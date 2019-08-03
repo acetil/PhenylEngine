@@ -42,7 +42,7 @@ GLuint graphics::loadShader (const char* filepath, GLuint shaderType) {
     return shader;
 }
 
-ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmentPath, char* name) {
+ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmentPath, std::string name) {
     GLuint vertexId = loadShader(vertexPath, GL_VERTEX_SHADER);
     GLuint fragmentId = loadShader(fragmentPath, GL_FRAGMENT_SHADER);
 
@@ -70,7 +70,7 @@ ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmen
     return ShaderProgram(programId, name);
 }
 
-graphics::ShaderProgram::ShaderProgram (GLuint program, char* name) {
+graphics::ShaderProgram::ShaderProgram (GLuint program, std::string name) {
     this->programId = program;
     this->name = name;
 }

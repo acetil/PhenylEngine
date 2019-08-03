@@ -1,12 +1,13 @@
 #include "graphics_headers.h"
+#include <string>
 namespace graphics {
     GLuint loadShader (const char* filepath, GLuint shaderType);
-    ShaderProgram loadShaders (const char* vertexPath, const char* fragmentPath, char* name);
+    ShaderProgram loadShaders (const char* vertexPath, const char* fragmentPath, std::string name);
     class ShaderProgram {
         private:
             GLuint programId;
-            char* name;
+            std::string name;
         public:
-            ShaderProgram (GLuint program, char* name);
+            ShaderProgram (GLuint program, std::string name);
     };
 }
