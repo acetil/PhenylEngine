@@ -22,12 +22,12 @@ void logging::log (int level, const char* log) {
             break;
         case LEVEL_INFO:
         default:
-            text = LEVEL_INFO;
+            text = INFO_TEXT;
             break;
     }
     time_t now = time(0);
-    strftime(timeText, TIME_TEXT_LEN, "[%T]", localtime(&now));
-    printf("%s (%s): %s\n", text, timeText, log);
+    strftime(timeText, TIME_TEXT_LEN, "[%H:%M:%S]", localtime(&now));
+    printf("%s (%s): %s\n", timeText, text, log);
 }
 
 void logging::logf(int level, const char* logFormat, ...) {
