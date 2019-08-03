@@ -12,5 +12,6 @@
 #define FATAL_TEXT "FATAL"
 namespace logging {
     void log (int level, const char* log);
+    void logf(int level, const char* log, ...);
 }
 #endif
