@@ -1,8 +1,12 @@
 #include "graphics_headers.h"
+#include <vector>
 #ifndef GRAPHICS_H
     #define GRAPHICS_H
-    class Graphics {
-        private:
-        GLFWwindow* window;
-    };
+    namespace graphics {
+        class Graphics {
+            private:
+            GLFWwindow* window;
+            std::vector<GLuint> shaders;
+        };
+    }
 #endif
