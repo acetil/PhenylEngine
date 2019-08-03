@@ -9,6 +9,8 @@
             private:
                 GLFWwindow* window;
                 std::unordered_map<std::string, graphics::ShaderProgram> shaderMap;
+            public:
+                Graphics(GLFWwindow* window);
         };
     }
 #endif
