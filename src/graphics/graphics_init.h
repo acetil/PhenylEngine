@@ -1,4 +1,5 @@
 #include "graphics_headers.h"
+#include "graphics.h"
 #ifndef GRAPHICS_INIT_H
     #define GRAPHICS_INIT_H
     #define DEFAULT_WINDOW_X 800
@@ -8,5 +9,6 @@
     #define GRAPHICS_INIT_FAILURE -1
     namespace graphics {
         int initWindow (GLFWwindow** windowPtr);
+        int initGraphics (GLFWwindow* window, Graphics* graphics);
     }
 #endif

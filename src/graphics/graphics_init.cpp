@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "graphics_headers.h"
+#include "graphics.h"
 #include "graphics_init.h"
 #include "logging/logging.h"
 
@@ -33,5 +34,9 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
     }
     *windowPtr = window;
     logging::log(LEVEL_INFO, "Window initialised successfully!");
+    return GRAPHICS_INIT_SUCCESS;
+}
+int graphics::initGraphics (GLFWwindow* window, Graphics* graphicsPtr) {
+    Graphics graphics(window);
     return GRAPHICS_INIT_SUCCESS;
 }
