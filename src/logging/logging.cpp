@@ -4,9 +4,9 @@
 #include "logging.h"
 #define TIME_TEXT_LEN 21
 using namespace logging;
-void log (int level, char* log) {
+void logging::log (int level, const char* log) {
     //TODO: update to print to log file
-    char* text;
+    const char* text;
     char timeText[TIME_TEXT_LEN];
     switch (level) {
         case LEVEL_WARNING:

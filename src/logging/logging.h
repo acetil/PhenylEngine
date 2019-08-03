@@ -11,6 +11,6 @@
 #define ERROR_TEXT "ERROR"
 #define FATAL_TEXT "FATAL"
 namespace logging {
-    void log (int level, char* log);
+    void log (int level, const char* log);
 }
 #endif

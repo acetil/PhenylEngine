@@ -6,7 +6,7 @@
 
 using namespace graphics;
 
-int initWindow (GLFWwindow** windowPtr) {
+int graphics::initWindow (GLFWwindow** windowPtr) {
     glewExperimental = true;
     if (!glfwInit()) {
         logging::log(LEVEL_FATAL, "Failed to init GLFW!");
@@ -32,5 +32,6 @@ int initWindow (GLFWwindow** windowPtr) {
         return GRAPHICS_INIT_FAILURE;
     }
     *windowPtr = window;
+    logging::log(LEVEL_INFO, "Window initialised successfully!");
     return GRAPHICS_INIT_SUCCESS;
 }
