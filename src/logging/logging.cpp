@@ -3,7 +3,8 @@
 
 #include "logging.h"
 #define TIME_TEXT_LEN 21
-void logging::log (int level, char* log) {
+using namespace logging;
+void log (int level, char* log) {
     //TODO: update to print to log file
     char* text;
     char timeText[TIME_TEXT_LEN];
