@@ -3,7 +3,7 @@
 
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics_init.h"
-#include "graphics.h"
+#include "graphics/graphics.h"
 #include "logging/logging.h"
 
 int main (int argv, char* argc[]) {

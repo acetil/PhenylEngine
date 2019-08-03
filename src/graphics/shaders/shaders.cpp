@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string.h>
 
-#include "graphics_headers.h"
+#include "graphics/graphics_headers.h"
 #include "shaders.h"
 #include "logging/logging.h"
 
