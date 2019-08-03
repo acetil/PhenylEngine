@@ -38,5 +38,6 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
 }
 int graphics::initGraphics (GLFWwindow* window, Graphics* graphicsPtr) {
     Graphics graphics(window);
+    *graphicsPtr = graphics;
     return GRAPHICS_INIT_SUCCESS;
 }
