@@ -10,7 +10,7 @@ using namespace graphics;
 int graphics::initWindow (GLFWwindow** windowPtr) {
     glewExperimental = true;
     if (!glfwInit()) {
-        logging::log(LEVEL_FATAL, "Failed to init GLFW!");
+        logging::log(LEVEL_FATAL, "Failed to initialise GLFW!");
         return GRAPHICS_INIT_FAILURE;
     }
 
@@ -23,13 +23,13 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
 
     GLFWwindow* window = glfwCreateWindow(DEFAULT_WINDOW_X, DEFAULT_WINDOW_Y, DEFAULT_WINDOW_NAME, NULL, NULL);
     if (window == NULL) {
-        logging::log(LEVEL_FATAL, "Failed to open GLFW window! Your GPU may not be compatible with OpenGl 3.3!");
+        logging::log(LEVEL_FATAL, "Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
         return GRAPHICS_INIT_FAILURE;
     }
     glfwMakeContextCurrent(window);
     glewExperimental = true; // TODO: check if removal affects anything
     if (glewInit() != GLEW_OK) {
-        logging::log(LEVEL_FATAL, "Failed to initialse GLEW!");
+        logging::log(LEVEL_FATAL, "Failed to initialise GLEW!");
         return GRAPHICS_INIT_FAILURE;
     }
     *windowPtr = window;
