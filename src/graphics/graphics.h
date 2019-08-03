@@ -11,6 +11,9 @@
                 std::unordered_map<std::string, graphics::ShaderProgram> shaderMap;
             public:
                 Graphics(GLFWwindow* window);
+                bool shouldClose ();
+                void pollEvents ();
+                void render ();
         };
     }
 #endif
