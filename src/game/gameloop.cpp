@@ -1,6 +1,8 @@
 #include "gameloop.h"
 #include "graphics/graphics.h"
 
+#include "logging/logging.h"
+
 using namespace game; 
 
 int game::gameloop (graphics::Graphics graphics) {
@@ -8,4 +10,5 @@ int game::gameloop (graphics::Graphics graphics) {
         graphics.render();
         graphics.pollEvents();
     }
+    return 0;
 }

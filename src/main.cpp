@@ -4,6 +4,9 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics_init.h"
 #include "graphics/graphics.h"
+
+#include "game/gameloop.h"
+
 #include "logging/logging.h"
 
 int main (int argv, char* argc[]) {
@@ -17,5 +20,7 @@ int main (int argv, char* argc[]) {
         logging::log(LEVEL_INFO, "Graphics init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
+    game::gameloop(graphics);
+    logging::log(LEVEL_INFO, "Shutting down!");
     return EXIT_SUCCESS;
 }
