@@ -28,3 +28,6 @@ void graphics::Camera::setScale (float scale) {
 glm::mat4 graphics::Camera::getCamMatrix () {
     return camMatrix;
 }
+std::string graphics::Camera::getUniformName () {
+    return "camera";
+}
