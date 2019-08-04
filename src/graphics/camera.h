@@ -17,6 +17,7 @@
             void setScale (float scale);
             glm::mat4 getCamMatrix ();
             std::string getUniformName ();
+            Camera();
         };
     }
 #endif

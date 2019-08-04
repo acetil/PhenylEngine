@@ -52,7 +52,7 @@ void graphics::Graphics::drawTexSquare (float x, float y, Texture tex) {
         *(posDataPtr++) = vertexX;
         *(posDataPtr++) = vertexY;
     }
-    spriteBuffer.pushBuffer(posData, tex.getTexUvs);
+    spriteBuffer.pushBuffer(posData, tex.getTexUvs());
 }
 
 void graphics::Buffer::initBuffer (unsigned int numSprites) {
