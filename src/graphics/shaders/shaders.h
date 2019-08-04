@@ -1,6 +1,7 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/math_headers.h"
 #include <string>
+#include <unordered_map>
 #ifndef SHADERS_H
     #define SHADERS_H
     namespace graphics {
@@ -8,6 +9,7 @@
             private:
                 GLuint programId;
                 std::string name;
+                std::unordered_map<std::string, GLuint> uniformMap;
             public:
                 ShaderProgram (GLuint program, std::string name);
                 void useProgram ();

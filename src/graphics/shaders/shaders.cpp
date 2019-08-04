@@ -3,8 +3,10 @@
 #include <fstream>
 #include <sstream>
 #include <string.h>
+#include <unordered_map>
 
 #include "graphics/graphics_headers.h"
+#include "graphics/math_headers.h"
 #include "shaders.h"
 #include "logging/logging.h"
 
@@ -73,4 +75,15 @@ ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmen
 graphics::ShaderProgram::ShaderProgram (GLuint program, std::string name) {
     this->programId = program;
     this->name = name;
+    this->uniformMap = std::unordered_map<std::string, GLuint>();
+}
+void graphics::ShaderProgram::useProgram () {
+    glUseProgram(programId);
+}
+void graphics::ShaderProgram::registerUniform (std::string name) {
+    uniformMap[name] = glGetUniformLocation(programId, name.c_str());
+}
+void graphics::ShaderProgram::appplyUniform (std::string name, glm::mat4 matrix) {
+    GLuint uniformId = uniformMap[name];
+    glUniformMatrix4fv(uniformId, 1, GL_FALSE, &matrix[0][0]);
 }
