@@ -2,6 +2,7 @@
 #include "shaders/shaders.h"
 #include "camera.h"
 #include "texture.h"
+#include <stdlib.h>
 #include <vector>
 #include <unordered_map>
 #ifndef GRAPHICS_H
@@ -9,10 +10,10 @@
     namespace graphics {
         class Buffer {
             private:
-                float* vertexPosData;
-                float* vertexUvData;
-                float* vertexPosCurrent;
-                float* vertexUvCurrent;
+                float* vertexPosData = NULL;
+                float* vertexUvData = NULL;
+                float* vertexPosCurrent = NULL;
+                float* vertexUvCurrent = NULL;
                 GLuint posBufferId;
                 GLuint uvBufferId;
                 size_t posBufferSize;
@@ -24,6 +25,7 @@
                 void reinitBuffer (unsigned int numSprites);
                 void pushBuffer (float* posData, float* uvData);
                 void flushBuffer (ShaderProgram shader, Camera camera);
+                ~Buffer();
         };
         class Graphics {
             private:

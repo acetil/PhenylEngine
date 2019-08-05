@@ -3,7 +3,7 @@
 #include "graphics.h"
 #include "graphics_headers.h"
 #include "camera.h"
-
+#include "logging/logging.h"
 using namespace graphics;
 
 #define NUM_TRIANGLE_VERTICES 3
@@ -77,6 +77,7 @@ void graphics::Buffer::initBuffer (unsigned int numSprites) {
 
 void graphics::Buffer::reinitBuffer (unsigned int numSprites) {
     // only use if things go wrong!
+    logging::logf(LEVEL_WARNING, "Forced to reallocate buffer with %u sprites!", numSprites);
     maxNumSprites = numSprites;
     posBufferSize = numSprites * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX * sizeof(float);
     uvBufferSize = numSprites * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_UV_PER_VERTEX * sizeof(float);
@@ -124,4 +125,12 @@ void graphics::Buffer::flushBuffer (ShaderProgram shader, Camera camera) {
     numSprites = 0;
     vertexPosCurrent = vertexPosData;
     vertexUvCurrent = vertexUvData;
+}
+graphics::Buffer::~Buffer () {
+    if (vertexPosData != NULL) {
+        free(vertexPosData);
+    }
+    if (vertexUvData != NULL) {
+        free(vertexPosData);
+    }
 }
