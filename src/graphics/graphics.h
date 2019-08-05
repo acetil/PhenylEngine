@@ -1,7 +1,7 @@
 #include "graphics_headers.h"
 #include "shaders/shaders.h"
 #include "camera.h"
-#include "texture.h"
+#include "textures/texture.h"
 #include <stdlib.h>
 #include <vector>
 #include <unordered_map>
