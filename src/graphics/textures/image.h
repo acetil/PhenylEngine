@@ -13,6 +13,10 @@
                 Image (const char* filename, std::string);
                 ~Image ();
                 unsigned char* getData ();
+                int getArea ();
+                int getWidth ();
+                int getHeight ();
+                std::string getName();
         };
     }
 #endif
