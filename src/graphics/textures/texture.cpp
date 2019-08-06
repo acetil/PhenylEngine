@@ -45,3 +45,6 @@ graphics::Texture::~Texture () {
         delete[] texUvs;
     }
 }
+void graphics::Texture::setName (std::string name) {
+    this->name = name;
+}
