@@ -9,8 +9,9 @@
             public:
                 float* getTexUvs ();
                 void setTexUvs (int uPixel, int vPixel, int xSize, int ySize, int atlasXSize, int atlasYSize);
+                void setName (std::string name);
                 std::string getName ();
-                Texture (std::string name);
+                Texture ();
                 ~Texture();
         };
     }

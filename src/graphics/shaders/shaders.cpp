@@ -36,10 +36,10 @@ GLuint graphics::loadShader (const char* filepath, GLuint shaderType) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolength);
     if (infolength > 0) {
-        char* errorMessage = (char*) malloc(sizeof(char) * infolength);
+        char* errorMessage = new char[infolength];
         glGetShaderInfoLog(shader, infolength, NULL, errorMessage);
         logging::log(LEVEL_ERROR, errorMessage);
-        free(errorMessage);
+        delete[] errorMessage;
     }
     return shader;
 }
@@ -58,10 +58,10 @@ ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmen
     glGetProgramiv(programId, GL_COMPILE_STATUS, &result);
     glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
     if (infoLength > 0) {
-        char* infoLog = (char*) malloc(infoLength * sizeof(char));
+        char* infoLog = new char[infoLength];
         glGetProgramInfoLog(programId, infoLength, NULL, infoLog);
         logging::log(LEVEL_ERROR, infoLog);
-        free(infoLog);
+        delete[] infoLog;
     }
 
     glDetachShader(programId, vertexId);

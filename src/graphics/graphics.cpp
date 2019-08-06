@@ -30,7 +30,7 @@ void graphics::Graphics::pollEvents () {
     glfwPollEvents();
 }
 void graphics::Graphics::drawTexSquare (float x, float y, Texture tex) {
-    float* posData = (float*) malloc(sizeof(float) * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX);
+    float* posData = new float[NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX];
     float* posDataPtr = posData;
     for (int i = 0; i < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
         // if order is 0 1
@@ -53,9 +53,13 @@ void graphics::Graphics::drawTexSquare (float x, float y, Texture tex) {
         *(posDataPtr++) = vertexY;
     }
     spriteBuffer.pushBuffer(posData, tex.getTexUvs());
+    delete[] posData;
 }
 
 void graphics::Buffer::initBuffer (unsigned int numSprites) {
+    // inits buffer for pos and uv data, intended for glSubBuffer()
+    // MUST USE malloc as otherwise you cannot realloc data if required
+    // TODO: see if malloc is required
     maxNumSprites = numSprites;
     posBufferSize = numSprites * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX * sizeof(float);
     uvBufferSize = numSprites * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_UV_PER_VERTEX * sizeof(float);
@@ -111,7 +115,7 @@ void graphics::Buffer::pushBuffer (float* posData, float* uvData) {
 void graphics::Buffer::flushBuffer (ShaderProgram shader, Camera camera) {
     shader.useProgram();
     shader.appplyUniform(camera.getUniformName(), camera.getCamMatrix());
-
+    
     glBindBuffer(GL_ARRAY_BUFFER, posBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
         NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX * sizeof(float), vertexPosData);

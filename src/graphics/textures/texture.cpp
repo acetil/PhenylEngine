@@ -9,8 +9,7 @@ std::string graphics::Texture::getName () {
     return name;
 }
 
-graphics::Texture::Texture (std::string name) {
-    this->name = name;
+graphics::Texture::Texture () {
     this->texUvs = NULL;
 }
 
@@ -20,9 +19,10 @@ float* graphics::Texture::getTexUvs () {
 
 void graphics::Texture::setTexUvs (int uPixel, int vPixel, int xSize, int ySize, int atlasXSize, int atlasYSize) {
     if (texUvs != NULL) {
-        free(texUvs);
+        delete[] texUvs;
     }
-    texUvs = (float*) malloc(sizeof(float) * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_TEX * NUM_UV_PER_VERTEX);
+    //texUvs = (float*) malloc(sizeof(float) * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_TEX * NUM_UV_PER_VERTEX);
+    texUvs = new float[NUM_TRIANGLE_VERTICES * TRIANGLES_PER_TEX * NUM_UV_PER_VERTEX];
     float* uvPtr = texUvs;
     for (int i = 0; i < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_TEX; i++) {
         // see Graphics::drawTexSquare() in graphics.cpp
@@ -42,6 +42,6 @@ void graphics::Texture::setTexUvs (int uPixel, int vPixel, int xSize, int ySize,
 }
 graphics::Texture::~Texture () {
     if (texUvs != NULL) {
-        free(texUvs);
+        delete[] texUvs;
     }
 }

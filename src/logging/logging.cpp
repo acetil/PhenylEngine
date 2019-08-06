@@ -6,6 +6,7 @@
 #include "logging.h"
 #define TIME_TEXT_LEN 21
 using namespace logging;
+char buffer[200];
 void logging::log (int level, const char* log) {
     //TODO: update to print to log file
     const char* text;
@@ -33,7 +34,6 @@ void logging::log (int level, const char* log) {
 void logging::logf(int level, const char* logFormat, ...) {
     va_list argPtr;
     va_start(argPtr, logFormat);
-    char buffer[200];
     vsprintf(buffer, logFormat, argPtr);
     log(level, buffer);
 }
