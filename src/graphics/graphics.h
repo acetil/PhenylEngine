@@ -2,6 +2,7 @@
 #include "shaders/shaders.h"
 #include "camera.h"
 #include "textures/texture.h"
+#include "textures/texture_atlas.h"
 #include <stdlib.h>
 #include <vector>
 #include <unordered_map>
@@ -24,21 +25,22 @@
                 void initBuffer (unsigned int numSprites);
                 void reinitBuffer (unsigned int numSprites);
                 void pushBuffer (float* posData, float* uvData);
-                void flushBuffer (ShaderProgram shader, Camera camera);
+                void flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas);
                 ~Buffer();
         };
         class Graphics {
             private:
                 GLFWwindow* window;
-                std::unordered_map<std::string, graphics::ShaderProgram> shaderMap;
+                std::unordered_map<std::string, graphics::ShaderProgram*> shaderMap;
                 int numImages;
-                Buffer spriteBuffer;
+                Buffer* spriteBuffer;
+                TextureAtlas* spriteAtlas; 
             public:
                 Graphics(GLFWwindow* window);
                 bool shouldClose ();
                 void pollEvents ();
                 void render ();
-                void drawTexSquare (float x, float y, Texture tex);
+                void drawTexSquare (float x, float y, int textureId);
         };
     }
 #endif

@@ -3,6 +3,7 @@
 #include "graphics.h"
 #include "graphics_headers.h"
 #include "camera.h"
+#include "textures/texture_atlas.h"
 #include "logging/logging.h"
 using namespace graphics;
 
@@ -13,7 +14,7 @@ using namespace graphics;
 
 graphics::Graphics::Graphics (GLFWwindow* window) {
     this->window = window;
-    shaderMap = std::unordered_map<std::string, graphics::ShaderProgram>();
+    shaderMap = std::unordered_map<std::string, graphics::ShaderProgram*>();
 }
 
 bool graphics::Graphics::shouldClose () {
@@ -29,7 +30,7 @@ void graphics::Graphics::render () {
 void graphics::Graphics::pollEvents () {
     glfwPollEvents();
 }
-void graphics::Graphics::drawTexSquare (float x, float y, Texture tex) {
+void graphics::Graphics::drawTexSquare (float x, float y, int textureId) {
     float* posData = new float[NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX];
     float* posDataPtr = posData;
     for (int i = 0; i < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
@@ -52,7 +53,8 @@ void graphics::Graphics::drawTexSquare (float x, float y, Texture tex) {
         *(posDataPtr++) = vertexX;
         *(posDataPtr++) = vertexY;
     }
-    spriteBuffer.pushBuffer(posData, tex.getTexUvs());
+    Texture* tex = spriteAtlas->getTexture(textureId);
+    spriteBuffer->pushBuffer(posData, tex->getTexUvs());
     delete[] posData;
 }
 
@@ -112,9 +114,11 @@ void graphics::Buffer::pushBuffer (float* posData, float* uvData) {
     vertexPosCurrent += sizePosData;
     vertexUvCurrent += sizeUvData;
 }
-void graphics::Buffer::flushBuffer (ShaderProgram shader, Camera camera) {
-    shader.useProgram();
-    shader.appplyUniform(camera.getUniformName(), camera.getCamMatrix());
+void graphics::Buffer::flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas) {
+    shader->useProgram();
+    shader->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
+
+    textureAtlas->bindTextureAtlas();
     
     glBindBuffer(GL_ARRAY_BUFFER, posBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 

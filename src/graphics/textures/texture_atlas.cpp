@@ -68,6 +68,7 @@ void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
         tree->height = sideLength;
         logging::logf(LEVEL_INFO, "Unable to pack, attempting packing of %d * %d atlas.", sideLength, sideLength);
     }
+    this->sideLength = sideLength;
     logging::log(LEVEL_INFO, "Packing success.");
 
     data = new unsigned char[sideLength * sideLength * BYTES_PER_PIXEL];
@@ -96,6 +97,23 @@ Texture* graphics::TextureAtlas::getTexture (int textureId) {
 Texture* graphics::TextureAtlas::getTexture (std::string name) {
     // convenience function
     return getTexture(getTextureId(name));
+}
+
+void graphics::TextureAtlas::loadTextureAtlas () {
+    glGenTextures(1, &glTextureId);
+
+    glBindTexture(GL_TEXTURE_2D, glTextureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sideLength, sideLength, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    // mipmapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    logging::logf(LEVEL_INFO, "Generating mipmaps for %d * %d texture atlas", sideLength, sideLength);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void graphics::TextureAtlas::bindTextureAtlas () {
+    glBindTexture(GL_TEXTURE_2D, glTextureId);
 }
 
 void node::setDimensions (int width, int height, int offsetX, int offsetY) {
