@@ -30,7 +30,7 @@ void graphics::Graphics::render () {
 void graphics::Graphics::pollEvents () {
     glfwPollEvents();
 }
-void graphics::Graphics::drawTexSquare (float x, float y, int textureId) {
+void graphics::Graphics::drawTexSquare (float x, float y, float scale, int textureId) {
     float* posData = new float[NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX];
     float* posDataPtr = posData;
     for (int i = 0; i < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
@@ -41,14 +41,14 @@ void graphics::Graphics::drawTexSquare (float x, float y, int textureId) {
         float vertexX = x;
         float vertexY = y;
         if (correctedVertex < 2) {
-            vertexY -= 0.5f;
+            vertexY -= 0.5f * scale;;
         } else {
-            vertexY += 0.5f;
+            vertexY += 0.5f * scale;
         }
         if (correctedVertex % 2 == 0) {
-            vertexX -= 0.5f;
+            vertexX -= 0.5f * scale;
         } else {
-            vertexX += 0.5f;
+            vertexX += 0.5f * scale;
         }
         *(posDataPtr++) = vertexX;
         *(posDataPtr++) = vertexY;

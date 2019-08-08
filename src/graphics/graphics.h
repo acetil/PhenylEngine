@@ -40,7 +40,7 @@
                 bool shouldClose ();
                 void pollEvents ();
                 void render ();
-                void drawTexSquare (float x, float y, int textureId);
+                void drawTexSquare (float x, float y, float scale, int textureId);
         };
     }
 #endif
