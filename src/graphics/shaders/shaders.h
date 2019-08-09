@@ -18,6 +18,6 @@
         };
 
         GLuint loadShader (const char* filepath, GLuint shaderType);
-        ShaderProgram loadShaders (const char* vertexPath, const char* fragmentPath, std::string name);
+        ShaderProgram* loadShaderProgram (const char* vertexPath, const char* fragmentPath, std::string name);
     }
 #endif

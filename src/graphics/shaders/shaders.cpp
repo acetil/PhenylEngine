@@ -44,7 +44,7 @@ GLuint graphics::loadShader (const char* filepath, GLuint shaderType) {
     return shader;
 }
 
-ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmentPath, std::string name) {
+ShaderProgram* graphics::loadShaderProgram (const char* vertexPath, const char* fragmentPath, std::string name) {
     GLuint vertexId = loadShader(vertexPath, GL_VERTEX_SHADER);
     GLuint fragmentId = loadShader(fragmentPath, GL_FRAGMENT_SHADER);
 
@@ -52,7 +52,7 @@ ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmen
     GLuint programId = glCreateProgram();
     glAttachShader(programId, vertexId);
     glAttachShader(programId, fragmentId);
-
+    glLinkProgram(programId);
     GLint result = GL_FALSE;
     int infoLength;
     glGetProgramiv(programId, GL_COMPILE_STATUS, &result);
@@ -69,7 +69,7 @@ ShaderProgram graphics::loadShaders (const char* vertexPath, const char* fragmen
 
     glDeleteShader(vertexId);
     glDeleteShader(fragmentId);
-    return ShaderProgram(programId, name);
+    return new ShaderProgram(programId, name);
 }
 
 graphics::ShaderProgram::ShaderProgram (GLuint program, std::string name) {

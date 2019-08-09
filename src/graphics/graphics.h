@@ -17,6 +17,7 @@
                 float* vertexUvCurrent = NULL;
                 GLuint posBufferId;
                 GLuint uvBufferId;
+                GLuint vaoId;
                 size_t posBufferSize;
                 size_t uvBufferSize;
                 unsigned int numSprites;
@@ -35,12 +36,21 @@
                 int numImages;
                 Buffer* spriteBuffer;
                 TextureAtlas* spriteAtlas; 
+                Camera* camera;
+                ShaderProgram* currentSpriteShader; // TODO: remove
             public:
                 Graphics(GLFWwindow* window);
+                ~Graphics();
                 bool shouldClose ();
                 void pollEvents ();
                 void render ();
                 void drawTexSquare (float x, float y, float scale, int textureId);
+                Camera* getCamera ();
+                void addShader (std::string name, ShaderProgram* shader);
+                void setCurrentSpriteShader (std::string name);
+                void initSpriteAtlas (std::vector<Image*> images);
+                int getSpriteTextureId (std::string name);
+                void initBuffer (unsigned int numSprites);
         };
     }
 #endif

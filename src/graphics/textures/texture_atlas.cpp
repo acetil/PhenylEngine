@@ -40,11 +40,10 @@ void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
     // power of 2 texture using a greedy depth-first search
 
     // sorts to get larger images first
-    logging::logf(LEVEL_INFO, "Initiated creation of texture atlas of %d images.", images.size());
     std::sort(images.begin(), images.end(), [](Image* a, Image* b) {
         return a->getArea() > b->getArea();
     });
-    int totalArea = 0;
+    int totalArea = 0;    
     for (Image* i : images) {
         totalArea += i->getArea();
     }
@@ -64,8 +63,7 @@ void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
         // space isn't big enough
         tree->destroy();
         sideLength *= 2;
-        tree->width = sideLength;
-        tree->height = sideLength;
+        tree->setDimensions(sideLength, sideLength, 0, 0);
         logging::logf(LEVEL_INFO, "Unable to pack, attempting packing of %d * %d atlas.", sideLength, sideLength);
     }
     this->sideLength = sideLength;
@@ -84,6 +82,7 @@ void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
         textureIdMap[texPtr->getName()] = texPtr - textures;
         texPtr++;
     }
+    logging::log(LEVEL_INFO, "Stitching complete");
 }
 
 int graphics::TextureAtlas::getTextureId (std::string name) {
@@ -106,7 +105,7 @@ void graphics::TextureAtlas::loadTextureAtlas () {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sideLength, sideLength, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     // mipmapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     logging::logf(LEVEL_INFO, "Generating mipmaps for %d * %d texture atlas", sideLength, sideLength);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -172,18 +171,22 @@ bool node::insert (Image* i) {
     }
 }
 void node::writeData (unsigned char* data, int sideLength) {
-    unsigned char* copyPtr = data + offsetX + offsetY * sideLength;
+    unsigned char* copyPtr = data + (offsetX + offsetY * sideLength) * BYTES_PER_PIXEL;
     unsigned char* dataPtr = image->getData();
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            *(dataPtr++) = copyPtr[j];
+            for (int k = 0; k < BYTES_PER_PIXEL; k++) {
+                copyPtr[j * BYTES_PER_PIXEL + k] = *(dataPtr++);
+            }
         }
-        copyPtr += sideLength; // incrementing row
+        copyPtr += sideLength * BYTES_PER_PIXEL; // incrementing row
     }
 }
 std::vector<Node> node::walk () {
     std::vector<Node> nodes;
-    nodes.push_back(this);
+    if (this->image != NULL) {
+        nodes.push_back(this);
+    }
     if (leftNode != NULL) {
         std::vector<Node> nodeInput = leftNode->walk();
         nodes.insert(nodes.end(), nodeInput.begin(), nodeInput.end());

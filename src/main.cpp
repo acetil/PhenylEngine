@@ -15,11 +15,12 @@ int main (int argv, char* argc[]) {
         logging::log(LEVEL_INFO, "Window init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
-    graphics::Graphics graphics = NULL;
+    graphics::Graphics* graphics = NULL;
     if (graphics::initGraphics(window, &graphics) != GRAPHICS_INIT_SUCCESS) {
         logging::log(LEVEL_INFO, "Graphics init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
+    logging::log(LEVEL_INFO, "Successfully initialised graphics");
     game::gameloop(graphics);
     logging::log(LEVEL_INFO, "Shutting down!");
     return EXIT_SUCCESS;

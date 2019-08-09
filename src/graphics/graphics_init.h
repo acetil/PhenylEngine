@@ -9,6 +9,6 @@
     #define GRAPHICS_INIT_FAILURE -1
     namespace graphics {
         int initWindow (GLFWwindow** windowPtr);
-        int initGraphics (GLFWwindow* window, Graphics* graphics);
+        int initGraphics (GLFWwindow* window, Graphics** graphics);
     }
 #endif

@@ -31,10 +31,10 @@ void graphics::Texture::setTexUvs (int uPixel, int vPixel, int xSize, int ySize,
         float v = (float)vPixel / atlasYSize;
 
         if (correctedVertex >= 2) {
-            u += (float)xSize / atlasXSize;
+            v += (float)ySize / atlasYSize;
         }
         if (correctedVertex % 2 == 1) {
-            v += (float)ySize / atlasYSize; 
+            u += (float)xSize / atlasXSize; 
         }
         *(uvPtr++) = u;
         *(uvPtr++) = v;

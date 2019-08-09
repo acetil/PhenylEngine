@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <vector>
 
 #include "graphics_headers.h"
 #include "graphics.h"
 #include "graphics_init.h"
 #include "logging/logging.h"
+#include "shaders/shaders.h"
+#include "textures/image.h"
 
 using namespace graphics;
 
@@ -32,12 +35,29 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
         logging::log(LEVEL_FATAL, "Failed to initialise GLEW!");
         return GRAPHICS_INIT_FAILURE;
     }
+    glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     *windowPtr = window;
     logging::log(LEVEL_INFO, "Window initialised successfully!");
     return GRAPHICS_INIT_SUCCESS;
 }
-int graphics::initGraphics (GLFWwindow* window, Graphics* graphicsPtr) {
-    Graphics graphics(window);
+std::vector<Image*> getSpriteImages () {
+    // temp code
+    std::vector<Image*> images;
+    images.push_back(new Image("resources/images/test/grass_temp.png", "test1"));
+    images.push_back(new Image("resources/images/test/temp_crystal.png", "test3"));
+    images.push_back(new Image("resources/images/test/tier2_ingot-temp.png", "test5"));
+    images.push_back(new Image("resources/images/test/temp_ecrys1.png", "test2"));
+    return images;
+}
+int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
+    Graphics* graphics = new Graphics(window);
     *graphicsPtr = graphics;
+    graphics->initSpriteAtlas(getSpriteImages());
+    logging::log(LEVEL_INFO, "Adding shaders");
+    graphics->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
+    graphics->setCurrentSpriteShader("default");
+    //graphics->initBuffer(100);
     return GRAPHICS_INIT_SUCCESS;
 }
+
