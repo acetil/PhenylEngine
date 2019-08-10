@@ -10,5 +10,6 @@
     namespace graphics {
         int initWindow (GLFWwindow** windowPtr);
         int initGraphics (GLFWwindow* window, Graphics** graphics);
+        void destroyGraphics (Graphics* graphics);
     }
 #endif

@@ -53,11 +53,19 @@ std::vector<Image*> getSpriteImages () {
 int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
     Graphics* graphics = new Graphics(window);
     *graphicsPtr = graphics;
-    graphics->initSpriteAtlas(getSpriteImages());
+    std::vector<Image*> images = getSpriteImages ();
+    graphics->initSpriteAtlas(images);
+    for (Image* i : images) {
+        delete i;
+    }
     logging::log(LEVEL_INFO, "Adding shaders");
     graphics->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
     graphics->setCurrentSpriteShader("default");
     //graphics->initBuffer(100);
     return GRAPHICS_INIT_SUCCESS;
+}
+void graphics::destroyGraphics (Graphics* graphics) {
+    delete graphics;
+    glfwTerminate();
 }
 

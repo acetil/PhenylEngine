@@ -23,5 +23,6 @@ int main (int argv, char* argc[]) {
     logging::log(LEVEL_INFO, "Successfully initialised graphics");
     game::gameloop(graphics);
     logging::log(LEVEL_INFO, "Shutting down!");
+    graphics::destroyGraphics(graphics);
     return EXIT_SUCCESS;
 }
