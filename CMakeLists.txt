@@ -9,6 +9,7 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.h
     ${CMAKE_SOURCE_DIR}/src/*.hpp)
 
+set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -g")
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 configure_file(src/helpers/RootDir.h.in src/helpers/RootDir.h)

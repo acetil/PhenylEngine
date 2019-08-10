@@ -9,6 +9,11 @@ using namespace logging;
 char buffer[200];
 void logging::log (int level, const char* log) {
     //TODO: update to print to log file
+    #ifndef DEBUG_LOG
+        if (level == LEVEL_DEBUG) {
+            return;
+        }
+    #endif
     const char* text;
     char timeText[TIME_TEXT_LEN];
     switch (level) {
@@ -20,6 +25,9 @@ void logging::log (int level, const char* log) {
             break;
         case LEVEL_FATAL:
             text = FATAL_TEXT;
+            break;
+        case LEVEL_DEBUG:
+            text = DEBUG_TEXT;
             break;
         case LEVEL_INFO:
         default:
