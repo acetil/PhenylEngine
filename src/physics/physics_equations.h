@@ -1,3 +1,6 @@
+#include <vector>
+
+#include "physics.h"
 #ifndef PHYSICS_EQUATIONS_H
 #define PHYSICS_EQUATIONS_H
 namespace physics {
@@ -16,5 +19,6 @@ namespace physics {
         float virtual getVelocityIntercept (float intercept);
         void virtual updateTime (float t); 
     };
+    ForceEquation** resolveForces (std::vector<Force> forces, float mass);
 }
 #endif

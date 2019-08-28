@@ -1,9 +1,11 @@
 #include <math.h>
-
+#include <vector>
+#include "physics.h"
+#include "physics_equations.h"
 #include "physics_body.h"
 
 using namespace physics;
-class ConstantEquation : ForceEquation {
+class ConstantEquation : public ForceEquation {
     // equation with no term of v (a)
     // equation: x'' = a
     public:
@@ -14,7 +16,7 @@ class ConstantEquation : ForceEquation {
     float virtual getPosIntercept (float intercept);
     float virtual getVelocityIntercept (float intercept);
 };
-class LinearEquation : ForceEquation {
+class LinearEquation : public ForceEquation {
     // equation with term of v (a + bv)
     // equation: x'' = a + bv
     // equation: x(t) = 1/b^2 * ((e^(bt) - 1)(a + bv0) + x0b^2)
@@ -24,7 +26,7 @@ class LinearEquation : ForceEquation {
     float virtual getPosIntercept (float intercept);
     float virtual getVelocityIntercept (float intercept);
 };
-class QuadEquation: ForceEquation {
+class QuadEquation: public ForceEquation {
     // equation with term of v (a + (bv + c)^2)
     protected:
     float c;
@@ -92,4 +94,42 @@ float LinearEquation::getPosIntercept (float intercept) {
 void QuadEquation::setFactors (float a, float b, float c, float x0, float v0) {
     setFactors(a, b, x0, v0);
     this->c = c;
+}
+
+ForceEquation* getEquation (float constant, float linear, float quadratic, float x0, float v0) {
+    ForceEquation* eq;
+    if (quadratic != 0) {
+        // TODO
+    } else if (linear != 0) {
+        eq = new LinearEquation;
+        eq->setFactors(constant, linear, x0, v0); 
+    } else {
+        eq = new ConstantEquation;
+        eq->setFactors(constant, 0, x0, v0);
+    }
+    return eq;
+}
+ForceEquation** physics::resolveForces (std::vector<Force> forces, float mass, float initialX, float initialY, 
+    float xv, float yv) {
+    // resolves the forces. Returns an ARRAY of [x, y] equation
+    float constantX = 0;
+    float constantY = 0;
+    float linearX = 0;
+    float linearY = 0;
+    float quadraticX = 0;
+    float quadraticY = 0;
+    // TODO: add quadratic
+    for (Force f : forces) {
+        if (f.degree == CONSTANT_DEGREE) {
+            constantX += f.xComponent;
+            constantY += f.yComponent;
+        } else if (f.degree == LINEAR_DEGREE) {
+            linearX += f.xComponent;
+            linearY += f.yComponent;
+        }
+    }
+    ForceEquation* equations[2];
+    equations[0] = getEquation(constantX, linearX, quadraticX, initialX, xv);
+    equations[1] = getEquation(constantY, linearY, quadraticY, initialY, yv);
+    return equations;
 }
