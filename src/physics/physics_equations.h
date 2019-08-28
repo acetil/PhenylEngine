@@ -19,6 +19,7 @@ namespace physics {
         float virtual getVelocityIntercept (float intercept);
         void virtual updateTime (float t); 
     };
-    ForceEquation** resolveForces (std::vector<Force> forces, float mass);
+    ForceEquation** resolveForces (std::vector<Force> forces, float mass, float initialX, float initialY, 
+        float velX, float velY);
 }
 #endif
