@@ -20,7 +20,6 @@ namespace physics {
         std::vector<Force> forces;
         ForceEquation* xEquation;
         ForceEquation* yEquation;
-        float mass;
         bool forceUpdate;
         public:
         void updatePosition (float addedTime);

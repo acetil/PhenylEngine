@@ -12,12 +12,12 @@ namespace physics {
         float b;
         float addedTime;
         public:
-        void virtual setFactors (float a, float b, float x0, float v0);
-        float virtual getVelocity (float t);
-        float virtual getPosition (float t);
-        float virtual getPosIntercept (float intercept);
-        float virtual getVelocityIntercept (float intercept);
-        void virtual updateTime (float t); 
+        virtual void setFactors (float a, float b, float x0, float v0);
+        virtual float getVelocity (float t) = 0;
+        virtual float getPosition (float t) = 0;
+        virtual float getPosIntercept (float intercept) = 0;
+        virtual float getVelocityIntercept (float intercept) = 0;
+        virtual void updateTime (float t); 
     };
     ForceEquation** resolveForces (std::vector<Force> forces, float mass, float initialX, float initialY, 
         float velX, float velY);

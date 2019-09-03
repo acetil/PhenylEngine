@@ -10,23 +10,23 @@ class ConstantEquation : public ForceEquation {
     // equation: x'' = a
     public:
     void setFactors (float a, float x0, float v0);
-    void setFactors (float a, float b, float x0, float v0);
-    float virtual getVelocity (float t);
-    float virtual getPosition (float t);
-    float virtual getPosIntercept (float intercept);
-    float virtual getVelocityIntercept (float intercept);
+    //void setFactors (float a, float b, float x0, float v0);
+    float getVelocity (float t);
+    float getPosition (float t);
+    float getPosIntercept (float intercept);
+    float getVelocityIntercept (float intercept);
 };
 class LinearEquation : public ForceEquation {
     // equation with term of v (a + bv)
     // equation: x'' = a + bv
     // equation: x(t) = 1/b^2 * ((e^(bt) - 1)(a + bv0) + x0b^2)
     public:
-    float virtual getVelocity (float t);
-    float virtual getPosition (float t);
-    float virtual getPosIntercept (float intercept);
-    float virtual getVelocityIntercept (float intercept);
+    float getVelocity (float t);
+    float getPosition (float t);
+    float getPosIntercept (float intercept);
+    float getVelocityIntercept (float intercept);
 };
-class QuadEquation: public ForceEquation {
+/*class QuadEquation: public ForceEquation {
     // equation with term of v (a + (bv + c)^2)
     protected:
     float c;
@@ -34,7 +34,7 @@ class QuadEquation: public ForceEquation {
     void virtual setFactors (float a, float b, float c, float x0, float v0);
     void virtual setFactors (float a, float b, float x0, float v0);
     
-};
+};*/
 void physics::ForceEquation::setFactors (float a, float b, float x0, float v0) {
     this->a = a;
     this->b = b;
@@ -46,7 +46,7 @@ void physics::ForceEquation::updateTime (float t) {
 }
 
 void ConstantEquation::setFactors(float a, float x0, float v0) {
-    setFactors(a, 0, x0, v0);    
+    ForceEquation::setFactors(a, 0, x0, v0);    
 }
 float ConstantEquation::getPosition (float t) {
     // equation: x(t) = v0t + 1/2at^2 + x0
@@ -91,10 +91,10 @@ float LinearEquation::getPosIntercept (float intercept) {
     // t = 1/b * ln(1 + (x - x0)b^2 /(a + bv0))
     return log(1 + (intercept - x0) * b * b /(a + b * v0)) / b;
 }
-void QuadEquation::setFactors (float a, float b, float c, float x0, float v0) {
+/*void QuadEquation::setFactors (float a, float b, float c, float x0, float v0) {
     setFactors(a, b, x0, v0);
     this->c = c;
-}
+}*/
 
 ForceEquation* getEquation (float constant, float linear, float quadratic, float x0, float v0) {
     ForceEquation* eq;
@@ -128,7 +128,7 @@ ForceEquation** physics::resolveForces (std::vector<Force> forces, float mass, f
             linearY += f.yComponent;
         }
     }
-    ForceEquation* equations[2];
+    ForceEquation** equations = new ForceEquation*[2];
     equations[0] = getEquation(constantX, linearX, quadraticX, initialX, xv);
     equations[1] = getEquation(constantY, linearY, quadraticY, initialY, yv);
     return equations;

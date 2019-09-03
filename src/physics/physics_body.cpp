@@ -11,6 +11,7 @@ void physics::PhysicsBody::updatePosition (float time) {
         ForceEquation** equations = resolveForces(forces, mass, *x, *y, velX, velY);
         xEquation = equations[0];
         yEquation = equations[1];
+        delete[] equations;
     }
     // TODO: account for intercepts with v = 0
     *x = xEquation->getPosition(time);
