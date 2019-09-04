@@ -38,3 +38,10 @@ void physics::PhysicsBody::setVelocity (float velX, float velY) {
     this->velY = velY;
     forceUpdate = true;
 }
+physics::PhysicsBody::PhysicsBody (float* x, float* y, float mass, float constFrictionK, float linearFrictionK) {
+    this->x = x;
+    this->y = y;
+    this->mass = mass;
+    this->constFrictionK = constFrictionK;
+    this->linearFrictionK = linearFrictionK;
+}

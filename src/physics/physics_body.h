@@ -22,6 +22,7 @@ namespace physics {
         ForceEquation* yEquation;
         bool forceUpdate;
         public:
+        PhysicsBody (float* x, float* y, float mass, float constFrictionK, float linearFrictionK);
         void updatePosition (float addedTime);
         void addForce (Force f);
         void removeMovementForces ();
