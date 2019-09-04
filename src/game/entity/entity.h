@@ -8,6 +8,7 @@
 #define ENTITY_H
 namespace game {
     class AbstractEntity {
+        friend class GameObject;
         protected:
         float x;
         float y;
@@ -16,13 +17,14 @@ namespace game {
         std::string name;
         int textureId;
         int entityId;
+        virtual void setEntityId (int entityId);
         public:
         virtual AbstractEntity* createEntity (float x, float y) = 0;
-        virtual void setEntityId (int entityId);
         virtual int getEntityId ();
 
         virtual void addForce (physics::Force force);
         virtual void clearMovementForces ();
+        virtual void update (float time);
         virtual void updatePosition (float time);
         virtual void setVelocity (float velX, float velY);
 

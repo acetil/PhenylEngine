@@ -11,7 +11,9 @@ void game::AbstractEntity::setEntityId (int entityId) {
 int game::AbstractEntity::getEntityId () {
     return entityId;
 }
-
+void game::AbstractEntity::update (float time) {
+    // default is empty
+}
 // PhysicsBody delegates
 void game::AbstractEntity::addForce (physics::Force force) {
     physicsBody->addForce(force);
