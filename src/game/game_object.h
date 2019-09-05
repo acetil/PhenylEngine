@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include "entity/entity.h"
+#include "graphics/textures/texture_atlas.h"
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
@@ -21,6 +22,7 @@ namespace game {
 
         void updateEntities (float deltaTime);
         void updateEntityPosition (float deltaTime);
+        void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
         
     };

@@ -1,5 +1,7 @@
 #include "entity_test.h"
 #include "entity.h"
+#include "logging/logging.h"
+
 using namespace game;
 
 game::EntityTest::EntityTest() {
@@ -12,10 +14,11 @@ AbstractEntity* game::EntityTest::createEntity (float x, float y) {
     EntityTest* entity = new EntityTest ();
     entity->textureId = textureId;
     entity->scale = scale;
-    physicsBody = nullptr;
+    entity->physicsBody = nullptr;
     entity->name = name;
     return entity;
 }
-void game::EntityTest::setTextureIds (graphics::TextureAtlas* atlas) {
-    textureId = atlas->getTextureId("test_img");
+void game::EntityTest::setTextureIds (graphics::Graphics* graphics) {
+    textureId = graphics->getSpriteTextureId("test3");
+    logging::logf(LEVEL_DEBUG, "EntityTest textureId: %d", textureId);
 }
