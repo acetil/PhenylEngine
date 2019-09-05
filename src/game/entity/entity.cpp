@@ -11,6 +11,9 @@ void game::AbstractEntity::setEntityId (int entityId) {
 int game::AbstractEntity::getEntityId () {
     return entityId;
 }
+std::string game::AbstractEntity::getEntityName () {
+    return name;
+}
 void game::AbstractEntity::update (float time) {
     // default is empty
 }

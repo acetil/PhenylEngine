@@ -21,7 +21,8 @@ namespace game {
         public:
         virtual AbstractEntity* createEntity (float x, float y) = 0;
         virtual int getEntityId ();
-
+        virtual std::string getEntityName ();
+        
         virtual void addForce (physics::Force force);
         virtual void clearMovementForces ();
         virtual void update (float time);
