@@ -1,4 +1,5 @@
 #include "graphics/graphics_headers.h"
+#include "graphics/graphics.h"
 #include <vector>
 #include <map>
 #include <utility>
@@ -9,14 +10,13 @@ namespace game {
     class KeyboardFunction {
         public:
         virtual void operator() (int action) = 0;
-        virtual ~KeyboardFunction() = 0;
     };
     class KeyboardInput {
         private:
         GLFWwindow* window;
         std::map<int, KeyboardFunction*> bindingMap; 
         public:
-        KeyboardInput (GLFWwindow* window);
+        KeyboardInput (graphics::Graphics* graphics);
         ~KeyboardInput ();
         void setKey (int key, KeyboardFunction* function);
         void replaceKey (int after, int before);

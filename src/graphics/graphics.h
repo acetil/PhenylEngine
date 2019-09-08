@@ -8,6 +8,11 @@
 #include <unordered_map>
 #ifndef GRAPHICS_H
     #define GRAPHICS_H
+    #ifndef KEY_INPUT_H
+    namespace game {
+        class KeyboardInput;
+    }
+    #endif
     namespace graphics {
         class Buffer {
             private:
@@ -51,6 +56,7 @@
                 void initSpriteAtlas (std::vector<Image*> images);
                 int getSpriteTextureId (std::string name);
                 void initBuffer (unsigned int numSprites);
+                friend class game::KeyboardInput;
         };
     }
 #endif

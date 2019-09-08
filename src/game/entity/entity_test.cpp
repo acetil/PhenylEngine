@@ -6,7 +6,6 @@ using namespace game;
 
 game::EntityTest::EntityTest() {
     scale = 0.5f;
-    physicsBody = nullptr;
     name = "test_entity";
 }
 
@@ -14,7 +13,7 @@ AbstractEntity* game::EntityTest::createEntity (float x, float y) {
     EntityTest* entity = new EntityTest ();
     entity->textureId = textureId;
     entity->scale = scale;
-    entity->physicsBody = nullptr;
+    entity->physicsBody = new physics::PhysicsBody(&entity->x, &entity->y, 100, 0, 0);
     entity->name = name;
     return entity;
 }

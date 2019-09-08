@@ -24,7 +24,7 @@ namespace game {
         virtual std::string getEntityName ();
         
         virtual void addForce (physics::Force force);
-        virtual void clearMovementForces ();
+        virtual void clearMovementForces (int tag);
         virtual void update (float time);
         virtual void updatePosition (float time);
         virtual void setVelocity (float velX, float velY);

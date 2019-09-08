@@ -6,8 +6,9 @@
 
 using namespace game;
 
-game::KeyboardInput::KeyboardInput (GLFWwindow* window) {
-    this->window = window;
+game::KeyboardInput::KeyboardInput (graphics::Graphics* graphics) {
+
+    window = graphics->window;
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
     // TODO: add key press preference reading here
 }

@@ -27,9 +27,10 @@ void physics::PhysicsBody::addForce (Force f) {
     forces.push_back(f);
     forceUpdate = true;
 }
-void physics::PhysicsBody::removeMovementForces () {
-    forces.erase(std::remove_if(forces.begin(), forces.end(), [](const Force& f){
-        return f.type == MOVEMENT_FORCE_TYPE;
+void physics::PhysicsBody::removeMovementForces (int tag) {
+    // tag must be >= 0, if < 0 all will be removed
+    forces.erase(std::remove_if(forces.begin(), forces.end(), [tag](const Force& f){
+        return f.type == MOVEMENT_FORCE_TYPE && (tag == f.tag || tag < 0);
     }), forces.end());
     forceUpdate = true;
 }

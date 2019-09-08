@@ -25,7 +25,7 @@ namespace physics {
         PhysicsBody (float* x, float* y, float mass, float constFrictionK, float linearFrictionK);
         void updatePosition (float addedTime);
         void addForce (Force f);
-        void removeMovementForces ();
+        void removeMovementForces (int tag);
         void setVelocity (float velX, float velY);
 
     };

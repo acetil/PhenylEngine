@@ -21,8 +21,8 @@ void game::AbstractEntity::update (float time) {
 void game::AbstractEntity::addForce (physics::Force force) {
     physicsBody->addForce(force);
 }
-void game::AbstractEntity::clearMovementForces () {
-    physicsBody->removeMovementForces();
+void game::AbstractEntity::clearMovementForces (int tag) {
+    physicsBody->removeMovementForces(tag);
 }
 void game::AbstractEntity::setVelocity (float velX, float velY) {
     physicsBody->setVelocity(velX, velY);

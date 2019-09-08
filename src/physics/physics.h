@@ -14,11 +14,12 @@ namespace physics {
         float yComponent;
         int degree;
         int type;
+        int tag;
         float time;
         Force () {
             
         };
-        Force(float xComponent, float yComponent, int degree, int type, float time);
+        Force(float xComponent, float yComponent, int degree, int type, int tag, float time);
     };
 }
 #endif
