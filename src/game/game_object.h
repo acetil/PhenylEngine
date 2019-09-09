@@ -21,7 +21,7 @@ namespace game {
         void deleteEntityInstance (int entityId);
 
         void updateEntities (float deltaTime);
-        void updateEntityPosition (float deltaTime);
+        void updateEntityPositions (float deltaTime);
         void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
         

@@ -43,6 +43,8 @@
                 TextureAtlas* spriteAtlas; 
                 Camera* camera;
                 ShaderProgram* currentSpriteShader; // TODO: remove
+                int fps;
+                double lastTime;
             public:
                 Graphics(GLFWwindow* window);
                 ~Graphics();
@@ -56,6 +58,8 @@
                 void initSpriteAtlas (std::vector<Image*> images);
                 int getSpriteTextureId (std::string name);
                 void initBuffer (unsigned int numSprites);
+                void startTimer (int fps);
+                float getDeltaTime ();
                 friend class game::KeyboardInput;
         };
     }

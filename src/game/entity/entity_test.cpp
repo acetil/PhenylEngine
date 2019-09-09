@@ -5,7 +5,7 @@
 using namespace game;
 
 game::EntityTest::EntityTest() {
-    scale = 0.5f;
+    scale = 0.1f;
     name = "test_entity";
 }
 

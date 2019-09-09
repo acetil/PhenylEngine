@@ -1,7 +1,7 @@
 #include "key_defaults.h"
 #include "physics/physics.h"
 
-#define FORCE_COMPONENT 10
+#define FORCE_COMPONENT 1
 #define FORWARD_TAG 1
 #define BACK_TAG 2
 #define LEFT_TAG 3
@@ -19,9 +19,9 @@ class KeyMovement : public KeyboardFunction {
     virtual void operator() (int action);
 };
 void game::setupMovementKeys (KeyboardInput* keyInput, AbstractEntity** playerPtr) {
-    keyInput->setKey(GLFW_KEY_W, new KeyMovement(playerPtr, 0, -1 * FORCE_COMPONENT, FORWARD_TAG));
+    keyInput->setKey(GLFW_KEY_W, new KeyMovement(playerPtr, 0, FORCE_COMPONENT, FORWARD_TAG));
     keyInput->setKey(GLFW_KEY_A, new KeyMovement(playerPtr, -1 * FORCE_COMPONENT, 0, LEFT_TAG));
-    keyInput->setKey(GLFW_KEY_S, new KeyMovement(playerPtr, 0, FORCE_COMPONENT, BACK_TAG));
+    keyInput->setKey(GLFW_KEY_S, new KeyMovement(playerPtr, 0, -1 * FORCE_COMPONENT, BACK_TAG));
     keyInput->setKey(GLFW_KEY_D, new KeyMovement(playerPtr, FORCE_COMPONENT, 0, RIGHT_TAG));
 }
 KeyMovement::KeyMovement(AbstractEntity** playerPtr, float xComponent, float yComponent, int tag) {

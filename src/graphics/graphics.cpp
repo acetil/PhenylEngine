@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <utility>
+#include <chrono>
+#include <thread>
 
 #include "graphics.h"
 #include "graphics_headers.h"
@@ -86,6 +88,19 @@ int graphics::Graphics::getSpriteTextureId (std::string name) {
 void graphics::Graphics::initBuffer (unsigned int numSprites) {
     // TODO: look at and see if needs changing
     spriteBuffer->initBuffer(numSprites);
+}
+void graphics::Graphics::startTimer (int fps) {
+    this->fps = fps;
+    lastTime = glfwGetTime();
+}
+float graphics::Graphics::getDeltaTime () {
+    while(glfwGetTime() - lastTime < 1.0 / fps) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    double currentTime = glfwGetTime();
+    float deltaTime = (float)(currentTime - lastTime);
+    lastTime = currentTime;
+    return deltaTime;
 }
 void graphics::Buffer::initBuffer (unsigned int numSprites) {
     // inits buffer for pos and uv data, intended for glSubBuffer()

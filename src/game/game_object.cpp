@@ -47,7 +47,7 @@ void game::GameObject::updateEntities (float deltaTime) {
         it.second->update(deltaTime);
     }
 }
-void game::GameObject::updateEntityPosition (float deltaTime) {
+void game::GameObject::updateEntityPositions (float deltaTime) {
     for (auto const& it : entities) {
         it.second->updatePosition(deltaTime);
     }
