@@ -45,7 +45,7 @@ std::vector<Image*> getSpriteImages () {
     // temp code
     std::vector<Image*> images;
     images.push_back(new Image("resources/images/test/grass_temp.png", "test1"));
-    images.push_back(new Image("resources/images/test/temp_crystal.png", "test3"));
+    images.push_back(new Image("resources/images/test/test_texture.png", "test3"));
     images.push_back(new Image("resources/images/test/tier2_ingot-temp.png", "test5"));
     images.push_back(new Image("resources/images/test/temp_ecrys1.png", "test2"));
     return images;
