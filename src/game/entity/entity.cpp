@@ -16,7 +16,6 @@ std::string game::AbstractEntity::getEntityName () {
 }
 void game::AbstractEntity::update (float time) {
     // default is empty
-    logging::logf(LEVEL_DEBUG, "pos: %f %f", x, y);
 }
 // PhysicsBody delegates
 void game::AbstractEntity::addForce (physics::Force force) {

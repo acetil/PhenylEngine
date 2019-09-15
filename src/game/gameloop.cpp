@@ -18,17 +18,26 @@ int game::gameloop (graphics::Graphics* graphics) {
     KeyboardInput* keyInput = new KeyboardInput(graphics);
     setupMovementKeys(keyInput, &player);
     float deltaTime = 0.0f;
+    float timeSinceFpsUpdate = 0.0f;
+    int frames = 0;
     graphics->startTimer(TARGET_FPS);
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {
         deltaTime = graphics->getDeltaTime();
-        logging::logf(LEVEL_DEBUG, "deltaTime: %f", deltaTime);
+        timeSinceFpsUpdate += deltaTime;
+        if (timeSinceFpsUpdate >= 1.0f) {
+            logging::logf(LEVEL_DEBUG, "Done %d frames in %f second(s), with an average fps of %f", frames, 
+            timeSinceFpsUpdate, frames / timeSinceFpsUpdate);
+            timeSinceFpsUpdate = 0.0f;
+            frames = 0;
+        }
         keyInput->handleKeyPresses();
         gameObject->updateEntities(deltaTime);
         gameObject->updateEntityPositions(deltaTime);
         gameObject->renderEntities(graphics);
         graphics->render();
         graphics->pollEvents();
+        frames++;
     }
     return 0;
 }

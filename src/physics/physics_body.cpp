@@ -14,7 +14,6 @@ void physics::PhysicsBody::updatePosition (float time) {
         forceUpdate = true;
     }*/
     if (forceUpdate) {
-        logging::log(LEVEL_DEBUG, "Updating force equations!");
         updateForceEquations();
         forceUpdate = false;
     }
@@ -24,7 +23,6 @@ void physics::PhysicsBody::updatePosition (float time) {
     *y = yEquation->getPosition(time);
     velX = xEquation->getVelocity(time);
     velY = yEquation->getVelocity(time);
-    logging::logf(LEVEL_DEBUG, "vel: %f %f", velX, velY);
 
     xEquation->updateTime(time);
     yEquation->updateTime(time);
@@ -80,6 +78,5 @@ void physics::PhysicsBody::updateForceEquations () {
     ForceEquation** equations = resolveForces(forces, mass, *x, *y, velX, velY);
     xEquation = equations[0];
     yEquation = equations[1];
-    logging::logf(LEVEL_DEBUG, "xEquation==null: %d yEquation==null: %d", xEquation == NULL, yEquation == NULL);
     //delete equations;
 }

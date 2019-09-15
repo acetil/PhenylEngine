@@ -76,7 +76,6 @@ float ConstantEquation::getVelocityIntercept (float intercept) {
     return (intercept - v0) / a - addedTime;
 }
 float LinearEquation::getPosition (float t) {
-    logging::log(LEVEL_DEBUG, "Getting position!");
     // equation: x(t) = 1/b^2 * ((e^(bt) - 1)(a + bv0) + x0b^2)
     float time = t + addedTime;
     //float negativeFactor = 1;
@@ -100,17 +99,13 @@ float LinearEquation::getPosIntercept (float intercept) {
 }*/
 
 ForceEquation* getEquation (float constant, float linear, float quadratic, float x0, float v0) {
-    logging::log(LEVEL_DEBUG, "Getting force equation!");
-    logging::logf(LEVEL_DEBUG, "Factors: %f %f %f %f %f", constant, linear, quadratic, x0, v0);
     ForceEquation* eq;
     if (quadratic != 0) {
         // TODO
     } else if (linear != 0) {
-        logging::log(LEVEL_DEBUG, "Getting linear equation!");
         eq = new LinearEquation;
         eq->setFactors(constant, linear, x0, v0); 
     } else {
-        logging::log(LEVEL_DEBUG, "Getting constant equation!");
         eq = new ConstantEquation;
         eq->setFactors(constant, 0, x0, v0);
     }

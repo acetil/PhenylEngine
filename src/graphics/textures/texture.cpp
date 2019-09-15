@@ -21,6 +21,11 @@ void graphics::Texture::setTexUvs (int uPixel, int vPixel, int xSize, int ySize,
     if (texUvs != NULL) {
         delete[] texUvs;
     }
+    // test
+    uPixel = 0;
+    vPixel = 0;
+    xSize = atlasXSize;
+    ySize = atlasYSize;
     //texUvs = (float*) malloc(sizeof(float) * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_TEX * NUM_UV_PER_VERTEX);
     texUvs = new float[NUM_TRIANGLE_VERTICES * TRIANGLES_PER_TEX * NUM_UV_PER_VERTEX];
     float* uvPtr = texUvs;
