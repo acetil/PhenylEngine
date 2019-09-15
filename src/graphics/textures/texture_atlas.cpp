@@ -9,6 +9,7 @@
 #include "logging/logging.h"
 
 #define BYTES_PER_PIXEL 4
+#define PADDING 1
 using namespace graphics;
 typedef struct _node *Node;
 typedef struct _node {
@@ -150,21 +151,23 @@ bool node::insert (Image* i) {
             return false;
         }
     }
-    if (width >= i->getWidth() && height >= i->getHeight()) {
+    if (width >= i->getWidth() + PADDING * 2 && height >= i->getHeight() + PADDING * 2) {
         // image can be inserted
 
         // split on x axis first
         leftNode = new node;
-        leftNode->setDimensions(width - i->getWidth(), height, offsetX + i->getWidth(), offsetY);
+        leftNode->setDimensions(width - i->getWidth() - PADDING * 2, height, offsetX + i->getWidth() + PADDING * 2, offsetY);
 
         // then split on y
         rightNode = new node;
-        rightNode->setDimensions(i->getWidth(), height - i->getHeight(), 
-            offsetX, offsetY + i->getHeight());
+        rightNode->setDimensions(i->getWidth(), height - i->getHeight() - PADDING * 2, 
+            offsetX, offsetY + i->getHeight() + PADDING * 2);
         
         width = i->getWidth();
         height = i->getHeight();
         image = i;
+        offsetX += PADDING;
+        offsetY += PADDING;
         return true;
     } else {
         return false;
