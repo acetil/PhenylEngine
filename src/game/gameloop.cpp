@@ -22,10 +22,10 @@ int game::gameloop (graphics::Graphics* graphics) {
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {
         deltaTime = graphics->getDeltaTime();
+        logging::logf(LEVEL_DEBUG, "deltaTime: %f", deltaTime);
         keyInput->handleKeyPresses();
         gameObject->updateEntities(deltaTime);
         gameObject->updateEntityPositions(deltaTime);
-
         gameObject->renderEntities(graphics);
         graphics->render();
         graphics->pollEvents();

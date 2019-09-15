@@ -1,7 +1,7 @@
 #include "key_defaults.h"
 #include "physics/physics.h"
 
-#define FORCE_COMPONENT 1
+#define FORCE_COMPONENT 1000
 #define FORWARD_TAG 1
 #define BACK_TAG 2
 #define LEFT_TAG 3

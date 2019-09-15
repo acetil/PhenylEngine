@@ -13,7 +13,7 @@ AbstractEntity* game::EntityTest::createEntity (float x, float y) {
     EntityTest* entity = new EntityTest ();
     entity->textureId = textureId;
     entity->scale = scale;
-    entity->physicsBody = new physics::PhysicsBody(&entity->x, &entity->y, 100, 0, 0);
+    entity->physicsBody = new physics::PhysicsBody(&entity->x, &entity->y, 100, 0, 800);
     entity->name = name;
     return entity;
 }
