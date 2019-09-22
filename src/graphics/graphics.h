@@ -76,6 +76,7 @@
                 StaticData* loadStaticData (float* vertexArray, float* uvArray, int numVertices, int sizeVertex, int sizeUv, 
                     std::string shader);
                 void unloadStaticData (StaticData* data);
+                void setupErrorHandling ();
                 friend class game::KeyboardInput;
         };
     }

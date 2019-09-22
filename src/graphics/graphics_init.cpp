@@ -52,6 +52,7 @@ std::vector<Image*> getSpriteImages () {
 }
 int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
     Graphics* graphics = new Graphics(window);
+    graphics->setupErrorHandling();
     *graphicsPtr = graphics;
     std::vector<Image*> images = getSpriteImages ();
     graphics->initSpriteAtlas(images);
