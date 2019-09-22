@@ -2,6 +2,7 @@
 #ifndef TEXTURE_H
     #define TEXTURE_H
     namespace graphics {
+        // TODO: change tex buffering to being immutable
         class Texture {
             private:
                 float* texUvs;
