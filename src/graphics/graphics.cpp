@@ -2,6 +2,7 @@
 #include <utility>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 
 #include "graphics.h"
 #include "graphics_headers.h"
@@ -38,7 +39,7 @@ void graphics::Graphics::render () {
 
     // TODO: add render code
     spriteBuffer->flushBuffer(currentSpriteShader, camera, spriteAtlas);
-    
+
     glfwSwapBuffers(window);
 }
 void graphics::Graphics::pollEvents () {
@@ -101,6 +102,30 @@ float graphics::Graphics::getDeltaTime () {
     float deltaTime = (float)(currentTime - lastTime);
     lastTime = currentTime;
     return deltaTime;
+}
+StaticData* graphics::Graphics::loadStaticData (float* vertexData, float* uvData, int numVertices, int sizeVertex, int sizeUv,
+    std::string shader) {
+    // size is number of floats, not size in bytes
+    // TODO: change to immutable loading
+    StaticData* data = new StaticData;
+    glGenBuffers(1, &(data->vertexVBO));
+    glBindBuffer(GL_ARRAY_BUFFER, data->vertexVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeVertex, vertexData, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &(data->uvVBO));
+    glBindBuffer(GL_ARRAY_BUFFER, data->uvVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeUv, uvData, GL_STATIC_DRAW);
+
+    data->numVertices = numVertices;
+    data->vertexComp = sizeVertex / numVertices;
+    data->uvComp = sizeUv / numVertices;
+    data->shaderProgram = shaderMap[shader];
+    staticData.push_back(data);
+    return data;
+}
+void graphics::Graphics::unloadStaticData (StaticData* data) {
+    staticData.erase(std::find(staticData.begin(), staticData.end(), data));
+    delete data;
 }
 void graphics::Buffer::initBuffer (unsigned int numSprites) {
     // inits buffer for pos and uv data, intended for glSubBuffer()

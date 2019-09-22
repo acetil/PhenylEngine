@@ -14,6 +14,8 @@
     }
     #endif
     namespace graphics {
+        // TODO: expose only the interface in this header
+        class Graphics;
         class Buffer {
             private:
                 float* vertexPosData = NULL;
@@ -34,6 +36,16 @@
                 void flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas);
                 ~Buffer();
         };
+        class StaticData {
+            private:
+            GLuint vertexVBO;
+            GLuint uvVBO;
+            int numVertices;
+            int vertexComp;
+            int uvComp;
+            ShaderProgram* shaderProgram;
+            friend class Graphics;
+        };
         class Graphics {
             private:
                 GLFWwindow* window;
@@ -45,6 +57,7 @@
                 ShaderProgram* currentSpriteShader; // TODO: remove
                 int fps;
                 double lastTime;
+                std::vector<StaticData*> staticData;
             public:
                 Graphics(GLFWwindow* window);
                 ~Graphics();
@@ -60,6 +73,9 @@
                 void initBuffer (unsigned int numSprites);
                 void startTimer (int fps);
                 float getDeltaTime ();
+                StaticData* loadStaticData (float* vertexArray, float* uvArray, int numVertices, int sizeVertex, int sizeUv, 
+                    std::string shader);
+                void unloadStaticData (StaticData* data);
                 friend class game::KeyboardInput;
         };
     }

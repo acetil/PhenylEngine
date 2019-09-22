@@ -1,5 +1,6 @@
 #include <string>
 #include "game/tile/tile.h"
+#include "graphics/graphics.h"
 #ifndef MAP_H
 #define MAP_H
 namespace game {
@@ -17,6 +18,7 @@ namespace game {
         virtual void setTiles (Tile** tiles);
         virtual int getWidth ();
         virtual int getHeight ();
+        virtual void initVAO (graphics::Graphics* graphics);
     };
 }
 #endif
