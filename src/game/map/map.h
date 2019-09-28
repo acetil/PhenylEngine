@@ -9,7 +9,7 @@ namespace game {
         int width;
         int height;
         Tile** tiles;
-        
+        graphics::StaticData* graphicsData;
         virtual Tile** getTiles ();
         public:
         Map (int xSize, int ySize);
@@ -18,7 +18,8 @@ namespace game {
         virtual void setTiles (Tile** tiles);
         virtual int getWidth ();
         virtual int getHeight ();
-        virtual void initVAO (graphics::Graphics* graphics);
+        virtual void initGraphicsData (graphics::Graphics* graphics, std::string shader);
+        virtual void unloadGraphicsData (graphics::Graphics* graphics);
     };
 }
 #endif

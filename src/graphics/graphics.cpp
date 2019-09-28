@@ -15,6 +15,8 @@ using namespace graphics;
 #define TRIANGLES_PER_SPRITE 2
 #define NUM_POS_PER_VERTEX 2
 #define NUM_UV_PER_VERTEX 2
+// TODO: refactor into different files
+// TODO: just refactor in general
 
 graphics::Graphics::Graphics (GLFWwindow* window) {
     this->window = window;
@@ -39,8 +41,18 @@ void graphics::Graphics::render () {
 
     // TODO: add render code
     spriteBuffer->flushBuffer(currentSpriteShader, camera, spriteAtlas);
-
+    renderStaticData();
     glfwSwapBuffers(window);
+}
+void graphics::Graphics::renderStaticData () {
+    // TODO: refactor and optimise to only apply/bind when necessary
+    for (auto data : staticData) {
+        data->shaderProgram->useProgram();
+        data->shaderProgram->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
+        spriteAtlas->bindTextureAtlas();
+
+        glDrawArrays(GL_TRIANGLES, 0, data->numVertices);
+    }
 }
 void graphics::Graphics::pollEvents () {
     glfwPollEvents();
@@ -111,10 +123,12 @@ StaticData* graphics::Graphics::loadStaticData (float* vertexData, float* uvData
     glGenBuffers(1, &(data->vertexVBO));
     glBindBuffer(GL_ARRAY_BUFFER, data->vertexVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeVertex, vertexData, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, NUM_POS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
 
     glGenBuffers(1, &(data->uvVBO));
     glBindBuffer(GL_ARRAY_BUFFER, data->uvVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeUv, uvData, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, NUM_UV_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
 
     data->numVertices = numVertices;
     data->vertexComp = sizeVertex / numVertices;
@@ -124,7 +138,13 @@ StaticData* graphics::Graphics::loadStaticData (float* vertexData, float* uvData
     return data;
 }
 void graphics::Graphics::unloadStaticData (StaticData* data) {
+    if (data = NULL) {
+        logging::log(LEVEL_WARNING, "Unload requested for null static data!");
+        return;
+    }
     staticData.erase(std::find(staticData.begin(), staticData.end(), data));
+    glDeleteBuffers(1, &(data->vertexVBO));
+    glDeleteBuffers(1, &(data->uvVBO));
     delete data;
 }
 void graphics::Graphics::setupErrorHandling () {

@@ -15,6 +15,7 @@
     #endif
     namespace graphics {
         // TODO: expose only the interface in this header
+        // TODO: refactor into multiple files
         class Graphics;
         class Buffer {
             private:
@@ -64,6 +65,7 @@
                 bool shouldClose ();
                 void pollEvents ();
                 void render ();
+                void renderStaticData ();
                 void drawTexSquare (float x, float y, float scale, int textureId);
                 Camera* getCamera ();
                 void addShader (std::string name, ShaderProgram* shader);
