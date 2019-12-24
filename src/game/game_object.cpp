@@ -14,6 +14,7 @@ game::GameObject::~GameObject () {
     for (int i = 0; i < tileRegistry.size(); i++) {
         delete tileRegistry[i];
     }
+    delete eventBus;
 }
 
 void game::GameObject::registerEntity (std::string name, AbstractEntity* entity) {
@@ -102,4 +103,7 @@ void game::GameObject::setTextureIds (graphics::Graphics* graphics) {
     for (auto const& it : entityRegistry) {
         it.second->setTextureIds(graphics);
     }
+}
+event::EventBus* game::GameObject::getEventBus () {
+    return eventBus;
 }

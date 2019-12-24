@@ -4,6 +4,8 @@
 #include "entity/entity.h"
 #include "graphics/textures/texture_atlas.h"
 #include "tile/tile.h"
+#include "event/event.h"
+
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
 namespace game {
@@ -14,6 +16,7 @@ namespace game {
         std::map<std::string, int> tileMap;
         std::vector<Tile*> tileRegistry;
         int currentEntityId = 0;
+        event::EventBus* eventBus = new event::EventBus();
         public:
         ~GameObject();
 
@@ -34,6 +37,7 @@ namespace game {
         void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
         
+        event::EventBus* getEventBus();
     };
 }
 #endif
