@@ -33,6 +33,10 @@
             public:
                 void initBuffer (unsigned int numSprites);
                 void reinitBuffer (unsigned int numSprites);
+                int* getVertexBufferPos ();
+                float* getUvBufferPos();
+                void incrementVertexPtr ();
+                void incrementUvPtr (); 
                 void pushBuffer (float* posData, float* uvData);
                 void flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas);
                 ~Buffer();

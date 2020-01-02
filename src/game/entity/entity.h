@@ -10,8 +10,8 @@ namespace game {
     class AbstractEntity {
         friend class GameObject;
         protected:
-        float x;
-        float y;
+        float* x;
+        float* y;
         float scale;
         physics::PhysicsBody* physicsBody;
         std::string name;

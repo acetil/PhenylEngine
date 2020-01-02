@@ -10,16 +10,16 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 #if MAX_COMPONENT_ENTITIES <= 256
-namespace game {
+namespace component {
     typedef unsigned char id_type_t;
 }
 #else
-namespace game {
+namespace component {
     typedef unsigned short id_type_t;
 }
 #endif
 unsigned char a;
-namespace game {
+namespace component {
     struct Component {
         void* data;
         size_t size;
@@ -65,7 +65,7 @@ namespace game {
             return ((T*)components[compId].data)[entityId];
         };
         id_type_t getNumEntities ();
-        id_type_t addEntity (AbstractEntity* entity);
+        id_type_t addEntity (game::AbstractEntity* entity);
         void removeEntity (id_type_t entityId);
     };
 }

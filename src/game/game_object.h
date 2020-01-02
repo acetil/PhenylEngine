@@ -17,6 +17,7 @@ namespace game {
         std::vector<Tile*> tileRegistry;
         int currentEntityId = 0;
         event::EventBus* eventBus = new event::EventBus();
+        
         public:
         ~GameObject();
 
