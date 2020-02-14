@@ -80,6 +80,7 @@ namespace event {
                     handler->handle(t);
                 }
             };
+            delete t;
         }
     };
    

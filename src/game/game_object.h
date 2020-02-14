@@ -5,6 +5,9 @@
 #include "graphics/textures/texture_atlas.h"
 #include "tile/tile.h"
 #include "event/event.h"
+#include "component/component.h"
+#include "component/main_component.h"
+#include "graphics/graphics.h"
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
@@ -17,7 +20,8 @@ namespace game {
         std::vector<Tile*> tileRegistry;
         int currentEntityId = 0;
         event::EventBus* eventBus = new event::EventBus();
-        
+        component::ComponentManager* entityComponentManager;
+        graphics::Graphics* graphics;
         public:
         ~GameObject();
 
@@ -34,10 +38,12 @@ namespace game {
         Tile* getTile (int tileId);
 
         void updateEntities (float deltaTime);
+        void updateEntityPosition ();
         void updateEntityPositions (float deltaTime);
         void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
-        
+        void setEntityComponentManager (component::ComponentManager* manager);
+        void setGraphics (graphics::Graphics* graphics);
         event::EventBus* getEventBus();
     };
 }

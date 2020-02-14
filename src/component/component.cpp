@@ -3,10 +3,10 @@
 
 #include "component.h"
 #include "logging/logging.h"
-#include "event/events.h"
+#include "event/events/entity_id_swap.h"
 using namespace component;
 
-component::ComponentManager::ComponentManager(id_type_t maxEntities, event::EventBus* bus) {
+component::ComponentManager::ComponentManager(int maxEntities, event::EventBus* bus) {
     this->maxEntities = fmin(maxEntities, MAX_COMPONENT_ENTITIES);
     this->numEntities = 0;
     this->bus = bus;
@@ -22,7 +22,8 @@ id_type_t component::ComponentManager::getNumEntities () {
     return numEntities;
 }
 id_type_t component::ComponentManager::addEntity (game::AbstractEntity* entity) {
-    entity->setEntityId(numEntities);
+    logging::logf(LEVEL_DEBUG, "Num entities: %d", numEntities);
+    getComponent<game::AbstractEntity*>(0)[numEntities] = entity;
     return numEntities++;
 }
 void component::ComponentManager::removeEntity (id_type_t entityId) {

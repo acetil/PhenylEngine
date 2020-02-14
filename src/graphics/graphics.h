@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "textures/texture.h"
 #include "textures/texture_atlas.h"
+#include "component/main_component.h"
 #include <stdlib.h>
 #include <vector>
 #include <unordered_map>
@@ -28,15 +29,16 @@
                 GLuint vaoId;
                 size_t posBufferSize;
                 size_t uvBufferSize;
-                unsigned int numSprites;
+                unsigned int numSpritesVertex;
+                unsigned int numSpritesUv;
                 unsigned int maxNumSprites;
             public:
                 void initBuffer (unsigned int numSprites);
                 void reinitBuffer (unsigned int numSprites);
-                int* getVertexBufferPos ();
+                float* getVertexBufferPos ();
                 float* getUvBufferPos();
-                void incrementVertexPtr ();
-                void incrementUvPtr (); 
+                void incrementVertexPtr (int amount);
+                void incrementUvPtr (int amount); 
                 void pushBuffer (float* posData, float* uvData);
                 void flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas);
                 ~Buffer();
@@ -79,10 +81,13 @@
                 void initBuffer (unsigned int numSprites);
                 void startTimer (int fps);
                 float getDeltaTime ();
+                Buffer* getSpriteBuffer ();
                 StaticData* loadStaticData (float* vertexArray, float* uvArray, int numVertices, int sizeVertex, int sizeUv, 
                     std::string shader);
                 void unloadStaticData (StaticData* data);
                 void setupErrorHandling ();
+                void bufferEntityPositions (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer);
+                TextureAtlas* getTextureAtlas ();
                 friend class game::KeyboardInput;
         };
     }

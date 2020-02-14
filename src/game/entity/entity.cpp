@@ -30,8 +30,11 @@ void game::AbstractEntity::setVelocity (float velX, float velY) {
 void game::AbstractEntity::updatePosition (float addedTime) {
     physicsBody->updatePosition(addedTime);
 }
+int game::AbstractEntity::getTextureId () {
+    return textureId;
+}
 // graphics code for base class
 
-void game::AbstractEntity::render (graphics::Graphics* graphics) {
-    graphics->drawTexSquare(x, y, scale, textureId);
-}
+/*void game::AbstractEntity::render (graphics::Graphics* graphics) {
+    graphics->drawTexSquare(*x, *y, scale, textureId);
+}*/

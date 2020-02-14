@@ -2,6 +2,8 @@
 #include "game_object.h"
 #include "graphics/graphics.h"
 #include "logging/logging.h"
+#include "physics/physics_new.h"
+#include "event/events/entity_creation.h"
 using namespace game;
 
 game::GameObject::~GameObject () {
@@ -33,14 +35,20 @@ AbstractEntity* game::GameObject::getEntity (std::string name) {
     }
 }
 AbstractEntity* game::GameObject::createNewEntityInstance (std::string name, float x, float y) {
+    // TODO: requires refactor
     if (entityRegistry.count(name) == 0) {
         logging::logf(LEVEL_WARNING, "Attempted creation of entity with name '%s' which doesn't exist!", name.c_str());
         return nullptr;
     } else {
-        auto entity = entityRegistry[name]->createEntity(x, y);
-        entity->setEntityId(currentEntityId);
-        entities[currentEntityId++] = entity;
-        logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), currentEntityId - 1);
+        auto entity = entityRegistry[name]->createEntity();
+        int entityId = entityComponentManager->addEntity(entity);
+        entity->setEntityId(entityId);
+        component::EntityMainComponent comp = entityComponentManager->getEntityData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
+        entity->x = comp.pos;
+        entity->y = comp.pos + 1;
+        float* uvPtr = entityComponentManager->getEntityDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
+        eventBus->raiseEvent(new event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, graphics, entity, entityId));
+        logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), entityId);
         return entity;
     }
 }
@@ -95,9 +103,23 @@ void game::GameObject::updateEntityPositions (float deltaTime) {
     }
 }
 void game::GameObject::renderEntities (graphics::Graphics* graphics) {
-    for (auto const& it : entities) {
+    /*for (auto const& it : entities) {
         it.second->render(graphics);
-    }
+    }*/
+    // TODO: update to remove magic numbers (12 is uv components per sprite)
+    entityComponentManager->applyFunc<component::EntityMainComponent, graphics::Graphics*>([](component::EntityMainComponent* comp, int numSprites, int direction, graphics::Graphics* graphics){graphics->bufferEntityPositions(comp, numSprites, direction, graphics->getSpriteBuffer());}, 1, graphics);
+    entityComponentManager->applyFunc<float, graphics::Graphics*>([](float *uv, int numEntities, int direction, graphics::Graphics* graphics){
+        graphics::Buffer* buf = graphics->getSpriteBuffer(); 
+        for (int i = 0; i < numEntities; i++) {
+            float* uvPos = buf->getUvBufferPos();
+            for (int j = 0; j < 12; j++) {
+                *(uvPos++) = uv[i * 12 + j];
+                printf("%f ", uv[i * 12 + j]);
+                
+            }
+            printf("\n");
+        }
+    }, 2, graphics);
 }
 void game::GameObject::setTextureIds (graphics::Graphics* graphics) {
     for (auto const& it : entityRegistry) {
@@ -106,4 +128,13 @@ void game::GameObject::setTextureIds (graphics::Graphics* graphics) {
 }
 event::EventBus* game::GameObject::getEventBus () {
     return eventBus;
+}
+void game::GameObject::setEntityComponentManager (component::ComponentManager* manager) {
+    this->entityComponentManager = manager;
+}
+void game::GameObject::updateEntityPosition () {
+    entityComponentManager->applyFunc(physics::updatePhysics, 1); // TODO: remove hardcode (1 is index of main comp)
+}
+void game::GameObject::setGraphics (graphics::Graphics* graphics) {
+    this->graphics = graphics;
 }

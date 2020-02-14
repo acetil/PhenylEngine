@@ -7,6 +7,7 @@
 #include "logging/logging.h"
 #include "shaders/shaders.h"
 #include "textures/image.h"
+#include "graphics/graphics_handlers.h"
 
 using namespace graphics;
 

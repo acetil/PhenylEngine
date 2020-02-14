@@ -9,12 +9,15 @@ game::EntityTest::EntityTest() {
     name = "test_entity";
 }
 
-AbstractEntity* game::EntityTest::createEntity (float x, float y) {
+AbstractEntity* game::EntityTest::createEntity () {
     EntityTest* entity = new EntityTest ();
     entity->textureId = textureId;
     entity->scale = scale;
-    entity->physicsBody = new physics::PhysicsBody(&entity->x, &entity->y, 100, 0, 800);
+    entity->physicsBody = new physics::PhysicsBody(entity->x, entity->y, 100, 0, 800);
     entity->name = name;
+    if (entity == nullptr) {
+        logging::log(LEVEL_ERROR, "Null test entity!");
+    }
     return entity;
 }
 void game::EntityTest::setTextureIds (graphics::Graphics* graphics) {

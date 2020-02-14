@@ -18,7 +18,7 @@ namespace game {
         int textureId;
         int entityId;
         public:
-        virtual AbstractEntity* createEntity (float x, float y) = 0;
+        virtual AbstractEntity* createEntity () = 0;
         virtual int getEntityId ();
         virtual std::string getEntityName ();
         
@@ -29,8 +29,8 @@ namespace game {
         virtual void setVelocity (float velX, float velY);
 
         virtual void setTextureIds (graphics::Graphics* graphics) = 0;
-        virtual void render (graphics::Graphics* graphics);
-
+        //virtual void render (graphics::Graphics* graphics);
+        virtual int getTextureId ();
         virtual void setEntityId (int entityId);
     };
 }

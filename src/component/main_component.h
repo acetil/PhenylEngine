@@ -7,10 +7,8 @@ namespace component {
         float acc[2];
         float constFriction;
         float linFriction;
-        int width;
-        int height;
-        float sinAngle;
-        float cosAngle;
+        float vec1[2];
+        float vec2[2];
     };
 }
 #endif

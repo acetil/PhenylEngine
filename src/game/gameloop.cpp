@@ -9,21 +9,24 @@
 #include "key_defaults.h"
 
 #define TARGET_FPS 60
-
+#define PHYSICS_FPS 60
 using namespace game; 
 
 int game::gameloop (graphics::Graphics* graphics) {
     GameObject* gameObject = initGame(graphics);
     AbstractEntity* player = gameObject->createNewEntityInstance("test_entity", 0, 0);
+    logging::log(LEVEL_INFO, "Created player");
     KeyboardInput* keyInput = new KeyboardInput(graphics);
     setupMovementKeys(keyInput, &player);
     float deltaTime = 0.0f;
+    float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
     graphics->startTimer(TARGET_FPS);
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {
         deltaTime = graphics->getDeltaTime();
+        deltaPhysicsFrame += deltaTime;
         timeSinceFpsUpdate += deltaTime;
         if (timeSinceFpsUpdate >= 1.0f) {
             logging::logf(LEVEL_DEBUG, "Done %d frames in %f second(s), with an average fps of %f", frames, 
@@ -32,8 +35,12 @@ int game::gameloop (graphics::Graphics* graphics) {
             frames = 0;
         }
         keyInput->handleKeyPresses();
-        gameObject->updateEntities(deltaTime);
-        gameObject->updateEntityPositions(deltaTime);
+        while (deltaPhysicsFrame > 1.0f / PHYSICS_FPS) {
+            gameObject->updateEntityPosition();
+            deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
+        }
+        /*gameObject->updateEntities(deltaTime);
+        gameObject->updateEntityPositions(deltaTime);*/
         gameObject->renderEntities(graphics);
         graphics->render();
         graphics->pollEvents();

@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <algorithm>
-
+#include <math.h>
 #include "graphics.h"
 #include "graphics_headers.h"
 #include "camera.h"
@@ -57,7 +57,7 @@ void graphics::Graphics::renderStaticData () {
 void graphics::Graphics::pollEvents () {
     glfwPollEvents();
 }
-void graphics::Graphics::drawTexSquare (float x, float y, float scale, int textureId) {
+/*void graphics::Graphics::drawTexSquare (float x, float y, float scale, int textureId) {
     float* posData = new float[NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX];
     float* posDataPtr = posData;
     for (int i = 0; i < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
@@ -83,7 +83,7 @@ void graphics::Graphics::drawTexSquare (float x, float y, float scale, int textu
     Texture* tex = spriteAtlas->getTexture(textureId);
     spriteBuffer->pushBuffer(posData, tex->getTexUvs());
     delete[] posData;
-}
+}*/
 void graphics::Graphics::addShader (std::string name, ShaderProgram* shader) {
     shaderMap[name] = shader;
 }
@@ -271,7 +271,7 @@ void graphics::Buffer::reinitBuffer (unsigned int numSprites) {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, NUM_UV_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
 }
-void graphics::Buffer::pushBuffer (float* posData, float* uvData) {
+/*void graphics::Buffer::pushBuffer (float* posData, float* uvData) {
     if (++numSprites >= maxNumSprites) {
         reinitBuffer(maxNumSprites * 2); //TODO update to sensible values
     }
@@ -281,21 +281,33 @@ void graphics::Buffer::pushBuffer (float* posData, float* uvData) {
     memcpy(vertexUvCurrent, uvData, sizeUvData);
     vertexPosCurrent += NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX;
     vertexUvCurrent += NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_UV_PER_VERTEX;
-}
+}*/
 void graphics::Buffer::flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas) {
+    float data[] = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+    /*unsigned int numSprites = fmin(numSpritesVertex, numSpritesUv);
+    logging::logf(LEVEL_DEBUG, "flushing %d sprites (%d, %d)!", numSprites, numSpritesVertex, numSpritesUv);
     shader->useProgram();
-    shader->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
+    //shader->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
     textureAtlas->bindTextureAtlas();
     glBindBuffer(GL_ARRAY_BUFFER, posBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
-        NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX * sizeof(float), vertexPosData);
-
+        NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX * sizeof(float), data);
+    for (int i = 0; i < numSprites * TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX; i++) {
+        printf("%f ", vertexPosData[i]);
+    }
     glBindBuffer(GL_ARRAY_BUFFER, uvBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
         NUM_TRIANGLE_VERTICES * NUM_UV_PER_VERTEX * sizeof(float), vertexUvData);
 
-    glDrawArrays(GL_TRIANGLES, 0, numSprites * TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES);
-    numSprites = 0;
+    glDrawArrays(GL_TRIANGLES, 0, numSprites * TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES);*/
+    glEnableVertexAttribArray(0); // TODO: update to better match layout for in position
+    glBindBuffer(GL_ARRAY_BUFFER, posBufferId);
+    glVertexAttribPointer(0, NUM_POS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisableVertexAttribArray(0);
+    numSpritesUv = 0;
+    numSpritesVertex = 0;
     vertexPosCurrent = vertexPosData;
     vertexUvCurrent = vertexUvData;
 }
@@ -306,4 +318,44 @@ graphics::Buffer::~Buffer () {
     if (vertexUvData != NULL) {
         free(vertexPosData);
     }
+}
+
+void Graphics::bufferEntityPositions (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer) {
+    for (int i = 0; i < numEntities; i++) {
+        auto ptr = buffer->getVertexBufferPos();
+        float vertices[4][2];
+        vertices[0][0] = comp->pos[0];
+        vertices[0][1] = comp->pos[1];
+        vertices[1][0] = vertices[0][0] + comp->vec1[0];
+        vertices[1][1] = vertices[0][1] + comp->vec1[1];
+        vertices[2][0] = vertices[0][0] + comp->vec2[0];
+        vertices[2][1] = vertices[0][1] + comp->vec2[1];
+        vertices[3][0] = vertices[0][0] + comp->vec1[0] + comp->vec2[0];
+        vertices[3][1] = vertices[0][1] + comp->vec1[1] + comp->vec2[1];
+        for (int j = 0; j < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX; j++) {
+            int correctedVertex = j % NUM_TRIANGLE_VERTICES + j / NUM_TRIANGLE_VERTICES;
+            ptr[2 * j] = vertices[correctedVertex][0];
+            ptr[2 * j + 1] = vertices[correctedVertex][1];
+            printf("(%f,%f) ", vertices[correctedVertex][0], vertices[correctedVertex][1]);
+        }
+        printf("\n");
+    }
+}
+float* Buffer::getVertexBufferPos () {
+    float* original = vertexPosCurrent;
+    vertexPosCurrent += NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_POS_PER_VERTEX;
+    numSpritesVertex++;
+    return original;
+}
+float* Buffer::getUvBufferPos () {
+    float* original = vertexUvCurrent;
+    vertexUvCurrent += NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_UV_PER_VERTEX;
+    numSpritesUv++;
+    return original;
+}
+Buffer* Graphics::getSpriteBuffer () {
+    return spriteBuffer;
+}
+TextureAtlas* Graphics::getTextureAtlas () {
+    return spriteAtlas;
 }

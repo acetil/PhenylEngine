@@ -6,7 +6,7 @@ namespace game {
     class EntityTest : public AbstractEntity {
         public:
         EntityTest();
-        virtual AbstractEntity* createEntity(float x, float y);
+        virtual AbstractEntity* createEntity();
         virtual void setTextureIds (graphics::Graphics* atlas);
     };
 }
