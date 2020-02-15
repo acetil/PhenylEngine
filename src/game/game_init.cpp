@@ -14,7 +14,6 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
 component::ComponentManager* getEntityComponentManager (event::EventBus* bus);
 GameObject* game::initGame (graphics::Graphics* graphics) {
     GameObject* gameObject = new GameObject();
-    gameObject->setGraphics(graphics);
     addEventHandlers(gameObject, graphics);
     gameObject->setEntityComponentManager(getEntityComponentManager(gameObject->getEventBus()));
     logging::log(LEVEL_INFO, "Starting init of entities!");
@@ -28,8 +27,9 @@ GameObject* game::initGame (graphics::Graphics* graphics) {
 
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     gameObject->getEventBus()->subscribeHandler(game::addEntities);
-    gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
+    //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
+    gameObject->getEventBus()->subscribeHandler(graphics::Graphics::onEntityCreation, graphics);
 }
 
 component::ComponentManager* getEntityComponentManager (event::EventBus* bus) {

@@ -47,7 +47,7 @@ AbstractEntity* game::GameObject::createNewEntityInstance (std::string name, flo
         entity->x = comp.pos;
         entity->y = comp.pos + 1;
         float* uvPtr = entityComponentManager->getEntityDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
-        eventBus->raiseEvent(new event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, graphics, entity, entityId));
+        eventBus->raiseEvent(new event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId));
         logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), entityId);
         return entity;
     }
@@ -131,7 +131,4 @@ void game::GameObject::setEntityComponentManager (component::ComponentManager* m
 }
 void game::GameObject::updateEntityPosition () {
     entityComponentManager->applyFunc(physics::updatePhysics, 1); // TODO: remove hardcode (1 is index of main comp)
-}
-void game::GameObject::setGraphics (graphics::Graphics* graphics) {
-    this->graphics = graphics;
 }

@@ -1,6 +1,5 @@
 #include "event/event.h"
 #include "component/component.h"
-#include "graphics/graphics.h"
 #ifndef ENTITY_H
 namespace game {
 class AbstractEntity;
@@ -16,7 +15,6 @@ namespace event {
         float y;
         float size;
         component::ComponentManager* compManager;
-        graphics::Graphics* graphics;
         game::AbstractEntity* entity;
         int entityId;
         EntityCreationEvent () {
@@ -24,15 +22,13 @@ namespace event {
             y = 0;
             size = 0;
             compManager = nullptr;
-            graphics = nullptr;
             entityId = 0;
         };
-        EntityCreationEvent (float x, float y, float size, component::ComponentManager* compManager, graphics::Graphics* graphics, game::AbstractEntity* entity, int entityId) {
+        EntityCreationEvent (float x, float y, float size, component::ComponentManager* compManager, game::AbstractEntity* entity, int entityId) {
             this->x = x;
             this->y = y;
             this->size = size;
             this->compManager = compManager;
-            this->graphics = graphics;
             this->entity = entity;
             this->entityId = entityId;
         };

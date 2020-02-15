@@ -40,6 +40,10 @@ namespace event {
         void (*fun)(T*);
         protected:
         EventType* type;
+        EventHandler (EventType* type) {
+            fun = nullptr;
+            this->type = type;
+        }
         public:
         EventHandler (void (*fun)(T*), EventType* type) {
             this->fun = fun;
@@ -55,16 +59,16 @@ namespace event {
     template<typename T, typename A>
     class EventHandlerMember : public EventHandler<T> {
         private:
-        void (*fun)(A*, T*);
+        void (A::*fun)(T*);
         A* obj;
         public:
-        EventHandlerMember(void (*fun)(T*, A*), EventType* type, A* obj) {
+        EventHandlerMember(void (A::*fun)(T*), EventType* type, A* obj) : EventHandler<T>{type}
+         {
             this->fun = fun;
-            this->type = type;
             this->obj = obj;
         }
         virtual void handle (T* t) {
-            fun(obj, t);
+            (obj->*fun)(t);
         }
     };
     template<class T> void EventHandlerBase::handle (T* t) {
@@ -86,7 +90,7 @@ namespace event {
             return handler;
         };
         template <class T, class A, class = std::enable_if<std::is_base_of<Event, T>::value>>
-        EventHandlerMember<T, A>* subscribeHandler (void eventHandler(A*, T*), A* obj) {
+        EventHandlerMember<T, A>* subscribeHandler (void (A::*eventHandler)(T*), A* obj) {
             T val;
             EventType* type = val.getEventType();
             EventHandlerMember<T, A>* handler = new EventHandlerMember<T, A>(eventHandler, type, obj);

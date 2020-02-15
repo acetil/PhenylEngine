@@ -21,7 +21,6 @@ namespace game {
         int currentEntityId = 0;
         event::EventBus* eventBus = new event::EventBus();
         component::ComponentManager* entityComponentManager;
-        graphics::Graphics* graphics;
         public:
         ~GameObject();
 
@@ -43,7 +42,6 @@ namespace game {
         void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
         void setEntityComponentManager (component::ComponentManager* manager);
-        void setGraphics (graphics::Graphics* graphics);
         event::EventBus* getEventBus();
     };
 }

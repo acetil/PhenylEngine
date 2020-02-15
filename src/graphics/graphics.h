@@ -4,6 +4,7 @@
 #include "textures/texture.h"
 #include "textures/texture_atlas.h"
 #include "component/main_component.h"
+#include "event/events/entity_creation.h"
 #include <stdlib.h>
 #include <vector>
 #include <unordered_map>
@@ -88,6 +89,7 @@
                 void setupErrorHandling ();
                 void bufferEntityPositions (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer);
                 TextureAtlas* getTextureAtlas ();
+                void onEntityCreation (event::EntityCreationEvent* event);
                 friend class game::KeyboardInput;
         };
     }

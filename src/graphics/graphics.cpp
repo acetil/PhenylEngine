@@ -9,6 +9,9 @@
 #include "camera.h"
 #include "textures/texture_atlas.h"
 #include "logging/logging.h"
+#include "event/events/entity_creation.h"
+#include "game/entity/entity.h"
+
 using namespace graphics;
 
 #define NUM_TRIANGLE_VERTICES 3
@@ -345,4 +348,12 @@ Buffer* Graphics::getSpriteBuffer () {
 }
 TextureAtlas* Graphics::getTextureAtlas () {
     return spriteAtlas;
+}
+void Graphics::onEntityCreation (event::EntityCreationEvent* event){
+    int texId = event->entity->getTextureId();
+    unsigned int id = event->entityId;
+    float* pointer = event->compManager->getEntityDataPtr<float>(2, id);
+    TextureAtlas* atlas = this->getTextureAtlas();
+    Texture* tex = atlas->getTexture(texId);
+    memcpy(pointer, tex->getTexUvs(), TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES * NUM_UV_PER_VERTEX *sizeof(float));
 }
