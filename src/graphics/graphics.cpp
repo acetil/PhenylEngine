@@ -110,7 +110,7 @@ void graphics::Graphics::startTimer (int fps) {
     lastTime = glfwGetTime();
 }
 float graphics::Graphics::getDeltaTime () {
-    while(glfwGetTime() - lastTime < 1.0 / fps) {
+    while(glfwGetTime() - lastTime < 1.0 / (2 * fps)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     double currentTime = glfwGetTime();
