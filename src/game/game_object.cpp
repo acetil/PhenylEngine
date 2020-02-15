@@ -113,11 +113,8 @@ void game::GameObject::renderEntities (graphics::Graphics* graphics) {
         for (int i = 0; i < numEntities; i++) {
             float* uvPos = buf->getUvBufferPos();
             for (int j = 0; j < 12; j++) {
-                *(uvPos++) = uv[i * 12 + j];
-                printf("%f ", uv[i * 12 + j]);
-                
+                *(uvPos++) = uv[i * 12 + j];     
             }
-            printf("\n");
         }
     }, 2, graphics);
 }

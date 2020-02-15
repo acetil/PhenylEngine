@@ -283,18 +283,13 @@ void graphics::Buffer::reinitBuffer (unsigned int numSprites) {
     vertexUvCurrent += NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE * NUM_UV_PER_VERTEX;
 }*/
 void graphics::Buffer::flushBuffer (ShaderProgram* shader, Camera* camera, TextureAtlas* textureAtlas) {
-    //float data[] = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
     unsigned int numSprites = fmin(numSpritesVertex, numSpritesUv);
-    logging::logf(LEVEL_DEBUG, "flushing %d sprites (%d, %d)!", numSprites, numSpritesVertex, numSpritesUv);
     shader->useProgram();
     shader->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
     textureAtlas->bindTextureAtlas();
     glBindBuffer(GL_ARRAY_BUFFER, posBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
         NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX * sizeof(float), vertexPosData);
-    for (int i = 0; i < numSprites * TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX; i++) {
-        printf("%f ", vertexPosData[i]);
-    }
     glBindBuffer(GL_ARRAY_BUFFER, uvBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
         NUM_TRIANGLE_VERTICES * NUM_UV_PER_VERTEX * sizeof(float), vertexUvData);
@@ -330,9 +325,7 @@ void Graphics::bufferEntityPositions (component::EntityMainComponent* comp, int 
             int correctedVertex = j % NUM_TRIANGLE_VERTICES + j / NUM_TRIANGLE_VERTICES;
             ptr[2 * j] = vertices[correctedVertex][0];
             ptr[2 * j + 1] = vertices[correctedVertex][1];
-            printf("(%f,%f) ", vertices[correctedVertex][0], vertices[correctedVertex][1]);
         }
-        printf("\n");
     }
 }
 float* Buffer::getVertexBufferPos () {
