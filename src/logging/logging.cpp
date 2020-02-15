@@ -1,47 +1,57 @@
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <stdarg.h>
-
 #include "logging.h"
-#define TIME_TEXT_LEN 21
-using namespace logging;
-char buffer[200];
-void logging::log (int level, const char* log) {
-    //TODO: update to print to log file
-    #ifndef DEBUG_LOG
-        if (level == LEVEL_DEBUG) {
-            return;
-        }
-    #endif
-    const char* text;
-    char timeText[TIME_TEXT_LEN];
-    switch (level) {
-        case LEVEL_WARNING:
-            text = WARNING_TEXT;
-            break;
-        case LEVEL_ERROR:
-            text = ERROR_TEXT;
-            break;
-        case LEVEL_FATAL:
-            text = FATAL_TEXT;
-            break;
-        case LEVEL_DEBUG:
-            text = DEBUG_TEXT;
-            break;
-        case LEVEL_INFO:
-        default:
-            text = INFO_TEXT;
-            break;
-    }
-    time_t now = time(0);
-    strftime(timeText, TIME_TEXT_LEN, "[%H:%M:%S]", localtime(&now));
-    printf("%s (%s): %s\n", timeText, text, log);
+#include "logging_internal.h"
+#include "stdarg.h"
+
+#define COMPONENT_LOCATION "COMPONENT"
+#define EVENT_LOCATION "EVENT"
+#define GAME_LOCATION "GAME"
+#define GRAPHICS_LOCATION "GRAPHICS"
+#define PHYSICS_LOCATION "PHYSICS"
+
+void component::logging::log (int level, const char* log) {
+    internal::log_internal(level, COMPONENT_LOCATION, log);
+}
+void component::logging::logf (int level, const char* log, ...) {
+    va_list l;
+    va_start(l, log);
+    internal::vlogf_internal(level, COMPONENT_LOCATION, log, l);
+    va_end(l);
 }
 
-void logging::logf(int level, const char* logFormat, ...) {
-    va_list argPtr;
-    va_start(argPtr, logFormat);
-    vsprintf(buffer, logFormat, argPtr);
-    log(level, buffer);
+void event::logging::log (int level, const char* log) {
+    internal::log_internal(level, EVENT_LOCATION, log);
+}
+void event::logging::logf (int level, const char* log, ...) {
+    va_list l;
+    va_start(l, log);
+    internal::vlogf_internal(level, EVENT_LOCATION, log, l);
+    va_end(l);
+}
+
+void game::logging::log (int level, const char* log) {
+    internal::log_internal(level, GAME_LOCATION, log);
+}
+void game::logging::logf (int level, const char* log, ...) {
+    va_list l;
+    va_start(l, log);
+    internal::vlogf_internal(level, GAME_LOCATION, log, l);
+    va_end(l);
+}
+void graphics::logging::log (int level, const char* log) {
+    internal::log_internal(level, GRAPHICS_LOCATION, log);
+}
+void graphics::logging::logf (int level, const char* log, ...) {
+    va_list l;
+    va_start(l, log);
+    internal::vlogf_internal(level, GRAPHICS_LOCATION, log, l);
+    va_end(l);
+}
+void physics::logging::log (int level, const char* log) {
+    internal::log_internal(level, PHYSICS_LOCATION, log);
+}
+void physics::logging::logf (int level, const char* log, ...) {
+    va_list l;
+    va_start(l, log);
+    internal::vlogf_internal(level, PHYSICS_LOCATION, log, l);
+    va_end(l);
 }
