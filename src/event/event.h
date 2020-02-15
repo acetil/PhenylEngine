@@ -9,6 +9,9 @@
 #ifndef EVENT_H
 #define EVENT_H
 namespace event {
+    enum EventHandlerType {
+        function, member
+    };
      class EventType {
         public:
         EventType (std::string name, bool async, bool immediateEval) {
@@ -25,6 +28,8 @@ namespace event {
         virtual EventType* getEventType () = 0;
     };
     class EventHandlerBase {
+        private:
+        EventHandlerType type;
         public:
         template<class T> void handle (T* t);
         virtual EventType* getEventType () = 0;
@@ -32,18 +37,34 @@ namespace event {
     template<typename T>
     class EventHandler : public EventHandlerBase {
         private:
-        std::function<void(T*)> fun;
+        void (*fun)(T*);
+        protected:
         EventType* type;
         public:
-        EventHandler (std::function<void(T*)> fun, EventType* type) {
+        EventHandler (void (*fun)(T*), EventType* type) {
             this->fun = fun;
             this->type = type;
         };
-        void handle (T* t) {
+        virtual void handle (T* t) {
             fun(t);
         };
         virtual EventType* getEventType () {
             return type;
+        }
+    };
+    template<typename T, typename A>
+    class EventHandlerMember : public EventHandler<T> {
+        private:
+        void (*fun)(A*, T*);
+        A* obj;
+        public:
+        EventHandlerMember(void (*fun)(T*, A*), EventType* type, A* obj) {
+            this->fun = fun;
+            this->type = type;
+            this->obj = obj;
+        }
+        virtual void handle (T* t) {
+            fun(obj, t);
         }
     };
     template<class T> void EventHandlerBase::handle (T* t) {
@@ -64,6 +85,17 @@ namespace event {
             handlerMap[type].push_back(handler);
             return handler;
         };
+        template <class T, class A, class = std::enable_if<std::is_base_of<Event, T>::value>>
+        EventHandlerMember<T, A>* subscribeHandler (void eventHandler(A*, T*), A* obj) {
+            T val;
+            EventType* type = val.getEventType();
+            EventHandlerMember<T, A>* handler = new EventHandlerMember<T, A>(eventHandler, type, obj);
+            if (handlerMap.count(type) == 0) {
+                handlerMap[type] = std::vector<EventHandlerBase*>();
+            }
+            handlerMap[type].push_back(handler);
+            return handler;
+        }
         template <class T, class = std::enable_if<std::is_base_of<Event, T>::value>>
         void unsubscribeHandler (EventHandler<T>* eventHandler) {
             EventType* type = eventHandler.getEventType();
