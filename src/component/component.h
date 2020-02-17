@@ -54,6 +54,22 @@ namespace component {
         void applyFuncThreaded (void func(T*, int, int , A), int compId, int numThreads, A extra) {
             applyFunc(func, compId, extra); // TODO: same as above
         }
+        template<typename T>
+        void applyFunc (void func(T*, int, int, int, int), int compId) {
+            func((T*)components[compId].data, 0, numEntities, 1, components[compId].sizeElement);
+        }
+        template<typename T>
+        void applyFuncThreaded (void func(T*, int, int, int, int), int compId, int numThreads) {
+            applyFunc(func, compId); // TODO: see above
+        }
+        template<typename T, typename A>
+        void applyFunc (void func(T*, int, int, int, int, A), int compId, A extra) {
+            func((T*)components[compId].data, 0, numEntities, 1, components[compId].sizeElement, extra);
+        }
+        template<typename T, typename A>
+        void applyFuncThreaded (void func(T*, int, int, int, int, A), int compId, A extra) {
+            applyFunc(func, compId, extra); // TODO: see above
+        }
         template <typename T, int size = 1>
         int addComponent (std::string name) {
             if (componentIds.count(name) > 0) {
