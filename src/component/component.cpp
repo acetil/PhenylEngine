@@ -4,13 +4,14 @@
 #include "component.h"
 #include "logging/logging.h"
 #include "event/events/entity_id_swap.h"
+#include "game/entity/entity.h"
 using namespace component;
 
 component::ComponentManager::ComponentManager(int maxEntities, event::EventBus* bus) {
     this->maxEntities = fmin(maxEntities, MAX_COMPONENT_ENTITIES);
     this->numEntities = 0;
     this->bus = bus;
-    addComponent<game::AbstractEntity*>("entity_ptr");
+    addComponent<game::AbstractEntity*>("entity_ptr"); // TODO: when AbstractEntity is not abstract, remove pointer
 }
 component::ComponentManager::~ComponentManager () {
     for (Component comp : components) {

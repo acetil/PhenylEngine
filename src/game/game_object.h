@@ -42,6 +42,9 @@ namespace game {
         void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
         void setEntityComponentManager (component::ComponentManager* manager);
+
+        void updateEntitiesPrePhysics ();
+        void updateEntitiesPostPhysics ();
         event::EventBus* getEventBus();
     };
 }

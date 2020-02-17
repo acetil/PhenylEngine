@@ -13,5 +13,9 @@ namespace game {
         virtual void onEntityCollision (AbstractEntity* entity, int entityId, AbstractEntity* other, int otherEntityId,
                                         component::ComponentManager* manager);
     };
+    void controlEntitiesPrePhysics (AbstractEntity** entities, component::EntityMainComponent* comp, int startId,
+                                    int numEntities, int direction, component::ComponentManager* manager);
+    void controlEntitiesPostPhysics (AbstractEntity** entities, component::EntityMainComponent* comp,int startId,
+                                     int numEntities, int direction, component::ComponentManager* manager);
 }
 #endif

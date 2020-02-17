@@ -36,7 +36,9 @@ int game::gameloop (graphics::Graphics* graphics) {
         }
         keyInput->handleKeyPresses();
         while (deltaPhysicsFrame > 1.0f / PHYSICS_FPS) {
+            gameObject->updateEntitiesPrePhysics();
             gameObject->updateEntityPosition();
+            gameObject->updateEntitiesPostPhysics();
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
         }
         /*gameObject->updateEntities(deltaTime);

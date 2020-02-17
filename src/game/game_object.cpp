@@ -4,6 +4,8 @@
 #include "logging/logging.h"
 #include "physics/physics_new.h"
 #include "event/events/entity_creation.h"
+#include "entity/controller/entity_controller.h"
+
 using namespace game;
 
 game::GameObject::~GameObject () {
@@ -131,4 +133,19 @@ void game::GameObject::setEntityComponentManager (component::ComponentManager* m
 }
 void game::GameObject::updateEntityPosition () {
     entityComponentManager->applyFunc(physics::updatePhysics, 1); // TODO: remove hardcode (1 is index of main comp)
+}
+void entityPrePhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager* manager) {
+    auto comp = manager->getComponent<component::EntityMainComponent>(1);
+    controlEntitiesPrePhysics(entities, comp, startId, numEntities, direction, manager);
+}
+void entityPostPhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager* manager) {
+    auto comp = manager->getComponent<component::EntityMainComponent>(1);
+    controlEntitiesPostPhysics(entities, comp, startId, numEntities, direction, manager);
+}
+void game::GameObject::updateEntitiesPrePhysics () {
+    entityComponentManager->applyFunc(entityPrePhysicsFunc, 0, entityComponentManager);
+}
+
+void GameObject::updateEntitiesPostPhysics () {
+    entityComponentManager->applyFunc(entityPostPhysicsFunc, 0, entityComponentManager);
 }

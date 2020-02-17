@@ -7,6 +7,8 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 namespace game {
+    // TODO: change AbstractEntity to be more like "EntityType", and move most other stuff to EntityController if possible
+    class EntityController;
     class AbstractEntity {
         friend class GameObject;
         protected:
@@ -17,6 +19,7 @@ namespace game {
         std::string name;
         int textureId;
         int entityId;
+        EntityController* controller;
         public:
         virtual AbstractEntity* createEntity () = 0;
         virtual int getEntityId ();
@@ -32,6 +35,7 @@ namespace game {
         //virtual void render (graphics::Graphics* graphics);
         virtual int getTextureId ();
         virtual void setEntityId (int entityId);
+        virtual EntityController* getController ();
     };
 }
 #endif
