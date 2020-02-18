@@ -12,7 +12,7 @@
     #define GRAPHICS_H
     #ifndef KEY_INPUT_H
     namespace game {
-        class KeyboardInput;
+        class KeyboardInputImpl;
     }
     #endif
     namespace graphics {
@@ -90,7 +90,7 @@
                 void bufferEntityPositions (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer);
                 TextureAtlas* getTextureAtlas ();
                 void onEntityCreation (event::EntityCreationEvent* event);
-                friend class game::KeyboardInput;
+                friend class game::KeyboardInputImpl;
         };
     }
 #endif

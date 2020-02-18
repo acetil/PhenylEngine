@@ -5,23 +5,40 @@
 #include "graphics/graphics_headers.h"
 
 using namespace game;
+namespace game {
+    class KeyboardInputImpl : public KeyboardInput {
+    private:
+        GLFWwindow* window;
+        std::map<int, KeyboardFunction*> bindingMap;
+    public:
+        KeyboardInputImpl (graphics::Graphics* graphics);
 
-game::KeyboardInput::KeyboardInput (graphics::Graphics* graphics) {
+        ~KeyboardInputImpl ();
+
+        void setKey (int key, KeyboardFunction* function);
+
+        void replaceKey (int after, int before);
+
+        void handleKeyPresses ();
+    };
+}
+
+game::KeyboardInputImpl::KeyboardInputImpl (graphics::Graphics* graphics) {
 
     window = graphics->window;
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
     // TODO: add key press preference reading here
 }
 
-void game::KeyboardInput::handleKeyPresses () {
+void game::KeyboardInputImpl::handleKeyPresses () {
     for (auto const& x : bindingMap) {
         x.second->operator()(glfwGetKey(window, x.first));
     }
 }
-void game::KeyboardInput::setKey(int key, KeyboardFunction* func) {
+void game::KeyboardInputImpl::setKey(int key, KeyboardFunction* func) {
     bindingMap[key] = func;
 }
-void game::KeyboardInput::replaceKey(int after, int before) {
+void game::KeyboardInputImpl::replaceKey(int after, int before) {
     KeyboardFunction* temp = bindingMap[before];
     if (bindingMap.count(after) > 0) {
         bindingMap[before] = bindingMap[after];
@@ -30,6 +47,10 @@ void game::KeyboardInput::replaceKey(int after, int before) {
     }
     bindingMap[after] = bindingMap[before];
 }
-game::KeyboardInput::~KeyboardInput () {
+game::KeyboardInputImpl::~KeyboardInputImpl () {
     bindingMap.clear();
+}
+
+KeyboardInput* game::getKeyboardInput (graphics::Graphics* graphics) {
+    return new KeyboardInputImpl(graphics);
 }

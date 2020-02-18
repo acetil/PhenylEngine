@@ -16,8 +16,8 @@ int game::gameloop (graphics::Graphics* graphics) {
     GameObject* gameObject = initGame(graphics);
     AbstractEntity* player = gameObject->createNewEntityInstance("test_entity", 0, 0);
     logging::log(LEVEL_INFO, "Created player");
-    KeyboardInput* keyInput = new KeyboardInput(graphics);
-    setupMovementKeys(keyInput, &player);
+    KeyboardInput* keyInput = getKeyboardInput(graphics);
+    setupMovementKeys(keyInput, gameObject->getEventBus());
     float deltaTime = 0.0f;
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;

@@ -4,7 +4,8 @@ using namespace game;
 
 void game::EntityController::controlEntityPrePhysics (AbstractEntity* entity, component::EntityMainComponent* comp,
                                                       int entityId, component::ComponentManager* manager) {
-        // default is empty
+    logging::log(LEVEL_INFO, "Controlling entity pre physics!");
+    // default is empty
 }
 void game::EntityController::controlEntityPostPhysics (AbstractEntity* entity, component::EntityMainComponent* comp,
                                                        int entityId, component::ComponentManager* manager) {

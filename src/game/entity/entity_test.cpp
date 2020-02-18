@@ -1,3 +1,4 @@
+#include "game/entity/controller/player_controller.h"
 #include "entity_test.h"
 #include "entity.h"
 #include "controller/entity_controller.h"
@@ -8,7 +9,7 @@ using namespace game;
 game::EntityTest::EntityTest() {
     scale = 0.1f;
     name = "test_entity";
-    controller = new EntityController();
+    controller = new PlayerController();
 }
 
 AbstractEntity* game::EntityTest::createEntity () {
@@ -17,7 +18,7 @@ AbstractEntity* game::EntityTest::createEntity () {
     entity->scale = scale;
     entity->physicsBody = new physics::PhysicsBody(entity->x, entity->y, 100, 0, 800);
     entity->name = name;
-    entity->controller = new EntityController();
+    entity->controller = controller;
     if (entity == nullptr) {
         logging::log(LEVEL_ERROR, "Null test entity!");
     }
