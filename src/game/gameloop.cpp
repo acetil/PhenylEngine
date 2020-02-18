@@ -7,6 +7,7 @@
 #include "graphics/shaders/shaders.h"
 #include "key_input.h"
 #include "key_defaults.h"
+#include "map/map_reader.h"
 
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
@@ -22,6 +23,8 @@ int game::gameloop (graphics::Graphics* graphics) {
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
+    Map* map = readMap("resources/maps/testmap.acmp", gameObject);
+    map->initGraphicsData(graphics, "default");
     graphics->startTimer(TARGET_FPS);
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {

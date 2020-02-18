@@ -27,6 +27,7 @@ graphics::Graphics::Graphics (GLFWwindow* window) {
     spriteBuffer = new Buffer();
     spriteBuffer->initBuffer(100);
     camera = new Camera ();
+    camera->scale(1);
 }
 graphics::Graphics::~Graphics () {
     delete spriteBuffer;
@@ -43,13 +44,17 @@ void graphics::Graphics::render () {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // TODO: add render code
-    spriteBuffer->flushBuffer(currentSpriteShader, camera, spriteAtlas);
     renderStaticData();
+    spriteBuffer->flushBuffer(currentSpriteShader, camera, spriteAtlas);
     glfwSwapBuffers(window);
 }
 void graphics::Graphics::renderStaticData () {
     // TODO: refactor and optimise to only apply/bind when necessary
     for (auto data : staticData) {
+        glBindBuffer(GL_ARRAY_BUFFER, data->vertexVBO);
+        glVertexAttribPointer(0, NUM_POS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
+        glBindBuffer(GL_ARRAY_BUFFER, data->uvVBO);
+        glVertexAttribPointer(1, NUM_UV_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
         data->shaderProgram->useProgram();
         data->shaderProgram->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
         spriteAtlas->bindTextureAtlas();
@@ -125,12 +130,12 @@ StaticData* graphics::Graphics::loadStaticData (float* vertexData, float* uvData
     StaticData* data = new StaticData;
     glGenBuffers(1, &(data->vertexVBO));
     glBindBuffer(GL_ARRAY_BUFFER, data->vertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeVertex, vertexData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeVertex * sizeof(float), vertexData, GL_STATIC_DRAW);
     glVertexAttribPointer(0, NUM_POS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
 
     glGenBuffers(1, &(data->uvVBO));
     glBindBuffer(GL_ARRAY_BUFFER, data->uvVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeUv, uvData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeUv * sizeof(float), uvData, GL_STATIC_DRAW);
     glVertexAttribPointer(1, NUM_UV_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
 
     data->numVertices = numVertices;
@@ -291,11 +296,13 @@ void graphics::Buffer::flushBuffer (ShaderProgram* shader, Camera* camera, Textu
     shader->appplyUniform(camera->getUniformName(), camera->getCamMatrix());
     textureAtlas->bindTextureAtlas();
     glBindBuffer(GL_ARRAY_BUFFER, posBufferId);
+    glVertexAttribPointer(0, NUM_POS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
         NUM_TRIANGLE_VERTICES * NUM_POS_PER_VERTEX * sizeof(float), vertexPosData);
     glBindBuffer(GL_ARRAY_BUFFER, uvBufferId);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numSprites * TRIANGLES_PER_SPRITE * 
         NUM_TRIANGLE_VERTICES * NUM_UV_PER_VERTEX * sizeof(float), vertexUvData);
+    glVertexAttribPointer(1, NUM_UV_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, NULL);
 
     glDrawArrays(GL_TRIANGLES, 0, numSprites * TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES);
     numSpritesUv = 0;

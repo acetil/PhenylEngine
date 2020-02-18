@@ -49,6 +49,8 @@ std::vector<Image*> getSpriteImages () {
     images.push_back(new Image("resources/images/test/test_texture.png", "test3"));
     images.push_back(new Image("resources/images/test/tier2_ingot-temp.png", "test5"));
     images.push_back(new Image("resources/images/test/temp_ecrys1.png", "test2"));
+    images.push_back(new Image("resources/images/test/stone.png", "test6"));
+    images.push_back(new Image("resources/images/test/prismarine_bricks.png", "test7"));
     return images;
 }
 int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {

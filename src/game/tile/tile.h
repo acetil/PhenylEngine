@@ -10,10 +10,10 @@ namespace game {
         int textureId;
         float* uvs;
         float* coords;
+        public:
         float xSize;
         float ySize;
-        
-        public:
+
         Tile (std::string name, int textureId, graphics::TextureAtlas* atlas, float xSize, float ySize);
         virtual ~Tile();
         virtual int getTextureId ();

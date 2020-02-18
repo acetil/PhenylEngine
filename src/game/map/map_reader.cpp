@@ -56,13 +56,13 @@ Map* game::readMap (std::string path, GameObject* gameObject) {
     
     // size of header
     unsigned char headerSize = fgetc(file);
-
+    logging::logf(LEVEL_DEBUG, "Header size: %d", headerSize);
     // width and height
     uint32_t dimBuf[2];
     fread ((void*) dimBuf, DIMENSION_SIZE, 2, file);
     unsigned int width = dimBuf[0];
     unsigned int height = dimBuf[1];
-
+    logging::logf(LEVEL_DEBUG, "Size of map: %d x %d", width, height);
     // size of tile numbers
     unsigned char tileSize = fgetc(file);
 
@@ -73,6 +73,7 @@ Map* game::readMap (std::string path, GameObject* gameObject) {
     uint32_t tileBuf;
     fread((void*) &tileBuf, TILE_TYPE_NUM_SIZE, 1, file);
     unsigned int numTiles = tileBuf;
+    logging::logf(LEVEL_DEBUG, "Num tiles: %d", numTiles);
     fseek(file, headerSize, SEEK_SET);
 
     /* tile type header */

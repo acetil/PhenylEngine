@@ -40,15 +40,16 @@ void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shad
             numVertices += VERTICES_PER_TILE;
         }
     }
-
+    logging::logf(LEVEL_DEBUG, "There are %d vertices in the map.", numVertices);
     float* vertexData = new float[numVertices * VCOMP_PER_VERTEX];
     float* uvData = new float[numVertices * UV_PER_VERTEX];
     float* vertexPtr = vertexData;
     float* uvPtr = uvData;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
-            memcpy(vertexData, tiles[i]->getVertexCoords(i % width, i / width), VERTICES_PER_TILE * VCOMP_PER_VERTEX * sizeof(float));
-            memcpy(uvData, tiles[i]->getUvs(), VERTICES_PER_TILE * UV_PER_VERTEX * sizeof(float));
+            logging::logf(LEVEL_DEBUG, "Copying buffers, id = %d. Ptr: %d, %d", i, vertexPtr - vertexData, uvPtr - uvData);
+            memcpy(vertexPtr, tiles[i]->getVertexCoords(i % width * tiles[i]->xSize, i / width * tiles[i]->ySize), VERTICES_PER_TILE * VCOMP_PER_VERTEX * sizeof(float));
+            memcpy(uvPtr, tiles[i]->getUvs(), VERTICES_PER_TILE * UV_PER_VERTEX * sizeof(float));
             vertexPtr += VERTICES_PER_TILE * VCOMP_PER_VERTEX;
             uvPtr += VERTICES_PER_TILE * UV_PER_VERTEX;
         }

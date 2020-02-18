@@ -32,9 +32,9 @@ float* game::Tile::getVertexCoords (float x, float y) {
         float vertexX = x;
         float vertexY = y;
         if (correctedVertex < 2) {
-            vertexY -= ySize / 2;
+            vertexY += ySize / 2;
         } else {
-            vertexY += ySize  / 2;
+            vertexY -= ySize  / 2;
         }
         if (correctedVertex % 2 == 0) {
             vertexX -= xSize / 2;
