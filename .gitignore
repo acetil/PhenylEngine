@@ -2,3 +2,4 @@
 resources/images
 **/cmake-build-debug
 **/.idea
+CMakeLists.txt
