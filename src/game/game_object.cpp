@@ -43,12 +43,12 @@ AbstractEntity* game::GameObject::createNewEntityInstance (std::string name, flo
         return nullptr;
     } else {
         auto entity = entityRegistry[name]->createEntity();
-        int entityId = entityComponentManager->addEntity(entity);
+        int entityId = entityComponentManager->addObject(entity);
         entity->setEntityId(entityId);
-        component::EntityMainComponent comp = entityComponentManager->getEntityData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
+        component::EntityMainComponent comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
         entity->x = comp.pos;
         entity->y = comp.pos + 1;
-        float* uvPtr = entityComponentManager->getEntityDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
+        auto uvPtr = entityComponentManager->getObjectDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
         eventBus->raiseEvent(new event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId));
         logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), entityId);
         return entity;
@@ -128,17 +128,17 @@ void game::GameObject::setTextureIds (graphics::Graphics* graphics) {
 event::EventBus* game::GameObject::getEventBus () {
     return eventBus;
 }
-void game::GameObject::setEntityComponentManager (component::ComponentManager* manager) {
+void game::GameObject::setEntityComponentManager (component::ComponentManager<AbstractEntity*>* manager) {
     this->entityComponentManager = manager;
 }
 void game::GameObject::updateEntityPosition () {
     entityComponentManager->applyFunc(physics::updatePhysics, 1); // TODO: remove hardcode (1 is index of main comp)
 }
-void entityPrePhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager* manager) {
+void entityPrePhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager<AbstractEntity*>* manager) {
     auto comp = manager->getComponent<component::EntityMainComponent>(1);
     controlEntitiesPrePhysics(entities, comp, startId, numEntities, direction, manager);
 }
-void entityPostPhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager* manager) {
+void entityPostPhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager<AbstractEntity*>* manager) {
     auto comp = manager->getComponent<component::EntityMainComponent>(1);
     controlEntitiesPostPhysics(entities, comp, startId, numEntities, direction, manager);
 }

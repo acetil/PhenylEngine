@@ -245,15 +245,15 @@ index 8d838f8..0000000
 -            return ENTITY_REGISTER_EVENT;
 -        }
 -    };
--    class EntityIdSwapEvent : public Event {
+-    class ObjectIdSwapEvent : public Event {
 -        public:
 -        int oldId;
 -        int newId;
--        EntityIdSwapEvent () {
+-        ObjectIdSwapEvent () {
 -            oldId = 0;
 -            newId = 0;
 -        }
--        EntityIdSwapEvent (int oldId, int newId) {
+-        ObjectIdSwapEvent (int oldId, int newId) {
 -            this->oldId = oldId;
 -            this->newId = newId;
 -        };
@@ -332,15 +332,15 @@ index 0000000..f0cf2fe
 +#define ENTITY_ID_SWAP_H
 +namespace event {
 +    static EventType* ENTITY_ID_SWAP_EVENT = nullptr;
-+    class EntityIdSwapEvent : public Event {
++    class ObjectIdSwapEvent : public Event {
 +        public:
 +        int oldId;
 +        int newId;
-+        EntityIdSwapEvent () {
++        ObjectIdSwapEvent () {
 +            oldId = 0;
 +            newId = 0;
 +        }
-+        EntityIdSwapEvent (int oldId, int newId) {
++        ObjectIdSwapEvent (int oldId, int newId) {
 +            this->oldId = oldId;
 +            this->newId = newId;
 +        };

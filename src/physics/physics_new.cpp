@@ -25,7 +25,7 @@ void physics::updatePhysics (component::EntityMainComponent* comp, int numEntiti
 }
 void physics::onEntityCreation (event::EntityCreationEvent* event) {
     logging::log(LEVEL_DEBUG, "About to get main component!");
-    component::EntityMainComponent* comp = event->compManager->getEntityDataPtr<component::EntityMainComponent>(1, event->entityId);
+    component::EntityMainComponent* comp = event->compManager->getObjectDataPtr<component::EntityMainComponent>(1, event->entityId);
     comp->pos[0] = event->x;
     comp->pos[1] = event->y;
     comp->vel[0] = 0;

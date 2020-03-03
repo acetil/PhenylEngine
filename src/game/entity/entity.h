@@ -21,6 +21,9 @@ namespace game {
         int entityId;
         EntityController* controller;
         public:
+        static std::string getObjectType () {
+            return "entity";
+        }
         virtual AbstractEntity* createEntity () = 0;
         virtual int getEntityId ();
         virtual std::string getEntityName ();

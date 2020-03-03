@@ -315,7 +315,7 @@ graphics::Buffer::~Buffer () {
         free(vertexPosData);
     }
     if (vertexUvData != NULL) {
-        free(vertexPosData);
+        free(vertexUvData);
     }
 }
 
@@ -359,7 +359,7 @@ TextureAtlas* Graphics::getTextureAtlas () {
 void Graphics::onEntityCreation (event::EntityCreationEvent* event){
     int texId = event->entity->getTextureId();
     unsigned int id = event->entityId;
-    float* pointer = event->compManager->getEntityDataPtr<float>(2, id);
+    float* pointer = event->compManager->getObjectDataPtr<float>(2, id);
     TextureAtlas* atlas = this->getTextureAtlas();
     Texture* tex = atlas->getTexture(texId);
     memcpy(pointer, tex->getTexUvs(), TRIANGLES_PER_SPRITE * NUM_TRIANGLE_VERTICES * NUM_UV_PER_VERTEX *sizeof(float));

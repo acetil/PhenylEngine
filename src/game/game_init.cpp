@@ -11,14 +11,14 @@
 
 using namespace game;
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
-component::ComponentManager* getEntityComponentManager (event::EventBus* bus);
+component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus);
 void registerTiles (GameObject* gameObject, graphics::Graphics* graphics);
 GameObject* game::initGame (graphics::Graphics* graphics) {
-    GameObject* gameObject = new GameObject();
+    auto gameObject = new GameObject();
     addEventHandlers(gameObject, graphics);
     gameObject->setEntityComponentManager(getEntityComponentManager(gameObject->getEventBus()));
     logging::log(LEVEL_INFO, "Starting init of entities!");
-    event::EntityRegisterEvent* entityEvent = new event::EntityRegisterEvent(gameObject);
+    auto entityEvent = new event::EntityRegisterEvent(gameObject);
     gameObject->getEventBus()->raiseEvent(entityEvent);
     logging::log(LEVEL_DEBUG, "Finished entity init!");
     gameObject->setTextureIds(graphics);
@@ -34,8 +34,8 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     gameObject->getEventBus()->subscribeHandler(graphics::Graphics::onEntityCreation, graphics);
 }
 
-component::ComponentManager* getEntityComponentManager (event::EventBus* bus) {
-    component::ComponentManager* manager = new component::ComponentManager(256, bus);
+component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus) {
+    auto manager = new component::ComponentManager<AbstractEntity*>(256, bus, "entity_ptr");
     manager->addComponent<component::EntityMainComponent>("main_component");
     manager->addComponent<float, 12>("uv");
     return manager;

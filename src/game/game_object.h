@@ -20,7 +20,7 @@ namespace game {
         std::vector<Tile*> tileRegistry;
         int currentEntityId = 0;
         event::EventBus* eventBus = new event::EventBus();
-        component::ComponentManager* entityComponentManager;
+        component::ComponentManager<AbstractEntity*>* entityComponentManager;
         public:
         ~GameObject();
 
@@ -41,7 +41,7 @@ namespace game {
         void updateEntityPositions (float deltaTime);
         void setTextureIds (graphics::Graphics* atlas);
         void renderEntities (graphics::Graphics* graphics);
-        void setEntityComponentManager (component::ComponentManager* manager);
+        void setEntityComponentManager (component::ComponentManager<AbstractEntity*>* manager);
 
         void updateEntitiesPrePhysics ();
         void updateEntitiesPostPhysics ();
