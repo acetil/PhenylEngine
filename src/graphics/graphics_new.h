@@ -1,8 +1,13 @@
+#include<stdlib.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 #include <utility>
-
+#include <unordered_map>
+#include <optional>
+#include <logging/logging.h>
+#include "textures/texture_atlas.h"
 #ifndef GRAPHICS_NEW_H
 #define GRAPHICS_NEW_H
 namespace graphics {
@@ -13,11 +18,23 @@ namespace graphics {
     class ShaderProgram {
 
     };
-    class Image;
-    class Model;
-    class TextureAtlas;
+    struct TextureOffset {
+        float x;
+        float y;
+        TextureOffset (float x, float y) {
+            this->x = x;
+            this->y = y;
+        }
+    };
+    struct Model {
+        std::string modelName;
+        std::string texPath;
+        std::vector<std::pair<TextureOffset, Image*>> textures;
+    };
     class RenderLayer;
-    class Camera;
+    class Camera {
+
+    };
     class GraphicsData {
     public:
 
@@ -42,29 +59,62 @@ namespace graphics {
     };*/
     struct BufferInfo {
         int numBuffers;
-        int size;
-        std::vector<int> elementSizes;
-        BufferInfo (int numBuffers, int size, std::vector<int> elementSizes) {
+        std::vector<int> sizes;
+        std::vector<std::pair<int,int>> elementSizes; // pair is typeSize, elementSize
+        std::vector<bool> isStatic;
+        BufferInfo (int numBuffers, std::vector<std::pair<int,int>> elementSizes, std::vector<int> sizes,std::vector<bool> isStatic) {
             this->numBuffers = numBuffers;
-            this->size = size;
             this->elementSizes = std::move(elementSizes);
+            this->isStatic = std::move(isStatic);
+            this->sizes = std::move(sizes);
         }
         BufferInfo () {
             this->numBuffers = 0;
-            this->size = 0;
-            this->elementSizes = std::vector<int>();
+            this->elementSizes = std::vector<std::pair<int,int>>();
+            this->sizes = std::vector<int>();
+            this->isStatic = std::vector<bool>();
         }
+        [[nodiscard]]
         bool isEmpty () const {
-            return numBuffers == 0 && size == 0;
+            return numBuffers == 0;
         }
     };
 
     class Buffer {
+    private:
+        bool ownsMemory;
+        void* memory;
+        int elementSize;
+        int numElements;
+        int maxNumElements;
+        bool isStatic;
+    public:
+        Buffer (int maxNumElements, int elementSize, bool isStatic);
+        ~Buffer ();
+        Buffer (const Buffer& copy); // copy constructor, does NOT move memory ownership
+        Buffer (Buffer&& move) noexcept ; // move constructor, DOES move memory ownership
+        template <typename T>
+        void pushData (T* data, int num) {
+            if (sizeof(T) != elementSize) {
+                logging::logf(LEVEL_WARNING, "Attempted to push data with element size %d, but buffer element size is %d!",
+                        sizeof(T), elementSize);
+                return;
+            }
+            if (numElements >= maxNumElements) {
+                logging::log(LEVEL_WARNING, "Attempted to push an element to buffer when buffer was at capacity!");
+            }
+            memcpy((T*)memory + numElements, data, num * sizeof(T));
+            (T*)memory += num;
+        }
 
     };
     class Renderer {
     public:
-
+        virtual double getCurrentTime () = 0;
+        virtual bool shouldClose () = 0;
+        virtual void pollEvents () = 0;
+        virtual void clearWindow () = 0;
+        virtual FrameBuffer* getWindowBuffer () = 0;
     };
     class RenderLayer {
     public:
@@ -84,20 +134,33 @@ namespace graphics {
 
 
     class GraphicsNew {
+    private:
+        Renderer* renderer;
+
+        double lastTime;
+        double deltaTime;
+
+        RenderLayer* renderLayer;
+
+        std::unordered_map<std::string, TextureAtlas> atlases;
+
+
+        Camera camera;
+
     public:
-        GraphicsNew (Renderer* renderer);
+        explicit GraphicsNew (Renderer* renderer);
         bool shouldClose ();
         void pollEvents ();
         void render ();
-        void addShader (std::string name, ShaderProgram* program);
-        TextureAtlas* initTextureAtlas (std::string atlasName, std::vector<Model*> images);
-        TextureAtlas* getTextureAtlas (std::string atlas);
+        //void addShader (std::string name, ShaderProgram* program);
+        void initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images);
+        std::optional<TextureAtlas> getTextureAtlas (const std::string& atlas);
         void sync (int fps);
-        float getDeltaTime ();
-        int createLayer (RenderLayer* layer);
-        RenderLayer* getLayer (std::string name);
-        virtual RenderLayer* getLayer (int layer);
-        Camera getCamera ();
+        double getDeltaTime () const;
+        //int createLayer (RenderLayer* layer);
+        //RenderLayer* getLayer (std::string name);
+        //virtual RenderLayer* getLayer (int layer);
+        Camera& getCamera ();
     };
 }
 
