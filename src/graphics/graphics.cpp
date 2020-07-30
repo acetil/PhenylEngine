@@ -146,7 +146,7 @@ StaticData* graphics::Graphics::loadStaticData (float* vertexData, float* uvData
     return data;
 }
 void graphics::Graphics::unloadStaticData (StaticData* data) {
-    if (data = NULL) {
+    if (data == NULL) {
         logging::log(LEVEL_WARNING, "Unload requested for null static data!");
         return;
     }

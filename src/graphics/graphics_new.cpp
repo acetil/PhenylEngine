@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <unordered_set>
+#include <graphics/renderlayer/entity_layer.h>
 #include "logging/logging.h"
 
 using namespace graphics;
@@ -12,6 +13,7 @@ GraphicsNew::GraphicsNew (Renderer* renderer) {
 
     this->deltaTime = 0;
     this->lastTime = renderer->getCurrentTime();
+    this->renderLayer = new GraphicsRenderLayer(renderer);
 }
 
 double GraphicsNew::getDeltaTime() const {
@@ -40,7 +42,7 @@ void GraphicsNew::render () {
 
     if (!info.isEmpty()) {
         for (int i = 0; i < info.numBuffers; i++) {
-            renderLayer->addBuffer(Buffer(info.elementSizes[i].second * info.elementSizes[i].first * info.sizes[i],
+            renderLayer->addBuffer(BufferNew(info.elementSizes[i].second * info.elementSizes[i].first * info.sizes[i],
                     info.elementSizes[i].first, info.isStatic[i]));
         }
     }
@@ -86,12 +88,20 @@ void GraphicsNew::sync (int fps) {
     lastTime = currTime;
 }
 
-Camera &GraphicsNew::getCamera () {
+CameraNew &GraphicsNew::getCamera () {
     return camera;
 }
 
+GraphicsRenderLayer* GraphicsNew::getRenderLayer () {
+    return renderLayer;
+}
 
-Buffer::Buffer (int maxNumElements, int elementSize, bool isStatic) {
+void GraphicsNew::addEntityLayer (component::ComponentManager<game::AbstractEntity*>* compManager) {
+    renderLayer->addRenderLayer(new EntityRenderLayer(renderer, compManager));
+}
+
+
+BufferNew::BufferNew (int maxNumElements, int elementSize, bool isStatic) {
     static_assert(sizeof(char) == 1, "Char has a greater than 1 size on this system!");
     memory = (void*) new char[maxNumElements * elementSize];
     this->maxNumElements = maxNumElements;
@@ -101,12 +111,12 @@ Buffer::Buffer (int maxNumElements, int elementSize, bool isStatic) {
     ownsMemory = true;
 }
 
-Buffer::~Buffer () {
+BufferNew::~BufferNew () {
     if (ownsMemory) {
         delete[] (char*)memory;
     }
 }
-Buffer::Buffer (const Buffer& copy) {
+BufferNew::BufferNew (const BufferNew& copy) {
     this->maxNumElements = copy.maxNumElements;
     this->elementSize = copy.elementSize;
     this->isStatic = copy.isStatic;
@@ -114,7 +124,7 @@ Buffer::Buffer (const Buffer& copy) {
     this->memory = copy.memory;
     ownsMemory = false; // copy constructor does not move memory ownership
 }
-Buffer::Buffer(Buffer &&move)  noexcept {
+BufferNew::BufferNew(BufferNew &&move)  noexcept {
     this->maxNumElements = move.maxNumElements;
     this->elementSize = move.elementSize;
     this->isStatic = move.isStatic;
@@ -124,4 +134,18 @@ Buffer::Buffer(Buffer &&move)  noexcept {
     move.ownsMemory = false; // moves memory ownership
 }
 
-
+BufferNew& BufferNew::operator=(BufferNew &&move) noexcept {
+    if (this != &move) {
+        if (ownsMemory) {
+            delete[] (char*)memory;
+        }
+        memory = move.memory;
+        this->maxNumElements = move.maxNumElements;
+        this->elementSize = move.elementSize;
+        this->isStatic = move.isStatic;
+        this->numElements = move.numElements;
+        ownsMemory = move.ownsMemory;
+        move.ownsMemory = false;
+    }
+    return *this;
+}
