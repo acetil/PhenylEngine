@@ -73,7 +73,7 @@ void GraphicsRenderLayer::render(Renderer *renderer, FrameBuffer *frameBuf) {
     }
 }
 
-void GraphicsRenderLayer::applyCamera(CameraNew camera) {
+void GraphicsRenderLayer::applyCamera(Camera camera) {
     for (auto i : renderLayers) {
         if (!i->isActive()) {
             continue;

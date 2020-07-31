@@ -53,6 +53,8 @@ void GraphicsNew::render () {
 
     renderLayer->render(renderer, buf);
 
+    renderer->finishRender();
+
 }
 
 std::optional<TextureAtlas> GraphicsNew::getTextureAtlas (const std::string& atlas) {
@@ -88,7 +90,7 @@ void GraphicsNew::sync (int fps) {
     lastTime = currTime;
 }
 
-CameraNew &GraphicsNew::getCamera () {
+Camera &GraphicsNew::getCamera () {
     return camera;
 }
 

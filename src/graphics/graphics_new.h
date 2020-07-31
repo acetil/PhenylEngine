@@ -52,7 +52,7 @@ namespace graphics {
         std::unordered_map<std::string, TextureAtlas> atlases;
 
 
-        CameraNew camera;
+        Camera camera;
 
     public:
         explicit GraphicsNew (Renderer* renderer);
@@ -68,7 +68,7 @@ namespace graphics {
         //int createLayer (RenderLayer* layer);
         //RenderLayer* getLayer (std::string name);
         //virtual RenderLayer* getLayer (int layer);
-        CameraNew& getCamera ();
+        Camera& getCamera ();
         void addEntityLayer (component::ComponentManager<game::AbstractEntity*>* compManager);
     };
 }

@@ -45,7 +45,7 @@ void MapRenderLayer::applyUniform (int uniformId, void* data) {
 
 }
 
-void MapRenderLayer::applyCamera (CameraNew camera) {
+void MapRenderLayer::applyCamera (Camera camera) {
 
 }
 

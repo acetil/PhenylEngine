@@ -43,6 +43,7 @@ void EntityRenderLayer::gatherData () {
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
     componentManager->applyFunc(bufferPosData, 1, buffers[0]);
     componentManager->applyFunc(bufferUvData, 2, buffers[1]);
+    renderer->bufferData(buffIds, buffers);
 }
 
 int EntityRenderLayer::getUniformId (std::string uniformName) {
@@ -53,18 +54,20 @@ void EntityRenderLayer::applyUniform (int uniformId, void* data) {
 
 }
 
-void EntityRenderLayer::applyCamera (graphics::CameraNew camera) {
-
+void EntityRenderLayer::applyCamera (graphics::Camera camera) {
+    shaderProgram->appplyUniform(camera.getUniformName(), camera.getCamMatrix());
 }
 
 void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
-
+    frameBuf->bind();
+    renderer->render(buffIds, shaderProgram);
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
                                                 component::ComponentManager<game::AbstractEntity*>* componentManager) {
     this->componentManager = componentManager;
     this->shaderProgram = renderer->getProgram("entity").value();
+    this->buffIds = renderer->getBufferIds(2);
 
 }
 

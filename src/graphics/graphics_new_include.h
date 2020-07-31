@@ -9,6 +9,7 @@
 #include "textures/texture.h"
 #include "textures/image.h"
 #include "logging/logging.h"
+#include "camera.h"
 #ifndef GRAPHICS_NEW_INCLUDE_H
 #define GRAPHICS_NEW_INCLUDE_H
 namespace graphics {
@@ -34,10 +35,7 @@ namespace graphics {
     };
 
     class RenderLayer;
-
-    class CameraNew {
-
-    };
+    class BufferNew;
 
     // TODO: roll into BufferNew
     struct GraphicsBufferIds {
@@ -60,6 +58,11 @@ namespace graphics {
         virtual FrameBuffer* getWindowBuffer () = 0;
         virtual std::optional<ShaderProgram*> getProgram (std::string program) = 0;
         virtual GraphicsBufferIds getBufferIds (int requestedBufs) = 0;
+        virtual void bufferData (GraphicsBufferIds ids, BufferNew* buffers) = 0; // TODO: make more safe
+
+        virtual void render (GraphicsBufferIds ids, ShaderProgram* program) = 0; // TODO: put rendering through frame buffer?
+
+        virtual void finishRender () = 0;
     };
 
     struct BufferInfo {

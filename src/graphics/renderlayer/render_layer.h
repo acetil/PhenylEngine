@@ -24,7 +24,7 @@ namespace graphics {
 
         virtual void applyUniform (int uniformId, void* data) = 0;
 
-        virtual void applyCamera (CameraNew camera) = 0;
+        virtual void applyCamera (Camera camera) = 0;
 
         virtual void render (Renderer* renderer, FrameBuffer* frameBuf) = 0;
     };

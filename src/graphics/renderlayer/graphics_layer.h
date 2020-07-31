@@ -29,7 +29,7 @@ namespace graphics {
 
         void applyUniform (int uniformId, void* data) override;
 
-        void applyCamera (CameraNew camera) override;
+        void applyCamera (Camera camera) override;
 
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
 
