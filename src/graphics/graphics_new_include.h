@@ -39,10 +39,10 @@ namespace graphics {
 
     // TODO: roll into BufferNew
     struct GraphicsBufferIds {
-        int vaoId;
-        std::vector<int> vboIds;
+        unsigned int vaoId;
+        std::vector<unsigned int> vboIds;
         GraphicsBufferIds (): vaoId(0), vboIds({}) {};
-        GraphicsBufferIds (int _vaoId, std::vector<int> _vboIds): vaoId(_vaoId), vboIds(std::move(_vboIds)) {};
+        GraphicsBufferIds (unsigned int _vaoId, std::vector<unsigned int> _vboIds): vaoId(_vaoId), vboIds(std::move(_vboIds)) {};
     };
 
     class Renderer {
@@ -57,10 +57,10 @@ namespace graphics {
 
         virtual FrameBuffer* getWindowBuffer () = 0;
         virtual std::optional<ShaderProgram*> getProgram (std::string program) = 0;
-        virtual GraphicsBufferIds getBufferIds (int requestedBufs) = 0;
+        virtual GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize) = 0;
         virtual void bufferData (GraphicsBufferIds ids, BufferNew* buffers) = 0; // TODO: make more safe
 
-        virtual void render (GraphicsBufferIds ids, ShaderProgram* program) = 0; // TODO: put rendering through frame buffer?
+        virtual void render (GraphicsBufferIds ids, ShaderProgram* program, int numTriangles) = 0; // TODO: put rendering through frame buffer?
 
         virtual void finishRender () = 0;
     };
@@ -176,7 +176,13 @@ namespace graphics {
         bool isEmpty () const {
             return maxNumElements == 0;
         }
-
+        [[nodiscard]]
+        int currentSize () const {
+            return elementSize * numElements;
+        };
+        void* getData () {
+            return memory;
+        }
     };
 
 }

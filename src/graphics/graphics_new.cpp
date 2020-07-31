@@ -33,6 +33,7 @@ void GraphicsNew::render () {
     if (!renderLayer->isActive()) {
         return;
     }
+    atlases["sprite"].bindTextureAtlas(); // TODO: get layers to specify
     FrameBuffer* buf = renderer->getWindowBuffer();
 
     BufferInfo info = renderLayer->getBufferInfo();
@@ -66,6 +67,7 @@ std::optional<TextureAtlas> GraphicsNew::getTextureAtlas (const std::string& atl
 }
 
 void GraphicsNew::initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images) {
+    // TODO: build baked models
     if (atlases.find(atlasName) != atlases.end()) {
         logging::logf(LEVEL_ERROR, "Attempted to create duplicate atlas \"%s\"!", atlasName.c_str());
         return;
@@ -79,6 +81,7 @@ void GraphicsNew::initTextureAtlas (const std::string& atlasName, const std::vec
     TextureAtlas atlas;
     atlas.createAtlas(std::vector<Image*>(imageSet.begin(), imageSet.end()));
     logging::logf(LEVEL_DEBUG, "Created atlas \"%s\"!", atlasName.c_str());
+    atlases[atlasName] = atlas;
 }
 
 void GraphicsNew::sync (int fps) {

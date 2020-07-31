@@ -1,7 +1,7 @@
 #include <component/main_component.h>
 #include "entity_layer.h"
 
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 100 * 2 * 6
 
 #define NUM_TRIANGLE_VERTICES 3
 #define TRIANGLES_PER_SPRITE 2
@@ -60,14 +60,14 @@ void EntityRenderLayer::applyCamera (graphics::Camera camera) {
 
 void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
     frameBuf->bind();
-    renderer->render(buffIds, shaderProgram);
+    renderer->render(buffIds, shaderProgram, buffers[0].currentSize() / sizeof(float) / 2); // TODO: Make better
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
                                                 component::ComponentManager<game::AbstractEntity*>* componentManager) {
     this->componentManager = componentManager;
     this->shaderProgram = renderer->getProgram("entity").value();
-    this->buffIds = renderer->getBufferIds(2);
+    this->buffIds = renderer->getBufferIds(2, BUFFER_SIZE * 2 * sizeof(float));
 
 }
 
