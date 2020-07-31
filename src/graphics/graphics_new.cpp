@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <graphics/renderlayer/entity_layer.h>
 #include "logging/logging.h"
-
+#include "game/entity/entity.h"
 using namespace graphics;
 
 GraphicsNew::GraphicsNew (Renderer* renderer) {
@@ -36,9 +36,8 @@ void GraphicsNew::render () {
     atlases["sprite"].bindTextureAtlas(); // TODO: get layers to specify
     FrameBuffer* buf = renderer->getWindowBuffer();
 
-    BufferInfo info = renderLayer->getBufferInfo();
+    BufferInfo info = std::move(renderLayer->getBufferInfo());
 
-    renderLayer->gatherData();
 
 
     if (!info.isEmpty()) {
@@ -47,6 +46,8 @@ void GraphicsNew::render () {
                     info.elementSizes[i].first, info.isStatic[i]));
         }
     }
+
+    renderLayer->gatherData();
 
     renderLayer->preRender(renderer);
 
@@ -80,6 +81,7 @@ void GraphicsNew::initTextureAtlas (const std::string& atlasName, const std::vec
     }
     TextureAtlas atlas;
     atlas.createAtlas(std::vector<Image*>(imageSet.begin(), imageSet.end()));
+    atlas.loadTextureAtlas();
     logging::logf(LEVEL_DEBUG, "Created atlas \"%s\"!", atlasName.c_str());
     atlases[atlasName] = atlas;
 }
@@ -103,6 +105,15 @@ GraphicsRenderLayer* GraphicsNew::getRenderLayer () {
 
 void GraphicsNew::addEntityLayer (component::ComponentManager<game::AbstractEntity*>* compManager) {
     renderLayer->addRenderLayer(new EntityRenderLayer(renderer, compManager));
+}
+
+void GraphicsNew::onEntityCreation (event::EntityCreationEvent* event) {
+    int texId = event->entity->getTextureId(); // TODO: update for models and decoupling
+    unsigned int id = event->entity->getEntityId();
+    auto* pointer = event->compManager->getObjectDataPtr<float>(2, id);
+    TextureAtlas atlas = this->getTextureAtlas("sprite").value();
+    Texture* tex = atlas.getTexture(texId);
+    memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
 }
 
 

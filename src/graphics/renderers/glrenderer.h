@@ -37,13 +37,18 @@ namespace graphics {
 
         GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize) override;
 
-        void bufferData (GraphicsBufferIds ids, BufferNew* buffers) override; // TODO: make more safe
+        void bufferData (GraphicsBufferIds& ids, BufferNew* buffers) override; // TODO: make more safe
 
-        void render (GraphicsBufferIds ids, ShaderProgram* program, int numTriangles) override; // TODO: put rendering through frame buffer?
+        void render (GraphicsBufferIds& ids, ShaderProgram* program, int numTriangles) override; // TODO: put rendering through frame buffer?
 
         void finishRender () override;
 
-        void addShader (std::string name, ShaderProgram* program);
+        void addShader (const std::string& name, ShaderProgram* program);
+
+        GLFWwindow* getWindow () {
+            return window; // TODO: remove
+        }
+        void setupErrorHandling ();
     };
 }
 #endif //GLRENDERER_H

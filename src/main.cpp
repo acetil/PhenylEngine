@@ -15,14 +15,14 @@ int main (int argv, char* argc[]) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
-    graphics::Graphics* graphics = NULL;
-    if (graphics::initGraphics(window, &graphics) != GRAPHICS_INIT_SUCCESS) {
+    graphics::GraphicsNew* graphics = NULL;
+    if (graphics::initGraphicsNew(window, &graphics) != GRAPHICS_INIT_SUCCESS) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
     internal::log_internal(LEVEL_INFO, "MAIN", "Successfully initialised graphics");
     game::gameloop(graphics);
     internal::log_internal(LEVEL_INFO, "MAIN", "Shutting down!");
-    graphics::destroyGraphics(graphics);
+    graphics::destroyGraphicsNew(graphics);
     return EXIT_SUCCESS;
 }

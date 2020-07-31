@@ -3,15 +3,17 @@
 
 #include "key_input.h"
 #include "graphics/graphics_headers.h"
+#include "graphics/renderers/glrenderer.h"
 
 using namespace game;
+// TODO: add this to renderer
 namespace game {
     class KeyboardInputImpl : public KeyboardInput {
     private:
         GLFWwindow* window;
         std::map<int, KeyboardFunction*> bindingMap;
     public:
-        KeyboardInputImpl (graphics::Graphics* graphics);
+        KeyboardInputImpl (graphics::GraphicsNew* graphics);
 
         ~KeyboardInputImpl ();
 
@@ -23,9 +25,9 @@ namespace game {
     };
 }
 
-game::KeyboardInputImpl::KeyboardInputImpl (graphics::Graphics* graphics) {
+game::KeyboardInputImpl::KeyboardInputImpl (graphics::GraphicsNew* graphics) {
 
-    window = graphics->window;
+    window = ((graphics::GLRenderer*)graphics->getRenderer())->getWindow();
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
     // TODO: add key press preference reading here
 }
@@ -51,6 +53,6 @@ game::KeyboardInputImpl::~KeyboardInputImpl () {
     bindingMap.clear();
 }
 
-KeyboardInput* game::getKeyboardInput (graphics::Graphics* graphics) {
+KeyboardInput* game::getKeyboardInput (graphics::GraphicsNew* graphics) {
     return new KeyboardInputImpl(graphics);
 }

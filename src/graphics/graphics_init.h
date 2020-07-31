@@ -1,5 +1,8 @@
 #include "graphics_headers.h"
 #include "graphics.h"
+#include "graphics_new_include.h"
+#include "graphics_new.h"
+
 #ifndef GRAPHICS_INIT_H
     #define GRAPHICS_INIT_H
     #define DEFAULT_WINDOW_X 800
@@ -11,5 +14,7 @@
         int initWindow (GLFWwindow** windowPtr);
         int initGraphics (GLFWwindow* window, Graphics** graphics);
         void destroyGraphics (Graphics* graphics);
+        int initGraphicsNew (GLFWwindow* window, GraphicsNew** graphicsNew);
+        void destroyGraphicsNew (GraphicsNew* graphics);
     }
 #endif

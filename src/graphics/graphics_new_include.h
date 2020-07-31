@@ -32,6 +32,11 @@ namespace graphics {
         std::string modelName;
         std::string texPath;
         std::vector<std::pair<TextureOffset, Image*>> textures;
+        Model (std::string modelName, Image* image) {
+            this->modelName = std::move(modelName);
+            textures.emplace_back(TextureOffset(0.0f, 0.0f), image);
+            texPath = "";
+        }
     };
 
     class RenderLayer;
@@ -58,9 +63,9 @@ namespace graphics {
         virtual FrameBuffer* getWindowBuffer () = 0;
         virtual std::optional<ShaderProgram*> getProgram (std::string program) = 0;
         virtual GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize) = 0;
-        virtual void bufferData (GraphicsBufferIds ids, BufferNew* buffers) = 0; // TODO: make more safe
+        virtual void bufferData (GraphicsBufferIds& ids, BufferNew* buffers) = 0; // TODO: make more safe
 
-        virtual void render (GraphicsBufferIds ids, ShaderProgram* program, int numTriangles) = 0; // TODO: put rendering through frame buffer?
+        virtual void render (GraphicsBufferIds& ids, ShaderProgram* program, int numTriangles) = 0; // TODO: put rendering through frame buffer?
 
         virtual void finishRender () = 0;
     };
@@ -81,9 +86,6 @@ namespace graphics {
 
         BufferInfo () {
             this->numBuffers = 0;
-            this->elementSizes = std::vector<std::pair<int, int>>();
-            this->sizes = std::vector<int>();
-            this->isStatic = std::vector<bool>();
         }
 
         [[nodiscard]]
@@ -165,9 +167,7 @@ namespace graphics {
                 logging::log(LEVEL_WARNING, "Attempted to push an element to buffer when buffer was at capacity!");
             }
             memcpy(((T*) memory) + numElements, data, num * sizeof(T));
-            T* memoryCpy = (T*)memory;
-            memoryCpy += num;
-            memory = memoryCpy; // avoids compiler shouting
+            numElements += 2;
         }
 
         
@@ -182,6 +182,9 @@ namespace graphics {
         };
         void* getData () {
             return memory;
+        }
+        void clearData () {
+            numElements = 0;
         }
     };
 

@@ -8,9 +8,11 @@
 #include "shaders/shaders.h"
 #include "textures/image.h"
 #include "graphics/graphics_handlers.h"
+#include "graphics_new.h"
+#include "renderers/glrenderer.h"
 
 using namespace graphics;
-
+// TODO: update to use exceptions instead of return values
 int graphics::initWindow (GLFWwindow** windowPtr) {
     glewExperimental = true;
     if (!glfwInit()) {
@@ -73,3 +75,30 @@ void graphics::destroyGraphics (Graphics* graphics) {
     glfwTerminate();
 }
 
+int graphics::initGraphicsNew (GLFWwindow* window, GraphicsNew** graphicsNew) {
+    auto renderer = new GLRenderer(window);
+
+    logging::log(LEVEL_INFO, "Adding shaders");
+    renderer->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
+    renderer->getProgram("default").value()->registerUniform("camera"); // TODO: update
+    auto* graphics = new GraphicsNew(renderer);
+    *graphicsNew = graphics;
+    logging::log(LEVEL_INFO, "Adding images!");
+    std::vector<Image*> images = getSpriteImages(); // TODO: update to match new model system
+    std::vector<Model> models;
+    models.reserve(images.size());
+    for (Image* i : images) {
+        models.emplace_back(i->getName(), i);
+    }
+    graphics->initTextureAtlas("sprite", models);
+    images.erase(images.begin(), images.end());
+
+
+    return GRAPHICS_INIT_SUCCESS;
+
+}
+
+void graphics::destroyGraphicsNew (GraphicsNew* graphics) {
+    delete graphics;
+    glfwTerminate(); // TODO: move to renderer
+}

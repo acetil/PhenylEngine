@@ -39,8 +39,8 @@ namespace game {
         void updateEntities (float deltaTime);
         void updateEntityPosition ();
         void updateEntityPositions (float deltaTime);
-        void setTextureIds (graphics::Graphics* atlas);
-        void renderEntities (graphics::Graphics* graphics);
+        void setTextureIds (graphics::TextureAtlas atlas);
+        //void renderEntities (graphics::Graphics* graphics);
         void setEntityComponentManager (component::ComponentManager<AbstractEntity*>* manager);
 
         void updateEntitiesPrePhysics ();

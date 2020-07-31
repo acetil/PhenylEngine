@@ -34,7 +34,7 @@ namespace game {
         virtual void updatePosition (float time);
         virtual void setVelocity (float velX, float velY);
 
-        virtual void setTextureIds (graphics::Graphics* graphics) = 0;
+        virtual void setTextureIds (graphics::TextureAtlas& graphics) = 0;
         //virtual void render (graphics::Graphics* graphics);
         virtual int getTextureId ();
         virtual void setEntityId (int entityId);

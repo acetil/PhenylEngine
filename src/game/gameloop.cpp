@@ -9,11 +9,13 @@
 #include "key_defaults.h"
 #include "map/map_reader.h"
 
+#include "graphics/graphics_new.h"
+
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
 using namespace game; 
 
-int game::gameloop (graphics::Graphics* graphics) {
+int game::gameloop (graphics::GraphicsNew* graphics) {
     GameObject* gameObject = initGame(graphics);
     AbstractEntity* player = gameObject->createNewEntityInstance("test_entity", 0, 0);
     logging::log(LEVEL_INFO, "Created player");
@@ -23,9 +25,8 @@ int game::gameloop (graphics::Graphics* graphics) {
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
-    Map* map = readMap("resources/maps/testmap.acmp", gameObject);
-    map->initGraphicsData(graphics, "default");
-    graphics->startTimer(TARGET_FPS);
+    //Map* map = readMap("resources/maps/testmap.acmp", gameObject);
+    //map->initGraphicsData(graphics, "default");
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {
         deltaTime = graphics->getDeltaTime();
@@ -46,10 +47,11 @@ int game::gameloop (graphics::Graphics* graphics) {
         }
         /*gameObject->updateEntities(deltaTime);
         gameObject->updateEntityPositions(deltaTime);*/
-        gameObject->renderEntities(graphics);
+        //gameObject->renderEntities(graphics);
         graphics->render();
         graphics->pollEvents();
         frames++;
+        graphics->sync(TARGET_FPS);
     }
     return 0;
 }

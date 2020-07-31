@@ -13,6 +13,7 @@ namespace graphics {
         BufferNew buffers[2];
         int numBuffers = 0;
         GraphicsBufferIds buffIds;
+        int numTriangles = 0;
     public:
         EntityRenderLayer (Renderer* renderer, component::ComponentManager<game::AbstractEntity*>* componentManager);
 

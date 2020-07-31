@@ -1,6 +1,9 @@
 #include <component/main_component.h>
 #include "entity_layer.h"
 
+#include <stdio.h>
+
+
 #define BUFFER_SIZE 100 * 2 * 6
 
 #define NUM_TRIANGLE_VERTICES 3
@@ -9,8 +12,8 @@
 
 using namespace graphics;
 
-void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, BufferNew buffer);
-void bufferUvData (float* uv, int numEntities, int direction, BufferNew buf);
+void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, BufferNew* buffer);
+void bufferUvData (float* uv, int numEntities, int direction, BufferNew* buf);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
 }
@@ -25,8 +28,20 @@ bool graphics::EntityRenderLayer::isActive () {
 
 BufferInfo EntityRenderLayer::getBufferInfo () {
     if (numBuffers < 2) {
-        return BufferInfo(2 - numBuffers, std::vector({std::pair<int,int>(sizeof(float), 2), std::pair<int,int>(sizeof(float), 2)}),
-                std::vector({BUFFER_SIZE, BUFFER_SIZE}), std::vector({true, true}));
+        /*std::vector<std::pair<int,int>> elemSizes;
+        std::vector<int> bufSizes;
+        std::vector<bool> statics;
+        elemSizes.emplace_back(std::pair<int,int>(sizeof(float), 2));
+        elemSizes.emplace_back(std::pair<int,int>(sizeof(float), 2));
+        bufSizes.emplace_back(BUFFER_SIZE);
+        bufSizes.emplace_back(BUFFER_SIZE);
+        statics.emplace_back(false);
+        statics.emplace_back(false);
+        return BufferInfo(2 - numBuffers, elemSizes,
+                bufSizes, statics);*/
+        buffers[0] = BufferNew(BUFFER_SIZE * sizeof(float), sizeof(float), false);
+        buffers[1] = BufferNew(BUFFER_SIZE * sizeof(float), sizeof(float), false);
+        numBuffers += 2;
     }
     return graphics::BufferInfo();
 }
@@ -41,8 +56,9 @@ void EntityRenderLayer::gatherData () {
 }
 
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
-    componentManager->applyFunc(bufferPosData, 1, buffers[0]);
-    componentManager->applyFunc(bufferUvData, 2, buffers[1]);
+    componentManager->applyFunc(bufferPosData, 1, &buffers[0]);
+    componentManager->applyFunc(bufferUvData, 2, &buffers[1]);
+    numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
     renderer->bufferData(buffIds, buffers);
 }
 
@@ -55,24 +71,29 @@ void EntityRenderLayer::applyUniform (int uniformId, void* data) {
 }
 
 void EntityRenderLayer::applyCamera (graphics::Camera camera) {
+    shaderProgram->useProgram();
     shaderProgram->appplyUniform(camera.getUniformName(), camera.getCamMatrix());
 }
 
 void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
+    shaderProgram->useProgram();
     frameBuf->bind();
-    renderer->render(buffIds, shaderProgram, buffers[0].currentSize() / sizeof(float) / 2); // TODO: Make better
+    //printf("Num triangles: %d\n", numTriangles);
+    renderer->render(buffIds, shaderProgram, numTriangles); // TODO: Make better
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
                                                 component::ComponentManager<game::AbstractEntity*>* componentManager) {
     this->componentManager = componentManager;
-    this->shaderProgram = renderer->getProgram("entity").value();
+    //this->shaderProgram = renderer->getProgram("entity").value();
+    this->shaderProgram = renderer->getProgram("default").value(); // TODO
     this->buffIds = renderer->getBufferIds(2, BUFFER_SIZE * 2 * sizeof(float));
 
 }
 
-void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, BufferNew buffer) {
+void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, BufferNew* buffer) {
     for (int i = 0; i < numEntities; i++) {
+        //logging::log(LEVEL_DEBUG, "Buffering entity pos data!");
         //auto ptr = buffer->getVertexBufferPos();
         float vertices[4][2];
         vertices[0][0] = comp->pos[0];
@@ -85,14 +106,15 @@ void bufferPosData (component::EntityMainComponent* comp, int numEntities, int d
         vertices[3][1] = vertices[0][1] + comp->vec1[1] + comp->vec2[1];
         for (int j = 0; j < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; j++) {
             int correctedVertex = j % NUM_TRIANGLE_VERTICES + j / NUM_TRIANGLE_VERTICES;
-            buffer.pushData(vertices[correctedVertex], 2);
+            buffer->pushData(vertices[correctedVertex], 2);
         }
         comp++;
     }
+
 }
-void bufferUvData (float* uv, int numEntities, int direction, BufferNew buf) {
+void bufferUvData (float* uv, int numEntities, int direction, BufferNew* buf) {
     for (int i = 0; i < numEntities * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
-        buf.pushData(uv, 2);
+        buf->pushData(uv, 2);
         uv += 2;
     }
 }

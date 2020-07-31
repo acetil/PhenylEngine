@@ -104,10 +104,7 @@ void game::GameObject::updateEntityPositions (float deltaTime) {
         it.second->updatePosition(deltaTime);
     }
 }
-void game::GameObject::renderEntities (graphics::Graphics* graphics) {
-    /*for (auto const& it : entities) {
-        it.second->render(graphics);
-    }*/
+/*void game::GameObject::renderEntities (graphics::Graphics* graphics) {
     // TODO: update to remove magic numbers (12 is uv components per sprite)
     entityComponentManager->applyFunc<component::EntityMainComponent, graphics::Graphics*>([](component::EntityMainComponent* comp, int numSprites, int direction, graphics::Graphics* graphics){graphics->bufferEntityPositions(comp, numSprites, direction, graphics->getSpriteBuffer());}, 1, graphics);
     entityComponentManager->applyFunc<float, graphics::Graphics*>([](float *uv, int numEntities, int direction, graphics::Graphics* graphics){
@@ -119,10 +116,10 @@ void game::GameObject::renderEntities (graphics::Graphics* graphics) {
             }
         }
     }, 2, graphics);
-}
-void game::GameObject::setTextureIds (graphics::Graphics* graphics) {
+}*/
+void game::GameObject::setTextureIds (graphics::TextureAtlas atlas) {
     for (auto const& it : entityRegistry) {
-        it.second->setTextureIds(graphics);
+        it.second->setTextureIds(atlas);
     }
 }
 event::EventBus* game::GameObject::getEventBus () {

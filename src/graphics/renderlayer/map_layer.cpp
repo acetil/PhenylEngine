@@ -18,10 +18,10 @@ bool MapRenderLayer::isActive() {
 }
 
 BufferInfo MapRenderLayer::getBufferInfo() {
-    if (buffer.isEmpty()) {
+    /*if (buffer.isEmpty()) {
         return BufferInfo(2, std::vector({std::pair<int,int>(sizeof(float), 2), std::pair<int,int>(sizeof(float), 2)}),
                 std::vector({BUFFER_SIZE, BUFFER_SIZE}), std::vector({true, true}));
-    }
+    }*/
     return BufferInfo();
 }
 

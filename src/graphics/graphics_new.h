@@ -8,6 +8,7 @@
 #include <optional>
 #include <logging/logging.h>
 #include <component/component.h>
+#include <event/events/entity_creation.h>
 #include "textures/texture_atlas.h"
 #include "renderlayer/render_layer.h"
 #include "graphics_new_include.h"
@@ -70,6 +71,10 @@ namespace graphics {
         //virtual RenderLayer* getLayer (int layer);
         Camera& getCamera ();
         void addEntityLayer (component::ComponentManager<game::AbstractEntity*>* compManager);
+        void onEntityCreation (event::EntityCreationEvent* event);
+        Renderer* getRenderer () {
+            return renderer; // TODO: remove
+        }
     };
 }
 

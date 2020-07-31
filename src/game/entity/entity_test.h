@@ -7,7 +7,7 @@ namespace game {
         public:
         EntityTest();
         virtual AbstractEntity* createEntity();
-        virtual void setTextureIds (graphics::Graphics* atlas);
+        void setTextureIds (graphics::TextureAtlas& atlas) override;
     };
 }
 #endif
