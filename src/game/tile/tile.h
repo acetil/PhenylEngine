@@ -14,7 +14,7 @@ namespace game {
         float xSize;
         float ySize;
 
-        Tile (std::string name, int textureId, graphics::TextureAtlas* atlas, float xSize, float ySize);
+        Tile (std::string name, int textureId, graphics::TextureAtlas& atlas, float xSize, float ySize);
         virtual ~Tile();
         virtual int getTextureId ();
         virtual std::string getName ();

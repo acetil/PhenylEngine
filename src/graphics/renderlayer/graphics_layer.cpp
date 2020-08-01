@@ -7,7 +7,7 @@ using namespace graphics;
 GraphicsRenderLayer::GraphicsRenderLayer (Renderer* renderer) {
     //program = renderer->getProgram("graphics_program").value();
     program = renderer->getProgram("default").value(); // TODO
-    renderLayers.push_back(new MapRenderLayer());
+    renderLayers.push_back(new MapRenderLayer(renderer));
     //renderLayers.push_back(new EntityRenderLayer());
 
 }

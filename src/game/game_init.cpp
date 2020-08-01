@@ -24,7 +24,7 @@ GameObject* game::initGame (graphics::GraphicsNew* graphics) {
     logging::log(LEVEL_DEBUG, "Finished entity init!");
     gameObject->setTextureIds(graphics->getTextureAtlas("sprite").value());
     graphics->addEntityLayer(manager); // TODO: unhackify
-    //registerTiles(gameObject, graphics);
+    registerTiles(gameObject, graphics);
     logging::log(LEVEL_DEBUG, "Set texture ids!");
     return gameObject;
 }
@@ -42,12 +42,11 @@ component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::
     manager->addComponent<float, 12>("uv");
     return manager;
 }
-/*
+
 void registerTiles (GameObject* gameObject, graphics::GraphicsNew* graphics) {
     graphics::TextureAtlas atlas = graphics->getTextureAtlas("sprite").value();
     gameObject->registerTile(new Tile("test_tile1", atlas.getTextureId("test6"),
             atlas, 0.1, 0.1));
-    gameObject->registerTile(new Tile("test_tile2", graphics->getSpriteTextureId("test7"),
-                                      graphics->getTextureAtlas(), 0.1, 0.1));
+    gameObject->registerTile(new Tile("test_tile2", atlas.getTextureId("test7"),
+                                      atlas, 0.1, 0.1));
 }
- */

@@ -167,7 +167,7 @@ namespace graphics {
                 logging::log(LEVEL_WARNING, "Attempted to push an element to buffer when buffer was at capacity!");
             }
             memcpy(((T*) memory) + numElements, data, num * sizeof(T));
-            numElements += 2;
+            numElements += num;
         }
 
         

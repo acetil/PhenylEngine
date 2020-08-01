@@ -10,6 +10,7 @@
 #include "map/map_reader.h"
 
 #include "graphics/graphics_new.h"
+#include "graphics/renderlayer/map_layer.h"
 
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
@@ -25,8 +26,9 @@ int game::gameloop (graphics::GraphicsNew* graphics) {
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
-    //Map* map = readMap("resources/maps/testmap.acmp", gameObject);
+    Map* map = readMap("resources/maps/testmap.acmp", gameObject);
     //map->initGraphicsData(graphics, "default");
+    ((graphics::MapRenderLayer*)graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {
         deltaTime = graphics->getDeltaTime();

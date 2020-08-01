@@ -20,6 +20,10 @@ namespace game {
         virtual int getHeight ();
         virtual void initGraphicsData (graphics::Graphics* graphics, std::string shader);
         virtual void unloadGraphicsData (graphics::Graphics* graphics);
+
+        virtual int getNumTileVertices (); // TODO: move to models
+        virtual float* getTileVertices ();
+        virtual float* getTileUvs ();
     };
 }
 #endif

@@ -58,6 +58,7 @@ GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize) {
     }
     delete[] buffers;
     return GraphicsBufferIds(vao, bufVec);
+
 }
 
 void GLRenderer::bufferData (GraphicsBufferIds& ids, BufferNew* buffers) {
@@ -74,6 +75,7 @@ void GLRenderer::render (GraphicsBufferIds& ids, ShaderProgram* program, int num
     program->useProgram();
     glBindVertexArray(ids.vaoId);
     glDrawArrays(GL_TRIANGLES, 0, numTriangles * 3);
+    //logging::logf(LEVEL_DEBUG, "Rendered %d triangles!", numTriangles);
 }
 
 void GLRenderer::finishRender () {

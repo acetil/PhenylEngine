@@ -5,11 +5,16 @@
 namespace graphics {
     class MapRenderLayer : public RenderLayer {
     private:
-        bool active = true;
-        BufferNew buffer;
-        bool requiresBuffer = false;
+        bool active = false;
+        BufferNew buffers[2];
+        bool requiresBuffer = true;
         game::Map* map;
+        GraphicsBufferIds bufferIds;
+        bool needDataBuffer = true;
+        int numTriangles;
+        ShaderProgram* program;
     public:
+        explicit MapRenderLayer(Renderer* renderer);
         std::string getName () override;
 
         int getPriority () override;

@@ -64,3 +64,39 @@ void game::Map::unloadGraphicsData (graphics::Graphics* graphics) {
     graphics->unloadStaticData(graphicsData);
     graphicsData = NULL;
 }
+
+int Map::getNumTileVertices () {
+    int numVertices = 0;
+    for (int i = 0; i < width * height; i++) {
+        if (tiles[i]->shouldDraw()) {
+            numVertices += VERTICES_PER_TILE;
+        }
+    }
+    return numVertices;
+}
+
+float* Map::getTileVertices () {
+    auto* data = new float[getNumTileVertices() * VCOMP_PER_VERTEX];
+    float* dataPtr = data;
+    for (int i = 0; i < width * height; i++) {
+        if (tiles[i]->shouldDraw()) {
+            float* vertexCoords = tiles[i]->getVertexCoords(i % width * tiles[i]->xSize, i / width * tiles[i]->ySize);
+            memcpy(dataPtr, vertexCoords, VERTICES_PER_TILE * VCOMP_PER_VERTEX * sizeof(float));
+            dataPtr += VERTICES_PER_TILE * VCOMP_PER_VERTEX;
+        }
+    }
+    logging::log(LEVEL_DEBUG, "Got tile vertices!");
+    return data;
+}
+float* Map::getTileUvs () {
+    auto* data = new float[getNumTileVertices() * VCOMP_PER_VERTEX];
+    float* dataPtr = data;
+    for (int i = 0; i < width * height; i++) {
+        if (tiles[i]->shouldDraw()) {
+            float* uvCoords = tiles[i]->getUvs();
+            memcpy(dataPtr, uvCoords, VERTICES_PER_TILE * UV_PER_VERTEX * sizeof(float));
+            dataPtr += VERTICES_PER_TILE * VCOMP_PER_VERTEX;
+        }
+    }
+    return data;
+}
