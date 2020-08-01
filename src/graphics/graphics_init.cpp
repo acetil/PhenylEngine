@@ -2,13 +2,12 @@
 #include <vector>
 
 #include "graphics_headers.h"
-#include "graphics.h"
 #include "graphics_init.h"
 #include "logging/logging.h"
 #include "shaders/shaders.h"
 #include "textures/image.h"
 #include "graphics/graphics_handlers.h"
-#include "graphics_new.h"
+#include "graphics.h"
 #include "renderers/glrenderer.h"
 
 using namespace graphics;
@@ -55,6 +54,7 @@ std::vector<Image*> getSpriteImages () {
     images.push_back(new Image("resources/images/test/prismarine_bricks.png", "test7"));
     return images;
 }
+/*
 int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
     Graphics* graphics = new Graphics(window);
     graphics->setupErrorHandling();
@@ -73,15 +73,15 @@ int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
 void graphics::destroyGraphics (Graphics* graphics) {
     delete graphics;
     glfwTerminate();
-}
+}*/
 
-int graphics::initGraphicsNew (GLFWwindow* window, GraphicsNew** graphicsNew) {
+int graphics::initGraphicsNew (GLFWwindow* window, Graphics** graphicsNew) {
     auto renderer = new GLRenderer(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
     renderer->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
     renderer->getProgram("default").value()->registerUniform("camera"); // TODO: update
-    auto* graphics = new GraphicsNew(renderer);
+    auto* graphics = new Graphics(renderer);
     *graphicsNew = graphics;
     logging::log(LEVEL_INFO, "Adding images!");
     std::vector<Image*> images = getSpriteImages(); // TODO: update to match new model system
@@ -98,7 +98,7 @@ int graphics::initGraphicsNew (GLFWwindow* window, GraphicsNew** graphicsNew) {
 
 }
 
-void graphics::destroyGraphicsNew (GraphicsNew* graphics) {
+void graphics::destroyGraphicsNew (Graphics* graphics) {
     delete graphics;
     glfwTerminate(); // TODO: move to renderer
 }

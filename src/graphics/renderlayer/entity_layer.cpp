@@ -12,8 +12,8 @@
 
 using namespace graphics;
 
-void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, BufferNew* buffer);
-void bufferUvData (float* uv, int numEntities, int direction, BufferNew* buf);
+void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer);
+void bufferUvData (float* uv, int numEntities, int direction, Buffer* buf);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
 }
@@ -24,31 +24,6 @@ int EntityRenderLayer::getPriority () {
 
 bool graphics::EntityRenderLayer::isActive () {
     return active;
-}
-
-BufferInfo EntityRenderLayer::getBufferInfo () {
-    if (numBuffers < 2) {
-        /*std::vector<std::pair<int,int>> elemSizes;
-        std::vector<int> bufSizes;
-        std::vector<bool> statics;
-        elemSizes.emplace_back(std::pair<int,int>(sizeof(float), 2));
-        elemSizes.emplace_back(std::pair<int,int>(sizeof(float), 2));
-        bufSizes.emplace_back(BUFFER_SIZE);
-        bufSizes.emplace_back(BUFFER_SIZE);
-        statics.emplace_back(false);
-        statics.emplace_back(false);
-        return BufferInfo(2 - numBuffers, elemSizes,
-                bufSizes, statics);*/
-        buffers[0] = BufferNew(BUFFER_SIZE * sizeof(float), sizeof(float), false);
-        buffers[1] = BufferNew(BUFFER_SIZE * sizeof(float), sizeof(float), false);
-        numBuffers += 2;
-    }
-    return graphics::BufferInfo();
-}
-
-void EntityRenderLayer::addBuffer (BufferNew buf) {
-    buffers[numBuffers] = std::move(buf);
-    numBuffers++;
 }
 
 void EntityRenderLayer::gatherData () {
@@ -88,10 +63,11 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
     //this->shaderProgram = renderer->getProgram("entity").value();
     this->shaderProgram = renderer->getProgram("default").value(); // TODO
     this->buffIds = renderer->getBufferIds(2, BUFFER_SIZE * 2 * sizeof(float));
-
+    this->buffers[0] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
+    this->buffers[1] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
 }
 
-void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, BufferNew* buffer) {
+void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer) {
     for (int i = 0; i < numEntities; i++) {
         //logging::log(LEVEL_DEBUG, "Buffering entity pos data!");
         //auto ptr = buffer->getVertexBufferPos();
@@ -112,7 +88,7 @@ void bufferPosData (component::EntityMainComponent* comp, int numEntities, int d
     }
 
 }
-void bufferUvData (float* uv, int numEntities, int direction, BufferNew* buf) {
+void bufferUvData (float* uv, int numEntities, int direction, Buffer* buf) {
     for (int i = 0; i < numEntities * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
         buf->pushData(uv, 2);
         uv += 2;

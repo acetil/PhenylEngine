@@ -1,7 +1,6 @@
 #include "graphics_headers.h"
-#include "graphics.h"
 #include "graphics_new_include.h"
-#include "graphics_new.h"
+#include "graphics.h"
 
 #ifndef GRAPHICS_INIT_H
     #define GRAPHICS_INIT_H
@@ -14,7 +13,7 @@
         int initWindow (GLFWwindow** windowPtr);
         int initGraphics (GLFWwindow* window, Graphics** graphics);
         void destroyGraphics (Graphics* graphics);
-        int initGraphicsNew (GLFWwindow* window, GraphicsNew** graphicsNew);
-        void destroyGraphicsNew (GraphicsNew* graphics);
+        int initGraphicsNew (GLFWwindow* window, Graphics** graphicsNew);
+        void destroyGraphicsNew (Graphics* graphics);
     }
 #endif

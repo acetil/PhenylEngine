@@ -23,17 +23,6 @@ bool MapRenderLayer::isActive() {
     return active;
 }
 
-BufferInfo MapRenderLayer::getBufferInfo() {
-    /*if (buffer.isEmpty()) {
-        return BufferInfo(2, std::vector({std::pair<int,int>(sizeof(float), 2), std::pair<int,int>(sizeof(float), 2)}),
-                std::vector({BUFFER_SIZE, BUFFER_SIZE}), std::vector({true, true}));
-    }*/
-    return BufferInfo();
-}
-
-void MapRenderLayer::addBuffer(BufferNew buf) {
-}
-
 void MapRenderLayer::gatherData () {
     
 }
@@ -45,8 +34,8 @@ void MapRenderLayer::preRender (Renderer* renderer) {
     }
     if (needDataBuffer) {
         int numVertices = map->getNumTileVertices();
-        buffers[0] = BufferNew(numVertices * 2 , sizeof(float), true);
-        buffers[1] = BufferNew(numVertices * 2, sizeof(float), true);
+        buffers[0] = Buffer(numVertices * 2 , sizeof(float), true);
+        buffers[1] = Buffer(numVertices * 2, sizeof(float), true);
         float* vertexData = map->getTileVertices();
         float* uvData = map->getTileUvs();
         buffers[0].pushData(vertexData, numVertices * 2);

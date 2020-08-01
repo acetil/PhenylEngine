@@ -25,28 +25,6 @@ bool GraphicsRenderLayer::isActive() {
     return active;
 }
 
-BufferInfo GraphicsRenderLayer::getBufferInfo () {
-    BufferInfo bf;
-
-    for (int i = 0; i < renderLayers.size(); i++) {
-        if (!renderLayers[i]->isActive()) {
-            continue;
-        }
-        BufferInfo b = renderLayers[i]->getBufferInfo();
-        for (int j = 0; j < b.numBuffers; j++) {
-            bufferGets.emplace(i);
-        }
-        bf += b;
-    }
-
-    return bf;
-}
-
-void GraphicsRenderLayer::addBuffer (BufferNew buf) {
-    renderLayers[bufferGets.front()]->addBuffer(buf);
-    bufferGets.pop();
-}
-
 void GraphicsRenderLayer::gatherData () {
     for (auto i : renderLayers) {
         if (!i->isActive()) {

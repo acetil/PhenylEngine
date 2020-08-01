@@ -6,11 +6,11 @@ namespace graphics {
     class EntityRenderLayer : public RenderLayer {
     private:
         bool active = true;
-        BufferNew buffer;
+        //Buffer buffer;
         bool needsBuffer = true;
         component::ComponentManager<game::AbstractEntity*>* componentManager;
         ShaderProgram* shaderProgram;
-        BufferNew buffers[2];
+        Buffer buffers[2];
         int numBuffers = 0;
         GraphicsBufferIds buffIds;
         int numTriangles = 0;
@@ -22,10 +22,6 @@ namespace graphics {
         int getPriority () override;
 
         bool isActive () override;
-
-        BufferInfo getBufferInfo () override;
-
-        void addBuffer (BufferNew buf) override;
 
         void gatherData () override;
 

@@ -1,6 +1,5 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics.h"
-#include "graphics/graphics_new.h"
 #include <vector>
 #include <map>
 #include <utility>
@@ -18,6 +17,6 @@ namespace game {
         virtual void replaceKey (int after, int before) = 0;
         virtual void handleKeyPresses () = 0;
     };
-    KeyboardInput* getKeyboardInput (graphics::GraphicsNew* graphics);
+    KeyboardInput* getKeyboardInput (graphics::Graphics* graphics);
 };
 #endif

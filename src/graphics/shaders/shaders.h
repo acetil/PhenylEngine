@@ -1,5 +1,5 @@
 #include "graphics/graphics_headers.h"
-#include "graphics/math_headers.h"
+#include "graphics/maths_headers.h"
 #include <string>
 #include <unordered_map>
 #ifndef SHADERS_H

@@ -1,5 +1,6 @@
 #include <queue>
 #include "render_layer.h"
+#include "graphics/renderer.h"
 #ifndef GAME_LAYER_H
 #define GAME_LAYER_H
 namespace graphics {
@@ -16,10 +17,6 @@ namespace graphics {
         int getPriority () override;
 
         bool isActive () override;
-
-        BufferInfo getBufferInfo () override;
-
-        void addBuffer (BufferNew buf) override;
 
         void gatherData () override;
 

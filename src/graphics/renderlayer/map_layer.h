@@ -6,7 +6,7 @@ namespace graphics {
     class MapRenderLayer : public RenderLayer {
     private:
         bool active = false;
-        BufferNew buffers[2];
+        Buffer buffers[2];
         bool requiresBuffer = true;
         game::Map* map;
         GraphicsBufferIds bufferIds;
@@ -20,10 +20,6 @@ namespace graphics {
         int getPriority () override;
 
         bool isActive () override;
-
-        BufferInfo getBufferInfo () override;
-
-        void addBuffer (BufferNew buf) override;
 
         void gatherData () override;
 

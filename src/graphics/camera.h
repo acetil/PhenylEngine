@@ -1,7 +1,7 @@
 #include <string>
 
 #include "graphics_headers.h"
-#include "math_headers.h"
+#include "maths_headers.h"
 #ifndef CAMERA_H
     #define CAMERA_H
     namespace graphics {

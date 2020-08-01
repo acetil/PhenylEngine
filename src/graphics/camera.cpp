@@ -1,4 +1,4 @@
-#include "math_headers.h"
+#include "maths_headers.h"
 #include "camera.h"
 
 using namespace graphics;

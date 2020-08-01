@@ -7,7 +7,6 @@
 #include "event/event.h"
 #include "component/component.h"
 #include "component/main_component.h"
-#include "graphics/graphics.h"
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H

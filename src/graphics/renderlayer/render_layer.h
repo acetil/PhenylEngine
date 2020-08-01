@@ -1,6 +1,7 @@
 #include <string>
 
 #include "graphics/graphics_new_include.h"
+#include "graphics/renderer.h"
 #ifndef RENDER_LAYER_H
 #define RENDER_LAYER_H
 namespace graphics {
@@ -11,10 +12,6 @@ namespace graphics {
         virtual int getPriority () = 0;
 
         virtual bool isActive () = 0;
-
-        virtual BufferInfo getBufferInfo () = 0;
-
-        virtual void addBuffer (BufferNew buf) = 0;
 
         virtual void gatherData () = 0;
 

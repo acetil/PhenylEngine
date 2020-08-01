@@ -13,7 +13,7 @@ namespace game {
         GLFWwindow* window;
         std::map<int, KeyboardFunction*> bindingMap;
     public:
-        KeyboardInputImpl (graphics::GraphicsNew* graphics);
+        KeyboardInputImpl (graphics::Graphics* graphics);
 
         ~KeyboardInputImpl ();
 
@@ -25,7 +25,7 @@ namespace game {
     };
 }
 
-game::KeyboardInputImpl::KeyboardInputImpl (graphics::GraphicsNew* graphics) {
+game::KeyboardInputImpl::KeyboardInputImpl (graphics::Graphics* graphics) {
 
     window = ((graphics::GLRenderer*)graphics->getRenderer())->getWindow();
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
@@ -53,6 +53,6 @@ game::KeyboardInputImpl::~KeyboardInputImpl () {
     bindingMap.clear();
 }
 
-KeyboardInput* game::getKeyboardInput (graphics::GraphicsNew* graphics) {
+KeyboardInput* game::getKeyboardInput (graphics::Graphics* graphics) {
     return new KeyboardInputImpl(graphics);
 }

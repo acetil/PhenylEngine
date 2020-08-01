@@ -2,8 +2,8 @@
 #include <string>
 
 #include "map.h"
-#include "graphics/graphics.h"
 #include "game/tile/tile.h"
+#include "logging/logging.h"
 
 #define VERTICES_PER_TILE 6
 #define VCOMP_PER_VERTEX 2
@@ -33,7 +33,7 @@ int game::Map::getWidth () {
 int game::Map::getHeight () {
     return height;
 }
-void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shader) {
+/*void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shader) {
     int numVertices = 0;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
@@ -63,7 +63,7 @@ void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shad
 void game::Map::unloadGraphicsData (graphics::Graphics* graphics) {
     graphics->unloadStaticData(graphicsData);
     graphicsData = NULL;
-}
+}*/
 
 int Map::getNumTileVertices () {
     int numVertices = 0;

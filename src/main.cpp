@@ -3,7 +3,6 @@
 
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics_init.h"
-#include "graphics/graphics.h"
 
 #include "game/gameloop.h"
 
@@ -15,7 +14,7 @@ int main (int argv, char* argc[]) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
-    graphics::GraphicsNew* graphics = NULL;
+    graphics::Graphics* graphics = NULL;
     if (graphics::initGraphicsNew(window, &graphics) != GRAPHICS_INIT_SUCCESS) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;

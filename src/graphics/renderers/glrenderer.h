@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 
+#include "graphics/renderer.h"
 #ifndef GLRENDERER_H
 #define GLRENDERER_H
 namespace graphics {
@@ -37,7 +38,7 @@ namespace graphics {
 
         GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize) override;
 
-        void bufferData (GraphicsBufferIds& ids, BufferNew* buffers) override; // TODO: make more safe
+        void bufferData (GraphicsBufferIds& ids, Buffer* buffers) override; // TODO: make more safe
 
         void render (GraphicsBufferIds& ids, ShaderProgram* program, int numTriangles) override; // TODO: put rendering through frame buffer?
 

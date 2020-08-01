@@ -1,7 +1,6 @@
 #include "gameloop.h"
 #include "game_init.h"
 #include "game_object.h"
-#include "graphics/graphics.h"
 #include "graphics/graphics_headers.h"
 #include "logging/logging.h"
 #include "graphics/shaders/shaders.h"
@@ -9,14 +8,14 @@
 #include "key_defaults.h"
 #include "map/map_reader.h"
 
-#include "graphics/graphics_new.h"
+#include "graphics/graphics.h"
 #include "graphics/renderlayer/map_layer.h"
 
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
 using namespace game; 
 
-int game::gameloop (graphics::GraphicsNew* graphics) {
+int game::gameloop (graphics::Graphics* graphics) {
     GameObject* gameObject = initGame(graphics);
     AbstractEntity* player = gameObject->createNewEntityInstance("test_entity", 0, 0);
     logging::log(LEVEL_INFO, "Created player");

@@ -1,6 +1,5 @@
 #include <string>
 #include "game_object.h"
-#include "graphics/graphics.h"
 #include "logging/logging.h"
 #include "physics/physics_new.h"
 #include "event/events/entity_creation.h"

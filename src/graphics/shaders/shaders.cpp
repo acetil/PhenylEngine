@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "graphics/graphics_headers.h"
-#include "graphics/math_headers.h"
+#include "graphics/maths_headers.h"
 #include "shaders.h"
 #include "logging/logging.h"
 

@@ -2,7 +2,6 @@
 #include "physics/physics.h"
 #include "physics/physics_body.h"
 #include "graphics/textures/texture_atlas.h"
-#include "graphics/graphics.h"
 
 #ifndef ENTITY_H
 #define ENTITY_H

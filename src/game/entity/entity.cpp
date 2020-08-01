@@ -1,7 +1,6 @@
 #include "entity.h"
 #include "physics/physics.h"
 #include "physics/physics_body.h"
-#include "graphics/graphics.h"
 #include "logging/logging.h"
 using namespace game;
 

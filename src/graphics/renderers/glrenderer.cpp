@@ -61,7 +61,7 @@ GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize) {
 
 }
 
-void GLRenderer::bufferData (GraphicsBufferIds& ids, BufferNew* buffers) {
+void GLRenderer::bufferData (GraphicsBufferIds& ids, Buffer* buffers) {
     glBindVertexArray(ids.vaoId);
     for (int i = 0; i < ids.vboIds.size(); i++) {
         glBindBuffer(GL_ARRAY_BUFFER, ids.vboIds[i]);

@@ -10,10 +10,10 @@
 #include "physics/physics_new.h"
 
 using namespace game;
-void addEventHandlers (GameObject* gameObject, graphics::GraphicsNew* graphics);
+void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
 component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus);
-void registerTiles (GameObject* gameObject, graphics::GraphicsNew* graphics);
-GameObject* game::initGame (graphics::GraphicsNew* graphics) {
+void registerTiles (GameObject* gameObject, graphics::Graphics* graphics);
+GameObject* game::initGame (graphics::Graphics* graphics) {
     auto gameObject = new GameObject();
     addEventHandlers(gameObject, graphics);
     auto manager = getEntityComponentManager(gameObject->getEventBus());
@@ -29,11 +29,11 @@ GameObject* game::initGame (graphics::GraphicsNew* graphics) {
     return gameObject;
 }
 
-void addEventHandlers (GameObject* gameObject, graphics::GraphicsNew* graphics) {
+void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     gameObject->getEventBus()->subscribeHandler(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
-    gameObject->getEventBus()->subscribeHandler(graphics::GraphicsNew::onEntityCreation, graphics);
+    gameObject->getEventBus()->subscribeHandler(graphics::Graphics::onEntityCreation, graphics);
 }
 
 component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus) {
@@ -43,7 +43,7 @@ component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::
     return manager;
 }
 
-void registerTiles (GameObject* gameObject, graphics::GraphicsNew* graphics) {
+void registerTiles (GameObject* gameObject, graphics::Graphics* graphics) {
     graphics::TextureAtlas atlas = graphics->getTextureAtlas("sprite").value();
     gameObject->registerTile(new Tile("test_tile1", atlas.getTextureId("test6"),
             atlas, 0.1, 0.1));
