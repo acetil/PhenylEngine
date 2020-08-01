@@ -72,7 +72,7 @@ namespace graphics {
         //virtual RenderLayer* getLayer (int layer);
         Camera& getCamera ();
         void addEntityLayer (component::ComponentManager<game::AbstractEntity*>* compManager);
-        void onEntityCreation (event::EntityCreationEvent* event);
+        void onEntityCreation (event::EntityCreationEvent& event);
         Renderer* getRenderer () {
             return renderer; // TODO: remove
         }

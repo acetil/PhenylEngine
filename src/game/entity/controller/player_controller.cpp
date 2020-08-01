@@ -1,8 +1,8 @@
 #include "player_controller.h"
 #include "logging/logging.h"
-void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent* event) {
-    deltaXForce += event->xForceComp;
-    deltaYForce += event->yForceComp;
+void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& event) {
+    deltaXForce += event.xForceComp;
+    deltaYForce += event.yForceComp;
     logging::logf(LEVEL_DEBUG, "Updating movement: (%f, %f)", deltaXForce, deltaYForce);
 }
 

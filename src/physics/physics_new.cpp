@@ -23,15 +23,15 @@ void physics::updatePhysics (component::EntityMainComponent* comp, int numEntiti
         //logging::logf(LEVEL_DEBUG, "Current pos: (%f, %f). Current vel: (%f, %f).", comp->pos[0], comp->pos[1], comp->vel[0], comp->vel[1]);
     }
 }
-void physics::onEntityCreation (event::EntityCreationEvent* event) {
+void physics::onEntityCreation (event::EntityCreationEvent& event) {
     logging::log(LEVEL_DEBUG, "About to get main component!");
-    component::EntityMainComponent* comp = event->compManager->getObjectDataPtr<component::EntityMainComponent>(1, event->entityId);
-    comp->pos[0] = event->x;
-    comp->pos[1] = event->y;
+    auto* comp = event.compManager->getObjectDataPtr<component::EntityMainComponent>(1, event.entityId);
+    comp->pos[0] = event.x;
+    comp->pos[1] = event.y;
     comp->vel[0] = 0;
     comp->vel[1] = 0;
-    comp->vec1[0] = event->size;
-    comp->vec2[1] = event->size;
+    comp->vec1[0] = event.size;
+    comp->vec2[1] = event.size;
     comp->acc[0] = 0;
     comp->acc[1] = 0;
     comp->linFriction = 0.2;

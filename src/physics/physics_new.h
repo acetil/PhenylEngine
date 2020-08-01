@@ -5,6 +5,6 @@
 #define PHYSICS_HEW_H
 namespace physics {
     void updatePhysics (component::EntityMainComponent* comp, int numEntities, int direction);
-    void onEntityCreation (event::EntityCreationEvent* event);
+    void onEntityCreation (event::EntityCreationEvent& event);
 }
 #endif

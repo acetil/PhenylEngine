@@ -100,10 +100,10 @@ void Graphics::addEntityLayer (component::ComponentManager<game::AbstractEntity*
     renderLayer->addRenderLayer(new EntityRenderLayer(renderer, compManager));
 }
 
-void Graphics::onEntityCreation (event::EntityCreationEvent* event) {
-    int texId = event->entity->getTextureId(); // TODO: update for models and decoupling
-    unsigned int id = event->entity->getEntityId();
-    auto* pointer = event->compManager->getObjectDataPtr<float>(2, id);
+void Graphics::onEntityCreation (event::EntityCreationEvent& event) {
+    int texId = event.entity->getTextureId(); // TODO: update for models and decoupling
+    unsigned int id = event.entity->getEntityId();
+    auto* pointer = event.compManager->getObjectDataPtr<float>(2, id);
     TextureAtlas atlas = this->getTextureAtlas("sprite").value();
     Texture* tex = atlas.getTexture(texId);
     memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));

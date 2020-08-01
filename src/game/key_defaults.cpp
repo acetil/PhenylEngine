@@ -33,10 +33,10 @@ KeyMovement::KeyMovement(event::EventBus* bus, float xComponent, float yComponen
 }
 void KeyMovement::operator() (int action) {
     if (!isDown && action == GLFW_PRESS) {
-        bus->raiseEvent(new event::PlayerMovementChangeEvent(xComponent, yComponent));
+        bus->raiseEvent(event::PlayerMovementChangeEvent(xComponent, yComponent));
         isDown = true;
     } else if (isDown && action == GLFW_RELEASE) {
-        bus->raiseEvent(new event::PlayerMovementChangeEvent(-1 * xComponent, -1 * yComponent));
+        bus->raiseEvent(event::PlayerMovementChangeEvent(-1 * xComponent, -1 * yComponent));
         isDown = false;
     }
 }

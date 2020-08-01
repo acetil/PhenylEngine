@@ -19,8 +19,7 @@ GameObject* game::initGame (graphics::Graphics* graphics) {
     auto manager = getEntityComponentManager(gameObject->getEventBus());
     gameObject->setEntityComponentManager(manager);
     logging::log(LEVEL_INFO, "Starting init of entities!");
-    auto entityEvent = new event::EntityRegisterEvent(gameObject);
-    gameObject->getEventBus()->raiseEvent(entityEvent);
+    gameObject->getEventBus()->raiseEvent(event::EntityRegisterEvent(gameObject));
     logging::log(LEVEL_DEBUG, "Finished entity init!");
     gameObject->setTextureIds(graphics->getTextureAtlas("sprite").value());
     graphics->addEntityLayer(manager); // TODO: unhackify

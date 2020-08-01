@@ -3,6 +3,6 @@
 #ifndef ENTITIES_H
 #define ENTITIES_H
 namespace game {
-    void addEntities (event::EntityRegisterEvent* event);
+    void addEntities (event::EntityRegisterEvent& event);
 }
 #endif

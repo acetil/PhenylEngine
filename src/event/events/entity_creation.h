@@ -8,14 +8,14 @@ class AbstractEntity;
 #ifndef ENTITY_CREATION_H
 #define ENTITY_CREATION_H
 namespace event {
-    static EventType* ENTITY_CREATION_EVENT = nullptr;
-    class EntityCreationEvent : public Event {
-        public:
+    class EntityCreationEvent : public Event<EntityCreationEvent> {
+    public:
+        std::string name = "entity_creation";
         float x;
         float y;
         float size;
         component::ComponentManager<game::AbstractEntity*>* compManager;
-        game::AbstractEntity* entity;
+        game::AbstractEntity* entity{};
         int entityId;
         EntityCreationEvent () {
             x = 0;
@@ -32,12 +32,6 @@ namespace event {
             this->entity = entity;
             this->entityId = entityId;
         };
-        virtual EventType* getEventType () {
-            if (ENTITY_CREATION_EVENT == nullptr) {
-                ENTITY_CREATION_EVENT = new EventType("entity_creation", false, true);
-            }
-            return ENTITY_CREATION_EVENT;
-        }
     };
 }
 #endif
