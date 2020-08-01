@@ -71,18 +71,14 @@ void bufferPosData (component::EntityMainComponent* comp, int numEntities, int d
     for (int i = 0; i < numEntities; i++) {
         //logging::log(LEVEL_DEBUG, "Buffering entity pos data!");
         //auto ptr = buffer->getVertexBufferPos();
-        float vertices[4][2];
-        vertices[0][0] = comp->pos[0];
-        vertices[0][1] = comp->pos[1];
-        vertices[1][0] = vertices[0][0] + comp->vec1[0];
-        vertices[1][1] = vertices[0][1] + comp->vec1[1];
-        vertices[2][0] = vertices[0][0] + comp->vec2[0];
-        vertices[2][1] = vertices[0][1] + comp->vec2[1];
-        vertices[3][0] = vertices[0][0] + comp->vec1[0] + comp->vec2[0];
-        vertices[3][1] = vertices[0][1] + comp->vec1[1] + comp->vec2[1];
+        glm::vec2 vertices[4];
+        vertices[0] = comp->pos;
+        vertices[1] = comp->pos + comp->vec1;
+        vertices[2] = comp->pos + comp->vec2;
+        vertices[3] = comp->pos + comp->vec1 + comp->vec2;
         for (int j = 0; j < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; j++) {
             int correctedVertex = j % NUM_TRIANGLE_VERTICES + j / NUM_TRIANGLE_VERTICES;
-            buffer->pushData(vertices[correctedVertex], 2);
+            buffer->pushData(&vertices[correctedVertex].x, 2);
         }
         comp++;
     }

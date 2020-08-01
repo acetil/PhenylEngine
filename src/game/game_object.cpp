@@ -45,8 +45,8 @@ AbstractEntity* game::GameObject::createNewEntityInstance (std::string name, flo
         int entityId = entityComponentManager->addObject(entity);
         entity->setEntityId(entityId);
         component::EntityMainComponent comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
-        entity->x = comp.pos;
-        entity->y = comp.pos + 1;
+        entity->x = &comp.pos.x;
+        entity->y = &comp.pos.y;
         auto uvPtr = entityComponentManager->getObjectDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
         eventBus->raiseEvent(event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId));
         logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), entityId);
