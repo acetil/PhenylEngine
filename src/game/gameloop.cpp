@@ -17,7 +17,8 @@ using namespace game;
 
 int game::gameloop (graphics::Graphics* graphics) {
     GameObject* gameObject = initGame(graphics);
-    AbstractEntity* player = gameObject->createNewEntityInstance("test_entity", 0, 0);
+    gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
+    gameObject->createNewEntityInstance("test_entity", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
     KeyboardInput* keyInput = getKeyboardInput(graphics);
     setupMovementKeys(keyInput, gameObject->getEventBus());

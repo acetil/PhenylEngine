@@ -8,6 +8,7 @@
 #include "logging/logging.h"
 #include "graphics/graphics_handlers.h"
 #include "physics/physics_new.h"
+#include "physics/collision_component.h"
 
 using namespace game;
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
@@ -39,6 +40,7 @@ component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::
     auto manager = new component::ComponentManager<AbstractEntity*>(256, bus, "entity_ptr");
     manager->addComponent<component::EntityMainComponent>("main_component");
     manager->addComponent<float, 12>("uv");
+    manager->addComponent<physics::CollisionComponent>("collision_component");
     return manager;
 }
 

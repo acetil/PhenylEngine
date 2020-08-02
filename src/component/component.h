@@ -39,8 +39,8 @@ namespace component {
     public:
         ComponentImpl (int maxEntities) {
             data = new T[maxEntities * sizeE];
-            this->size = size * sizeof(T);
-            sizeElement = size;
+            this->size = sizeE * sizeof(T);
+            sizeElement = sizeE;
         }
         void* getData () override  {
             return (void*) data;

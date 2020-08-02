@@ -4,7 +4,8 @@
 #ifndef PHYSICS_NEW_H
 #define PHYSICS_HEW_H
 namespace physics {
-    void updatePhysics (component::EntityMainComponent* comp, int numEntities, int direction);
     void onEntityCreation (event::EntityCreationEvent& event);
+    void updatePhysics (component::ComponentManager<game::AbstractEntity*>* componentManager);
+    void checkCollisions (component::ComponentManager<game::AbstractEntity*>* componentManager);
 }
 #endif

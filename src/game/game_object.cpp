@@ -44,7 +44,7 @@ AbstractEntity* game::GameObject::createNewEntityInstance (std::string name, flo
         auto entity = entityRegistry[name]->createEntity();
         int entityId = entityComponentManager->addObject(entity);
         entity->setEntityId(entityId);
-        component::EntityMainComponent comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
+        auto comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
         entity->x = &comp.pos.x;
         entity->y = &comp.pos.y;
         auto uvPtr = entityComponentManager->getObjectDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
@@ -128,7 +128,8 @@ void game::GameObject::setEntityComponentManager (component::ComponentManager<Ab
     this->entityComponentManager = manager;
 }
 void game::GameObject::updateEntityPosition () {
-    entityComponentManager->applyFunc(physics::updatePhysics, 1); // TODO: remove hardcode (1 is index of main comp)
+    physics::updatePhysics(entityComponentManager);
+    physics::checkCollisions(entityComponentManager);
 }
 void entityPrePhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, int size, component::ComponentManager<AbstractEntity*>* manager) {
     auto comp = manager->getComponent<component::EntityMainComponent>(1);
