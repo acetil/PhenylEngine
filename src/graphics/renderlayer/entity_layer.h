@@ -8,13 +8,13 @@ namespace graphics {
     private:
         bool active = true;
         //Buffer buffer;
-        bool needsBuffer = true;
+        //bool needsBuffer = true;
         component::ComponentManager<game::AbstractEntity*>* componentManager;
         ShaderProgram* shaderProgram;
         Buffer buffers[5];
-        int numBuffers = 0;
+        //int numBuffers = 0;
         GraphicsBufferIds buffIds;
-        int numTriangles = 0;;
+        int numTriangles = 0;
     public:
         EntityRenderLayer (Renderer* renderer, component::ComponentManager<game::AbstractEntity*>* componentManager);
 

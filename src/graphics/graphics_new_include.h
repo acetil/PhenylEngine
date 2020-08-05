@@ -6,7 +6,6 @@
 #include <optional>
 
 #include "graphics/shaders/shaders.h"
-#include "textures/texture.h"
 #include "textures/image.h"
 #include "logging/logging.h"
 #include "camera.h"

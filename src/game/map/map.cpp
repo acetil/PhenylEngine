@@ -14,7 +14,7 @@ using namespace game;
 game::Map::Map (int width, int height) {
     this->width = width;
     this->height = height;
-    tiles = NULL;
+    tiles = nullptr;
 }
 game::Map::~Map () {
     delete[] tiles;
@@ -22,6 +22,7 @@ game::Map::~Map () {
 Tile* game::Map::getTile (int x, int y) {
     return tiles[x + width * y];
 }
+// TODO: convert to vector and convert from pointers
 void game::Map::setTiles (Tile** tiles) {
     this->tiles = tiles;
 }
@@ -49,8 +50,8 @@ std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> Map::ge
     return models;
 }
 
-void Map::setAtlas (graphics::TextureAtlas atlas) {
-    this->atlas = std::move(atlas);
+void Map::setAtlas (graphics::TextureAtlas _atlas) {
+    this->atlas = std::move(_atlas);
 }
 
 /*void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shader) {

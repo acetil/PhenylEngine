@@ -7,7 +7,7 @@ namespace graphics {
     private:
         bool active = false;
         Buffer buffers[5];
-        bool requiresBuffer = true;
+        //bool requiresBuffer = true;
         game::Map* map;
         GraphicsBufferIds bufferIds;
         bool needDataBuffer = true;

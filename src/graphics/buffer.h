@@ -35,7 +35,7 @@ namespace graphics {
             numElements += num;
         }
 
-        [[nodiscard]]
+        [[maybe_unused]] [[nodiscard]]
         bool isEmpty () const {
             return maxNumElements == 0;
         }

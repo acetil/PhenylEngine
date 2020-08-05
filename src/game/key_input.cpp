@@ -13,15 +13,15 @@ namespace game {
         GLFWwindow* window;
         std::map<int, KeyboardFunction*> bindingMap;
     public:
-        KeyboardInputImpl (graphics::Graphics* graphics);
+        explicit KeyboardInputImpl (graphics::Graphics* graphics);
 
         ~KeyboardInputImpl ();
 
-        void setKey (int key, KeyboardFunction* function);
+        void setKey (int key, KeyboardFunction* function) override;
 
-        void replaceKey (int after, int before);
+        void replaceKey (int after, int before) override;
 
-        void handleKeyPresses ();
+        void handleKeyPresses () override;
     };
 }
 

@@ -2,8 +2,8 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <string.h>
 #include <unordered_map>
+#include <utility>
 
 #include "graphics/graphics_headers.h"
 #include "graphics/maths_headers.h"
@@ -30,14 +30,14 @@ GLuint graphics::loadShader (const char* filepath, GLuint shaderType) {
     int infolength;
     logging::logf(LEVEL_INFO, "Compiling shader file at %s", filepath);
     const char* shaderSourcePtr = shaderCode.c_str();
-    glShaderSource(shader, 1, &shaderSourcePtr, NULL);
+    glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
     glCompileShader(shader);
 
     glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolength);
     if (infolength > 0) {
         char* errorMessage = new char[infolength];
-        glGetShaderInfoLog(shader, infolength, NULL, errorMessage);
+        glGetShaderInfoLog(shader, infolength, nullptr, errorMessage);
         logging::log(LEVEL_ERROR, errorMessage);
         delete[] errorMessage;
     }
@@ -59,7 +59,7 @@ ShaderProgram* graphics::loadShaderProgram (const char* vertexPath, const char* 
     glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
     if (infoLength > 0) {
         char* infoLog = new char[infoLength];
-        glGetProgramInfoLog(programId, infoLength, NULL, infoLog);
+        glGetProgramInfoLog(programId, infoLength, nullptr, infoLog);
         logging::log(LEVEL_ERROR, infoLog);
         delete[] infoLog;
     }
@@ -69,21 +69,22 @@ ShaderProgram* graphics::loadShaderProgram (const char* vertexPath, const char* 
 
     glDeleteShader(vertexId);
     glDeleteShader(fragmentId);
-    return new ShaderProgram(programId, name);
+    return new ShaderProgram(programId, std::move(name));
 }
 
 graphics::ShaderProgram::ShaderProgram (GLuint program, std::string name) {
     this->programId = program;
-    this->name = name;
+    this->name = std::move(name);
     this->uniformMap = std::unordered_map<std::string, GLuint>();
 }
-void graphics::ShaderProgram::useProgram () {
+void graphics::ShaderProgram::useProgram () const {
     glUseProgram(programId);
 }
-void graphics::ShaderProgram::registerUniform (std::string name) {
-    uniformMap[name] = glGetUniformLocation(programId, name.c_str());
+void graphics::ShaderProgram::registerUniform (const std::string& _name) {
+    uniformMap[_name] = glGetUniformLocation(programId, _name.c_str());
 }
-void graphics::ShaderProgram::appplyUniform (std::string name, glm::mat4 matrix) {
-    GLuint uniformId = uniformMap[name];
+// TODO: do for different uniform types
+void graphics::ShaderProgram::appplyUniform (const std::string& _name, glm::mat4 matrix) {
+    GLuint uniformId = uniformMap[_name];
     glUniformMatrix4fv(uniformId, 1, GL_FALSE, &matrix[0][0]);
 }

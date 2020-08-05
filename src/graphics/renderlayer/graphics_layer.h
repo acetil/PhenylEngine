@@ -9,7 +9,7 @@ namespace graphics {
         bool active = true;
         ShaderProgram* program;
         std::vector<RenderLayer*> renderLayers;
-        std::queue<int> bufferGets;
+        //std::queue<int> bufferGets;
     public:
         explicit GraphicsRenderLayer(Renderer* renderer);
         std::string getName () override;

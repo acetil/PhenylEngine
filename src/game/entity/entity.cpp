@@ -1,6 +1,4 @@
 #include "entity.h"
-#include "physics/physics.h"
-#include "physics/physics_body.h"
 #include "logging/logging.h"
 using namespace game;
 
@@ -15,19 +13,6 @@ std::string game::AbstractEntity::getEntityName () {
 }
 void game::AbstractEntity::update (float time) {
     // default is empty
-}
-// PhysicsBody delegates
-void game::AbstractEntity::addForce (physics::Force force) {
-    physicsBody->addForce(force);
-}
-void game::AbstractEntity::clearMovementForces (int tag) {
-    physicsBody->removeMovementForces(tag);
-}
-void game::AbstractEntity::setVelocity (float velX, float velY) {
-    physicsBody->setVelocity(velX, velY);
-}
-void game::AbstractEntity::updatePosition (float addedTime) {
-    physicsBody->updatePosition(addedTime);
 }
 int game::AbstractEntity::getTextureId () {
     return textureId;

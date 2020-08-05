@@ -1,7 +1,5 @@
 #include "map_layer.h"
 
-#include <utility>
-
 #define BUFFER_SIZE 100
 
 using namespace graphics;
@@ -99,8 +97,8 @@ void MapRenderLayer::render (Renderer* renderer, FrameBuffer* frameBuf) {
     renderer->render(bufferIds, program, numTriangles);
 }
 
-void MapRenderLayer::attachMap (game::Map* map) {
-    this->map = map;
+void MapRenderLayer::attachMap (game::Map* _map) {
+    this->map = _map;
     active = true;
     needDataBuffer = true;
 }

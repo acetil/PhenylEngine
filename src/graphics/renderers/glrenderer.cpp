@@ -92,7 +92,7 @@ void GLRenderer::setupErrorHandling () {
                                const void* userParam){
         const char* sourceString;
         const char* typeString;
-        const char* severityString;
+        //const char* severityString;
         switch (source) {
             case GL_DEBUG_SOURCE_API:
                 sourceString = "API";
@@ -158,7 +158,7 @@ void GLRenderer::setupErrorHandling () {
                 logging::logf(LEVEL_WARNING, "GL unknown severity message from %s with type %s and message %s",
                               sourceString, typeString, message);
         }
-    }, NULL);
+    }, nullptr);
 }
 
 GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* data) {

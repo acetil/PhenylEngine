@@ -33,7 +33,7 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     gameObject->getEventBus()->subscribeHandler(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
-    gameObject->getEventBus()->subscribeHandler(graphics::Graphics::onEntityCreation, graphics);
+    gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, graphics);
 }
 
 component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus) {

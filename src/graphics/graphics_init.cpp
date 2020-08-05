@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <vector>
 
 #include "graphics_headers.h"
@@ -26,8 +25,8 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(DEFAULT_WINDOW_X, DEFAULT_WINDOW_Y, DEFAULT_WINDOW_NAME, NULL, NULL);
-    if (window == NULL) {
+    GLFWwindow* window = glfwCreateWindow(DEFAULT_WINDOW_X, DEFAULT_WINDOW_Y, DEFAULT_WINDOW_NAME, nullptr, nullptr);
+    if (window == nullptr) {
         logging::log(LEVEL_FATAL, "Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
         return GRAPHICS_INIT_FAILURE;
     }
@@ -75,7 +74,7 @@ void graphics::destroyGraphics (Graphics* graphics) {
     glfwTerminate();
 }*/
 
-int graphics::initGraphicsNew (GLFWwindow* window, Graphics** graphicsNew) {
+int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
     auto renderer = new GLRenderer(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
@@ -98,7 +97,7 @@ int graphics::initGraphicsNew (GLFWwindow* window, Graphics** graphicsNew) {
 
 }
 
-void graphics::destroyGraphicsNew (Graphics* graphics) {
+void graphics::destroyGraphics (Graphics* graphics) {
     delete graphics;
     glfwTerminate(); // TODO: move to renderer
 }

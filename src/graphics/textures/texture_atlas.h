@@ -1,5 +1,4 @@
 #include "image.h"
-#include "texture.h"
 #include "graphics/graphics_headers.h"
 #include "graphics/renderer.h"
 
@@ -14,8 +13,6 @@ namespace graphics {
     class TextureAtlas {
         private:
             unsigned char* data;
-            Texture* textures;
-            std::unordered_map<std::string, int> textureIdMap;
             GraphicsTexture graphicsTexture;
             int sideLength;
             float* positionData;
@@ -23,13 +20,14 @@ namespace graphics {
             std::vector<FixedModel> models;
             std::unordered_map<std::string, int> modelIdMap;
         public:
-            void createAtlas (std::vector<Image*> images);
-            void createAtlas (std::vector<Model> modelsIn);
+            void createAtlas (const std::vector<Model>& modelsIn);
             //int getTextureId (std::string name);
             void loadTextureAtlas (Renderer* renderer);
             //Texture* getTexture (int textureId);
             //Texture* getTexture (std::string name);
             FixedModel getModel (int modelId);
+
+            [[maybe_unused]]
             FixedModel getModel (const std::string& name);
             int getModelId (const std::string& name);
             void bindTextureAtlas ();

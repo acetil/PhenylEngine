@@ -5,17 +5,17 @@
         class Image {
             private:
                 unsigned char* data;
-                int width;
-                int height;
-                int n;
+                int width{};
+                int height{};
+                int n{};
                 std::string name;
             public:
                 Image (const char* filename, std::string);
                 ~Image ();
                 unsigned char* getData ();
-                int getArea ();
-                int getWidth ();
-                int getHeight ();
+                int getArea () const;
+                int getWidth () const;
+                int getHeight () const;
                 std::string getName();
         };
     }

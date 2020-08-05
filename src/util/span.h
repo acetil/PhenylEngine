@@ -16,13 +16,15 @@ namespace util {
         auto begin() {
             return ptr;
         };
-        auto end () {
+
+        [[maybe_unused]] auto end () {
             return ptr + ptrSize;
         }
         size_t size () {
             return ptrSize;
         }
-        size_t sizeBytes () {
+
+        [[maybe_unused]] size_t sizeBytes () {
             return ptrSize * sizeof(T);
         }
     };

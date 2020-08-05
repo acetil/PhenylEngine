@@ -14,30 +14,31 @@ namespace game {
     class GameObject {
         private:
         std::map<std::string, AbstractEntity*> entityRegistry;
-        std::map<int, AbstractEntity*> entities;
+        //std::map<int, AbstractEntity*> entities;
         std::map<std::string, int> tileMap;
         std::vector<Tile*> tileRegistry;
-        int currentEntityId = 0;
+        //int currentEntityId = 0;
         event::EventBus* eventBus = new event::EventBus();
         component::ComponentManager<AbstractEntity*>* entityComponentManager;
         public:
         ~GameObject();
 
-        void registerEntity (std::string name, AbstractEntity* entity);
-        AbstractEntity* getEntity (std::string name);
-        AbstractEntity* createNewEntityInstance (std::string name, float x, float y);
-        AbstractEntity* getEntityInstance (int entityId);
+        void registerEntity (const std::string& name, AbstractEntity* entity);
+
+        [[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
+        AbstractEntity* createNewEntityInstance (const std::string& name, float x, float y);
+        /*AbstractEntity* getEntityInstance (int entityId);
         void deleteEntityInstance (AbstractEntity* entity);
-        void deleteEntityInstance (int entityId);
+        void deleteEntityInstance (int entityId);*/
 
         void registerTile (Tile* tile);
-        int getTileId (std::string name);
-        Tile* getTile (std::string name);
+        int getTileId (const std::string& name);
+        Tile* getTile (const std::string& name);
         Tile* getTile (int tileId);
 
-        void updateEntities (float deltaTime);
+        //void updateEntities (float deltaTime);
         void updateEntityPosition ();
-        void updateEntityPositions (float deltaTime);
+        //void updateEntityPositions (float deltaTime);
         void setTextureIds (graphics::TextureAtlas atlas);
         //void renderEntities (graphics::Graphics* graphics);
         void setEntityComponentManager (component::ComponentManager<AbstractEntity*>* manager);

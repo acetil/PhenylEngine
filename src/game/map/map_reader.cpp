@@ -25,16 +25,11 @@
 
 using namespace game;
 
-typedef struct _tile {
-    std::string name;
-    uint32_t num;
-    Tile* tile;
-} tileType;
-Map* game::readMap (std::string path, GameObject* gameObject) {
+Map* game::readMap (const std::string& path, GameObject* gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
     FILE* file = fopen(path.c_str(), "rb");
-    if (file == NULL) {
+    if (file == nullptr) {
         logging::logf(LEVEL_ERROR, "Error loading map file at path %s", path.c_str());
     }
     char magic[MAGIC_LEN];
@@ -45,13 +40,13 @@ Map* game::readMap (std::string path, GameObject* gameObject) {
     fread(magic, 1, MAGIC_LEN, file);
     if (magic[0] != 'A' || magic[1] != 'c' || magic[2] != 'M' || magic[3] != 'P') {
         logging::logf(LEVEL_ERROR, "File at path %s does not have correct magic number for map file!", path.c_str());
-        return NULL;
+        return nullptr;
     }
 
     // version check
     if (fgetc(file) != 1) {
         logging::logf(LEVEL_ERROR, "Map file at path %s has unsupported version!", path.c_str());
-        return NULL;
+        return nullptr;
     }
     
     // size of header
@@ -68,7 +63,7 @@ Map* game::readMap (std::string path, GameObject* gameObject) {
 
     if (tileSize != 1 && tileSize != 2 && tileSize != 4) {
         logging::logf(LEVEL_ERROR, "Map file at path %s has incorrect tile num size!", path.c_str());
-        return NULL;
+        return nullptr;
     }
     uint32_t tileBuf;
     fread((void*) &tileBuf, TILE_TYPE_NUM_SIZE, 1, file);
@@ -88,14 +83,14 @@ Map* game::readMap (std::string path, GameObject* gameObject) {
         fread((void*) &tileBuf, tileSize, 1, file);
         if (feof(file)) {
             logging::logf(LEVEL_ERROR, "Unexpected eof in tile type header of map file at path %s", path.c_str());
-            return NULL;
+            return nullptr;
         }
         if (tileBuf < NUM_RESERVED) {
             isValid = false;
         }
         // tile string
         auto j = 0;
-        char c;
+        int c;
         do {
             if (j >= STRING_BUFF_SIZE) {
                 logging::logf(LEVEL_WARNING, "Tile %u in map file at path %s has too long name!", tileBuf, path.c_str());
@@ -104,13 +99,13 @@ Map* game::readMap (std::string path, GameObject* gameObject) {
             }
 
             c = fgetc(file);
-            charBuf[j] = c;
+            charBuf[j] = (char)c;
             j++;
-        } while (c != '\0');
+        } while (c != '\0' && c != EOF);
 
         if (isValid) {
             Tile* tile = gameObject->getTile(std::string(charBuf));
-            if (tile == NULL) {
+            if (tile == nullptr) {
                 //logging::logf(LEVEL_WARNING, "Unknown tile '%s' in map file at path %s", charBuf, path.c_str());
                 tile = emptyTile;
             }

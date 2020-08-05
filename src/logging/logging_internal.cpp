@@ -34,7 +34,7 @@ void internal::log_internal (int level, const char* location, const char* log) {
             text = INFO_TEXT;
             break;
     }
-    time_t now = time(0);
+    time_t now = time(nullptr);
     strftime(timeText, TIME_TEXT_LEN, "[%H:%M:%S]", localtime(&now));
     printf("%s (%s/%s): %s\n", timeText, location, text, log);
 }

@@ -1,12 +1,9 @@
 #include <vector>
 #include <algorithm>
-#include <stdlib.h>
-#include <math.h>
 #include <unordered_set>
 
 #include "texture_atlas.h"
 #include "image.h"
-#include "texture.h"
 #include "logging/logging.h"
 
 #define BYTES_PER_PIXEL 4
@@ -17,25 +14,25 @@
 #define COMP_PER_VERTEX 2
 
 using namespace graphics;
-typedef struct _node *Node;
-typedef struct _node {
-    int width;
-    int height;
-    int offsetX;
-    int offsetY;
-    Node leftNode = NULL;
-    Node rightNode = NULL;
-    Image* image = NULL;
+typedef struct node *Node;
+struct node {
+    int width = 0;
+    int height = 0;
+    int offsetX = 0;
+    int offsetY = 0;
+    Node leftNode = nullptr;
+    Node rightNode = nullptr;
+    Image* image = nullptr;
     void setDimensions (int width, int height, int offsetX, int offsetY);
-    int getArea ();
+
     bool insert (Image* i);
     void destroy ();
     std::vector<Node> walk ();
-    void writeData (unsigned char* data, int sideLength);
-} node;
+    void writeData (unsigned char* data, int sideLength) const;
+};
 glm::vec2 getVertexVec (int index);
 
-bool insertImages (Node tree, std::vector<Image*> images) {
+bool insertImages (Node tree, const std::vector<Image*>& images) {
     // returns true if all images fit in
     for (Image* i : images) {
         if (!tree->insert(i)) {
@@ -44,7 +41,7 @@ bool insertImages (Node tree, std::vector<Image*> images) {
     }
     return true;
 }
-void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
+/*void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
     // creates a texture atlas by first assigning each image to a space on a square
     // power of 2 texture using a greedy depth-first search
 
@@ -92,8 +89,8 @@ void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
         texPtr++;
     }
     logging::log(LEVEL_INFO, "Stitching complete");
-}
-void graphics::TextureAtlas::createAtlas (std::vector<Model> modelsIn) {
+}*/
+void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
     // TODO: cleanup
     // creates a texture atlas by first assigning each image to a space on a square
     // power of 2 texture using a greedy depth-first search
@@ -215,7 +212,7 @@ FixedModel TextureAtlas::getModel (int modelId) {
     return models[modelId];
 }
 
-FixedModel TextureAtlas::getModel (const std::string& name) {
+[[maybe_unused]] FixedModel TextureAtlas::getModel (const std::string& name) {
     return models[modelIdMap[name]];
 }
 
@@ -223,34 +220,31 @@ int TextureAtlas::getModelId (const std::string& name) {
     return modelIdMap[name];
 }
 
-void node::setDimensions (int width, int height, int offsetX, int offsetY) {
-    this->width = width;
-    this->height = height;
-    this->offsetX = offsetX;
-    this->offsetY = offsetY;
+void node::setDimensions (int _width, int _height, int _offsetX, int _offsetY) {
+    this->width = _width;
+    this->height = _height;
+    this->offsetX = _offsetX;
+    this->offsetY = _offsetY;
 }
 
-int node::getArea () {
-    return width * height;
-}
 void node::destroy () {
-    if (leftNode != NULL) {
+    if (leftNode != nullptr) {
         leftNode->destroy();
         delete leftNode;
     }
-    if (rightNode != NULL) {
+    if (rightNode != nullptr) {
         rightNode->destroy();
         delete rightNode;
     }
-    image = NULL;
+    image = nullptr;
 }
 bool node::insert (Image* i) {
     // recursively uses a depth-first search for a space which is bigger than the image
     // returns true if a space can be found, false otherwise
     // see http://blackpawn.com/texts/lightmaps/ for algorithm, which has been very slightly tweaked
-    if (image != NULL) {
+    if (image != nullptr) {
         // image already present
-        if (leftNode != NULL && rightNode != NULL) {
+        if (leftNode != nullptr && rightNode != nullptr) {
             // should always get here
             return leftNode->insert(i) || rightNode->insert(i);
         } else {
@@ -280,7 +274,7 @@ bool node::insert (Image* i) {
         return false;
     }
 }
-void node::writeData (unsigned char* data, int sideLength) {
+void node::writeData (unsigned char* data, int sideLength) const {
     unsigned char* copyPtr = data + (offsetX + offsetY * sideLength) * BYTES_PER_PIXEL;
     unsigned char* dataPtr = image->getData();
     for (int i = 0; i < height; i++) {
@@ -294,14 +288,14 @@ void node::writeData (unsigned char* data, int sideLength) {
 }
 std::vector<Node> node::walk () {
     std::vector<Node> nodes;
-    if (this->image != NULL) {
+    if (this->image != nullptr) {
         nodes.push_back(this);
     }
-    if (leftNode != NULL) {
+    if (leftNode != nullptr) {
         std::vector<Node> nodeInput = leftNode->walk();
         nodes.insert(nodes.end(), nodeInput.begin(), nodeInput.end());
     }
-    if (rightNode != NULL) {
+    if (rightNode != nullptr) {
         std::vector<Node> nodeInput = rightNode->walk();
         nodes.insert(nodes.end(), nodeInput.begin(), nodeInput.end());
     }

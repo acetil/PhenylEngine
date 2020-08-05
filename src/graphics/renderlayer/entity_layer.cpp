@@ -1,20 +1,18 @@
-#include <component/main_component.h>
+#include "component/main_component.h"
 #include "entity_layer.h"
-
-#include <stdio.h>
 
 
 #define BUFFER_SIZE 100 * 2 * 6
 
 #define NUM_TRIANGLE_VERTICES 3
-#define TRIANGLES_PER_SPRITE 2
-#define NUM_POS_PER_VERTEX 2
+//#define TRIANGLES_PER_SPRITE 2
+//#define NUM_POS_PER_VERTEX 2
 
 using namespace graphics;
 
-void bufferPosData (FixedModel* comp, int numEntities, int direction, std::pair<Buffer*, AbsolutePosition*> tup);
-void bufferUvData (FixedModel* comp, int numEntities, int direction, Buffer* buf);
-void bufferActualPosData (AbsolutePosition* comp, int numEntities, int direction, Buffer* bufs);
+void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup);
+void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf);
+void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
 }
@@ -74,7 +72,7 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
     this->buffers[4] = Buffer(BUFFER_SIZE * 4, sizeof(float), false); // TODO: better way to input matrices
 }
 
-void bufferPosData (FixedModel* comp, int numEntities, int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
+void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
     auto [buf, modComp] = tup;
     for (int i = 0; i < numEntities; i++) {
         //logging::log(LEVEL_DEBUG, "Buffering entity pos data!");
@@ -96,13 +94,13 @@ void bufferPosData (FixedModel* comp, int numEntities, int direction, std::pair<
     }
 
 }
-void bufferUvData (FixedModel* comp, int numEntities, int direction, Buffer* buf) {
+void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf) {
     for (int i = 0; i < numEntities; i++) {
         buf->pushData(comp->uvData.begin(), comp->uvData.size());
         comp++;
     }
 }
-void bufferActualPosData (AbsolutePosition* comp, int numEntities, int direction, Buffer* bufs) {
+void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs) {
     for (int i = 0; i < numEntities; i++) {
         //logging::logf(LEVEL_DEBUG, "Abs pos: <%f, %f>", comp->pos.x, comp->pos.y);
         for (int j = 0; j < comp->vertices; j++) {

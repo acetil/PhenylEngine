@@ -14,9 +14,10 @@ namespace game {
     class KeyboardInput {
         public:
         virtual void setKey (int key, KeyboardFunction* function) = 0;
-        virtual void replaceKey (int after, int before) = 0;
+
+        [[maybe_unused]] virtual void replaceKey (int after, int before) = 0;
         virtual void handleKeyPresses () = 0;
     };
     KeyboardInput* getKeyboardInput (graphics::Graphics* graphics);
-};
+}
 #endif

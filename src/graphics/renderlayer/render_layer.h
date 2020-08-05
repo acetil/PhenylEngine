@@ -9,7 +9,7 @@ namespace graphics {
     public:
         virtual std::string getName () = 0;
 
-        virtual int getPriority () = 0;
+        [[maybe_unused]] virtual int getPriority () = 0;
 
         virtual bool isActive () = 0;
 
@@ -19,7 +19,7 @@ namespace graphics {
 
         virtual int getUniformId (std::string uniformName) = 0;
 
-        virtual void applyUniform (int uniformId, void* data) = 0;
+        [[maybe_unused]] virtual void applyUniform (int uniformId, void* data) = 0;
 
         virtual void applyCamera (Camera camera) = 0;
 

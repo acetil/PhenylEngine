@@ -1,4 +1,5 @@
 #include <string>
+#include <utility>
 #include "tile.h"
 #include "graphics/textures/texture_atlas.h"
 
@@ -7,16 +8,13 @@ using namespace game;
 #define TRIANGLES_PER_TILE 2
 #define NUM_POS_PER_VERTEX 2
 game::Tile::Tile (std::string name, int textureId, graphics::TextureAtlas& atlas, float xSize, float ySize) {
-    this->name = name;
+    this->name = std::move(name);
     this->textureId = textureId;
     //this->uvs = atlas.getTexture(textureId)->getTexUvs();
-    this->coords = new float[VERTICES_PER_TRIANGLE * TRIANGLES_PER_TILE * NUM_POS_PER_VERTEX];
     this->xSize = xSize;
     this->ySize = ySize;
 }
-game::Tile::~Tile () {
-    delete[] coords;
-}
+game::Tile::~Tile () = default;
 int game::Tile::getTextureId () {
     return textureId;
 }

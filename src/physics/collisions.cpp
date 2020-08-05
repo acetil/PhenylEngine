@@ -105,7 +105,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
     return std::pair(true, smallestDispVec);
 }
 
-void physics::checkCollisionsEntity (CollisionComponent* comp, int numEntities, int direction, std::vector<std::tuple<int, int, glm::vec2>>* collisionResults) {
+void physics::checkCollisionsEntity (CollisionComponent* comp, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<int, int, glm::vec2>>* collisionResults) {
     for (int i = 0; i < numEntities; i++) {
         auto compPtr = comp + 1;
         for (int j = i + 1; j < numEntities; j++) {

@@ -11,9 +11,7 @@
     #define GRAPHICS_INIT_FAILURE -1
     namespace graphics {
         int initWindow (GLFWwindow** windowPtr);
-        int initGraphics (GLFWwindow* window, Graphics** graphics);
+        int initGraphics (GLFWwindow* window, Graphics** graphicsNew);
         void destroyGraphics (Graphics* graphics);
-        int initGraphicsNew (GLFWwindow* window, Graphics** graphicsNew);
-        void destroyGraphicsNew (Graphics* graphics);
     }
 #endif

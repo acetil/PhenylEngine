@@ -22,7 +22,7 @@ int game::gameloop (graphics::Graphics* graphics) {
     logging::log(LEVEL_INFO, "Created player");
     KeyboardInput* keyInput = getKeyboardInput(graphics);
     setupMovementKeys(keyInput, gameObject->getEventBus());
-    float deltaTime = 0.0f;
+    float deltaTime;
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
@@ -32,12 +32,12 @@ int game::gameloop (graphics::Graphics* graphics) {
     ((graphics::MapRenderLayer*)graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
     while (!graphics->shouldClose()) {
-        deltaTime = graphics->getDeltaTime();
+        deltaTime = (float) graphics->getDeltaTime();
         deltaPhysicsFrame += deltaTime;
         timeSinceFpsUpdate += deltaTime;
         if (timeSinceFpsUpdate >= 1.0f) {
             logging::logf(LEVEL_DEBUG, "Done %d frames in %f second(s), with an average fps of %f", frames, 
-            timeSinceFpsUpdate, frames / timeSinceFpsUpdate);
+            timeSinceFpsUpdate, (float)frames / timeSinceFpsUpdate);
             timeSinceFpsUpdate = 0.0f;
             frames = 0;
         }

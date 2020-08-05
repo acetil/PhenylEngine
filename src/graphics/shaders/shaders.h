@@ -12,9 +12,9 @@
                 std::unordered_map<std::string, GLuint> uniformMap;
             public:
                 ShaderProgram (GLuint program, std::string name);
-                void useProgram ();
-                void registerUniform (std::string name);
-                void appplyUniform(std::string name, glm::mat4 matrix);
+                void useProgram () const;
+                void registerUniform (const std::string& _name);
+                void appplyUniform(const std::string& _name, glm::mat4 matrix);
         };
 
         GLuint loadShader (const char* filepath, GLuint shaderType);

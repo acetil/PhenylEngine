@@ -5,11 +5,10 @@
 namespace game {
     class Tile {
         // xSize and ySize relate to normal tile size i.e. a normal tile should be 1.0f, 1.0f
+        // TODO: move from virtuals
         protected:
         std::string name;
         int textureId;
-        float* uvs;
-        float* coords;
         public:
         float xSize;
         float ySize;

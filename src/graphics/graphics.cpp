@@ -88,7 +88,7 @@ void Graphics::sync (int fps) {
     lastTime = currTime;
 }
 
-Camera &Graphics::getCamera () {
+[[maybe_unused]] Camera &Graphics::getCamera () {
     return camera;
 }
 
