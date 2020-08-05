@@ -27,6 +27,7 @@ int game::gameloop (graphics::Graphics* graphics) {
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
     Map* map = readMap("resources/maps/testmap.acmp", gameObject);
+    map->setAtlas(graphics->getTextureAtlas("sprite").value());
     //map->initGraphicsData(graphics, "default");
     ((graphics::MapRenderLayer*)graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");

@@ -1,5 +1,7 @@
 #include "map_layer.h"
 
+#include <utility>
+
 #define BUFFER_SIZE 100
 
 using namespace graphics;
@@ -28,7 +30,36 @@ void MapRenderLayer::gatherData () {
 }
 
 void MapRenderLayer::preRender (Renderer* renderer) {
-    if (requiresBuffer) {
+    if (needDataBuffer) {
+        auto models = map->getModels();
+        int numVertices = 0;
+        for (const auto& m : models) {
+            numVertices += m.first.vertices;
+        }
+        bufferIds = renderer->getBufferIds(5, numVertices * 2 * sizeof(float), {2, 2, 2, 2, 2});
+        buffers[0] = Buffer(numVertices * 2, sizeof(float), true);
+        buffers[1] = Buffer(numVertices * 2, sizeof(float), true);
+        buffers[2] = Buffer(numVertices * 2, sizeof(float), true);
+        buffers[3] = Buffer(numVertices * 2, sizeof(float), true);
+        buffers[4] = Buffer(numVertices * 2, sizeof(float), true);
+        for (auto& m : models) {
+            buffers[0].pushData(m.second.positionData.begin(), m.second.positionData.size());
+            buffers[1].pushData(m.second.uvData.begin(), m.second.uvData.size());
+            for (int i = 0; i < m.first.vertices; i++) {
+                buffers[2].pushData(&m.first.pos[0], 2);
+                buffers[3].pushData(&m.first.transform[0][0], 2);
+                buffers[4].pushData(&m.first.transform[1][0], 2);
+            }
+        }
+        logging::logf(LEVEL_DEBUG, "Sizes: %d %d %d %d %d", buffers[0].currentSize(), buffers[1].currentSize(), buffers[2].currentSize(),
+                      buffers[3].currentSize(), buffers[4].currentSize());
+        renderer->bufferData(bufferIds, buffers);
+        needDataBuffer = false;
+        numTriangles = numVertices / 3;
+        logging::logf(LEVEL_DEBUG, "Buffered map data with %d vertices!", numVertices);
+
+    }
+    /*if (requiresBuffer) {
         bufferIds = renderer->getBufferIds(2, map->getNumTileVertices() * 6 * sizeof(float));
         requiresBuffer = false;
     }
@@ -46,7 +77,7 @@ void MapRenderLayer::preRender (Renderer* renderer) {
         delete[] vertexData;
         delete[] uvData;
         logging::logf(LEVEL_DEBUG, "Buffered map data with %d vertices!", numVertices);
-    }
+    }*/
 }
 
 int MapRenderLayer::getUniformId (std::string uniformName) {

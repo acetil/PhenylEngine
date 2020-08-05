@@ -1,5 +1,6 @@
 #include <string.h>
 #include <string>
+#include <utility>
 
 #include "map.h"
 #include "game/tile/tile.h"
@@ -33,6 +34,25 @@ int game::Map::getWidth () {
 int game::Map::getHeight () {
     return height;
 }
+
+std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> Map::getModels () {
+    std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> models;
+    for (int i = 0; i < width * height; i++) {
+        if (tiles[i]->shouldDraw()) {
+            auto model = atlas.getModel(tiles[i]->getModelId());
+            auto pos = graphics::AbsolutePosition{static_cast<int>(model.positionData.size() / 2),
+                                                  glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize},
+                                                  glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
+            models.emplace_back(std::pair(pos,model));
+        }
+    }
+    return models;
+}
+
+void Map::setAtlas (graphics::TextureAtlas atlas) {
+    this->atlas = std::move(atlas);
+}
+
 /*void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shader) {
     int numVertices = 0;
     for (int i = 0; i < width * height; i++) {
@@ -65,7 +85,7 @@ void game::Map::unloadGraphicsData (graphics::Graphics* graphics) {
     graphicsData = NULL;
 }*/
 
-int Map::getNumTileVertices () {
+/*int Map::getNumTileVertices () {
     int numVertices = 0;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
@@ -99,4 +119,4 @@ float* Map::getTileUvs () {
         }
     }
     return data;
-}
+}*/

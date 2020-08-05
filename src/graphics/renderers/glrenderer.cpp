@@ -36,7 +36,7 @@ std::optional<ShaderProgram*> GLRenderer::getProgram (std::string program) {
     return std::optional(shaderPrograms[program]);
 }
 
-GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize) {
+GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) {
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -48,7 +48,7 @@ GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize) {
         glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
         glBufferData(GL_ARRAY_BUFFER, bufferSize, nullptr, GL_DYNAMIC_DRAW);
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, 0, nullptr); // TODO: update to be more generic
+        glVertexAttribPointer(i, attribSizes[i], GL_FLOAT, GL_FALSE, 0, nullptr); // TODO: update to be more generic
     }
 
     std::vector<GLuint> bufVec;
@@ -159,6 +159,24 @@ void GLRenderer::setupErrorHandling () {
                               sourceString, typeString, message);
         }
     }, NULL);
+}
+
+GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* data) {
+    unsigned int id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    // mipmapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    logging::logf(LEVEL_INFO, "Generating mipmaps for %d * %d texture atlas", width, width);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    return GraphicsTexture(this, id);
+}
+
+void GLRenderer::bindTexture (unsigned int textureId) {
+    glBindTexture(GL_TEXTURE_2D, textureId);
 }
 
 

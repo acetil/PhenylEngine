@@ -9,7 +9,7 @@ using namespace game;
 game::Tile::Tile (std::string name, int textureId, graphics::TextureAtlas& atlas, float xSize, float ySize) {
     this->name = name;
     this->textureId = textureId;
-    this->uvs = atlas.getTexture(textureId)->getTexUvs();
+    //this->uvs = atlas.getTexture(textureId)->getTexUvs();
     this->coords = new float[VERTICES_PER_TRIANGLE * TRIANGLES_PER_TILE * NUM_POS_PER_VERTEX];
     this->xSize = xSize;
     this->ySize = ySize;
@@ -23,7 +23,7 @@ int game::Tile::getTextureId () {
 std::string game::Tile::getName () {
     return name;
 }
-float* game::Tile::getVertexCoords (float x, float y) {
+/*float* game::Tile::getVertexCoords (float x, float y) {
     float* coordsPtr = coords;
     // from graphics.cpp
     // TODO: refactor all
@@ -48,7 +48,11 @@ float* game::Tile::getVertexCoords (float x, float y) {
 }
 float* game::Tile::getUvs () {
     return uvs;
-}
+}*/
 bool game::Tile::shouldDraw () {
     return true; // default is true
+}
+
+int Tile::getModelId () {
+    return textureId;
 }

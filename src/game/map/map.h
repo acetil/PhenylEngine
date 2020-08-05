@@ -10,6 +10,7 @@ namespace game {
         Tile** tiles;
         //graphics::StaticData* graphicsData;
         virtual Tile** getTiles ();
+        graphics::TextureAtlas atlas;
         public:
         Map (int xSize, int ySize);
         ~Map();
@@ -20,9 +21,11 @@ namespace game {
         //virtual void initGraphicsData (graphics::Graphics* graphics, std::string shader);
         //virtual void unloadGraphicsData (graphics::Graphics* graphics);
 
-        virtual int getNumTileVertices (); // TODO: move to models
-        virtual float* getTileVertices ();
-        virtual float* getTileUvs ();
+        //virtual int getNumTileVertices (); // TODO: move to models
+        //virtual float* getTileVertices ();
+        //virtual float* getTileUvs ();
+        virtual std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> getModels ();
+        virtual void setAtlas (graphics::TextureAtlas atlas);
     };
 }
 #endif

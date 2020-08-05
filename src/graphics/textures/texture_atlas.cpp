@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
+#include <unordered_set>
 
 #include "texture_atlas.h"
 #include "image.h"
@@ -10,6 +11,11 @@
 
 #define BYTES_PER_PIXEL 4
 #define PADDING 1
+
+#define TRIANGLES_PER_IMAGE 2
+#define VERTICES_PER_TRIANGLE 3
+#define COMP_PER_VERTEX 2
+
 using namespace graphics;
 typedef struct _node *Node;
 typedef struct _node {
@@ -27,6 +33,8 @@ typedef struct _node {
     std::vector<Node> walk ();
     void writeData (unsigned char* data, int sideLength);
 } node;
+glm::vec2 getVertexVec (int index);
+
 bool insertImages (Node tree, std::vector<Image*> images) {
     // returns true if all images fit in
     for (Image* i : images) {
@@ -85,7 +93,102 @@ void graphics::TextureAtlas::createAtlas (std::vector<Image*> images) {
     }
     logging::log(LEVEL_INFO, "Stitching complete");
 }
+void graphics::TextureAtlas::createAtlas (std::vector<Model> modelsIn) {
+    // TODO: cleanup
+    // creates a texture atlas by first assigning each image to a space on a square
+    // power of 2 texture using a greedy depth-first search
 
+    // sorts to get larger images first
+    std::unordered_set<Image*> imageSet;
+    for (const auto& m : modelsIn) {
+        for (auto i : m.textures) {
+            imageSet.insert(i.second);
+        }
+    }
+    auto images = std::vector(imageSet.begin(), imageSet.end());
+    std::sort(images.begin(), images.end(), [](Image* a, Image* b) {
+        return a->getArea() > b->getArea();
+    });
+    int totalArea = 0;
+    for (Image* i : images) {
+        totalArea += i->getArea();
+    }
+    logging::logf(LEVEL_INFO, "Initiated creation of texture atlas of %d images of total area %d.",
+                  images.size(), totalArea);
+
+    //getting initial atlas area side length
+    int length = 2;
+    while (length * length < totalArea) {
+        length *= 2;
+    }
+
+    Node tree = new node;
+    tree->setDimensions(length, length, 0, 0);
+    logging::logf(LEVEL_INFO, "Attempting packing of %d * %d atlas.", length, length);
+    while (!insertImages(tree, images)) {
+        // space isn't big enough
+        tree->destroy();
+        length *= 2;
+        tree->setDimensions(length, length, 0, 0);
+        logging::logf(LEVEL_INFO, "Unable to pack, attempting packing of %d * %d atlas.", length, length);
+    }
+    this->sideLength = length;
+    logging::log(LEVEL_INFO, "Packing success.");
+
+    data = new unsigned char[length * length * BYTES_PER_PIXEL];
+    //textures = new Texture[images.size()];
+    //Texture* texPtr = textures;
+    auto* tempUvData = new float[images.size() * TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX];
+    auto uvPtr = tempUvData;
+    std::vector<Node> nodes = tree->walk();
+    logging::log(LEVEL_INFO, "Stitching atlas.");
+    std::unordered_map<Image*, util::span<float>> imageMap;
+    for (Node n : nodes) {
+        n->writeData(data, length);
+        auto originalUv = uvPtr;
+        for (int i = 0; i < TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE; i++) {
+            glm::vec2 offVec = getVertexVec(i);
+            offVec.x = offVec.x * (float)n->width / (float)length + (float)n->offsetX / (float)length;
+            offVec.y = offVec.y * (float) n->height / float(length) + (float)n->offsetY / (float) length;
+            *(uvPtr++) = offVec[0];
+            *(uvPtr++) = offVec[1];
+        }
+        imageMap[n->image] = util::span(originalUv, uvPtr);
+    }
+
+    int numModelComponents = 0;
+    for (const auto& m : modelsIn) {
+        numModelComponents += m.textures.size();
+    }
+
+    positionData = new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents];
+    uvData = new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents];
+    auto posPtr = positionData;
+    uvPtr = uvData;
+    for (const auto& m : modelsIn) {
+        auto originalPos = posPtr;
+        auto originalUv = uvPtr;
+        for (auto pair : m.textures) {
+            for (int i = 0; i < TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE; i++) {
+                glm::vec2 offVec = getVertexVec(i) * 2.0f - glm::vec2{1.0f, 1.0f};
+                glm::vec2 finalVec = pair.first.recMat *  offVec + pair.first.offset;
+                *(posPtr++) = finalVec.x;
+                *(posPtr++) = finalVec.y * -1.0f;
+            }
+            auto uvSpan = imageMap[pair.second];
+            memcpy(uvPtr, uvSpan.begin(), uvSpan.size() * sizeof(float));
+            uvPtr += uvSpan.size();
+        }
+        models.emplace_back(FixedModel(originalPos, posPtr, originalUv, uvPtr, m.modelName));
+        modelIdMap[m.modelName] = models.size() - 1;
+    }
+
+    delete[] tempUvData;
+    logging::log(LEVEL_INFO, "Stitching complete");
+    tree->destroy();
+    delete tree;
+}
+/*
 int graphics::TextureAtlas::getTextureId (std::string name) {
     return textureIdMap[name];
 }
@@ -98,22 +201,26 @@ Texture* graphics::TextureAtlas::getTexture (std::string name) {
     // convenience function
     return getTexture(getTextureId(name));
 }
-
-void graphics::TextureAtlas::loadTextureAtlas () {
-    glGenTextures(1, &glTextureId);
-
-    glBindTexture(GL_TEXTURE_2D, glTextureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sideLength, sideLength, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-    // mipmapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    logging::logf(LEVEL_INFO, "Generating mipmaps for %d * %d texture atlas", sideLength, sideLength);
-    glGenerateMipmap(GL_TEXTURE_2D);
+*/
+void graphics::TextureAtlas::bindTextureAtlas () {
+    graphicsTexture.bindTexture();
 }
 
-void graphics::TextureAtlas::bindTextureAtlas () {
-    glBindTexture(GL_TEXTURE_2D, glTextureId);
+void TextureAtlas::loadTextureAtlas (Renderer* renderer) {
+    graphicsTexture = renderer->loadTexture(sideLength, sideLength, data);
+    delete[] data;
+}
+
+FixedModel TextureAtlas::getModel (int modelId) {
+    return models[modelId];
+}
+
+FixedModel TextureAtlas::getModel (const std::string& name) {
+    return models[modelIdMap[name]];
+}
+
+int TextureAtlas::getModelId (const std::string& name) {
+    return modelIdMap[name];
 }
 
 void node::setDimensions (int width, int height, int offsetX, int offsetY) {
@@ -199,4 +306,15 @@ std::vector<Node> node::walk () {
         nodes.insert(nodes.end(), nodeInput.begin(), nodeInput.end());
     }
     return nodes;
+}
+
+glm::vec2 getVertexVec (int index) {
+    // for 0 1
+    //     2 3
+    // order is 0,1,2,3,1,2
+    glm::vec2 vector = {0, 0};
+    unsigned int correctedVertex = 3 * (index == 3) + index % 3;
+    vector.x += (float) (correctedVertex & (unsigned int)1);
+    vector.y += (float) ((correctedVertex & (unsigned int)2) >> (unsigned int) 1);
+    return vector;
 }

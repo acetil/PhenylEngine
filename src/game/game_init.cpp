@@ -39,15 +39,17 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
 component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus) {
     auto manager = new component::ComponentManager<AbstractEntity*>(256, bus, "entity_ptr");
     manager->addComponent<component::EntityMainComponent>("main_component");
-    manager->addComponent<float, 12>("uv");
+    //manager->addComponent<float, 12>("uv");
+    manager->addComponent<graphics::FixedModel>("model");
     manager->addComponent<physics::CollisionComponent>("collision_component");
+    manager->addComponent<std::pair<glm::vec2, int>>("model_pos");
     return manager;
 }
 
 void registerTiles (GameObject* gameObject, graphics::Graphics* graphics) {
     graphics::TextureAtlas atlas = graphics->getTextureAtlas("sprite").value();
-    gameObject->registerTile(new Tile("test_tile1", atlas.getTextureId("test6"),
+    gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
             atlas, 0.1, 0.1));
-    gameObject->registerTile(new Tile("test_tile2", atlas.getTextureId("test7"),
+    gameObject->registerTile(new Tile("test_tile2", atlas.getModelId("test7"),
                                       atlas, 0.1, 0.1));
 }

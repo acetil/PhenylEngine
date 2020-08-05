@@ -12,8 +12,9 @@
 
 using namespace graphics;
 
-void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer);
-void bufferUvData (float* uv, int numEntities, int direction, Buffer* buf);
+void bufferPosData (FixedModel* comp, int numEntities, int direction, std::pair<Buffer*, AbsolutePosition*> tup);
+void bufferUvData (FixedModel* comp, int numEntities, int direction, Buffer* buf);
+void bufferActualPosData (AbsolutePosition* comp, int numEntities, int direction, Buffer* bufs);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
 }
@@ -31,8 +32,11 @@ void EntityRenderLayer::gatherData () {
 }
 
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
-    componentManager->applyFunc(bufferPosData, 1, &buffers[0]);
+    componentManager->applyFunc(bufferPosData, 2, std::pair(&buffers[0],
+                                                            componentManager->getComponent<AbsolutePosition>(4)));
     componentManager->applyFunc(bufferUvData, 2, &buffers[1]);
+    componentManager->applyFunc(bufferActualPosData, 4, &buffers[2]);
+
     numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
     renderer->bufferData(buffIds, buffers);
 }
@@ -62,16 +66,20 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
     this->componentManager = componentManager;
     //this->shaderProgram = renderer->getProgram("entity").value();
     this->shaderProgram = renderer->getProgram("default").value(); // TODO
-    this->buffIds = renderer->getBufferIds(2, BUFFER_SIZE * 2 * sizeof(float));
+    this->buffIds = renderer->getBufferIds(5, BUFFER_SIZE * 2 * sizeof(float), {2, 2, 2, 2, 2});
     this->buffers[0] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
     this->buffers[1] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
+    this->buffers[2] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
+    this->buffers[3] = Buffer(BUFFER_SIZE * 4, sizeof(float), false);
+    this->buffers[4] = Buffer(BUFFER_SIZE * 4, sizeof(float), false); // TODO: better way to input matrices
 }
 
-void bufferPosData (component::EntityMainComponent* comp, int numEntities, int direction, Buffer* buffer) {
+void bufferPosData (FixedModel* comp, int numEntities, int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
+    auto [buf, modComp] = tup;
     for (int i = 0; i < numEntities; i++) {
         //logging::log(LEVEL_DEBUG, "Buffering entity pos data!");
         //auto ptr = buffer->getVertexBufferPos();
-        glm::vec2 vertices[4];
+        /*glm::vec2 vertices[4];
         vertices[0] = comp->pos;
         vertices[1] = comp->pos + comp->vec1;
         vertices[2] = comp->pos + comp->vec2;
@@ -79,14 +87,30 @@ void bufferPosData (component::EntityMainComponent* comp, int numEntities, int d
         for (int j = 0; j < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; j++) {
             int correctedVertex = j % NUM_TRIANGLE_VERTICES + j / NUM_TRIANGLE_VERTICES;
             buffer->pushData(&vertices[correctedVertex].x, 2);
-        }
+        }*/
+
+        buf->pushData(comp->positionData.begin(), comp->positionData.size());
+        modComp->vertices = comp->positionData.size() / 2;
         comp++;
+        modComp++;
     }
 
 }
-void bufferUvData (float* uv, int numEntities, int direction, Buffer* buf) {
-    for (int i = 0; i < numEntities * NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; i++) {
-        buf->pushData(uv, 2);
-        uv += 2;
+void bufferUvData (FixedModel* comp, int numEntities, int direction, Buffer* buf) {
+    for (int i = 0; i < numEntities; i++) {
+        buf->pushData(comp->uvData.begin(), comp->uvData.size());
+        comp++;
+    }
+}
+void bufferActualPosData (AbsolutePosition* comp, int numEntities, int direction, Buffer* bufs) {
+    for (int i = 0; i < numEntities; i++) {
+        //logging::logf(LEVEL_DEBUG, "Abs pos: <%f, %f>", comp->pos.x, comp->pos.y);
+        for (int j = 0; j < comp->vertices; j++) {
+            bufs->pushData(&comp->pos[0], 2);
+            (bufs + 1)->pushData(&comp->transform[0][0], 2);
+            (bufs + 2)->pushData(&comp->transform[1][0], 2);
+            //buf.second->pushData(&comp->transform[2], 2); // TODO: update buffer implementation
+        }
+        comp++;
     }
 }

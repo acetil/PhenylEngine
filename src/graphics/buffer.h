@@ -29,6 +29,7 @@ namespace graphics {
             }
             if (numElements >= maxNumElements) {
                 logging::log(LEVEL_WARNING, "Attempted to push an element to buffer when buffer was at capacity!");
+                return;
             }
             memcpy(((T*) memory) + numElements, data, num * sizeof(T));
             numElements += num;

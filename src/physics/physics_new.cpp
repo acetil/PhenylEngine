@@ -2,10 +2,12 @@
 #include "math.h"
 #include "collisions.h"
 #include <tuple>
+#include <graphics/graphics_new_include.h>
 
 using namespace physics;
 
-void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntities, int direction, physics::CollisionComponent* comp2) {
+void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntities, int direction, std::pair<physics::CollisionComponent*,
+                            graphics::AbsolutePosition*> comp2) {
     // TODO: consider writing fully in assembly
     for (int i = 0; i < numEntities; i ++) {
         int isPosXVel = comp->vel.x > 0;
@@ -21,9 +23,11 @@ void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntitie
 
         comp->pos += comp->vel;
 
-        comp2->pos = comp->pos;
+        comp2.first->pos = comp->pos;
+        comp2.second->pos = comp->pos;
         comp += direction;
-        comp2 += direction;
+        comp2.first += direction;
+        comp2.second += direction;
         //logging::logf(LEVEL_DEBUG, "Current pos: (%f, %f). Current vel: (%f, %f).", comp->pos[0], comp->pos[1], comp->vel[0], comp->vel[1]);
     }
 }
@@ -34,20 +38,22 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     comp->pos[1] = event.y;
     comp->vel[0] = 0;
     comp->vel[1] = 0;
-    comp->vec1[0] = event.size;
-    comp->vec2[1] = event.size;
     comp->acc[0] = 0;
     comp->acc[1] = 0;
     comp->linFriction = 0.2;
     comp->constFriction = 0.002; // TODO: remove hardcoding and add EntityType etc.
     auto comp2 = event.compManager->getObjectDataPtr<CollisionComponent>(3, event.entityId);
+    auto comp3 = event.compManager->getObjectDataPtr<graphics::AbsolutePosition>(4, event.entityId);
     comp2->pos = comp->pos;
     comp2->bbMap = {{event.size / 2, 0.0f}, {0.0f, event.size / 2}};
     comp2->outerRadius = sqrt(2) * event.size;
+    comp3->pos = comp->pos;
+    comp3->transform = comp2->bbMap;
 }
 
 void physics::updatePhysics (component::ComponentManager<game::AbstractEntity*>* componentManager) {
-    componentManager->applyFunc(updatePhysicsInternal, 1, componentManager->getComponent<CollisionComponent>(3));
+    componentManager->applyFunc(updatePhysicsInternal, 1,std::pair(componentManager->getComponent<CollisionComponent>(3),
+                                        componentManager->getComponent<graphics::AbsolutePosition>(4)));
 }
 
 void physics::checkCollisions (component::ComponentManager<game::AbstractEntity*>* componentManager) {

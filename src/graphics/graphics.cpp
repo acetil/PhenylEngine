@@ -73,8 +73,8 @@ void Graphics::initTextureAtlas (const std::string& atlasName, const std::vector
         }
     }
     TextureAtlas atlas;
-    atlas.createAtlas(std::vector<Image*>(imageSet.begin(), imageSet.end()));
-    atlas.loadTextureAtlas();
+    atlas.createAtlas(images);
+    atlas.loadTextureAtlas(renderer);
     logging::logf(LEVEL_DEBUG, "Created atlas \"%s\"!", atlasName.c_str());
     atlases[atlasName] = atlas;
 }
@@ -103,8 +103,9 @@ void Graphics::addEntityLayer (component::ComponentManager<game::AbstractEntity*
 void Graphics::onEntityCreation (event::EntityCreationEvent& event) {
     int texId = event.entity->getTextureId(); // TODO: update for models and decoupling
     unsigned int id = event.entity->getEntityId();
-    auto* pointer = event.compManager->getObjectDataPtr<float>(2, id);
+    auto* pointer = event.compManager->getObjectDataPtr<graphics::FixedModel>(2, id);
     TextureAtlas atlas = this->getTextureAtlas("sprite").value();
-    Texture* tex = atlas.getTexture(texId);
-    memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
+    *pointer = atlas.getModel(texId);
+    //Texture* tex = atlas.getTexture(texId);
+    //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
 }

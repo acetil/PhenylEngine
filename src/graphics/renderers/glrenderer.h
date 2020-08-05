@@ -36,7 +36,7 @@ namespace graphics {
 
         std::optional<ShaderProgram*> getProgram (std::string program) override;
 
-        GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize) override;
+        GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) override;
 
         void bufferData (GraphicsBufferIds& ids, Buffer* buffers) override; // TODO: make more safe
 
@@ -50,6 +50,10 @@ namespace graphics {
             return window; // TODO: remove
         }
         void setupErrorHandling ();
+
+        GraphicsTexture loadTexture (int width, int height, unsigned char* data) override;
+
+        void bindTexture (unsigned int textureId) override;
     };
 }
 #endif //GLRENDERER_H

@@ -8,8 +8,6 @@ namespace component {
         glm::vec2 acc;
         float constFriction;
         float linFriction;
-        glm::vec2 vec1;
-        glm::vec2 vec2;
     };
 }
 #endif

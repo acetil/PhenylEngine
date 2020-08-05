@@ -10,20 +10,19 @@
 #include "textures/image.h"
 #include "logging/logging.h"
 #include "camera.h"
+#include "util/span.h"
 //#include "buffer.h"
 //#include "renderer.h"
 #ifndef GRAPHICS_NEW_INCLUDE_H
 #define GRAPHICS_NEW_INCLUDE_H
 namespace graphics {
     struct TextureOffset {
-        float x;
-        float y;
-
-        TextureOffset (float x, float y) {
-            this->x = x;
-            this->y = y;
-        }
+        glm::vec2 offset;
+        glm::mat2 recMat;
+        TextureOffset (glm::vec2 off, glm::mat2 mat) : offset{off}, recMat{mat} {};
+        TextureOffset () : TextureOffset ({0.0f, 0.0f}, {{1.0f, 0.0f}, {0.0f, 1.0f}}) {};
     };
+
 
     struct Model {
         std::string modelName;
@@ -31,10 +30,37 @@ namespace graphics {
         std::vector<std::pair<TextureOffset, Image*>> textures;
         Model (std::string modelName, Image* image) {
             this->modelName = std::move(modelName);
-            textures.emplace_back(TextureOffset(0.0f, 0.0f), image);
+            textures.emplace_back(TextureOffset(), image);
             texPath = "";
         }
     };
 
+    struct FixedModel {
+        util::span<float> positionData;
+        util::span<float> uvData;
+        std::string modelName;
+        FixedModel () : positionData(), uvData() {}
+        FixedModel (float* posPtr, float* uvPtr, int size, std::string name) {
+            positionData = util::span(posPtr, size);
+            uvData = util::span(uvPtr, size);
+            modelName = std::move(name);
+        }
+        FixedModel (float* posStart, float* posEnd, float* uvStart, float* uvEnd, std::string name) {
+            /*logging::logf(LEVEL_DEBUG, "Pos size: %ld", posEnd - posStart);
+            logging::logf(LEVEL_DEBUG, "UV size: %ld", uvEnd - uvStart);*/
+#ifndef NDEBUG
+            assert(posEnd - posStart == uvEnd - uvStart);
+#endif
+            positionData = util::span(posStart, posEnd);
+            uvData = util::span(uvStart, uvEnd);
+            modelName = std::move(name);
+        }
+    };
+
+    struct AbsolutePosition {
+        int vertices;
+        glm::vec2 pos;
+        glm::mat2 transform;
+    };
 }
 #endif //GRAPHICS_NEW_INCLUDE_H

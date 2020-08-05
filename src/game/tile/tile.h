@@ -18,9 +18,10 @@ namespace game {
         virtual ~Tile();
         virtual int getTextureId ();
         virtual std::string getName ();
-        virtual float* getVertexCoords (float x, float y);
-        virtual float* getUvs ();
+        //virtual float* getVertexCoords (float x, float y);
+        //virtual float* getUvs ();
         virtual bool shouldDraw ();
+        virtual int getModelId ();
     };
 }
 #endif

@@ -6,13 +6,14 @@ namespace graphics {
     class MapRenderLayer : public RenderLayer {
     private:
         bool active = false;
-        Buffer buffers[2];
+        Buffer buffers[5];
         bool requiresBuffer = true;
         game::Map* map;
         GraphicsBufferIds bufferIds;
         bool needDataBuffer = true;
         int numTriangles;
         ShaderProgram* program;
+        TextureAtlas atlas;
     public:
         explicit MapRenderLayer(Renderer* renderer);
         std::string getName () override;

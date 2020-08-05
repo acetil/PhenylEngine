@@ -1,3 +1,4 @@
+#include <graphics/textures/texture_atlas.h>
 #include "render_layer.h"
 #include "component/component.h"
 #ifndef ENTITY_LAYER_H
@@ -10,10 +11,10 @@ namespace graphics {
         bool needsBuffer = true;
         component::ComponentManager<game::AbstractEntity*>* componentManager;
         ShaderProgram* shaderProgram;
-        Buffer buffers[2];
+        Buffer buffers[5];
         int numBuffers = 0;
         GraphicsBufferIds buffIds;
-        int numTriangles = 0;
+        int numTriangles = 0;;
     public:
         EntityRenderLayer (Renderer* renderer, component::ComponentManager<game::AbstractEntity*>* componentManager);
 
