@@ -93,7 +93,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
             float sign = getSign(maxIntersectVec - minIntersectVec, basis1);
             glm::vec2 overlapVec = basis1 * sign - minIntersectVec;
             if (squaredDistance(overlapVec) < leastSquaredDist) {
-                smallestDispVec = (i < 2 ? comp2.bbMap : comp1.bbMap)  *  overlapVec * (i < 2 ? 1.0f : -1.0f);
+                smallestDispVec = (i < 2 ? comp2.bbMap : comp1.bbMap)  *  overlapVec;
                 leastSquaredDist = squaredDistance(overlapVec);
             }
         }

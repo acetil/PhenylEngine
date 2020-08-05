@@ -46,6 +46,12 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     auto comp3 = event.compManager->getObjectDataPtr<graphics::AbsolutePosition>(4, event.entityId);
     comp2->pos = comp->pos;
     comp2->bbMap = {{event.size / 2, 0.0f}, {0.0f, event.size / 2}};
+    if (event.entityId == 0) {
+        // TODO: remove
+        float val = 1 /sqrt(2);
+        //printf("%f\n", val);
+        comp2->bbMap *= glm::mat2{{val,-val}, {val, val}}; // pi/4 rotation
+    }
     comp2->outerRadius = sqrt(2) * event.size;
     comp3->pos = comp->pos;
     comp3->transform = comp2->bbMap;
@@ -63,7 +69,7 @@ void physics::checkCollisions (component::ComponentManager<game::AbstractEntity*
     componentManager->applyFunc(checkCollisionsEntity, 3,  &collisionResults);
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;
-        //logging::logf(LEVEL_DEBUG, "Detected collision between entities %d and %d with min translation vec <%f, %f>!", x, y, dVec.x, dVec.y);
+        logging::logf(LEVEL_DEBUG, "Detected collision between entities %d and %d with min translation vec <%f, %f>!", x, y, dVec.x, dVec.y);
         // TODO: better collision resolving code
         componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->pos += dVec;
         componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->vel = {0,0};
