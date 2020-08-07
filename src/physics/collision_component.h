@@ -6,7 +6,11 @@ namespace physics {
         glm::vec2 pos;
         glm::mat2 bbMap;
         float outerRadius;
-        unsigned int layers;
+        float mass;
+        unsigned int layers = 0;
+        unsigned int masks = 0;
+        unsigned int resolveLayers = 0;
+        unsigned int eventLayer = 0;
     };
 }
 #endif //COLLISION_COMPONENT_H

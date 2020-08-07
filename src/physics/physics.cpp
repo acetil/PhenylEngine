@@ -1,6 +1,7 @@
 #include "physics.h"
 #include "math.h"
 #include "collisions.h"
+#include "event/events/entity_collision.h"
 #include <tuple>
 #include <graphics/graphics_new_include.h>
 
@@ -46,11 +47,16 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     auto comp3 = event.compManager->getObjectDataPtr<graphics::AbsolutePosition>(4, event.entityId);
     comp2->pos = comp->pos;
     comp2->bbMap = {{event.size / 2, 0.0f}, {0.0f, event.size / 2}};
+    comp2->masks = 1; // TODO: move to EntityType
+    comp2->layers = 1;
+    comp2->mass = 10.0f;
     if (event.entityId == 0) {
         // TODO: remove
         float val = 1 /sqrt(2);
         //printf("%f\n", val);
         comp2->bbMap *= glm::mat2{{val,-val}, {val, val}}; // pi/4 rotation
+        comp2->resolveLayers = 1;
+        comp2->eventLayer = 1;
     }
     comp2->outerRadius = sqrt(2) * event.size;
     comp3->pos = comp->pos;
@@ -62,7 +68,7 @@ void physics::updatePhysics (component::ComponentManager<game::AbstractEntity*>*
                                         componentManager->getComponent<graphics::AbsolutePosition>(4)));
 }
 
-void physics::checkCollisions (component::ComponentManager<game::AbstractEntity*>* componentManager) {
+void physics::checkCollisions (component::ComponentManager<game::AbstractEntity*>* componentManager, event::EventBus* eventBus) {
     //logging::log(LEVEL_DEBUG, "Checking collisions!");
     std::vector<std::tuple<int,int, glm::vec2>> collisionResults; // TODO: do caching or something
     collisionResults.reserve(componentManager->getNumObjects());
@@ -70,8 +76,27 @@ void physics::checkCollisions (component::ComponentManager<game::AbstractEntity*
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;
         logging::logf(LEVEL_DEBUG, "Detected collision between entities %d and %d with min translation vec <%f, %f>!", x, y, dVec.x, dVec.y);
-        // TODO: better collision resolving code
-        componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->pos += dVec;
-        componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->vel = {0,0};
+        // TODO: collision event
+        auto comp1 = componentManager->getObjectData<CollisionComponent>(3, x);
+        auto comp2 = componentManager->getObjectData<CollisionComponent>(3, y);
+        auto comp1Mass = comp1.resolveLayers & comp2.layers ? comp1.mass : 0.0f;
+        auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
+        float totalMass = comp1Mass + comp2Mass;
+        if (totalMass != 0) {
+            componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->pos +=
+                    dVec * comp1Mass / totalMass;
+            componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->vel -=
+                    projectVec(dVec, componentManager->getObjectDataPtr<component::EntityMainComponent>(1, x)->vel);
+            componentManager->getObjectDataPtr<component::EntityMainComponent>(1, y)->pos -=
+                    dVec * comp2Mass / totalMass;
+            componentManager->getObjectDataPtr<component::EntityMainComponent>(1, y)->vel -=
+                    projectVec(dVec, componentManager->getObjectDataPtr<component::EntityMainComponent>(1, y)->vel);
+        }
+        if (comp1.layers & comp2.eventLayer) {
+            eventBus->raiseEvent(event::EntityCollisionEvent(y, x, comp1.layers & comp2.eventLayer, componentManager));
+        }
+        if (comp2.layers & comp1.eventLayer) {
+            eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager));
+        }
     }
 }

@@ -112,7 +112,7 @@ void game::GameObject::setEntityComponentManager (component::ComponentManager<Ab
 }
 void game::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
-    physics::checkCollisions(entityComponentManager);
+    physics::checkCollisions(entityComponentManager, eventBus);
 }
 void entityPrePhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, [[maybe_unused]] int size, component::ComponentManager<AbstractEntity*>* manager) {
     auto comp = manager->getComponent<component::EntityMainComponent>(1);

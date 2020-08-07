@@ -6,6 +6,6 @@
 namespace physics {
     void onEntityCreation (event::EntityCreationEvent& event);
     void updatePhysics (component::ComponentManager<game::AbstractEntity*>* componentManager);
-    void checkCollisions (component::ComponentManager<game::AbstractEntity*>* componentManager);
+    void checkCollisions (component::ComponentManager<game::AbstractEntity*>* componentManager, event::EventBus* eventBus);
 }
 #endif

@@ -9,6 +9,7 @@
 #include "graphics/graphics_handlers.h"
 #include "physics/physics.h"
 #include "physics/collision_component.h"
+#include "game/entity/controller/entity_controller.h"
 
 using namespace game;
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
@@ -17,6 +18,7 @@ void registerTiles (GameObject* gameObject, graphics::Graphics* graphics);
 GameObject* game::initGame (graphics::Graphics* graphics) {
     auto gameObject = new GameObject();
     addEventHandlers(gameObject, graphics);
+    addControlEventHandlers(gameObject->getEventBus());
     auto manager = getEntityComponentManager(gameObject->getEventBus());
     gameObject->setEntityComponentManager(manager);
     logging::log(LEVEL_INFO, "Starting init of entities!");

@@ -12,8 +12,8 @@ void game::EntityController::controlEntityPostPhysics (AbstractEntity* entity, c
     // default is empty
 }
 void game::EntityController::onEntityCollision (AbstractEntity* entity, int entityId, AbstractEntity* other, int otherEntityId,
-                                                component::ComponentManager<AbstractEntity*>* manager) {
-    // default is empty
+                                                component::ComponentManager<AbstractEntity*>* manager, unsigned int layers) {
+    logging::log(LEVEL_DEBUG, "On entity collision!");
 }
 void game::controlEntitiesPrePhysics (AbstractEntity** entities, component::EntityMainComponent* comp, int startId, int numEntities,
                                       int direction, component::ComponentManager<AbstractEntity*>* manager) {
@@ -30,3 +30,13 @@ void game::controlEntitiesPostPhysics(AbstractEntity** entities, component::Enti
     }
 }
 
+void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
+    auto control = collisionEvent.componentManager->getObjectData<AbstractEntity*>(0, collisionEvent.entityId)->getController();
+    control->onEntityCollision(collisionEvent.componentManager->getObjectData<AbstractEntity*>(0, collisionEvent.entityId),
+            collisionEvent.entityId,collisionEvent.componentManager->getObjectData<AbstractEntity*>(0, collisionEvent.otherId),
+            collisionEvent.otherId, collisionEvent.componentManager, collisionEvent.collisionLayers);
+}
+
+void game::addControlEventHandlers (event::EventBus* eventBus) {
+    eventBus->subscribeHandler(controlOnCollision);
+}

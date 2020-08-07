@@ -8,14 +8,6 @@ using namespace physics;
 // TODO: optimise
 // TODO: spatial data structure analysis to optimise collisions
 
-inline float squaredDistance (glm::vec2 vec) {
-    return glm::dot(vec, vec);
-}
-
-inline glm::vec2 projectVec (glm::vec2 onto, glm::vec2 vec) {
-    return glm::dot(onto, vec) / squaredDistance(onto) * onto;
-}
-
 inline float getSign (glm::vec2 vec, glm::vec2 basis) {
     if (vec.x * basis.x >= 0 && vec.y * basis.y >= 0) {
         return 1.0f;
@@ -25,6 +17,9 @@ inline float getSign (glm::vec2 vec, glm::vec2 basis) {
 }
 
 inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, CollisionComponent& comp2) {
+    if (!(comp1.layers & comp2.masks) && !(comp2.layers & comp1.masks)) {
+        return std::pair(false, glm::vec2({0,0}));
+    }
     glm::vec2 displacement = comp1.pos - comp2.pos;
     float outerRadiusDist = comp1.outerRadius + comp2.outerRadius;
     if (squaredDistance(displacement) >
