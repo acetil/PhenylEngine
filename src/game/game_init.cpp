@@ -7,7 +7,7 @@
 #include "component/main_component.h"
 #include "logging/logging.h"
 #include "graphics/graphics_handlers.h"
-#include "physics/physics_new.h"
+#include "physics/physics.h"
 #include "physics/collision_component.h"
 
 using namespace game;

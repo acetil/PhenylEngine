@@ -9,6 +9,7 @@
 
 int main (int argv, char* argc[]) {
     // TODO: move to exceptions
+    internal::log_internal(LEVEL_DEBUG, "MAIN", "Started game!");
     GLFWwindow* window = nullptr;
     if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");

@@ -1,7 +1,7 @@
 #include <string>
 #include "game_object.h"
 #include "logging/logging.h"
-#include "physics/physics_new.h"
+#include "physics/physics.h"
 #include "event/events/entity_creation.h"
 #include "entity/controller/entity_controller.h"
 

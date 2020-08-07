@@ -15,8 +15,8 @@
 #include "renderlayer/graphics_layer.h"
 #include "renderer.h"
 
-#ifndef GRAPHICS_NEW_H
-#define GRAPHICS_NEW_H
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 namespace graphics {
 
     class GraphicsData {

@@ -26,6 +26,7 @@ int game::gameloop (graphics::Graphics* graphics) {
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;
     int frames = 0;
+    //int fpsFrames = 0;
     Map* map = readMap("resources/maps/testmap.acmp", gameObject);
     map->setAtlas(graphics->getTextureAtlas("sprite").value());
     //map->initGraphicsData(graphics, "default");
@@ -35,18 +36,20 @@ int game::gameloop (graphics::Graphics* graphics) {
         deltaTime = (float) graphics->getDeltaTime();
         deltaPhysicsFrame += deltaTime;
         timeSinceFpsUpdate += deltaTime;
-        if (timeSinceFpsUpdate >= 1.0f) {
-            logging::logf(LEVEL_DEBUG, "Done %d frames in %f second(s), with an average fps of %f", frames, 
-            timeSinceFpsUpdate, (float)frames / timeSinceFpsUpdate);
-            timeSinceFpsUpdate = 0.0f;
-            frames = 0;
-        }
         keyInput->handleKeyPresses();
-        while (deltaPhysicsFrame > 1.0f / PHYSICS_FPS) {
+        while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             gameObject->updateEntitiesPrePhysics();
             gameObject->updateEntityPosition();
             gameObject->updateEntitiesPostPhysics();
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
+            //fpsFrames++;
+        }
+        if (timeSinceFpsUpdate >= 1.0f) {
+            logging::logf(LEVEL_DEBUG, "Done %d frames in %f second(s), with an average fps of %f", frames,
+                          timeSinceFpsUpdate, (float)frames / timeSinceFpsUpdate);
+            timeSinceFpsUpdate = 0.0f;
+            frames = 0;
+            //fpsFrames = 0;
         }
         /*gameObject->updateEntities(deltaTime);
         gameObject->updateEntityPositions(deltaTime);*/
