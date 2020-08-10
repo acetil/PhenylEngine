@@ -7,7 +7,7 @@ void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& e
 }
 
 void game::PlayerController::controlEntityPrePhysics (game::AbstractEntity* entity, component::EntityMainComponent* comp,
-                                                      int entityId, component::ComponentManager<AbstractEntity*>* manager) {
+                                                      int entityId, component::EntityComponentManager* manager) {
     //logging::log(LEVEL_DEBUG, "Updating acceleration!");
     if (entityId != 0) return; // TODO: remove
     comp->acc[0] += deltaXForce;

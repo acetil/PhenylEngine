@@ -30,10 +30,10 @@ void EntityRenderLayer::gatherData () {
 }
 
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
-    componentManager->applyFunc(bufferPosData, 2, std::pair(&buffers[0],
-                                                            componentManager->getComponent<AbsolutePosition>(4)));
-    componentManager->applyFunc(bufferUvData, 2, &buffers[1]);
-    componentManager->applyFunc(bufferActualPosData, 4, &buffers[2]);
+    componentManager->applyFunc<FixedModel>(bufferPosData, std::pair(&buffers[0],
+                                                            componentManager->getComponent<AbsolutePosition>()));
+    componentManager->applyFunc<FixedModel>(bufferUvData, &buffers[1]);
+    componentManager->applyFunc<AbsolutePosition>(bufferActualPosData, &buffers[2]);
 
     numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
     renderer->bufferData(buffIds, buffers);
@@ -60,7 +60,7 @@ void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuf
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
-                                                component::ComponentManager<game::AbstractEntity*>* componentManager) {
+                                                component::EntityComponentManager* componentManager) {
     this->componentManager = componentManager;
     //this->shaderProgram = renderer->getProgram("entity").value();
     this->shaderProgram = renderer->getProgram("default").value(); // TODO
@@ -75,6 +75,7 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
 void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
     auto [buf, modComp] = tup;
     for (int i = 0; i < numEntities; i++) {
+        //logging::logf(LEVEL_DEBUG, "Num vertices: %d", comp[i].positionData.size());
         //logging::log(LEVEL_DEBUG, "Buffering entity pos data!");
         //auto ptr = buffer->getVertexBufferPos();
         /*glm::vec2 vertices[4];

@@ -10,10 +10,10 @@ namespace event {
         int otherId;
         unsigned int collisionLayers;
         std::string name = "entity_collision";
-        component::ComponentManager<game::AbstractEntity*>* componentManager;
+        component::EntityComponentManager* componentManager;
         EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(nullptr) {}
         EntityCollisionEvent (int _entityId, int _otherId, unsigned int _collisionLayers,
-                              component::ComponentManager<game::AbstractEntity*>* compManager) : entityId(_entityId),
+                              component::EntityComponentManager* compManager) : entityId(_entityId),
                                     otherId(_otherId), collisionLayers(_collisionLayers), componentManager(compManager) {};
     };
 }

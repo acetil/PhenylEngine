@@ -13,7 +13,7 @@
 
 using namespace game;
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
-component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus);
+component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus);
 void registerTiles (GameObject* gameObject, graphics::Graphics* graphics);
 GameObject* game::initGame (graphics::Graphics* graphics) {
     auto gameObject = new GameObject();
@@ -38,13 +38,12 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, graphics);
 }
 
-component::ComponentManager<AbstractEntity*>* getEntityComponentManager (event::EventBus* bus) {
-    auto manager = new component::ComponentManager<AbstractEntity*>(256, bus, "entity_ptr");
-    manager->addComponent<component::EntityMainComponent>("main_component");
-    //manager->addComponent<float, 12>("uv");
+component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus) {
+    auto manager = new component::EntityComponentManager(255, bus);
+    /*manager->addComponent<component::EntityMainComponent>("main_component");
     manager->addComponent<graphics::FixedModel>("model");
     manager->addComponent<physics::CollisionComponent>("collision_component");
-    manager->addComponent<std::pair<glm::vec2, int>>("model_pos");
+    manager->addComponent<graphics::AbsolutePosition>("model_pos");*/
     return manager;
 }
 

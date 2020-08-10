@@ -14,7 +14,7 @@ namespace event {
         float x;
         float y;
         float size;
-        component::ComponentManager<game::AbstractEntity*>* compManager;
+        component::EntityComponentManager* compManager;
         game::AbstractEntity* entity{};
         int entityId;
         EntityCreationEvent () {
@@ -24,7 +24,7 @@ namespace event {
             compManager = nullptr;
             entityId = 0;
         };
-        EntityCreationEvent (float x, float y, float size, component::ComponentManager<game::AbstractEntity*>* compManager, game::AbstractEntity* entity, int entityId) {
+        EntityCreationEvent (float x, float y, float size, component::EntityComponentManager* compManager, game::AbstractEntity* entity, int entityId) {
             this->x = x;
             this->y = y;
             this->size = size;

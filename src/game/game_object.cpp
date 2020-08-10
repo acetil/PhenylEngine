@@ -45,7 +45,7 @@ AbstractEntity* game::GameObject::createNewEntityInstance (const std::string& na
         auto entity = entityRegistry[name]->createEntity();
         int entityId = entityComponentManager->addObject(entity);
         entity->setEntityId(entityId);
-        auto comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityComponentManager->getComponentId("main_component"), entityId);
+        auto comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityId);
         entity->x = &comp.pos.x;
         entity->y = &comp.pos.y;
         //auto uvPtr = entityComponentManager->getObjectDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
@@ -107,25 +107,25 @@ void game::GameObject::setTextureIds (graphics::TextureAtlas atlas) {
 event::EventBus* game::GameObject::getEventBus () {
     return eventBus;
 }
-void game::GameObject::setEntityComponentManager (component::ComponentManager<AbstractEntity*>* manager) {
+void game::GameObject::setEntityComponentManager (component::EntityComponentManager* manager) {
     this->entityComponentManager = manager;
 }
 void game::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
     physics::checkCollisions(entityComponentManager, eventBus);
 }
-void entityPrePhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, [[maybe_unused]] int size, component::ComponentManager<AbstractEntity*>* manager) {
-    auto comp = manager->getComponent<component::EntityMainComponent>(1);
-    controlEntitiesPrePhysics(entities, comp, startId, numEntities, direction, manager);
+void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager) {
+    auto comp = manager->getComponent<component::EntityMainComponent>();
+    controlEntitiesPrePhysics(entities, comp, 0, numEntities, direction, manager);
 }
-void entityPostPhysicsFunc (AbstractEntity** entities, int startId, int numEntities, int direction, [[maybe_unused]] int size, component::ComponentManager<AbstractEntity*>* manager) {
-    auto comp = manager->getComponent<component::EntityMainComponent>(1);
-    controlEntitiesPostPhysics(entities, comp, startId, numEntities, direction, manager);
+void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager) {
+    auto comp = manager->getComponent<component::EntityMainComponent>();
+    controlEntitiesPostPhysics(entities, comp, 0, numEntities, direction, manager);
 }
 void game::GameObject::updateEntitiesPrePhysics () {
-    entityComponentManager->applyFunc(entityPrePhysicsFunc, 0, entityComponentManager);
+    entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager);
 }
 
 void GameObject::updateEntitiesPostPhysics () {
-    entityComponentManager->applyFunc(entityPostPhysicsFunc, 0, entityComponentManager);
+    entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager);
 }

@@ -16,7 +16,7 @@ namespace game {
         }
         void updateMovement (event::PlayerMovementChangeEvent& event);
         void controlEntityPrePhysics (AbstractEntity* entity, component::EntityMainComponent *comp, int entityId,
-                                              component::ComponentManager<AbstractEntity*>* manager) override;
+                                              component::EntityComponentManager* manager) override;
 
     };
 }
