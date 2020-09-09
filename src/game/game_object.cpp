@@ -115,17 +115,17 @@ void game::GameObject::updateEntityPosition () {
     physics::checkCollisions(entityComponentManager, eventBus);
 }
 void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager) {
-    auto comp = manager->getComponent<component::EntityMainComponent>();
-    controlEntitiesPrePhysics(entities, comp, 0, numEntities, direction, manager);
+    controlEntitiesPrePhysics(manager, 0, numEntities, direction);
 }
 void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager) {
-    auto comp = manager->getComponent<component::EntityMainComponent>();
-    controlEntitiesPostPhysics(entities, comp, 0, numEntities, direction, manager);
+    controlEntitiesPostPhysics(manager, 0, numEntities, direction);
 }
 void game::GameObject::updateEntitiesPrePhysics () {
+    // TODO: make better way
     entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager);
 }
 
 void GameObject::updateEntitiesPostPhysics () {
+    // TODO: make better way
     entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager);
 }

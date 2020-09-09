@@ -15,9 +15,7 @@ namespace game {
             deltaYForce = 0;
         }
         void updateMovement (event::PlayerMovementChangeEvent& event);
-        void controlEntityPrePhysics (AbstractEntity* entity, component::EntityMainComponent *comp, int entityId,
-                                              component::EntityComponentManager* manager) override;
-
+        void controlEntityPrePhysics (view::EntityView& entityView) override;
     };
 }
 #endif

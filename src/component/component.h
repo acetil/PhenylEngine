@@ -29,6 +29,10 @@ namespace game {
     class AbstractEntity;
 }
 #endif
+namespace view {
+    template<typename ...Args>
+    class ViewCore;
+}
 namespace component {
     template <typename T>
     using add_pointer = T*;
@@ -154,6 +158,7 @@ namespace component {
             f(std::get<add_pointer<T>>(ptrTuple), numEntities, 0, std::get<add_pointer<A>>(ptrTuple), args...);
         }
 
+        friend class view::ViewCore<Args...>;
     };
     template<typename ...T>
     struct type_list {};
