@@ -9,6 +9,7 @@
 #include <physics/collision_component.h>
 #include "event/event.h"
 #include "main_component.h"
+#include "util/meta.h"
 
 #ifndef MAX_COMPONENT_ENTITIES
 #define MAX_COMPONENT_ENTITIES 256
@@ -34,40 +35,11 @@ namespace view {
     class ViewCore;
 }
 namespace component {
-    template <typename T>
-    using add_pointer = T*;
-
-    template <typename C, typename ...Args>
-    struct get_first_impl {
-        using type = C;
-    };
-    template <typename ...Args>
-    using get_first = typename get_first_impl<Args...>::type;
-
-
-    // The below can_call from https://stackoverflow.com/a/22882504
-    struct can_call_test
-    {
-        template<typename F, typename... A>
-        static decltype(std::declval<F>()(std::declval<A>()...), std::true_type())
-        f(int);
-
-        template<typename F, typename... A>
-        static std::false_type
-        f(...);
-    };
-
-    template<typename F, typename... A>
-    using can_call = decltype(can_call_test::f<F, A...>(0));
-
-    template<typename ...T, typename F>
-    constexpr bool is_callable(F&&) { return can_call<F, T...>{}; }
-
     template <typename ...Args>
     class ComponentManagerImpl {
-        using FirstType = get_first<Args...>;
+        using FirstType = meta::get_first<Args...>;
     private:
-        std::tuple<add_pointer<Args>...> ptrTuple;
+        std::tuple<meta::add_pointer<Args>...> ptrTuple;
         id_type_t numEntities;
         id_type_t maxNumEntities;
         event::EventBus* eventBus;
@@ -107,7 +79,7 @@ namespace component {
 
         template <typename T>
         T* getComponent () {
-            return std::get<add_pointer<T>>(ptrTuple);
+            return std::get<meta::add_pointer<T>>(ptrTuple);
         }
         template <int N>
         decltype(std::get<N>(ptrTuple)) getComponent () {
@@ -115,13 +87,13 @@ namespace component {
         }
         template <typename T>
         T& getObjectData (int entityId) {
-            T* temp = std::get<add_pointer<T>>(ptrTuple) + entityId;
+            T* temp = std::get<meta::add_pointer<T>>(ptrTuple) + entityId;
             //static_assert(std::is_same<decltype(temp2),T&>::value, "Typecast failed!");
             return reinterpret_cast<T&>(*temp);
         }
         template <typename T>
         T* getObjectDataPtr (int entityId) {
-            return std::get<add_pointer<T>>(ptrTuple) + entityId;
+            return std::get<meta::add_pointer<T>>(ptrTuple) + entityId;
         }
         id_type_t getNumObjects () {
             return numEntities;
@@ -148,38 +120,31 @@ namespace component {
 
         template <typename T, typename F, typename ...List>
         void applyFunc (F f, List... args) {
-            static_assert(is_callable<add_pointer<T>, int, int, List...>(f), "Function has incorrect parameters!");
-            f(std::get<add_pointer<T>>(ptrTuple), numEntities, 0, args...);
+            static_assert(meta::is_callable<meta::add_pointer<T>, int, int, List...>(f), "Function has incorrect parameters!");
+            f(std::get<meta::add_pointer<T>>(ptrTuple), numEntities, 0, args...);
         }
 
         template <typename T, typename A, typename F, typename ...List>
         void applyFunc (F f, List... args) {
-            static_assert(is_callable<add_pointer<T>, int, int, A, List...>("Function has incorrect parameters!"));
-            f(std::get<add_pointer<T>>(ptrTuple), numEntities, 0, std::get<add_pointer<A>>(ptrTuple), args...);
+            static_assert(meta::is_callable<meta::add_pointer<T>, int, int, A, List...>("Function has incorrect parameters!"));
+            f(std::get<meta::add_pointer<T>>(ptrTuple), numEntities, 0, std::get<meta::add_pointer<A>>(ptrTuple), args...);
         }
 
         friend class view::ViewCore<Args...>;
-    };
-    template<typename ...T>
-    struct type_list {};
-
-    template <typename ...T>
-    struct type_list_wrapper {
-        using args = type_list<T...>;
     };
 
 
     template<typename T, typename = typename T::args>
     struct ComponentManagerWrap;
     template<typename T, typename... Args>
-    struct ComponentManagerWrap <T, type_list<Args...>> {
+    struct ComponentManagerWrap <T, meta::type_list<Args...>> {
         using type = ComponentManagerImpl<Args...>;
     };
     template <typename T>
     using ComponentManager2 = typename ComponentManagerWrap<T>::type;
 
 
-    using entity_list = type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
+    using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
             graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition>; // TODO: remove includes like AbstractEntity*
 
     using EntityComponentManager = ComponentManager2<entity_list>;

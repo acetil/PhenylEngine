@@ -1,5 +1,6 @@
 #include "graphics/maths_headers.h"
 #include "component/component.h"
+#include "util/meta.h"
 #include <stddef.h>
 #include <tuple>
 #include <utility>
@@ -141,7 +142,7 @@ namespace view {
     struct ViewBaseWrap;
 
     template <typename T, typename ...Args>
-    struct ViewBaseWrap <T, component::type_list<Args...>> {
+    struct ViewBaseWrap <T, meta::type_list<Args...>> {
         using type = ViewBaseImpl<Args...>;
     };
 
@@ -149,7 +150,7 @@ namespace view {
     struct ViewCoreListImpl;
 
     template <typename T, typename ...Args>
-    struct ViewCoreListImpl <T, component::type_list<Args...>> {
+    struct ViewCoreListImpl <T, meta::type_list<Args...>> {
         using type = ViewCore<Args...>;
     };
 
