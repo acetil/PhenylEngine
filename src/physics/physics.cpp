@@ -2,6 +2,7 @@
 #include "math.h"
 #include "collisions.h"
 #include "event/events/entity_collision.h"
+#include "component/rotation_update.h"
 #include <tuple>
 #include <graphics/graphics_new_include.h>
 
@@ -42,7 +43,7 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     comp->acc[0] = 0;
     comp->acc[1] = 0;
     comp->linFriction = 0.27;
-    comp->constFriction = 0.005; // TODO: remove hardcoding and add EntityaType etc.
+    comp->constFriction = 0.005; // TODO: remove hardcoding and add EntityType etc.
     auto comp2 = event.compManager->getObjectDataPtr<CollisionComponent>(event.entityId);
     auto comp3 = event.compManager->getObjectDataPtr<graphics::AbsolutePosition>(event.entityId);
     comp2->pos = comp->pos;
@@ -50,17 +51,15 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     comp2->masks = 1; // TODO: move to EntityType
     comp2->layers = 1;
     comp2->mass = 10.0f;
-    if (event.entityId == 0) {
-        // TODO: remove
-        float val = 1 /sqrt(2);
-        //printf("%f\n", val);
-        comp2->bbMap *= glm::mat2{{val,-val}, {val, val}}; // pi/4 rotation
-        comp2->resolveLayers = 1;
-        comp2->eventLayer = 1;
-    }
     comp2->outerRadius = sqrt(2) * event.size;
     comp3->pos = comp->pos;
     comp3->transform = comp2->bbMap;
+    if (event.entityId == 0) {
+        // TODO: remove
+        comp2->resolveLayers = 1;
+        comp2->eventLayer = 1;
+        //component::rotateEntity(event.entityId, M_PI / 4, event.compManager, event.eventBus);
+    }
 }
 
 void physics::updatePhysics (component::EntityComponentManager* componentManager) {
@@ -99,4 +98,8 @@ void physics::checkCollisions (component::EntityComponentManager * componentMana
             eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager));
         }
     }
+}
+void physics::updateEntityHitboxRotation (event::EntityRotationEvent& event) {
+    auto ptr = event.manager->getObjectDataPtr<CollisionComponent>(event.entityId);
+    ptr->bbMap *= event.rotMatrix;
 }

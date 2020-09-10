@@ -6,7 +6,7 @@ void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& e
     //logging::logf(LEVEL_DEBUG, "Updating movement: (%f, %f)", deltaXForce, deltaYForce);
 }
 
-void game::PlayerController::controlEntityPrePhysics (view::EntityView& entityView) {
+void game::PlayerController::controlEntityPrePhysics (view::EntityView& entityView, event::EventBus* bus) {
    if (entityView.entityId != 0) return; // TODO: remove
    entityView.acceleration += glm::vec2(deltaXForce, deltaYForce);
    deltaXForce = 0;

@@ -2,12 +2,12 @@
 #include "logging/logging.h"
 using namespace game;
 
-void EntityController::controlEntityPrePhysics (view::EntityView& entityView) {
+void EntityController::controlEntityPrePhysics (view::EntityView& entityView, event::EventBus* bus) {
     //logging::log(LEVEL_INFO, "Controlling entity pre physics!");
 }
 
 
-void EntityController::controlEntityPostPhysics (view::EntityView& entityView) {
+void EntityController::controlEntityPostPhysics (view::EntityView& entityView, event::EventBus* bus) {
     //logging::log(LEVEL_INFO, "Controlling entity pre physics!");
 }
 
@@ -17,19 +17,19 @@ void EntityController::onEntityCollision (view::EntityView& entityView, int othe
 
 
 void game::controlEntitiesPrePhysics (component::EntityComponentManager* manager, int startId, int numEntities,
-                                      int direction) {
+                                      int direction, event::EventBus* bus) {
     auto viewCore = view::ViewCore(manager);
     for (int i = 0; i < numEntities; i++) {
         view::EntityView entityView = view::EntityView(viewCore, i);
-        entityView.entity()->getController()->controlEntityPrePhysics(entityView);
+        entityView.entity()->getController()->controlEntityPrePhysics(entityView, bus);
     }
 }
 void game::controlEntitiesPostPhysics(component::EntityComponentManager* manager, int startId, int numEntities,
-                                      int direction) {
+                                      int direction, event::EventBus* bus) {
     auto viewCore = view::ViewCore(manager);
     for (int i = 0; i < numEntities; i++) {
         auto entityView = view::EntityView(viewCore, i);
-        entityView.entity()->getController()->controlEntityPostPhysics(entityView);
+        entityView.entity()->getController()->controlEntityPostPhysics(entityView, bus);
     }
 }
 

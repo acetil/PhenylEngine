@@ -10,6 +10,7 @@
 #include "logging/logging.h"
 #include "camera.h"
 #include "util/span.h"
+
 //#include "buffer.h"
 //#include "renderer.h"
 #ifndef GRAPHICS_NEW_INCLUDE_H
@@ -61,5 +62,7 @@ namespace graphics {
         glm::vec2 pos;
         glm::mat2 transform;
     };
+
+
 }
 #endif //GRAPHICS_NEW_INCLUDE_H

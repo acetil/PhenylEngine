@@ -10,6 +10,7 @@
 #include "physics/physics.h"
 #include "physics/collision_component.h"
 #include "game/entity/controller/entity_controller.h"
+#include "graphics/graphics_update.h"
 
 using namespace game;
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
@@ -36,6 +37,8 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, graphics);
+    gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
+    gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
 }
 
 component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus) {

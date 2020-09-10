@@ -17,6 +17,7 @@ namespace event {
         component::EntityComponentManager* compManager;
         game::AbstractEntity* entity{};
         int entityId;
+        event::EventBus* eventBus = nullptr; // TODO: remove
         EntityCreationEvent () {
             x = 0;
             y = 0;

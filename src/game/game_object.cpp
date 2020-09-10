@@ -1,9 +1,13 @@
 #include <string>
+#include <math.h>
+
 #include "game_object.h"
 #include "logging/logging.h"
 #include "physics/physics.h"
 #include "event/events/entity_creation.h"
 #include "entity/controller/entity_controller.h"
+#include "component/rotation_update.h"
+
 
 using namespace game;
 
@@ -49,7 +53,10 @@ AbstractEntity* game::GameObject::createNewEntityInstance (const std::string& na
         entity->x = &comp.pos.x;
         entity->y = &comp.pos.y;
         //auto uvPtr = entityComponentManager->getObjectDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
-        eventBus->raiseEvent(event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId));
+        auto event = event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId);
+        event.eventBus = eventBus;
+        //eventBus->raiseEvent(event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId));
+        eventBus->raiseEvent(event);
         logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), entityId);
         return entity;
     }
@@ -114,18 +121,21 @@ void game::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
     physics::checkCollisions(entityComponentManager, eventBus);
 }
-void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager) {
-    controlEntitiesPrePhysics(manager, 0, numEntities, direction);
+void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus) {
+    controlEntitiesPrePhysics(manager, 0, numEntities, direction, bus);
 }
-void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager) {
-    controlEntitiesPostPhysics(manager, 0, numEntities, direction);
+void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus) {
+    controlEntitiesPostPhysics(manager, 0, numEntities, direction, bus);
 }
 void game::GameObject::updateEntitiesPrePhysics () {
     // TODO: make better way
-    entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager);
+    entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus);
+
+    // TODO: remove
+    component::rotateEntityBy(0, M_PI / 60, entityComponentManager, eventBus);
 }
 
 void GameObject::updateEntitiesPostPhysics () {
     // TODO: make better way
-    entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager);
+    entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus);
 }

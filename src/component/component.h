@@ -10,6 +10,7 @@
 #include "event/event.h"
 #include "main_component.h"
 #include "util/meta.h"
+#include "rotation_component.h"
 
 #ifndef MAX_COMPONENT_ENTITIES
 #define MAX_COMPONENT_ENTITIES 256
@@ -145,7 +146,7 @@ namespace component {
 
 
     using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
-            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition>; // TODO: remove includes like AbstractEntity*
+            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent>; // TODO: remove includes like AbstractEntity*
 
     using EntityComponentManager = ComponentManager2<entity_list>;
 
