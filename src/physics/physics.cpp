@@ -92,10 +92,10 @@ void physics::checkCollisions (component::EntityComponentManager * componentMana
                     projectVec(dVec, componentManager->getObjectData<component::EntityMainComponent>(y).vel);
         }
         if (comp1.layers & comp2.eventLayer) {
-            eventBus->raiseEvent(event::EntityCollisionEvent(y, x, comp1.layers & comp2.eventLayer, componentManager));
+            eventBus->raiseEvent(event::EntityCollisionEvent(y, x, comp1.layers & comp2.eventLayer, componentManager, eventBus));
         }
         if (comp2.layers & comp1.eventLayer) {
-            eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager));
+            eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager, eventBus));
         }
     }
 }

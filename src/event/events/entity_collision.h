@@ -11,10 +11,11 @@ namespace event {
         unsigned int collisionLayers;
         std::string name = "entity_collision";
         component::EntityComponentManager* componentManager;
-        EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(nullptr) {}
+        EventBus* eventBus; // TODO: find better way
+        EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(nullptr), eventBus(nullptr) {}
         EntityCollisionEvent (int _entityId, int _otherId, unsigned int _collisionLayers,
-                              component::EntityComponentManager* compManager) : entityId(_entityId),
-                                    otherId(_otherId), collisionLayers(_collisionLayers), componentManager(compManager) {};
+                              component::EntityComponentManager* compManager, EventBus* bus) : entityId(_entityId),
+                                    otherId(_otherId), collisionLayers(_collisionLayers), componentManager(compManager), eventBus(bus) {};
     };
 }
 #endif

@@ -130,9 +130,6 @@ void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int dire
 void game::GameObject::updateEntitiesPrePhysics () {
     // TODO: make better way
     entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus);
-
-    // TODO: remove
-    component::rotateEntityBy(0, M_PI / 60, entityComponentManager, eventBus);
 }
 
 void GameObject::updateEntitiesPostPhysics () {

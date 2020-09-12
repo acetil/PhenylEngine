@@ -1,6 +1,7 @@
 #include "graphics/maths_headers.h"
 #include "component/component.h"
 #include "util/meta.h"
+#include "component/rotation_update.h"
 #include <stddef.h>
 #include <tuple>
 #include <utility>
@@ -97,6 +98,7 @@ namespace view {
 
         }
     };
+
     template <class... T> struct type_list {};
     using test = type_list<int, char>;
     template <typename T>
@@ -113,14 +115,16 @@ namespace view {
         T* getPointer () {
             return std::get<add_pointer<T>>(pointerTuple);
         }
+        component::EntityComponentManager* manager;
     public:
-        explicit ViewCore(const component::ComponentManagerImpl<Args...>& compManager) {
+        /*explicit ViewCore(const component::ComponentManagerImpl<Args...>& compManager) {
             pointerTuple = std::move(compManager.ptrTuple);
-        }
-        explicit ViewCore(const component::ComponentManagerImpl<Args...>* compManager) :
-            pointerTuple{compManager->ptrTuple}{};
-        explicit ViewCore(std::tuple<add_pointer<Args>...> tup) : pointerTuple{tup} {};
+        }*/
+        explicit ViewCore(component::ComponentManagerImpl<Args...>* compManager) :
+            pointerTuple{compManager->ptrTuple}, manager(compManager) {};
+        //explicit ViewCore(std::tuple<add_pointer<Args>...> tup) : pointerTuple{tup} {};
         friend class ViewBaseImpl<Args...>;
+        friend class ViewPropertyRotation;
     };
     template <typename ...Args>
     class ViewBaseImpl {
@@ -160,9 +164,28 @@ namespace view {
     template <typename T>
     using ViewBase = typename ViewBaseWrap<T>::type;
 
+    class ViewPropertyRotation : public ViewPropertyCustom<float, ViewPropertyRotation> {
+    private:
+        float newVal;
+        component::RotationComponent* compPtr;
+        component::EntityComponentManager* manager;
+        event::EventBus* eventBus;
+        int entityId;
+    public:
+        explicit ViewPropertyRotation (ViewCoreList<component::entity_list> core,
+                                       event::EventBus* bus, int _entityId) :
+                ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::RotationComponent>() + _entityId),
+                newVal((core.getPointer<component::RotationComponent>() + _entityId)->rotation),
+                manager(core.manager), eventBus(bus), entityId(_entityId) {};
+        void fieldChangeCallback () {
+            component::rotateEntity(entityId, newVal, manager, eventBus);
+        }
+    };
+
     class EntityView : public ViewBase<component::entity_list> {
     public:
         const int entityId;
+        event::EventBus* eventBus;
         ViewProperty<game::AbstractEntity*> entity;
 
         ViewProperty<glm::vec2> position;
@@ -174,7 +197,7 @@ namespace view {
 
         ViewProperty<graphics::FixedModel> model; // TODO: fix
 
-        //ViewPropertyCustom<float> rotation; // TODO
+        ViewPropertyRotation rotation;
 
         ViewProperty<unsigned int> collisionLayers;
         //ViewProperty<unsigned int> collisionMasks;
@@ -182,8 +205,10 @@ namespace view {
         ViewProperty<unsigned int> eventLayers;
 
         // TODO: add scaling
-        EntityView (ViewCoreList<component::entity_list> core, int id) : ViewBase<component::entity_list>(core),
+        EntityView (ViewCoreList<component::entity_list> core, int id, event::EventBus* bus) : ViewBase<component::entity_list>(core),
             entityId(id),
+            eventBus(bus),
+            rotation(core, bus, id),
             entity(getPointer<game::AbstractEntity*>()),
             position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, pos, id))),
             velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, vel, id))),
@@ -199,7 +224,7 @@ namespace view {
             eventLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))) {};
 
         EntityView withId (int id) {
-            return EntityView(viewCore, id);
+            return EntityView(viewCore, id, eventBus);
         }
     };
 }
