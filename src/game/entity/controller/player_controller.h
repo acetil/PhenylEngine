@@ -3,12 +3,14 @@
 
 #include "event/events/player_movement_change.h"
 #include "entity_controller.h"
+#include "event/events/cursor_position_change.h"
 
 namespace game {
     class PlayerController : public EntityController {
     private:
         float deltaXForce;
         float deltaYForce;
+        glm::vec2 cursorWorldPos = {0, 0};
     public:
         PlayerController () {
             deltaXForce = 0;
@@ -16,6 +18,7 @@ namespace game {
         }
         void updateMovement (event::PlayerMovementChangeEvent& event);
         void controlEntityPrePhysics (view::EntityView& entityView) override;
+        void updateCursorPos (event::CursorPosChangeEvent& event);
     };
 }
 #endif

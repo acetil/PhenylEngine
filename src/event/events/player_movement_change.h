@@ -2,7 +2,7 @@
 #ifndef PLAYER_MOVEMENT_CHANGE_H
 #define PLAYER_MOVEMENT_CHANGE_H
 namespace event {
-    class PlayerMovementChangeEvent : public Event<PlayerMovementChangeEvent> {
+    class PlayerMovementChangeEvent : public Event<PlayerMovementChangeEvent, false> {
     public:
         std::string name = "player_movement_change";
         float xForceComp;

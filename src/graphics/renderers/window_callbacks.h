@@ -9,7 +9,7 @@ namespace graphics {
         Renderer* renderer;
         event::EventBus* eventBus;
     };
-    void onMousePosChange (WindowCallbackContext* ctx, double windowX, double windowY);
+    void onMousePosChange (WindowCallbackContext* ctx, double windowX, double windowY, int windowSizeX, int windowSizeY);
 
 }
 #endif

@@ -12,5 +12,7 @@ void graphics::setupGLWindowCallbacks (GLFWwindow* window) {
 
 
 static void cursorCallback (GLFWwindow* window, double xPos, double yPos) {
-    onMousePosChange((WindowCallbackContext*)glfwGetWindowUserPointer(window), xPos, yPos);
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    onMousePosChange((WindowCallbackContext*)glfwGetWindowUserPointer(window), xPos, yPos, width, height);
 }

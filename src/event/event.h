@@ -15,7 +15,7 @@
 // TODO: remove duplication
 
 namespace event {
-    template<typename T, typename ...Args>
+    template<typename T, bool _doDebugLog = true, typename ...Args>
     class Event {
     public:
         using CallbackArgsList = meta::type_list_wrapper<Args...>;
@@ -26,6 +26,13 @@ namespace event {
             return underlying.name;
         };
 
+        void debugLog () {
+            logging::logf("Raised event: \"%s\"", getEventName().c_str());
+        }
+
+        static constexpr bool doDebugLog () {
+            return _doDebugLog;
+        }
         friend T;
     };
     class EventHandlerBase {
@@ -178,7 +185,9 @@ namespace event {
         template <class T, typename = std::enable_if<std::is_base_of<Event<T>, T>::value>>
         void raiseEvent (const T& t) {
             // TODO: other forms of Event
-            logging::logf(LEVEL_DEBUG, "Raised event \"%s\"", t.getEventName().c_str());
+            if constexpr (T::doDebugLog()) {
+                logging::logf(LEVEL_DEBUG, "Raised event \"%s\"", t.getEventName().c_str());
+            }
             //if (t.getEventType()->immediateEval) {
                 for (EventHandlerBase* handler : handlerMap[t.getEventName()]) {
                     handler->handle(t);

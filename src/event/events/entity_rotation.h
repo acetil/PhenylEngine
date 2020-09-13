@@ -3,7 +3,7 @@
 #ifndef ENTITY_ROTATION_H
 #define ENTITY_ROTATION_H
 namespace event {
-    class EntityRotationEvent : public Event<EntityRotationEvent> {
+    class EntityRotationEvent : public Event<EntityRotationEvent, false> {
     public:
         std::string name = "entity_rotation";
         glm::mat2 rotMatrix;

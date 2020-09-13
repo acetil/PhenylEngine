@@ -29,12 +29,6 @@ namespace view {
         }
     public:
         explicit ViewPropertyCustom(void* _ptr) : ptr{(T*)_ptr} {};
-
-        V& operator= (const T& val){
-            *ptr = val;
-            getUnderlying().fieldChangeCallback();
-            return getUnderlying();
-        }
         template<typename U, typename W>
         auto operator+= (const ViewPropertyCustom<U, W>& val) -> decltype(*ptr += val()) {
             *ptr += val();
@@ -96,6 +90,12 @@ namespace view {
         explicit ViewProperty(T* _ptr) : ViewPropertyCustom<T, ViewProperty<T>>(_ptr) {};
         void fieldChangeCallback () {
 
+        }
+        template <typename U>
+        ViewProperty<T>& operator= (const U& val){
+            *(this->ptr) = val;
+            fieldChangeCallback();
+            return *this;
         }
     };
 
@@ -179,6 +179,12 @@ namespace view {
                 manager(core.manager), eventBus(bus), entityId(_entityId) {};
         void fieldChangeCallback () {
             component::rotateEntity(entityId, newVal, manager, eventBus);
+        }
+        template<typename U>
+        ViewPropertyRotation& operator= (const U& val) {
+            newVal = val;
+            fieldChangeCallback();
+            return *this;
         }
     };
 
