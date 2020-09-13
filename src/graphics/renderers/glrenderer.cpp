@@ -1,4 +1,6 @@
 #include "glrenderer.h"
+#include "window_callbacks.h"
+#include "glcallbacks.h"
 #include <vector>
 using namespace graphics;
 GLRenderer::GLRenderer (GLFWwindow* window) {
@@ -177,6 +179,11 @@ GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* d
 
 void GLRenderer::bindTexture (unsigned int textureId) {
     glBindTexture(GL_TEXTURE_2D, textureId);
+}
+
+void GLRenderer::setupWindowCallbacks (WindowCallbackContext* ctx) {
+    glfwSetWindowUserPointer(window, ctx);
+    setupGLWindowCallbacks(window);
 }
 
 

@@ -13,7 +13,7 @@
 #include "renderlayer/render_layer.h"
 #include "graphics_new_include.h"
 #include "renderlayer/graphics_layer.h"
-#include "renderer.h"
+#include "graphics/renderers/renderer.h"
 
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
@@ -76,6 +76,7 @@ namespace graphics {
         Renderer* getRenderer () {
             return renderer; // TODO: remove
         }
+        void setupWindowCallbacks (event::EventBus* bus);
     };
 }
 

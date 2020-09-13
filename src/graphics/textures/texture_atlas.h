@@ -1,6 +1,6 @@
 #include "image.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/renderer.h"
+#include "graphics/renderers/renderer.h"
 
 #include <vector>
 #include <unordered_map>

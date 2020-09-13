@@ -4,7 +4,7 @@
 
 #include <unordered_map>
 
-#include "graphics/renderer.h"
+#include "renderer.h"
 #ifndef GLRENDERER_H
 #define GLRENDERER_H
 namespace graphics {
@@ -54,6 +54,8 @@ namespace graphics {
         GraphicsTexture loadTexture (int width, int height, unsigned char* data) override;
 
         void bindTexture (unsigned int textureId) override;
+
+        void setupWindowCallbacks (WindowCallbackContext* ctx) override;
     };
 }
 #endif //GLRENDERER_H

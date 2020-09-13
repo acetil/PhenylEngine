@@ -7,6 +7,8 @@
 #include "logging/logging.h"
 #include "game/entity/entity.h"
 #include "renderlayer/graphics_layer.h"
+#include "renderers/window_callbacks.h"
+
 using namespace graphics;
 
 Graphics::Graphics (Renderer* renderer) {
@@ -108,4 +110,13 @@ void Graphics::onEntityCreation (event::EntityCreationEvent& event) {
     *data = atlas.getModel(texId);
     //Texture* tex = atlas.getTexture(texId);
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
+}
+
+void Graphics::setupWindowCallbacks (event::EventBus* bus) {
+    auto ctx = new WindowCallbackContext;
+    ctx->graphics = this;
+    ctx->eventBus = bus;
+    ctx->renderer = renderer;
+    renderer->setupWindowCallbacks(ctx);
+    logging::log(LEVEL_DEBUG, "Set up window callbacks!");
 }

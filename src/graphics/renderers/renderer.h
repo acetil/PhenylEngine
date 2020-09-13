@@ -1,9 +1,12 @@
 #include <vector>
-#include "buffer.h"
-#include "shaders/shaders.h"
+#include "graphics/buffer.h"
+#include "graphics/shaders/shaders.h"
 #ifndef RENDERER_H
 #define RENDERER_H
 namespace graphics {
+#ifndef WINDOW_CALLBACKS_H
+    class WindowCallbackContext;
+#endif
     class GraphicsTexture;
     class FrameBuffer {
     public:
@@ -39,6 +42,8 @@ namespace graphics {
         virtual GraphicsTexture loadTexture (int width, int height, unsigned char* data) = 0;
 
         virtual void bindTexture (unsigned int textureId) = 0;
+
+        virtual void setupWindowCallbacks (WindowCallbackContext* ctx) = 0;
     };
     class GraphicsTexture {
         Renderer* renderer;

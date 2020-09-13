@@ -29,6 +29,9 @@ GameObject* game::initGame (graphics::Graphics* graphics) {
     graphics->addEntityLayer(manager); // TODO: unhackify
     registerTiles(gameObject, graphics);
     logging::log(LEVEL_DEBUG, "Set texture ids!");
+
+    graphics->setupWindowCallbacks(gameObject->getEventBus());
+
     return gameObject;
 }
 
