@@ -15,7 +15,7 @@ void game::PlayerController::controlEntityPrePhysics (view::EntityView& entityVi
    deltaXForce = 0;
    deltaYForce = 0;
    auto cursorDisp = cursorWorldPos - entityView.position();
-   entityView.rotation = atan2(cursorDisp.x, cursorDisp.y);
+   entityView.rotation = atan2(cursorDisp.x, cursorDisp.y) - M_PI_2;
 }
 
 void game::PlayerController::updateCursorPos (event::CursorPosChangeEvent &event) {

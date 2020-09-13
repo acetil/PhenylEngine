@@ -3,6 +3,7 @@
 
 #include "image.h"
 #include "stb/stb_image.h"
+#include "logging/logging.h"
 using namespace graphics;
 
 graphics::Image::Image (const char* filename, std::string name) {
@@ -10,6 +11,9 @@ graphics::Image::Image (const char* filename, std::string name) {
     height = 0;
     n = 0;
     data = stbi_load(filename, &width, &height, &n, 4);
+    if (data == nullptr) {
+        logging::logf(LEVEL_ERROR, R"(Failed to load texture "%s" at path "%s")", name.c_str(), filename);
+    }
     this->name = std::move(name);
 }
 unsigned char* graphics::Image::getData () {
