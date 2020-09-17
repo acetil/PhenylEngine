@@ -9,7 +9,7 @@ using namespace game;
 game::EntityTest::EntityTest() {
     scale = 0.1f;
     name = "test_entity";
-    controller = new PlayerController();
+    controller = new PlayerController(); //TODO: move somewhere else
 }
 
 AbstractEntity* game::EntityTest::createEntity () {

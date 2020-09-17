@@ -52,6 +52,7 @@ std::vector<Image*> getSpriteImages () {
     images.push_back(new Image("resources/images/test/stone.png", "test6"));
     images.push_back(new Image("resources/images/test/prismarine_bricks.png", "test7"));
     images.push_back(new Image("resources/images/test/manBlue_gun.png", "test8"));
+    images.push_back(new Image("resources/images/test/bullet2.png", "test9"));
     return images;
 }
 /*
