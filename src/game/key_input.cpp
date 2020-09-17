@@ -5,6 +5,8 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/renderers/glrenderer.h"
 
+#include "event/events/cursor_position_change.h"
+
 using namespace game;
 // TODO: add this to renderer
 namespace game {
@@ -12,6 +14,9 @@ namespace game {
     private:
         GLFWwindow* window;
         std::map<int, KeyboardFunction*> bindingMap;
+        std::map<int, MouseFunction*> mouseBindingMap;
+        glm::vec2 screenMousePos;
+        glm::vec2 worldMousePos;
     public:
         explicit KeyboardInputImpl (graphics::Graphics* graphics);
 
@@ -19,9 +24,13 @@ namespace game {
 
         void setKey (int key, KeyboardFunction* function) override;
 
+        void setMouseButton (int button, MouseFunction* function) override;
+
         void replaceKey (int after, int before) override;
 
         void handleKeyPresses () override;
+
+        void onCursorPosChange (event::CursorPosChangeEvent& event);
     };
 }
 
@@ -35,6 +44,9 @@ game::KeyboardInputImpl::KeyboardInputImpl (graphics::Graphics* graphics) {
 void game::KeyboardInputImpl::handleKeyPresses () {
     for (auto const& x : bindingMap) {
         x.second->operator()(glfwGetKey(window, x.first));
+    }
+    for (auto const& x : mouseBindingMap) {
+        x.second->operator()(glfwGetMouseButton(window, x.first), screenMousePos, worldMousePos);
     }
 }
 void game::KeyboardInputImpl::setKey(int key, KeyboardFunction* func) {
@@ -53,6 +65,19 @@ game::KeyboardInputImpl::~KeyboardInputImpl () {
     bindingMap.clear();
 }
 
+void KeyboardInputImpl::setMouseButton (int button, MouseFunction* function) {
+    mouseBindingMap[button] = function;
+}
+
+void KeyboardInputImpl::onCursorPosChange (event::CursorPosChangeEvent& event) {
+    screenMousePos = event.windowPos;
+    worldMousePos = event.worldPos;
+}
+
 KeyboardInput* game::getKeyboardInput (graphics::Graphics* graphics) {
     return new KeyboardInputImpl(graphics);
+}
+
+void game::setupKeyboardInputListeners (KeyboardInput* input, event::EventBus* bus) {
+    bus->subscribeHandler(&KeyboardInputImpl::onCursorPosChange, (KeyboardInputImpl*)input);
 }

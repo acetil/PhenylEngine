@@ -4,6 +4,7 @@
 #include "event/events/player_movement_change.h"
 #include "entity_controller.h"
 #include "event/events/cursor_position_change.h"
+#include "event/events/player_shoot_change.h"
 
 namespace game {
     class PlayerController : public EntityController {
@@ -11,6 +12,7 @@ namespace game {
         float deltaXForce;
         float deltaYForce;
         glm::vec2 cursorWorldPos = {0, 0};
+        bool doShoot;
     public:
         PlayerController () {
             deltaXForce = 0;
@@ -19,6 +21,7 @@ namespace game {
         void updateMovement (event::PlayerMovementChangeEvent& event);
         void controlEntityPrePhysics (view::EntityView& entityView) override;
         void updateCursorPos (event::CursorPosChangeEvent& event);
+        void updateDoShoot (event::PlayerShootChangeEvent& event);
     };
 }
 #endif

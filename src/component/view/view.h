@@ -80,6 +80,9 @@ namespace view {
         auto operator() () -> decltype(*ptr)& {
             return reinterpret_cast<T&>(*ptr);
         }
+        operator T() {
+            return *ptr;
+        }
         friend V;
     };
     template<typename T>
@@ -98,9 +101,6 @@ namespace view {
             return *this;
         }
     };
-
-    template <class... T> struct type_list {};
-    using test = type_list<int, char>;
     template <typename T>
     using add_pointer = T*;
 
