@@ -27,9 +27,9 @@ void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntitie
 
         comp2.first->pos = comp->pos;
         comp2.second->pos = comp->pos;
-        comp += direction;
-        comp2.first += direction;
-        comp2.second += direction;
+        comp++;
+        comp2.first++;
+        comp2.second++;
         //logging::logf(LEVEL_DEBUG, "Current pos: (%f, %f). Current vel: (%f, %f).", comp->pos[0], comp->pos[1], comp->vel[0], comp->vel[1]);
     }
 }
@@ -46,18 +46,21 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     comp->constFriction = 0.005; // TODO: remove hardcoding and add EntityType etc.
     auto comp2 = event.compManager->getObjectDataPtr<CollisionComponent>(event.entityId);
     auto comp3 = event.compManager->getObjectDataPtr<graphics::AbsolutePosition>(event.entityId);
+    auto comp4 = event.compManager->getObjectDataPtr<component::RotationComponent>(event.entityId);
     comp2->pos = comp->pos;
     comp2->bbMap = {{event.size / 2, 0.0f}, {0.0f, event.size / 2}};
     comp2->masks = 1; // TODO: move to EntityType
     comp2->layers = 1;
+    comp2->eventLayer = 1;
     comp2->mass = 10.0f;
     comp2->outerRadius = sqrt(2) * event.size;
     comp3->pos = comp->pos;
     comp3->transform = comp2->bbMap;
+    comp4->rotation = 0;
+    comp4->rotMatrix = {{1, 0}, {0, 1}};
     if (event.entityId == 0) {
         // TODO: remove
         comp2->resolveLayers = 1;
-        comp2->eventLayer = 1;
         //component::rotateEntity(event.entityId, M_PI / 4, event.compManager, event.eventBus);
     }
 }
@@ -67,7 +70,7 @@ void physics::updatePhysics (component::EntityComponentManager* componentManager
                                         componentManager->getComponent<graphics::AbsolutePosition>()));
 }
 
-void physics::checkCollisions (component::EntityComponentManager * componentManager, event::EventBus* eventBus) {
+void physics::checkCollisions (component::EntityComponentManager * componentManager, event::EventBus* eventBus, view::GameView gameView) {
     //logging::log(LEVEL_DEBUG, "Checking collisions!");
     std::vector<std::tuple<int,int, glm::vec2>> collisionResults; // TODO: do caching or something
     collisionResults.reserve(componentManager->getNumObjects());
@@ -92,10 +95,10 @@ void physics::checkCollisions (component::EntityComponentManager * componentMana
                     projectVec(dVec, componentManager->getObjectData<component::EntityMainComponent>(y).vel);
         }
         if (comp1.layers & comp2.eventLayer) {
-            eventBus->raiseEvent(event::EntityCollisionEvent(y, x, comp1.layers & comp2.eventLayer, componentManager, eventBus));
+            eventBus->raiseEvent(event::EntityCollisionEvent(y, x, comp1.layers & comp2.eventLayer, componentManager, eventBus, gameView));
         }
         if (comp2.layers & comp1.eventLayer) {
-            eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager, eventBus));
+            eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager, eventBus, gameView));
         }
     }
 }

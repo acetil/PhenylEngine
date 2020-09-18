@@ -215,7 +215,7 @@ namespace view {
             entityId(id),
             eventBus(bus),
             rotation(core, bus, id),
-            entity(getPointer<game::AbstractEntity*>()),
+            entity(getPointer<game::AbstractEntity*>() +  id),
             position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, pos, id))),
             velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, vel, id))),
             acceleration(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, acc, id))),

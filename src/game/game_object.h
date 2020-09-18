@@ -28,9 +28,9 @@ namespace game {
         [[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
         AbstractEntity* createNewEntityInstance (const std::string& name, float x, float y);
         /*AbstractEntity* getEntityInstance (int entityId);
-        void deleteEntityInstance (AbstractEntity* entity);
-        void deleteEntityInstance (int entityId);*/
+        void deleteEntityInstance (AbstractEntity* entity);*/
 
+        void deleteEntityInstance (int entityId);
         void registerTile (Tile* tile);
         int getTileId (const std::string& name);
         Tile* getTile (const std::string& name);

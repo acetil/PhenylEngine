@@ -7,6 +7,8 @@
 namespace meta {
     template <typename T>
     using add_pointer = T*;
+    template <typename T>
+    using remove_pointer = typename std::remove_pointer<T>::type;
 
     template <typename C, typename ...Args>
     struct get_first_impl {

@@ -119,20 +119,26 @@ void game::GameObject::setEntityComponentManager (component::EntityComponentMana
 }
 void game::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
-    physics::checkCollisions(entityComponentManager, eventBus);
+    physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
 }
-void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus) {
-    controlEntitiesPrePhysics(manager, 0, numEntities, direction, bus);
+void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus, view::GameView gameView) {
+    controlEntitiesPrePhysics(manager, gameView, 0, numEntities, direction, bus);
 }
-void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus) {
-    controlEntitiesPostPhysics(manager, 0, numEntities, direction, bus);
+void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus, view::GameView gameView) {
+    controlEntitiesPostPhysics(manager, gameView, 0, numEntities, direction, bus);
 }
 void game::GameObject::updateEntitiesPrePhysics () {
     // TODO: make better way
-    entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus);
+    auto gameView = view::GameView(this);
+    entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus, gameView);
 }
 
 void GameObject::updateEntitiesPostPhysics () {
     // TODO: make better way
-    entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus);
+    auto gameView = view::GameView(this);
+    entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus, gameView);
+}
+
+void GameObject::deleteEntityInstance (int entityId) {
+    entityComponentManager->removeObject(entityId); // TODO: implement queue
 }

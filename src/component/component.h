@@ -104,19 +104,25 @@ namespace component {
             std::get<0>(ptrTuple)[numEntities] = obj;
             return numEntities++;
         }
-        template <int N = 0, typename T, typename ...List>
+        template <int N = 0, std::enable_if_t<N < sizeof...(Args), int> = 0>
         void swapObjects (id_type_t oldId, id_type_t newId) {
-            std::get<N>(ptrTuple)[newId] = std::get<N>(ptrTuple)[oldId];
-            swapObjects<N + 1, List...>();
+            //std::get<N>(ptrTuple)[newId] = std::get<N>(ptrTuple)[oldId];
+            memcpy(std::get<N>(ptrTuple) + newId, std::get<N>(ptrTuple) + oldId, sizeof(decltype(*std::get<N>(ptrTuple))));
+            swapObjects<N + 1>(oldId, newId);
+        }
+        template <int N = 0, std::enable_if_t<N >= sizeof...(Args), int> = 0>
+        void swapObjects (id_type_t oldId, id_type_t newId) {
+
         }
         void removeObject (id_type_t entityId) {
+            logging::logf(LEVEL_DEBUG, "Removing entity %d!", entityId);
             if (entityId >= numEntities) {
                 logging::logf(LEVEL_ERROR, "Attempted to remove object id %d, only %d object components!", entityId, numEntities);
                 return;
             }
             id_type_t oldId = --numEntities;
-            swapObjects<Args...>(oldId, entityId);
-            eventBus->raiseEvent(new event::ObjectIdSwapEvent<FirstType>(oldId, entityId));
+            swapObjects<>(oldId, entityId);
+            eventBus->raiseEvent(event::ObjectIdSwapEvent<meta::remove_pointer<FirstType>>(oldId, entityId)); // TODO
         }
 
         template <typename T, typename F, typename ...List>

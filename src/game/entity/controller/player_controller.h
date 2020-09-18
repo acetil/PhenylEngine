@@ -12,14 +12,15 @@ namespace game {
         float deltaXForce;
         float deltaYForce;
         glm::vec2 cursorWorldPos = {0, 0};
-        bool doShoot;
+        bool doShoot = false;
+        bool hasShot = false;
     public:
         PlayerController () {
             deltaXForce = 0;
             deltaYForce = 0;
         }
         void updateMovement (event::PlayerMovementChangeEvent& event);
-        void controlEntityPrePhysics (view::EntityView& entityView) override;
+        void controlEntityPrePhysics (view::EntityView& entityView, view::GameView& gameView) override;
         void updateCursorPos (event::CursorPosChangeEvent& event);
         void updateDoShoot (event::PlayerShootChangeEvent& event);
     };

@@ -4,7 +4,7 @@
 namespace game {
     class BulletController : public EntityController {
     public:
-        void onEntityCollision(view::EntityView &entityView, int otherEntityId, unsigned int layers) override;
+        void onEntityCollision(view::EntityView &entityView, view::GameView& gameView, int otherEntityId, unsigned int layers) override;
     };
 }
 #endif //BULLET_CONTROLLER_H
