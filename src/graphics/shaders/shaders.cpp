@@ -55,7 +55,7 @@ ShaderProgram* graphics::loadShaderProgram (const char* vertexPath, const char* 
     glLinkProgram(programId);
     GLint result = GL_FALSE;
     int infoLength;
-    glGetProgramiv(programId, GL_COMPILE_STATUS, &result);
+    glGetProgramiv(programId, GL_LINK_STATUS, &result);
     glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
     if (infoLength > 0) {
         char* infoLog = new char[infoLength];
@@ -84,7 +84,7 @@ void graphics::ShaderProgram::registerUniform (const std::string& _name) {
     uniformMap[_name] = glGetUniformLocation(programId, _name.c_str());
 }
 // TODO: do for different uniform types
-void graphics::ShaderProgram::appplyUniform (const std::string& _name, glm::mat4 matrix) {
+void graphics::ShaderProgram::applyUniform (const std::string& _name, glm::mat4 matrix) {
     GLuint uniformId = uniformMap[_name];
     glUniformMatrix4fv(uniformId, 1, GL_FALSE, &matrix[0][0]);
 }

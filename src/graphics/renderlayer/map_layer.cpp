@@ -88,7 +88,7 @@ void MapRenderLayer::applyUniform (int uniformId, void* data) {
 
 void MapRenderLayer::applyCamera (Camera camera) {
     program->useProgram();
-    program->appplyUniform(camera.getUniformName(), camera.getCamMatrix());
+    program->applyUniform(camera.getUniformName(), camera.getCamMatrix());
 }
 
 void MapRenderLayer::render (Renderer* renderer, FrameBuffer* frameBuf) {

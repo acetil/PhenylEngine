@@ -14,7 +14,7 @@
                 ShaderProgram (GLuint program, std::string name);
                 void useProgram () const;
                 void registerUniform (const std::string& _name);
-                void appplyUniform(const std::string& _name, glm::mat4 matrix);
+                void applyUniform(const std::string& _name, glm::mat4 matrix);
         };
 
         GLuint loadShader (const char* filepath, GLuint shaderType);

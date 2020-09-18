@@ -49,7 +49,7 @@ void EntityRenderLayer::applyUniform (int uniformId, void* data) {
 
 void EntityRenderLayer::applyCamera (graphics::Camera camera) {
     shaderProgram->useProgram();
-    shaderProgram->appplyUniform(camera.getUniformName(), camera.getCamMatrix());
+    shaderProgram->applyUniform(camera.getUniformName(), camera.getCamMatrix());
 }
 
 void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
