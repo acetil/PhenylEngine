@@ -38,6 +38,9 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
     }
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glfwSwapInterval(1); // TODO: handle enable/disable vsync
+
     *windowPtr = window;
     logging::log(LEVEL_INFO, "Window initialised successfully!");
     return GRAPHICS_INIT_SUCCESS;
