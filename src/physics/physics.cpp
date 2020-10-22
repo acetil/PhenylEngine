@@ -34,7 +34,7 @@ void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntitie
     }
 }
 void physics::onEntityCreation (event::EntityCreationEvent& event) {
-    logging::log(LEVEL_DEBUG, "About to get main component!");
+    /*logging::log(LEVEL_DEBUG, "About to get main component!");
     auto comp = event.compManager->getObjectDataPtr<component::EntityMainComponent>(event.entityId);
     comp->pos[0] = event.x;
     comp->pos[1] = event.y;
@@ -62,7 +62,7 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
         // TODO: remove
         comp2->resolveLayers = 1;
         //component::rotateEntity(event.entityId, M_PI / 4, event.compManager, event.eventBus);
-    }
+    }*/
 }
 
 void physics::updatePhysics (component::EntityComponentManager* componentManager) {

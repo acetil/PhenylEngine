@@ -6,13 +6,13 @@ using namespace game;
 EntityBullet::EntityBullet () {
     scale = 0.03f;
     name = "bullet";
-    controller = new BulletController();
+    //controller = new BulletController();
 }
 
 AbstractEntity* EntityBullet::createEntity () {
     auto entity = new EntityBullet();
     entity->textureId = textureId;
-    entity->controller = controller;
+    //entity->controller = controller;
     return entity;
 }
 

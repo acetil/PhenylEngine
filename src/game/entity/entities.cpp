@@ -2,16 +2,44 @@
 #include "entities.h"
 #include "entity_test.h"
 #include "entity_bullet.h"
+#include "entity_type.h"
+#include "controller/bullet_controller.h"
 using namespace game;
 
 void game::addEntities(event::EntityRegisterEvent& event) {
-    auto entityTest = new EntityTest();
-    auto entityBullet = new EntityBullet();
-    // TODO: move to PlayerController
-    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateMovement, (PlayerController*) entityTest->getController());
-    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateCursorPos, (PlayerController*) entityTest->getController());
-    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateDoShoot, (PlayerController*) entityTest->getController());
+    //auto entityTest = new EntityTest();
+    //auto entityBullet = new EntityBullet();
 
-    event.gameObject->registerEntity("test_entity", entityTest);
-    event.gameObject->registerEntity("bullet", entityBullet);
+    auto entityTestType = EntityTypeBuilder("test_entity", constructor_factory<EntityTest>)
+            .setMass(10.0f)
+            .setConstFriction(0.005)
+            .setLinearFriction(0.27)
+            .setScale(0.1f)
+            .addCollisionLayers(1)
+            .addEventLayers(1)
+            .addLayers(1);
+    auto entityBulletType = EntityTypeBuilder("bullet", constructor_factory<EntityBullet>)
+            .setScale(0.03f)
+            .setMass(1.0f)
+            .setConstFriction(0.0001)
+            .setLinearFriction(0.01)
+            .addCollisionLayers(1)
+            .addEventLayers(1)
+            .addLayers(1);
+
+    event.gameObject->registerEntityType("test_entity", entityTestType);
+    event.gameObject->registerEntityType("bullet", entityBulletType);
+    event.gameObject->registerEntityController<PlayerController>("test_entity");
+    event.gameObject->registerEntityController<BulletController>("bullet");
+
+    event.gameObject->buildEntityTypes();
+
+    auto playerController = (PlayerController*)event.gameObject->getController("test_entity");
+
+    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateMovement, playerController);
+    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateCursorPos, playerController);
+    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateDoShoot, playerController);
+
+    //event.gameObject->registerEntity("test_entity", entityTest);
+    //event.gameObject->registerEntity("bullet", entityBullet);
 }

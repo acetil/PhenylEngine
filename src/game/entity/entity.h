@@ -15,7 +15,7 @@ namespace game {
         std::string name;
         int textureId;
         int entityId;
-        EntityController* controller;
+        //EntityController* controller;
         public:
         static std::string getObjectType () {
             return "entity";
@@ -31,7 +31,7 @@ namespace game {
         //virtual void render (graphics::Graphics* graphics);
         virtual int getTextureId ();
         virtual void setEntityId (int entityId);
-        virtual EntityController* getController ();
+        //virtual EntityController* getController ();
     };
 }
 #endif

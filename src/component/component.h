@@ -11,6 +11,7 @@
 #include "main_component.h"
 #include "util/meta.h"
 #include "rotation_component.h"
+#include "game/entity/entity_type.h"
 
 #ifndef MAX_COMPONENT_ENTITIES
 #define MAX_COMPONENT_ENTITIES 256
@@ -26,11 +27,14 @@ namespace component {
     typedef unsigned short id_type_t;
 }
 #endif
-#ifndef ENTITY_H
 namespace game {
-    class AbstractEntity;
-}
+#ifndef ENTITY_H
+        class AbstractEntity;
 #endif
+#ifndef CONTROLLER_H
+        class EntityController;
+#endif
+};
 namespace view {
     template<typename ...Args>
     class ViewCore;
@@ -104,6 +108,10 @@ namespace component {
             std::get<0>(ptrTuple)[numEntities] = obj;
             return numEntities++;
         }
+        id_type_t addObject () {
+            logging::logf(LEVEL_DEBUG, "New object! Num objects: %d", numEntities + 1);
+            return numEntities++;
+        }
         template <int N = 0, std::enable_if_t<N < sizeof...(Args), int> = 0>
         void swapObjects (id_type_t oldId, id_type_t newId) {
             //std::get<N>(ptrTuple)[newId] = std::get<N>(ptrTuple)[oldId];
@@ -152,7 +160,7 @@ namespace component {
 
 
     using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
-            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent>; // TODO: remove includes like AbstractEntity*
+            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent, game::EntityType, game::EntityController*>; // TODO: remove includes like AbstractEntity*
 
     using EntityComponentManager = ComponentManager2<entity_list>;
 

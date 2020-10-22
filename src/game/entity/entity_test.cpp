@@ -9,7 +9,7 @@ using namespace game;
 game::EntityTest::EntityTest() {
     scale = 0.1f;
     name = "test_entity";
-    controller = new PlayerController(); //TODO: move somewhere else
+    //controller = new PlayerController(); //TODO: move somewhere else
 }
 
 AbstractEntity* game::EntityTest::createEntity () {
@@ -17,7 +17,7 @@ AbstractEntity* game::EntityTest::createEntity () {
     entity->textureId = textureId;
     entity->scale = scale;
     entity->name = name;
-    entity->controller = controller;
+    //entity->controller = controller;
     return entity;
 }
 void game::EntityTest::setTextureIds (graphics::TextureAtlas& atlas) {

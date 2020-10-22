@@ -89,6 +89,7 @@ namespace view {
     class ViewProperty : public ViewPropertyCustom<T, ViewProperty<T>>{
 
     public:
+        ViewProperty() : ViewPropertyCustom<T, ViewProperty<T>>(nullptr) {};
         explicit ViewProperty(void* _ptr) : ViewPropertyCustom<T, ViewProperty<T>>(_ptr) {};
         explicit ViewProperty(T* _ptr) : ViewPropertyCustom<T, ViewProperty<T>>(_ptr) {};
         void fieldChangeCallback () {
@@ -110,7 +111,7 @@ namespace view {
     template <typename ...Args>
     class ViewCore {
     private:
-        const std::tuple<add_pointer<Args>...> pointerTuple;
+        const std::tuple<add_pointer<Args>...> pointerTuple{};
         template <typename T>
         T* getPointer () {
             return std::get<add_pointer<T>>(pointerTuple);
@@ -122,6 +123,7 @@ namespace view {
         }*/
         explicit ViewCore(component::ComponentManagerImpl<Args...>* compManager) :
             pointerTuple{compManager->ptrTuple}, manager(compManager) {};
+        explicit ViewCore () : manager(nullptr) {};
         //explicit ViewCore(std::tuple<add_pointer<Args>...> tup) : pointerTuple{tup} {};
         friend class ViewBaseImpl<Args...>;
         friend class ViewPropertyRotation;
@@ -134,6 +136,7 @@ namespace view {
         T* getPointer () {
             return viewCore.template getPointer<T>();
         }
+        ViewBaseImpl() : viewCore() {};
         explicit ViewBaseImpl(ViewCore<Args...> core) : viewCore{std::move(core)} {}
     };
 
@@ -166,17 +169,18 @@ namespace view {
 
     class ViewPropertyRotation : public ViewPropertyCustom<float, ViewPropertyRotation> {
     private:
-        float newVal;
-        component::RotationComponent* compPtr;
-        component::EntityComponentManager* manager;
-        event::EventBus* eventBus;
-        int entityId;
+        float newVal{};
+        component::RotationComponent* compPtr{};
+        component::EntityComponentManager* manager{};
+        event::EventBus* eventBus{};
+        int entityId{};
     public:
         explicit ViewPropertyRotation (ViewCoreList<component::entity_list> core,
                                        event::EventBus* bus, int _entityId) :
                 ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::RotationComponent>() + _entityId),
                 newVal((core.getPointer<component::RotationComponent>() + _entityId)->rotation),
                 manager(core.manager), eventBus(bus), entityId(_entityId) {};
+        ViewPropertyRotation () : ViewPropertyCustom<float, ViewPropertyRotation>(nullptr) {}
         void fieldChangeCallback () {
             component::rotateEntity(entityId, newVal, manager, eventBus);
         }
@@ -194,6 +198,8 @@ namespace view {
         event::EventBus* eventBus;
         ViewProperty<game::AbstractEntity*> entity;
 
+        ViewProperty<game::EntityController*> controller;
+
         ViewProperty<glm::vec2> position;
         ViewProperty<glm::vec2> velocity;
         ViewProperty<glm::vec2> acceleration;
@@ -210,12 +216,29 @@ namespace view {
         ViewProperty<unsigned int> resolveLayers;
         ViewProperty<unsigned int> eventLayers;
 
+        EntityView () : ViewBase<component::entity_list>(),
+            entityId(-1),
+            eventBus{nullptr},
+            rotation(),
+            entity(),
+            controller(),
+            position(),
+            velocity(),
+            acceleration(),
+            constantFriction(),
+            linearFriction(),
+            model(),
+
+            collisionLayers(),
+            resolveLayers(),
+            eventLayers() {};
         // TODO: add scaling
         EntityView (ViewCoreList<component::entity_list> core, int id, event::EventBus* bus) : ViewBase<component::entity_list>(core),
             entityId(id),
             eventBus(bus),
             rotation(core, bus, id),
             entity(getPointer<game::AbstractEntity*>() +  id),
+            controller(getPointer<game::EntityController*>() + id),
             position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, pos, id))),
             velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, vel, id))),
             acceleration(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, acc, id))),

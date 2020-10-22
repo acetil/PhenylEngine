@@ -41,4 +41,12 @@ void game::PlayerController::updateDoShoot (event::PlayerShootChangeEvent &event
     hasShot &= doShoot;
 }
 
+int game::PlayerController::getTextureId (view::EntityView& entityView, view::GameView& gameView) {
+    return texId;
+}
+
+void game::PlayerController::setTextureIds (graphics::TextureAtlas& atlas) {
+    texId = atlas.getModelId("test8");
+}
+
 

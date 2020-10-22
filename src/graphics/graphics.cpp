@@ -8,6 +8,7 @@
 #include "game/entity/entity.h"
 #include "renderlayer/graphics_layer.h"
 #include "renderers/window_callbacks.h"
+#include "game/entity/controller/entity_controller.h"
 
 using namespace graphics;
 
@@ -103,11 +104,9 @@ void Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
 }
 
 void Graphics::onEntityCreation (event::EntityCreationEvent& event) {
-    int texId = event.entity->getTextureId(); // TODO: update for models and decoupling
-    unsigned int id = event.entity->getEntityId();
-    auto data = event.compManager->getObjectDataPtr<graphics::FixedModel>(id);
+    int texId = event.entityView.controller()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
     TextureAtlas atlas = this->getTextureAtlas("sprite").value();
-    *data = atlas.getModel(texId);
+    event.entityView.model = atlas.getModel((texId));
     //Texture* tex = atlas.getTexture(texId);
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
 }

@@ -22,6 +22,7 @@ int game::AbstractEntity::getTextureId () {
 /*void game::AbstractEntity::render (graphics::Graphics* graphics) {
     graphics->drawTexSquare(*x, *y, scale, textureId);
 }*/
-EntityController* game::AbstractEntity::getController() {
+/*EntityController* game::AbstractEntity::getController() {
     return controller;
 }
+*/

@@ -15,13 +15,21 @@ void EntityController::onEntityCollision (view::EntityView& entityView, view::Ga
     logging::log(LEVEL_DEBUG, "On entity collision!");
 }
 
+int EntityController::getTextureId (view::EntityView& entityView, view::GameView& gameView) {
+    return testTexId;
+}
+
+void EntityController::setTextureIds (graphics::TextureAtlas& atlas) {
+    testTexId = atlas.getModelId("test3");
+}
+
 
 void game::controlEntitiesPrePhysics (component::EntityComponentManager* manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, event::EventBus* bus) {
     auto viewCore = view::ViewCore(manager);
     for (int i = 0; i < numEntities; i++) {
         view::EntityView entityView = view::EntityView(viewCore, i, bus);
-        entityView.entity()->getController()->controlEntityPrePhysics(entityView, gameView);
+        entityView.controller()->controlEntityPrePhysics(entityView, gameView);
     }
 }
 void game::controlEntitiesPostPhysics(component::EntityComponentManager* manager, view::GameView& gameView, int startId, int numEntities,
@@ -29,13 +37,13 @@ void game::controlEntitiesPostPhysics(component::EntityComponentManager* manager
     auto viewCore = view::ViewCore(manager);
     for (int i = 0; i < numEntities; i++) {
         auto entityView = view::EntityView(viewCore, i, bus);
-        entityView.entity()->getController()->controlEntityPostPhysics(entityView, gameView);
+        entityView.controller()->controlEntityPostPhysics(entityView, gameView);
     }
 }
 
 void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
     auto entityView = view::EntityView(view::ViewCore(collisionEvent.componentManager), collisionEvent.entityId, collisionEvent.eventBus);
-    entityView.entity()->getController()->onEntityCollision(entityView, collisionEvent.gameView, collisionEvent.otherId, collisionEvent.collisionLayers);
+    entityView.controller()->onEntityCollision(entityView, collisionEvent.gameView, collisionEvent.otherId, collisionEvent.collisionLayers);
 }
 
 void game::addControlEventHandlers (event::EventBus* eventBus) {

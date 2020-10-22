@@ -14,6 +14,7 @@ namespace game {
         glm::vec2 cursorWorldPos = {0, 0};
         bool doShoot = false;
         bool hasShot = false;
+        int texId = 0;
     public:
         PlayerController () {
             deltaXForce = 0;
@@ -23,6 +24,8 @@ namespace game {
         void controlEntityPrePhysics (view::EntityView& entityView, view::GameView& gameView) override;
         void updateCursorPos (event::CursorPosChangeEvent& event);
         void updateDoShoot (event::PlayerShootChangeEvent& event);
+        int getTextureId (view::EntityView& entityView, view::GameView& gameView) override;
+        void setTextureIds (graphics::TextureAtlas& atlas) override;
     };
 }
 #endif

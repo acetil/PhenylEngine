@@ -1,4 +1,5 @@
 #include <string>
+#include <utility>
 #include <math.h>
 
 #include "game_object.h"
@@ -7,7 +8,7 @@
 #include "event/events/entity_creation.h"
 #include "entity/controller/entity_controller.h"
 #include "component/rotation_update.h"
-
+#include "game/entity/entity_type_functions.h"
 
 using namespace game;
 
@@ -24,7 +25,7 @@ game::GameObject::~GameObject () {
     delete eventBus;
 }
 
-void game::GameObject::registerEntity (const std::string& name, AbstractEntity* entity) {
+/*void game::GameObject::registerEntity (const std::string& name, AbstractEntity* entity) {
     if (entityRegistry.count(name) > 0) {
         logging::logf(LEVEL_WARNING, "Duplicate registry of entity with name '%s'!", name.c_str());
         return;
@@ -39,26 +40,21 @@ void game::GameObject::registerEntity (const std::string& name, AbstractEntity* 
     } else {
         return nullptr;
     }
-}
-AbstractEntity* game::GameObject::createNewEntityInstance (const std::string& name, float x, float y) {
+}*/
+int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y) {
     // TODO: requires refactor
-    if (entityRegistry.count(name) == 0) {
+    if (entityTypes.count(name) == 0) {
         logging::logf(LEVEL_WARNING, "Attempted creation of entity with name '%s' which doesn't exist!", name.c_str());
-        return nullptr;
+        return -1;
     } else {
-        auto entity = entityRegistry[name]->createEntity();
-        int entityId = entityComponentManager->addObject(entity);
-        entity->setEntityId(entityId);
-        auto comp = entityComponentManager->getObjectData<component::EntityMainComponent>(entityId);
-        entity->x = &comp.pos.x;
-        entity->y = &comp.pos.y;
-        //auto uvPtr = entityComponentManager->getObjectDataPtr<float>(entityComponentManager->getComponentId("uv"), entityId);
-        auto event = event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId);
-        event.eventBus = eventBus;
-        //eventBus->raiseEvent(event::EntityCreationEvent(x, y, entity->scale, entityComponentManager, entity, entityId));
-        eventBus->raiseEvent(event);
-        logging::logf(LEVEL_DEBUG, "Created entity with name %s and id %d", name.c_str(), entityId);
-        return entity;
+        int entityId = entityComponentManager->addObject();
+        setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y);
+        auto viewCore = view::ViewCore(entityComponentManager);
+
+        eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
+                                                        entityComponentManager->getObjectData<AbstractEntity*>(entityId), entityId,
+                             view::EntityView(viewCore, entityId, eventBus), view::GameView(this)));
+        return entityId;
     }
 }
 /*AbstractEntity* game::GameObject::getEntityInstance (int entityId) {
@@ -107,7 +103,7 @@ Tile* game::GameObject::getTile (const std::string& name) {
     }
 }*/
 void game::GameObject::setTextureIds (graphics::TextureAtlas atlas) {
-    for (auto const& it : entityRegistry) {
+    for (auto const& it : controllers) {
         it.second->setTextureIds(atlas);
     }
 }
@@ -141,4 +137,18 @@ void GameObject::updateEntitiesPostPhysics () {
 
 void GameObject::deleteEntityInstance (int entityId) {
     entityComponentManager->removeObject(entityId); // TODO: implement queue
+}
+
+void GameObject::registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder) {
+    entityTypeBuilders[name] = std::move(entityTypeBuilder);
+}
+
+void GameObject::buildEntityTypes () {
+    for (auto [name, builder] : entityTypeBuilders) {
+        entityTypes[name] = builder.build(controllers);
+    }
+}
+
+EntityController* GameObject::getController (const std::string& name) {
+    return controllers[name];
 }
