@@ -42,3 +42,7 @@ void internal::vlogf_internal (int level, const char* location, const char* log,
     vsprintf(buffer, log, l);
     log_internal(level, location, buffer);
 }
+
+void internal::log_internal (int level, const std::string& location, const std::string& log) {
+    log_internal(level, location.c_str(), log.c_str());
+}

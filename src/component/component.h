@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <type_traits>
+#include <stdint.h>
 #include "event/events/object_id_swap.h"
 
 #include <cmath>
@@ -20,11 +21,11 @@
 #define COMPONENT_H
 #if MAX_COMPONENT_ENTITIES <= 256
 namespace component {
-    typedef unsigned char id_type_t;
+    typedef uint16_t id_type_t;
 }
 #else
 namespace component {
-    typedef unsigned short id_type_t;
+    typedef uint16_t id_type_t;
 }
 #endif
 namespace game {
@@ -104,12 +105,12 @@ namespace component {
             return numEntities;
         }
         id_type_t addObject (FirstType obj) {
-            logging::logf(LEVEL_DEBUG, "New object! Num objects: %d", numEntities + 1);
+            logging::log(LEVEL_DEBUG, "New object! Num objects: {}", numEntities + 1);
             std::get<0>(ptrTuple)[numEntities] = obj;
             return numEntities++;
         }
         id_type_t addObject () {
-            logging::logf(LEVEL_DEBUG, "New object! Num objects: %d", numEntities + 1);
+            logging::log(LEVEL_DEBUG, "New object! Num objects: {}", numEntities + 1);
             return numEntities++;
         }
         template <int N = 0, std::enable_if_t<N < sizeof...(Args), int> = 0>
@@ -123,16 +124,16 @@ namespace component {
 
         }
         void removeObject (id_type_t entityId) {
-            logging::logf(LEVEL_DEBUG, "Removing entity %d!", entityId);
+            logging::log(LEVEL_DEBUG, "Removing entity {}!", entityId);
             if (entityId >= numEntities) {
-                logging::logf(LEVEL_ERROR, "Attempted to remove object id %d, only %d object components!", entityId, numEntities);
+                logging::log(LEVEL_ERROR, "Attempted to remove object id {}, only {} object components!", entityId, numEntities);
                 return;
             }
             id_type_t oldId = --numEntities;
-            swapObjects<>(oldId, entityId);
             if constexpr (std::is_pointer<FirstType>::value) {
-                delete std::get<0>(ptrTuple)[oldId];
+                delete std::get<0>(ptrTuple)[entityId];
             }
+            swapObjects<>(oldId, entityId);
             eventBus->raiseEvent(event::ObjectIdSwapEvent<meta::remove_pointer<FirstType>>(oldId, entityId)); // TODO
         }
 

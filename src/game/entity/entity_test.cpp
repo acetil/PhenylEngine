@@ -23,5 +23,5 @@ AbstractEntity* game::EntityTest::createEntity () {
 void game::EntityTest::setTextureIds (graphics::TextureAtlas& atlas) {
     //textureId = atlas.getTextureId("test3");
     textureId = atlas.getModelId("test8");
-    logging::logf(LEVEL_DEBUG, "EntityTest textureId: %d", textureId);
+    logging::log(LEVEL_DEBUG, "EntityTest textureId: {}", textureId);
 }

@@ -27,7 +27,7 @@ namespace event {
         };
 
         void debugLog () {
-            logging::logf("Raised event: \"%s\"", getEventName().c_str());
+            logging::log("Raised event: \"{}\"", getEventName());
         }
 
         static constexpr bool doDebugLog () {
@@ -186,7 +186,7 @@ namespace event {
         void raiseEvent (const T& t) {
             // TODO: other forms of Event
             if constexpr (T::doDebugLog()) {
-                logging::logf(LEVEL_DEBUG, "Raised event \"%s\"", t.getEventName().c_str());
+                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", t.getEventName());
             }
             //if (t.getEventType()->immediateEval) {
                 for (EventHandlerBase* handler : handlerMap[t.getEventName()]) {
@@ -199,7 +199,7 @@ namespace event {
         void raiseEvent (const T& t, F f) {
             // TODO: other forms of Event
             static_assert(meta::is_callable_list<T::CallbackArgs>(f), "Invalid callback function!");
-            logging::logf(LEVEL_DEBUG, "Raised event \"%s\"", t.getEventName().c_str());
+            logging::log(LEVEL_DEBUG, "Raised event \"{}\"", t.getEventName());
             //if (t.getEventType()->immediateEval) {
             for (EventHandlerBase* handler : handlerMap[t.getEventName()]) {
                 handler->handle(t, f);

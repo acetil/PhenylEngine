@@ -45,7 +45,7 @@ int game::gameloop (graphics::Graphics* graphics) {
             //fpsFrames++;
         }
         if (timeSinceFpsUpdate >= 1.0f) {
-            logging::logf(LEVEL_DEBUG, "Done %d frames in %f second(s), with an average fps of %f", frames,
+            logging::log(LEVEL_DEBUG, "Done {} frames in {} second(s), with an average fps of {}", frames,
                           timeSinceFpsUpdate, (float)frames / timeSinceFpsUpdate);
             timeSinceFpsUpdate = 0.0f;
             frames = 0;

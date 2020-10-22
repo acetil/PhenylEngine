@@ -44,7 +44,7 @@ game::GameObject::~GameObject () {
 int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y) {
     // TODO: requires refactor
     if (entityTypes.count(name) == 0) {
-        logging::logf(LEVEL_WARNING, "Attempted creation of entity with name '%s' which doesn't exist!", name.c_str());
+        logging::log(LEVEL_WARNING, "Attempted creation of entity with name '{}' which doesn't exist!", name);
         return -1;
     } else {
         int entityId = entityComponentManager->addObject();
@@ -76,7 +76,7 @@ void game::GameObject::deleteEntityInstance (int entityId) {
 
 void game::GameObject::registerTile (Tile* tile) {
     if (tileMap.count(tile->getName()) > 0) {
-        logging::logf(LEVEL_WARNING, "Duplicate registry of tile with name '%s'!", tile->getName().c_str());
+        logging::log(LEVEL_WARNING, "Duplicate registry of tile with name '{}'!", tile->getName());
         return;
     }
     int pos = tileRegistry.size();

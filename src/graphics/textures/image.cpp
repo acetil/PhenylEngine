@@ -12,7 +12,7 @@ graphics::Image::Image (const char* filename, std::string name) {
     n = 0;
     data = stbi_load(filename, &width, &height, &n, 4);
     if (data == nullptr) {
-        logging::logf(LEVEL_ERROR, R"(Failed to load texture "%s" at path "%s")", name.c_str(), filename);
+        logging::log(LEVEL_ERROR, "Failed to load texture \"{}\" at path \"{}\"", name, filename);
     }
     this->name = std::move(name);
 }

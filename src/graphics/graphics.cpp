@@ -57,7 +57,7 @@ void Graphics::render () {
 
 std::optional<TextureAtlas> Graphics::getTextureAtlas (const std::string& atlas) {
     if (atlases.find(atlas) == atlases.end()) {
-        logging::logf(LEVEL_ERROR, "Attempted to get nonexistent atlas \"%s\"", atlas.c_str());
+        logging::log(LEVEL_ERROR, "Attempted to get nonexistent atlas \"{}\"", atlas);
         return std::nullopt;
     }
     return atlases[atlas];
@@ -66,7 +66,7 @@ std::optional<TextureAtlas> Graphics::getTextureAtlas (const std::string& atlas)
 void Graphics::initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images) {
     // TODO: build baked models
     if (atlases.find(atlasName) != atlases.end()) {
-        logging::logf(LEVEL_ERROR, "Attempted to create duplicate atlas \"%s\"!", atlasName.c_str());
+        logging::log(LEVEL_ERROR, "Attempted to create duplicate atlas \"{}\"!", atlasName);
         return;
     }
     std::unordered_set<Image*> imageSet;
@@ -78,7 +78,7 @@ void Graphics::initTextureAtlas (const std::string& atlasName, const std::vector
     TextureAtlas atlas;
     atlas.createAtlas(images);
     atlas.loadTextureAtlas(renderer);
-    logging::logf(LEVEL_DEBUG, "Created atlas \"%s\"!", atlasName.c_str());
+    logging::log(LEVEL_DEBUG, "Created atlas \"{}\"!", atlasName);
     atlases[atlasName] = atlas;
 }
 

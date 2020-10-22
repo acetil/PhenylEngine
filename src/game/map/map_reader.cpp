@@ -30,7 +30,7 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
     // TODO: replace uint32_t with fast version
     FILE* file = fopen(path.c_str(), "rb");
     if (file == nullptr) {
-        logging::logf(LEVEL_ERROR, "Error loading map file at path %s", path.c_str());
+        logging::log(LEVEL_ERROR, "Error loading map file at path {}", path);
     }
     char magic[MAGIC_LEN];
 
@@ -39,36 +39,36 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
     // magic number test
     fread(magic, 1, MAGIC_LEN, file);
     if (magic[0] != 'A' || magic[1] != 'c' || magic[2] != 'M' || magic[3] != 'P') {
-        logging::logf(LEVEL_ERROR, "File at path %s does not have correct magic number for map file!", path.c_str());
+        logging::log(LEVEL_ERROR, "File at path {} does not have correct magic number for map file!", path);
         return nullptr;
     }
 
     // version check
     if (fgetc(file) != 1) {
-        logging::logf(LEVEL_ERROR, "Map file at path %s has unsupported version!", path.c_str());
+        logging::log(LEVEL_ERROR, "Map file at path {} has unsupported version!", path);
         return nullptr;
     }
     
     // size of header
     unsigned char headerSize = fgetc(file);
-    logging::logf(LEVEL_DEBUG, "Header size: %d", headerSize);
+    logging::log(LEVEL_DEBUG, "Header size: {}", headerSize);
     // width and height
     uint32_t dimBuf[2];
     fread ((void*) dimBuf, DIMENSION_SIZE, 2, file);
     unsigned int width = dimBuf[0];
     unsigned int height = dimBuf[1];
-    logging::logf(LEVEL_DEBUG, "Size of map: %d x %d", width, height);
+    logging::log(LEVEL_DEBUG, "Size of map: {} x {}", width, height);
     // size of tile numbers
     unsigned char tileSize = fgetc(file);
 
     if (tileSize != 1 && tileSize != 2 && tileSize != 4) {
-        logging::logf(LEVEL_ERROR, "Map file at path %s has incorrect tile num size!", path.c_str());
+        logging::log(LEVEL_ERROR, "Map file at path {} has incorrect tile num size!", path);
         return nullptr;
     }
     uint32_t tileBuf;
     fread((void*) &tileBuf, TILE_TYPE_NUM_SIZE, 1, file);
     unsigned int numTiles = tileBuf;
-    logging::logf(LEVEL_DEBUG, "Num tiles: %d", numTiles);
+    logging::log(LEVEL_DEBUG, "Num tiles: {}", numTiles);
     fseek(file, headerSize, SEEK_SET);
 
     /* tile type header */
@@ -82,7 +82,7 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
         bool isValid = true;
         fread((void*) &tileBuf, tileSize, 1, file);
         if (feof(file)) {
-            logging::logf(LEVEL_ERROR, "Unexpected eof in tile type header of map file at path %s", path.c_str());
+            logging::log(LEVEL_ERROR, "Unexpected eof in tile type header of map file at path {}", path);
             return nullptr;
         }
         if (tileBuf < NUM_RESERVED) {
@@ -93,7 +93,7 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
         int c;
         do {
             if (j >= STRING_BUFF_SIZE) {
-                logging::logf(LEVEL_WARNING, "Tile %u in map file at path %s has too long name!", tileBuf, path.c_str());
+                logging::log(LEVEL_WARNING, "Tile {} in map file at path {} has too long name!", tileBuf, path);
                 isValid = false;
                 break;
             }
@@ -110,7 +110,7 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
                 tile = emptyTile;
             }
             if (tileTypeMap.count(tileBuf) > 0) {
-                logging::logf(LEVEL_WARNING, "Duplicate tile %u in map file at path %s!", tileBuf);
+                logging::log(LEVEL_WARNING, "Duplicate tile {} in map file at path {}!", tileBuf, path);
             } else {
                 tileTypeMap[tileBuf] = tile;
             }
@@ -118,7 +118,7 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
     }
 
     /* data */
-    logging::logf(LEVEL_INFO, "Reading map file at path %s", path.c_str());
+    logging::log(LEVEL_INFO, "Reading map file at path {}", path);
 
     Tile** tiles = new Tile*[width * height];
     Tile** tilePtr = tiles;
@@ -131,11 +131,11 @@ Map* game::readMap (const std::string& path, GameObject* gameObject) {
     auto num = 0;
     while (tileBuf != END_DATA) {
         if (feof(file)) {
-            logging::logf(LEVEL_WARNING, "Ecountered EOF reading map file at %s before data end.", path.c_str());
+            logging::log(LEVEL_WARNING, "Ecountered EOF reading map file at {} before data end.", path);
             break;
         }
         if (num >= width * height) {
-            logging::logf(LEVEL_WARNING, "Max data read before data end encountered reading map file at %s", path.c_str());
+            logging::log(LEVEL_WARNING, "Max data read before data end encountered reading map file at {}", path);
             break;
         }
         if (tileBuf != EMPTY_TILE_BYTE) {

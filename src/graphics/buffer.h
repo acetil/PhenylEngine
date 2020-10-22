@@ -22,8 +22,8 @@ namespace graphics {
         template<typename T>
         void pushData (T* data, int num) {
             if (sizeof(T) != elementSize) {
-                logging::logf(LEVEL_WARNING,
-                              "Attempted to push data with element size %d, but buffer element size is %d!",
+                logging::log(LEVEL_WARNING,
+                              "Attempted to push data with element size {}, but buffer element size is {}!",
                               sizeof(T), elementSize);
                 return;
             }

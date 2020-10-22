@@ -1,3 +1,4 @@
+#include <string>
 #include "stdarg.h"
 #ifndef LOGGING_INTERNAL_H
 #define LOGGING_INTERNAL_H
@@ -15,6 +16,7 @@
 #define DEBUG_TEXT "DEBUG"
 namespace internal {
     void log_internal (int level, const char* location, const char* log);
+    void log_internal (int level, const std::string& location, const std::string& log);
     void vlogf_internal(int level, const char* locationl, const char* log, va_list l);
 }
 #endif

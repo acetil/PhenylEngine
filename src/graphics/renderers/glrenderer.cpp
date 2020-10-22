@@ -146,18 +146,18 @@ void GLRenderer::setupErrorHandling () {
                 //sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
-                logging::logf(LEVEL_WARNING, "GL low severity message from %s with type %s and message %s",
+                logging::log(LEVEL_WARNING, "GL low severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
-                logging::logf(LEVEL_ERROR, "GL medium severity message from %s with type %s and message %s",
+                logging::log(LEVEL_ERROR, "GL medium severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_HIGH:
-                logging::logf(LEVEL_ERROR, "GL high severity message from %s with type %s and message %s",
+                logging::log(LEVEL_ERROR, "GL high severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
             default:
-                logging::logf(LEVEL_WARNING, "GL unknown severity message from %s with type %s and message %s",
+                logging::log(LEVEL_WARNING, "GL unknown severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
         }
     }, nullptr);
@@ -172,7 +172,7 @@ GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* d
     // mipmapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    logging::logf(LEVEL_INFO, "Generating mipmaps for %d * %d texture atlas", width, width);
+    logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
     glGenerateMipmap(GL_TEXTURE_2D);
     return GraphicsTexture(this, id);
 }

@@ -6,10 +6,12 @@
 #include "game/gameloop.h"
 
 #include "logging/logging_internal.h"
+#include "util/format.h"
 
 int main (int argv, char* argc[]) {
     // TODO: move to exceptions
     internal::log_internal(LEVEL_DEBUG, "MAIN", "Started game!");
+    internal::log_internal(LEVEL_DEBUG, "MAIN", util::format("Test format: {} {} {1}", 4, 3.8, "abc").c_str());
     GLFWwindow* window = nullptr;
     if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");

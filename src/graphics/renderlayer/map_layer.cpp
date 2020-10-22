@@ -49,12 +49,12 @@ void MapRenderLayer::preRender (Renderer* renderer) {
                 buffers[4].pushData(&m.first.transform[1][0], 2);
             }
         }
-        logging::logf(LEVEL_DEBUG, "Sizes: %d %d %d %d %d", buffers[0].currentSize(), buffers[1].currentSize(), buffers[2].currentSize(),
+        logging::log(LEVEL_DEBUG, "Sizes: {} {} {} {} {}", buffers[0].currentSize(), buffers[1].currentSize(), buffers[2].currentSize(),
                       buffers[3].currentSize(), buffers[4].currentSize());
         renderer->bufferData(bufferIds, buffers);
         needDataBuffer = false;
         numTriangles = numVertices / 3;
-        logging::logf(LEVEL_DEBUG, "Buffered map data with %d vertices!", numVertices);
+        logging::log(LEVEL_DEBUG, "Buffered map data with {} vertices!", numVertices);
 
     }
     /*if (requiresBuffer) {

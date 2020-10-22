@@ -8,50 +8,66 @@
 #define GRAPHICS_LOCATION "GRAPHICS"
 #define PHYSICS_LOCATION "PHYSICS"
 
-void component::logging::log (int level, const char* log) {
+/*void component::logging::log (int level, const char* log) {
+    internal::log_internal(level, COMPONENT_LOCATION, log);
+}*/
+void component::logging::log (int level, const std::string& log) {
     internal::log_internal(level, COMPONENT_LOCATION, log);
 }
-void component::logging::logf (int level, const char* log, ...) {
+/*void component::logging::logf (int level, const char* log, ...) {
     va_list l;
     va_start(l, log);
     internal::vlogf_internal(level, COMPONENT_LOCATION, log, l);
     va_end(l);
-}
+}*/
 
-void event::logging::log (int level, const char* log) {
+/*void event::logging::log (int level, const char* log) {
+    internal::log_internal(level, EVENT_LOCATION, log);
+}*/
+void event::logging::log (int level, const std::string& log) {
     internal::log_internal(level, EVENT_LOCATION, log);
 }
-void event::logging::logf (int level, const char* log, ...) {
+/*void event::logging::logf (int level, const char* log, ...) {
     va_list l;
     va_start(l, log);
     internal::vlogf_internal(level, EVENT_LOCATION, log, l);
     va_end(l);
-}
+}*/
 
-void game::logging::log (int level, const char* log) {
+/*void game::logging::log (int level, const char* log) {
+    internal::log_internal(level, GAME_LOCATION, log);
+}*/
+void game::logging::log (int level, const std::string& log) {
     internal::log_internal(level, GAME_LOCATION, log);
 }
-void game::logging::logf (int level, const char* log, ...) {
+/*void game::logging::logf (int level, const char* log, ...) {
     va_list l;
     va_start(l, log);
     internal::vlogf_internal(level, GAME_LOCATION, log, l);
     va_end(l);
-}
-void graphics::logging::log (int level, const char* log) {
+}*/
+/*void graphics::logging::log (int level, const char* log) {
+    internal::log_internal(level, GRAPHICS_LOCATION, log);
+}*/
+void graphics::logging::log (int level, const std::string& log) {
     internal::log_internal(level, GRAPHICS_LOCATION, log);
 }
-void graphics::logging::logf (int level, const char* log, ...) {
+/*void graphics::logging::logf (int level, const char* log, ...) {
     va_list l;
     va_start(l, log);
     internal::vlogf_internal(level, GRAPHICS_LOCATION, log, l);
     va_end(l);
-}
-void physics::logging::log (int level, const char* log) {
+}*/
+/*void physics::logging::log (int level, const char* log) {
     internal::log_internal(level, PHYSICS_LOCATION, log);
-}
-void physics::logging::logf (int level, const char* log, ...) {
+}*/
+/*void physics::logging::logf (int level, const char* log, ...) {
     va_list l;
     va_start(l, log);
     internal::vlogf_internal(level, PHYSICS_LOCATION, log, l);
     va_end(l);
+}*/
+
+void physics::logging::log (int level, const std::string& log) {
+    internal::log_internal(level, PHYSICS_LOCATION, log);
 }

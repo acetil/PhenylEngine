@@ -77,7 +77,7 @@ void physics::checkCollisions (component::EntityComponentManager * componentMana
     componentManager->applyFunc<CollisionComponent>(checkCollisionsEntity, &collisionResults);
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;
-        logging::logf(LEVEL_DEBUG, "Detected collision between entities %d and %d with min translation vec <%f, %f>!", x, y, dVec.x, dVec.y);
+        logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!", x, y, dVec.x, dVec.y);
         // TODO: collision event
         auto comp1 = componentManager->getObjectData<CollisionComponent>(x);
         auto comp2 = componentManager->getObjectData<CollisionComponent>(y);

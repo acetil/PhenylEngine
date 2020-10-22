@@ -110,7 +110,7 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
     for (Image* i : images) {
         totalArea += i->getArea();
     }
-    logging::logf(LEVEL_INFO, "Initiated creation of texture atlas of %d images of total area %d.",
+    logging::log(LEVEL_INFO, "Initiated creation of texture atlas of {} images of total area {}.",
                   images.size(), totalArea);
 
     //getting initial atlas area side length
@@ -121,13 +121,13 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
 
     Node tree = new node;
     tree->setDimensions(length, length, 0, 0);
-    logging::logf(LEVEL_INFO, "Attempting packing of %d * %d atlas.", length, length);
+    logging::log(LEVEL_INFO, "Attempting packing of {} * {} atlas.", length, length);
     while (!insertImages(tree, images)) {
         // space isn't big enough
         tree->destroy();
         length *= 2;
         tree->setDimensions(length, length, 0, 0);
-        logging::logf(LEVEL_INFO, "Unable to pack, attempting packing of %d * %d atlas.", length, length);
+        logging::log(LEVEL_INFO, "Unable to pack, attempting packing of {} * {} atlas.", length, length);
     }
     this->sideLength = length;
     logging::log(LEVEL_INFO, "Packing success.");

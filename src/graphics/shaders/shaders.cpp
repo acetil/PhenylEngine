@@ -23,12 +23,12 @@ GLuint graphics::loadShader (const char* filepath, GLuint shaderType) {
         shaderCode = sstr.str();
         shaderStream.close();
     } else {
-        logging::logf(LEVEL_ERROR, "Error reading shader file %s", filepath);
+        logging::log(LEVEL_ERROR, "Error reading shader file {}", filepath);
         return 0;
     }
     GLint result = GL_FALSE;
     int infolength;
-    logging::logf(LEVEL_INFO, "Compiling shader file at %s", filepath);
+    logging::log(LEVEL_INFO, "Compiling shader file at {}", filepath);
     const char* shaderSourcePtr = shaderCode.c_str();
     glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
     glCompileShader(shader);
