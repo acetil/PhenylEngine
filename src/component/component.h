@@ -130,6 +130,9 @@ namespace component {
             }
             id_type_t oldId = --numEntities;
             swapObjects<>(oldId, entityId);
+            if constexpr (std::is_pointer<FirstType>::value) {
+                delete std::get<0>(ptrTuple)[oldId];
+            }
             eventBus->raiseEvent(event::ObjectIdSwapEvent<meta::remove_pointer<FirstType>>(oldId, entityId)); // TODO
         }
 
