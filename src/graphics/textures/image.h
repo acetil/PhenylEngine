@@ -9,8 +9,10 @@
                 int height{};
                 int n{};
                 std::string name;
+                bool isSTB;
             public:
-                Image (const char* filename, std::string);
+                Image (const char* filename, std::string name);
+                Image (unsigned char* data, int width, int height, bool monochrome, const std::string& name);
                 ~Image ();
                 unsigned char* getData ();
                 int getArea () const;

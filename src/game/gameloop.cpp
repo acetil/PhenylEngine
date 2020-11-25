@@ -11,6 +11,9 @@
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/map_layer.h"
 
+#include "graphics/font/font_manager.h"
+#include "graphics/font/glyph_atlas.h"
+
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
 using namespace game; 
@@ -22,6 +25,13 @@ int game::gameloop (graphics::Graphics* graphics) {
     logging::log(LEVEL_INFO, "Created player");
     KeyboardInput* keyInput = getKeyboardInput(graphics);
     setupMovementKeys(keyInput, gameObject->getEventBus());
+
+    graphics::FontManager manager;
+    manager.addFace("calibri", "C:/Windows/Fonts/arial.ttf");
+    auto& face = manager.getFace("calibri");
+    face.setFontSize(72);
+    graphics::GlyphAtlas atlas(face.getGlyphs(), 256);
+
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;

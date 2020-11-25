@@ -8,6 +8,8 @@
 #ifndef FORMAT_H
 #define FORMAT_H
 namespace util {
+    template <int len, int N = 0, typename T, typename ...Args>
+    std::array<std::string, len> getStringsHelp (std::stringstream& sstream, T t, Args... args);
     inline std::string format (std::string formatStr) {
         return formatStr;
     }
@@ -22,7 +24,7 @@ namespace util {
         //std::cout << arr[N] << std::endl;
         return arr;
     }
-    template <int len, int N = 0, typename T, typename ...Args>
+    template <int len, int N, typename T, typename ...Args>
     std::array<std::string, len> getStringsHelp (std::stringstream& sstream, T t, Args... args) {
         auto arr = getStringsHelp<len, N + 1>(sstream, args...);
         //std::cout << "Test: " << t << std::endl;
