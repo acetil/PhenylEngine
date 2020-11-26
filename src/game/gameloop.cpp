@@ -26,11 +26,14 @@ int game::gameloop (graphics::Graphics* graphics) {
     KeyboardInput* keyInput = getKeyboardInput(graphics);
     setupMovementKeys(keyInput, gameObject->getEventBus());
 
+    // TODO: remove
     graphics::FontManager manager;
     manager.addFace("calibri", "C:/Windows/Fonts/arial.ttf");
     auto& face = manager.getFace("calibri");
     face.setFontSize(72);
-    graphics::GlyphAtlas atlas(face.getGlyphs(), 256);
+    graphics::GlyphAtlas atlas(face.getGlyphs(), 128);
+    atlas.loadAtlas(graphics->getRenderer());
+    graphics->addGlyphAtlas(atlas);
 
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;

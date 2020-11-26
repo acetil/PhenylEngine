@@ -64,11 +64,16 @@ ShaderProgram* graphics::loadShaderProgram (const char* vertexPath, const char* 
         delete[] infoLog;
     }
 
+    int error = glGetError();
+    if (error != GL_NO_ERROR) {
+        logging::log(LEVEL_ERROR, "Shader error code {}", error);
+    }
+
     glDetachShader(programId, vertexId);
     glDetachShader(programId, fragmentId);
 
-    glDeleteShader(vertexId);
-    glDeleteShader(fragmentId);
+    //glDeleteShader(vertexId);
+    //glDeleteShader(fragmentId);
     return new ShaderProgram(programId, std::move(name));
 }
 
@@ -81,10 +86,12 @@ void graphics::ShaderProgram::useProgram () const {
     glUseProgram(programId);
 }
 void graphics::ShaderProgram::registerUniform (const std::string& _name) {
+    useProgram();
     uniformMap[_name] = glGetUniformLocation(programId, _name.c_str());
 }
 // TODO: do for different uniform types
 void graphics::ShaderProgram::applyUniform (const std::string& _name, glm::mat4 matrix) {
+    useProgram();
     GLuint uniformId = uniformMap[_name];
     glUniformMatrix4fv(uniformId, 1, GL_FALSE, &matrix[0][0]);
 }

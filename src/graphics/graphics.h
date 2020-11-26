@@ -14,6 +14,7 @@
 #include "graphics_new_include.h"
 #include "renderlayer/graphics_layer.h"
 #include "graphics/renderers/renderer.h"
+#include "font/glyph_atlas.h"
 
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
@@ -56,6 +57,8 @@ namespace graphics {
 
         Camera camera;
 
+        GlyphAtlas glyphAtlas;
+
     public:
         explicit Graphics (Renderer* renderer);
         bool shouldClose ();
@@ -75,6 +78,10 @@ namespace graphics {
         void onEntityCreation (event::EntityCreationEvent& event);
         Renderer* getRenderer () {
             return renderer; // TODO: remove
+        }
+        void addGlyphAtlas (GlyphAtlas& atlas) {
+            glyphAtlas = std::move(atlas);
+            renderLayer->addTex(glyphAtlas.getTex());
         }
         void setupWindowCallbacks (event::EventBus* bus);
     };

@@ -52,6 +52,7 @@ namespace graphics {
         void setupErrorHandling ();
 
         GraphicsTexture loadTexture (int width, int height, unsigned char* data) override;
+        GraphicsTexture loadTextureGrey (int width, int height, unsigned char* data) override;
 
         void bindTexture (unsigned int textureId) override;
 

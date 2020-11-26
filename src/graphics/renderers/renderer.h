@@ -40,6 +40,7 @@ namespace graphics {
         virtual void finishRender () = 0;
 
         virtual GraphicsTexture loadTexture (int width, int height, unsigned char* data) = 0;
+        virtual GraphicsTexture loadTextureGrey (int width, int height, unsigned char* data) = 0;
 
         virtual void bindTexture (unsigned int textureId) = 0;
 

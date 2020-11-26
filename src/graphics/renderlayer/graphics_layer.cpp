@@ -7,9 +7,12 @@ using namespace graphics;
 GraphicsRenderLayer::GraphicsRenderLayer (Renderer* renderer) {
     //program = renderer->getProgram("graphics_program").value();
     program = renderer->getProgram("default").value(); // TODO
+    textProgram = renderer->getProgram("text").value();
     renderLayers.push_back(new MapRenderLayer(renderer));
     //renderLayers.push_back(new EntityRenderLayer());
-
+    ids = renderer->getBufferIds(2, 40 * sizeof(float), {2, 2});
+    buffers[0] = Buffer(40, sizeof(float), true);
+    buffers[1] = Buffer(40, sizeof(float), true);
 }
 
 
@@ -50,6 +53,19 @@ void GraphicsRenderLayer::render(Renderer *renderer, FrameBuffer *frameBuf) {
         }
         i->render(renderer, frameBuf); // TODO
     }
+    textProgram->useProgram();
+
+    float posData[] = {0.0f, 0.0f, 0.0f, (float)69 / 600 * scale, (float)61 / 800 * scale, 0.0f, (float)61 / 800 * scale, 0.0f,
+                       (float)61 / 800 * scale, (float)69 / 600 * scale, 0.0f, (float)69 / 600 * scale};
+    float uvData[] = {0.0f, (float)69 / 128, 0.0f, 0.0f, (float)61 / 128, (float)69 / 128, (float)61 / 128, (float)69 / 128,
+                      (float)61 / 128, 0.0f, 0.0f, 0.0f};
+    //float posData[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+    buffers[0].pushData(posData, 12);
+    buffers[1].pushData(uvData, 12);
+    tex.bindTexture();
+    renderer->bufferData(ids, buffers);
+    renderer->render(ids, textProgram, 2);
+    scale = 0.8f;
 }
 
 void GraphicsRenderLayer::applyCamera(Camera camera) {
@@ -82,4 +98,3 @@ std::optional<RenderLayer*> GraphicsRenderLayer::getRenderLayer (const std::stri
 void GraphicsRenderLayer::addRenderLayer (RenderLayer* layer) {
     renderLayers.push_back(layer);
 }
-

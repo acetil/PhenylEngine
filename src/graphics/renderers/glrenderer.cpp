@@ -186,6 +186,21 @@ void GLRenderer::setupWindowCallbacks (WindowCallbackContext* ctx) {
     setupGLWindowCallbacks(window);
 }
 
+// TODO: make profiles for different magfilter/minfilter/mipmapping
+GraphicsTexture GLRenderer::loadTextureGrey (int width, int height, unsigned char* data) {
+    unsigned int id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+
+    // mipmapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    //logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    return GraphicsTexture(this, id);
+}
+
 
 
 

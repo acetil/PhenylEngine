@@ -81,7 +81,7 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
     }
     //auto index = FT_Get_Char_Index(ftFace, 'A');
     //logging::log(LEVEL_DEBUG, "Char index: {}", index);
-    error = FT_Load_Char(ftFace, 'g', FT_LOAD_DEFAULT);
+    error = FT_Load_Char(ftFace, 'a', FT_LOAD_DEFAULT);
     if (error) {
         logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
     }
@@ -92,8 +92,8 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
     auto buf = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
     memcpy(buf, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
     glyphs.emplace_back(GlyphImage(buf, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows,
-                                   'g', size, 300, 300));
-    logging::log(LEVEL_DEBUG, "Rendered glyph {} with pixel format grey? {} ", 'W',
-                 ftFace->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
+                                   'a', size, 300, 300));
+    //logging::log(LEVEL_DEBUG, "Rendered glyph {} with pixel format grey? {} ", 'W',
+                 //ftFace->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
     return glyphs;
 }

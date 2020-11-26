@@ -84,6 +84,9 @@ int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
 
     logging::log(LEVEL_INFO, "Adding shaders");
     renderer->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
+    renderer->addShader("text", loadShaderProgram("resources/shaders/text_vertex.vs", "resources/shaders/text_fragment.fs", "text"));
+    renderer->getProgram("text").value()->registerUniform("camera");
+
     renderer->getProgram("default").value()->registerUniform("camera"); // TODO: update
     auto* graphics = new Graphics(renderer);
     *graphicsNew = graphics;
