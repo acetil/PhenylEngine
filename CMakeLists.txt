@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(action-game)
+cmake_policy(SET CMP0072 NEW) #FindOpenGL
 enable_language(CXX)
 file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_SOURCE_DIR}/src/*.c
@@ -18,18 +19,20 @@ include_directories(${CMAKE_BINARY_DIR}/src)
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 set (CMAKE_MODULE_PATH $(CMAKE_MODULE_PATH) "${CMAKE_SOURCE_DIR}/cmake/")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
-#message(${CMAKE_MODULE_PATH})
 find_package(OpenGL REQUIRED)
-find_package(GLM REQUIRED)
-find_package(GLFW3 REQUIRED)
+find_package(glm REQUIRED)
+find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(harfbuzz REQUIRED)
 
 get_target_property(harfbuzz_include_dir harfbuzz::harfbuzz INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(harfbuzz_icu_include_dir harfbuzz::icu INTERFACE_INCLUDE_DIRECTORIES)
-
+if (WIN32)
 set(LIBS glfw3 opengl32 GLEW::GLEW FreeType harfbuzz )
+elseif (UNIX)
+set(LIBS glfw GL GLEW::GLEW freetype harfbuzz)
+endif(WIN32)
 #message(harfbuzz)
 include_directories(
         "${CMAKE_SOURCE_DIR}/src"
