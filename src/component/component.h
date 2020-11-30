@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <string>
+#include <string.h>
 #include <vector>
 #include <type_traits>
 #include <stdint.h>

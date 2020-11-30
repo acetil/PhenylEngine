@@ -1,3 +1,4 @@
+#include <string.h>
 #include "logging/logging.h"
 #ifndef BUFFER_H
 #define BUFFER_H
