@@ -4,6 +4,7 @@
 
 #include "texture_atlas.h"
 #include "image.h"
+#include "build_atlas.h"
 #include "logging/logging.h"
 
 #define BYTES_PER_PIXEL 4
@@ -30,8 +31,24 @@ struct node {
     std::vector<Node> walk ();
     void writeData (unsigned char* data, int sideLength) const;
 };
-glm::vec2 getVertexVec (int index);
 
+struct ImageContainer {
+    Image* img;
+    int key;
+    ImageContainer (Image* _img, int _key) : img(_img), key(_key) {};
+    int getKey () {
+        return key;
+    }
+    int getXSize () {
+        return img->getWidth();
+    }
+    int getYSize () {
+        return img->getHeight();
+    }
+};
+
+glm::vec2 getVertexVec (int index);
+static void writeData (unsigned char* data, int sideLength, Image* img, AtlasObject<int> obj);
 bool insertImages (Node tree, const std::vector<Image*>& images) {
     // returns true if all images fit in
     for (Image* i : images) {
@@ -103,7 +120,7 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
         }
     }
     auto images = std::vector(imageSet.begin(), imageSet.end());
-    std::sort(images.begin(), images.end(), [](Image* a, Image* b) {
+    /*std::sort(images.begin(), images.end(), [](Image* a, Image* b) {
         return a->getArea() > b->getArea();
     });
     int totalArea = 0;
@@ -131,16 +148,24 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
     }
     this->sideLength = length;
     logging::log(LEVEL_INFO, "Packing success.");
-
+    */
+    std::vector<ImageContainer> imgConts;
+    for (size_t i = 0; i < images.size(); i++) {
+        imgConts.emplace_back(ImageContainer(images[i], i));
+    }
+    std::vector<AtlasObject<int>> objs;
+    int length = buildAtlas(imgConts.begin(), imgConts.end(), std::back_inserter(objs), PADDING);
+    this->sideLength = length;
     data = new unsigned char[length * length * BYTES_PER_PIXEL];
     //textures = new Texture[images.size()];
     //Texture* texPtr = textures;
     auto* tempUvData = new float[images.size() * TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX];
     auto uvPtr = tempUvData;
-    std::vector<Node> nodes = tree->walk();
+    //std::vector<Node> nodes = tree->walk();
     logging::log(LEVEL_INFO, "Stitching atlas.");
+
     std::unordered_map<Image*, util::span<float>> imageMap;
-    for (Node n : nodes) {
+    /*for (Node n : nodes) {
         n->writeData(data, length);
         auto originalUv = uvPtr;
         for (int i = 0; i < TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE; i++) {
@@ -151,7 +176,21 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
             *(uvPtr++) = offVec[1];
         }
         imageMap[n->image] = util::span(originalUv, uvPtr);
+    }*/
+    for (auto obj : objs) {
+        auto img = imgConts[obj.key].img;
+        writeData(data, length, img, obj);
+        auto originalUv = uvPtr;
+        for (int i = 0; i < TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE; i++) {
+            glm::vec2 offVec = getVertexVec(i);
+            offVec.x = offVec.x * obj.uSize + obj.uOff;
+            offVec.y = offVec.y * obj.vSize + obj.vOff;
+            *(uvPtr++) = offVec[0];
+            *(uvPtr++) = offVec[1];
+        }
+        imageMap[img] = util::span(originalUv, uvPtr);
     }
+
 
     int numModelComponents = 0;
     for (const auto& m : modelsIn) {
@@ -182,8 +221,8 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
 
     delete[] tempUvData;
     logging::log(LEVEL_INFO, "Stitching complete");
-    tree->destroy();
-    delete tree;
+    //tree->destroy();
+    //delete tree;
 }
 /*
 int graphics::TextureAtlas::getTextureId (std::string name) {
@@ -311,4 +350,17 @@ glm::vec2 getVertexVec (int index) {
     vector.x += (float) (correctedVertex & (unsigned int)1);
     vector.y += (float) ((correctedVertex & (unsigned int)2) >> (unsigned int) 1);
     return vector;
+}
+
+static void writeData (unsigned char* data, int sideLength, Image* img, AtlasObject<int> obj) {
+    unsigned char* copyPtr = data + (obj.xOff + obj.yOff * sideLength) * BYTES_PER_PIXEL;
+    unsigned char* dataPtr = img->getData();
+    for (int i = 0; i < img->getHeight(); i++) {
+        for (int j = 0; j < img->getWidth(); j++) {
+            for (int k = 0; k < BYTES_PER_PIXEL; k++) {
+                copyPtr[j * BYTES_PER_PIXEL + k] = *(dataPtr++);
+            }
+        }
+        copyPtr += sideLength * BYTES_PER_PIXEL; // incrementing row
+    }
 }
