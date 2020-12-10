@@ -6,7 +6,8 @@
 #ifndef FONT_FACE_H
 #define FONT_FACE_H
 namespace graphics {
-    constexpr std::pair<int, int> AsciiGlyphRange = {0, 255};
+    //constexpr std::pair<int, int> AsciiGlyphRange = {33, 127};
+    constexpr std::pair<int, int> AsciiGlyphRange = {33, 255};
     class FontFace {
     private:
         hb_face_t* fontFace = nullptr;

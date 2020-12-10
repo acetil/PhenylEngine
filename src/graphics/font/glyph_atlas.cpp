@@ -4,7 +4,7 @@
 #include "graphics/maths_headers.h"
 #include "glyph_atlas.h"
 #include "logging/logging.h"
-
+#include "graphics/textures/build_atlas.h"
 #define TARGET_MAX_RES 32
 
 #define EM_SIZE 72
@@ -19,15 +19,25 @@ struct GlyphDistanceField {
     int height = 0;
     unsigned char* data = nullptr;
     int glyphIndex = 0;
+    int key = 0;
     GlyphDistanceField () = default;
     GlyphDistanceField (int _width, int _height, int _glyphIndex) : width(_width), height(_height), glyphIndex(_glyphIndex) {
         data = new unsigned char[width * height];
     }
     GlyphDistanceField(GlyphDistanceField&) = delete;
-    GlyphDistanceField(GlyphDistanceField&& other) : width(other.width), height(other.height),
-            data(std::exchange(other.data, nullptr)), glyphIndex(other.glyphIndex) {}
+    GlyphDistanceField(GlyphDistanceField&& other)  noexcept : width(other.width), height(other.height),
+            data(std::exchange(other.data, nullptr)), glyphIndex(other.glyphIndex), key(other.key) {}
     ~GlyphDistanceField () {
         delete[] data;
+    }
+    int getKey () const {
+        return key;
+    }
+    int getXSize () const {
+        return width;
+    }
+    int getYSize () const {
+        return height;
     }
 };
 
@@ -69,16 +79,17 @@ static unsigned char* getReducedPixels (const GlyphImage& img, int newWidth, int
 
 static unsigned char signedDistance (unsigned char* data, int width, int height, int x, int y, int limit) {
     int mult = data[y * width + x] ? 1 : -1;
-    double lowDist = limit * sqrt(2);
+    double lowDist = 2 * limit * limit;
     for (int i = - limit + 1; i < limit; i++) {
         for (int j = -limit + 1; j < limit; j++) {
-            if (data[y * width + x] != data[(y + i) * width + x + j] && sqrt(i * i + j * j) < lowDist) {
-                lowDist = sqrt(i * i + j * j);
+            if (data[y * width + x] != data[(y + i) * width + x + j] && i * i + j * j < lowDist) {
+                lowDist = i * i + j * j;
             }
         }
     }
+    lowDist /= limit * limit * 8;
+    lowDist = sqrt(lowDist);
     lowDist *= mult;
-    lowDist /= limit * sqrt(2) * 2;
     lowDist += 0.5;
     //printf("%f\n", lowDist);
     return (unsigned char) round(lowDist * 255);
@@ -107,10 +118,11 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
         // newHeight = height * emY / oldEmY = height * targetRes * yRes / xRes * 72 / (pointSize * yRes)
         //           = height * targetRes * 72 / (pointSize * yRes)
         int newHeight = (int) floor(img.height * targetRes * EM_SIZE / (double) (img.fontSize * img.xRes));
-        logging::log(LEVEL_DEBUG, "width = {}, height = {}, newWidth = {}, newHeight = {}", img.width, img.height,
-                     newWidth, newHeight);
+        //logging::log(LEVEL_DEBUG, "width = {}, height = {}, newWidth = {}, newHeight = {}", img.width, img.height,
+                     //newWidth, newHeight);
         auto isPixel = getReducedPixels(img, newWidth, newHeight);
         GlyphDistanceField glyphDist = getDistField(isPixel, newWidth, newHeight, img.glyphIndex);
+        glyphDist.key = distFieldGlyphs.size();
         //GlyphDistanceField glyphDist(newWidth, newHeight, img.glyphIndex);
         //memcpy(glyphDist.data, isPixel, newWidth * newHeight);
         /*for (int i = 0; i < img.height; i++) {
@@ -134,14 +146,24 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
     height = distFieldGlyphs[0].height;
     data = new unsigned char[width * height];
     memcpy(data, distFieldGlyphs[0].data, width * height);*/
-    width = 128;
-    height = 128;
+    std::vector<AtlasObject<int>> vec;
+    vec.reserve(distFieldGlyphs.size());
+    int len = buildAtlas(distFieldGlyphs.begin(), distFieldGlyphs.end(), std::back_inserter(vec), 1);
+    width = len;
+    height = len;
     data = new unsigned char[width * height];
-    for (int i = 0; i < distFieldGlyphs[0].height; i++) {
-        for (int j = 0; j < distFieldGlyphs[0].width; j++) {
-            data[i * height + j] = distFieldGlyphs[0].data[distFieldGlyphs[0].width * i + j];
+    memset(data, 0, width * height);
+    for (auto obj : vec) {
+        auto copyPtr = data + obj.xOff + obj.yOff * width;
+        auto dataPtr = distFieldGlyphs[obj.key].data;
+        for (int i = 0; i < distFieldGlyphs[obj.key].height; i++) {
+            for (int j = 0; j < distFieldGlyphs[obj.key].width; j++) {
+                copyPtr[j] = *(dataPtr++);
+            }
+            copyPtr += width;
         }
     }
+
 }
 GlyphAtlas::~GlyphAtlas () {
     delete[] data;

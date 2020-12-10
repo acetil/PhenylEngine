@@ -31,7 +31,8 @@ int game::gameloop (graphics::Graphics* graphics) {
     manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
     auto& face = manager.getFace("noto-serif");
     face.setFontSize(72);
-    graphics::GlyphAtlas atlas(face.getGlyphs(), 128);
+    face.setGlyphs({graphics::AsciiGlyphRange});
+    graphics::GlyphAtlas atlas(face.getGlyphs(), 64);
     atlas.loadAtlas(graphics->getRenderer());
     graphics->addGlyphAtlas(atlas);
 

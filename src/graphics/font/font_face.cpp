@@ -55,7 +55,9 @@ void FontFace::updateResolution (int _xRes, int _yRes) {
 }
 
 void FontFace::setGlyphs (std::vector<std::pair<int, int>> _glyphRanges) {
-    std::copy(glyphRanges.begin(), _glyphRanges.begin(), _glyphRanges.end());
+    logging::log(LEVEL_DEBUG, "Num ranges: {}", _glyphRanges.size());
+    glyphRanges.reserve(_glyphRanges.size());
+    std::copy(_glyphRanges.begin(), _glyphRanges.end(), std::back_inserter(glyphRanges));
 }
 
 void FontFace::setFontSize (int _size) {
@@ -73,26 +75,31 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
 
         }
     }*/
-    // Test glyph a
     int error;
     error = FT_Select_Charmap(ftFace, FT_ENCODING_UNICODE);
     if (error) {
         logging::log(LEVEL_ERROR, "Charmap select encountered error code {}!", error);
     }
-    //auto index = FT_Get_Char_Index(ftFace, 'A');
-    //logging::log(LEVEL_DEBUG, "Char index: {}", index);
-    error = FT_Load_Char(ftFace, 'a', FT_LOAD_DEFAULT);
-    if (error) {
-        logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+    // Test glyph a
+    for (auto p : glyphRanges) {
+        for (int i = p.first; i < p.second; i++) {
+            //auto index = FT_Get_Char_Index(ftFace, 'A');
+            //logging::log(LEVEL_DEBUG, "Char index: {}", index);
+            error = FT_Load_Char(ftFace, i, FT_LOAD_DEFAULT);
+            if (error) {
+                logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+            }
+            error = FT_Render_Glyph(ftFace->glyph, FT_RENDER_MODE_NORMAL);
+            if (error) {
+                logging::log(LEVEL_ERROR, "Render glyph encountered error code {}!", error);
+            }
+            auto buf = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
+            memcpy(buf, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
+            glyphs.push_back(GlyphImage(buf, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows,
+                                           i, size, 300, 300));
+        }
     }
-    error = FT_Render_Glyph(ftFace->glyph, FT_RENDER_MODE_NORMAL);
-    if (error) {
-        logging::log(LEVEL_ERROR, "Render glyph encountered error code {}!", error);
-    }
-    auto buf = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
-    memcpy(buf, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
-    glyphs.emplace_back(GlyphImage(buf, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows,
-                                   'a', size, 300, 300));
+
     //logging::log(LEVEL_DEBUG, "Rendered glyph {} with pixel format grey? {} ", 'W',
                  //ftFace->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
     return glyphs;

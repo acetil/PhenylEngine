@@ -1,3 +1,8 @@
+#include <queue>
+#include <utility>
+#include <stdio.h>
+#include "math.h"
+
 #include "build_atlas.h"
 #include "logging/logging.h"
 
@@ -13,18 +18,21 @@ struct Node {
     int index = -1;
     void setDimensions (int _width, int _height, int _offsetX, int _offsetY);
     bool insert (atlas_internal::InternalAtlasImage& img, int padding);
-    void destroy () const;
+    void destroy ();
     std::back_insert_iterator<std::vector<Node*>> walk (std::back_insert_iterator<std::vector<Node*>> out);
 
 };
 
+static void printTree (Node* root);
 
 bool insertImages (Node* tree, const std::vector<atlas_internal::InternalAtlasImage>& images, int padding) {
     // returns true if all images fit in
     for (auto i : images) {
+        //logging::log(LEVEL_DEBUG, "Inserting {} x {} image!", i.xSize, i.ySize);
         if (!tree->insert(i, padding)) {
             return false;
         }
+        //printTree(tree);
     }
     return true;
 }
@@ -36,6 +44,7 @@ std::pair<std::vector<AtlasObject<int>>, int> atlas_internal::buildAtlasInternal
 
     // sorts to get larger images first
     std::sort(imgs.begin(), imgs.end(), [] (auto a, auto b) {
+        //return (a.xSize > a.ySize ? a.xSize : a.ySize) > (b.xSize > b.ySize ? b.xSize : b.ySize);
         return a.xSize * a.ySize > b.xSize * b.ySize;
     });
 
@@ -100,38 +109,47 @@ bool Node::insert (atlas_internal::InternalAtlasImage& img, int padding) {
             return false;
         }
     }
-    if (width >= img.xSize + padding * 2 && height >= img.ySize + padding * 2) {
+    if (width >= img.xSize + padding && height >= img.ySize) {
         // image can be inserted
+        if (img.xSize > img.ySize) {
+            // split on x axis first
+            leftNode = new Node();
+            leftNode->setDimensions(width - img.xSize - padding, height, offsetX + img.xSize + padding, offsetY);
 
-        // split on x axis first
-        leftNode = new Node();
-        leftNode->setDimensions(width - img.xSize - padding * 2, height, offsetX + img.xSize + padding * 2, offsetY);
-
-        // then split on y
-        rightNode = new Node();
-        rightNode->setDimensions(img.xSize, height - img.ySize - padding * 2,
-                                 offsetX, offsetY + img.ySize + padding * 2);
-
+            // then split on y
+            rightNode = new Node();
+            rightNode->setDimensions(img.xSize, height - img.ySize - padding,
+                                     offsetX, offsetY + img.ySize + padding);
+        } else {
+            // then split on y
+            rightNode = new Node();
+            rightNode->setDimensions(width, height - img.ySize - padding,
+                                     offsetX, offsetY + img.ySize + padding);
+            // split on x axis first
+            leftNode = new Node();
+            leftNode->setDimensions(width - img.xSize - padding, img.ySize, offsetX + img.xSize + padding, offsetY);
+        }
         width = img.xSize;
         height = img.ySize;
         index = img.index;
-        offsetX += padding;
-        offsetY += padding;
         return true;
     } else {
         return false;
     }
 }
 
-void Node::destroy () const {
+void Node::destroy () {
     if (leftNode != nullptr) {
         leftNode->destroy();
         delete leftNode;
+        leftNode = nullptr;
     }
     if (rightNode != nullptr) {
         rightNode->destroy();
         delete rightNode;
+        rightNode = nullptr;
     }
+    index = -1;
 }
 
 std::back_insert_iterator<std::vector<Node*>> Node::walk (std::back_insert_iterator<std::vector<Node*>> out) {
@@ -146,4 +164,47 @@ std::back_insert_iterator<std::vector<Node*>> Node::walk (std::back_insert_itera
         out = rightNode->walk(out);
     }
     return out;
+}
+
+static void printNode (Node* node, FILE* file) {
+    fprintf(file, "{x: %d y: %d width: %d height: %d}\n", node->offsetX, node->offsetY, node->width, node->height);
+}
+static void printTreeHelp (Node* root, int height, bool right, FILE* file) {
+    if (root == nullptr) {
+        return;
+    }
+    if (height > 0) {
+        for (int i = 0; i < height; i++) {
+            if (i > 0) {
+                fprintf(file, "   ");
+            }
+            fprintf(file, "|");
+        }
+        fprintf(file, "\n");
+        for (int i = 0; i < height - 1; i++) {
+            if (i > 0) {
+                fprintf(file, "   ");
+            }
+            fprintf(file, "|");
+        }
+        if (height > 1) {
+            fprintf(file, "   ");
+        }
+        if (right) {
+            fprintf(file, "└");
+        } else {
+            fprintf(file, "├");
+        }
+        fprintf(file, "---");
+    }
+    printNode(root, file);
+    printTreeHelp(root->leftNode, height + 1, false, file);
+    printTreeHelp(root->rightNode, height + 1, true, file);
+}
+
+static void printTree (Node* root) {
+    FILE* file = fopen("treeprint.txt", "a");
+    printTreeHelp(root, 0, false, file);
+    fprintf(file, "done\n");
+    fclose(file);
 }

@@ -55,10 +55,12 @@ void GraphicsRenderLayer::render(Renderer *renderer, FrameBuffer *frameBuf) {
     }
     textProgram->useProgram();
 
-    float posData[] = {0.0f, 0.0f, 0.0f, (float)69 / 600 * scale, (float)61 / 800 * scale, 0.0f, (float)61 / 800 * scale, 0.0f,
-                       (float)61 / 800 * scale, (float)69 / 600 * scale, 0.0f, (float)69 / 600 * scale};
-    float uvData[] = {0.0f, (float)69 / 128, 0.0f, 0.0f, (float)61 / 128, (float)69 / 128, (float)61 / 128, (float)69 / 128,
-                      (float)61 / 128, 0.0f, 0.0f, 0.0f};
+    /*float posData[] = {0.0f, 0.0f, 0.0f, (float)80 / 600 * scale, (float)80 / 800 * scale, 0.0f, (float)80 / 800 * scale, 0.0f,
+                       (float)80 / 800 * scale, (float)80 / 600 * scale, 0.0f, (float)80 / 600 * scale};*/
+    float posData[] = {-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
+                       1.0f, 1.0f, -1.0f, 1.0f};
+    float uvData[] = {0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+                      1.0f, 0.0f, 0.0f, 0.0f};
     //float posData[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
     buffers[0].pushData(posData, 12);
     buffers[1].pushData(uvData, 12);
