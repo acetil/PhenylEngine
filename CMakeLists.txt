@@ -16,7 +16,7 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_BINARY_DIR}/src)
 
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/graphics/font/font.cpp)
 set (CMAKE_MODULE_PATH $(CMAKE_MODULE_PATH) "${CMAKE_SOURCE_DIR}/cmake/")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 find_package(OpenGL REQUIRED)

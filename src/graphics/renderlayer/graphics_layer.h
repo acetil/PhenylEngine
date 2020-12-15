@@ -1,4 +1,7 @@
 #include <queue>
+#include "graphics/font/glyph_atlas.h"
+#include "graphics/font/font.h"
+#include "graphics/font/font_manager.h"
 #include "render_layer.h"
 #include "graphics/renderers/renderer.h"
 #ifndef GAME_LAYER_H
@@ -13,10 +16,12 @@ namespace graphics {
         GraphicsBufferIds ids;
         Buffer buffers[2];
         GraphicsTexture tex;
+        FontManager manager;
+        Font font;
         float scale = 0.1f;
         //std::queue<int> bufferGets;
     public:
-        explicit GraphicsRenderLayer(Renderer* renderer);
+        explicit GraphicsRenderLayer(Renderer* renderer, FontManager& manager);
         std::string getName () override;
 
         int getPriority () override;

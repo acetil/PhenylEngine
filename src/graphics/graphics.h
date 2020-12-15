@@ -79,10 +79,10 @@ namespace graphics {
         Renderer* getRenderer () {
             return renderer; // TODO: remove
         }
-        void addGlyphAtlas (GlyphAtlas& atlas) {
+        /*void addGlyphAtlas (GlyphAtlas& atlas) {
             glyphAtlas = std::move(atlas);
             renderLayer->addTex(glyphAtlas.getTex());
-        }
+        }*/
         void setupWindowCallbacks (event::EventBus* bus);
     };
 }

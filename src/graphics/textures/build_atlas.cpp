@@ -19,7 +19,7 @@ struct Node {
     void setDimensions (int _width, int _height, int _offsetX, int _offsetY);
     bool insert (atlas_internal::InternalAtlasImage& img, int padding);
     void destroy ();
-    std::back_insert_iterator<std::vector<Node*>> walk (std::back_insert_iterator<std::vector<Node*>> out);
+    void walk (std::back_insert_iterator<std::vector<Node*>> out);
 
 };
 
@@ -152,18 +152,18 @@ void Node::destroy () {
     index = -1;
 }
 
-std::back_insert_iterator<std::vector<Node*>> Node::walk (std::back_insert_iterator<std::vector<Node*>> out) {
+void Node::walk (std::back_insert_iterator<std::vector<Node*>> out) {
     if (this->index != -1) {
         *out = this;
         out++;
     }
     if (leftNode != nullptr) {
-        out = leftNode->walk(out);
+        leftNode->walk(out);
     }
     if (rightNode != nullptr) {
-        out = rightNode->walk(out);
+        rightNode->walk(out);
     }
-    return out;
+    //return out;
 }
 
 static void printNode (Node* node, FILE* file) {

@@ -9,6 +9,7 @@
 #include "renderlayer/graphics_layer.h"
 #include "renderers/window_callbacks.h"
 #include "game/entity/controller/entity_controller.h"
+#include "font/font_manager.h"
 
 using namespace graphics;
 
@@ -17,7 +18,11 @@ Graphics::Graphics (Renderer* renderer) {
 
     this->deltaTime = 0;
     this->lastTime = renderer->getCurrentTime();
-    this->renderLayer = new GraphicsRenderLayer(renderer);
+    FontManager manager;
+    manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
+    manager.getFace("noto-serif").setFontSize(144);
+    manager.getFace("noto-serif").setGlyphs({AsciiGlyphRange});
+    this->renderLayer = new GraphicsRenderLayer(renderer, manager);
 }
 
 double Graphics::getDeltaTime() const {

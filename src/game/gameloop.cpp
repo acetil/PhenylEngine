@@ -26,16 +26,6 @@ int game::gameloop (graphics::Graphics* graphics) {
     KeyboardInput* keyInput = getKeyboardInput(graphics);
     setupMovementKeys(keyInput, gameObject->getEventBus());
 
-    // TODO: remove
-    graphics::FontManager manager;
-    manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
-    auto& face = manager.getFace("noto-serif");
-    face.setFontSize(72);
-    face.setGlyphs({graphics::AsciiGlyphRange});
-    graphics::GlyphAtlas atlas(face.getGlyphs(), 64);
-    atlas.loadAtlas(graphics->getRenderer());
-    graphics->addGlyphAtlas(atlas);
-
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
     float timeSinceFpsUpdate = 0.0f;

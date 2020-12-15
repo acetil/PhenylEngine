@@ -5,8 +5,8 @@ out vec4 color;
 
 uniform sampler2D textureSampler;
 
-#define SMOOTH_MIN 0.47f
-#define SMOOTH_MAX 0.53f
+#define SMOOTH_MIN 0.49f
+#define SMOOTH_MAX 0.51f
 
 #define THRESHOLD 0.5f
 

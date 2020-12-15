@@ -29,7 +29,7 @@ FontFace::~FontFace () {
 }
 
 FontFace::FontFace (FontFace&& face) noexcept : fontFace(std::exchange(face.fontFace, nullptr)),
-                                                ftFace(std::exchange(face.ftFace,nullptr)) {
+                                                ftFace(std::exchange(face.ftFace,nullptr)), glyphRanges(std::move(face.glyphRanges)), size(face.size) {
 
 }
 
@@ -51,18 +51,18 @@ std::vector<int> FontFace::getFixedFontSizes () {
 void FontFace::updateResolution (int _xRes, int _yRes) {
     this->xRes = _xRes;
     this->yRes = _yRes;
-    FT_Set_Char_Size(ftFace, 0, size * 64, 300, 300);
+    FT_Set_Char_Size(ftFace, 0, size * 64, xRes, yRes);
 }
 
 void FontFace::setGlyphs (std::vector<std::pair<int, int>> _glyphRanges) {
-    logging::log(LEVEL_DEBUG, "Num ranges: {}", _glyphRanges.size());
+    //logging::log(LEVEL_DEBUG, "Num ranges: {}", _glyphRanges.size());
     glyphRanges.reserve(_glyphRanges.size());
     std::copy(_glyphRanges.begin(), _glyphRanges.end(), std::back_inserter(glyphRanges));
 }
 
 void FontFace::setFontSize (int _size) {
     size = _size;
-    int error = FT_Set_Char_Size(ftFace, 0, size * 64, 300, 300);
+    int error = FT_Set_Char_Size(ftFace, 0, size * 32, 300, 300);
     if (error) {
         logging::log(LEVEL_ERROR, "Error encountered while setting char size: {}", error);
     }
@@ -80,7 +80,20 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
     if (error) {
         logging::log(LEVEL_ERROR, "Charmap select encountered error code {}!", error);
     }
-    // Test glyph a
+
+    error = FT_Load_Glyph(ftFace, 0, FT_LOAD_DEFAULT);
+    if (error) {
+        logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+    }
+    error = FT_Render_Glyph(ftFace->glyph, FT_RENDER_MODE_NORMAL);
+    if (error) {
+        logging::log(LEVEL_ERROR, "Render glyph encountered error code {}!", error);
+    }
+    auto buf = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
+    memcpy(buf, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
+    glyphs.emplace_back(buf, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows,
+                        0, size, 300, 300);
+
     for (auto p : glyphRanges) {
         for (int i = p.first; i < p.second; i++) {
             //auto index = FT_Get_Char_Index(ftFace, 'A');
@@ -93,14 +106,30 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
             if (error) {
                 logging::log(LEVEL_ERROR, "Render glyph encountered error code {}!", error);
             }
-            auto buf = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
-            memcpy(buf, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
-            glyphs.push_back(GlyphImage(buf, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows,
-                                           i, size, 300, 300));
+            auto buf2 = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
+            memcpy(buf2, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
+            glyphs.emplace_back(buf2, ftFace->glyph->bitmap.width, ftFace->glyph->bitmap.rows,
+                                           i, size, 300, 300);
         }
     }
-
+    //logging::log(LEVEL_DEBUG, "Gotten all glyphs!");
     //logging::log(LEVEL_DEBUG, "Rendered glyph {} with pixel format grey? {} ", 'W',
                  //ftFace->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY);
     return glyphs;
+}
+
+CharOffsets FontFace::renderText (int c, int prev) {
+    int error = FT_Load_Char(ftFace, c, FT_LOAD_BITMAP_METRICS_ONLY);
+    if (error) {
+        logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+        return CharOffsets(0, 0, 0, 0, 0);
+    }
+    FT_Vector vec;
+    vec.x = 0;
+    vec.y = 0;
+    if (prev != 0) {
+        FT_Get_Kerning(ftFace, prev, c, FT_KERNING_DEFAULT, &vec);
+    }
+    FT_GlyphSlot slot = ftFace->glyph;
+    return CharOffsets(slot->metrics.horiBearingX / 64 + vec.x / 64, -slot->metrics.horiBearingY / 64, slot->metrics.width / 64, slot->metrics.height / 64, slot->metrics.horiAdvance / 64);
 }

@@ -3,11 +3,21 @@
 #include <utility>
 #include "harfbuzz_typedefs.h"
 #include "glyph_image.h"
+#include "graphics/buffer.h"
 #ifndef FONT_FACE_H
 #define FONT_FACE_H
 namespace graphics {
+    struct CharOffsets {
+        int advance;
+        int offsetX;
+        int offsetY;
+        int width;
+        int height;
+        CharOffsets (int _offsetX, int _offsetY, int _width, int _height, int _advance) : offsetX(_offsetX),
+                offsetY(_offsetY), width(_width), height(_height), advance(_advance) {}
+    };
     //constexpr std::pair<int, int> AsciiGlyphRange = {33, 127};
-    constexpr std::pair<int, int> AsciiGlyphRange = {33, 255};
+    constexpr std::pair<int, int> AsciiGlyphRange = {32, 255};
     class FontFace {
     private:
         hb_face_t* fontFace = nullptr;
@@ -28,6 +38,7 @@ namespace graphics {
         void setGlyphs (std::vector<std::pair<int, int>> _glyphRanges);
         void updateResolution (int _xRes, int _yRes);
         std::vector<GlyphImage> getGlyphs ();
+        CharOffsets renderText (int c, int prev);
     };
 }
 #endif

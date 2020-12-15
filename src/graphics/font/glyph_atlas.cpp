@@ -12,6 +12,9 @@
 #define SAMPLE_THRESHOLD 0.5
 #define DISTANCE_LIMIT 12
 
+#define NUM_VERTICES 6
+#define UV_PER_VERTEX 2
+
 using namespace graphics;
 
 struct GlyphDistanceField {
@@ -153,6 +156,9 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
     height = len;
     data = new unsigned char[width * height];
     memset(data, 0, width * height);
+    uvs = new float[distFieldGlyphs.size() * NUM_VERTICES * UV_PER_VERTEX];
+    float* uvPtr = uvs;
+    //logging::log(LEVEL_DEBUG, "Vec size: {}", vec.size());
     for (auto obj : vec) {
         auto copyPtr = data + obj.xOff + obj.yOff * width;
         auto dataPtr = distFieldGlyphs[obj.key].data;
@@ -162,11 +168,22 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
             }
             copyPtr += width;
         }
+        float* originalPtr = uvPtr;
+        for (int i = 0; i < NUM_VERTICES; i++) {
+            unsigned int correctedVertex = 3 * (i == 3) + i % 3;
+            *(uvPtr++) = obj.uOff + (float) (correctedVertex & 1) * obj.uSize;
+            *(uvPtr++) = obj.vOff + (float) ((correctedVertex & 2) >> 1) * obj.vSize;
+        }
+        charUvs[distFieldGlyphs[obj.key].glyphIndex] = util::span(originalPtr, uvPtr);
     }
-
+    logging::log(LEVEL_DEBUG, "Character keys: ");
+    for (auto i : charUvs) {
+        printf("%d\n", i.first);
+    }
 }
 GlyphAtlas::~GlyphAtlas () {
     delete[] data;
+    delete[] uvs;
 }
 
 void GlyphAtlas::loadAtlas (Renderer* renderer) {
@@ -177,4 +194,13 @@ void GlyphAtlas::loadAtlas (Renderer* renderer) {
         }
         printf("\n");
     }*/
+}
+
+void GlyphAtlas::bufferChar (Buffer& uvBuffer, int c) {
+    if (!charUvs.contains(c)) {
+        logging::log(LEVEL_DEBUG, "No glyph found with code {}", c);
+        uvBuffer.pushData(charUvs[0].begin(), charUvs[0].size());
+    } else {
+        uvBuffer.pushData(charUvs[c].begin(), charUvs[c].size());
+    }
 }
