@@ -176,10 +176,10 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
         }
         charUvs[distFieldGlyphs[obj.key].glyphIndex] = util::span(originalPtr, uvPtr);
     }
-    logging::log(LEVEL_DEBUG, "Character keys: ");
+    /*logging::log(LEVEL_DEBUG, "Character keys: ");
     for (auto i : charUvs) {
         printf("%d\n", i.first);
-    }
+    }*/
 }
 GlyphAtlas::~GlyphAtlas () {
     delete[] data;

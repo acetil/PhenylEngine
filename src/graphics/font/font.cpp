@@ -32,3 +32,7 @@ void Font::loadAtlas (Renderer* renderer) {
 void Font::bindAtlasTexture () {
     atlas.getTex().bindTexture();
 }
+
+GraphicsTexture& Font::getAtlasTexture () {
+    return atlas.getTex();
+}

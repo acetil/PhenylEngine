@@ -11,17 +11,10 @@ namespace graphics {
     private:
         bool active = true;
         ShaderProgram* program;
-        ShaderProgram* textProgram;
         std::vector<RenderLayer*> renderLayers;
-        GraphicsBufferIds ids;
-        Buffer buffers[2];
-        GraphicsTexture tex;
-        FontManager manager;
-        Font font;
-        float scale = 0.1f;
         //std::queue<int> bufferGets;
     public:
-        explicit GraphicsRenderLayer(Renderer* renderer, FontManager& manager);
+        explicit GraphicsRenderLayer(Renderer* renderer);
         std::string getName () override;
 
         int getPriority () override;
@@ -43,9 +36,6 @@ namespace graphics {
         std::optional<RenderLayer*> getRenderLayer (const std::string& layer);
 
         void addRenderLayer (RenderLayer* layer);
-        void addTex (GraphicsTexture _tex) {
-            tex = _tex; // TODO: remove
-        };
     };
 }
 #endif //GAME_LAYER_H

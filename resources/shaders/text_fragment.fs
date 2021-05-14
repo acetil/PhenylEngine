@@ -5,10 +5,15 @@ out vec4 color;
 
 uniform sampler2D textureSampler;
 
-#define SMOOTH_MIN 0.49f
-#define SMOOTH_MAX 0.51f
+#define SMOOTH_MIN 0.45f
+#define SMOOTH_MAX 0.53f
 
 #define THRESHOLD 0.5f
+
+/*float bilinealSample (vec2 uv) {
+
+}*/
+
 
 void main() {
     float v = texture(textureSampler, uv).r;

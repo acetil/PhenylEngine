@@ -13,16 +13,13 @@
 
 using namespace graphics;
 
-Graphics::Graphics (Renderer* renderer) {
+Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManager(renderer, manager) {
     this->renderer = renderer;
 
     this->deltaTime = 0;
     this->lastTime = renderer->getCurrentTime();
-    FontManager manager;
-    manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
-    manager.getFace("noto-serif").setFontSize(144);
-    manager.getFace("noto-serif").setGlyphs({AsciiGlyphRange});
-    this->renderLayer = new GraphicsRenderLayer(renderer, manager);
+
+    this->renderLayer = new GraphicsRenderLayer(renderer);
 }
 
 double Graphics::getDeltaTime() const {
@@ -123,4 +120,8 @@ void Graphics::setupWindowCallbacks (event::EventBus* bus) {
     ctx->renderer = renderer;
     renderer->setupWindowCallbacks(ctx);
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
+}
+
+UIManager& Graphics::getUIManager () {
+    return uiManager;
 }

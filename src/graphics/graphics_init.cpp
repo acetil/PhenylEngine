@@ -8,6 +8,7 @@
 #include "graphics/graphics_handlers.h"
 #include "graphics.h"
 #include "renderers/glrenderer.h"
+#include "font/font_manager.h"
 
 using namespace graphics;
 // TODO: update to use exceptions instead of return values
@@ -79,6 +80,15 @@ void graphics::destroyGraphics (Graphics* graphics) {
     glfwTerminate();
 }*/
 
+FontManager initFonts () {
+    FontManager manager;
+    manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
+    manager.getFace("noto-serif").setFontSize(144);
+    manager.getFace("noto-serif").setGlyphs({AsciiGlyphRange});
+
+    return manager;
+}
+
 int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
     auto renderer = new GLRenderer(window);
 
@@ -88,7 +98,11 @@ int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
     renderer->getProgram("text").value()->registerUniform("camera");
 
     renderer->getProgram("default").value()->registerUniform("camera"); // TODO: update
-    auto* graphics = new Graphics(renderer);
+
+    auto manager = initFonts();
+
+    auto* graphics = new Graphics(renderer, manager);
+
     *graphicsNew = graphics;
     logging::log(LEVEL_INFO, "Adding images!");
     std::vector<Image*> images = getSpriteImages(); // TODO: update to match new model system

@@ -18,6 +18,12 @@ namespace graphics {
         void renderText (const std::string& text, int size, int x, int y, Buffer* buffer);
         void bindAtlasTexture ();
         void loadAtlas (Renderer* renderer);
+        GraphicsTexture& getAtlasTexture ();
+
+        Font(Font&& font) noexcept : face(std::move(font.face)), atlas(std::move(font.atlas)) {
+            screenX = font.screenX;
+            screenY = font.screenY;
+        }
     };
 }
 #endif

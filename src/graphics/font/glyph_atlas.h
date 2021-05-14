@@ -22,8 +22,14 @@ namespace graphics {
         GlyphAtlas () = default;
         GlyphAtlas (const std::vector<GlyphImage>& glyphs, int targetRes);
         GlyphAtlas (GlyphAtlas& atlas) = delete;
-        GlyphAtlas (GlyphAtlas&& atlas) noexcept : data(std::exchange(atlas.data, nullptr)), offsetX(atlas.offsetX),
-                offsetY(atlas.offsetY), uvs(std::exchange(atlas.uvs, nullptr)), charUvs(std::move(atlas.charUvs)) {}
+        GlyphAtlas (GlyphAtlas&& atlas) noexcept : data(std::exchange(atlas.data, nullptr)),
+                                                   offsetX(atlas.offsetX),
+                                                   offsetY(atlas.offsetY),
+                                                   uvs(std::exchange(atlas.uvs, nullptr)),
+                                                   charUvs(std::move(atlas.charUvs)),
+                                                   width(atlas.width),
+                                                   height(atlas.height) {}
+
         GlyphAtlas& operator= (GlyphAtlas&& atlas)  noexcept {
             offsetX = atlas.offsetX;
             offsetY = atlas.offsetY;

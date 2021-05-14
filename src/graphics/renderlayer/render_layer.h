@@ -6,6 +6,7 @@
 #define RENDER_LAYER_H
 namespace graphics {
     class RenderLayer {
+    // TODO: add initial setup function
     public:
         virtual std::string getName () = 0;
 

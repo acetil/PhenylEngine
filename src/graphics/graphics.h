@@ -15,6 +15,7 @@
 #include "renderlayer/graphics_layer.h"
 #include "graphics/renderers/renderer.h"
 #include "font/glyph_atlas.h"
+#include "ui/ui_manager.h"
 
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
@@ -59,8 +60,10 @@ namespace graphics {
 
         GlyphAtlas glyphAtlas;
 
+        UIManager uiManager;
+
     public:
-        explicit Graphics (Renderer* renderer);
+        explicit Graphics (Renderer* renderer, FontManager& manager);
         bool shouldClose ();
         void pollEvents ();
         void render ();
@@ -84,6 +87,8 @@ namespace graphics {
             renderLayer->addTex(glyphAtlas.getTex());
         }*/
         void setupWindowCallbacks (event::EventBus* bus);
+
+        UIManager& getUIManager ();
     };
 }
 

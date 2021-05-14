@@ -27,6 +27,8 @@ GameObject* game::initGame (graphics::Graphics* graphics) {
     logging::log(LEVEL_DEBUG, "Finished entity init!");
     gameObject->setTextureIds(graphics->getTextureAtlas("sprite").value());
     graphics->addEntityLayer(manager); // TODO: unhackify
+    graphics->getUIManager().addRenderLayer(graphics, graphics->getRenderer());
+
     registerTiles(gameObject, graphics);
     logging::log(LEVEL_DEBUG, "Set texture ids!");
 

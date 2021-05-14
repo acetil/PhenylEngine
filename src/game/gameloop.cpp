@@ -20,6 +20,9 @@ using namespace game;
 
 int game::gameloop (graphics::Graphics* graphics) {
     GameObject* gameObject = initGame(graphics);
+
+    auto& uiManager = graphics->getUIManager();
+
     gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
@@ -55,9 +58,9 @@ int game::gameloop (graphics::Graphics* graphics) {
             frames = 0;
             //fpsFrames = 0;
         }
-        /*gameObject->updateEntities(deltaTime);
-        gameObject->updateEntityPositions(deltaTime);*/
-        //gameObject->renderEntities(graphics);
+
+        uiManager.renderText("noto-serif", "Hello World!", 28, 100, 50);
+
         graphics->render();
         graphics->pollEvents();
         frames++;
