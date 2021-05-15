@@ -12,6 +12,10 @@
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
+namespace view {
+    class DebugGameView;
+};
+
 namespace game {
     class GameObject {
         private:
@@ -60,6 +64,8 @@ namespace game {
         event::EventBus* getEventBus();
 
         EntityController* getController (const std::string& name);
+
+        friend view::DebugGameView;
     };
 }
 #endif

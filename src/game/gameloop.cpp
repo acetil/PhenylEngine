@@ -14,6 +14,8 @@
 #include "graphics/font/font_manager.h"
 #include "graphics/font/glyph_atlas.h"
 
+#include "graphics/ui/debug_ui.h"
+
 #include "util/profiler.h"
 
 #define TARGET_FPS 60
@@ -42,16 +44,6 @@ int game::gameloop (graphics::Graphics* graphics) {
     ((graphics::MapRenderLayer*)graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
-    double avgGraphicsTime = 0;
-    double avgPhysicsTime = 0;
-    double avgFrameTime = 0;
-
-    double totGraphicsTime = 0;
-    double totPhysicsTime = 0;
-    double totFrameTime = 0;
-
-    int smoothFrames = 0;
-
     while (!graphics->shouldClose()) {
         util::startProfileFrame();
         deltaTime = (float) graphics->getDeltaTime();
@@ -75,28 +67,10 @@ int game::gameloop (graphics::Graphics* graphics) {
             //fpsFrames = 0;
         }
 
-        if (smoothFrames % 30 == 0) {
-            avgFrameTime = totFrameTime / 30;
-            avgGraphicsTime = totGraphicsTime / 30;
-            avgPhysicsTime = totPhysicsTime / 30;
-
-            totFrameTime = 0;
-            totGraphicsTime = 0;
-            totPhysicsTime = 0;
-        }
-
-        totFrameTime += util::getProfileFrameTime();
-        totGraphicsTime += util::getProfileTime("graphics");
-        totPhysicsTime += util::getProfileTime("physics");
-
-        smoothFrames++;
-
         util::startProfile("graphics");
-        //uiManager.renderText("noto-serif", "Hello World!", 28, 100, 50);
 
-        uiManager.renderText("noto-serif", "physics: " + std::to_string(avgPhysicsTime * 1000) + "ms", 11, 20, 20);
-        uiManager.renderText("noto-serif", "graphics: " + std::to_string(avgGraphicsTime * 1000) + "ms", 11, 20, 45);
-        uiManager.renderText("noto-serif", "frame time: " + std::to_string(avgFrameTime * 1000) + "ms", 11, 20, 70);
+        graphics::renderDebugUi(gameObject, uiManager);
+
         graphics->render();
 
         util::endProfile();

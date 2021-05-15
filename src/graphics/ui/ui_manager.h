@@ -8,6 +8,9 @@
 #ifndef UI_MANAGER_H
 #define UI_MANAGER_H
 namespace graphics {
+#ifndef FONT_H
+class Font;
+#endif
     #ifndef RENDERER_H
     class Renderer;
     #endif

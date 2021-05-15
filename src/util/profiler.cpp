@@ -70,7 +70,7 @@ void util::endProfile () {
         logging::log(LEVEL_WARNING, "Profiler has not active categories to end!");
     } else {
         auto category = profiler.activeCategories.back();
-        
+
         profiler.currentProfileTime[category] += time - profiler.profileStartTime[category];
 
         profiler.activeSet.erase(category);
