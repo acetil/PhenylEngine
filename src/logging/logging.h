@@ -56,4 +56,11 @@ namespace physics::logging {
     }
     //void logf (int level, const char* log, ...);
 }
+namespace util::logging {
+    void log (int level, const std::string& log);
+    template<typename ...Args>
+    void log (int level, const std::string& logStr, Args... args) {
+        log(level, util::format(logStr, args...));
+    }
+}
 #endif

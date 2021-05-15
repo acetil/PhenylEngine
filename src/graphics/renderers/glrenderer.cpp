@@ -1,6 +1,7 @@
 #include "glrenderer.h"
 #include "window_callbacks.h"
 #include "glcallbacks.h"
+#include "util/profiler.h"
 #include <vector>
 using namespace graphics;
 GLRenderer::GLRenderer (GLFWwindow* window) {
@@ -9,6 +10,7 @@ GLRenderer::GLRenderer (GLFWwindow* window) {
     windowBuf = new GLFrameBuffer();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
+    util::setProfilerTimingFunction(glfwGetTime);
 }
 
 double GLRenderer::getCurrentTime () {

@@ -56,9 +56,9 @@ void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string
 
 UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) : fontTexture(_fontTexture),
                                                                                   textProgram(renderer->getProgram("text").value()) {
-    textIds = renderer->getBufferIds(2, 40 * 12 * sizeof(float), {2, 2});
-    textBuffer[0] = Buffer(40 * 12, sizeof(float), true);
-    textBuffer[1] = Buffer(40 * 12, sizeof(float), true);
+    textIds = renderer->getBufferIds(2, 100 * 12 * sizeof(float), {2, 2});
+    textBuffer[0] = Buffer(100 * 12, sizeof(float), true);
+    textBuffer[1] = Buffer(100 * 12, sizeof(float), true);
 }
 
 

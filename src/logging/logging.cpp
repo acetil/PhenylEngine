@@ -7,6 +7,7 @@
 #define GAME_LOCATION "GAME"
 #define GRAPHICS_LOCATION "GRAPHICS"
 #define PHYSICS_LOCATION "PHYSICS"
+#define UTIL_LOCATION "UTIL"
 
 /*void component::logging::log (int level, const char* log) {
     internal::log_internal(level, COMPONENT_LOCATION, log);
@@ -70,4 +71,8 @@ void graphics::logging::log (int level, const std::string& log) {
 
 void physics::logging::log (int level, const std::string& log) {
     internal::log_internal(level, PHYSICS_LOCATION, log);
+}
+
+void util::logging::log(int level, const std::string& log) {
+    internal::log_internal(level, UTIL_LOCATION, log);
 }
