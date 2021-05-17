@@ -5,5 +5,6 @@
 #define DEBUG_UI_H
 namespace graphics {
     void renderDebugUi (game::GameObject* gameObject, UIManager& manager);
+    void addDebugEventHandlers (event::EventBus* bus);
 }
 #endif

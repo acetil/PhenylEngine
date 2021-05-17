@@ -2,6 +2,9 @@
 #include "event/event.h"
 #include "event/events/player_movement_change.h"
 #include "event/events/player_shoot_change.h"
+
+#include "util/debug_console.h"
+
 #define FORCE_COMPONENT 0.01
 using namespace game;
 class KeyMovement : public KeyboardFunction {
@@ -33,6 +36,23 @@ public:
         }
     };
 };
+
+class DebugKey : public KeyboardFunction {
+private:
+    event::EventBus* bus;
+    bool isDown;
+public:
+    explicit DebugKey (event::EventBus* _bus) : bus(_bus), isDown(false) {}
+    void operator() (int action) override {
+        if (!isDown && action == GLFW_PRESS) {
+            isDown = true;
+        } else if (isDown && action == GLFW_RELEASE) {
+            isDown = false;
+            util::doDebugConsole(bus);
+        }
+    }
+};
+
 void game::setupMovementKeys (KeyboardInput* keyInput, event::EventBus* bus) {
     setupKeyboardInputListeners(keyInput, bus);
     keyInput->setKey(GLFW_KEY_W, new KeyMovement(bus, 0, FORCE_COMPONENT));
@@ -41,6 +61,8 @@ void game::setupMovementKeys (KeyboardInput* keyInput, event::EventBus* bus) {
     keyInput->setKey(GLFW_KEY_D, new KeyMovement(bus, FORCE_COMPONENT, 0));
 
     keyInput->setMouseButton(GLFW_MOUSE_BUTTON_LEFT, new MouseShoot(bus));
+
+    keyInput->setKey(GLFW_KEY_F12, new DebugKey(bus));
 }
 // TODO: move to vectors
 KeyMovement::KeyMovement(event::EventBus* bus, float xComponent, float yComponent) {

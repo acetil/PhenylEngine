@@ -12,6 +12,8 @@
 #include "game/entity/controller/entity_controller.h"
 #include "graphics/graphics_update.h"
 
+#include "graphics/ui/debug_ui.h"
+
 using namespace game;
 void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
 component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus);
@@ -44,6 +46,8 @@ void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
     gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, graphics);
     gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
     gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
+
+    graphics::addDebugEventHandlers(gameObject->getEventBus());
 }
 
 component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus) {
