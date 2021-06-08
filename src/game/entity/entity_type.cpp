@@ -5,7 +5,7 @@
 
 using namespace game;
 
-void game::setInitialEntityValues (component::EntityComponentManager* componentManager,
+void game::setInitialEntityValues (const component::EntityComponentManager::SharedPtr& componentManager,
                                         EntityType& type, int entityId, float x, float y) {
     *componentManager->getObjectDataPtr<EntityType>(entityId) = type;
 
@@ -33,7 +33,7 @@ void game::setInitialEntityValues (component::EntityComponentManager* componentM
     rotComp->rotation = 0;
     rotComp->rotMatrix = {{1, 0}, {0, 1}};
 
-    *componentManager->getObjectDataPtr<EntityController*>(entityId) = type.defaultController;
+    *componentManager->getObjectDataPtr<std::shared_ptr<EntityController>>(entityId) = type.defaultController;
     *componentManager->getObjectDataPtr<AbstractEntity*>(entityId) = type.entityFactory();
 
 }
@@ -89,7 +89,7 @@ EntityTypeBuilder& EntityTypeBuilder::addResolveLayers (unsigned int layers) {
     return *this;
 }
 
-EntityType EntityTypeBuilder::build (const std::unordered_map<std::string, EntityController*>& controllerMap) {
+EntityType EntityTypeBuilder::build (const std::unordered_map<std::string, std::shared_ptr<EntityController>>& controllerMap) {
     auto type = EntityType();
 
     type.entityFactory = entityFactory;

@@ -4,7 +4,7 @@
 #ifndef ROTATION_UPDATE_H
 #define ROTATION_UPDATE_H
 namespace component {
-    void rotateEntity (int entityId, float newRotation, EntityComponentManager* manager, event::EventBus* eventBus);
-    void rotateEntityBy (int entityId, float deltaTheta, EntityComponentManager* manager, event::EventBus* eventBus);
+    void rotateEntity (int entityId, float newRotation, EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& eventBus);
+    void rotateEntityBy (int entityId, float deltaTheta, EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& eventBus);
 }
 #endif

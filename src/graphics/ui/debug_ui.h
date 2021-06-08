@@ -4,7 +4,7 @@
 #ifndef DEBUG_UI_H
 #define DEBUG_UI_H
 namespace graphics {
-    void renderDebugUi (game::GameObject* gameObject, UIManager& manager);
-    void addDebugEventHandlers (event::EventBus* bus);
+    void renderDebugUi (game::GameObject::SharedPtr gameObject, UIManager& manager);
+    void addDebugEventHandlers (event::EventBus::SharedPtr bus);
 }
 #endif

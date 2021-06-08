@@ -17,6 +17,8 @@
 #include "font/glyph_atlas.h"
 #include "ui/ui_manager.h"
 
+#include "util/smart_help.h"
+
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 namespace graphics {
@@ -44,7 +46,7 @@ namespace graphics {
 
     };*/
 
-    class Graphics {
+class Graphics : public util::SmartHelper<Graphics> {
     private:
         Renderer* renderer;
 
@@ -77,7 +79,7 @@ namespace graphics {
         //RenderLayer* getLayer (std::string name);
         //virtual RenderLayer* getLayer (int layer);
         [[maybe_unused]] Camera& getCamera ();
-        void addEntityLayer (component::EntityComponentManager* compManager);
+        void addEntityLayer (component::EntityComponentManager::SharedPtr compManager);
         void onEntityCreation (event::EntityCreationEvent& event);
         Renderer* getRenderer () {
             return renderer; // TODO: remove
@@ -86,7 +88,7 @@ namespace graphics {
             glyphAtlas = std::move(atlas);
             renderLayer->addTex(glyphAtlas.getTex());
         }*/
-        void setupWindowCallbacks (event::EventBus* bus);
+        void setupWindowCallbacks (event::EventBus::SharedPtr bus);
 
         UIManager& getUIManager ();
     };

@@ -2,6 +2,7 @@
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <memory>
 #include "entity/entity.h"
 #include "graphics/textures/texture_atlas.h"
 #include "tile/tile.h"
@@ -9,6 +10,7 @@
 #include "component/component.h"
 #include "component/main_component.h"
 #include "entity/entity_type.h"
+#include "util/smart_help.h"
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
@@ -17,18 +19,18 @@ namespace view {
 };
 
 namespace game {
-    class GameObject {
+class GameObject : public util::SmartHelper<GameObject> {
         private:
         std::map<std::string, AbstractEntity*> entityRegistry;
         std::unordered_map<std::string, EntityType> entityTypes;
-        std::unordered_map<std::string, EntityController*> controllers;
+        std::unordered_map<std::string, std::shared_ptr<EntityController>> controllers;
         std::unordered_map<std::string, EntityTypeBuilder> entityTypeBuilders;
         //std::map<int, AbstractEntity*> entities;
         std::map<std::string, int> tileMap;
         std::vector<Tile*> tileRegistry;
         //int currentEntityId = 0;
-        event::EventBus* eventBus = new event::EventBus();
-        component::EntityComponentManager* entityComponentManager;
+        event::EventBus::SharedPtr eventBus = event::EventBus::NewSharedPtr();
+        component::EntityComponentManager::SharedPtr entityComponentManager;
         public:
         ~GameObject();
 
@@ -37,7 +39,7 @@ namespace game {
         template <typename T>
         void registerEntityController (const std::string& name) {
             static_assert(std::is_base_of<EntityController, T>::value, "Type must be child of EntityController!");
-            controllers[name] = new T(); // TODO: smarter memory stuff
+            controllers[name] = std::make_shared<T>();
         }
         void buildEntityTypes ();
         //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
@@ -57,13 +59,13 @@ namespace game {
         //void updateEntityPositions (float deltaTime);
         void setTextureIds (graphics::TextureAtlas atlas);
         //void renderEntities (graphics::Graphics* graphics);
-        void setEntityComponentManager (component::EntityComponentManager* manager);
+        void setEntityComponentManager (component::EntityComponentManager::SharedPtr manager);
 
         void updateEntitiesPrePhysics ();
         void updateEntitiesPostPhysics ();
-        event::EventBus* getEventBus();
+        event::EventBus::SharedPtr getEventBus();
 
-        EntityController* getController (const std::string& name);
+        std::shared_ptr<EntityController> getController (const std::string& name);
 
         friend view::DebugGameView;
     };

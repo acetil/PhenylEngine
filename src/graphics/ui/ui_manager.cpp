@@ -28,7 +28,7 @@ void UIManager::renderText (const std::string& font, const std::string& text, in
     }
 }
 
-void UIManager::addRenderLayer (Graphics* graphics, Renderer* renderer) {
+void UIManager::addRenderLayer (const Graphics::SharedPtr& graphics, Renderer* renderer) {
     uiLayer = new UIRenderLayer(fonts.at("noto-serif").getAtlasTexture(), renderer);
     graphics->getRenderLayer()->addRenderLayer(uiLayer);
 }

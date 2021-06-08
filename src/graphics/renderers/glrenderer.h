@@ -3,6 +3,7 @@
 #include "graphics/graphics_headers.h"
 
 #include <unordered_map>
+#include <memory>
 
 #include "renderer.h"
 #ifndef GLRENDERER_H
@@ -20,6 +21,8 @@ namespace graphics {
         GLFWwindow* window;
         GLFrameBuffer* windowBuf;
         std::unordered_map<std::string, ShaderProgram*> shaderPrograms;
+
+        std::unique_ptr<WindowCallbackContext> callbackCtx;
 
     public:
         explicit GLRenderer (GLFWwindow* window);
@@ -56,7 +59,7 @@ namespace graphics {
 
         void bindTexture (unsigned int textureId) override;
 
-        void setupWindowCallbacks (WindowCallbackContext* ctx) override;
+        void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
     };
 }
 #endif //GLRENDERER_H

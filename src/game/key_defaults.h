@@ -4,6 +4,6 @@
 #ifndef KEY_DEFAULTS_H
 #define KEY_DEFAULTS_H
 namespace game {
-    void setupMovementKeys (KeyboardInput* keyInput, event::EventBus* playerPtr);
+    void setupMovementKeys (const KeyboardInput::SharedPtr& keyInput, const event::EventBus::SharedPtr& playerPtr);
 }
 #endif

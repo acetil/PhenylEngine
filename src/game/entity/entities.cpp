@@ -34,7 +34,8 @@ void game::addEntities(event::EntityRegisterEvent& event) {
 
     event.gameObject->buildEntityTypes();
 
-    auto playerController = (PlayerController*)event.gameObject->getController("test_entity");
+    auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject->getController("test_entity"));
+
 
     event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateMovement, playerController);
     event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateCursorPos, playerController);

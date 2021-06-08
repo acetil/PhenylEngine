@@ -1,4 +1,7 @@
 #include <vector>
+#include <optional>
+#include <memory>
+
 #include "graphics/buffer.h"
 #include "graphics/shaders/shaders.h"
 #ifndef RENDERER_H
@@ -44,7 +47,7 @@ namespace graphics {
 
         virtual void bindTexture (unsigned int textureId) = 0;
 
-        virtual void setupWindowCallbacks (WindowCallbackContext* ctx) = 0;
+        virtual void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) = 0;
     };
     class GraphicsTexture {
         Renderer* renderer;

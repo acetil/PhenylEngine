@@ -1,5 +1,8 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics.h"
+
+#include "util/smart_help.h"
+
 #include <vector>
 #include <map>
 #include <utility>
@@ -15,7 +18,7 @@ namespace game {
     public:
         virtual void operator() (int action, glm::vec2 screenPos, glm::vec2 worldPos) = 0;
     };
-    class KeyboardInput {
+class KeyboardInput : public util::SmartHelper<KeyboardInput> {
         public:
         virtual void setKey (int key, KeyboardFunction* function) = 0;
         virtual void setMouseButton (int button, MouseFunction* function) = 0;
@@ -23,8 +26,8 @@ namespace game {
         [[maybe_unused]] virtual void replaceKey (int after, int before) = 0;
         virtual void handleKeyPresses () = 0;
     };
-    KeyboardInput* getKeyboardInput (graphics::Graphics* graphics);
+    KeyboardInput::SharedPtr getKeyboardInput (const graphics::Graphics::SharedPtr& graphics);
 
-    void setupKeyboardInputListeners (KeyboardInput* input, event::EventBus* bus);
+    void setupKeyboardInputListeners (const KeyboardInput::SharedPtr& input, const event::EventBus::SharedPtr& bus);
 }
 #endif

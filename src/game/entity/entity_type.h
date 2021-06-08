@@ -1,6 +1,8 @@
 #include <string>
 #include <unordered_map>
 #include <type_traits>
+#include <memory>
+
 #include "event/event.h"
 #include "graphics/maths_headers.h"
 #include "entity.h"
@@ -12,7 +14,7 @@ namespace game {
     class EntityController;
     #endif
     struct EntityType {
-        EntityController* defaultController;
+        std::shared_ptr<EntityController> defaultController;
 
         glm::vec2 scale;
         glm::vec2 collisionScale;
@@ -61,7 +63,7 @@ namespace game {
         EntityTypeBuilder& addCollisionLayers (unsigned int layers);
         EntityTypeBuilder& addEventLayers (unsigned int layers);
         EntityTypeBuilder& addResolveLayers (unsigned int layers);
-        EntityType build (const std::unordered_map<std::string, EntityController*>& controllerMap);
+        EntityType build (const std::unordered_map<std::string, std::shared_ptr<EntityController>>& controllerMap);
     };
 
     template <class T>

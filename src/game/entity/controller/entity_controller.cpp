@@ -1,4 +1,6 @@
 #include "entity_controller.h"
+
+#include <utility>
 #include "logging/logging.h"
 using namespace game;
 
@@ -24,17 +26,17 @@ void EntityController::setTextureIds (graphics::TextureAtlas& atlas) {
 }
 
 
-void game::controlEntitiesPrePhysics (component::EntityComponentManager* manager, view::GameView& gameView, int startId, int numEntities,
-                                      int direction, event::EventBus* bus) {
-    auto viewCore = view::ViewCore(manager);
+void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
+                                      int direction, const event::EventBus::SharedPtr& bus) {
+    auto viewCore = view::ViewCore(std::move(manager));
     for (int i = 0; i < numEntities; i++) {
         view::EntityView entityView = view::EntityView(viewCore, i, bus);
         entityView.controller()->controlEntityPrePhysics(entityView, gameView);
     }
 }
-void game::controlEntitiesPostPhysics(component::EntityComponentManager* manager, view::GameView& gameView, int startId, int numEntities,
-                                      int direction, event::EventBus* bus) {
-    auto viewCore = view::ViewCore(manager);
+void game::controlEntitiesPostPhysics(component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
+                                      int direction, const event::EventBus::SharedPtr& bus) {
+    auto viewCore = view::ViewCore(std::move(manager));
     for (int i = 0; i < numEntities; i++) {
         auto entityView = view::EntityView(viewCore, i, bus);
         entityView.controller()->controlEntityPostPhysics(entityView, gameView);
@@ -46,6 +48,6 @@ void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
     entityView.controller()->onEntityCollision(entityView, collisionEvent.gameView, collisionEvent.otherId, collisionEvent.collisionLayers);
 }
 
-void game::addControlEventHandlers (event::EventBus* eventBus) {
+void game::addControlEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     eventBus->subscribeHandler(controlOnCollision);
 }

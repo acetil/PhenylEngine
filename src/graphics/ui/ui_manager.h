@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <string>
+#include <memory>
 
 #include "graphics/font/font_manager.h"
 #include "graphics/buffer.h"
@@ -31,7 +32,7 @@ class Font;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);
-        void addRenderLayer (Graphics* graphics, Renderer* renderer);
+        void addRenderLayer (const std::shared_ptr<Graphics>& graphics, Renderer* renderer);
     };
 }
 #endif

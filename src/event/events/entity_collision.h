@@ -2,6 +2,7 @@
 #include "event/event.h"
 #include "component/view/game_view.h"
 #include <string>
+#include <utility>
 #ifndef ENTITIY_COLLISION_H
 #define ENTITIY_COLLISION_H
 namespace event {
@@ -11,13 +12,13 @@ namespace event {
         int otherId;
         unsigned int collisionLayers;
         std::string name = "entity_collision";
-        component::EntityComponentManager* componentManager;
-        EventBus* eventBus; // TODO: find better way
+        component::EntityComponentManager::SharedPtr componentManager;
+        EventBus::SharedPtr eventBus; // TODO: find better way
         view::GameView gameView;
-        EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(nullptr), eventBus(nullptr), gameView(view::GameView(nullptr)) {}
+        EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(), eventBus{}, gameView(view::GameView(nullptr)) {}
         EntityCollisionEvent (int _entityId, int _otherId, unsigned int _collisionLayers,
-                              component::EntityComponentManager* compManager, EventBus* bus, view::GameView _gameView) : entityId(_entityId),
-                                    otherId(_otherId), collisionLayers(_collisionLayers), componentManager(compManager), eventBus(bus), gameView(_gameView) {};
+                              component::EntityComponentManager::SharedPtr compManager, EventBus::SharedPtr bus, view::GameView _gameView) : entityId(_entityId),
+                                    otherId(_otherId), collisionLayers(_collisionLayers), componentManager(std::move(compManager)), eventBus(std::move(bus)), gameView(_gameView) {};
     };
 }
 #endif

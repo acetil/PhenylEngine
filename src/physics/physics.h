@@ -8,8 +8,8 @@
 #define PHYSICS_H
 namespace physics {
     void onEntityCreation (event::EntityCreationEvent& event);
-    void updatePhysics (component::EntityComponentManager* componentManager);
-    void checkCollisions (component::EntityComponentManager* componentManager, event::EventBus* eventBus, view::GameView gameView);
+    void updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager);
+    void checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView gameView);
     void updateEntityHitboxRotation (event::EntityRotationEvent& event);
 }
 #endif

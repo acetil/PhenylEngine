@@ -183,8 +183,9 @@ void GLRenderer::bindTexture (unsigned int textureId) {
     glBindTexture(GL_TEXTURE_2D, textureId);
 }
 
-void GLRenderer::setupWindowCallbacks (WindowCallbackContext* ctx) {
-    glfwSetWindowUserPointer(window, ctx);
+void GLRenderer::setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) {
+    callbackCtx = std::move(ctx);
+    glfwSetWindowUserPointer(window, callbackCtx.get());
     setupGLWindowCallbacks(window);
 }
 

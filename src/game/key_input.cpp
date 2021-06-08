@@ -18,7 +18,7 @@ namespace game {
         glm::vec2 screenMousePos;
         glm::vec2 worldMousePos;
     public:
-        explicit KeyboardInputImpl (graphics::Graphics* graphics);
+        explicit KeyboardInputImpl (graphics::Graphics::SharedPtr graphics);
 
         ~KeyboardInputImpl ();
 
@@ -34,7 +34,7 @@ namespace game {
     };
 }
 
-game::KeyboardInputImpl::KeyboardInputImpl (graphics::Graphics* graphics) {
+game::KeyboardInputImpl::KeyboardInputImpl (graphics::Graphics::SharedPtr graphics) {
 
     window = ((graphics::GLRenderer*)graphics->getRenderer())->getWindow();
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
@@ -74,10 +74,10 @@ void KeyboardInputImpl::onCursorPosChange (event::CursorPosChangeEvent& event) {
     worldMousePos = event.worldPos;
 }
 
-KeyboardInput* game::getKeyboardInput (graphics::Graphics* graphics) {
-    return new KeyboardInputImpl(graphics);
+KeyboardInput::SharedPtr game::getKeyboardInput (const graphics::Graphics::SharedPtr& graphics) {
+    return std::make_shared<KeyboardInputImpl>(graphics);
 }
 
-void game::setupKeyboardInputListeners (KeyboardInput* input, event::EventBus* bus) {
-    bus->subscribeHandler(&KeyboardInputImpl::onCursorPosChange, (KeyboardInputImpl*)input);
+void game::setupKeyboardInputListeners (const KeyboardInput::SharedPtr& input, const event::EventBus::SharedPtr& bus) {
+    bus->subscribeHandler(&KeyboardInputImpl::onCursorPosChange, std::dynamic_pointer_cast<KeyboardInputImpl>(input));
 }

@@ -3,6 +3,6 @@
 #ifndef GAME_INIT_H
 #define GAME_INIT_H
 namespace game {
-    GameObject* initGame (graphics::Graphics* graphics);
+    GameObject::SharedPtr initGame (const graphics::Graphics::SharedPtr& graphics);
 }
 #endif

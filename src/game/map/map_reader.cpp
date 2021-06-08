@@ -25,7 +25,7 @@
 
 using namespace game;
 
-Map* game::readMap (const std::string& path, GameObject* gameObject) {
+Map* game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
     FILE* file = fopen(path.c_str(), "rb");

@@ -1,6 +1,8 @@
 #include "component/main_component.h"
 #include "entity_layer.h"
 
+#include <utility>
+
 
 #define BUFFER_SIZE 100 * 2 * 6
 
@@ -60,8 +62,8 @@ void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuf
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
-                                                component::EntityComponentManager* componentManager) {
-    this->componentManager = componentManager;
+                                                component::EntityComponentManager::SharedPtr componentManager) {
+    this->componentManager = std::move(componentManager);
     //this->shaderProgram = renderer->getProgram("entity").value();
     this->shaderProgram = renderer->getProgram("default").value(); // TODO
     this->buffIds = renderer->getBufferIds(5, BUFFER_SIZE * 2 * sizeof(float), {2, 2, 2, 2, 2});

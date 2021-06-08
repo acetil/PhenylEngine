@@ -89,7 +89,7 @@ FontManager initFonts () {
     return manager;
 }
 
-int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
+int graphics::initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew) {
     auto renderer = new GLRenderer(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
@@ -101,9 +101,9 @@ int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
 
     auto manager = initFonts();
 
-    auto* graphics = new Graphics(renderer, manager);
+    auto graphics = std::make_shared<Graphics>(renderer, manager);
 
-    *graphicsNew = graphics;
+    graphicsNew = graphics;
     logging::log(LEVEL_INFO, "Adding images!");
     std::vector<Image*> images = getSpriteImages(); // TODO: update to match new model system
     std::vector<Model> models;
@@ -119,7 +119,7 @@ int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsNew) {
 
 }
 
-void graphics::destroyGraphics (Graphics* graphics) {
-    delete graphics;
+void graphics::destroyGraphics (const Graphics::SharedPtr& graphics) {
+    //delete graphics;
     glfwTerminate(); // TODO: move to renderer
 }

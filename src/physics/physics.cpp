@@ -65,12 +65,12 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
     }*/
 }
 
-void physics::updatePhysics (component::EntityComponentManager* componentManager) {
+void physics::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
     componentManager->applyFunc<component::EntityMainComponent>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent>(),
                                         componentManager->getComponent<graphics::AbsolutePosition>()));
 }
 
-void physics::checkCollisions (component::EntityComponentManager * componentManager, event::EventBus* eventBus, view::GameView gameView) {
+void physics::checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView gameView) {
     //logging::log(LEVEL_DEBUG, "Checking collisions!");
     std::vector<std::tuple<int,int, glm::vec2>> collisionResults; // TODO: do caching or something
     collisionResults.reserve(componentManager->getNumObjects());

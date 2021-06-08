@@ -1,4 +1,6 @@
 #include "key_defaults.h"
+
+#include <utility>
 #include "event/event.h"
 #include "event/events/player_movement_change.h"
 #include "event/events/player_shoot_change.h"
@@ -9,21 +11,21 @@
 using namespace game;
 class KeyMovement : public KeyboardFunction {
     private:
-    event::EventBus* bus;
+    event::EventBus::SharedPtr bus;
     float xComponent;
     float yComponent;
     bool isDown;
     public:
-    KeyMovement(event::EventBus* bus, float xComponent, float yComponent);
+    KeyMovement(event::EventBus::SharedPtr bus, float xComponent, float yComponent);
     void operator() (int action) override;
 };
 class MouseShoot : public MouseFunction {
 private:
-    event::EventBus* bus;
+    event::EventBus::SharedPtr bus;
     bool isDown;
 public:
-    explicit MouseShoot (event::EventBus* bus) {
-        this->bus = bus;
+    explicit MouseShoot (event::EventBus::SharedPtr bus) {
+        this->bus = std::move(bus);
         isDown = false;
     };
     void operator() (int action, glm::vec2 screenPos, glm::vec2 worldPos) override {
@@ -39,10 +41,10 @@ public:
 
 class DebugKey : public KeyboardFunction {
 private:
-    event::EventBus* bus;
+    event::EventBus::SharedPtr bus;
     bool isDown;
 public:
-    explicit DebugKey (event::EventBus* _bus) : bus(_bus), isDown(false) {}
+    explicit DebugKey (event::EventBus::SharedPtr _bus) : bus(std::move(_bus)), isDown(false) {}
     void operator() (int action) override {
         if (!isDown && action == GLFW_PRESS) {
             isDown = true;
@@ -53,7 +55,7 @@ public:
     }
 };
 
-void game::setupMovementKeys (KeyboardInput* keyInput, event::EventBus* bus) {
+void game::setupMovementKeys (const KeyboardInput::SharedPtr& keyInput, const event::EventBus::SharedPtr& bus) {
     setupKeyboardInputListeners(keyInput, bus);
     keyInput->setKey(GLFW_KEY_W, new KeyMovement(bus, 0, FORCE_COMPONENT));
     keyInput->setKey(GLFW_KEY_A, new KeyMovement(bus, -1 * FORCE_COMPONENT, 0));
@@ -65,7 +67,7 @@ void game::setupMovementKeys (KeyboardInput* keyInput, event::EventBus* bus) {
     keyInput->setKey(GLFW_KEY_F12, new DebugKey(bus));
 }
 // TODO: move to vectors
-KeyMovement::KeyMovement(event::EventBus* bus, float xComponent, float yComponent) {
+KeyMovement::KeyMovement(event::EventBus::SharedPtr bus, float xComponent, float yComponent) {
     this->bus = bus;
     this->xComponent = xComponent;
     this->yComponent = yComponent;

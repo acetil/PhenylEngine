@@ -17,8 +17,8 @@ int main (int argv, char* argc[]) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
-    graphics::Graphics* graphics = nullptr;
-    if (graphics::initGraphics(window, &graphics) != GRAPHICS_INIT_SUCCESS) {
+    graphics::Graphics::SharedPtr graphics;
+    if (graphics::initGraphics(window, graphics) != GRAPHICS_INIT_SUCCESS) {
         internal::log_internal(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }

@@ -116,14 +116,14 @@ namespace view {
         T* getPointer () {
             return std::get<add_pointer<T>>(pointerTuple);
         }
-        component::EntityComponentManager* manager;
+        component::EntityComponentManager::SharedPtr manager;
     public:
         /*explicit ViewCore(const component::ComponentManagerImpl<Args...>& compManager) {
             pointerTuple = std::move(compManager.ptrTuple);
         }*/
-        explicit ViewCore(component::ComponentManagerImpl<Args...>* compManager) :
-            pointerTuple{compManager->ptrTuple}, manager(compManager) {};
-        explicit ViewCore () : manager(nullptr) {};
+        explicit ViewCore(std::shared_ptr<component::ComponentManagerImpl<Args...>> compManager) :
+            pointerTuple{compManager->ptrTuple}, manager(std::move(compManager)) {};
+        explicit ViewCore () : manager{} {};
         //explicit ViewCore(std::tuple<add_pointer<Args>...> tup) : pointerTuple{tup} {};
         friend class ViewBaseImpl<Args...>;
         friend class ViewPropertyRotation;
@@ -171,15 +171,15 @@ namespace view {
     private:
         float newVal{};
         component::RotationComponent* compPtr{};
-        component::EntityComponentManager* manager{};
-        event::EventBus* eventBus{};
+        component::EntityComponentManager::SharedPtr manager{};
+        event::EventBus::SharedPtr eventBus{};
         int entityId{};
     public:
         explicit ViewPropertyRotation (ViewCoreList<component::entity_list> core,
-                                       event::EventBus* bus, int _entityId) :
+                                       event::EventBus::SharedPtr bus, int _entityId) :
                 ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::RotationComponent>() + _entityId),
                 newVal((core.getPointer<component::RotationComponent>() + _entityId)->rotation),
-                manager(core.manager), eventBus(bus), entityId(_entityId) {};
+                manager(core.manager), eventBus(std::move(bus)), entityId(_entityId) {};
         ViewPropertyRotation () : ViewPropertyCustom<float, ViewPropertyRotation>(nullptr) {}
         void fieldChangeCallback () {
             component::rotateEntity(entityId, newVal, manager, eventBus);
@@ -195,10 +195,10 @@ namespace view {
     class EntityView : public ViewBase<component::entity_list> {
     public:
         const int entityId;
-        event::EventBus* eventBus;
+        event::EventBus::SharedPtr eventBus;
         ViewProperty<game::AbstractEntity*> entity;
 
-        ViewProperty<game::EntityController*> controller;
+        ViewProperty<std::shared_ptr<game::EntityController>> controller;
 
         ViewProperty<glm::vec2> position;
         ViewProperty<glm::vec2> velocity;
@@ -233,12 +233,12 @@ namespace view {
             resolveLayers(),
             eventLayers() {};
         // TODO: add scaling
-        EntityView (ViewCoreList<component::entity_list> core, int id, event::EventBus* bus) : ViewBase<component::entity_list>(core),
+        EntityView (ViewCoreList<component::entity_list> core, int id, const event::EventBus::SharedPtr& bus) : ViewBase<component::entity_list>(core),
             entityId(id),
             eventBus(bus),
             rotation(core, bus, id),
             entity(getPointer<game::AbstractEntity*>() +  id),
-            controller(getPointer<game::EntityController*>() + id),
+            controller(getPointer<std::shared_ptr<game::EntityController>>() + id),
             position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, pos, id))),
             velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, vel, id))),
             acceleration(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, acc, id))),

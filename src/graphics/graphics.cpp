@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <unordered_set>
+#include <utility>
 #include <graphics/renderlayer/entity_layer.h>
 #include "logging/logging.h"
 #include "game/entity/entity.h"
@@ -101,7 +102,7 @@ GraphicsRenderLayer* Graphics::getRenderLayer () {
     return renderLayer;
 }
 
-void Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
+void Graphics::addEntityLayer (component::EntityComponentManager::SharedPtr compManager) {
     renderLayer->addRenderLayer(new EntityRenderLayer(renderer, compManager));
 }
 
@@ -113,12 +114,12 @@ void Graphics::onEntityCreation (event::EntityCreationEvent& event) {
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
 }
 
-void Graphics::setupWindowCallbacks (event::EventBus* bus) {
-    auto ctx = new WindowCallbackContext;
+void Graphics::setupWindowCallbacks (event::EventBus::SharedPtr bus) {
+    auto ctx = std::make_unique<WindowCallbackContext>();
     ctx->graphics = this;
-    ctx->eventBus = bus;
+    ctx->eventBus = std::move(bus);
     ctx->renderer = renderer;
-    renderer->setupWindowCallbacks(ctx);
+    renderer->setupWindowCallbacks(std::move(ctx));
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
 }
 

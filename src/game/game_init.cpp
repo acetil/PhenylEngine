@@ -1,4 +1,6 @@
 #include "game_init.h"
+
+#include <utility>
 #include "game_object.h"
 
 #include "entity/entity_test.h"
@@ -15,11 +17,11 @@
 #include "graphics/ui/debug_ui.h"
 
 using namespace game;
-void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics);
-component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus);
-void registerTiles (GameObject* gameObject, graphics::Graphics* graphics);
-GameObject* game::initGame (graphics::Graphics* graphics) {
-    auto gameObject = new GameObject();
+void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphics::SharedPtr graphics);
+component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
+void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::Graphics::SharedPtr& graphics);
+GameObject::SharedPtr game::initGame (const graphics::Graphics::SharedPtr& graphics) {
+    auto gameObject = GameObject::NewSharedPtr();
     addEventHandlers(gameObject, graphics);
     addControlEventHandlers(gameObject->getEventBus());
     auto manager = getEntityComponentManager(gameObject->getEventBus());
@@ -39,19 +41,19 @@ GameObject* game::initGame (graphics::Graphics* graphics) {
     return gameObject;
 }
 
-void addEventHandlers (GameObject* gameObject, graphics::Graphics* graphics) {
+void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphics::SharedPtr graphics) {
     gameObject->getEventBus()->subscribeHandler(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
-    gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, graphics);
+    gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, std::move(graphics));
     gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
     gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
 
     graphics::addDebugEventHandlers(gameObject->getEventBus());
 }
 
-component::EntityComponentManager* getEntityComponentManager (event::EventBus* bus) {
-    auto manager = new component::EntityComponentManager(255, bus);
+component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus) {
+    auto manager = component::EntityComponentManager::NewSharedPtr(255, std::move(bus));
     /*manager->addComponent<component::EntityMainComponent>("main_component");
     manager->addComponent<graphics::FixedModel>("model");
     manager->addComponent<physics::CollisionComponent>("collision_component");
@@ -59,7 +61,7 @@ component::EntityComponentManager* getEntityComponentManager (event::EventBus* b
     return manager;
 }
 
-void registerTiles (GameObject* gameObject, graphics::Graphics* graphics) {
+void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::Graphics::SharedPtr& graphics) {
     graphics::TextureAtlas atlas = graphics->getTextureAtlas("sprite").value();
     gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
             atlas, 0.1, 0.1));

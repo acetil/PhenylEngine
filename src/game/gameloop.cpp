@@ -22,15 +22,15 @@
 #define PHYSICS_FPS 60
 using namespace game; 
 
-int game::gameloop (graphics::Graphics* graphics) {
-    GameObject* gameObject = initGame(graphics);
+int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
+    GameObject::SharedPtr gameObject = initGame(graphics);
 
     auto& uiManager = graphics->getUIManager();
 
     gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
-    KeyboardInput* keyInput = getKeyboardInput(graphics);
+    KeyboardInput::SharedPtr keyInput = getKeyboardInput(graphics);
     setupMovementKeys(keyInput, gameObject->getEventBus());
 
     float deltaTime;

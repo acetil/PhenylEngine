@@ -22,7 +22,7 @@ game::GameObject::~GameObject () {
     for (auto& i : tileRegistry) {
         delete i;
     }
-    delete eventBus;
+    //delete eventBus;
 }
 
 /*void game::GameObject::registerEntity (const std::string& name, AbstractEntity* entity) {
@@ -107,20 +107,20 @@ void game::GameObject::setTextureIds (graphics::TextureAtlas atlas) {
         it.second->setTextureIds(atlas);
     }
 }
-event::EventBus* game::GameObject::getEventBus () {
+event::EventBus::SharedPtr game::GameObject::getEventBus () {
     return eventBus;
 }
-void game::GameObject::setEntityComponentManager (component::EntityComponentManager* manager) {
-    this->entityComponentManager = manager;
+void game::GameObject::setEntityComponentManager (component::EntityComponentManager::SharedPtr manager) {
+    this->entityComponentManager = std::move(manager);
 }
 void game::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
     physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
 }
-void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus, view::GameView gameView) {
+void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& bus, view::GameView gameView) {
     controlEntitiesPrePhysics(manager, gameView, 0, numEntities, direction, bus);
 }
-void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager* manager, event::EventBus* bus, view::GameView gameView) {
+void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& bus, view::GameView gameView) {
     controlEntitiesPostPhysics(manager, gameView, 0, numEntities, direction, bus);
 }
 void game::GameObject::updateEntitiesPrePhysics () {
@@ -149,6 +149,6 @@ void GameObject::buildEntityTypes () {
     }
 }
 
-EntityController* GameObject::getController (const std::string& name) {
+std::shared_ptr<EntityController> GameObject::getController (const std::string& name) {
     return controllers[name];
 }

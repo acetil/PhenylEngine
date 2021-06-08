@@ -1,9 +1,12 @@
 #include <unordered_map>
 #include <string>
 #include <string.h>
+#include <utility>
 #include <vector>
 #include <type_traits>
 #include <stdint.h>
+#include <memory>
+
 #include "event/events/object_id_swap.h"
 
 #include <cmath>
@@ -14,6 +17,7 @@
 #include "util/meta.h"
 #include "rotation_component.h"
 #include "game/entity/entity_type.h"
+#include "util/smart_help.h"
 
 #ifndef MAX_COMPONENT_ENTITIES
 #define MAX_COMPONENT_ENTITIES 256
@@ -43,13 +47,13 @@ namespace view {
 }
 namespace component {
     template <typename ...Args>
-    class ComponentManagerImpl {
+    class ComponentManagerImpl : public util::SmartHelper<ComponentManagerImpl<Args...>> {
         using FirstType = meta::get_first<Args...>;
     private:
         std::tuple<meta::add_pointer<Args>...> ptrTuple;
         id_type_t numEntities;
         id_type_t maxNumEntities;
-        event::EventBus* eventBus;
+        event::EventBus::SharedPtr eventBus;
     public:
         //template <int N, typename T>
         //void initData () {
@@ -65,19 +69,20 @@ namespace component {
         void initData () {
 
         }
-        template <int N = 0, typename T, typename ...List>
+        template <int N, std::enable_if_t<N >= sizeof...(Args), int> = 0>
         void destroyData () {
-            if constexpr (N == sizeof...(Args)) {
-                return;
-            }
+
+        }
+        template <int N = 0, std::enable_if_t<N < sizeof...(Args), int> = 0>
+        void destroyData () {
             delete[] std::get<N>(ptrTuple);
-            destroyData<N + 1, List...>();
+            destroyData<N + 1>();
         }
 
-        explicit ComponentManagerImpl(id_type_t maxEntities, event::EventBus* bus) {
+        explicit ComponentManagerImpl(id_type_t maxEntities, event::EventBus::SharedPtr bus) {
             maxNumEntities = maxEntities;
             numEntities = 0;
-            eventBus = bus;
+            eventBus = std::move(bus);
             initData();
         }
         ~ComponentManagerImpl () {
@@ -165,7 +170,7 @@ namespace component {
 
 
     using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
-            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent, game::EntityType, game::EntityController*>; // TODO: remove includes like AbstractEntity*
+            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>>; // TODO: remove includes like AbstractEntity*
 
     using EntityComponentManager = ComponentManager2<entity_list>;
 

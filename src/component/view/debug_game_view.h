@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "game/game_object.h"
 
 #ifndef DEBUG_GAME_VIEW_H
@@ -5,12 +7,12 @@
 namespace view {
     class DebugGameView {
     private:
-        game::GameObject* gameObject;
+        game::GameObject::SharedPtr gameObject;
 
     public:
-        explicit DebugGameView(game::GameObject* _gameObject) : gameObject(_gameObject) {}
+        explicit DebugGameView(game::GameObject::SharedPtr _gameObject) : gameObject(std::move(_gameObject)) {}
 
-        component::EntityComponentManager* getComponentManager () {
+        component::EntityComponentManager::SharedPtr getComponentManager () {
             return gameObject->entityComponentManager;
         }
 

@@ -3,7 +3,7 @@
 #ifndef ENTITY_TYPE_FUNCTIONS_H
 #define ENTITY_TYPE_FUNCTIONS_H
 namespace game {
-    void setInitialEntityValues (component::EntityComponentManager* componentManager,
+    void setInitialEntityValues (const component::EntityComponentManager::SharedPtr& componentManager,
                                  EntityType& type, int entityId, float x, float y);
 }
 #endif //ENTITY_TYPE_FUNCTIONS_H

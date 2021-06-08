@@ -19,7 +19,7 @@ static int smoothFrames = 0;
 
 static bool doDisplayProfiler = true;
 
-void graphics::renderDebugUi (game::GameObject* gameObject, UIManager& uiManager) {
+void graphics::renderDebugUi (game::GameObject::SharedPtr gameObject, UIManager& uiManager) {
     view::DebugGameView debugView(gameObject);
 
     if (smoothFrames % 30 == 0) {
@@ -48,6 +48,6 @@ void handleProfilerChange(const event::ProfilerChangeEvent& event) {
     doDisplayProfiler = event.doDisplay.value_or(doDisplayProfiler);
 }
 
-void graphics::addDebugEventHandlers (event::EventBus* bus) {
+void graphics::addDebugEventHandlers (event::EventBus::SharedPtr bus) {
     bus->subscribeHandler(handleProfilerChange);
 }

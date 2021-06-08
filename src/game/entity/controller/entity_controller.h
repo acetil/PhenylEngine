@@ -18,11 +18,11 @@ namespace game {
         virtual int getTextureId (view::EntityView& entityView, view::GameView& gameView);
         virtual void setTextureIds (graphics::TextureAtlas& atlas);
     };
-    void controlEntitiesPrePhysics (component::EntityComponentManager* manager, view::GameView& gameView, int startId,
-                                    int numEntities, int direction, event::EventBus* bus);
-    void controlEntitiesPostPhysics (component::EntityComponentManager* manager, view::GameView& gameView, int startId,
-                                     int numEntities, int direction, event::EventBus* bus);
+    void controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId,
+                                    int numEntities, int direction, const event::EventBus::SharedPtr& bus);
+    void controlEntitiesPostPhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId,
+                                     int numEntities, int direction, const event::EventBus::SharedPtr& bus);
     void controlOnCollision (event::EntityCollisionEvent& event);
-    void addControlEventHandlers (event::EventBus* eventBus);
+    void addControlEventHandlers (const event::EventBus::SharedPtr& eventBus);
 }
 #endif

@@ -23,7 +23,7 @@ std::vector<std::string> stringSplit (std::string& str) {
     return substrings;
 }
 
-void handleProfiler (event::EventBus* bus, std::vector<std::string>& args) {
+void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::string>& args) {
     if (args.empty()) {
         logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
@@ -37,7 +37,7 @@ void handleProfiler (event::EventBus* bus, std::vector<std::string>& args) {
     }
 }
 
-void util::doDebugConsole (event::EventBus* bus) {
+void util::doDebugConsole (event::EventBus::SharedPtr bus) {
     std::cout << ">";
     std::string debugInput;
     std::getline(std::cin, debugInput);

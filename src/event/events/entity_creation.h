@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "event/event.h"
 #include "component/component.h"
 #include "component/view/view.h"
@@ -16,7 +18,7 @@ namespace event {
         float x;
         float y;
         float size;
-        component::EntityComponentManager* compManager;
+        component::EntityComponentManager::SharedPtr compManager;
         game::AbstractEntity* entity{};
         int entityId;
         view::EntityView entityView;
@@ -29,12 +31,12 @@ namespace event {
             compManager = nullptr;
             entityId = 0;
         };
-        EntityCreationEvent (float x, float y, float size, component::EntityComponentManager* compManager, game::AbstractEntity* entity, int entityId,
+        EntityCreationEvent (float x, float y, float size, component::EntityComponentManager::SharedPtr compManager, game::AbstractEntity* entity, int entityId,
                              view::EntityView _entityView, view::GameView _gameView) : entityView(std::move(_entityView)), gameView(_gameView) {
             this->x = x;
             this->y = y;
             this->size = size;
-            this->compManager = compManager;
+            this->compManager = std::move(compManager);
             this->entity = entity;
             this->entityId = entityId;
         };

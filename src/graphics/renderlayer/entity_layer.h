@@ -9,14 +9,14 @@ namespace graphics {
         bool active = true;
         //Buffer buffer;
         //bool needsBuffer = true;
-        component::EntityComponentManager* componentManager;
+        component::EntityComponentManager::SharedPtr componentManager;
         ShaderProgram* shaderProgram;
         Buffer buffers[5];
         //int numBuffers = 0;
         GraphicsBufferIds buffIds;
         int numTriangles = 0;
     public:
-        EntityRenderLayer (Renderer* renderer, component::EntityComponentManager* componentManager);
+        EntityRenderLayer (Renderer* renderer, component::EntityComponentManager::SharedPtr componentManager);
 
         std::string getName () override;
 
