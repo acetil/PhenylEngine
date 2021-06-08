@@ -123,8 +123,10 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
         int newHeight = (int) floor(img.height * targetRes * EM_SIZE / (double) (img.fontSize * img.xRes));
         //logging::log(LEVEL_DEBUG, "width = {}, height = {}, newWidth = {}, newHeight = {}", img.width, img.height,
                      //newWidth, newHeight);
-        auto isPixel = getReducedPixels(img, newWidth, newHeight);
-        GlyphDistanceField glyphDist = getDistField(isPixel, newWidth, newHeight, img.glyphIndex);
+        //auto isPixel = getReducedPixels(img, newWidth, newHeight);
+        //GlyphDistanceField glyphDist = getDistField(isPixel, newWidth, newHeight, img.glyphIndex);
+        GlyphDistanceField glyphDist = GlyphDistanceField(img.width, img.height, img.glyphIndex);
+        memcpy(glyphDist.data, img.data, img.width * img.height);
         glyphDist.key = distFieldGlyphs.size();
         //GlyphDistanceField glyphDist(newWidth, newHeight, img.glyphIndex);
         //memcpy(glyphDist.data, isPixel, newWidth * newHeight);
@@ -142,7 +144,7 @@ graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int tar
             printf("\n");
         }
         printf("====\n");*/
-        delete[] isPixel;
+        //delete[] isPixel;
         distFieldGlyphs.emplace_back(std::move(glyphDist));
     }
     /*width = distFieldGlyphs[0].width;

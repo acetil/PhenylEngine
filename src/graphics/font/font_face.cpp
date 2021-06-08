@@ -12,7 +12,7 @@ FontFace::FontFace (const FT_Library& library, const std::string& path, int face
     if (error) {
         throw util::InitException("Error in init of font face at path \"" + path + "\"");
     }
-    error = FT_Set_Char_Size(ftFace, 0, size * 64, 300, 300); // TODO
+    error = FT_Set_Char_Size(ftFace, 0, size * 64, 0, 0); // TODO
     if (error) {
         logging::log(LEVEL_ERROR, "Error encountered when setting char size: {}", error);
     }
@@ -62,7 +62,7 @@ void FontFace::setGlyphs (std::vector<std::pair<int, int>> _glyphRanges) {
 
 void FontFace::setFontSize (int _size) {
     size = _size;
-    int error = FT_Set_Char_Size(ftFace, 0, size * 32, 300, 300);
+    int error = FT_Set_Char_Size(ftFace, 0, size * 64, 0, 0);
     if (error) {
         logging::log(LEVEL_ERROR, "Error encountered while setting char size: {}", error);
     }

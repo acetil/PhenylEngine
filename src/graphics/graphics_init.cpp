@@ -83,7 +83,7 @@ void graphics::destroyGraphics (Graphics* graphics) {
 FontManager initFonts () {
     FontManager manager;
     manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
-    manager.getFace("noto-serif").setFontSize(144);
+    manager.getFace("noto-serif").setFontSize(72);
     manager.getFace("noto-serif").setGlyphs({AsciiGlyphRange});
 
     return manager;

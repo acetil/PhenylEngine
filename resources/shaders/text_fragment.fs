@@ -10,15 +10,21 @@ uniform sampler2D textureSampler;
 
 #define THRESHOLD 0.5f
 
+#define ALPHA_THRESHOLD 0.30f
+
 /*float bilinealSample (vec2 uv) {
 
 }*/
 
 
 void main() {
-    float v = texture(textureSampler, uv).r;
-    float s = smoothstep(SMOOTH_MIN, SMOOTH_MAX, v);
-    color = vec4(1.0f, 1.0f, 1.0f, s);
+    float s = texture(textureSampler, uv).r;
+    //float s = smoothstep(SMOOTH_MIN, SMOOTH_MAX, v);
+    if (s < ALPHA_THRESHOLD) {
+        color = vec4(s, s, s, s);
+    } else {
+        color = vec4(s, s, s, 1.0f);
+    }
     //color = vec4(v, v, v, 1.0f);
     //color = texture(textureSampler, uv);
     //color = vec4(val, val, val, 1.0f);
