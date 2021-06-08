@@ -86,8 +86,8 @@ void Graphics::initTextureAtlas (const std::string& atlasName, const std::vector
 }
 
 void Graphics::sync (int fps) {
-    while (renderer->getCurrentTime() - lastTime < 1.0 / (2.0 * fps)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    while (renderer->getCurrentTime() - lastTime < 1.0 / (fps)) {
+        std::this_thread::sleep_for(std::chrono::nanoseconds(100));
     }
     double currTime = renderer->getCurrentTime();
     deltaTime = currTime - lastTime;
