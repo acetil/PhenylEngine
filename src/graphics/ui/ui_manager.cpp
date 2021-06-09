@@ -21,15 +21,20 @@ graphics::UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) :
 }
 
 void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y) {
-    if (!fonts.contains(font)) {
-        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
-    } else {
-        uiLayer->bufferStr(fonts.at(font), text, size, x, y);
-    }
+    renderText(font, text, size, x, y, {1.0f, 1.0f, 1.0f});
 }
 
 void UIManager::addRenderLayer (const Graphics::SharedPtr& graphics, Renderer* renderer) {
     uiLayer = new UIRenderLayer(fonts.at("noto-serif").getAtlasTexture(), renderer);
     graphics->getRenderLayer()->addRenderLayer(uiLayer);
+}
+
+void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
+                            glm::vec3 colour) {
+    if (!fonts.contains(font)) {
+        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
+    } else {
+        uiLayer->bufferStr(fonts.at(font), text, size, x, y, colour);
+    }
 }
 

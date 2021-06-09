@@ -60,7 +60,8 @@ void graphics::renderDebugUi (game::GameObject::SharedPtr gameObject, UIManager&
         uiManager.renderText("noto-serif", "graphics: " + std::to_string(avgGraphicsTime * 1000) + "ms", 14, 5, 30);
         uiManager.renderText("noto-serif", "frame time: " + std::to_string(avgFrameTime * 1000) + "ms", 14, 5, 45);
         //uiManager.renderText("noto-serif", "a", 288 * 2, 20, 600);
-        uiManager.renderText("noto-serif", std::to_string((float)numSmoothDeltaTime / totalDeltaTime) + " fps", 14, 700, 15);
+        uiManager.renderText("noto-serif", std::to_string((float)numSmoothDeltaTime / totalDeltaTime) + " fps",
+                             14, 700, 15, {0.0f, 1.0f, 0.0f});
     }
 }
 

@@ -1,4 +1,5 @@
 #include "render_layer.h"
+#include "graphics/maths_headers.h"
 
 #ifndef UI_LAYER_H
 #define UI_LAYER_H
@@ -9,7 +10,7 @@ namespace graphics {
     class UIRenderLayer : public RenderLayer {
     private:
         GraphicsBufferIds textIds;
-        Buffer textBuffer[2];
+        Buffer textBuffer[3];
         GraphicsTexture fontTexture;
         ShaderProgram* textProgram;
     public:
@@ -33,7 +34,7 @@ namespace graphics {
 
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
 
-        void bufferStr(Font& font, const std::string& text, int size, int x, int y);
+        void bufferStr(Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
     };
 }
 #endif

@@ -50,15 +50,16 @@ void graphics::UIRenderLayer::render (graphics::Renderer* renderer, graphics::Fr
     renderer->render(textIds, textProgram, size);
 }
 
-void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string& text, int size, int x, int y) {
-    font.renderText(text, size, x, y, textBuffer);
+void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour) {
+    font.renderText(text, size, x, y, colour, textBuffer);
 }
 
 UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) : fontTexture(_fontTexture),
                                                                                   textProgram(renderer->getProgram("text").value()) {
-    textIds = renderer->getBufferIds(2, 100 * 12 * sizeof(float), {2, 2});
-    textBuffer[0] = Buffer(100 * 12, sizeof(float), true);
-    textBuffer[1] = Buffer(100 * 12, sizeof(float), true);
+    textIds = renderer->getBufferIds(3, 100 * 12 * sizeof(float), {2, 2, 3});
+    textBuffer[0] = Buffer(100 * 12, sizeof(float), false);
+    textBuffer[1] = Buffer(100 * 12, sizeof(float), false);
+    textBuffer[2] = Buffer(100 * 18, sizeof(float), false);
 }
 
 

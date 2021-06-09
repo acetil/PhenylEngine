@@ -5,6 +5,7 @@
 #include "graphics/font/font_manager.h"
 #include "graphics/buffer.h"
 #include "graphics/font/font.h"
+#include "graphics/maths_headers.h"
 
 #ifndef UI_MANAGER_H
 #define UI_MANAGER_H
@@ -32,6 +33,7 @@ class Font;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);
+        void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
         void addRenderLayer (const std::shared_ptr<Graphics>& graphics, Renderer* renderer);
     };
 }
