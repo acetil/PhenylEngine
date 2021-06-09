@@ -35,8 +35,8 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
 
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
-    float timeSinceFpsUpdate = 0.0f;
-    int frames = 0;
+    //float timeSinceFpsUpdate = 0.0f;
+    //int frames = 0;
     //int fpsFrames = 0;
     Map* map = readMap("resources/maps/testmap.acmp", gameObject);
     map->setAtlas(graphics->getTextureAtlas("sprite").value());
@@ -48,7 +48,7 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
         util::startProfileFrame();
         deltaTime = (float) graphics->getDeltaTime();
         deltaPhysicsFrame += deltaTime;
-        timeSinceFpsUpdate += deltaTime;
+        //timeSinceFpsUpdate += deltaTime;
         keyInput->handleKeyPresses();
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
@@ -59,24 +59,24 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
             util::endProfile();
             //fpsFrames++;
         }
-        if (timeSinceFpsUpdate >= 1.0f) {
+        /*if (timeSinceFpsUpdate >= 1.0f) {
             logging::log(LEVEL_DEBUG, "Done {} frames in {} second(s), with an average fps of {}", frames,
                           timeSinceFpsUpdate, (float)frames / timeSinceFpsUpdate);
             timeSinceFpsUpdate = 0.0f;
             frames = 0;
             //fpsFrames = 0;
-        }
+        }*/
 
         util::startProfile("graphics");
 
-        graphics::renderDebugUi(gameObject, uiManager);
+        graphics::renderDebugUi(gameObject, uiManager, deltaTime);
 
         graphics->render();
 
         util::endProfile();
 
         graphics->pollEvents();
-        frames++;
+        //frames++;
         util::endProfileFrame();
 
         graphics->sync(TARGET_FPS);
