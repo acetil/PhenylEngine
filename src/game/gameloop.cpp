@@ -41,7 +41,7 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
     Map* map = readMap("resources/maps/testmap.acmp", gameObject);
     map->setAtlas(graphics->getTextureAtlas("sprite").value());
     //map->initGraphicsData(graphics, "default");
-    ((graphics::MapRenderLayer*)graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
+    std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
     while (!graphics->shouldClose()) {

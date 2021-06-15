@@ -9,7 +9,7 @@ using namespace graphics;
 GraphicsRenderLayer::GraphicsRenderLayer (Renderer* renderer) {
     //program = renderer->getProgram("graphics_program").value();
     program = renderer->getProgram("default").value(); // TODO
-    renderLayers.push_back(new MapRenderLayer(renderer));
+    renderLayers.push_back(std::make_shared<MapRenderLayer>(renderer));
     // TODO: remove
     //graphics::FontManager manager;
     //manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
@@ -36,7 +36,7 @@ bool GraphicsRenderLayer::isActive() {
 }
 
 void GraphicsRenderLayer::gatherData () {
-    for (auto i : renderLayers) {
+    for (const auto& i : renderLayers) {
         if (!i->isActive()) {
             continue;
         }
@@ -45,7 +45,7 @@ void GraphicsRenderLayer::gatherData () {
 }
 
 void GraphicsRenderLayer::preRender(Renderer *renderer) {
-    for (auto i : renderLayers) {
+    for (const auto& i : renderLayers) {
         if (!i->isActive()) {
             continue;
         }
@@ -54,7 +54,7 @@ void GraphicsRenderLayer::preRender(Renderer *renderer) {
 }
 
 void GraphicsRenderLayer::render(Renderer *renderer, FrameBuffer *frameBuf) {
-    for (auto i : renderLayers) {
+    for (const auto& i : renderLayers) {
         if (!i->isActive()) {
             continue;
         }
@@ -64,7 +64,7 @@ void GraphicsRenderLayer::render(Renderer *renderer, FrameBuffer *frameBuf) {
 }
 
 void GraphicsRenderLayer::applyCamera(Camera camera) {
-    for (auto i : renderLayers) {
+    for (const auto& i : renderLayers) {
         if (!i->isActive()) {
             continue;
         }
@@ -80,8 +80,8 @@ void GraphicsRenderLayer::applyUniform(int uniformId, void *data) {
     // TODO
 }
 
-std::optional<RenderLayer*> GraphicsRenderLayer::getRenderLayer (const std::string& layer) {
-    for (auto i : renderLayers) {
+std::optional<std::shared_ptr<RenderLayer>> GraphicsRenderLayer::getRenderLayer (const std::string& layer) {
+    for (const auto& i : renderLayers) {
         if (i->getName() == layer) {
             // TODO: optimize
             return std::optional(i);
@@ -90,6 +90,6 @@ std::optional<RenderLayer*> GraphicsRenderLayer::getRenderLayer (const std::stri
     return std::nullopt;
 }
 
-void GraphicsRenderLayer::addRenderLayer (RenderLayer* layer) {
-    renderLayers.push_back(layer);
+void GraphicsRenderLayer::addRenderLayer (std::shared_ptr<RenderLayer> layer) {
+    renderLayers.push_back(std::move(layer));
 }

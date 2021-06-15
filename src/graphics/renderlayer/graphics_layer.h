@@ -1,4 +1,6 @@
 #include <queue>
+#include <memory>
+
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/font/font.h"
 #include "graphics/font/font_manager.h"
@@ -11,7 +13,7 @@ namespace graphics {
     private:
         bool active = true;
         ShaderProgram* program;
-        std::vector<RenderLayer*> renderLayers;
+        std::vector<std::shared_ptr<RenderLayer>> renderLayers;
         //std::queue<int> bufferGets;
     public:
         explicit GraphicsRenderLayer(Renderer* renderer);
@@ -33,9 +35,9 @@ namespace graphics {
 
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
 
-        std::optional<RenderLayer*> getRenderLayer (const std::string& layer);
+        std::optional<std::shared_ptr<RenderLayer>> getRenderLayer (const std::string& layer);
 
-        void addRenderLayer (RenderLayer* layer);
+        void addRenderLayer (std::shared_ptr<RenderLayer> layer);
     };
 }
 #endif //GAME_LAYER_H

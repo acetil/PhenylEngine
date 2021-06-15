@@ -29,7 +29,7 @@ class Font;
     private:
         FontManager fontManager;
         std::unordered_map<std::string, Font> fonts;
-        UIRenderLayer* uiLayer;
+        std::shared_ptr<UIRenderLayer> uiLayer;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);

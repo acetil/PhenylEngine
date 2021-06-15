@@ -20,7 +20,7 @@ Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManager(render
     this->deltaTime = 0;
     this->lastTime = renderer->getCurrentTime();
 
-    this->renderLayer = new GraphicsRenderLayer(renderer);
+    this->renderLayer = std::make_shared<GraphicsRenderLayer>(renderer);
 }
 
 double Graphics::getDeltaTime() const {
@@ -98,12 +98,12 @@ void Graphics::sync (int fps) {
     return camera;
 }
 
-GraphicsRenderLayer* Graphics::getRenderLayer () {
+std::shared_ptr<GraphicsRenderLayer> Graphics::getRenderLayer () {
     return renderLayer;
 }
 
 void Graphics::addEntityLayer (component::EntityComponentManager::SharedPtr compManager) {
-    renderLayer->addRenderLayer(new EntityRenderLayer(renderer, compManager));
+    renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, std::move(compManager)));
 }
 
 void Graphics::onEntityCreation (event::EntityCreationEvent& event) {

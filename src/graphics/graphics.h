@@ -53,7 +53,7 @@ class Graphics : public util::SmartHelper<Graphics> {
         double lastTime;
         double deltaTime;
 
-        GraphicsRenderLayer* renderLayer;
+        std::shared_ptr<GraphicsRenderLayer> renderLayer;
 
         std::unordered_map<std::string, TextureAtlas> atlases;
 
@@ -74,7 +74,7 @@ class Graphics : public util::SmartHelper<Graphics> {
         std::optional<TextureAtlas> getTextureAtlas (const std::string& atlas);
         void sync (int fps);
         double getDeltaTime () const;
-        GraphicsRenderLayer* getRenderLayer ();
+        std::shared_ptr<GraphicsRenderLayer> getRenderLayer ();
         //int createLayer (RenderLayer* layer);
         //RenderLayer* getLayer (std::string name);
         //virtual RenderLayer* getLayer (int layer);
