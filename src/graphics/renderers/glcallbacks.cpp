@@ -10,6 +10,10 @@ void graphics::setupGLWindowCallbacks (GLFWwindow* window) {
     glfwSetCursorPosCallback(window, cursorCallback);
 }
 
+void graphics::removeGLWindowCallbacks (GLFWwindow* window) {
+    glfwSetCursorPosCallback(window, nullptr);
+}
+
 
 static void cursorCallback (GLFWwindow* window, double xPos, double yPos) {
     int width, height;

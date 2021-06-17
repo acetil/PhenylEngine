@@ -11,63 +11,69 @@
 using namespace game;
 class KeyMovement : public KeyboardFunction {
     private:
-    event::EventBus::SharedPtr bus;
+    event::EventBus::WeakPtr bus;
     float xComponent;
     float yComponent;
     bool isDown;
     public:
-    KeyMovement(event::EventBus::SharedPtr bus, float xComponent, float yComponent);
+    KeyMovement(event::EventBus::WeakPtr bus, float xComponent, float yComponent);
     void operator() (int action) override;
 };
 class MouseShoot : public MouseFunction {
 private:
-    event::EventBus::SharedPtr bus;
+    event::EventBus::WeakPtr bus;
     bool isDown;
 public:
-    explicit MouseShoot (event::EventBus::SharedPtr bus) {
+    explicit MouseShoot (event::EventBus::WeakPtr bus) {
         this->bus = std::move(bus);
         isDown = false;
     };
     void operator() (int action, glm::vec2 screenPos, glm::vec2 worldPos) override {
         if (!isDown && action == GLFW_PRESS) {
             isDown = true;
-            bus->raiseEvent(event::PlayerShootChangeEvent(true));
+            if (!bus.expired()) {
+                bus.lock()->raiseEvent(event::PlayerShootChangeEvent(true));
+            }
         } else if (isDown && action == GLFW_RELEASE) {
             isDown = false;
-            bus->raiseEvent(event::PlayerShootChangeEvent(false));
+            if (!bus.expired()) {
+                bus.lock()->raiseEvent(event::PlayerShootChangeEvent(false));
+            }
         }
     };
 };
 
 class DebugKey : public KeyboardFunction {
 private:
-    event::EventBus::SharedPtr bus;
+    event::EventBus::WeakPtr bus;
     bool isDown;
 public:
-    explicit DebugKey (event::EventBus::SharedPtr _bus) : bus(std::move(_bus)), isDown(false) {}
+    explicit DebugKey (event::EventBus::WeakPtr _bus) : bus(std::move(_bus)), isDown(false) {}
     void operator() (int action) override {
         if (!isDown && action == GLFW_PRESS) {
             isDown = true;
         } else if (isDown && action == GLFW_RELEASE) {
             isDown = false;
-            util::doDebugConsole(bus);
+            if (!bus.expired()) {
+                util::doDebugConsole(bus.lock());
+            }
         }
     }
 };
 
 void game::setupMovementKeys (const KeyboardInput::SharedPtr& keyInput, const event::EventBus::SharedPtr& bus) {
     setupKeyboardInputListeners(keyInput, bus);
-    keyInput->setKey(GLFW_KEY_W, new KeyMovement(bus, 0, FORCE_COMPONENT));
-    keyInput->setKey(GLFW_KEY_A, new KeyMovement(bus, -1 * FORCE_COMPONENT, 0));
-    keyInput->setKey(GLFW_KEY_S, new KeyMovement(bus, 0, -1 * FORCE_COMPONENT));
-    keyInput->setKey(GLFW_KEY_D, new KeyMovement(bus, FORCE_COMPONENT, 0));
+    keyInput->setKey(GLFW_KEY_W, std::make_unique<KeyMovement>(bus, 0, FORCE_COMPONENT));
+    keyInput->setKey(GLFW_KEY_A, std::make_unique<KeyMovement>(bus, -1 * FORCE_COMPONENT, 0));
+    keyInput->setKey(GLFW_KEY_S, std::make_unique<KeyMovement>(bus, 0, -1 * FORCE_COMPONENT));
+    keyInput->setKey(GLFW_KEY_D, std::make_unique<KeyMovement>(bus, FORCE_COMPONENT, 0));
 
-    keyInput->setMouseButton(GLFW_MOUSE_BUTTON_LEFT, new MouseShoot(bus));
+    keyInput->setMouseButton(GLFW_MOUSE_BUTTON_LEFT, std::make_unique<MouseShoot>(bus));
 
-    keyInput->setKey(GLFW_KEY_F12, new DebugKey(bus));
+    keyInput->setKey(GLFW_KEY_F12, std::make_unique<DebugKey>(bus));
 }
 // TODO: move to vectors
-KeyMovement::KeyMovement(event::EventBus::SharedPtr bus, float xComponent, float yComponent) {
+KeyMovement::KeyMovement(event::EventBus::WeakPtr bus, float xComponent, float yComponent) {
     this->bus = bus;
     this->xComponent = xComponent;
     this->yComponent = yComponent;
@@ -75,10 +81,14 @@ KeyMovement::KeyMovement(event::EventBus::SharedPtr bus, float xComponent, float
 }
 void KeyMovement::operator() (int action) {
     if (!isDown && action == GLFW_PRESS) {
-        bus->raiseEvent(event::PlayerMovementChangeEvent(xComponent, yComponent));
+        if (!bus.expired()) {
+            bus.lock()->raiseEvent(event::PlayerMovementChangeEvent(xComponent, yComponent));
+        }
         isDown = true;
     } else if (isDown && action == GLFW_RELEASE) {
-        bus->raiseEvent(event::PlayerMovementChangeEvent(-1 * xComponent, -1 * yComponent));
+        if (!bus.expired()) {
+            bus.lock()->raiseEvent(event::PlayerMovementChangeEvent(-1 * xComponent, -1 * yComponent));
+        }
         isDown = false;
     }
 }

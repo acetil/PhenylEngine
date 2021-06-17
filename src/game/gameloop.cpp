@@ -38,7 +38,7 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
     //float timeSinceFpsUpdate = 0.0f;
     //int frames = 0;
     //int fpsFrames = 0;
-    Map* map = readMap("resources/maps/testmap.acmp", gameObject);
+    Map::SharedPtr map = readMap("resources/maps/testmap.acmp", gameObject);
     map->setAtlas(graphics->getTextureAtlas("sprite").value());
     //map->initGraphicsData(graphics, "default");
     std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)

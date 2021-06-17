@@ -28,6 +28,6 @@
 #ifndef MAP_READER_H
 #define MAP_READER_H
 namespace game {
-    Map* readMap (const std::string& path, GameObject::SharedPtr gameObject);
+    Map::SharedPtr readMap (const std::string& path, GameObject::SharedPtr gameObject);
 }
 #endif

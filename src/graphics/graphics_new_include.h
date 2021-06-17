@@ -27,8 +27,8 @@ namespace graphics {
     struct Model {
         std::string modelName;
         std::string texPath;
-        std::vector<std::pair<TextureOffset, Image*>> textures;
-        Model (std::string modelName, Image* image) {
+        std::vector<std::pair<TextureOffset, Image::SharedPtr>> textures;
+        Model (std::string modelName, Image::SharedPtr image) {
             this->modelName = std::move(modelName);
             textures.emplace_back(TextureOffset(), image);
             texPath = "";

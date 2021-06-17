@@ -66,6 +66,9 @@ class Graphics : public util::SmartHelper<Graphics> {
 
     public:
         explicit Graphics (Renderer* renderer, FontManager& manager);
+        ~Graphics () {
+            delete renderer;
+        }
         bool shouldClose ();
         void pollEvents ();
         void render ();
@@ -89,6 +92,8 @@ class Graphics : public util::SmartHelper<Graphics> {
             renderLayer->addTex(glyphAtlas.getTex());
         }*/
         void setupWindowCallbacks (event::EventBus::SharedPtr bus);
+
+        void deleteWindowCallbacks ();
 
         UIManager& getUIManager ();
     };

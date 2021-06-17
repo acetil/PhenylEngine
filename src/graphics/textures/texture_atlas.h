@@ -12,11 +12,14 @@
 namespace graphics {
     class TextureAtlas {
         private:
-            unsigned char* data;
+            //unsigned char* data;
+            std::shared_ptr<unsigned char[]> data;
             GraphicsTexture graphicsTexture;
             int sideLength;
-            float* positionData;
-            float* uvData;
+            //float* positionData;
+            std::shared_ptr<float[]> positionData;
+            std::shared_ptr<float[]> uvData;
+            //float* uvData;
             std::vector<FixedModel> models;
             std::unordered_map<std::string, int> modelIdMap;
         public:
@@ -31,6 +34,8 @@ namespace graphics {
             FixedModel getModel (const std::string& name);
             int getModelId (const std::string& name);
             void bindTextureAtlas ();
+            //TextureAtlas(TextureAtlas&) = delete;
+            //TextureAtlas& operator=(TextureAtlas&) = delete;
     };
 }
 #endif

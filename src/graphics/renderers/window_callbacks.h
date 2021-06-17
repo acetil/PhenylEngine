@@ -7,7 +7,8 @@ namespace graphics {
     struct WindowCallbackContext {
         Graphics* graphics;
         Renderer* renderer;
-        event::EventBus::SharedPtr eventBus;
+        std::weak_ptr<event::EventBus> eventBus;
+
     };
     void onMousePosChange (WindowCallbackContext* ctx, double windowX, double windowY, int windowSizeX, int windowSizeY);
 

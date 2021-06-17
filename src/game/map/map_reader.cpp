@@ -25,7 +25,7 @@
 
 using namespace game;
 
-Map* game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
+Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
     FILE* file = fopen(path.c_str(), "rb");
@@ -148,7 +148,7 @@ Map* game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
         fread((void*)&tileBuf, tileSize, 1, file);
     }
     logging::log(LEVEL_INFO, "Finished reading map file");
-    Map* map = new Map(width, height);
+    Map::SharedPtr map = Map::NewSharedPtr(width, height);
     map->setTiles(tiles);
     return map;
 }   

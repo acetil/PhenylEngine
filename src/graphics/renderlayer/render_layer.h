@@ -25,6 +25,8 @@ namespace graphics {
         virtual void applyCamera (Camera camera) = 0;
 
         virtual void render (Renderer* renderer, FrameBuffer* frameBuf) = 0;
+
+        virtual ~RenderLayer() = default;
     };
 }
 #endif //RENDER_LAYER_H

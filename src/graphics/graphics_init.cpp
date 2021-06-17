@@ -46,17 +46,17 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
     logging::log(LEVEL_INFO, "Window initialised successfully!");
     return GRAPHICS_INIT_SUCCESS;
 }
-std::vector<Image*> getSpriteImages () {
+std::vector<Image::SharedPtr> getSpriteImages () {
     // temp code
-    std::vector<Image*> images;
-    images.push_back(new Image("resources/images/test/grass_temp.png", "test1"));
-    images.push_back(new Image("resources/images/test/test_texture.png", "test3"));
-    images.push_back(new Image("resources/images/test/tier2_ingot-temp.png", "test5"));
-    images.push_back(new Image("resources/images/test/temp_ecrys1.png", "test2"));
-    images.push_back(new Image("resources/images/test/stone.png", "test6"));
-    images.push_back(new Image("resources/images/test/prismarine_bricks.png", "test7"));
-    images.push_back(new Image("resources/images/test/manBlue_gun.png", "test8"));
-    images.push_back(new Image("resources/images/test/bullet2.png", "test9"));
+    std::vector<Image::SharedPtr> images;
+    images.push_back(Image::NewSharedPtr("resources/images/test/grass_temp.png", "test1"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/test_texture.png", "test3"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/tier2_ingot-temp.png", "test5"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/temp_ecrys1.png", "test2"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/stone.png", "test6"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/prismarine_bricks.png", "test7"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/manBlue_gun.png", "test8"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/bullet2.png", "test9"));
     return images;
 }
 /*
@@ -105,11 +105,11 @@ int graphics::initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew
 
     graphicsNew = graphics;
     logging::log(LEVEL_INFO, "Adding images!");
-    std::vector<Image*> images = getSpriteImages(); // TODO: update to match new model system
+    std::vector<Image::SharedPtr> images = getSpriteImages(); // TODO: update to match new model system
     std::vector<Model> models;
     models.reserve(images.size());
-    for (Image* i : images) {
-        models.emplace_back(i->getName(), i);
+    for (Image::SharedPtr i : images) {
+        models.emplace_back(i->getName(), std::move(i));
     }
     graphics->initTextureAtlas("sprite", models);
     images.erase(images.begin(), images.end());
@@ -120,6 +120,7 @@ int graphics::initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew
 }
 
 void graphics::destroyGraphics (const Graphics::SharedPtr& graphics) {
+    graphics->deleteWindowCallbacks();
     //delete graphics;
-    glfwTerminate(); // TODO: move to renderer
+    //glfwTerminate(); // TODO: move to renderer
 }

@@ -7,6 +7,7 @@ namespace util {
     struct SmartHelper {
         using Ptr = std::unique_ptr<T>;
         using SharedPtr = std::shared_ptr<T>;
+        using WeakPtr = std::weak_ptr<T>;
 
         template<typename ...Args>
         inline static Ptr NewPtr (Args... args) {

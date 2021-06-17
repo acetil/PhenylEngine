@@ -75,6 +75,11 @@ namespace component {
         }
         template <int N = 0, std::enable_if_t<N < sizeof...(Args), int> = 0>
         void destroyData () {
+            if constexpr (N == 0 && std::is_pointer<FirstType>::value) {
+                for (int i = 0; i < numEntities; i++) {
+                    delete std::get<N>(ptrTuple)[i];
+                }
+            }
             delete[] std::get<N>(ptrTuple);
             destroyData<N + 1>();
         }

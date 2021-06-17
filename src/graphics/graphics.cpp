@@ -74,8 +74,8 @@ void Graphics::initTextureAtlas (const std::string& atlasName, const std::vector
     }
     std::unordered_set<Image*> imageSet;
     for (const auto& m : images) {
-        for (auto p : m.textures) {
-            imageSet.insert(p.second);
+        for (const auto& p : m.textures) {
+            imageSet.insert(p.second.get());
         }
     }
     TextureAtlas atlas;
@@ -125,4 +125,8 @@ void Graphics::setupWindowCallbacks (event::EventBus::SharedPtr bus) {
 
 UIManager& Graphics::getUIManager () {
     return uiManager;
+}
+
+void Graphics::deleteWindowCallbacks () {
+    renderer->invalidateWindowCallbacks();
 }

@@ -7,7 +7,7 @@ using namespace graphics;
 GLRenderer::GLRenderer (GLFWwindow* window) {
     // TODO: move graphics init code here
     this->window = window;
-    windowBuf = new GLFrameBuffer();
+    windowBuf = std::make_shared<GLFrameBuffer>();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
@@ -30,7 +30,7 @@ void GLRenderer::clearWindow () {
 }
 
 FrameBuffer* GLRenderer::getWindowBuffer () {
-    return windowBuf;
+    return windowBuf.get();
 }
 
 std::optional<ShaderProgram*> GLRenderer::getProgram (std::string program) {
@@ -202,6 +202,20 @@ GraphicsTexture GLRenderer::loadTextureGrey (int width, int height, unsigned cha
     //logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
     glGenerateMipmap(GL_TEXTURE_2D);
     return GraphicsTexture(this, id);
+}
+
+void GLRenderer::invalidateWindowCallbacks () {
+    glfwSetWindowUserPointer(window, nullptr);
+    removeGLWindowCallbacks(window);
+    callbackCtx = nullptr;
+}
+
+GLRenderer::~GLRenderer () {
+    for (const auto& pair : shaderPrograms) {
+        delete pair.second;
+    }
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
 

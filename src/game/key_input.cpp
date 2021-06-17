@@ -13,8 +13,8 @@ namespace game {
     class KeyboardInputImpl : public KeyboardInput {
     private:
         GLFWwindow* window;
-        std::map<int, KeyboardFunction*> bindingMap;
-        std::map<int, MouseFunction*> mouseBindingMap;
+        std::map<int, std::unique_ptr<KeyboardFunction>> bindingMap;
+        std::map<int, std::unique_ptr<MouseFunction>> mouseBindingMap;
         glm::vec2 screenMousePos;
         glm::vec2 worldMousePos;
     public:
@@ -22,9 +22,9 @@ namespace game {
 
         ~KeyboardInputImpl ();
 
-        void setKey (int key, KeyboardFunction* function) override;
+        void setKey (int key, std::unique_ptr<KeyboardFunction> function) override;
 
-        void setMouseButton (int button, MouseFunction* function) override;
+        void setMouseButton (int button, std::unique_ptr<MouseFunction> function) override;
 
         void replaceKey (int after, int before) override;
 
@@ -49,24 +49,24 @@ void game::KeyboardInputImpl::handleKeyPresses () {
         x.second->operator()(glfwGetMouseButton(window, x.first), screenMousePos, worldMousePos);
     }
 }
-void game::KeyboardInputImpl::setKey(int key, KeyboardFunction* func) {
-    bindingMap[key] = func;
+void game::KeyboardInputImpl::setKey(int key, std::unique_ptr<KeyboardFunction> func) {
+    bindingMap[key] = std::move(func);
 }
 void game::KeyboardInputImpl::replaceKey(int after, int before) {
-    KeyboardFunction* temp = bindingMap[before];
+    auto temp = std::move(bindingMap[before]);
     if (bindingMap.count(after) > 0) {
-        bindingMap[before] = bindingMap[after];
+        bindingMap[before] = std::move(bindingMap[after]);
     } else {
         bindingMap.erase(before);
     }
-    bindingMap[after] = bindingMap[before];
+    bindingMap[after] = std::move(temp);
 }
 game::KeyboardInputImpl::~KeyboardInputImpl () {
     bindingMap.clear();
 }
 
-void KeyboardInputImpl::setMouseButton (int button, MouseFunction* function) {
-    mouseBindingMap[button] = function;
+void KeyboardInputImpl::setMouseButton (int button, std::unique_ptr<MouseFunction> function) {
+    mouseBindingMap[button] = std::move(function);
 }
 
 void KeyboardInputImpl::onCursorPosChange (event::CursorPosChangeEvent& event) {

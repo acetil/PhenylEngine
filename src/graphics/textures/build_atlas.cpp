@@ -83,6 +83,10 @@ std::pair<std::vector<AtlasObject<int>>, int> atlas_internal::buildAtlasInternal
                 float) n->width / (float) length, (float) n->height / (float) length, n->index);
     }
 
+    tree->destroy();
+
+    delete tree;
+
     logging::log(LEVEL_INFO, "Packing success.");
 
     return {objs, length};

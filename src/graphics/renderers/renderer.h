@@ -25,6 +25,9 @@ namespace graphics {
 
     class Renderer {
     public:
+
+        virtual ~Renderer() = default;
+
         virtual double getCurrentTime () = 0;
 
         virtual bool shouldClose () = 0;
@@ -48,6 +51,8 @@ namespace graphics {
         virtual void bindTexture (unsigned int textureId) = 0;
 
         virtual void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) = 0;
+
+        virtual void invalidateWindowCallbacks () = 0;
     };
     class GraphicsTexture {
         Renderer* renderer;

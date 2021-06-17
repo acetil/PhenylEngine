@@ -1,9 +1,10 @@
 #include <string>
 #include "game/tile/tile.h"
+#include "util/smart_help.h"
 #ifndef MAP_H
 #define MAP_H
 namespace game {
-    class Map {
+    class Map : public util::SmartHelper<Map> {
         protected:
         int width;
         int height;

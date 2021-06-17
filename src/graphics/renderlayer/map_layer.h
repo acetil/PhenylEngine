@@ -8,7 +8,7 @@ namespace graphics {
         bool active = false;
         Buffer buffers[5];
         //bool requiresBuffer = true;
-        game::Map* map;
+        game::Map::SharedPtr map;
         GraphicsBufferIds bufferIds;
         bool needDataBuffer = true;
         int numTriangles;
@@ -34,7 +34,7 @@ namespace graphics {
 
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
 
-        void attachMap (game::Map* map);
+        void attachMap (game::Map::SharedPtr map);
     };
 
 };

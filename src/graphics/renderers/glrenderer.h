@@ -19,13 +19,15 @@ namespace graphics {
     class GLRenderer : public Renderer {
     private:
         GLFWwindow* window;
-        GLFrameBuffer* windowBuf;
+        std::shared_ptr<GLFrameBuffer> windowBuf;
         std::unordered_map<std::string, ShaderProgram*> shaderPrograms;
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
 
     public:
         explicit GLRenderer (GLFWwindow* window);
+
+        ~GLRenderer() override;
 
         double getCurrentTime () override;
 
@@ -60,6 +62,8 @@ namespace graphics {
         void bindTexture (unsigned int textureId) override;
 
         void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
+
+        void invalidateWindowCallbacks () override;
     };
 }
 #endif //GLRENDERER_H

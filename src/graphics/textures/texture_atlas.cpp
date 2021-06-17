@@ -115,8 +115,8 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
     // sorts to get larger images first
     std::unordered_set<Image*> imageSet;
     for (const auto& m : modelsIn) {
-        for (auto i : m.textures) {
-            imageSet.insert(i.second);
+        for (const auto& i : m.textures) {
+            imageSet.insert(i.second.get());
         }
     }
     auto images = std::vector(imageSet.begin(), imageSet.end());
@@ -156,11 +156,11 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
     std::vector<AtlasObject<int>> objs;
     int length = buildAtlas(imgConts.begin(), imgConts.end(), std::back_inserter(objs), PADDING);
     this->sideLength = length;
-    data = new unsigned char[length * length * BYTES_PER_PIXEL];
+    data = std::shared_ptr<unsigned char[]> (new unsigned char[length * length * BYTES_PER_PIXEL]);
     //textures = new Texture[images.size()];
     //Texture* texPtr = textures;
-    auto* tempUvData = new float[images.size() * TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX];
-    auto uvPtr = tempUvData;
+    auto tempUvData = std::unique_ptr<float[]>(new float[images.size() * TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX]);
+    auto uvPtr = tempUvData.get();
     //std::vector<Node> nodes = tree->walk();
     logging::log(LEVEL_INFO, "Stitching atlas.");
 
@@ -179,7 +179,7 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
     }*/
     for (auto obj : objs) {
         auto img = imgConts[obj.key].img;
-        writeData(data, length, img, obj);
+        writeData(data.get(), length, img, obj);
         auto originalUv = uvPtr;
         for (int i = 0; i < TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE; i++) {
             glm::vec2 offVec = getVertexVec(i);
@@ -197,10 +197,10 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
         numModelComponents += m.textures.size();
     }
 
-    positionData = new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents];
-    uvData = new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents];
-    auto posPtr = positionData;
-    uvPtr = uvData;
+    positionData = std::shared_ptr<float[]>(new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents]);
+    uvData = std::shared_ptr<float[]>(new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents]);
+    auto posPtr = positionData.get();
+    uvPtr = uvData.get();
     for (const auto& m : modelsIn) {
         auto originalPos = posPtr;
         auto originalUv = uvPtr;
@@ -211,7 +211,7 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
                 *(posPtr++) = finalVec.x;
                 *(posPtr++) = finalVec.y * -1.0f;
             }
-            auto uvSpan = imageMap[pair.second];
+            auto uvSpan = imageMap[pair.second.get()];
             memcpy(uvPtr, uvSpan.begin(), uvSpan.size() * sizeof(float));
             uvPtr += uvSpan.size();
         }
@@ -219,7 +219,6 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
         modelIdMap[m.modelName] = models.size() - 1;
     }
 
-    delete[] tempUvData;
     logging::log(LEVEL_INFO, "Stitching complete");
     //tree->destroy();
     //delete tree;
@@ -243,8 +242,8 @@ void graphics::TextureAtlas::bindTextureAtlas () {
 }
 
 void TextureAtlas::loadTextureAtlas (Renderer* renderer) {
-    graphicsTexture = renderer->loadTexture(sideLength, sideLength, data);
-    delete[] data;
+    graphicsTexture = renderer->loadTexture(sideLength, sideLength, data.get());
+    //delete[] data;
 }
 
 FixedModel TextureAtlas::getModel (int modelId) {

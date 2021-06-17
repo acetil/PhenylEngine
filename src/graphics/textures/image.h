@@ -1,8 +1,9 @@
 #include <string>
+#include "util/smart_help.h"
 #ifndef IMAGE_H
     #define IMAGE_H
     namespace graphics {
-        class Image {
+        class Image : public util::SmartHelper<Image>{
             private:
                 unsigned char* data;
                 int width{};
