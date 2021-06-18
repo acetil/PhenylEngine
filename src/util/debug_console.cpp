@@ -5,11 +5,12 @@
 
 #include "logging/logging.h"
 #include "event/events/debug/profiler_change.h"
+#include "string_help.h"
 
 using namespace util;
 
 
-std::vector<std::string> stringSplit (std::string& str) {
+/*std::vector<std::string> stringSplit (std::string& str) {
     std::vector<std::string> substrings;
 
     std::size_t start = 0;
@@ -21,7 +22,7 @@ std::vector<std::string> stringSplit (std::string& str) {
     }
     substrings.emplace_back(str.substr(start));
     return substrings;
-}
+}*/
 
 void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::string>& args) {
     if (args.empty()) {

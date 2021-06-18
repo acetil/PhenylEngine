@@ -4,12 +4,16 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
+#include <fstream>
 
 #include "map_reader.h"
 #include "map.h"
 
 #include "game/tile/tile.h"
 #include "logging/logging.h"
+
+#include "util/string_help.h"
 
 #define MAGIC_LEN 4
 #define DIMENSION_SIZE 4
@@ -25,9 +29,16 @@
 
 using namespace game;
 
+Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gameObject);
+
 Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
+    logging::log(LEVEL_DEBUG, path.substr(path.size() - 4, std::string::npos));
+    if (path.substr(path.size() - 4, std::string::npos) == ".txt") {
+        return readMapSimple(path, std::move(gameObject));
+    }
+
     FILE* file = fopen(path.c_str(), "rb");
     if (file == nullptr) {
         logging::log(LEVEL_ERROR, "Error loading map file at path {}", path);
@@ -151,4 +162,71 @@ Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gam
     Map::SharedPtr map = Map::NewSharedPtr(width, height);
     map->setTiles(tiles);
     return map;
-}   
+}
+
+Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gameObject) {
+    std::ifstream file(path);
+
+    if (!file) {
+        logging::log(LEVEL_ERROR, "Error loading simple map file \"{}\"", path);
+        return nullptr;
+    }
+
+    std::string headerStr;
+    std::getline(file, headerStr);
+
+    auto header = util::stringSplit(headerStr);
+
+    int width = std::stoi(header[0]);
+    int height = std::stoi(header[1]);
+
+    int numTiles = std::stoi(header[2]);
+
+    std::unordered_map<int, Tile*> tileIdMap;
+    auto emptyTile = gameObject->getTile("empty_tile");
+
+    for (int i = 0; i < numTiles; i++) {
+        std::string line;
+        std::getline(file, line);
+        auto lineSplit = util::stringSplit(line);
+        if (lineSplit.size() < 2) {
+            logging::log(LEVEL_WARNING, "Simple map tile line \"{}\" is too short!", line);
+        }
+        auto t = gameObject->getTile(lineSplit[1]);
+        if (t == nullptr) {
+            t = emptyTile;
+        }
+
+        tileIdMap[std::stoi(lineSplit[0])] = t;
+    }
+
+    Tile** tiles = new Tile*[width * height]{emptyTile};
+
+    int y = height - 1;
+
+    for (auto& i : util::readLines(file)) {
+        if (y < 0) {
+            logging::log(LEVEL_WARNING, "Map file \"{}\" height is incorrect!", path);
+            break;
+        }
+        int x = 0;
+
+        for (auto& j : util::stringSplit(i)) {
+            if (x >= width) {
+                logging::log(LEVEL_WARNING, "Map file \"{}\" width is incorrect!", path);
+            }
+            auto id = std::stoi(j);
+
+            if (tileIdMap.contains(id)) {
+                tiles[y * width + x] = tileIdMap[id];
+            }
+            x++;
+
+        }
+        y--;
+    }
+    Map::SharedPtr map = Map::NewSharedPtr(width, height);
+    map->setTiles(tiles);
+
+    return map;
+}
