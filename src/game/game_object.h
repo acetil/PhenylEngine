@@ -11,6 +11,8 @@
 #include "component/main_component.h"
 #include "entity/entity_type.h"
 #include "util/smart_help.h"
+#include "map/map.h"
+#include "event/events/debug/reload_map.h"
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
@@ -31,6 +33,9 @@ class GameObject : public util::SmartHelper<GameObject> {
         //int currentEntityId = 0;
         event::EventBus::SharedPtr eventBus = event::EventBus::NewSharedPtr();
         component::EntityComponentManager::SharedPtr entityComponentManager;
+
+        Map::SharedPtr gameMap;
+
         public:
         ~GameObject();
 
@@ -44,7 +49,7 @@ class GameObject : public util::SmartHelper<GameObject> {
         void buildEntityTypes ();
         //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
 
-        int createNewEntityInstance (const std::string& name, float x, float y);
+        int createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, std::string opts = "");
         /*AbstractEntity* getEntityInstance (int entityId);
         void deleteEntityInstance (AbstractEntity* entity);*/
 
@@ -66,6 +71,11 @@ class GameObject : public util::SmartHelper<GameObject> {
         event::EventBus::SharedPtr getEventBus();
 
         std::shared_ptr<EntityController> getController (const std::string& name);
+
+        void reloadMap ();
+        void loadMap (Map::SharedPtr map);
+
+        void mapReloadRequest (event::ReloadMapEvent& event);
 
         friend view::DebugGameView;
     };

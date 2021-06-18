@@ -8,8 +8,8 @@ namespace view {
     public:
         explicit GameView (game::GameObject* _gameObject) :
             gameObject(_gameObject) {}
-        int createEntityInstance (const std::string& name, float x, float y) {
-            return gameObject->createNewEntityInstance(name, x, y);
+        int createEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, std::string extraOpts = "") {
+            return gameObject->createNewEntityInstance(name, x, y, rot, extraOpts);
         }
         void destroyEntityInstance (int entityId) {
             gameObject->deleteEntityInstance(entityId);

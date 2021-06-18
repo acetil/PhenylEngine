@@ -1,5 +1,6 @@
 #include "game/map/map.h"
 #include "render_layer.h"
+#include "event/events/map_load.h"
 #ifndef MAP_LAYER_H
 #define MAP_LAYER_H
 namespace graphics {
@@ -35,6 +36,8 @@ namespace graphics {
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
 
         void attachMap (game::Map::SharedPtr map);
+
+        void onMapLoad (event::MapLoadEvent& event);
     };
 
 };

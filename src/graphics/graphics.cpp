@@ -11,6 +11,7 @@
 #include "renderers/window_callbacks.h"
 #include "game/entity/controller/entity_controller.h"
 #include "font/font_manager.h"
+#include "renderlayer/map_layer.h"
 
 using namespace graphics;
 
@@ -130,3 +131,9 @@ UIManager& Graphics::getUIManager () {
 void Graphics::deleteWindowCallbacks () {
     renderer->invalidateWindowCallbacks();
 }
+// TODO: move
+void graphics::addMapRenderLayer (graphics::Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus) {
+    auto layer = std::make_shared<MapRenderLayer>(graphics->getRenderer());
+    graphics->getRenderLayer()->addRenderLayer(layer);
+    bus->subscribeHandler(&MapRenderLayer::onMapLoad, layer);
+};

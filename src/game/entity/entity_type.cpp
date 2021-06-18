@@ -6,7 +6,7 @@
 using namespace game;
 
 void game::setInitialEntityValues (const component::EntityComponentManager::SharedPtr& componentManager,
-                                        EntityType& type, int entityId, float x, float y) {
+                                        EntityType& type, int entityId, float x, float y, float rot) {
     *componentManager->getObjectDataPtr<EntityType>(entityId) = type;
 
     auto physComp = componentManager->getObjectDataPtr<component::EntityMainComponent>(entityId);
@@ -24,14 +24,17 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     collComp->resolveLayers = type.defaultResolveLayers;
     collComp->eventLayer = type.defaultEventLayers;
     collComp->masks = type.defaultCollisionMask;
-    collComp->bbMap = {{type.collisionScale.x, 0}, {0, type.collisionScale.y}};
+    collComp->bbMap = glm::mat2({{type.collisionScale.x, 0}, {0, type.collisionScale.y}});
     collComp->mass = type.defaultMass;
     collComp->outerRadius = sqrt(type.scale.x * type.scale.x + type.scale.y * type.scale.y);
     collComp->pos = {x, y};
 
     auto rotComp = componentManager->getObjectDataPtr<component::RotationComponent>(entityId);
-    rotComp->rotation = 0;
-    rotComp->rotMatrix = {{1, 0}, {0, 1}};
+    rotComp->rotation = rot;
+    rotComp->rotMatrix = {{cos(rot), -sin(rot)}, {sin(rot), cos(rot)}};
+
+    collComp->bbMap *= rotComp->rotMatrix;
+    absPos->transform *= rotComp->rotMatrix;
 
     *componentManager->getObjectDataPtr<std::shared_ptr<EntityController>>(entityId) = type.defaultController;
     *componentManager->getObjectDataPtr<AbstractEntity*>(entityId) = type.entityFactory();

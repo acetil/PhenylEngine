@@ -30,6 +30,7 @@ GameObject::SharedPtr game::initGame (const graphics::Graphics::SharedPtr& graph
     gameObject->getEventBus()->raiseEvent(event::EntityRegisterEvent(gameObject));
     logging::log(LEVEL_DEBUG, "Finished entity init!");
     gameObject->setTextureIds(graphics->getTextureAtlas("sprite").value());
+    graphics::addMapRenderLayer(graphics, gameObject->getEventBus());
     graphics->addEntityLayer(manager); // TODO: unhackify
     graphics->getUIManager().addRenderLayer(graphics, graphics->getRenderer());
 
@@ -48,6 +49,8 @@ void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphi
     gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, std::move(graphics));
     gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
     gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
+
+    gameObject->getEventBus()->subscribeHandler(&GameObject::mapReloadRequest, gameObject);
 
     graphics::addDebugEventHandlers(gameObject->getEventBus());
 }

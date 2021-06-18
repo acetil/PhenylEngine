@@ -9,6 +9,7 @@
 #include "entity/controller/entity_controller.h"
 #include "component/rotation_update.h"
 #include "game/entity/entity_type_functions.h"
+#include "event/events/map_load.h"
 
 using namespace game;
 
@@ -41,19 +42,25 @@ game::GameObject::~GameObject () {
         return nullptr;
     }
 }*/
-int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y) {
+int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, std::string opts) {
     // TODO: requires refactor
     if (entityTypes.count(name) == 0) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with name '{}' which doesn't exist!", name);
         return -1;
     } else {
         int entityId = entityComponentManager->addObject();
-        setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y);
+        setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y, rot);
         auto viewCore = view::ViewCore(entityComponentManager);
-
+        auto entityView = view::EntityView(viewCore, entityId, eventBus);
+        auto gameView = view::GameView(this);
+        if (opts.empty()) {
+            entityView.controller()->initEntity(entityView, gameView);
+        } else {
+            entityView.controller()->initEntity(entityView, gameView, opts);
+        }
         eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
                                                         entityComponentManager->getObjectData<AbstractEntity*>(entityId), entityId,
-                             view::EntityView(viewCore, entityId, eventBus), view::GameView(this)));
+                             entityView, gameView));
         return entityId;
     }
 }
@@ -151,4 +158,23 @@ void GameObject::buildEntityTypes () {
 
 std::shared_ptr<EntityController> GameObject::getController (const std::string& name) {
     return controllers[name];
+}
+
+void GameObject::loadMap (Map::SharedPtr map) {
+    entityComponentManager->clear();
+    this->gameMap = std::move(map);
+
+    for (auto& i : gameMap->getEntities()) {
+        createNewEntityInstance(i.entityType, i.x, i.y, i.rotation, i.extraOpts);
+    }
+
+    eventBus->raiseEvent(event::MapLoadEvent(gameMap));
+}
+
+void GameObject::reloadMap () {
+    loadMap(gameMap);
+}
+
+void GameObject::mapReloadRequest (event::ReloadMapEvent& event) {
+    reloadMap();
 }

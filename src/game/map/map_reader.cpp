@@ -177,10 +177,16 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
 
     auto header = util::stringSplit(headerStr);
 
+    if (header.size() != 4) {
+        logging::log(LEVEL_ERROR, "Simple map header size is too small!");
+    }
+
     int width = std::stoi(header[0]);
     int height = std::stoi(header[1]);
 
     int numTiles = std::stoi(header[2]);
+
+    int numEntities = std::stoi(header[3]);
 
     std::unordered_map<int, Tile*> tileIdMap;
     auto emptyTile = gameObject->getTile("empty_tile");
@@ -203,17 +209,13 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
     Tile** tiles = new Tile*[width * height]{emptyTile};
 
     int y = height - 1;
-
-    for (auto& i : util::readLines(file)) {
-        if (y < 0) {
-            logging::log(LEVEL_WARNING, "Map file \"{}\" height is incorrect!", path);
-            break;
-        }
+    for (auto& i : util::readLines(file, height)) {
         int x = 0;
 
         for (auto& j : util::stringSplit(i)) {
             if (x >= width) {
                 logging::log(LEVEL_WARNING, "Map file \"{}\" width is incorrect!", path);
+                break;
             }
             auto id = std::stoi(j);
 
@@ -221,12 +223,28 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
                 tiles[y * width + x] = tileIdMap[id];
             }
             x++;
-
         }
+        logging::log(LEVEL_DEBUG, "Last x: {}", x);
         y--;
     }
+    logging::log(LEVEL_DEBUG, "Last y: {}", y);
+
+    std::vector<MapEntity> entities;
+
+    for (auto& i : util::readLines(file, numEntities)) {
+        auto lineSplit = util::stringSplit(i, " ", 3);
+        if (lineSplit.size() < 4) {
+            logging::log(LEVEL_WARNING, R"(Incorrect entity specification in map file "{}": "{}")", path, i);
+        } else if (lineSplit.size() == 4) {
+            entities.emplace_back(lineSplit[0], std::stof(lineSplit[1]), std::stof(lineSplit[2]), std::stof(lineSplit[3]), "");
+        } else {
+            entities.emplace_back(lineSplit[0], std::stof(lineSplit[1]), std::stof(lineSplit[2]), std::stof(lineSplit[3]), lineSplit[4]);
+        }
+    }
+
     Map::SharedPtr map = Map::NewSharedPtr(width, height);
     map->setTiles(tiles);
+    map->setEntities(entities);
 
     return map;
 }

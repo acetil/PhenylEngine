@@ -9,6 +9,7 @@ namespace game {
         void onEntityCollision(view::EntityView &entityView, view::GameView& gameView, int otherEntityId, unsigned int layers) override;
         int getTextureId (view::EntityView& entityView, view::GameView& gameView) override;
         void setTextureIds (graphics::TextureAtlas& atlas) override;
+        void initEntity (view::EntityView& entityView, view::GameView& gameView, std::string& opt) override;
     };
 }
 #endif //BULLET_CONTROLLER_H

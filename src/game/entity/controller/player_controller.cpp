@@ -3,6 +3,8 @@
 #include "player_controller.h"
 #include "logging/logging.h"
 
+#include "util/string_help.h"
+
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 0.15f
 
@@ -54,11 +56,13 @@ void game::PlayerController::controlEntityPostPhysics (view::EntityView& entityV
         auto rot = entityView.rotation;
         glm::vec2 rotVec = {cos(-rot()), sin(-rot())};
         glm::vec2 relPos = rotVec * SHOOT_DIST;
-        auto bulletId = gameView.createEntityInstance("bullet", entityView.position().x + relPos.x,
-                                                      entityView.position().y + relPos.y);
-        auto bulletView = entityView.withId(bulletId);
-        bulletView.rotation = rot(); // TODO: look into difference with ()
-        bulletView.velocity = rotVec * SHOOT_VEL;
+        glm::vec2 bulletVel = rotVec * SHOOT_VEL;
+
+        gameView.createEntityInstance("bullet", entityView.position().x + relPos.x,
+                                                      entityView.position().y + relPos.y, rot(), "b" + util::binToString(bulletVel));
+        /*auto bulletView = entityView.withId(bulletId);
+        //bulletView.rotation = rot(); // TODO: look into difference with ()
+        bulletView.velocity = rotVec * SHOOT_VEL;*/
         hasShot = true;
     }
 }

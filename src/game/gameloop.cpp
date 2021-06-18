@@ -27,7 +27,6 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
 
     auto& uiManager = graphics->getUIManager();
 
-    gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
     KeyboardInput::SharedPtr keyInput = getKeyboardInput(graphics);
@@ -39,10 +38,13 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
     //int frames = 0;
     //int fpsFrames = 0;
     //Map::SharedPtr map = readMap("resources/maps/testmap.acmp", gameObject);
+    //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     Map::SharedPtr map = readMap("resources/maps/testmap.txt", gameObject);
     map->setAtlas(graphics->getTextureAtlas("sprite").value());
+    gameObject->loadMap(map);
+    //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //map->initGraphicsData(graphics, "default");
-    std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
+    //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
     while (!graphics->shouldClose()) {

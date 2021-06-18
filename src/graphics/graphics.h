@@ -97,6 +97,7 @@ class Graphics : public util::SmartHelper<Graphics> {
 
         UIManager& getUIManager ();
     };
+    void addMapRenderLayer (Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus);
 }
 
 #endif //GRAPHICS_NEW_H

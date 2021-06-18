@@ -100,9 +100,14 @@ void MapRenderLayer::render (Renderer* renderer, FrameBuffer* frameBuf) {
 }
 
 void MapRenderLayer::attachMap (game::Map::SharedPtr _map) {
+    logging::log(LEVEL_DEBUG, "Map attached!");
     this->map = std::move(_map);
     active = true;
     needDataBuffer = true;
+}
+
+void MapRenderLayer::onMapLoad (event::MapLoadEvent& event) {
+    attachMap(event.map);
 }
 
 

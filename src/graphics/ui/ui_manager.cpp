@@ -2,6 +2,7 @@
 #include "graphics/renderers/renderer.h"
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/ui_layer.h"
+#include "event/events/map_load.h"
 
 #include "logging/logging.h"
 

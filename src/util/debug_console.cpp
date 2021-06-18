@@ -5,6 +5,7 @@
 
 #include "logging/logging.h"
 #include "event/events/debug/profiler_change.h"
+#include "event/events/debug/reload_map.h"
 #include "string_help.h"
 
 using namespace util;
@@ -50,6 +51,8 @@ void util::doDebugConsole (event::EventBus::SharedPtr bus) {
 
     if (command == "profiler") {
         handleProfiler(bus, args);
+    } else if (command == "map" && args.size() == 1 && args[0] == "reload"){
+        bus->raiseEvent(event::ReloadMapEvent());
     } else {
         logging::log(LEVEL_ERROR, "Unknown debug command: \"{}\"", command);
     }

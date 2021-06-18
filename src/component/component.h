@@ -148,6 +148,11 @@ namespace component {
             eventBus->raiseEvent(event::ObjectIdSwapEvent<meta::remove_pointer<FirstType>>(oldId, entityId)); // TODO
         }
 
+        void clear () {
+            logging::log(LEVEL_DEBUG, "Clearing entities!");
+            numEntities = 0;
+        }
+
         template <typename T, typename F, typename ...List>
         void applyFunc (F f, List... args) {
             static_assert(meta::is_callable<meta::add_pointer<T>, int, int, List...>(f), "Function has incorrect parameters!");

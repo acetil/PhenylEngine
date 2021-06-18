@@ -9,7 +9,7 @@ using namespace graphics;
 GraphicsRenderLayer::GraphicsRenderLayer (Renderer* renderer) {
     //program = renderer->getProgram("graphics_program").value();
     program = renderer->getProgram("default").value(); // TODO
-    renderLayers.push_back(std::make_shared<MapRenderLayer>(renderer));
+    //renderLayers.push_back(std::make_shared<MapRenderLayer>(renderer));
     // TODO: remove
     //graphics::FontManager manager;
     //manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
