@@ -232,7 +232,7 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
     std::vector<MapEntity> entities;
 
     for (auto& i : util::readLines(file, numEntities)) {
-        auto lineSplit = util::stringSplit(i, " ", 3);
+        auto lineSplit = util::stringSplit(i, " ", 4);
         if (lineSplit.size() < 4) {
             logging::log(LEVEL_WARNING, R"(Incorrect entity specification in map file "{}": "{}")", path, i);
         } else if (lineSplit.size() == 4) {

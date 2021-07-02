@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <type_traits>
 #include <memory>
+#include <functional>
 
 #include "event/event.h"
 #include "graphics/maths_headers.h"
@@ -29,7 +30,8 @@ namespace game {
         unsigned int defaultEventLayers;
         unsigned int defaultResolveLayers;
 
-        AbstractEntity* (*entityFactory)();
+        //AbstractEntity* (*entityFactory)();
+        std::function<AbstractEntity*(void)> entityFactory;
 
         EntityType () = default;
     };
@@ -46,11 +48,12 @@ namespace game {
         unsigned int defaultCollisionMask = 0;
         unsigned int defaultEventLayers = 0;
         unsigned int defaultResolveLayers = 0;
-        AbstractEntity* (*entityFactory)();
+        //AbstractEntity* (*entityFactory)();
+        std::function<AbstractEntity*(void)> entityFactory;
         std::string controller;
     public:
         EntityTypeBuilder () = default;
-        EntityTypeBuilder (std::string _controller, AbstractEntity* (*_entityFactory)()) : entityFactory(_entityFactory),
+        EntityTypeBuilder (std::string _controller, std::function<AbstractEntity*(void)> _entityFactory) : entityFactory(_entityFactory),
             controller(std::move(_controller)) {};
         EntityTypeBuilder& setScale (float _scale);
         EntityTypeBuilder& setScale (float xScale, float yScale);
@@ -71,7 +74,7 @@ namespace game {
        return new T();
     }
 
-    template <class T, class V>
+    template <class V, class T>
     V* constructor_factory () {
         static_assert(std::is_base_of<V, T>::value, "First class must be derived from the second class!");
         return new T();

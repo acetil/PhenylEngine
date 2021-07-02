@@ -57,6 +57,7 @@ std::vector<Image::SharedPtr> getSpriteImages () {
     images.push_back(Image::NewSharedPtr("resources/images/test/prismarine_bricks.png", "test7"));
     images.push_back(Image::NewSharedPtr("resources/images/test/manBlue_gun.png", "test8"));
     images.push_back(Image::NewSharedPtr("resources/images/test/bullet2.png", "test9"));
+    images.push_back(Image::NewSharedPtr("resources/images/test/test_wall.png", "test10"));
     return images;
 }
 /*

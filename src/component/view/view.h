@@ -192,6 +192,54 @@ namespace view {
         }
     };
 
+    class ViewPropertyScale {
+    protected:
+        glm::mat2* matPtr;
+    public:
+        ViewPropertyScale () : matPtr(nullptr) {};
+        explicit ViewPropertyScale (glm::mat2* _ptr) : matPtr{_ptr} {}
+
+        virtual void scaleBy (float xScale, float yScale) {
+            glm::mat2 scaleMat = {{xScale, 0}, {0, yScale}};
+
+            *matPtr = scaleMat * *matPtr;
+        }
+
+        virtual glm::vec2 getScale () {
+            return {glm::sqrt((*matPtr)[0][0] * (*matPtr)[0][0] + (*matPtr)[0][1] * (*matPtr)[0][1]),
+                    glm::sqrt((*matPtr)[1][0] * (*matPtr)[1][0] + (*matPtr)[1][1] * (*matPtr)[1][1])};
+        }
+
+        virtual void setScale (float xScale, float yScale) {
+            auto scale = getScale();
+            *matPtr = glm::mat2({xScale, 0}, {0, yScale}) * glm::mat2({(*matPtr)[0] / scale[0], (*matPtr)[1] / scale[1]});
+        }
+    };
+
+    class ViewPropertyCollisionBox : ViewPropertyScale {
+    private:
+        float* radiusPtr;
+        void calcRadius () {
+            auto vec = (*matPtr)[0] + (*matPtr)[1];
+            *radiusPtr = glm::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+        }
+    public:
+        ViewPropertyCollisionBox () : ViewPropertyScale(), radiusPtr(nullptr) {}
+        explicit ViewPropertyCollisionBox (glm::mat2* matPtr, float* _radiusPtr) : ViewPropertyScale(matPtr), radiusPtr(_radiusPtr) {}
+
+
+        void scaleBy (float xScale, float yScale) override {
+            ViewPropertyScale::scaleBy(xScale, yScale);
+            calcRadius();
+        }
+
+        void setScale (float xScale, float yScale) override {
+            ViewPropertyScale::setScale(xScale, yScale);
+            calcRadius();
+        }
+
+    };
+
     class EntityView : public ViewBase<component::entity_list> {
     public:
         const int entityId;
@@ -215,6 +263,9 @@ namespace view {
         //ViewProperty<unsigned int> collisionMasks;
         ViewProperty<unsigned int> resolveLayers;
         ViewProperty<unsigned int> eventLayers;
+
+        ViewPropertyScale modelScale;
+        ViewPropertyCollisionBox hitboxScale;
 
         EntityView () : ViewBase<component::entity_list>(),
             entityId(-1),
@@ -250,7 +301,10 @@ namespace view {
 
             collisionLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))),
             resolveLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, resolveLayers, id))),
-            eventLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))) {};
+            eventLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))),
+            modelScale(VIEW_GET_PROPERTY_PTR(graphics::AbsolutePosition, transform, id)),
+            hitboxScale(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, bbMap, id),
+                        VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, outerRadius, id)){};
 
         EntityView withId (int id) {
             return EntityView(viewCore, id, eventBus);
