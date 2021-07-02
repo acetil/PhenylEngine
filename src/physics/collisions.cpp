@@ -38,6 +38,8 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
         bool isIntersection = false;
         glm::vec2 minIntersectVec = {1.1f, 1.1f};
         glm::vec2 maxIntersectVec = {0.0f, 0.0f};
+        float posMax = 0.0f;
+        float negMax = -0.0f;
         glm::mat2 transMat = i < 2 ? comp1.bbMap : comp2.bbMap;
         glm::mat2 invMat = i < 2 ? inv2 : inv1;
         glm::vec2 relDisplacement = i < 2 ? displacement : -displacement;
@@ -54,7 +56,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
                 testPoint += basisVec[1];
             }
 
-            glm::vec2 transPoint = transMat * testPoint + displacement;
+            glm::vec2 transPoint = transMat * testPoint + relDisplacement;
 
             glm::vec2 relPoint = projectVec(basis1, invMat * transPoint);
 
@@ -80,21 +82,40 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
                 isIntersection = true;
                 //break;
             }
-
+            float sign = getSign(relPoint, basis1);
+            float mul = glm::dot(basis1, relPoint) / squaredDistance(basis1);
+            if (mul >= posMax) {
+                posMax = mul;
+            } else if (mul <= negMax) {
+                negMax = mul;
+            }
         }
-        if (!isIntersection) {
-            return std::pair(false, glm::vec2({0,0}));
-        } else {
+
+        if (isIntersection) {
             float sign = getSign(maxIntersectVec - minIntersectVec, basis1);
             glm::vec2 overlapVec = basis1 * sign - minIntersectVec;
             if (squaredDistance(overlapVec) < leastSquaredDist) {
                 smallestDispVec = (i < 2 ? comp2.bbMap : comp1.bbMap)  *  overlapVec;
                 leastSquaredDist = squaredDistance(overlapVec);
             }
+        } else if (posMax >= 1.0f && negMax <= -1.0f) {
+            float minDist;
+            if (posMax + 1.0f >= -(negMax - 1.0f)) {
+                minDist = posMax + 1.0f;
+            } else {
+                minDist = negMax - 1.0f;
+            }
+            glm::vec2 overlapVec = basis1 * minDist;
+            if (squaredDistance(overlapVec) < leastSquaredDist) {
+                smallestDispVec = (i < 2 ? comp2.bbMap : comp1.bbMap) * overlapVec;
+                leastSquaredDist = squaredDistance(overlapVec);
+            }
+        } else {
+            return std::pair(false, glm::vec2({0,0}));
         }
     }
-    //logging::logf(LEVEL_DEBUG, "Smallest displacement: <%f, %f>", smallestDispVec.x, smallestDispVec.y);
-    if (abs(smallestDispVec.x) < FLT_EPSILON && abs(smallestDispVec.y) < FLT_EPSILON) {
+    //logging::log(LEVEL_DEBUG, "Smallest displacement: <{}, {}> (epsilon = {})", smallestDispVec.x, smallestDispVec.y, FLT_EPSILON);
+    if (fabs(smallestDispVec.x) < FLT_EPSILON && fabs(smallestDispVec.y) < FLT_EPSILON) {
         return std::pair(false, glm::vec2{0,0});
     }
     return std::pair(true, smallestDispVec);
