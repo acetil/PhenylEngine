@@ -30,7 +30,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
     glm::mat2 inv2 = glm::inverse(comp2.bbMap);
 
     glm::vec2 basisVec[2] = {{1,0}, {0,1}};
-    float leastSquaredDist = 4.0f;
+    float leastSquaredDist = FLT_MAX;
     glm::vec2 smallestDispVec;
 
     for (int i = 0; i < 4; i++) {
@@ -94,9 +94,11 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
         if (isIntersection) {
             float sign = getSign(maxIntersectVec - minIntersectVec, basis1);
             glm::vec2 overlapVec = basis1 * sign - minIntersectVec;
-            if (squaredDistance(overlapVec) < leastSquaredDist) {
-                smallestDispVec = (i < 2 ? comp2.bbMap : comp1.bbMap)  *  overlapVec;
-                leastSquaredDist = squaredDistance(overlapVec);
+            auto dispVec = (i < 2 ? comp2.bbMap : comp1.bbMap) * overlapVec;
+            if (squaredDistance(dispVec) < leastSquaredDist) {
+                smallestDispVec = dispVec * (i < 2 ? 1.0f : -1.0f);
+                leastSquaredDist = squaredDistance(dispVec);
+                logging::log(LEVEL_DEBUG, "A");
             }
         } else if (posMax >= 1.0f && negMax <= -1.0f) {
             float minDist;
@@ -106,15 +108,17 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
                 minDist = negMax - 1.0f;
             }
             glm::vec2 overlapVec = basis1 * minDist;
-            if (squaredDistance(overlapVec) < leastSquaredDist) {
-                smallestDispVec = (i < 2 ? comp2.bbMap : comp1.bbMap) * overlapVec;
-                leastSquaredDist = squaredDistance(overlapVec);
+            auto dispVec = (i < 2 ? comp2.bbMap : comp1.bbMap) * overlapVec;
+            if (squaredDistance(dispVec) < leastSquaredDist) {
+                smallestDispVec = dispVec * (i < 2 ? 1.0f : -1.0f);;
+                leastSquaredDist = squaredDistance(dispVec);
+                logging::log(LEVEL_DEBUG, "B");
             }
         } else {
             return std::pair(false, glm::vec2({0,0}));
         }
     }
-    //logging::log(LEVEL_DEBUG, "Smallest displacement: <{}, {}> (epsilon = {})", smallestDispVec.x, smallestDispVec.y, FLT_EPSILON);
+    logging::log(LEVEL_DEBUG, "Smallest displacement: <{}, {}> (epsilon = {})", smallestDispVec.x, smallestDispVec.y, FLT_EPSILON);
     if (fabs(smallestDispVec.x) < FLT_EPSILON && fabs(smallestDispVec.y) < FLT_EPSILON) {
         return std::pair(false, glm::vec2{0,0});
     }
