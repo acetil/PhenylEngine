@@ -17,26 +17,24 @@ void game::addEntities(event::EntityRegisterEvent& event) {
             .setConstFriction(0.005)
             .setLinearFriction(0.27)
             .setScale(0.1f)
-            .addCollisionLayers(1)
+            .addCollisionLayers(1 | 2)
             .addEventLayers(1)
             .addLayers(1)
-            .addResolveLayers(1);
+            .addResolveLayers(1 | 2);
 
     auto entityBulletType = EntityTypeBuilder("bullet", constructor_factory<AbstractEntity, EntityBullet>)
             .setScale(0.03f)
             .setMass(1.0f)
             .setConstFriction(0.0001)
             .setLinearFriction(0.01)
-            .addCollisionLayers(1)
-            .addEventLayers(1)
+            .addCollisionLayers(1 | 2)
+            .addEventLayers(1 | 2)
             .addLayers(1);
 
     auto entityWallType = EntityTypeBuilder("wall_entity", constructor_factory<AbstractEntity, BasicEntity>)
             .setScale(0.1f)
             .setMass(0.0f)
-            .addCollisionLayers(1)
-            .addEventLayers(1)
-            .addLayers(1);
+            .addLayers(2);
 
 
     event.gameObject->registerEntityType("test_entity", entityTestType);

@@ -98,7 +98,6 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
             if (squaredDistance(dispVec) < leastSquaredDist) {
                 smallestDispVec = dispVec * (i < 2 ? 1.0f : -1.0f);
                 leastSquaredDist = squaredDistance(dispVec);
-                logging::log(LEVEL_DEBUG, "A");
             }
         } else if (posMax >= 1.0f && negMax <= -1.0f) {
             float minDist;
@@ -112,13 +111,12 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
             if (squaredDistance(dispVec) < leastSquaredDist) {
                 smallestDispVec = dispVec * (i < 2 ? 1.0f : -1.0f);;
                 leastSquaredDist = squaredDistance(dispVec);
-                logging::log(LEVEL_DEBUG, "B");
             }
         } else {
             return std::pair(false, glm::vec2({0,0}));
         }
     }
-    logging::log(LEVEL_DEBUG, "Smallest displacement: <{}, {}> (epsilon = {})", smallestDispVec.x, smallestDispVec.y, FLT_EPSILON);
+    //logging::log(LEVEL_DEBUG, "Smallest displacement: <{}, {}> (epsilon = {})", smallestDispVec.x, smallestDispVec.y, FLT_EPSILON);
     if (fabs(smallestDispVec.x) < FLT_EPSILON && fabs(smallestDispVec.y) < FLT_EPSILON) {
         return std::pair(false, glm::vec2{0,0});
     }

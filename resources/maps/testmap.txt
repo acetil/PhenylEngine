@@ -1,9 +1,11 @@
-4 4 2 2
+4 4 2 4
 1 test_tile1
 2 test_tile2
 1 1 1 1
 1 2 2 1
 1 2 2 1
 2 1 1 1
-test_entity 0.5 0.5 0.0
-wall_entity -0.5 0.0 0.0 1.0,5.0
+test_entity 0.0 0.0 0.0
+wall_entity -0.4 0.0 0.0 0.8,5.0
+wall_entity 0.4 0.0 0.0 0.8,5.0
+wall_entity 0.0 -0.50 0.0 4.8,0.8
