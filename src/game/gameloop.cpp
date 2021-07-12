@@ -60,6 +60,8 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
             gameObject->updateEntitiesPostPhysics();
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
             util::endProfile();
+
+            gameObject->updateCamera(graphics->getCamera());
             //fpsFrames++;
         }
         /*if (timeSinceFpsUpdate >= 1.0f) {

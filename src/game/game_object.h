@@ -13,6 +13,7 @@
 #include "util/smart_help.h"
 #include "map/map.h"
 #include "event/events/debug/reload_map.h"
+#include "game_camera.h"
 
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
@@ -35,6 +36,8 @@ class GameObject : public util::SmartHelper<GameObject> {
         component::EntityComponentManager::SharedPtr entityComponentManager;
 
         Map::SharedPtr gameMap;
+
+        GameCamera camera;
 
         public:
         ~GameObject();
@@ -76,6 +79,10 @@ class GameObject : public util::SmartHelper<GameObject> {
         void loadMap (Map::SharedPtr map);
 
         void mapReloadRequest (event::ReloadMapEvent& event);
+
+        void updateCamera (graphics::Camera& camera);
+
+        GameCamera& getCamera ();
 
         friend view::DebugGameView;
     };

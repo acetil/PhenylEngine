@@ -10,7 +10,7 @@ graphics::Camera::Camera() {
 }
 
 [[maybe_unused]] void graphics::Camera::translate (float x, float y) {
-    positionMat = glm::translate(positionMat, glm::vec3(x, y, 0.0f));
+    positionMat = glm::translate(positionMat, glm::vec3(-x, -y, 0.0f));
     camMatrix = scaleMat * positionMat;
 }
 
@@ -20,7 +20,7 @@ graphics::Camera::Camera() {
 }
 
 [[maybe_unused]] void graphics::Camera::setPosition (float x, float y) {
-    positionMat = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, 0.0f));
+    positionMat = glm::translate(glm::mat4(1.0f), glm::vec3(-x, -y, 0.0f));
     camMatrix = scaleMat * positionMat;
 }
 

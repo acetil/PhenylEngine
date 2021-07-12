@@ -65,6 +65,7 @@ void game::PlayerController::controlEntityPostPhysics (view::EntityView& entityV
         bulletView.velocity = rotVec * SHOOT_VEL;*/
         hasShot = true;
     }
+    gameView.getCamera().setPos(entityView.position());
 }
 
 

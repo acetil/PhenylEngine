@@ -178,3 +178,11 @@ void GameObject::reloadMap () {
 void GameObject::mapReloadRequest (event::ReloadMapEvent& event) {
     reloadMap();
 }
+
+void GameObject::updateCamera (graphics::Camera& _camera) {
+    this->camera.updateCamera(_camera);
+}
+
+GameCamera& GameObject::getCamera () {
+    return camera;
+}

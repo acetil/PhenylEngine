@@ -14,6 +14,9 @@ namespace view {
         void destroyEntityInstance (int entityId) {
             gameObject->deleteEntityInstance(entityId);
         }
+        game::GameCamera& getCamera () {
+            return gameObject->getCamera();
+        }
     };
 }
 #endif //GAME_VIEW_H
