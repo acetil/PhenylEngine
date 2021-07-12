@@ -17,7 +17,7 @@ namespace game {
     };
     class MouseFunction {
     public:
-        virtual void operator() (int action, glm::vec2 screenPos, glm::vec2 worldPos) = 0;
+        virtual void operator() (int action, glm::vec2 windowPos, glm::vec2 screenPos) = 0;
         virtual ~MouseFunction() = default;
     };
 class KeyboardInput : public util::SmartHelper<KeyboardInput> {

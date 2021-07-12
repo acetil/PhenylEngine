@@ -11,7 +11,7 @@ namespace game {
     private:
         float deltaXForce;
         float deltaYForce;
-        glm::vec2 cursorWorldPos = {0, 0};
+        glm::vec2 cursorScreenPos = {0, 0};
         bool doShoot = false;
         bool hasShot = false;
         int texId = 0;

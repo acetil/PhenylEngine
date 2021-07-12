@@ -21,6 +21,8 @@ namespace game {
         void setScale (float scaleX, float scaleY);
         void scaleBy (float scaleX, float scaleY);
 
+        glm::vec2 getWorldPos (glm::vec2 screenPos); // Asumes screenPos is -1 to 1
+
         void updateCamera (graphics::Camera& camera);
     };
 }

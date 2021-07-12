@@ -15,8 +15,8 @@ namespace game {
         GLFWwindow* window;
         std::map<int, std::unique_ptr<KeyboardFunction>> bindingMap;
         std::map<int, std::unique_ptr<MouseFunction>> mouseBindingMap;
+        glm::vec2 windowMousePos;
         glm::vec2 screenMousePos;
-        glm::vec2 worldMousePos;
     public:
         explicit KeyboardInputImpl (graphics::Graphics::SharedPtr graphics);
 
@@ -46,7 +46,7 @@ void game::KeyboardInputImpl::handleKeyPresses () {
         x.second->operator()(glfwGetKey(window, x.first));
     }
     for (auto const& x : mouseBindingMap) {
-        x.second->operator()(glfwGetMouseButton(window, x.first), screenMousePos, worldMousePos);
+        x.second->operator()(glfwGetMouseButton(window, x.first), windowMousePos, screenMousePos);
     }
 }
 void game::KeyboardInputImpl::setKey(int key, std::unique_ptr<KeyboardFunction> func) {
@@ -70,8 +70,8 @@ void KeyboardInputImpl::setMouseButton (int button, std::unique_ptr<MouseFunctio
 }
 
 void KeyboardInputImpl::onCursorPosChange (event::CursorPosChangeEvent& event) {
-    screenMousePos = event.windowPos;
-    worldMousePos = event.worldPos;
+    windowMousePos = event.windowPos;
+    screenMousePos = event.screenPos;
 }
 
 KeyboardInput::SharedPtr game::getKeyboardInput (const graphics::Graphics::SharedPtr& graphics) {

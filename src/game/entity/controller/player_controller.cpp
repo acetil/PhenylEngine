@@ -19,7 +19,7 @@ void game::PlayerController::controlEntityPrePhysics (view::EntityView& entityVi
    entityView.acceleration += glm::vec2(deltaXForce, deltaYForce);
    deltaXForce = 0;
    deltaYForce = 0;
-   auto cursorDisp = cursorWorldPos - (glm::vec2)entityView.position;
+   auto cursorDisp = gameView.getCamera().getWorldPos(cursorScreenPos) - (glm::vec2)entityView.position;
    float rot = atan2(cursorDisp.x, cursorDisp.y)- M_PI_2;
    entityView.rotation = rot;
    /*if (!hasShot && doShoot) {
@@ -35,7 +35,7 @@ void game::PlayerController::controlEntityPrePhysics (view::EntityView& entityVi
 }
 
 void game::PlayerController::updateCursorPos (event::CursorPosChangeEvent &event) {
-    cursorWorldPos = event.worldPos;
+    cursorScreenPos = event.screenPos;
 }
 
 void game::PlayerController::updateDoShoot (event::PlayerShootChangeEvent &event) {

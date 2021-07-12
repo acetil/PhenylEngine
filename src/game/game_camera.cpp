@@ -31,3 +31,9 @@ void GameCamera::updateCamera (graphics::Camera& camera) {
     currentPos += transVec;
     currentScale = targetScale;
 }
+
+glm::vec2 GameCamera::getWorldPos (glm::vec2 screenPos) {
+    glm::vec2 worldPos = screenPos / currentScale;
+    worldPos += currentPos;
+    return worldPos;
+}
