@@ -8,8 +8,13 @@
 #include "logging/logging_internal.h"
 #include "util/format.h"
 
+#include "util/data.h"
+
 int main (int argv, char* argc[]) {
     // TODO: move to exceptions
+
+    util::testData();
+
     internal::log_internal(LEVEL_DEBUG, "MAIN", "Started game!");
     internal::log_internal(LEVEL_DEBUG, "MAIN", util::format("Test format: {} {} {1}", 4, 3.8, "abc").c_str());
     GLFWwindow* window = nullptr;
