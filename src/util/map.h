@@ -14,8 +14,8 @@ namespace util {
     template <typename K, typename V, typename Wrap = ValueWrapper<V>>
     class MapIterator;
 
-    template <typename K, typename V, typename hashFunc>
-    class MapImpl {
+    template <typename K, typename V, typename hashFunc=std::hash<K>>
+    class Map {
     protected:
         // 0 = no item, 1 = has item, -1 = deleted (sentinel)
         std::unique_ptr<std::pair<char, K>[]> exists;
@@ -134,7 +134,7 @@ namespace util {
     public:
         using iterator = MapIterator<K, V>;
         using const_iterator = MapIterator<K, V, const ValueWrapper<V>>;
-        MapImpl () {
+        Map () {
             exists = std::make_unique<std::pair<char, K>[]>(maxSize);
             for (int i = 0; i < maxSize; i++) {
                 exists[i].first = 0;
@@ -142,9 +142,9 @@ namespace util {
             data = std::move(std::unique_ptr<unsigned char[]>(new unsigned char[maxSize * sizeof(V)]));
         }
 
-        MapImpl (const MapImpl<K, V, hashFunc>& other) : loadFactor(other.loadFactor), maxSize(other.maxSize), currentSize(other.currentSize),
-                                   exists(std::make_unique<std::pair<char, K>[]>(other.maxSize)),
-                                   data(std::make_unique<unsigned char[]>(other.maxSize * sizeof(V))) {
+        Map (const Map<K, V, hashFunc>& other) : loadFactor(other.loadFactor), maxSize(other.maxSize), currentSize(other.currentSize),
+                                                 exists(std::make_unique<std::pair<char, K>[]>(other.maxSize)),
+                                                 data(std::make_unique<unsigned char[]>(other.maxSize * sizeof(V))) {
             auto otherData = (V*)other.data.get();
             for (int i = 0; i < maxSize; i++) {
                 exists[i] = other.exists[i];
@@ -154,7 +154,7 @@ namespace util {
             }
         }
 
-        MapImpl<K, V, hashFunc>& operator= (const MapImpl<K, V, hashFunc>& other) {
+        Map<K, V, hashFunc>& operator= (const Map<K, V, hashFunc>& other) {
             if (&other != this) {
                 loadFactor = other.loadFactor;
 
@@ -178,8 +178,8 @@ namespace util {
             return *this;
         }
 
-        MapImpl(MapImpl<K, V, hashFunc>&&) = default;
-        MapImpl<K, V, hashFunc>& operator= (MapImpl<K, V, hashFunc>&&) = default;
+        Map(Map<K, V, hashFunc>&&) = default;
+        Map<K, V, hashFunc>& operator= (Map<K, V, hashFunc>&&) = default;
 
         template <typename T>
         V operator[] (const T& key) const {
@@ -220,7 +220,7 @@ namespace util {
             return currentSize;
         }
 
-        ~MapImpl () {
+        ~Map () {
             if (exists && data) {
                 for (int i = 0; i < maxSize; i++) {
                     if (exists[i].first == 1) {
@@ -234,7 +234,7 @@ namespace util {
             return iterator(*this, 0);
         }
 
-        iterator cbegin() {
+        const_iterator cbegin() {
             return const_iterator(*this, 0);
         }
 
@@ -242,60 +242,12 @@ namespace util {
             return iterator(*this, maxSize);
         }
 
-        iterator cend () {
+        const_iterator cend () {
             return const_iterator (*this, maxSize);
         }
 
         friend  MapIterator<K, V>;
         friend  MapIterator<K, V, const ValueWrapper<V>>;
-    };
-    template <typename K, typename V, typename hashFunc=std::hash<K>>
-    class Map : public MapImpl<K, V, hashFunc> {};
-
-    template <typename V, typename hashFunc>
-    class Map <std::string, V, hashFunc> : public MapImpl<std::string, V, hashFunc> {
-    private:
-        using Base = MapImpl<std::string, V, std::hash<std::string>>;
-        Base* getBaseType () {
-            return static_cast<Base*>(*this);
-        }
-    public:
-        /*V& operator[] (const char* key) {
-            std::string k(key);
-            return getBaseType()->operator[](k);
-        }
-        V operator[] (const char* key) const {
-            std::string k(key);
-            return getBaseType()->operator[](k);
-        }
-        bool contains (const char* key) {
-            std::string k(key);
-            return getBaseType()->contains(k);
-        }*/
-    };
-    template <typename V>
-    class Map <std::string, V> : public MapImpl<std::string, V, std::hash<std::string>> {
-    private:
-        using Base = MapImpl<std::string, V, std::hash<std::string>>;
-        Base* getBaseType () {
-            return static_cast<Base*>(this);
-        }
-    public:
-        /*V& operator[] (const char* key) {
-            std::string k(key);
-            return getBaseType()->operator[](k);
-        }
-        V operator[] (const char* key) const {
-            std::string k(key);
-            return getBaseType()->operator[](k);
-        }
-        bool contains (const char* key) {
-            std::string k(key);
-            return getBaseType()->contains(k);
-        }
-        bool contains (std::string& key) {
-            return getBaseType()->contains(key);
-        }*/
     };
 
 
@@ -411,7 +363,7 @@ namespace util {
         MapIterator () = default;
 
         template <typename HashFunc>
-        MapIterator(MapImpl<K, V, HashFunc>& map, std::size_t startIndex) : maxSize{map.maxSize}, index{startIndex}, exists(map.exists.get()), data{(V*)map.data.get()} {
+        MapIterator(Map<K, V, HashFunc>& map, std::size_t startIndex) : maxSize{map.maxSize}, index{startIndex}, exists(map.exists.get()), data{(V*)map.data.get()} {
             nextIndex();
         };
     };

@@ -208,7 +208,53 @@ void testMap () {
 
 }
 
+void testDataTypes () {
+    util::DataValue val;
+    assert(val == std::monostate());
+    val = 4;
+    int v = val;
+    assert (v == 4);
+    bool threw = false;
+    try {
+        float f = val;
+    } catch (std::exception&) {
+        threw = true;
+    }
+    assert(threw);
+    val = 4.5f;
+    float f;
+    assert(val.getValue(f));
+    assert(f == 4.5f);
+
+    val = std::string("Hello World!");
+
+    std::string s = val;
+    assert(s == "Hello World!");
+
+    util::DataObject obj;
+
+    obj["test1"] = 1;
+    obj["test2"] = 3.0f;
+    obj["test3"] = true;
+    obj["test4"] = val;
+
+    assert(obj.contains("test1"));
+    assert(obj.contains("test2"));
+    assert(obj.contains("test3"));
+    assert(obj.contains("test4"));
+
+    int t1 = obj["test1"];
+    float t2 = obj["test2"];
+    bool t3 = obj["test3"];
+    std::string t4 = obj["test4"];
+    assert(t1 == 1);
+    assert(t2 == 3.0f);
+    assert(t3);
+    assert(t4 == "Hello World!");
+}
+
 
 void util::testData () {
     testMap();
+    testDataTypes();
 }

@@ -9,18 +9,30 @@
 
 #include "map.h"
 
-#ifndef DATA_H
-#define DATA_H
+#ifndef UTIL_DATA_H
+#define UTIL_DATA_H
 namespace util {
     class DataValue;
-    class DataObject;
 
     class DataObject {
     private:
         Map<std::string, DataValue> values;
+
     public:
         DataObject();
-        //DataObject(DataValue& val);
+        explicit DataObject(DataValue& val);
+
+        Map<std::string, DataValue>::iterator begin ();
+        Map<std::string, DataValue>::iterator end ();
+
+        Map<std::string, DataValue>::const_iterator cbegin ();
+        Map<std::string, DataValue>::const_iterator cend ();
+
+        template <typename T>
+        DataValue& operator[] (const T& key);
+
+        template <typename T>
+        bool contains (const T& key);
     };
     class DataArray {
     private:
@@ -37,8 +49,17 @@ namespace util {
         meta::type_list_unroll<std::variant, data_types> obj{};
     public:
         DataValue() {
+            static_assert(std::is_same_v<DataObject, meta::get_nth_typelist<4, data_types>>);
             obj = std::monostate{};
         }
+
+        DataValue (DataValue& other) = default;
+        DataValue (DataValue const& other) = default; // Both are necessary because c++ is dumb
+
+        DataValue& operator= (DataValue const& other) = default;
+        DataValue& operator= (DataValue&& other) = default;
+
+        DataValue (DataValue&& other) = default;
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         explicit DataValue (T& val) {
@@ -58,7 +79,7 @@ namespace util {
             if (p) {
                 val = *p;
             }
-            return p == nullptr;
+            return p != nullptr;
         }
 
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
@@ -94,6 +115,15 @@ namespace util {
         }
     };
 
+    template<typename T>
+    DataValue& DataObject::operator[] (const T& key) {
+        return values[key];
+    }
+
+    template <typename T>
+    bool DataObject::contains (const T& key) {
+        return values.contains(key);
+    }
     void testData ();
 }
 #endif

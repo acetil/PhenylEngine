@@ -118,32 +118,58 @@ namespace meta {
     template <int N, typename L>
     using get_nth_typelist = typename type_list_unroll<get_nth_typelist_impl, L>::template val<N>;
 
+    /*template <typename ...Args>
+    struct pack_len_impl {
+        constexpr int packlen = sizeof...(Args);
+    };*/
+
     template <typename ...Args>
     struct pack_len_impl {
-        int packlen = sizeof...(Args);
+        static constexpr int val = sizeof...(Args);
     };
 
     template <typename ...Args>
-    int pack_len = pack_len_impl<Args...>::packlen;
+    inline constexpr int pack_len = pack_len_impl<Args...>::val;
+
+    //template <typename ...Args>
+    //inline constexpr int tl_len<typename L<Args...>
+    /*template <typename L, typename ...Args>
+    constexpr int tl_len2 () {
+        return pack_len<Args...>;
+    }
+    template <typename L, typename Args = typename L::args>
+    constexpr int tl_len () {
+        return tl_len2<L, Args>();
+    };*/
+
+    //template <typename L, typename ...Args>
+    //inline constexpr int tl_len = pack_len<Args...>
+    //template <typename ...Args>
+    //int pack_len = pack_len_impl<Args...>::packlen;
 
     template <typename L>
-    int typelist_len = type_list_unroll<pack_len_impl, L>::packlen;
+    static constexpr int typelist_len = type_list_unroll<pack_len_impl, L>::val;
+
+    /*template <typename L>
+    constexpr int typelist_len = tl_len<L>();*/
 
     template <int N, typename T, typename L>
     struct is_in_impl;
 
     template <typename T, typename L>
     struct is_in_impl <0, T, L> {
-        bool val = false;
+        using val = typename std::false_type;
     };
 
     template <int N, typename T, typename L>
     struct is_in_impl  {
-        bool val = std::is_same<get_nth_typelist<N - 1, L>, T>::value || is_in_impl<N - 1, T, L>::val;
+        //static_assert(N < 3);
+        //static_assert(!std::is_same<get_nth_typelist<6, L>, double>());
+        using val = typename std::disjunction<std::is_same<get_nth_typelist<N - 1, L>, T>, typename is_in_impl<N - 1, T, L>::val>;
     };
 
     template <typename T, typename L>
-    bool is_in_typelist = is_in_impl<typelist_len<L>, T, L>::val;
+    inline constexpr bool is_in_typelist = typename is_in_impl<typelist_len<L>, T, L>::val();
 
     template <typename T>
     struct make_const_impl {
