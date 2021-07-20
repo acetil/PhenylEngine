@@ -251,6 +251,22 @@ void testDataTypes () {
     assert(t2 == 3.0f);
     assert(t3);
     assert(t4 == "Hello World!");
+
+    DataArray arr;
+
+    assert(arr.empty());
+    assert(arr.size() == 0);
+
+    arr.push_back(4);
+    arr.push_back(4.5f);
+
+    assert(!arr.empty());
+    assert(arr.size() == 2);
+    v = arr[0];
+    f = arr[1];
+
+    assert(v == 4);
+    assert(f == 4.5f);
 }
 
 

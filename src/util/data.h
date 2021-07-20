@@ -38,6 +38,56 @@ namespace util {
     private:
         std::vector<DataValue> values;
     public:
+        using iterator = std::vector<DataValue>::iterator;
+        using const_iterator = std::vector<DataValue>::const_iterator;
+        DataArray () = default;
+        template <typename T>
+        DataArray (std::vector<T>& _values);
+        DataArray (std::vector<DataValue>& _values);
+        DataArray (std::vector<DataValue>&& _values);
+
+        std::size_t size ();
+
+        DataValue& operator[] (std::size_t index);
+
+        bool empty ();
+
+        iterator begin ();
+        iterator end ();
+
+        const_iterator cbegin ();
+
+        const_iterator cend ();
+
+        void clear ();
+
+        template <typename T>
+        iterator insert (const_iterator pos, const T& val);
+
+        template <typename T>
+        iterator insert (const_iterator pos, T&& val);
+
+        template <typename T, typename ...Args>
+        iterator emplace (const_iterator pos, Args... args);
+
+        iterator erase (const_iterator pos);
+
+        template <typename ...Args>
+        iterator emplace (const_iterator pos, Args... args);
+
+        template <typename T>
+        void push_back (const T& val);
+
+        template <typename T>
+        void push_back (T&& val);
+
+        template <typename T, typename ...Args>
+        iterator emplace_back (Args... args);
+        template <typename ...Args>
+        iterator emplace_back (Args... args);
+
+        void pop_back ();
+
 
     };
 
@@ -124,6 +174,55 @@ namespace util {
     bool DataObject::contains (const T& key) {
         return values.contains(key);
     }
+
+    template <typename T>
+    DataArray::DataArray (std::vector<T>& _values) {
+        for (auto i : _values) {
+            values.emplace_back(i);
+        }
+    }
+
+    template <typename T>
+    DataArray::iterator DataArray::insert (const_iterator pos, const T& val) {
+        return values.insert(pos, val);
+    }
+
+    template <typename T>
+    DataArray::iterator DataArray::insert (const_iterator pos, T&& val) {
+        return values.insert(pos, val);
+    }
+
+    template <typename T, typename ...Args>
+    DataArray::iterator DataArray::emplace (const_iterator pos, Args... args) {
+        return values.emplace(T(args...));
+    }
+
+    template <typename ...Args>
+    DataArray::iterator DataArray::emplace (const_iterator pos, Args... args) {
+        return values.emplace(args...);
+    }
+
+    template <typename T>
+    void DataArray::push_back (const T& val) {
+        values.push_back(val);
+    }
+
+    template <typename T>
+    void DataArray::push_back (T&& val) {
+        auto v = DataValue(val);
+        values.push_back(std::move(v));
+    }
+
+    template <typename T, typename ...Args>
+    DataArray::iterator DataArray::emplace_back (Args... args) {
+        return values.push_back(T(args...));
+    }
+
+    template <typename ...Args>
+    DataArray::iterator DataArray::emplace_back (Args... args) {
+        return values.push_back(args...);
+    }
+
     void testData ();
 }
 #endif
