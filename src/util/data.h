@@ -2,12 +2,15 @@
 #include <unordered_map>
 #include <vector>
 #include <variant>
+#include <typeinfo>
 
 #include "meta.h"
 
 #include "data_funcs.h"
 
 #include "map.h"
+
+#include "logging/logging.h"
 
 #ifndef UTIL_DATA_H
 #define UTIL_DATA_H
@@ -163,6 +166,19 @@ namespace util {
                  throw std::bad_variant_access();
              }
         }
+
+        template<class T>
+        friend bool operator== (DataValue& v1, const T& v2);
+        template<class T>
+        friend bool operator!= (DataValue& v1, const T& v2);
+        template<class T>
+        friend bool operator< (DataValue& v1, const T& v2);
+        template<class T>
+        friend bool operator> (DataValue& v1, const T& v2);
+        template<class T>
+        friend bool operator<= (DataValue& v1, const T& v2);
+        template<class T>
+        friend bool operator>= (DataValue& v1, const T& v2);
     };
 
     template<typename T>
@@ -224,5 +240,108 @@ namespace util {
     }
 
     void testData ();
+
+    namespace internal {
+        template<template<typename ...> typename Cond, typename F, typename T, bool defaultVal = false>
+        struct OperatorVisitor {
+        private:
+            F func;
+            const T& t;
+        public:
+            OperatorVisitor (F f, const T& _t) : func{f}, t{_t} {}
+
+            template<typename V>
+            auto operator() (
+                    const V& v) -> std::enable_if_t<meta::does_exist<Cond, meta::maybe_boxed<T>, meta::maybe_boxed<V>>, bool> {
+                return func(t, v);
+            }
+
+            template<typename V>
+            auto operator() (
+                    const V& v) -> std::enable_if_t<!meta::does_exist<Cond, meta::maybe_boxed<T>, meta::maybe_boxed<V>>, bool> {
+                return defaultVal;
+            }
+        };
+
+        struct Operations {
+        private:
+            template<typename A, typename B>
+            using eq_cond = decltype(std::declval<A>().operator==(std::declval<B>()));
+            template<typename A, typename B>
+            using neq_cond = decltype(std::declval<A>().operator!=(std::declval<B>()));
+            template<typename A, typename B>
+            using less_cond = decltype(std::declval<A>().operator<(std::declval<B>()));
+            template<typename A, typename B>
+            using more_cond = decltype(std::declval<A>().operator>(std::declval<B>()));
+            template<typename A, typename B>
+            using leq_cond = decltype(std::declval<A>().operator<=(std::declval<B>()));
+            template<typename A, typename B>
+            using geq_cond = decltype(std::declval<A>().operator>=(std::declval<B>()));
+
+            template<template<typename ...> typename Cond, bool defaultVal = false, typename F, typename T>
+            static auto get_visitor (F f, const T& t) {
+                return OperatorVisitor<Cond, F, T, defaultVal>(f, t);
+            }
+
+        public:
+            template<typename T>
+            static auto eq (const T& t) {
+                return get_visitor<eq_cond>([] (const auto& a, const auto& b) { return a == b; }, t);
+            }
+
+            template<typename T>
+            static auto neq (const T& t) {
+                return get_visitor<neq_cond, true>([] (const auto& a, const auto& b) { return a != b; }, t);
+            }
+
+            template<typename T>
+            static auto less (const T& t) {
+                return get_visitor<less_cond>([] (const auto& a, const auto& b) { return a < b; }, t);
+            }
+
+            template<typename T>
+            static auto more (const T& t) {
+                return get_visitor<more_cond>([] (const auto& a, const auto& b) { return a > b; }, t);
+            }
+
+            template<typename T>
+            static auto leq (const T& t) {
+                return get_visitor<leq_cond>([] (const auto& a, const auto& b) { return a <= b; }, t);
+            }
+
+            template<typename T>
+            static auto geq (const T& t) {
+                return get_visitor<geq_cond>([] (const auto& a, const auto& b) { return a >= b; }, t);
+            }
+        };
+    }
+
+    // if op(x, y) is undefined then op(DataVal(x), y) = false, except for
+    // op = !=, where its = true
+    // Non-equality operators are swapped because Operations is from the perspective of v2
+    template <typename T>
+    bool operator== (DataValue& v1, const T& v2) {
+        return std::visit(internal::Operations::eq(v2), v1.obj);
+    }
+    template <typename T>
+    bool operator!= (DataValue& v1, const T& v2) {
+        return std::visit(internal::Operations::neq(v2), v1.obj);
+    }
+    template <typename T>
+    bool operator< (DataValue& v1, const T& v2) {
+        return std::visit(internal::Operations::more(v2), v1.obj);
+    }
+    template <typename T>
+    bool operator> (DataValue& v1, const T& v2) {
+        return std::visit(internal::Operations::less(v2), v1.obj);
+    }
+    template <typename T>
+    bool operator<= (DataValue& v1, const T& v2) {
+        return std::visit(internal::Operations::geq(v2), v1.obj);
+    }
+    template <typename T>
+    bool operator>= (DataValue& v1, const T& v2) {
+        return std::visit(internal::Operations::leq(v2), v1.obj);
+    }
 }
 #endif

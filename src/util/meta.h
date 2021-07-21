@@ -200,5 +200,190 @@ namespace meta {
     template <typename T>
     using remove_const_if_exist = typename remove_const_if_exist_impl<T>::val;
 
+
+
+    template <template <typename ...> typename T, typename ...Args>
+    struct pack_map_impl {
+        using val = type_list_wrapper<T<Args>...>;
+    };
+
+    template <template <typename ...> typename T, typename ...Args>
+    using pack_map = typename pack_map_impl<T, Args...>::val;
+
+    //template <template <typename ...> typename T, typename L>
+
+    template <template <typename ...> typename T, typename L, typename = typename L::args>
+    struct type_list_map_impl;
+
+    template <template <typename ...> typename T, typename L, typename ...Args>
+    struct type_list_map_impl <T, L, type_list<Args...>> {
+        using val = pack_map<T, Args...>;
+    };
+
+
+    template <template <typename ...> typename T, typename L>
+    using type_list_map = typename type_list_map_impl<T, L>::val;
+
+
+    struct does_exist_impl {
+    private:
+        template <typename ...Args>
+        struct inner {
+            // I hate this language so much this is so dumb
+            template<template<typename ...> typename Template>
+            static constexpr char SFINAE (Template<Args...>* t) { return 'a'; };
+
+            template <template <typename ...> typename Template>
+            static constexpr short SFINAE (...) {return 0;};
+        };
+    public:
+        template <template <typename ...> typename Template, typename ...Args>
+        static constexpr bool exists = sizeof(inner<Args...>::template SFINAE<Template>(nullptr)) == sizeof(char);
+    };
+    template <template <typename ...> typename Template, typename ...Args>
+    static constexpr bool does_exist = does_exist_impl::exists<Template, Args...>;
+
+    struct does_func_exist_impl {
+    private:
+        template <typename F, typename ...Args>
+        static constexpr auto SFINAE (char* t) -> std::enable_if_t<std::is_same_v<decltype(std::declval<F>()(std::declval<Args>()...)),
+                decltype(std::declval<F>()(std::declval<Args>()...))>, bool> {return 'a';};
+
+        template <typename F, typename ...Args>
+        static constexpr short SFINAE (...) {return 0;};
+    public:
+        template <typename F, typename ...Args>
+        static constexpr bool exists = sizeof(SFINAE<F, Args...>(nullptr)) == sizeof(char);
+    };
+
+    template <typename F, typename ...Args>
+    static constexpr bool does_func_exist = does_func_exist_impl::exists<F, Args...>;
+
+    template <bool b>
+    struct convert_type;
+
+    template <>
+    struct convert_type<true> : std::true_type {};
+    template <>
+    struct convert_type<false> : std::false_type {};
+
+    template <typename F, typename ...Args>
+    using does_func_exist_type = convert_type<does_func_exist<F, Args...>>;
+
+    template <typename T>
+    struct boxed_type {
+    private:
+        const T& t;
+
+    public:
+        boxed_type (const T& _t) : t{_t} {}
+
+        template <typename A, typename B = decltype(std::declval<A>() + t)>
+        B operator+ (const A& a) const {
+            return t + a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() - t)>
+        B operator- (const A& a) const {
+            return t - a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() * t)>
+        B operator* (const A& a) const {
+            return t * a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() / t)>
+        B operator/ (const A& a) const {
+            return t / a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() % t)>
+        B operator% (const A& a) const {
+            return t % a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() ^ t)>
+        B operator^ (const A& a) const {
+            return t ^ a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() & t)>
+        B operator& (const A& a) const {
+            return t & a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() | t)>
+        B operator| (const A& a) const {
+            return t | a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() < t)>
+        B operator< (const A& a) const {
+            return t < a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() > t)>
+        B operator > (const A& a) const {
+            return t > a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() << t)>
+        B operator << (const A& a) const {
+            return t << a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() >> t)>
+        B operator >> (const A& a) const {
+            return t >> a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() == t)>
+        B operator== (const A& a) const {
+            return t == a;
+        }
+
+        template <typename A, typename B = decltype(std::declval<A>() != t)>
+        B operator!= (const A& a) const {
+            return t != a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() <= t)>
+        B operator<= (const A& a) const {
+            return t <= a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() >= t)>
+        B operator>= (const A& a) const {
+            return t >= a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() && t)>
+        B operator&& (const A& a) const {
+            return t && a;
+        };
+
+        template <typename A, typename B = decltype(std::declval<A>() || t)>
+        B operator|| (const A& a) const {
+            return t || a;
+        };
+    };
+
+    template <typename T, typename = void>
+    struct maybe_boxed_impl;
+
+    template <typename T>
+    struct maybe_boxed_impl <T, std::enable_if_t<std::is_fundamental_v<T>>> {
+        using val = boxed_type<T>;
+    };
+
+    template <typename T>
+    struct maybe_boxed_impl <T, std::enable_if_t<!std::is_fundamental_v<T>>> {
+        using val = T;
+    };
+
+    template <typename T>
+    using maybe_boxed = typename maybe_boxed_impl<T>::val;
+
 }
 #endif

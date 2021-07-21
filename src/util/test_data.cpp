@@ -210,7 +210,7 @@ void testMap () {
 
 void testDataTypes () {
     util::DataValue val;
-    assert(val == std::monostate());
+    //assert(val == std::monostate());
     val = 4;
     int v = val;
     assert (v == 4);
@@ -267,6 +267,26 @@ void testDataTypes () {
 
     assert(v == 4);
     assert(f == 4.5f);
+
+    val = 4;
+
+    //auto eq = Operations::eq(v);
+
+    //assert(eq(4));
+
+    assert(val == 4);
+
+    assert(val > 1);
+
+    assert(val >= 4.0);
+    assert(val >= 3);
+
+    assert(val < 13.7);
+    assert(val <= 4.1);
+    assert(val <= 4);
+
+    assert(val != false);
+
 }
 
 
