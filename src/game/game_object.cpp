@@ -42,7 +42,7 @@ game::GameObject::~GameObject () {
         return nullptr;
     }
 }*/
-int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, std::string opts) {
+int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
     // TODO: requires refactor
     if (entityTypes.count(name) == 0) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with name '{}' which doesn't exist!", name);
@@ -53,11 +53,7 @@ int game::GameObject::createNewEntityInstance (const std::string& name, float x,
         auto viewCore = view::ViewCore(entityComponentManager);
         auto entityView = view::EntityView(viewCore, entityId, eventBus);
         auto gameView = view::GameView(this);
-        if (opts.empty()) {
-            entityView.controller()->initEntity(entityView, gameView);
-        } else {
-            entityView.controller()->initEntity(entityView, gameView, opts);
-        }
+        entityView.controller()->initEntity(entityView, gameView, data);
         eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
                                                         entityComponentManager->getObjectData<AbstractEntity*>(entityId), entityId,
                              entityView, gameView));
@@ -165,7 +161,7 @@ void GameObject::loadMap (Map::SharedPtr map) {
     this->gameMap = std::move(map);
 
     for (auto& i : gameMap->getEntities()) {
-        createNewEntityInstance(i.entityType, i.x, i.y, i.rotation, i.extraOpts);
+        createNewEntityInstance(i.entityType, i.x, i.y, i.rotation, i.data);
     }
 
     eventBus->raiseEvent(event::MapLoadEvent(gameMap));
@@ -185,4 +181,8 @@ void GameObject::updateCamera (graphics::Camera& _camera) {
 
 GameCamera& GameObject::getCamera () {
     return camera;
+}
+
+void GameObject::dumpMap (const std::string& filepath) {
+
 }

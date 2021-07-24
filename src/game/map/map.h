@@ -1,6 +1,7 @@
 #include <string>
 #include "game/tile/tile.h"
 #include "util/smart_help.h"
+#include "util/data.h"
 #ifndef MAP_H
 #define MAP_H
 namespace game {
@@ -9,10 +10,10 @@ namespace game {
         float x = 0.0f;
         float y = 0.0f;
         float rotation = 0.0f;
-        std::string extraOpts;
+        util::DataValue data;
         MapEntity () = default;
-        MapEntity(std::string _type, float _x, float _y, float _rot, std::string _opts) : entityType(std::move(_type)),
-                x(_x), y(_y), rotation(_rot), extraOpts(std::move(_opts)) {};
+        MapEntity(std::string _type, float _x, float _y, float _rot, util::DataValue _data) : entityType(std::move(_type)),
+                x(_x), y(_y), rotation(_rot), data(std::move(_data)) {};
 
 
     };
@@ -48,7 +49,7 @@ namespace game {
         virtual const std::vector<MapEntity>& getEntities () {
             return entities;
         }
-        virtual void writeMapJson (const std::string& path);
+        virtual void writeMapJson (const std::string& path, util::DataValue entities = util::DataValue());
     };
 }
 #endif

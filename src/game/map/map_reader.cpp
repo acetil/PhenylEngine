@@ -241,9 +241,9 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
         if (lineSplit.size() < 4) {
             logging::log(LEVEL_WARNING, R"(Incorrect entity specification in map file "{}": "{}")", path, i);
         } else if (lineSplit.size() == 4) {
-            entities.emplace_back(lineSplit[0], std::stof(lineSplit[1]), std::stof(lineSplit[2]), std::stof(lineSplit[3]), "");
+            //entities.emplace_back(lineSplit[0], std::stof(lineSplit[1]), std::stof(lineSplit[2]), std::stof(lineSplit[3]), "");
         } else {
-            entities.emplace_back(lineSplit[0], std::stof(lineSplit[1]), std::stof(lineSplit[2]), std::stof(lineSplit[3]), lineSplit[4]);
+            //entities.emplace_back(lineSplit[0], std::stof(lineSplit[1]), std::stof(lineSplit[2]), std::stof(lineSplit[3]), lineSplit[4]);
         }
     }
 
@@ -272,8 +272,10 @@ Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameO
         tileIds[tileObj.at("id")] = t ? t : emptyTile;
     }
 
-    int width = mapData["width"];
-    int height = mapData["height"];
+    util::DataObject dims = mapData.at("dimensions");
+
+    int width = dims.at("width");
+    int height = dims.at("height");
     Tile** tiles = new Tile*[width * height]{emptyTile};
     util::DataArray tileArray = mapData.at("tiles");
     for (int i = 0; i < tileArray.size(); i++) {
@@ -284,11 +286,12 @@ Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameO
 
     for (auto& i : mapData.at("entities").get<util::DataArray>()) {
         auto entityObj = i.get<util::DataObject>();
+        util::DataObject pos = entityObj.at("pos");
         if (entityObj.contains("data")) {
-            entities.emplace_back(entityObj.at("type"), entityObj.at("x"), entityObj.at("y"), entityObj.at("rotation"),
+            entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"),
                                   entityObj.at("data"));
         } else {
-            entities.emplace_back(entityObj.at("type"), entityObj.at("x"), entityObj.at("y"), entityObj.at("rotation"), "");
+            entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"), util::DataValue());
         }
     }
 

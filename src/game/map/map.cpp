@@ -56,10 +56,12 @@ void Map::setAtlas (graphics::TextureAtlas _atlas) {
     this->atlas = std::move(_atlas);
 }
 
-void Map::writeMapJson (const std::string& path) {
+void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
     util::DataObject mapData;
-    mapData["width"] = width;
-    mapData["height"] = height;
+    util::DataObject dims;
+    dims["width"] = width;
+    dims["height"] = height;
+    mapData["dimensions"] = std::move(dims);
     int tileIndex = 0;
     std::unordered_map<Tile*, int> tileIdMap;
     util::DataArray tileIds;
@@ -75,14 +77,18 @@ void Map::writeMapJson (const std::string& path) {
         tileArray.push_back((int)tileIdMap[tiles[i]]);
     }
     util::DataArray entityArray;
-    for (auto entity : entities) {
-        util::DataObject entityObj;
-        entityObj["type"] = entity.entityType;
-        entityObj["x"] = entity.x;
-        entityObj["y"] = entity.y;
-        entityObj["rotation"] = entity.rotation;
-        entityObj["data"] = entity.extraOpts;
-        entityArray.push_back(std::move(entityObj));
+    if (entitiesVal.empty()) {
+        for (auto& entity : entities) {
+            util::DataObject entityObj;
+            entityObj["type"] = entity.entityType;
+            util::DataObject pos;
+            pos["x"] = entity.x;
+            pos["y"] = entity.y;
+            entityObj["pos"] = std::move(pos);
+            entityObj["rotation"] = entity.rotation;
+            entityObj["data"] = entity.data;
+            entityArray.push_back(std::move(entityObj));
+        }
     }
     mapData["tile_ids"] = std::move(tileIds);
     mapData["tiles"] = std::move(tileArray);

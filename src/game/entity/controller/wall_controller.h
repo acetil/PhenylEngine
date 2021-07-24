@@ -15,7 +15,7 @@ namespace game {
             texId = atlas.getModelId("test10");
         }
 
-        void initEntity (view::EntityView& entityView, view::GameView&, std::string& opts) override; // TODO: convert to binary format
+        void initEntity (view::EntityView& entityView, view::GameView&, const util::DataValue& data) override; // TODO: convert to binary format
     };
 }
 #endif //WALL_CONTROLLER_H

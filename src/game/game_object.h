@@ -52,7 +52,7 @@ class GameObject : public util::SmartHelper<GameObject> {
         void buildEntityTypes ();
         //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
 
-        int createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, std::string opts = "");
+        int createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue());
         /*AbstractEntity* getEntityInstance (int entityId);
         void deleteEntityInstance (AbstractEntity* entity);*/
 
@@ -77,6 +77,8 @@ class GameObject : public util::SmartHelper<GameObject> {
 
         void reloadMap ();
         void loadMap (Map::SharedPtr map);
+
+        void dumpMap (const std::string& filepath);
 
         void mapReloadRequest (event::ReloadMapEvent& event);
 

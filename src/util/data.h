@@ -146,7 +146,7 @@ namespace util {
             obj = val;
         }*/
 
-        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        template <typename T, std::enable_if_t<meta::is_in_typelist<std::remove_reference_t<T>, data_types>, bool> = true>
         explicit DataValue (T&& val) {
             setObj(std::forward<T&>(val));
         }
@@ -201,6 +201,11 @@ namespace util {
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         T& get () {
+            return std::get<T>(obj);
+        }
+
+        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        T const& get () const {
             return std::get<T>(obj);
         }
 

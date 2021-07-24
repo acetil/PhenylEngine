@@ -5,16 +5,20 @@
 
 using namespace game;
 
-void WallController::initEntity (view::EntityView& entityView, view::GameView& gameView, std::string& opts) {
-    logging::log(LEVEL_DEBUG, "Created wall entity!");
-    glm::vec2 pos = entityView.position();
+void WallController::initEntity (view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
+    if (data.empty()) {
+        return;
+    }
+    auto dataObj = data.get<util::DataObject>();
 
-    auto sizes = util::stringSplit(opts, ",");
-    if (sizes.size() >= 2) {
-        float xSize = std::stof(sizes[0]);
-        float ySize = std::stof(sizes[1]);
+    util::DataObject size = dataObj.at("size");
 
-        entityView.modelScale.scaleBy(xSize, ySize);
-        entityView.hitboxScale.scaleBy(xSize, ySize);
+    entityView.modelScale.scaleBy(size.at("x"), size.at("y"));
+
+    if (dataObj.contains("hitbox_size")) {
+        util::DataObject hitboxSize = dataObj.at("hitbox_size");
+        entityView.hitboxScale.scaleBy(hitboxSize.at("x"), hitboxSize.at("y"));
+    } else {
+        entityView.hitboxScale.scaleBy(size.at("x"), size.at("y"));
     }
 }

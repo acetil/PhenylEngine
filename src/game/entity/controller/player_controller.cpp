@@ -58,8 +58,15 @@ void game::PlayerController::controlEntityPostPhysics (view::EntityView& entityV
         glm::vec2 relPos = rotVec * SHOOT_DIST;
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
+        util::DataObject bData;
+        util::DataObject bVel;
+        bVel["x"] = bulletVel.x;
+        bVel["y"] = bulletVel.y;
+
+        bData["vel"] = bVel;
+
         gameView.createEntityInstance("bullet", entityView.position().x + relPos.x,
-                                                      entityView.position().y + relPos.y, rot(), "b" + util::binToString(bulletVel));
+                                                      entityView.position().y + relPos.y, rot(), util::DataValue(bData));
         /*auto bulletView = entityView.withId(bulletId);
         //bulletView.rotation = rot(); // TODO: look into difference with ()
         bulletView.velocity = rotVec * SHOOT_VEL;*/
