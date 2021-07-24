@@ -15,6 +15,9 @@
 #ifndef UTIL_DATA_H
 #define UTIL_DATA_H
 namespace util {
+    namespace internal {
+        class DataObserver;
+    }
     class DataValue;
 
     class DataObject {
@@ -26,22 +29,30 @@ namespace util {
         explicit DataObject(DataValue& val);
 
         Map<std::string, DataValue>::iterator begin ();
+        Map<std::string, DataValue>::const_iterator begin () const;
         Map<std::string, DataValue>::iterator end ();
+        Map<std::string, DataValue>::const_iterator end () const;
 
-        Map<std::string, DataValue>::const_iterator cbegin ();
-        Map<std::string, DataValue>::const_iterator cend ();
+        Map<std::string, DataValue>::const_iterator cbegin () const;
+        Map<std::string, DataValue>::const_iterator cend () const;
 
         template <typename T>
         DataValue& operator[] (const T& key);
 
         template <typename T>
         bool contains (const T& key);
+
+        std::string convertToJson ();
+        std::string convertToJsonPretty (int indent = 4);
+
+        friend class internal::DataObserver;
     };
     class DataArray {
     private:
         std::vector<DataValue> values;
     public:
         using iterator = std::vector<DataValue>::iterator;
+        using reference = std::vector<DataValue>::reference;
         using const_iterator = std::vector<DataValue>::const_iterator;
         DataArray () = default;
         template <typename T>
@@ -71,12 +82,13 @@ namespace util {
         iterator insert (const_iterator pos, T&& val);
 
         template <typename T, typename ...Args>
-        iterator emplace (const_iterator pos, Args... args);
+        reference emplace (const_iterator pos, Args... args);
 
         iterator erase (const_iterator pos);
 
         template <typename ...Args>
-        iterator emplace (const_iterator pos, Args... args);
+        reference
+        emplace (const_iterator pos, Args... args);
 
         template <typename T>
         void push_back (const T& val);
@@ -85,13 +97,16 @@ namespace util {
         void push_back (T&& val);
 
         template <typename T, typename ...Args>
-        iterator emplace_back (Args... args);
+        reference emplace_back (Args... args);
         template <typename ...Args>
-        iterator emplace_back (Args... args);
+        reference emplace_back (Args... args);
 
         void pop_back ();
 
+        std::string convertToJson ();
+        std::string convertToJsonPretty (int indent = 4);
 
+        friend class internal::DataObserver;
     };
 
     using data_types = meta::type_list_wrapper<int, float, bool, std::string, DataObject, DataArray, std::monostate>;
@@ -100,6 +115,10 @@ namespace util {
     private:
         //std::variant<int, float, std::string, DataObject, DataArray> obj;
         meta::type_list_unroll<std::variant, data_types> obj{};
+        template <typename T>
+        void setObj (T& v) {
+            obj = v;
+        }
     public:
         DataValue() {
             static_assert(std::is_same_v<DataObject, meta::get_nth_typelist<4, data_types>>);
@@ -114,9 +133,16 @@ namespace util {
 
         DataValue (DataValue&& other) = default;
 
-        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
-        explicit DataValue (T& val) {
+
+
+        /*template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        explicit DataValue (T val) {
             obj = val;
+        }*/
+
+        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        explicit DataValue (T&& val) {
+            setObj(std::forward<T&>(val));
         }
 
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
@@ -167,6 +193,9 @@ namespace util {
              }
         }
 
+        std::string convertToJson ();
+        std::string convertToJsonPretty (int indent = 4);
+
         template<class T>
         friend bool operator== (DataValue& v1, const T& v2);
         template<class T>
@@ -179,6 +208,8 @@ namespace util {
         friend bool operator<= (DataValue& v1, const T& v2);
         template<class T>
         friend bool operator>= (DataValue& v1, const T& v2);
+
+        friend class internal::DataObserver;
     };
 
     template<typename T>
@@ -209,12 +240,12 @@ namespace util {
     }
 
     template <typename T, typename ...Args>
-    DataArray::iterator DataArray::emplace (const_iterator pos, Args... args) {
+    DataArray::reference DataArray::emplace (const_iterator pos, Args... args) {
         return values.emplace(T(args...));
     }
 
     template <typename ...Args>
-    DataArray::iterator DataArray::emplace (const_iterator pos, Args... args) {
+    DataArray::reference DataArray::emplace (const_iterator pos, Args... args) {
         return values.emplace(args...);
     }
 
@@ -225,18 +256,18 @@ namespace util {
 
     template <typename T>
     void DataArray::push_back (T&& val) {
-        auto v = DataValue(val);
+        auto v = DataValue(std::forward<T&&>(val));
         values.push_back(std::move(v));
     }
 
     template <typename T, typename ...Args>
-    DataArray::iterator DataArray::emplace_back (Args... args) {
-        return values.push_back(T(args...));
+    DataArray::reference DataArray::emplace_back (Args... args) {
+        return values.emplace_back(T(args...));
     }
 
     template <typename ...Args>
-    DataArray::iterator DataArray::emplace_back (Args... args) {
-        return values.push_back(args...);
+    DataArray::reference DataArray::emplace_back (Args... args) {
+        return values.emplace_back(args...);
     }
 
     void testData ();
@@ -343,5 +374,9 @@ namespace util {
     bool operator>= (DataValue& v1, const T& v2) {
         return std::visit(internal::Operations::leq(v2), v1.obj);
     }
+
+    DataValue parseJson (const std::string& json);
+    DataValue parseFromFile (const std::string& filepath);
+
 }
 #endif

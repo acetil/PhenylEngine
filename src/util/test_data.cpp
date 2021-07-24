@@ -289,8 +289,46 @@ void testDataTypes () {
 
 }
 
+void testJson () {
+    auto jsonStr = R"({"hello" : 1, "world" : true, "test" : {"meme" : "lol", "testing" : 1.1}, "test2" : [4, 3, 2, 1]})";
+    auto val = util::parseJson(jsonStr);
+
+    DataObject obj = val;
+
+    assert(obj.contains("hello"));
+    assert(obj.contains("world"));
+    assert(obj.contains("test"));
+    assert(obj.contains("test2"));
+
+    assert(obj["hello"] == 1);
+    assert(obj["world"] == true);
+
+    DataObject obj2 = obj["test"];
+
+    assert(obj2.contains("meme"));
+    assert(obj2.contains("testing"));
+
+    //logging::log(LEVEL_DEBUG, "meme = {}", (std::string)obj2["meme"]);
+    std::string x = obj2["meme"];
+    assert(x == std::string("lol"));
+    assert(obj2["testing"] == 1.1f);
+
+    DataArray arr = obj["test2"];
+    assert(arr.size() == 4);
+
+    for (int i = 0; i < arr.size(); i++) {
+        assert(arr[i] == arr.size() - i);
+    }
+
+    logging::log(LEVEL_DEBUG, "Json: {}", val.convertToJson());
+    logging::log(LEVEL_DEBUG, "Json: \n{}", val.convertToJsonPretty());
+    assert(val.convertToJson() == parseJson(val.convertToJson()).convertToJson());
+
+}
+
 
 void util::testData () {
     testMap();
     testDataTypes();
+    testJson();
 }

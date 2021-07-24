@@ -234,7 +234,11 @@ namespace util {
             return iterator(*this, 0);
         }
 
-        const_iterator cbegin() {
+        const_iterator begin () const {
+            return cbegin();
+        }
+
+        const_iterator cbegin() const {
             return const_iterator(*this, 0);
         }
 
@@ -242,7 +246,11 @@ namespace util {
             return iterator(*this, maxSize);
         }
 
-        const_iterator cend () {
+        const_iterator end () const {
+            return cend();
+        }
+
+        const_iterator cend () const {
             return const_iterator (*this, maxSize);
         }
 
@@ -262,7 +270,11 @@ namespace util {
         ValueWrapper& operator=(T t) {
             *ptr = t;
         }
-        operator T () {
+        operator T& () {
+            return *ptr;
+        }
+
+        operator const T& () const {
             return *ptr;
         }
 
@@ -281,6 +293,13 @@ namespace util {
         template <typename I>
         auto operator/=(I i) -> decltype(*ptr /= i) {
             return *ptr /= i;
+        }
+        T& operator() () {
+            return *ptr;
+        }
+
+        T const& operator() () const {
+            return *ptr;
         }
     };
 
@@ -321,7 +340,7 @@ namespace util {
         using iterator_category = std::forward_iterator_tag;
 
         // Iterator
-        MapIterator (MapIterator<K, V, Wrapper>& it) : exists(it.exists), data(it.data), maxSize(it.maxSize), index(it.index) {}
+        MapIterator (const MapIterator<K, V, Wrapper>& it) : exists(it.exists), data(it.data), maxSize(it.maxSize), index(it.index) {}
         MapIterator& operator= (iterator& other) {
             exists = other.exists;
             data = other.data;
@@ -363,7 +382,7 @@ namespace util {
         MapIterator () = default;
 
         template <typename HashFunc>
-        MapIterator(Map<K, V, HashFunc>& map, std::size_t startIndex) : maxSize{map.maxSize}, index{startIndex}, exists(map.exists.get()), data{(V*)map.data.get()} {
+        MapIterator(const Map<K, V, HashFunc>& map, std::size_t startIndex) : maxSize{map.maxSize}, index{startIndex}, exists(map.exists.get()), data{(V*)map.data.get()} {
             nextIndex();
         };
     };
