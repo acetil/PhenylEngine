@@ -1,0 +1,50 @@
+{
+    "width": 4,
+    "height": 4,
+    "tile_ids": [
+        {
+            "id": 0,
+            "tile": "test_tile2"
+        },
+        {
+            "id": 1,
+            "tile": "test_tile1"
+        }
+    ],
+    "tiles": [
+        0, 1, 1, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 1
+    ],
+    "entities": [
+        {
+            "data": "",
+            "rotation": 0.0,
+            "type": "test_entity",
+            "x": 0.0,
+            "y": 0.0
+        },
+        {
+            "data": "0.8,5.0",
+            "rotation": 0.0,
+            "type": "wall_entity",
+            "x": -0.4000000059604645,
+            "y": 0.0
+        },
+        {
+            "data": "0.8,5.0",
+            "rotation": 0.0,
+            "type": "wall_entity",
+            "x": 0.4000000059604645,
+            "y": 0.0
+        },
+        {
+            "data": "4.8,0.8",
+            "rotation": 0.0,
+            "type": "wall_entity",
+            "x": 0.0,
+            "y": -0.5
+        }
+    ]
+}

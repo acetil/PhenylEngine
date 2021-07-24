@@ -1,10 +1,12 @@
 #include <string.h>
 #include <string>
 #include <utility>
+#include <fstream>
 
 #include "map.h"
 #include "game/tile/tile.h"
 #include "logging/logging.h"
+#include "util/data.h"
 
 #define VERTICES_PER_TILE 6
 #define VCOMP_PER_VERTEX 2
@@ -52,6 +54,44 @@ std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> Map::ge
 
 void Map::setAtlas (graphics::TextureAtlas _atlas) {
     this->atlas = std::move(_atlas);
+}
+
+void Map::writeMapJson (const std::string& path) {
+    util::DataObject mapData;
+    mapData["width"] = width;
+    mapData["height"] = height;
+    int tileIndex = 0;
+    std::unordered_map<Tile*, int> tileIdMap;
+    util::DataArray tileIds;
+    util::DataArray tileArray;
+    for (auto i = 0; i < width * height; i++) {
+        if (!tileIdMap.contains(tiles[i])) {
+            util::DataObject tileObj;
+            tileObj["id"] = tileIndex;
+            tileObj["tile"] = tiles[i]->getName();
+            tileIds.push_back(util::DataObject(tileObj));
+            tileIdMap[tiles[i]] = tileIndex++;
+        }
+        tileArray.push_back((int)tileIdMap[tiles[i]]);
+    }
+    util::DataArray entityArray;
+    for (auto entity : entities) {
+        util::DataObject entityObj;
+        entityObj["type"] = entity.entityType;
+        entityObj["x"] = entity.x;
+        entityObj["y"] = entity.y;
+        entityObj["rotation"] = entity.rotation;
+        entityObj["data"] = entity.extraOpts;
+        entityArray.push_back(std::move(entityObj));
+    }
+    mapData["tile_ids"] = std::move(tileIds);
+    mapData["tiles"] = std::move(tileArray);
+    mapData["entities"] = std::move(entityArray);
+
+    std::ofstream file(path);
+    if (file) {
+        file << util::DataValue(std::move(mapData)).convertToJsonPretty();
+    }
 }
 
 /*void game::Map::initGraphicsData (graphics::Graphics* graphics, std::string shader) {

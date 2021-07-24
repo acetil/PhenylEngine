@@ -42,6 +42,12 @@ namespace util {
         template <typename T>
         bool contains (const T& key);
 
+        template <typename T>
+        DataValue& at (const T& key);
+
+        template <typename T>
+        DataValue const& at (const T& key) const;
+
         std::string convertToJson ();
         std::string convertToJsonPretty (int indent = 4);
 
@@ -193,6 +199,23 @@ namespace util {
              }
         }
 
+        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        T& get () {
+            return std::get<T>(obj);
+        }
+
+        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        bool is () const {
+            return std::visit([](const auto& v) {
+                return std::is_same_v<decltype(v), const T&>;
+            }, obj);
+        }
+
+
+        bool empty () const {
+            return std::visit([](const auto& val) {return std::is_same_v<decltype(val), const std::monostate&>;}, obj);
+        }
+
         std::string convertToJson ();
         std::string convertToJsonPretty (int indent = 4);
 
@@ -220,6 +243,16 @@ namespace util {
     template <typename T>
     bool DataObject::contains (const T& key) {
         return values.contains(key);
+    }
+
+    template <typename T>
+    DataValue& DataObject::at (const T& key) {
+        return values.at(key);
+    }
+
+    template <typename T>
+    DataValue const& DataObject::at (const T& key) const {
+        return values.at(key);
     }
 
     template <typename T>

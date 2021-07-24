@@ -48,6 +48,7 @@ namespace game {
         virtual const std::vector<MapEntity>& getEntities () {
             return entities;
         }
+        virtual void writeMapJson (const std::string& path);
     };
 }
 #endif

@@ -28,7 +28,7 @@ namespace util {
             return (std::pair<char, K>*)exists.get();
         }*/
 
-        V* getData () {
+        V* getData () const {
             return (V*)data.get();
         }
 
@@ -60,7 +60,7 @@ namespace util {
             data = std::move(newData);
         }
 
-        std::size_t findPos (const K& key, std::size_t hash) {
+        std::size_t findPos (const K& key, std::size_t hash) const {
             auto i = hash % maxSize;
             std::size_t firstSentinel = 0;
             bool hitSentinel = false;
@@ -131,6 +131,15 @@ namespace util {
             removeElement(key, hashFunc{}(key));
         }
 
+        V& atKey (const K& key) const {
+            auto hash = hashFunc{}(key);
+            auto pos = findPos(key, hash);
+            if (exists[pos].first != 1) {
+                throw std::out_of_range("Key not in map!");
+            }
+            return getData()[pos];
+        }
+
     public:
         using iterator = MapIterator<K, V>;
         using const_iterator = MapIterator<K, V, const ValueWrapper<V>>;
@@ -198,6 +207,16 @@ namespace util {
             //auto pos = getOrNew(key);
             //return getData()[pos];
             return getFromKey(std::forward<const T>(key));
+        }
+
+        template <typename T>
+        V& at (const T& key) {
+            return atKey(std::forward<const T>(key));
+        }
+
+        template <typename T>
+        V const& at (const T& key) const {
+            return atKey(std::forward<const T>(key));
         }
 
         /*V& operator[] (K&& key) {

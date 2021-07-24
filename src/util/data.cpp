@@ -126,8 +126,17 @@ DataValue util::parseJson (const std::string& jsonStr) {
 
 DataValue util::parseFromFile (const std::string& filepath) {
     std::ifstream file(filepath);
-    auto json = nlohmann::json::parse(file);
-    return internalParseJson(json);
+    if (!file) {
+        logging::log(LEVEL_WARNING, "Failed to read file: {}", filepath);
+        return DataValue();
+    }
+    try {
+        auto json = nlohmann::json::parse(file);
+        return internalParseJson(json);
+    } catch (std::exception&) {
+        logging::log(LEVEL_WARNING, "Failed to parse json from file {}", filepath);
+    }
+    return DataValue();
 }
 
 DataValue internalParseJson (nlohmann::json& json) {

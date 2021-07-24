@@ -15,6 +15,8 @@
 
 #include "util/string_help.h"
 
+#include "util/data.h"
+
 #define MAGIC_LEN 4
 #define DIMENSION_SIZE 4
 #define TILE_TYPE_NUM_SIZE 4
@@ -30,13 +32,16 @@
 using namespace game;
 
 Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gameObject);
+Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameObject);
 
 Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
-    logging::log(LEVEL_DEBUG, path.substr(path.size() - 4, std::string::npos));
-    if (path.substr(path.size() - 4, std::string::npos) == ".txt") {
+    //logging::log(LEVEL_DEBUG, path.substr(path.size() - 4, std::string::npos));
+    if (path.size() >= 4 && path.substr(path.size() - 4, std::string::npos) == ".txt") {
         return readMapSimple(path, std::move(gameObject));
+    } else if (path.size() >= 5 && path.substr(path.size() - 5, std::string::npos) == ".json") {
+        return readMapJson(path, std::move(gameObject));
     }
 
     FILE* file = fopen(path.c_str(), "rb");
@@ -246,5 +251,49 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
     map->setTiles(tiles);
     map->setEntities(entities);
 
+    return map;
+}
+
+Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameObject) {
+    util::DataValue mapVal = util::parseFromFile(path);
+    if (mapVal.empty()) {
+        logging::log(LEVEL_ERROR, "Failed to read map file {}", path);
+        return nullptr;
+    }
+
+    util::DataObject mapData = std::move(mapVal);
+
+    util::DataArray tileIdArray = mapData.at("tile_ids");
+    std::unordered_map<int, Tile*> tileIds;
+    auto emptyTile = gameObject->getTile("empty_tile");
+    for (auto& i : tileIdArray) {
+        auto& tileObj = i.get<util::DataObject>();
+        auto t = gameObject->getTile(tileObj.at("tile").get<std::string>());
+        tileIds[tileObj.at("id")] = t ? t : emptyTile;
+    }
+
+    int width = mapData["width"];
+    int height = mapData["height"];
+    Tile** tiles = new Tile*[width * height]{emptyTile};
+    util::DataArray tileArray = mapData.at("tiles");
+    for (int i = 0; i < tileArray.size(); i++) {
+        tiles[i] = tileIds[tileArray[i]];
+    }
+
+    std::vector<MapEntity> entities;
+
+    for (auto& i : mapData.at("entities").get<util::DataArray>()) {
+        auto entityObj = i.get<util::DataObject>();
+        if (entityObj.contains("data")) {
+            entities.emplace_back(entityObj.at("type"), entityObj.at("x"), entityObj.at("y"), entityObj.at("rotation"),
+                                  entityObj.at("data"));
+        } else {
+            entities.emplace_back(entityObj.at("type"), entityObj.at("x"), entityObj.at("y"), entityObj.at("rotation"), "");
+        }
+    }
+
+    Map::SharedPtr map = Map::NewSharedPtr(width, height);
+    map->setTiles(tiles);
+    map->setEntities(entities);
     return map;
 }
