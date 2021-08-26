@@ -113,6 +113,8 @@ EntityType EntityTypeBuilder::build (const std::unordered_map<std::string, std::
 
     type.defaultController = controllerMap.at(controller);
 
+    type.controller = controller;
+
     return type;
 }
 

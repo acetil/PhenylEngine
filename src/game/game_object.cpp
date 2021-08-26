@@ -10,6 +10,7 @@
 #include "component/rotation_update.h"
 #include "game/entity/entity_type_functions.h"
 #include "event/events/map_load.h"
+#include "component/component_serialisation.h"
 
 using namespace game;
 
@@ -184,5 +185,15 @@ GameCamera& GameObject::getCamera () {
 }
 
 void GameObject::dumpMap (const std::string& filepath) {
+    util::DataArray entities;
+    for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
+        auto compData = component::serialise(entityComponentManager, i);
+        entities.push_back(compData);
+    }
+    logging::log(LEVEL_DEBUG, "Num in array: {}", entities.size());
+    gameMap->writeMapJson(filepath, (util::DataValue)entities);
+}
 
+void GameObject::mapDumpRequest (event::DumpMapEvent& event) {
+    dumpMap(event.filepath);
 }

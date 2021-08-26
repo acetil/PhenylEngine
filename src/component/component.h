@@ -59,6 +59,10 @@ namespace component {
         //void initData () {
 
         //}
+        using type_list = meta::type_list_wrapper<Args...>;
+
+        static constexpr const int num_comps = sizeof...(Args);
+
         template <int N = 0, std::enable_if_t<N < sizeof...(Args), int> = 0>
         void initData () {
             using T = typename std::remove_pointer<typename std::remove_reference<decltype(std::get<N>(ptrTuple))>::type>::type;

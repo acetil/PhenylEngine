@@ -290,7 +290,7 @@ void testDataTypes () {
 }
 
 void testJson () {
-    auto jsonStr = R"({"hello" : 1, "world" : true, "test" : {"meme" : "lol", "testing" : 1.1}, "test2" : [4, 3, 2, 1]})";
+    auto jsonStr = R"({"hello" : 1, "world" : true, "test" : {"meme" : "lol", "testing" : 1.1}, "test2" : [4, 3, 2, 1, {}]})";
     auto val = util::parseJson(jsonStr);
 
     DataObject obj = val;
@@ -314,10 +314,10 @@ void testJson () {
     assert(obj2["testing"] == 1.1f);
 
     DataArray arr = obj["test2"];
-    assert(arr.size() == 4);
+    assert(arr.size() == 5);
 
-    for (int i = 0; i < arr.size(); i++) {
-        assert(arr[i] == arr.size() - i);
+    for (int i = 0; i < arr.size() - 1; i++) {
+        assert(arr[i] == arr.size() - i - 1);
     }
 
     logging::log(LEVEL_DEBUG, "Json: {}", val.convertToJson());

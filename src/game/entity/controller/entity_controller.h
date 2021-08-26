@@ -20,6 +20,7 @@ namespace game {
         virtual void setTextureIds (graphics::TextureAtlas& atlas);
         virtual void initEntity (view::EntityView& entityView, view::GameView&) {};
         virtual void initEntity (view::EntityView& entityView, view::GameView&, const util::DataValue& data) {}; // TODO: convert to binary format
+
     };
     void controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId,
                                     int numEntities, int direction, const event::EventBus::SharedPtr& bus);

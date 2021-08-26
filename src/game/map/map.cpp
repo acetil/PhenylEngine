@@ -89,6 +89,8 @@ void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
             entityObj["data"] = entity.data;
             entityArray.push_back(std::move(entityObj));
         }
+    } else {
+        entityArray = entitiesVal.get<util::DataArray>();
     }
     mapData["tile_ids"] = std::move(tileIds);
     mapData["tiles"] = std::move(tileArray);

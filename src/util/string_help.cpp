@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "string_help.h"
 
 using namespace util;
@@ -42,4 +44,17 @@ std::vector<std::string> util::readLines (std::ifstream& file, int maxLines) {
     }
 
     return lines;
+}
+
+std::string util::joinStrings (const std::string& joinStr, const std::vector<std::string>& strs) {
+    std::ostringstream ss;
+    int i = 1;
+    for (auto& s : strs) {
+        ss << s;
+        if (i < strs.size()) {
+            ss << joinStr;
+        }
+        i++;
+    }
+    return std::move(ss.str());
 }

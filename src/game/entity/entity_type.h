@@ -15,23 +15,25 @@ namespace game {
     class EntityController;
     #endif
     struct EntityType {
-        std::shared_ptr<EntityController> defaultController;
+        std::shared_ptr<EntityController> defaultController{};
 
-        glm::vec2 scale;
-        glm::vec2 collisionScale;
+        std::string controller{};
 
-        float defaultConstFriction;
-        float defaultLinFriction;
+        glm::vec2 scale{};
+        glm::vec2 collisionScale{};
 
-        float defaultMass;
+        float defaultConstFriction{};
+        float defaultLinFriction{};
 
-        unsigned int defaultLayers;
-        unsigned int defaultCollisionMask;
-        unsigned int defaultEventLayers;
-        unsigned int defaultResolveLayers;
+        float defaultMass{};
+
+        unsigned int defaultLayers{};
+        unsigned int defaultCollisionMask{};
+        unsigned int defaultEventLayers{};
+        unsigned int defaultResolveLayers{};
 
         //AbstractEntity* (*entityFactory)();
-        std::function<AbstractEntity*(void)> entityFactory;
+        std::function<AbstractEntity*(void)> entityFactory{};
 
         EntityType () = default;
     };

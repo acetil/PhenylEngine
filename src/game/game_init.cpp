@@ -51,6 +51,7 @@ void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphi
     gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
 
     gameObject->getEventBus()->subscribeHandler(&GameObject::mapReloadRequest, gameObject);
+    gameObject->getEventBus()->subscribeHandler(&GameObject::mapDumpRequest, gameObject);
 
     graphics::addDebugEventHandlers(gameObject->getEventBus());
 }

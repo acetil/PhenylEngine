@@ -6,6 +6,7 @@
 #include "logging/logging.h"
 #include "event/events/debug/profiler_change.h"
 #include "event/events/debug/reload_map.h"
+#include "event/events/debug/dump_map.h"
 #include "string_help.h"
 
 using namespace util;
@@ -51,10 +52,16 @@ void util::doDebugConsole (event::EventBus::SharedPtr bus) {
 
     if (command == "profiler") {
         handleProfiler(bus, args);
-    } else if (command == "map" && args.size() == 1 && args[0] == "reload"){
-        bus->raiseEvent(event::ReloadMapEvent());
+    } else if (command == "map"){
+        if (args.size() == 1 && args[0] == "reload") {
+            bus->raiseEvent(event::ReloadMapEvent());
+        } else if (args.size() == 2 && args[0] == "dump") {
+            bus->raiseEvent(event::DumpMapEvent(args[1]));
+        } else {
+            logging::log(LEVEL_WARNING, "Unknown arguments for map command: \"{}\"", util::joinStrings(" ", args));
+        }
     } else {
-        logging::log(LEVEL_ERROR, "Unknown debug command: \"{}\"", command);
+        logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
     }
 
 }

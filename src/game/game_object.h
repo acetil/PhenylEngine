@@ -13,6 +13,7 @@
 #include "util/smart_help.h"
 #include "map/map.h"
 #include "event/events/debug/reload_map.h"
+#include "event/events/debug/dump_map.h"
 #include "game_camera.h"
 
 #ifndef GAME_OBJECT_H
@@ -81,6 +82,7 @@ class GameObject : public util::SmartHelper<GameObject> {
         void dumpMap (const std::string& filepath);
 
         void mapReloadRequest (event::ReloadMapEvent& event);
+        void mapDumpRequest (event::DumpMapEvent& event);
 
         void updateCamera (graphics::Camera& camera);
 

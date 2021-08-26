@@ -10,6 +10,8 @@ namespace util {
     std::vector<std::string> stringSplit (const std::string& str, const std::string& delim = " ", int maxSplits = INT32_MAX);
     std::vector<std::string> readLines (std::ifstream& file, int maxLines = INT32_MAX);
 
+    std::string joinStrings (const std::string& joinStr, const std::vector<std::string>& strs);
+
     // Be very careful about endianness if storing/reading result of this!
     template <typename T>
     std::string binToString (T data) {
