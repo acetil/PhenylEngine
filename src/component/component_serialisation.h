@@ -9,7 +9,7 @@ namespace component {
 
     template <class CompManager, typename T, std::enable_if_t<std::is_base_of_v<SerialisableComponent<T>, T>, int> = 0>
     void serialiseComp (CompManager compManager, util::DataObject& dataObj, int id) {
-        dataObj[T::_getName()] = compManager->template getObjectData<T>(id)._serialise();
+        dataObj[std::string(T::_getName())] = compManager->template getObjectData<T>(id)._serialise();
     }
 
     template <class CompManager, typename T, std::enable_if_t<!std::is_base_of_v<SerialisableComponent<T>, T>, int> = 0>

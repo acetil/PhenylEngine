@@ -123,7 +123,7 @@ namespace util {
             auto pos = getOrNew(key);
             return getData()[pos];
         }
-        bool containsInternal (const K& key) {
+        bool containsInternal (const K& key) const{
             return exists[findPos(key, hashFunc{}(key))].first == 1;
         }
 
@@ -225,7 +225,7 @@ namespace util {
         }*/
 
         template <typename T>
-        bool contains (const T& key) {
+        bool contains (const T& key) const {
             return containsInternal(std::forward<const T>(key));
         }
 

@@ -7,6 +7,7 @@
 #include "event/events/debug/profiler_change.h"
 #include "event/events/debug/reload_map.h"
 #include "event/events/debug/dump_map.h"
+#include "event/events/map_load_request.h"
 #include "string_help.h"
 
 using namespace util;
@@ -57,6 +58,8 @@ void util::doDebugConsole (event::EventBus::SharedPtr bus) {
             bus->raiseEvent(event::ReloadMapEvent());
         } else if (args.size() == 2 && args[0] == "dump") {
             bus->raiseEvent(event::DumpMapEvent(args[1]));
+        } else if (args.size() == 2 && args[0] == "load") {
+          bus->raiseEvent(event::MapLoadRequestEvent(args[1]));
         } else {
             logging::log(LEVEL_WARNING, "Unknown arguments for map command: \"{}\"", util::joinStrings(" ", args));
         }

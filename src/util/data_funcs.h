@@ -3,7 +3,7 @@
 namespace util {
     class DataValue;
     template <typename T>
-    bool fromdata (DataValue& dataVal, T& val);
+    bool fromdata (const DataValue& dataVal, T& val);
     template <typename T>
     DataValue todata (T& val);
 }

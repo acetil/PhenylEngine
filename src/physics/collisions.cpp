@@ -137,3 +137,42 @@ void physics::checkCollisionsEntity (CollisionComponent* comp, int numEntities, 
     }
 }
 
+util::DataValue physics::CollisionComponent::serialise () {
+    util::DataObject obj;
+    util::DataArray collScale;
+    for (int i = 0; i < 2; i++) {
+        collScale.push_back(bbMap[i]);
+    }
+    obj["coll_scale"] = std::move(collScale);
+    obj["mass"] = mass;
+    obj["layers"] = layers;
+    obj["masks"] = masks;
+    obj["resolve_layers"] = resolveLayers;
+    obj["event_layers"] = eventLayer;
+    return (util::DataValue) obj;
+}
+
+void physics::CollisionComponent::deserialise (const util::DataValue& val) {
+    auto& obj = val.get<util::DataObject>();
+    if (obj.contains("coll_scale")) {
+        // TODO
+        auto& arr = obj.at("coll_scale").get<util::DataArray>();
+        bbMap[0] = arr[0].get<glm::vec2>();
+        bbMap[1] = arr[1].get<glm::vec2>();
+    }
+    if (obj.contains("mass")) {
+        mass = obj.at("mass").get<float>();
+    }
+    if (obj.contains("layers")) {
+        layers = obj.at("layers").get<int>();
+    }
+    if (obj.contains("masks")) {
+        masks = obj.at("masks").get<int>();
+    }
+    if (obj.contains("resolve_layers")) {
+        resolveLayers = obj.at("resolve_layers").get<int>();
+    }
+    if (obj.contains("event_layers")) {
+        eventLayer = obj.at("event_layers").get<int>();
+    }
+}

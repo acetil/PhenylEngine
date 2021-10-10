@@ -25,6 +25,10 @@ void EntityController::setTextureIds (graphics::TextureAtlas& atlas) {
     testTexId = atlas.getModelId("test3");
 }
 
+util::DataObject EntityController::getData (view::EntityView& entityView, view::GameView& gameView) {
+    return util::DataObject();
+}
+
 
 void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, const event::EventBus::SharedPtr& bus) {

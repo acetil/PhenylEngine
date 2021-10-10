@@ -21,3 +21,11 @@ void component::rotateEntityBy (int entityId, float deltaTheta, EntityComponentM
     eventBus->raiseEvent(event::EntityRotationEvent(entityId, manager, oldMat, rotMat));
     component->rotation += deltaTheta;
 }
+
+util::DataValue RotationComponent::serialise () const {
+    return (util::DataValue)rotation;
+}
+
+void RotationComponent::deserialise (const util::DataValue& val) {
+    rotation = val.get<float>();
+}

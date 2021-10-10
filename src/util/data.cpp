@@ -23,7 +23,7 @@ namespace util {
                 }, val.obj);
             }
             static void toJsonObj (nlohmann::json& json, const DataObject& obj) {
-                nlohmann::json jsonObj;
+                nlohmann::json jsonObj(nlohmann::json::value_t::object);
                 for (auto& [key, val] : obj) {
                     jsonObj[key] = nlohmann::json(val);
                 }
@@ -85,6 +85,10 @@ std::size_t DataArray::size () {
 }
 
 DataValue& DataArray::operator[] (std::size_t index) {
+    return values[index];
+}
+
+DataValue const& DataArray::operator[] (std::size_t index) const {
     return values[index];
 }
 
@@ -212,3 +216,20 @@ void util::to_json (nlohmann::json& json, const DataArray& val) {
 void util::to_json (nlohmann::json& json, const DataObject& val) {
     internal::DataObserver::toJsonObj(json, val);
 }
+
+/*util::DataValue todata (unsigned int& val) {
+    unsigned int v = val;
+    int v2 = *((int*)&v);
+    util::DataValue d;
+    d = v2;
+    return d;
+}
+
+bool fromdata (const DataValue& val, unsigned int& out) {
+    int v2;
+    if (!val.getValue(v2)) {
+        return false;
+    }
+    out = *((unsigned int*)&v2);
+    return true;
+}*/

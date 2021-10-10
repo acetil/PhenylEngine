@@ -22,3 +22,7 @@ void WallController::initEntity (view::EntityView& entityView, view::GameView& g
         entityView.hitboxScale.scaleBy(size.at("x"), size.at("y"));
     }
 }
+
+util::DataObject WallController::getData (view::EntityView& entityView, view::GameView& gameView) {
+    return EntityController::getData(entityView, gameView);
+}

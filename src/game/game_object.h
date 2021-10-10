@@ -14,6 +14,7 @@
 #include "map/map.h"
 #include "event/events/debug/reload_map.h"
 #include "event/events/debug/dump_map.h"
+#include "event/events/map_load_request.h"
 #include "game_camera.h"
 
 #ifndef GAME_OBJECT_H
@@ -23,7 +24,7 @@ namespace view {
 };
 
 namespace game {
-class GameObject : public util::SmartHelper<GameObject> {
+class GameObject : public util::SmartHelper<GameObject>, public std::enable_shared_from_this<GameObject> {
         private:
         std::map<std::string, AbstractEntity*> entityRegistry;
         std::unordered_map<std::string, EntityType> entityTypes;
@@ -83,6 +84,7 @@ class GameObject : public util::SmartHelper<GameObject> {
 
         void mapReloadRequest (event::ReloadMapEvent& event);
         void mapDumpRequest (event::DumpMapEvent& event);
+        void mapLoadRequest (event::MapLoadRequestEvent& event);
 
         void updateCamera (graphics::Camera& camera);
 

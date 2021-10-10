@@ -52,6 +52,7 @@ void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphi
 
     gameObject->getEventBus()->subscribeHandler(&GameObject::mapReloadRequest, gameObject);
     gameObject->getEventBus()->subscribeHandler(&GameObject::mapDumpRequest, gameObject);
+    gameObject->getEventBus()->subscribeHandler(&GameObject::mapLoadRequest, gameObject);
 
     graphics::addDebugEventHandlers(gameObject->getEventBus());
 }

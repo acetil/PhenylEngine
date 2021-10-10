@@ -11,6 +11,7 @@
 #include "game/entity/entity_type_functions.h"
 #include "event/events/map_load.h"
 #include "component/component_serialisation.h"
+#include "map/map_reader.h"
 
 using namespace game;
 
@@ -186,8 +187,12 @@ GameCamera& GameObject::getCamera () {
 
 void GameObject::dumpMap (const std::string& filepath) {
     util::DataArray entities;
+    auto gameView = view::GameView(this);
     for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
         auto compData = component::serialise(entityComponentManager, i);
+        auto entityView = view::EntityView(view::ViewCore(entityComponentManager), i, eventBus);
+        compData.get<util::DataObject>()["data"] =
+                entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(i)->getData(entityView, gameView);
         entities.push_back(compData);
     }
     logging::log(LEVEL_DEBUG, "Num in array: {}", entities.size());
@@ -196,4 +201,8 @@ void GameObject::dumpMap (const std::string& filepath) {
 
 void GameObject::mapDumpRequest (event::DumpMapEvent& event) {
     dumpMap(event.filepath);
+}
+
+void GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
+    loadMap(readMap(event.filepath, shared_from_this()));
 }

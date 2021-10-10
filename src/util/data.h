@@ -40,7 +40,7 @@ namespace util {
         DataValue& operator[] (const T& key);
 
         template <typename T>
-        bool contains (const T& key);
+        bool contains (const T& key) const;
 
         template <typename T>
         DataValue& at (const T& key);
@@ -69,6 +69,8 @@ namespace util {
         std::size_t size ();
 
         DataValue& operator[] (std::size_t index);
+
+        DataValue const& operator[] (std::size_t index) const;
 
         bool empty ();
 
@@ -146,12 +148,12 @@ namespace util {
             obj = val;
         }*/
 
-        template <typename T, std::enable_if_t<meta::is_in_typelist<std::remove_reference_t<T>, data_types>, bool> = true>
+        template <typename T, std::enable_if_t<meta::is_in_typelist<std::remove_cvref_t<T>, data_types>, bool> = true>
         explicit DataValue (T&& val) {
             setObj(std::forward<T&>(val));
         }
 
-        template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
+        template <typename T, std::enable_if_t<!meta::is_in_typelist<std::remove_const_t<T>, data_types>, bool> = true>
         explicit DataValue (T& val) {
             obj = std::move(todata(val).obj);
         }
@@ -159,7 +161,7 @@ namespace util {
         //template <typename T>
         //bool getValue (T& val);
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
-        bool getValue  (T& val) {
+        bool getValue  (T& val) const {
             auto p = std::get_if<T>(&obj);
             if (p) {
                 val = *p;
@@ -184,6 +186,11 @@ namespace util {
             return *this;
         }
 
+        DataValue& operator= (unsigned int val) {
+            obj = *((int*)&val);
+            return *this;
+        }
+
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         operator T() {
             return std::get<T>(obj);
@@ -199,6 +206,15 @@ namespace util {
              }
         }
 
+        operator unsigned int () {
+            int val;
+            if (fromdata(*this, val)) {
+                return *((unsigned int*)&val);
+            } else {
+                throw std::bad_variant_access();
+            }
+        }
+
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         T& get () {
             return std::get<T>(obj);
@@ -207,6 +223,20 @@ namespace util {
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         T const& get () const {
             return std::get<T>(obj);
+        }
+
+        unsigned int get () const {
+            return *((unsigned int*)&std::get<int>(obj));
+        }
+
+        template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
+        T get () const {
+            T val;
+            if (fromdata(*this, val)) {
+                return val;
+            } else {
+                throw std::bad_variant_access();
+            }
         }
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
@@ -245,8 +275,9 @@ namespace util {
         return values[key];
     }
 
+
     template <typename T>
-    bool DataObject::contains (const T& key) {
+    bool DataObject::contains (const T& key) const {
         return values.contains(key);
     }
 
@@ -415,6 +446,5 @@ namespace util {
 
     DataValue parseJson (const std::string& json);
     DataValue parseFromFile (const std::string& filepath);
-
 }
 #endif

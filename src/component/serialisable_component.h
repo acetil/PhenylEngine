@@ -1,4 +1,5 @@
 #include <string>
+#include "util/data.h"
 #ifndef SERIALISABLE_COMPONENT_H
 #define SERIALISABLE_COMPONENT_H
 #ifndef DATA_H
@@ -18,7 +19,7 @@ namespace component {
         void _deserialise (const util::DataValue& val) {
             static_cast<T&>(*this).deserialise(val);
         };
-        static const std::string& _getName () {
+        static constexpr std::string_view const& _getName () {
             return T::getName();
         }
         friend T;

@@ -16,6 +16,7 @@ namespace game {
         }
 
         void initEntity (view::EntityView& entityView, view::GameView&, const util::DataValue& data) override; // TODO: convert to binary format
+        util::DataObject getData(view::EntityView &entityView, view::GameView &gameView) override;
     };
 }
 #endif //WALL_CONTROLLER_H
