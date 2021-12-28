@@ -235,8 +235,12 @@ namespace util {
             removeInternal(std::forward<const T>(key));
         }
 
-        std::size_t size () {
+        std::size_t size () const {
             return currentSize;
+        }
+
+        bool empty () const {
+            return currentSize == 0;
         }
 
         ~Map () {

@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 #include <unordered_map>
 #include <vector>
 #include <variant>
@@ -50,6 +51,12 @@ namespace util {
 
         std::string convertToJson ();
         std::string convertToJsonPretty (int indent = 4);
+
+        std::string toString () const;
+
+        bool empty () const {
+            return values.empty();
+        }
 
         friend class internal::DataObserver;
     };
@@ -113,6 +120,8 @@ namespace util {
 
         std::string convertToJson ();
         std::string convertToJsonPretty (int indent = 4);
+
+        std::string toString () const;
 
         friend class internal::DataObserver;
     };
@@ -251,6 +260,23 @@ namespace util {
             return std::visit([](const auto& val) {return std::is_same_v<decltype(val), const std::monostate&>;}, obj);
         }
 
+        std::string toString () const {
+            return std::visit([](const auto& arg) {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, std::monostate>) {
+                    return std::string("empty");
+                } else if constexpr (std::is_same_v<T, DataArray>) {
+                    return ((DataArray&&)arg).toString();
+                } else if constexpr (std::is_same_v<T, DataObject>) {
+                    return ((DataObject&&)arg).toString();
+                } else if constexpr (std::is_same_v<T, std::string>) {
+                    return (std::string)arg;
+                } else {
+                    return std::to_string(arg);
+                }
+            }, obj);
+        }
+
         std::string convertToJson ();
         std::string convertToJsonPretty (int indent = 4);
 
@@ -289,6 +315,23 @@ namespace util {
     template <typename T>
     DataValue const& DataObject::at (const T& key) const {
         return values.at(key);
+    }
+
+    inline std::string DataObject::toString () const {
+        std::stringstream stream;
+        stream << "{";
+        bool first = true;
+        for (auto& [key, val] : values) {
+            if (first) {
+                first = false;
+            } else {
+                stream << ", ";
+            }
+
+            stream << key << " : " << val().toString();
+        }
+        stream << "}";
+        return stream.str();
     }
 
     template <typename T>
@@ -338,6 +381,24 @@ namespace util {
     DataArray::reference DataArray::emplace_back (Args... args) {
         return values.emplace_back(args...);
     }
+
+    inline std::string DataArray::toString () const{
+        std::stringstream stream;
+        stream << "[";
+        bool first = true;
+
+        for (auto& i : values) {
+            if (first) {
+                first = false;
+            } else {
+                stream << ", ";
+            }
+
+            stream << i.toString();
+        }
+        stream << "]";
+        return stream.str();
+    };
 
     void testData ();
 

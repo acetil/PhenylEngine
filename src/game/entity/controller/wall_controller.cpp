@@ -6,7 +6,7 @@
 using namespace game;
 
 void WallController::initEntity (view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
-    if (data.empty()) {
+    if (data.empty() || data.get<util::DataObject>().empty()) {
         return;
     }
     auto dataObj = data.get<util::DataObject>();

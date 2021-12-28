@@ -133,7 +133,7 @@ void Graphics::deleteWindowCallbacks () {
 }
 // TODO: move
 void graphics::addMapRenderLayer (graphics::Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus) {
-    auto layer = std::make_shared<MapRenderLayer>(graphics->getRenderer());
+    auto layer = std::make_shared<MapRenderLayer>(graphics->getRenderer(), graphics->getTextureAtlas("sprite").value());
     graphics->getRenderLayer()->addRenderLayer(layer);
     bus->subscribeHandler(&MapRenderLayer::onMapLoad, layer);
 };

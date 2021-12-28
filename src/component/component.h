@@ -1,3 +1,8 @@
+#ifndef MAX_COMPONENT_ENTITIES
+#define MAX_COMPONENT_ENTITIES 256
+#endif
+#ifndef COMPONENT_H
+#define COMPONENT_H
 #include <unordered_map>
 #include <string>
 #include <string.h>
@@ -18,12 +23,6 @@
 #include "rotation_component.h"
 #include "game/entity/entity_type.h"
 #include "util/smart_help.h"
-
-#ifndef MAX_COMPONENT_ENTITIES
-#define MAX_COMPONENT_ENTITIES 256
-#endif
-#ifndef COMPONENT_H
-#define COMPONENT_H
 #if MAX_COMPONENT_ENTITIES <= 256
 namespace component {
     typedef uint16_t id_type_t;

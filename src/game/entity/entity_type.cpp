@@ -115,6 +115,8 @@ EntityType EntityTypeBuilder::build (const std::unordered_map<std::string, std::
 
     type.controller = controller;
 
+    type.typeName = typeName;
+
     return type;
 }
 

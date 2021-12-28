@@ -41,6 +41,8 @@ class GameObject : public util::SmartHelper<GameObject>, public std::enable_shar
 
         GameCamera camera;
 
+        int deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
+
         public:
         ~GameObject();
 

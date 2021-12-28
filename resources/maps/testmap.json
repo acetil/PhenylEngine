@@ -1,8 +1,290 @@
 {
     "dimensions": {
-        "width": 4,
-        "height": 4
+        "height": 4,
+        "width": 4
     },
+    "entities": [
+        {
+            "absolute_position": {
+                "transform": [
+                    {
+                        "x": -4.371139006309477e-09,
+                        "y": 0.10000000149011612
+                    },
+                    {
+                        "x": -0.10000000149011612,
+                        "y": -4.371139006309477e-09
+                    }
+                ]
+            },
+            "collision_comp": {
+                "coll_scale": [
+                    {
+                        "x": -4.371139006309477e-09,
+                        "y": 0.10000000149011612
+                    },
+                    {
+                        "x": -0.10000000149011612,
+                        "y": -4.371139006309477e-09
+                    }
+                ],
+                "event_layers": 1,
+                "layers": 1,
+                "masks": 3,
+                "mass": 10.0,
+                "resolve_layers": 3
+            },
+            "data": {},
+            "entity_type": {
+                "collision_scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "controller": "test_entity",
+                "default_coll_mask": 3,
+                "default_const_friction": 0.004999999888241291,
+                "default_event_layers": 1,
+                "default_layers": 1,
+                "default_lin_friction": 0.27000001072883606,
+                "default_mass": 10.0,
+                "default_resolve_layers": 3,
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "type_name": "test_entity"
+            },
+            "fixed_model": "test8",
+            "main_comp": {
+                "acc": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "const_friction": 0.004999999888241291,
+                "lin_friction": 0.27000001072883606,
+                "pos": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "vel": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "rotation": -1.5707963705062866,
+            "type": "test_entity"
+        },
+        {
+            "absolute_position": {
+                "transform": [
+                    {
+                        "x": 0.08000000566244125,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.5
+                    }
+                ]
+            },
+            "collision_comp": {
+                "coll_scale": [
+                    {
+                        "x": 0.08000000566244125,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.5
+                    }
+                ],
+                "event_layers": 0,
+                "layers": 2,
+                "masks": 0,
+                "mass": 0.0,
+                "resolve_layers": 0
+            },
+            "data": {},
+            "entity_type": {
+                "collision_scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "controller": "wall_entity",
+                "default_coll_mask": 0,
+                "default_const_friction": 1.0,
+                "default_event_layers": 0,
+                "default_layers": 2,
+                "default_lin_friction": 1.0,
+                "default_mass": 0.0,
+                "default_resolve_layers": 0,
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "type_name": "wall_entity"
+            },
+            "fixed_model": "test10",
+            "main_comp": {
+                "acc": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "const_friction": 1.0,
+                "lin_friction": 1.0,
+                "pos": {
+                    "x": -0.4000000059604645,
+                    "y": 0.0
+                },
+                "vel": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "rotation": 0.0,
+            "type": "wall_entity"
+        },
+        {
+            "absolute_position": {
+                "transform": [
+                    {
+                        "x": 0.08000000566244125,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.5
+                    }
+                ]
+            },
+            "collision_comp": {
+                "coll_scale": [
+                    {
+                        "x": 0.08000000566244125,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.5
+                    }
+                ],
+                "event_layers": 0,
+                "layers": 2,
+                "masks": 0,
+                "mass": 0.0,
+                "resolve_layers": 0
+            },
+            "data": {},
+            "entity_type": {
+                "collision_scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "controller": "wall_entity",
+                "default_coll_mask": 0,
+                "default_const_friction": 1.0,
+                "default_event_layers": 0,
+                "default_layers": 2,
+                "default_lin_friction": 1.0,
+                "default_mass": 0.0,
+                "default_resolve_layers": 0,
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "type_name": "wall_entity"
+            },
+            "fixed_model": "test10",
+            "main_comp": {
+                "acc": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "const_friction": 1.0,
+                "lin_friction": 1.0,
+                "pos": {
+                    "x": 0.4000000059604645,
+                    "y": 0.0
+                },
+                "vel": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "rotation": 0.0,
+            "type": "wall_entity"
+        },
+        {
+            "absolute_position": {
+                "transform": [
+                    {
+                        "x": 0.48000001907348633,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.08000000566244125
+                    }
+                ]
+            },
+            "collision_comp": {
+                "coll_scale": [
+                    {
+                        "x": 0.48000001907348633,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.08000000566244125
+                    }
+                ],
+                "event_layers": 0,
+                "layers": 2,
+                "masks": 0,
+                "mass": 0.0,
+                "resolve_layers": 0
+            },
+            "data": {},
+            "entity_type": {
+                "collision_scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "controller": "wall_entity",
+                "default_coll_mask": 0,
+                "default_const_friction": 1.0,
+                "default_event_layers": 0,
+                "default_layers": 2,
+                "default_lin_friction": 1.0,
+                "default_mass": 0.0,
+                "default_resolve_layers": 0,
+                "scale": {
+                    "x": 0.10000000149011612,
+                    "y": 0.10000000149011612
+                },
+                "type_name": "wall_entity"
+            },
+            "fixed_model": "test10",
+            "main_comp": {
+                "acc": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "const_friction": 1.0,
+                "lin_friction": 1.0,
+                "pos": {
+                    "x": 0.0,
+                    "y": -0.5
+                },
+                "vel": {
+                    "x": 0.0,
+                    "y": 0.0
+                }
+            },
+            "rotation": 0.0,
+            "type": "wall_entity"
+        }
+    ],
     "tile_ids": [
         {
             "id": 0,
@@ -14,62 +296,21 @@
         }
     ],
     "tiles": [
-        0, 1, 1, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 1
-    ],
-    "entities": [
-        {
-            "data": {},
-            "rotation": 0.0,
-            "type": "test_entity",
-            "pos" : {
-                "x": 0.0,
-                "y": 0.0
-            }
-        },
-        {
-            "data" : {
-                "size" : {
-                    "x" : 0.8,
-                    "y" : 5.0
-                }
-            },
-            "rotation": 0.0,
-            "type": "wall_entity",
-            "pos" : {
-                "x": -0.4000000059604645,
-                "y": 0.0
-            }
-        },
-        {
-            "data" : {
-                "size" : {
-                    "x" : 0.8,
-                    "y" : 5.0
-                }
-            },
-            "rotation": 0.0,
-            "type": "wall_entity",
-            "pos" : {
-                "x": 0.4000000059604645,
-                "y": 0.0
-            }
-        },
-        {
-            "data" : {
-                "size" : {
-                    "x" : 4.8,
-                    "y" : 0.8
-                }
-            },
-            "rotation": 0.0,
-            "type": "wall_entity",
-            "pos" : {
-                "x": 0.0,
-                "y": -0.5
-            }
-        }
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
     ]
 }

@@ -29,5 +29,6 @@
 #define MAP_READER_H
 namespace game {
     Map::SharedPtr readMap (const std::string& path, GameObject::SharedPtr gameObject);
+    Map::SharedPtr readMapNew (const std::string& path, GameObject::SharedPtr gameObject);
 }
 #endif

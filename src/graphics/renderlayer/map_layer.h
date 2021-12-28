@@ -16,7 +16,7 @@ namespace graphics {
         ShaderProgram* program;
         TextureAtlas atlas;
     public:
-        explicit MapRenderLayer(Renderer* renderer);
+        explicit MapRenderLayer(Renderer* renderer, TextureAtlas&& atlas);
         std::string getName () override;
 
         int getPriority () override;

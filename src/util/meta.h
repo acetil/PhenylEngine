@@ -385,5 +385,10 @@ namespace meta {
     template <typename T>
     using maybe_boxed = typename maybe_boxed_impl<T>::val;
 
+    template<class... Ts> struct overloaded : Ts... {using Ts::operator()...;
+        overloaded(Ts...) {}
+    };
+    template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
 }
 #endif

@@ -3,10 +3,13 @@
 #include <type_traits>
 #include <memory>
 #include <functional>
+#include <utility>
 
 #include "event/event.h"
 #include "graphics/maths_headers.h"
 #include "entity.h"
+
+#include "component/serialisable_component.h"
 
 #ifndef ENTITY_TYPE_H
 #define ENTITY_TYPE_H
@@ -14,7 +17,10 @@ namespace game {
     #ifndef CONTROLLER_H
     class EntityController;
     #endif
-    struct EntityType {
+    struct EntityType : component::SerialisableComponent<EntityType>{
+    private:
+        static constexpr std::string_view compName = "entity_type";
+    public:
         std::shared_ptr<EntityController> defaultController{};
 
         std::string controller{};
@@ -35,7 +41,44 @@ namespace game {
         //AbstractEntity* (*entityFactory)();
         std::function<AbstractEntity*(void)> entityFactory{};
 
+        std::string typeName;
+
         EntityType () = default;
+        util::DataValue serialise () {
+            util::DataObject obj;
+            obj["controller"] = controller;
+            obj["scale"] = scale;
+            obj["collision_scale"] = collisionScale;
+            obj["default_const_friction"] = defaultConstFriction;
+            obj["default_lin_friction"] = defaultLinFriction;
+            obj["default_mass"] = defaultMass;
+            obj["default_layers"] = defaultLayers;
+            obj["default_coll_mask"] = defaultCollisionMask;
+            obj["default_event_layers"] = defaultEventLayers;
+            obj["default_resolve_layers"] = defaultResolveLayers;
+            obj["type_name"] = typeName;
+            return (util::DataValue)obj;
+        }
+
+        void deserialise (const util::DataValue& val) {
+            auto obj = val.get<util::DataObject>();
+
+            controller = obj.at("controller").get<std::string>();
+            scale = obj.at("scale").get<glm::vec2>();
+            collisionScale = obj.at("collision_scale").get<glm::vec2>();
+            defaultConstFriction = obj.at("default_const_friction").get<float>();
+            defaultLinFriction = obj.at("default_lin_friction").get<float>();
+            defaultMass = obj.at("default_mass").get<float>();
+            defaultLayers = obj.at("default_layers").get<int>();
+            defaultCollisionMask = obj.at("default_coll_mask").get<int>();
+            defaultEventLayers = obj.at("default_event_layers").get<int>();
+            defaultResolveLayers = obj.at("default_resolve_layers").get<int>();
+            typeName = obj.at("type_name").get<std::string>();
+        }
+
+        static constexpr std::string_view const& getName () {
+            return compName;
+        }
     };
 
     class EntityTypeBuilder {
@@ -53,10 +96,11 @@ namespace game {
         //AbstractEntity* (*entityFactory)();
         std::function<AbstractEntity*(void)> entityFactory;
         std::string controller;
+        std::string typeName = "";
     public:
         EntityTypeBuilder () = default;
-        EntityTypeBuilder (std::string _controller, std::function<AbstractEntity*(void)> _entityFactory) : entityFactory(_entityFactory),
-            controller(std::move(_controller)) {};
+        EntityTypeBuilder (const std::string& _typeName, std::string _controller, std::function<AbstractEntity*(void)> _entityFactory) : entityFactory(std::move(_entityFactory)),
+            controller(std::move(_controller)), typeName(_typeName) {};
         EntityTypeBuilder& setScale (float _scale);
         EntityTypeBuilder& setScale (float xScale, float yScale);
         EntityTypeBuilder& setCollisonScale (float _scale); // TODO: work with more complicated hitboxes

@@ -40,7 +40,7 @@ int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
     //Map::SharedPtr map = readMap("resources/maps/testmap.acmp", gameObject);
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     Map::SharedPtr map = readMap("resources/maps/testmap.json", gameObject);
-    map->setAtlas(graphics->getTextureAtlas("sprite").value());
+    //map->setAtlas(graphics->getTextureAtlas("sprite").value());
     gameObject->loadMap(map);
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //map->initGraphicsData(graphics, "default");

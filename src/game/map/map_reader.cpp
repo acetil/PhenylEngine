@@ -41,7 +41,8 @@ Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gam
     if (path.size() >= 4 && path.substr(path.size() - 4, std::string::npos) == ".txt") {
         return readMapSimple(path, std::move(gameObject));
     } else if (path.size() >= 5 && path.substr(path.size() - 5, std::string::npos) == ".json") {
-        return readMapJson(path, std::move(gameObject));
+        //return readMapJson(path, std::move(gameObject));
+        return readMapNew(path, std::move(gameObject));
     }
 
     FILE* file = fopen(path.c_str(), "rb");
@@ -300,3 +301,53 @@ Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameO
     map->setEntities(entities);
     return map;
 }
+
+Map::SharedPtr game::readMapNew (const std::string& path, GameObject::SharedPtr gameObject) {
+    util::DataValue mapVal = util::parseFromFile(path);
+    if (mapVal.empty()) {
+        logging::log(LEVEL_ERROR, "Failed to read map file {}", path);
+        return nullptr;
+    }
+
+    util::DataObject mapData = std::move(mapVal);
+
+    util::DataArray tileIdArray = mapData.at("tile_ids");
+    std::unordered_map<int, Tile*> tileIds;
+    auto emptyTile = gameObject->getTile("empty_tile");
+    for (auto& i : tileIdArray) {
+        auto& tileObj = i.get<util::DataObject>();
+        auto t = gameObject->getTile(tileObj.at("tile").get<std::string>());
+        tileIds[tileObj.at("id")] = t ? t : emptyTile;
+    }
+
+    util::DataObject dims = mapData.at("dimensions");
+
+    int width = dims.at("width");
+    int height = dims.at("height");
+    Tile** tiles = new Tile*[width * height]{emptyTile};
+    util::DataArray tileArray = mapData.at("tiles");
+    for (int i = 0; i < tileArray.size(); i++) {
+        tiles[i] = tileIds[tileArray[i]];
+    }
+
+    std::vector<MapEntity> entities;
+
+    for (auto& i : mapData.at("entities").get<util::DataArray>()) {
+        auto entityObj = i.get<util::DataObject>();
+        util::DataObject pos = entityObj.at("main_comp").get<util::DataObject>().at("pos");
+
+        entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"), (util::DataValue)entityObj);
+        /*if (entityObj.contains("data")) {
+            entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"),
+                                  entityObj.at("data"));
+        } else {
+            entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"), util::DataValue());
+        }*/
+    }
+
+    auto mapPtr = Map::NewSharedPtr(width, height);
+    mapPtr->setEntities(entities);
+    mapPtr->setTiles(tiles);
+    return mapPtr;
+}
+

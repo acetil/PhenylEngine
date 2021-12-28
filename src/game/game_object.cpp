@@ -62,6 +62,23 @@ int game::GameObject::createNewEntityInstance (const std::string& name, float x,
         return entityId;
     }
 }
+
+int game::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
+    int entityId = entityComponentManager->addObject();
+    auto serialisedObj = serialised.get<util::DataObject>();
+    setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
+
+    component::deserialiseComps(entityComponentManager, entityId, serialisedObj);
+
+    auto viewCore = view::ViewCore(entityComponentManager);
+    auto entityView = view::EntityView(viewCore, entityId, eventBus);
+    auto gameView = view::GameView(this);
+    entityView.controller()->initEntity(entityView, gameView, serialisedObj["data"]);
+    eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
+                                                    entityComponentManager->getObjectData<AbstractEntity*>(entityId), entityId,
+                                                    entityView, gameView));
+    return entityId;
+}
 /*AbstractEntity* game::GameObject::getEntityInstance (int entityId) {
     if (entities.count(entityId) > 0) {
         return entities[entityId];
@@ -163,7 +180,8 @@ void GameObject::loadMap (Map::SharedPtr map) {
     this->gameMap = std::move(map);
 
     for (auto& i : gameMap->getEntities()) {
-        createNewEntityInstance(i.entityType, i.x, i.y, i.rotation, i.data);
+        //createNewEntityInstance(i.entityType, i.x, i.y, i.rotation, i.data);
+        deserialiseEntity(i.entityType, i.x, i.y, i.rotation, i.data);
     }
 
     eventBus->raiseEvent(event::MapLoadEvent(gameMap));
@@ -193,7 +211,9 @@ void GameObject::dumpMap (const std::string& filepath) {
         auto entityView = view::EntityView(view::ViewCore(entityComponentManager), i, eventBus);
         compData.get<util::DataObject>()["data"] =
                 entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(i)->getData(entityView, gameView);
+        compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(i).typeName;
         entities.push_back(compData);
+        //compData.get<util::DataObject>()[""]
     }
     logging::log(LEVEL_DEBUG, "Num in array: {}", entities.size());
     gameMap->writeMapJson(filepath, (util::DataValue)entities);

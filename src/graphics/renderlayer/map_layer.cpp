@@ -7,10 +7,11 @@
 using namespace graphics;
 
 
-MapRenderLayer::MapRenderLayer (Renderer* renderer) {
+MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas&& atlas) {
     map = nullptr;
     numTriangles = 0;
     program = renderer->getProgram("default").value();
+    this->atlas = atlas;
 }
 
 std::string MapRenderLayer::getName() {
@@ -102,6 +103,7 @@ void MapRenderLayer::render (Renderer* renderer, FrameBuffer* frameBuf) {
 void MapRenderLayer::attachMap (game::Map::SharedPtr _map) {
     logging::log(LEVEL_DEBUG, "Map attached!");
     this->map = std::move(_map);
+    this->map->setAtlas(atlas);
     active = true;
     needDataBuffer = true;
 }

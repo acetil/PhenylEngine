@@ -287,6 +287,8 @@ void testDataTypes () {
 
     assert(val != false);
 
+    auto s1 = val.toString();
+    assert(s1 == "4");
 }
 
 void testJson () {

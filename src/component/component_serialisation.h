@@ -34,5 +34,31 @@ namespace component {
         serialiseComps<decltype(compManager), Args...>(compManager, dataObj, id);
         return util::DataValue(dataObj);
     }
+
+    template <class CompManager, typename T, std::enable_if_t<std::is_base_of_v<SerialisableComponent<T>, T>, int> = 0>
+    void deserialiseComp (CompManager compManager, int id, const util::DataObject& obj) {
+        compManager->template getObjectData<T>(id)._deserialise(obj.at(std::string(T::_getName())));
+    }
+
+    template <class CompManager, typename T, std::enable_if_t<!std::is_base_of_v<SerialisableComponent<T>, T>, int> = 0>
+    void deserialiseComp (CompManager compManager, int id, const util::DataObject& obj) {
+
+    }
+
+    template <class CompManager, typename T, typename ...Args, std::enable_if_t<1 <= sizeof...(Args), int> = 0>
+    void deserialiseCompsInt (CompManager compManager, int id, const util::DataObject& obj) {
+        deserialiseComp<CompManager, T>(compManager, id, obj);
+        deserialiseCompsInt<CompManager, Args...>(compManager, id, obj);
+    }
+
+    template <class CompManager, typename T>
+    void deserialiseCompsInt (CompManager compManager, int id, const util::DataObject& obj) {
+        deserialiseComp<CompManager, T>(compManager, id, obj);
+    }
+
+    template <typename ...Args>
+    void deserialiseComps (std::shared_ptr<ComponentManagerImpl<Args...>> compManager, int id, const util::DataObject& obj) {
+        deserialiseCompsInt<decltype(compManager), Args...>(compManager, id, obj);
+    }
 }
 #endif
