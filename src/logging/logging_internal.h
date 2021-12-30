@@ -18,5 +18,7 @@ namespace internal {
     void log_internal (int level, const char* location, const char* log);
     void log_internal (int level, const std::string& location, const std::string& log);
     void vlogf_internal(int level, const char* locationl, const char* log, va_list l);
+
+    void init_internal (const std::string& logPath);
 }
 #endif

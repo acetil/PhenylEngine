@@ -15,6 +15,8 @@ int main (int argv, char* argc[]) {
 
     //util::testData();
 
+    logger::initLogger();
+
     internal::log_internal(LEVEL_DEBUG, "MAIN", "Started game!");
     internal::log_internal(LEVEL_DEBUG, "MAIN", util::format("Test format: {} {} {1}", 4, 3.8, "abc").c_str());
     GLFWwindow* window = nullptr;
@@ -31,5 +33,6 @@ int main (int argv, char* argc[]) {
     game::gameloop(graphics);
     internal::log_internal(LEVEL_INFO, "MAIN", "Shutting down!");
     graphics::destroyGraphics(graphics);
+
     return EXIT_SUCCESS;
 }

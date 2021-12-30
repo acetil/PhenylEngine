@@ -76,3 +76,11 @@ void physics::logging::log (int level, const std::string& log) {
 void util::logging::log(int level, const std::string& log) {
     internal::log_internal(level, UTIL_LOCATION, log);
 }
+
+void logger::initLogger (const std::string& logfile) {
+    internal::init_internal(logfile);
+}
+
+void logger::initLogger () {
+    initLogger("debug.log");
+}

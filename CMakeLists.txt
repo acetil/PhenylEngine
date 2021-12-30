@@ -10,7 +10,7 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.h
     ${CMAKE_SOURCE_DIR}/src/*.hpp)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -D C_LOGGING -ggdb -fsanitize=address")
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
