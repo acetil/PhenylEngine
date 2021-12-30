@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(action-game)
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
+cmake_policy(SET CMP0079 NEW)
 enable_language(CXX)
 file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_SOURCE_DIR}/src/*.c
@@ -58,5 +59,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
 
 add_subdirectory(modules/logger)
 add_subdirectory(modules/util)
-target_link_libraries(action-game PRIVATE logger util)
+add_subdirectory(modules/eventbus)
+target_link_libraries(action-game PRIVATE logger util eventbus)
 #target_compile_options(action-game PUBLIC -fsanitize=address)
