@@ -8,7 +8,7 @@
 #include "event/events/debug/reload_map.h"
 #include "event/events/debug/dump_map.h"
 #include "event/events/map_load_request.h"
-#include "string_help.h"
+#include "util/string_help.h"
 
 using namespace util;
 

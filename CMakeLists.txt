@@ -12,12 +12,13 @@ file(GLOB_RECURSE HEADER_FILES
 
 add_compile_options("-D C_LOGGING")
 set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address")
+#set(CMAKE_CXX_STANDARD 20)
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 
 
-add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/graphics/ui/ui_manager.cpp src/graphics/renderlayer/ui_layer.h src/graphics/renderlayer/ui_layer.cpp src/util/profiler.h src/util/profiler.cpp src/component/view/debug_game_view.h src/graphics/ui/debug_ui.h src/graphics/ui/debug_ui.cpp src/util/debug_console.h src/util/debug_console.cpp src/event/events/debug/profiler_change.h src/util/smart_help.h src/util/smooth_queue.h src/util/string_help.h src/util/string_help.cpp src/event/events/map_load.h src/event/events/debug/reload_map.h src/game/entity/controller/wall_controller.h src/game/entity/controller/wall_controller.cpp src/game/entity/basic_entity.h src/game/game_camera.h src/game/game_camera.cpp src/util/data.h src/util/data_funcs.h src/util/data.cpp src/util/map.h src/util/test_data.cpp src/component/serialisable_component.h src/component/component_serialisation.h src/event/events/debug/dump_map.h src/component/main_component.cpp src/graphics/maths_headers.cpp src/event/events/map_load_request.h)
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} src/graphics/ui/ui_manager.cpp src/graphics/renderlayer/ui_layer.h src/graphics/renderlayer/ui_layer.cpp src/component/view/debug_game_view.h src/graphics/ui/debug_ui.h src/graphics/ui/debug_ui.cpp src/util/debug_console.h src/util/debug_console.cpp src/event/events/debug/profiler_change.h src/event/events/map_load.h src/event/events/debug/reload_map.h src/game/entity/controller/wall_controller.h src/game/entity/controller/wall_controller.cpp src/game/entity/basic_entity.h src/game/game_camera.h src/game/game_camera.cpp src/component/serialisable_component.h src/component/component_serialisation.h src/event/events/debug/dump_map.h src/component/main_component.cpp src/graphics/maths_headers.cpp src/event/events/map_load_request.h)
 set (CMAKE_MODULE_PATH $(CMAKE_MODULE_PATH) "${CMAKE_SOURCE_DIR}/cmake/")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 find_package(OpenGL REQUIRED)
@@ -26,12 +27,12 @@ find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(harfbuzz REQUIRED)
-find_package(nlohmann_json 3.2.0 REQUIRED)
+#find_package(nlohmann_json 3.2.0 REQUIRED)
 
 get_target_property(harfbuzz_include_dir harfbuzz::harfbuzz INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(harfbuzz_icu_include_dir harfbuzz::icu INTERFACE_INCLUDE_DIRECTORIES)
 if (WIN32)
-set(LIBS glfw3 opengl32 GLEW::GLEW FreeType harfbuzz nlohmann_json)
+set(LIBS glfw3 opengl32 GLEW::GLEW FreeType harfbuzz)
 elseif (UNIX)
 set(LIBS glfw GL GLEW::GLEW freetype harfbuzz)
 endif(WIN32)
@@ -56,5 +57,6 @@ add_custom_target(CopyResources ALL DEPENDS ${resource_files_dest})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
 
 add_subdirectory(modules/logger)
-target_link_libraries(action-game PRIVATE logger)
+add_subdirectory(modules/util)
+target_link_libraries(action-game PRIVATE logger util)
 #target_compile_options(action-game PUBLIC -fsanitize=address)
