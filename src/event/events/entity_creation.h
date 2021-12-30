@@ -24,13 +24,13 @@ namespace event {
         view::EntityView entityView;
         view::GameView gameView;
         event::EventBus* eventBus = nullptr; // TODO: remove
-        EntityCreationEvent () : gameView(nullptr) {
+        /*EntityCreationEvent () : gameView(nullptr) {
             x = 0;
             y = 0;
             size = 0;
             compManager = nullptr;
             entityId = 0;
-        };
+        };*/
         EntityCreationEvent (float x, float y, float size, component::EntityComponentManager::SharedPtr compManager, game::AbstractEntity* entity, int entityId,
                              view::EntityView _entityView, view::GameView _gameView) : entityView(std::move(_entityView)), gameView(_gameView) {
             this->x = x;

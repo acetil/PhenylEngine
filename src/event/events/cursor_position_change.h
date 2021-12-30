@@ -8,7 +8,7 @@ namespace event {
         inline static const std::string name = "cursor_pos_change";
         glm::vec2 windowPos = {0, 0};
         glm::vec2 screenPos = {0, 0};
-        CursorPosChangeEvent() = default;
+        //CursorPosChangeEvent() = default;
         CursorPosChangeEvent (glm::vec2 _windowPos, glm::vec2 _screenPos) :
             windowPos(_windowPos), screenPos{_screenPos} {};
     };

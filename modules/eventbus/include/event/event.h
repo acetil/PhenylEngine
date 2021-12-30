@@ -11,14 +11,11 @@ namespace event {
 
         static constexpr bool DoDebugLog = _doDebugLog;
 
-        Event () = default;
+        //Event () = default;
 
-        [[nodiscard]]
-        constexpr const std::string& getEventName () const {
-            //const T& underlying = static_cast<const T&>(*this);
-            //return underlying.name;
+        constexpr static const std::string& getEventName () {
             return T::name;
-        };
+        }
 
         /*void debugLog () {
             logging::log("Raised event: \"{}\"", getEventName());

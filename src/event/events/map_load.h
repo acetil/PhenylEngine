@@ -8,7 +8,7 @@ namespace event {
     public:
         inline static const std::string name = "map_load";
         game::Map::SharedPtr map = nullptr;
-        MapLoadEvent () = default;
+        //MapLoadEvent () = default;
         explicit MapLoadEvent (game::Map::SharedPtr _map) : map(std::move(_map)) {};
     };
 }

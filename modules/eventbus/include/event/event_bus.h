@@ -208,8 +208,8 @@ class EventBus : public util::SmartHelper<EventBus>{
         std::unordered_map<std::string, std::vector<std::shared_ptr<EventHandlerBase*>>> handlerMap;
         template <typename T>
         std::shared_ptr<EventHandlerBase*> addHandlerInt (EventHandler<T>* handler, void (*deleter)(EventHandlerBase**)) {
-            T val;
-            std::string type = val.getEventName();
+            //T val;
+            const std::string& type = T::getEventName();
             if (handlerMap.count(type) == 0) {
                 handlerMap[type] = std::vector<std::shared_ptr<EventHandlerBase*>>();
             }
@@ -226,8 +226,8 @@ class EventBus : public util::SmartHelper<EventBus>{
 public:
         template <class T, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
         std::shared_ptr<EventHandlerBase*> subscribeHandler (void eventHandler(T&)) {
-            T val;
-            std::string type = val.getEventName();
+            //T val;
+            const std::string& type = T::getEventName();
             auto* handler = new EventHandler<T>(eventHandler, type);
             //addHandler(handler);
             //EventHandler<T> test(eventHandler, type);
@@ -235,24 +235,24 @@ public:
         };
         template <class T, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
         std::shared_ptr<EventHandlerBase*> subscribeHandler (meta::type_list_tuple<typename T::CallbackArgsList> eventHandler(T&)) {
-            T val;
-            std::string type = val.getEventName();
+            //T val;
+            const std::string& type = T::getEventName();
             auto* handler = new EventHandler<T>(eventHandler, type);
             //addHandler(handler);
             return addHandler(handler);
         };
         template <class T, class A, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
         std::shared_ptr<EventHandlerBase*> subscribeHandler (void (A::*eventHandler)(T&), std::shared_ptr<A> obj) {
-            T val;
-            std::string type = val.getEventName();
+            //T val;
+            const std::string& type = T::getEventName();
             auto handler = new EventHandlerMember<T, A>(eventHandler, type, obj);
             //addHandler(handler);
             return addHandler(handler);
         }
         template <class T, class A, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
         std::shared_ptr<EventHandlerBase*> subscribeHandler (meta::type_list_tuple<typename T::CallbackArgsList>  (A::*eventHandler)(T&), std::shared_ptr<A> obj) {
-            T val;
-            std::string type = val.getEventName();
+            //T val;
+            const std::string& type = T::getEventName();
             auto handler = new EventHandlerMember<T, A>(eventHandler, type, obj);
             //addHandler(handler);
             return addHandler(handler);
@@ -268,9 +268,9 @@ public:
         void raiseEvent (const T& t) {
             // TODO: other forms of Event
             if constexpr (T::DoDebugLog) {
-                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", t.getEventName());
+                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", T::getEventName());
             }
-            std::vector<std::shared_ptr<EventHandlerBase*>>& vec = handlerMap[t.getEventName()];
+            std::vector<std::shared_ptr<EventHandlerBase*>>& vec = handlerMap[T::getEventName()];
             vec.erase(std::remove_if(vec.begin(), vec.end(), [](const std::shared_ptr<EventHandlerBase*>& base){return (*base)->hasExpired<T>();}), vec.end());
             //if (t.getEventType()->immediateEval) {
                 for (const auto& handler : vec) {
@@ -284,9 +284,9 @@ public:
             // TODO: other forms of Event
             static_assert(meta::is_callable_list<T::CallbackArgs>(f), "Invalid callback function!");
             if constexpr (T::DoDebugLog) {
-                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", t.getEventName());
+                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", T::getEventName());
             }
-            std::vector<std::shared_ptr<EventHandlerBase*>>& vec = handlerMap[t.getEventName()];
+            std::vector<std::shared_ptr<EventHandlerBase*>>& vec = handlerMap[T::getEventName()];
             vec.erase(std::remove_if(vec.begin(), vec.end(), [](const std::shared_ptr<EventHandlerBase*>& base){return (*base)->hasExpired<T>();}));
             //if (t.getEventType()->immediateEval) {
             for (const auto& handler : vec) {

@@ -9,7 +9,7 @@ namespace event {
     public:
         inline static const std::string name = "entity_register";
         game::GameObject::SharedPtr gameObject{};
-        EntityRegisterEvent () = default;
+        //EntityRegisterEvent () = default;
         explicit EntityRegisterEvent (game::GameObject::SharedPtr gameObject) {
             this->gameObject = std::move(gameObject);
         }

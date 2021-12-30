@@ -12,10 +12,10 @@ namespace event {
         int newId{};
         std::string objectType;
         inline static const std::string name = T::getObjectType() + " id swap";
-        ObjectIdSwapEvent () {
+        /*ObjectIdSwapEvent () {
             oldId = 0;
             newId = 0;
-        }
+        }*/
         ObjectIdSwapEvent (int oldId, int newId) {
             this->oldId = oldId;
             this->newId = newId;

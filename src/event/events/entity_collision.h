@@ -14,10 +14,10 @@ namespace event {
         inline static const std::string name = "entity_collision";
         component::EntityComponentManager::SharedPtr componentManager;
         EventBus::SharedPtr eventBus; // TODO: find better way
-        view::GameView gameView;
-        EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(), eventBus{}, gameView(view::GameView(nullptr)) {}
+        view::GameView& gameView;
+        //EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(), eventBus{}, gameView(view::GameView(nullptr)) {}
         EntityCollisionEvent (int _entityId, int _otherId, unsigned int _collisionLayers,
-                              component::EntityComponentManager::SharedPtr compManager, EventBus::SharedPtr bus, view::GameView _gameView) : entityId(_entityId),
+                              component::EntityComponentManager::SharedPtr compManager, EventBus::SharedPtr bus, view::GameView& _gameView) : entityId(_entityId),
                                     otherId(_otherId), collisionLayers(_collisionLayers), componentManager(std::move(compManager)), eventBus(std::move(bus)), gameView(_gameView) {};
     };
 }

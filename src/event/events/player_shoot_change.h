@@ -6,7 +6,7 @@ namespace event {
     public:
         inline static const std::string name = "player_shoot_change";
         bool doShoot = false;
-        PlayerShootChangeEvent () = default;
+        //PlayerShootChangeEvent () = default;
         explicit PlayerShootChangeEvent (bool _doShoot) : doShoot(_doShoot) {};
     };
 }
