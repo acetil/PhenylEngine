@@ -10,7 +10,8 @@ file(GLOB_RECURSE HEADER_FILES
 	${CMAKE_SOURCE_DIR}/src/*.h
     ${CMAKE_SOURCE_DIR}/src/*.hpp)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -D C_LOGGING -ggdb -fsanitize=address")
+add_compile_options("-D C_LOGGING")
+set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address")
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 include_directories(${CMAKE_BINARY_DIR}/src)
@@ -52,5 +53,8 @@ foreach(resource_file ${resource_files})
     list(APPEND resource_files_dest "${resource_file}")
 endforeach()
 add_custom_target(CopyResources ALL DEPENDS ${resource_files_dest})
-target_link_libraries(${PROJECT_NAME} ${LIBS})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
+
+add_subdirectory(modules/logger)
+target_link_libraries(action-game PRIVATE logger)
 #target_compile_options(action-game PUBLIC -fsanitize=address)

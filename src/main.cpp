@@ -5,7 +5,7 @@
 
 #include "game/gameloop.h"
 
-#include "logging/logging_internal.h"
+#include "logging/logging.h"
 #include "util/format.h"
 
 //#include "util/data.h"
@@ -17,21 +17,21 @@ int main (int argv, char* argc[]) {
 
     logger::initLogger();
 
-    internal::log_internal(LEVEL_DEBUG, "MAIN", "Started game!");
-    internal::log_internal(LEVEL_DEBUG, "MAIN", util::format("Test format: {} {} {1}", 4, 3.8, "abc").c_str());
+    logger::log(LEVEL_DEBUG, "MAIN", "Started game!");
+    logger::log(LEVEL_DEBUG, "MAIN", util::format("Test format: {} {} {1}", 4, 3.8, "abc").c_str());
     GLFWwindow* window = nullptr;
     if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
-        internal::log_internal(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
+        logger::log(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
     graphics::Graphics::SharedPtr graphics;
     if (graphics::initGraphics(window, graphics) != GRAPHICS_INIT_SUCCESS) {
-        internal::log_internal(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
+        logger::log(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
         return GRAPHICS_INIT_FAILURE;
     }
-    internal::log_internal(LEVEL_INFO, "MAIN", "Successfully initialised graphics");
+    logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");
     game::gameloop(graphics);
-    internal::log_internal(LEVEL_INFO, "MAIN", "Shutting down!");
+    logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
     graphics::destroyGraphics(graphics);
 
     return EXIT_SUCCESS;

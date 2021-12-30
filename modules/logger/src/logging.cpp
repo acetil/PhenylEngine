@@ -1,4 +1,4 @@
-#include "logging.h"
+#include "logging/logging.h"
 #include "logging_internal.h"
 #include "stdarg.h"
 
@@ -83,4 +83,8 @@ void logger::initLogger (const std::string& logfile) {
 
 void logger::initLogger () {
     initLogger("debug.log");
+}
+
+void logger::log (int level, const std::string& category, const std::string& log) {
+    internal::log_internal(level, category, log);
 }

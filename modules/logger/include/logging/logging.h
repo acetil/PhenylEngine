@@ -67,5 +67,7 @@ namespace util::logging {
 namespace logger {
     void initLogger (const std::string& logfile);
     void initLogger ();
+
+    void log (int level, const std::string& category, const std::string& log);
 }
 #endif
