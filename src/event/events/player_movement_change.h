@@ -4,7 +4,7 @@
 namespace event {
     class PlayerMovementChangeEvent : public Event<PlayerMovementChangeEvent, false> {
     public:
-        std::string name = "player_movement_change";
+        inline static const std::string name = "player_movement_change";
         float xForceComp;
         float yForceComp;
         PlayerMovementChangeEvent () {

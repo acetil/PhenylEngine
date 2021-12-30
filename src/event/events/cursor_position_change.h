@@ -5,7 +5,7 @@
 namespace event {
     class CursorPosChangeEvent : public Event<CursorPosChangeEvent, false> {
     public:
-        std::string name = "cursor_pos_change";
+        inline static const std::string name = "cursor_pos_change";
         glm::vec2 windowPos = {0, 0};
         glm::vec2 screenPos = {0, 0};
         CursorPosChangeEvent() = default;

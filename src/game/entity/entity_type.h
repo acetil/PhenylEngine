@@ -5,7 +5,7 @@
 #include <functional>
 #include <utility>
 
-#include "event/event.h"
+#include "event/event_bus.h"
 #include "graphics/maths_headers.h"
 #include "entity.h"
 

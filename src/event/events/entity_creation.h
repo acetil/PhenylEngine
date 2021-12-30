@@ -14,7 +14,7 @@ class AbstractEntity;
 namespace event {
     class EntityCreationEvent : public Event<EntityCreationEvent> {
     public:
-        std::string name = "entity_creation";
+        inline static const std::string name = "entity_creation";
         float x;
         float y;
         float size;

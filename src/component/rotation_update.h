@@ -1,6 +1,6 @@
 #include "rotation_component.h"
 #include "component.h"
-#include "event/event.h"
+#include "event/event_bus.h"
 #ifndef ROTATION_UPDATE_H
 #define ROTATION_UPDATE_H
 namespace component {

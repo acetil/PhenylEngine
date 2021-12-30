@@ -1,6 +1,6 @@
 #include "graphics/graphics.h"
 #include "renderer.h"
-#include "event/event.h"
+#include "event/event_bus.h"
 #ifndef WINDOW_CALLBACKS_H
 #define WINDOW_CALLBACKS_H
 namespace graphics {

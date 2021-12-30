@@ -1,4 +1,4 @@
-add_library(eventbus INTERFACE)
+add_library(eventbus INTERFACE include/event/event.h)
 
 #set_property(TARGET util PROPERTY CXX_STANDARD 20)
 

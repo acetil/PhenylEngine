@@ -17,7 +17,7 @@
 #include <cmath>
 #include <graphics/graphics_new_include.h>
 #include <physics/collision_component.h>
-#include "event/event.h"
+#include "event/event_bus.h"
 #include "main_component.h"
 #include "util/meta.h"
 #include "rotation_component.h"

@@ -4,7 +4,7 @@
 namespace event {
     class DumpMapEvent : public Event<DumpMapEvent> {
     public:
-        const std::string name = "dump_map";
+        inline static const std::string name = "dump_map";
         const std::string& filepath = std::string("");
         DumpMapEvent () = default;
         explicit DumpMapEvent (const std::string& path) : filepath(path) {}

@@ -11,7 +11,7 @@ namespace event {
         int entityId;
         int otherId;
         unsigned int collisionLayers;
-        std::string name = "entity_collision";
+        inline static const std::string name = "entity_collision";
         component::EntityComponentManager::SharedPtr componentManager;
         EventBus::SharedPtr eventBus; // TODO: find better way
         view::GameView gameView;

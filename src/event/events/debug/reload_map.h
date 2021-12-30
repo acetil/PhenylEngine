@@ -4,7 +4,7 @@
 namespace event {
     class ReloadMapEvent : public Event<ReloadMapEvent, true> {
     public:
-        std::string name = "map_reload";
+        inline static const std::string name = "map_reload";
         ReloadMapEvent() = default;
     };
 }

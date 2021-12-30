@@ -6,7 +6,7 @@
 #include "entity/entity.h"
 #include "graphics/textures/texture_atlas.h"
 #include "tile/tile.h"
-#include "event/event.h"
+#include "event/event_bus.h"
 #include "component/component.h"
 #include "component/main_component.h"
 #include "entity/entity_type.h"

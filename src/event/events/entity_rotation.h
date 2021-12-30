@@ -7,7 +7,7 @@
 namespace event {
     class EntityRotationEvent : public Event<EntityRotationEvent, false> {
     public:
-        std::string name = "entity_rotation";
+        inline static const std::string name = "entity_rotation";
         glm::mat2 rotMatrix;
         glm::mat2 prevMatrix;
         int entityId;
