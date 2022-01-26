@@ -12,13 +12,13 @@
 #include <stdint.h>
 #include <memory>
 
-#include "event/events/object_id_swap.h"
+#include "events/object_id_swap.h"
 
 #include <cmath>
-#include <graphics/graphics_new_include.h>
-#include <physics/collision_component.h>
+#include "graphics/graphics_new_include.h"
+#include "physics/collision_component.h"
 #include "event/event_bus.h"
-#include "main_component.h"
+#include "component/main_component.h"
 #include "util/meta.h"
 #include "rotation_component.h"
 #include "game/entity/entity_type.h"

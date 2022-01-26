@@ -1,5 +1,5 @@
-#include "rotation_component.h"
-#include "component.h"
+#include "component/rotation_component.h"
+#include "component/component.h"
 #include "event/event_bus.h"
 #ifndef ROTATION_UPDATE_H
 #define ROTATION_UPDATE_H

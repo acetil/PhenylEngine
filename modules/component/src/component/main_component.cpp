@@ -1,4 +1,4 @@
-#include "main_component.h"
+#include "component/main_component.h"
 #include "util/data.h"
 
 

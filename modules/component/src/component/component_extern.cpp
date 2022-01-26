@@ -1,4 +1,4 @@
-#include "component.h"
+#include "component/component.h"
 
 using namespace component;
 namespace component {

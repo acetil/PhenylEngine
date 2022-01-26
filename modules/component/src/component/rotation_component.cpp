@@ -1,8 +1,8 @@
 #include <math.h>
 #include <limits>
 
-#include "rotation_component.h"
-#include "rotation_update.h"
+#include "component/rotation_component.h"
+#include "component/rotation_update.h"
 #include "event/events/entity_rotation.h"
 
 using namespace component;

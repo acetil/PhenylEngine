@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <optional>
 #include <logging/logging.h>
-#include <component/component.h>
+#include "component/component.h"
 #include <event/events/entity_creation.h>
 #include "textures/texture_atlas.h"
 #include "renderlayer/render_layer.h"

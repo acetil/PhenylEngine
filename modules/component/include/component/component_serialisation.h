@@ -1,6 +1,6 @@
 #include <functional>
 #include "serialisable_component.h"
-#include "component.h"
+#include "component/component.h"
 #include "util/data.h"
 
 #ifndef COMPONENT_SERIALISATION_H
