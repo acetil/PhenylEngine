@@ -14,9 +14,9 @@ namespace graphics {
         bool needDataBuffer = true;
         int numTriangles;
         ShaderProgram* program;
-        TextureAtlas atlas;
+        TextureAtlas& atlas;
     public:
-        explicit MapRenderLayer(Renderer* renderer, TextureAtlas&& atlas);
+        explicit MapRenderLayer(Renderer* renderer, TextureAtlas& atlas);
         std::string getName () override;
 
         int getPriority () override;

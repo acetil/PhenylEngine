@@ -7,11 +7,11 @@
 using namespace graphics;
 
 
-MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas&& atlas) {
+MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas& _atlas) : atlas(_atlas){
     map = nullptr;
     numTriangles = 0;
     program = renderer->getProgram("default").value();
-    this->atlas = atlas;
+    //this->atlas = atlas;
 }
 
 std::string MapRenderLayer::getName() {

@@ -29,7 +29,8 @@ GameObject::SharedPtr game::initGame (const graphics::Graphics::SharedPtr& graph
     logging::log(LEVEL_INFO, "Starting init of entities!");
     gameObject->getEventBus()->raiseEvent(event::EntityRegisterEvent(gameObject));
     logging::log(LEVEL_DEBUG, "Finished entity init!");
-    gameObject->setTextureIds(graphics->getTextureAtlas("sprite").value());
+
+    graphics->getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject->setTextureIds(atlas);});
     graphics::addMapRenderLayer(graphics, gameObject->getEventBus());
     graphics->addEntityLayer(manager); // TODO: unhackify
     graphics->getUIManager().addRenderLayer(graphics, graphics->getRenderer());
@@ -67,9 +68,10 @@ component::EntityComponentManager::SharedPtr getEntityComponentManager (event::E
 }
 
 void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::Graphics::SharedPtr& graphics) {
-    graphics::TextureAtlas atlas = graphics->getTextureAtlas("sprite").value();
-    gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
-            atlas, 0.1, 0.1));
-    gameObject->registerTile(new Tile("test_tile2", atlas.getModelId("test7"),
-                                      atlas, 0.1, 0.1));
+    graphics->getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas) {
+        gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
+                                          atlas, 0.1, 0.1));
+        gameObject->registerTile(new Tile("test_tile2", atlas.getModelId("test7"),
+                                          atlas, 0.1, 0.1));
+    });
 }

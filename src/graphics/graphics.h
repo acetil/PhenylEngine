@@ -18,6 +18,7 @@
 #include "ui/ui_manager.h"
 
 #include "util/smart_help.h"
+#include "util/optional.h"
 
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
@@ -74,7 +75,7 @@ class Graphics : public util::SmartHelper<Graphics> {
         void render ();
         //void addShader (std::string name, ShaderProgram* program);
         void initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images);
-        std::optional<TextureAtlas> getTextureAtlas (const std::string& atlas);
+        util::Optional<TextureAtlas&> getTextureAtlas (const std::string& atlas);
         void sync (int fps);
         double getDeltaTime () const;
         std::shared_ptr<GraphicsRenderLayer> getRenderLayer ();

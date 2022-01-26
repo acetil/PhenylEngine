@@ -124,7 +124,7 @@ Tile* game::GameObject::getTile (const std::string& name) {
         it.second->update(deltaTime);
     }
 }*/
-void game::GameObject::setTextureIds (graphics::TextureAtlas atlas) {
+void game::GameObject::setTextureIds (graphics::TextureAtlas& atlas) {
     for (auto const& it : controllers) {
         it.second->setTextureIds(atlas);
     }

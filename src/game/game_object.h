@@ -11,6 +11,7 @@
 #include "component/main_component.h"
 #include "entity/entity_type.h"
 #include "util/smart_help.h"
+#include "util/optional.h"
 #include "map/map.h"
 #include "event/events/debug/reload_map.h"
 #include "event/events/debug/dump_map.h"
@@ -69,7 +70,7 @@ class GameObject : public util::SmartHelper<GameObject>, public std::enable_shar
         //void updateEntities (float deltaTime);
         void updateEntityPosition ();
         //void updateEntityPositions (float deltaTime);
-        void setTextureIds (graphics::TextureAtlas atlas);
+        void setTextureIds (graphics::TextureAtlas& atlas);
         //void renderEntities (graphics::Graphics* graphics);
         void setEntityComponentManager (component::EntityComponentManager::SharedPtr manager);
 

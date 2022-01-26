@@ -59,12 +59,12 @@ void Graphics::render () {
 
 }
 
-std::optional<TextureAtlas> Graphics::getTextureAtlas (const std::string& atlas) {
+util::Optional<TextureAtlas&> Graphics::getTextureAtlas (const std::string& atlas) {
     if (atlases.find(atlas) == atlases.end()) {
         logging::log(LEVEL_ERROR, "Attempted to get nonexistent atlas \"{}\"", atlas);
-        return std::nullopt;
+        return util::NullOpt;
     }
-    return atlases[atlas];
+    return util::Optional<TextureAtlas&>(atlases[atlas]);
 }
 
 void Graphics::initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images) {
@@ -109,8 +109,10 @@ void Graphics::addEntityLayer (component::EntityComponentManager::SharedPtr comp
 
 void Graphics::onEntityCreation (event::EntityCreationEvent& event) {
     int texId = event.entityView.controller()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
-    TextureAtlas atlas = this->getTextureAtlas("sprite").value();
-    event.entityView.model = atlas.getModel((texId));
+    //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
+    getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
+        event.entityView.model = atlas.getModel((texId));
+    });
     //Texture* tex = atlas.getTexture(texId);
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
 }
@@ -133,7 +135,9 @@ void Graphics::deleteWindowCallbacks () {
 }
 // TODO: move
 void graphics::addMapRenderLayer (graphics::Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus) {
-    auto layer = std::make_shared<MapRenderLayer>(graphics->getRenderer(), graphics->getTextureAtlas("sprite").value());
-    graphics->getRenderLayer()->addRenderLayer(layer);
-    bus->subscribeHandler(&MapRenderLayer::onMapLoad, layer);
+    graphics->getTextureAtlas("sprite").ifPresent([&graphics, &bus](auto& atlas) {
+        auto layer = std::make_shared<MapRenderLayer>(graphics->getRenderer(), atlas);
+        graphics->getRenderLayer()->addRenderLayer(layer);
+        bus->subscribeHandler(&MapRenderLayer::onMapLoad, layer);
+    });
 };
