@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <sstream>
 #include <string_view>
@@ -5,8 +7,7 @@
 #include <type_traits>
 #include <charconv>
 #include <iostream>
-#ifndef FORMAT_H
-#define FORMAT_H
+
 namespace util {
     template <int len, int N = 0, typename T, typename ...Args>
     std::array<std::string, len> getStringsHelp (std::stringstream& sstream, T t, Args... args);
@@ -102,5 +103,3 @@ namespace util {
         return outString;
     }
 }
-
-#endif

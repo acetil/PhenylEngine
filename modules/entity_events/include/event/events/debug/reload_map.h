@@ -1,6 +1,7 @@
+#pragma once
+
 #include "event/event.h"
-#ifndef RELOAD_MAP_H
-#define RELOAD_MAP_H
+
 namespace event {
     class ReloadMapEvent : public Event<ReloadMapEvent, true> {
     public:
@@ -8,4 +9,3 @@ namespace event {
         //ReloadMapEvent() = default;
     };
 }
-#endif

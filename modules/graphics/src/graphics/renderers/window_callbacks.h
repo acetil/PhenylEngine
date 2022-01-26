@@ -1,8 +1,9 @@
+#pragma once
+
 #include "graphics/graphics.h"
 #include "graphics/renderers/renderer.h"
 #include "event/event_bus.h"
-#ifndef WINDOW_CALLBACKS_H
-#define WINDOW_CALLBACKS_H
+
 namespace graphics {
     struct WindowCallbackContext {
         Graphics* graphics;
@@ -13,4 +14,3 @@ namespace graphics {
     void onMousePosChange (WindowCallbackContext* ctx, double windowX, double windowY, int windowSizeX, int windowSizeY);
 
 }
-#endif

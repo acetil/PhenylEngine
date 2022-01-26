@@ -1,7 +1,8 @@
+#pragma once
+
 #include "graphics/maths_headers.h"
 #include "serialisable_component.h"
-#ifndef ROTATION_COMPONENT_H
-#define ROTATION_COMPONENT_H
+
 namespace component {
     struct RotationComponent : SerialisableComponent<RotationComponent> {
     private:
@@ -17,4 +18,3 @@ namespace component {
         friend SerialisableComponent<RotationComponent>;
     };
 }
-#endif

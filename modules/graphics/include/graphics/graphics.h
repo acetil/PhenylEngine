@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdlib.h>
 
 #include <string>
@@ -20,8 +22,6 @@
 #include "util/smart_help.h"
 #include "util/optional.h"
 
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
 namespace graphics {
 
     class GraphicsData {
@@ -100,5 +100,3 @@ class Graphics : public util::SmartHelper<Graphics> {
     };
     void addMapRenderLayer (Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus);
 }
-
-#endif //GRAPHICS_NEW_H

@@ -1,10 +1,10 @@
+#pragma once
+
 #include <functional>
 #include "serialisable_component.h"
 #include "component/component.h"
 #include "util/data.h"
 
-#ifndef COMPONENT_SERIALISATION_H
-#define COMPONENT_SERIALISATION_H
 namespace component {
 
     template <class CompManager, typename T, std::enable_if_t<std::is_base_of_v<SerialisableComponent<T>, T>, int> = 0>
@@ -61,4 +61,3 @@ namespace component {
         deserialiseCompsInt<decltype(compManager), Args...>(compManager, id, obj);
     }
 }
-#endif

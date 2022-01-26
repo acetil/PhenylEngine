@@ -1,7 +1,7 @@
+#pragma once
+
 #include <string>
 #include "stdarg.h"
-#ifndef LOGGING_INTERNAL_H
-#define LOGGING_INTERNAL_H
 
 #define LEVEL_INFO 0
 #define LEVEL_WARNING 1
@@ -21,4 +21,3 @@ namespace internal {
 
     void init_internal (const std::string& logPath);
 }
-#endif

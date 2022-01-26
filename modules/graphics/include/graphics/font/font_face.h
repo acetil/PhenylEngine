@@ -1,11 +1,12 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <utility>
 #include "harfbuzz_typedefs.h"
 #include "glyph_image.h"
 #include "graphics/buffer.h"
-#ifndef FONT_FACE_H
-#define FONT_FACE_H
+
 namespace graphics {
     struct CharOffsets {
         int advance;
@@ -41,4 +42,3 @@ namespace graphics {
         CharOffsets renderText (int c, int prev);
     };
 }
-#endif

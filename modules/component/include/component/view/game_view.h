@@ -1,7 +1,7 @@
+#pragma once
 #include "engine/game_object.h"
 #include "util/data.h"
-#ifndef GAME_VIEW_H
-#define GAME_VIEW_H
+
 namespace view {
     class GameView {
     private:
@@ -20,4 +20,4 @@ namespace view {
         }
     };
 }
-#endif //GAME_VIEW_H
+

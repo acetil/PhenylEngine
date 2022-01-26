@@ -1,6 +1,7 @@
+#pragma once
+
 #include "engine/entity/controller/entity_controller.h"
-#ifndef BULLET_CONTROLLER_H
-#define BULLET_CONTROLLER_H
+
 namespace game {
     class BulletController : public EntityController {
     private:
@@ -12,4 +13,3 @@ namespace game {
         void initEntity (view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) override;
     };
 }
-#endif //BULLET_CONTROLLER_H

@@ -1,11 +1,11 @@
+#pragma once
+
 #include <fstream>
 #include <string>
 #include <string_view>
 #include <vector>
 #include <cstring>
 
-#ifndef STRING_HELP_H
-#define STRING_HELP_H
 namespace util {
     std::vector<std::string> stringSplit (const std::string& str, const std::string& delim = " ", int maxSplits = INT32_MAX);
     std::vector<std::string> readLines (std::ifstream& file, int maxLines = INT32_MAX);
@@ -32,4 +32,3 @@ namespace util {
         return str.substr(sizeof(T));
     };
 }
-#endif //STRING_HELP_H

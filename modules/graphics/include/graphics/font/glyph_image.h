@@ -1,6 +1,7 @@
+#pragma once
+
 #include <utility>
-#ifndef GLYPH_IMAGE_H
-#define GLYPH_IMAGE_H
+
 namespace graphics {
     class GlyphImage {
     public:
@@ -25,4 +26,3 @@ namespace graphics {
         }
     };
 }
-#endif //GLYPH_TEXTURE_H

@@ -1,7 +1,8 @@
+#pragma once
+
 #include "graphics/maths_headers.h"
 #include "component/serialisable_component.h"
-#ifndef COLLISION_COMPONENT_H
-#define COLLISION_COMPONENT_H
+
 namespace physics {
     struct CollisionComponent : public component::SerialisableComponent<CollisionComponent> {
     private:
@@ -23,4 +24,3 @@ namespace physics {
         friend component::SerialisableComponent<CollisionComponent>;
     };
 }
-#endif //COLLISION_COMPONENT_H

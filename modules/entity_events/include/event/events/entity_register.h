@@ -1,9 +1,10 @@
+#pragma once
+
 #include <utility>
 
 #include "event/event.h"
 #include "engine/game_object.h"
-#ifndef ENTITY_REGISTER_H
-#define ENTITY_REGISTER_H
+
 namespace event {
     class EntityRegisterEvent : public Event<EntityRegisterEvent> {
     public:
@@ -15,4 +16,3 @@ namespace event {
         }
     };
 }
-#endif

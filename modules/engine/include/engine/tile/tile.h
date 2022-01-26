@@ -1,7 +1,8 @@
+#pragma once
+
 #include <string>
 #include "graphics/textures/texture_atlas.h"
-#ifndef TILE_H
-#define TILE_H
+
 namespace game {
     class Tile {
         // xSize and ySize relate to normal tile size i.e. a normal tile should be 1.0f, 1.0f
@@ -23,4 +24,3 @@ namespace game {
         virtual int getModelId ();
     };
 }
-#endif

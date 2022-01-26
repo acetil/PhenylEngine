@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -11,9 +13,6 @@
 #include "util/meta.h"
 #include "util/smart_help.h"
 #include "event.h"
-
-#ifndef EVENT_BUS_H
-#define EVENT_BUS_H
 
 // TODO: remove duplication
 
@@ -298,4 +297,3 @@ public:
     };
    
 }
-#endif

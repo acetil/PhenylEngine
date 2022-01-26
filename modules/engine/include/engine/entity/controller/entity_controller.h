@@ -1,3 +1,5 @@
+#pragma once
+
 #include "component/main_component.h"
 #include "component/component.h"
 #include "engine/entity/entity.h"
@@ -6,8 +8,6 @@
 #include "component/view/game_view.h"
 #include "util/data.h"
 
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
 namespace game {
     class EntityController {
     private:
@@ -30,4 +30,3 @@ namespace game {
     void controlOnCollision (event::EntityCollisionEvent& event);
     void addControlEventHandlers (const event::EventBus::SharedPtr& eventBus);
 }
-#endif

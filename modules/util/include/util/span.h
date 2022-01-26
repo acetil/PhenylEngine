@@ -1,8 +1,8 @@
+#pragma once
+
 #include <vector>
 #include <stddef.h>
 
-#ifndef SPAN_H
-#define SPAN_H
 namespace util {
     template<typename T>
     class span {
@@ -30,4 +30,3 @@ namespace util {
     };
 
 }
-#endif //SPAN_H

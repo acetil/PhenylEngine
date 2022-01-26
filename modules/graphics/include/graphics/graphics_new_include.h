@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <string>
 #include <utility>
@@ -14,8 +16,7 @@
 
 //#include "buffer.h"
 //#include "renderer.h"
-#ifndef GRAPHICS_NEW_INCLUDE_H
-#define GRAPHICS_NEW_INCLUDE_H
+
 namespace graphics {
     struct TextureOffset {
         glm::vec2 offset;
@@ -90,4 +91,3 @@ namespace graphics {
 
 
 }
-#endif //GRAPHICS_NEW_INCLUDE_H

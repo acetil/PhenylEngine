@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <unordered_map>
 #include <type_traits>
@@ -11,8 +13,6 @@
 
 #include "component/serialisable_component.h"
 
-#ifndef ENTITY_TYPE_H
-#define ENTITY_TYPE_H
 namespace game {
     #ifndef CONTROLLER_H
     class EntityController;
@@ -127,4 +127,3 @@ namespace game {
     }
 
 }
-#endif

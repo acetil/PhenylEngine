@@ -1,12 +1,13 @@
+#pragma once
+
 #include <string>
 #include "util/data.h"
-#ifndef SERIALISABLE_COMPONENT_H
-#define SERIALISABLE_COMPONENT_H
-#ifndef DATA_H
+
+/*#ifndef DATA_H
 namespace util {
     class DataValue;
 }
-#endif
+#endif*/
 namespace component {
     template <typename T>
     class SerialisableComponent {
@@ -25,5 +26,3 @@ namespace component {
         friend T;
     };
 }
-
-#endif

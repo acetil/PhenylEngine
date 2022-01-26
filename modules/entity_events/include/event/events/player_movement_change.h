@@ -1,6 +1,7 @@
+#pragma once
+
 #include "event/event.h"
-#ifndef PLAYER_MOVEMENT_CHANGE_H
-#define PLAYER_MOVEMENT_CHANGE_H
+
 namespace event {
     class PlayerMovementChangeEvent : public Event<PlayerMovementChangeEvent, false> {
     public:
@@ -17,4 +18,3 @@ namespace event {
         }
     };
 }
-#endif //PLAYER_MOVEMENT_CHANGE_H

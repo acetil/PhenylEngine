@@ -1,3 +1,5 @@
+#pragma once
+
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics.h"
 
@@ -7,8 +9,6 @@
 #include <map>
 #include <utility>
 
-#ifndef KEY_INPUT_H
-#define KEY_INPUT_H
 namespace game {
     class KeyboardFunction {
         public:
@@ -32,4 +32,3 @@ class KeyboardInput : public util::SmartHelper<KeyboardInput> {
 
     void setupKeyboardInputListeners (const KeyboardInput::SharedPtr& input, const event::EventBus::SharedPtr& bus);
 }
-#endif

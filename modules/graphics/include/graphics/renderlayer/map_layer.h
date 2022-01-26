@@ -1,8 +1,9 @@
+#pragma once
+
 #include "engine/map/map.h"
 #include "render_layer.h"
 #include "event/events/map_load.h"
-#ifndef MAP_LAYER_H
-#define MAP_LAYER_H
+
 namespace graphics {
     class MapRenderLayer : public RenderLayer {
     private:
@@ -41,4 +42,3 @@ namespace graphics {
     };
 
 };
-#endif //MAP_LAYER_H

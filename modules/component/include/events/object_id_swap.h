@@ -1,8 +1,9 @@
+#pragma once
+
 #include <unordered_map>
 #include <string>
 #include "event/event.h"
-#ifndef ENTITY_ID_SWAP_H
-#define ENTITY_ID_SWAP_H
+
 namespace event {
     //static std::unordered_map<std::string, std::string> OBJECT_SWAP_EVENT_TYPES;
     template<typename T>
@@ -22,4 +23,3 @@ namespace event {
         };
     };
 }
-#endif

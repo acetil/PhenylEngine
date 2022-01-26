@@ -1,3 +1,5 @@
+#pragma once
+
 #include "image.h"
 #include "graphics/graphics_headers.h"
 #include "graphics/renderers/renderer.h"
@@ -7,8 +9,6 @@
 #include <string>
 #include "graphics/graphics_new_include.h"
 
-#ifndef TEXTURE_ATLAS_H
-#define TEXTURE_ATLAS_H
 namespace graphics {
     class TextureAtlas {
         private:
@@ -38,4 +38,3 @@ namespace graphics {
             //TextureAtlas& operator=(TextureAtlas&) = delete;
     };
 }
-#endif

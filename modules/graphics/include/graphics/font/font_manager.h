@@ -1,9 +1,10 @@
+#pragma once
+
 #include <string>
 #include <unordered_map>
 #include "harfbuzz_typedefs.h"
 #include "font_face.h"
-#ifndef FONT_MANAGER_H
-#define FONT_MANAGER_H
+
 namespace graphics {
     class FontManager {
     private:
@@ -20,4 +21,3 @@ namespace graphics {
         FontFace& getFace (const std::string& face);
     };
 }
-#endif

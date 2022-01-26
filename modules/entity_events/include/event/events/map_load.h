@@ -1,8 +1,8 @@
+#pragma once
+
 #include "event/event.h"
 #include "engine/map/map.h"
 
-#ifndef MAP_LOAD_H
-#define MAP_LOAD_H
 namespace event {
     class MapLoadEvent : public Event<MapLoadEvent, true> {
     public:
@@ -12,4 +12,4 @@ namespace event {
         explicit MapLoadEvent (game::Map::SharedPtr _map) : map(std::move(_map)) {};
     };
 }
-#endif
+

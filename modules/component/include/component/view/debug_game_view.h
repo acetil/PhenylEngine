@@ -1,9 +1,8 @@
+#pragma once
 #include <utility>
 
 #include "engine/game_object.h"
 
-#ifndef DEBUG_GAME_VIEW_H
-#define DEBUG_GAME_VIEW_H
 namespace view {
     class DebugGameView {
     private:
@@ -18,4 +17,3 @@ namespace view {
 
     };
 }
-#endif

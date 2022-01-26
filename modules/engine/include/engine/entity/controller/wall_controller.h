@@ -1,6 +1,7 @@
+#pragma once
+
 #include "engine/entity/controller/entity_controller.h"
-#ifndef WALL_CONTROLLER_H
-#define WALL_CONTROLLER_H
+
 namespace game {
     class WallController : public EntityController {
     private:
@@ -19,4 +20,3 @@ namespace game {
         util::DataObject getData(view::EntityView &entityView, view::GameView &gameView) override;
     };
 }
-#endif //WALL_CONTROLLER_H

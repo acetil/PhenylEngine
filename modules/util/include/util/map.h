@@ -1,10 +1,11 @@
+#pragma once
+
 #include <functional>
 #include <memory>
 #include <utility>
 #include <cstring>
 #include <cstdint>
-#ifndef UTIL_MAP_H
-#define UTIL_MAP_H
+
 namespace util {
     // This specifically exists because c++ standard is stupid
     // Not thread safe
@@ -411,4 +412,3 @@ namespace util {
     };
 
 }
-#endif

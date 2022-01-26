@@ -1,10 +1,11 @@
+#pragma once
+
 #include "component/component.h"
 #include "event/event.h"
 #include "component/view/game_view.h"
 #include <string>
 #include <utility>
-#ifndef ENTITIY_COLLISION_H
-#define ENTITIY_COLLISION_H
+
 namespace event {
     class EntityCollisionEvent : public Event<EntityCollisionEvent> {
     public:
@@ -21,4 +22,3 @@ namespace event {
                                     otherId(_otherId), collisionLayers(_collisionLayers), componentManager(std::move(compManager)), eventBus(std::move(bus)), gameView(_gameView) {};
     };
 }
-#endif

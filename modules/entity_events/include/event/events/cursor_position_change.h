@@ -1,7 +1,8 @@
+#pragma once
+
 #include "event/event.h"
 #include "graphics/maths_headers.h"
-#ifndef CURSOR_POSITION_CHANGE_H
-#define CURSOR_POSITION_CHANGE_H
+
 namespace event {
     class CursorPosChangeEvent : public Event<CursorPosChangeEvent, false> {
     public:
@@ -13,4 +14,3 @@ namespace event {
             windowPos(_windowPos), screenPos{_screenPos} {};
     };
 }
-#endif

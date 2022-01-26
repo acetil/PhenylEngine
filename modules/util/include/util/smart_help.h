@@ -1,7 +1,7 @@
+#pragma once
+
 #include <memory>
 
-#ifndef SMART_HELP_H
-#define SMART_HELP_H
 namespace util {
     template<class T>
     struct SmartHelper {
@@ -20,4 +20,3 @@ namespace util {
         }
     };
 }
-#endif

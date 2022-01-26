@@ -1,5 +1,4 @@
-#ifndef PLAYER_CONTROLLER_H
-#define PLAYER_CONTROLLER_H
+#pragma once
 
 #include "event/events/player_movement_change.h"
 #include "engine/entity/controller/entity_controller.h"
@@ -29,4 +28,3 @@ namespace game {
         void setTextureIds (graphics::TextureAtlas& atlas) override;
     };
 }
-#endif

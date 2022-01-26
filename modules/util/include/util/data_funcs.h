@@ -1,5 +1,5 @@
-#ifndef DATA_FUNCS_H
-#define DATA_FUNCS_H
+#pragma once
+
 namespace util {
     class DataValue;
     template <typename T>
@@ -7,4 +7,4 @@ namespace util {
     template <typename T>
     DataValue todata (T& val);
 }
-#endif //DATA_FUNCS_H
+

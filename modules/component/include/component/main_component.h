@@ -1,7 +1,8 @@
+#pragma once
+
 #include "graphics/maths_headers.h"
 #include "serialisable_component.h"
-#ifndef MAIN_COMPONENT_H
-#define MAIN_COMPONENT_H
+
 namespace component {
     struct EntityMainComponent : SerialisableComponent<EntityMainComponent> {
     private:
@@ -20,4 +21,3 @@ namespace component {
         friend SerialisableComponent<EntityMainComponent>;
     };
 }
-#endif

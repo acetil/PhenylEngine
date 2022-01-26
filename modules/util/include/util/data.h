@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <sstream>
 #include <unordered_map>
@@ -13,8 +15,6 @@
 
 #include "logging/logging.h"
 
-#ifndef UTIL_DATA_H
-#define UTIL_DATA_H
 namespace util {
     namespace internal {
         class DataObserver;
@@ -514,4 +514,3 @@ namespace util {
     DataValue parseJson (const std::string& json);
     DataValue parseFromFile (const std::string& filepath);
 }
-#endif

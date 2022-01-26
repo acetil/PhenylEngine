@@ -1,3 +1,5 @@
+#pragma once
+
 #include <queue>
 #include <memory>
 
@@ -6,8 +8,7 @@
 #include "graphics/font/font_manager.h"
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/renderers/renderer.h"
-#ifndef GAME_LAYER_H
-#define GAME_LAYER_H
+
 namespace graphics {
     class GraphicsRenderLayer : public RenderLayer {
     private:
@@ -40,4 +41,3 @@ namespace graphics {
         void addRenderLayer (std::shared_ptr<RenderLayer> layer);
     };
 }
-#endif //GAME_LAYER_H

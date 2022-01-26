@@ -1,7 +1,8 @@
+#pragma once
+
 #include <exception>
 #include <memory>
-#ifndef EXCEPTIONS_H
-#define EXCEPTIONS_H
+
 namespace util {
     class InitException : std::runtime_error {
     public:
@@ -12,4 +13,3 @@ namespace util {
         }
     };
 }
-#endif //EXCEPTIONS_H

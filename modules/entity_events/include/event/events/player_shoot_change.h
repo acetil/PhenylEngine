@@ -1,6 +1,7 @@
+#pragma once
+
 #include "event/event.h"
-#ifndef PLAYER_SHOOT_CHANGE_H
-#define PLAYER_SHOOT_CHANGE_H
+
 namespace event {
     class PlayerShootChangeEvent : public Event<PlayerShootChangeEvent> {
     public:
@@ -10,4 +11,3 @@ namespace event {
         explicit PlayerShootChangeEvent (bool _doShoot) : doShoot(_doShoot) {};
     };
 }
-#endif //PLAYER_SHOOT_CHANGE_H

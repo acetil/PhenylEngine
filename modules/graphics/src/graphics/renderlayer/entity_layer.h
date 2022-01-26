@@ -1,8 +1,9 @@
+#pragma once
+
 #include "graphics/textures/texture_atlas.h"
 #include "graphics/renderlayer/render_layer.h"
 #include "component/component.h"
-#ifndef ENTITY_LAYER_H
-#define ENTITY_LAYER_H
+
 namespace graphics {
     class EntityRenderLayer : public RenderLayer {
     private:
@@ -37,4 +38,3 @@ namespace graphics {
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
     };
 }
-#endif //ENTITY_LAYER_H

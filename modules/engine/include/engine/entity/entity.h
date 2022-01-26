@@ -1,8 +1,8 @@
+#pragma once
+
 #include <string>
 #include "graphics/textures/texture_atlas.h"
 
-#ifndef ENTITY_H
-#define ENTITY_H
 namespace game {
     // TODO: change AbstractEntity to be more like "EntityType", and move most other stuff to EntityController if possible
     class EntityController;
@@ -34,4 +34,3 @@ namespace game {
         //virtual EntityController* getController ();
     };
 }
-#endif

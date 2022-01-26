@@ -1,16 +1,17 @@
+#pragma once
+
 #include <utility>
 
 #include "event/event.h"
 #include "component/component.h"
 #include "component/view/view.h"
 #include "component/view/game_view.h"
-#ifndef ENTITY_H
+/*#ifndef ENTITY_H
 namespace game {
 class AbstractEntity;
 };
-#endif
-#ifndef ENTITY_CREATION_H
-#define ENTITY_CREATION_H
+#endif*/
+
 namespace event {
     class EntityCreationEvent : public Event<EntityCreationEvent> {
     public:
@@ -42,4 +43,3 @@ namespace event {
         };
     };
 }
-#endif

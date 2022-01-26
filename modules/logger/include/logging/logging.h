@@ -1,7 +1,7 @@
+#pragma once
+
 #include <string>
 #include "util/format.h"
-#ifndef LOGGING_H
-#define LOGGING_H
 
 #define LEVEL_INFO 0
 #define LEVEL_WARNING 1
@@ -70,4 +70,3 @@ namespace logger {
 
     void log (int level, const std::string& category, const std::string& log);
 }
-#endif

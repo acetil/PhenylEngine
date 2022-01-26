@@ -1,3 +1,5 @@
+#pragma once
+
 #include "graphics/graphics_new_include.h"
 
 #include "graphics/graphics_headers.h"
@@ -6,8 +8,7 @@
 #include <memory>
 
 #include "renderer.h"
-#ifndef GLRENDERER_H
-#define GLRENDERER_H
+
 namespace graphics {
     class GLFrameBuffer : public FrameBuffer {
     public:
@@ -66,4 +67,3 @@ namespace graphics {
         void invalidateWindowCallbacks () override;
     };
 }
-#endif //GLRENDERER_H

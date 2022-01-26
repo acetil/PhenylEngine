@@ -1,3 +1,5 @@
+#pragma once
+
 #include "graphics/maths_headers.h"
 #include "component/component.h"
 #include "util/meta.h"
@@ -6,9 +8,6 @@
 #include <tuple>
 #include <utility>
 #include "graphics/graphics_new_include.h"
-
-#ifndef VIEW_H
-#define VIEW_H
 
 // TODO: clean up
 
@@ -311,4 +310,3 @@ namespace view {
         }
     };
 }
-#endif //VIEW_H

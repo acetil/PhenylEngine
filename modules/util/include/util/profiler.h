@@ -1,9 +1,9 @@
+#pragma once
+
 #include <functional>
 
 #include <string>
 
-#ifndef PROFILER_H
-#define PROFILER_H
 namespace util {
     void setProfilerTimingFunction (std::function<double(void)> timeFunc);
 
@@ -20,4 +20,3 @@ namespace util {
     double getProfileFrameTime ();
 
 }
-#endif

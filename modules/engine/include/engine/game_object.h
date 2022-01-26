@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -18,8 +20,6 @@
 #include "event/events/map_load_request.h"
 #include "game_camera.h"
 
-#ifndef GAME_OBJECT_H
-#define GAME_OBJECT_H
 namespace view {
     class DebugGameView;
 };
@@ -96,4 +96,3 @@ class GameObject : public util::SmartHelper<GameObject>, public std::enable_shar
         friend view::DebugGameView;
     };
 }
-#endif

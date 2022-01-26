@@ -1,7 +1,7 @@
+#pragma once
+
 #include "event/event.h"
 
-#ifndef MAP_LOAD_REQUEST_H
-#define MAP_LOAD_REQUEST_H
 namespace event {
     class MapLoadRequestEvent : public Event<MapLoadRequestEvent> {
     public:
@@ -11,4 +11,3 @@ namespace event {
         explicit MapLoadRequestEvent(std::string& _filepath) : filepath(_filepath) {}
     };
 }
-#endif

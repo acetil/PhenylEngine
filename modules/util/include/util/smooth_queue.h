@@ -1,5 +1,5 @@
-#ifndef SMOOTH_QUEUE_H
-#define SMOOTH_QUEUE_H
+#pragma once
+
 namespace util {
     template <class T, int N>
     class SmoothQueue {
@@ -21,4 +21,3 @@ namespace util {
         }
     };
 }
-#endif

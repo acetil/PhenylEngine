@@ -1,3 +1,5 @@
+#pragma once
+
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -7,23 +9,21 @@
 #include "graphics/font/font.h"
 #include "graphics/maths_headers.h"
 
-#ifndef UI_MANAGER_H
-#define UI_MANAGER_H
 namespace graphics {
-#ifndef FONT_H
+//#ifndef FONT_H
 class Font;
-#endif
-    #ifndef RENDERER_H
+//#endif
+    //#ifndef RENDERER_H
     class Renderer;
-    #endif
+    //#endif
 
-    #ifndef UI_LAYER_H
+    //#ifndef UI_LAYER_H
     class UIRenderLayer;
-    #endif
+    //#endif
 
-    #ifndef GRAPHICS_H
+    //#ifndef GRAPHICS_H
     class Graphics;
-    #endif
+    //#endif
 
     class UIManager {
     private:
@@ -37,4 +37,3 @@ class Font;
         void addRenderLayer (const std::shared_ptr<Graphics>& graphics, Renderer* renderer);
     };
 }
-#endif

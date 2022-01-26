@@ -1,8 +1,8 @@
+#pragma once
+
 #include <string>
 #include "util/meta.h"
 
-#ifndef EVENT_H
-#define EVENT_H
 namespace event {
     template<typename T, bool _doDebugLog = true, typename ...Args>
     class Event {
@@ -28,4 +28,3 @@ namespace event {
         friend T;
     };
 }
-#endif //EVENT_H

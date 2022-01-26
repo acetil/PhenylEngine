@@ -1,8 +1,9 @@
+#pragma once
+
 #ifndef MAX_COMPONENT_ENTITIES
 #define MAX_COMPONENT_ENTITIES 256
 #endif
-#ifndef COMPONENT_H
-#define COMPONENT_H
+
 #include <unordered_map>
 #include <string>
 #include <string.h>
@@ -189,4 +190,3 @@ namespace component {
 
     extern template class ComponentManagerWrap<entity_list>;
 }
-#endif

@@ -1,9 +1,9 @@
+#pragma once
+
 #include <type_traits>
 #include <functional>
 #include <tuple>
 
-#ifndef META_H
-#define META_H
 namespace meta {
     template <typename T>
     using add_pointer = T*;
@@ -391,4 +391,3 @@ namespace meta {
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 }
-#endif

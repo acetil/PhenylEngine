@@ -1,7 +1,8 @@
+#pragma once
+
 #include <string.h>
 #include "logging/logging.h"
-#ifndef BUFFER_H
-#define BUFFER_H
+
 namespace graphics {
     class Buffer {
     private:
@@ -50,4 +51,3 @@ namespace graphics {
 
 }
 
-#endif //BUFFER_H

@@ -1,7 +1,8 @@
+#pragma once
+
 #include "physics/collision_component.h"
 #include <vector>
-#ifndef COLLISIONS_H
-#define COLLISIONS_H
+
 namespace physics {
     void checkCollisionsEntity (CollisionComponent* comp, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<int, int, glm::vec2>>* collisionResults);
     // TODO: move to specialised maths help header
@@ -12,4 +13,3 @@ namespace physics {
         return glm::dot(onto, vec) / squaredDistance(onto) * onto;
     }
 }
-#endif //COLLISIONS_H

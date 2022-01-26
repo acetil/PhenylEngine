@@ -1,3 +1,5 @@
+#pragma once
+
 #include <utility>
 #include <vector>
 #include <unordered_map>
@@ -5,8 +7,7 @@
 #include "util/span.h"
 #include "glyph_image.h"
 #include "graphics/renderers/renderer.h"
-#ifndef GLYPH_ATLAS_H
-#define GLYPH_ATLAS_H
+
 namespace graphics {
     class GlyphAtlas {
     private:
@@ -49,4 +50,3 @@ namespace graphics {
         ~GlyphAtlas ();
     };
 }
-#endif //GLYPH_ATLAS_H

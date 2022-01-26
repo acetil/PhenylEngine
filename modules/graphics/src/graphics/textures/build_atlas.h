@@ -1,9 +1,10 @@
+#pragma once
+
 #include <algorithm>
 #include <iterator>
 #include <vector>
 #include <utility>
-#ifndef BUILD_ATLAS_H
-#define BUILD_ATLAS_H
+
 namespace graphics {
     template<class T>
     struct AtlasObject {
@@ -53,4 +54,3 @@ namespace graphics {
         return p.second;
     }
 }
-#endif

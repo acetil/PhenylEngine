@@ -1,6 +1,7 @@
+#pragma once
+
 #include "event/event.h"
-#ifndef DUMP_MAP_H
-#define DUMP_MAP_H
+
 namespace event {
     class DumpMapEvent : public Event<DumpMapEvent> {
     public:
@@ -10,4 +11,3 @@ namespace event {
         explicit DumpMapEvent (const std::string& path) : filepath(path) {}
     };
 }
-#endif

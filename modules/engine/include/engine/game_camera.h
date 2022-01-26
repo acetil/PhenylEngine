@@ -1,7 +1,7 @@
+#pragma once
+
 #include "graphics/maths_headers.h"
 
-#ifndef GAME_CAMERA_H
-#define GAME_CAMERA_H
 #ifndef CAMERA_H
 namespace graphics{
     class Camera;
@@ -26,4 +26,3 @@ namespace game {
         void updateCamera (graphics::Camera& camera);
     };
 }
-#endif

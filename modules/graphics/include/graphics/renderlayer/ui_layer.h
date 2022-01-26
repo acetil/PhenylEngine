@@ -1,12 +1,12 @@
+#pragma once
+
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/maths_headers.h"
 
-#ifndef UI_LAYER_H
-#define UI_LAYER_H
 namespace graphics {
-#ifndef FONT_H
+//#ifndef FONT_H
     class Font;
-#endif
+//#endif
     class UIRenderLayer : public RenderLayer {
     private:
         GraphicsBufferIds textIds;
@@ -37,4 +37,3 @@ namespace graphics {
         void bufferStr(Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
     };
 }
-#endif

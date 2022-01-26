@@ -1,15 +1,16 @@
+#pragma once
+
 #include <vector>
 #include <optional>
 #include <memory>
 
 #include "graphics/buffer.h"
 #include "graphics/shaders/shaders.h"
-#ifndef RENDERER_H
-#define RENDERER_H
+
 namespace graphics {
-#ifndef WINDOW_CALLBACKS_H
+//#ifndef WINDOW_CALLBACKS_H
     class WindowCallbackContext;
-#endif
+//#endif
     class GraphicsTexture;
     class FrameBuffer {
     public:
@@ -66,4 +67,3 @@ namespace graphics {
     };
 
 }
-#endif //RENDERER_H

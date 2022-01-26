@@ -1,9 +1,10 @@
+#pragma once
+
 #include <string>
 
 #include "graphics/graphics_new_include.h"
 #include "graphics/renderers/renderer.h"
-#ifndef RENDER_LAYER_H
-#define RENDER_LAYER_H
+
 namespace graphics {
     class RenderLayer {
     // TODO: add initial setup function
@@ -29,4 +30,3 @@ namespace graphics {
         virtual ~RenderLayer() = default;
     };
 }
-#endif //RENDER_LAYER_H

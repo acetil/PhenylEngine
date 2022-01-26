@@ -1,9 +1,10 @@
+#pragma once
+
 #include <type_traits>
 
 #include "detail/memory.h"
 //#include "meta.h"
-#ifndef OPTIONAL_H
-#define OPTIONAL_H
+
 namespace util {
     template <typename T, typename = void>
     class Optional;
@@ -152,4 +153,3 @@ namespace util {
     };
 
 }
-#endif

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 #include "font_face.h"
@@ -5,8 +7,6 @@
 
 #include "graphics/maths_headers.h"
 
-#ifndef FONT_H
-#define FONT_H
 namespace graphics {
     class Font {
     private:
@@ -29,4 +29,3 @@ namespace graphics {
         }
     };
 }
-#endif

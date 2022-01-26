@@ -21,14 +21,14 @@
     Unknown tiles are to be replaced (silently) with empty tile. If EOF is encountered before 0, warn and treat eof as 0
 
 */
+#pragma once
+
 #include <string>
 
 #include "engine/map/map.h"
 #include "engine/game_object.h"
-#ifndef MAP_READER_H
-#define MAP_READER_H
+
 namespace game {
     Map::SharedPtr readMap (const std::string& path, GameObject::SharedPtr gameObject);
     Map::SharedPtr readMapNew (const std::string& path, GameObject::SharedPtr gameObject);
 }
-#endif

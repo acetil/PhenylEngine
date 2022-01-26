@@ -1,6 +1,7 @@
+#pragma once
+
 #include "engine/entity/entity.h"
-#ifndef ENTITY_BULLET_H
-#define ENTITY_BULLET_H
+
 namespace game {
     class EntityBullet : public AbstractEntity {
     public:
@@ -9,4 +10,3 @@ namespace game {
         void setTextureIds (graphics::TextureAtlas& atlas) override;
     };
 }
-#endif

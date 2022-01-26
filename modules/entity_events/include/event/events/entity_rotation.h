@@ -1,9 +1,10 @@
+#pragma once
+
 #include <utility>
 
 #include "component/view/view.h"
 #include "event/event.h"
-#ifndef ENTITY_ROTATION_H
-#define ENTITY_ROTATION_H
+
 namespace event {
     class EntityRotationEvent : public Event<EntityRotationEvent, false> {
     public:
@@ -17,4 +18,3 @@ namespace event {
             entityId(_entityId), manager(std::move(_manager)), prevMatrix(_prevMatrix), rotMatrix(_rotMatrix) {};
     };
 }
-#endif

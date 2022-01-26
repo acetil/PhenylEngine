@@ -1,9 +1,10 @@
+#pragma once
+
 #include <string>
 #include "engine/tile/tile.h"
 #include "util/smart_help.h"
 #include "util/data.h"
-#ifndef MAP_H
-#define MAP_H
+
 namespace game {
     struct MapEntity {
         std::string entityType;
@@ -52,4 +53,3 @@ namespace game {
         virtual void writeMapJson (const std::string& path, util::DataValue entities = util::DataValue());
     };
 }
-#endif
