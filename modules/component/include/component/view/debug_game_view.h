@@ -1,6 +1,6 @@
 #include <utility>
 
-#include "game/game_object.h"
+#include "engine/game_object.h"
 
 #ifndef DEBUG_GAME_VIEW_H
 #define DEBUG_GAME_VIEW_H

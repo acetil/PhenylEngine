@@ -1,7 +1,7 @@
-#include "game/entity/controller/player_controller.h"
-#include "entity_test.h"
-#include "entity.h"
-#include "controller/entity_controller.h"
+#include "engine/entity/controller/player_controller.h"
+#include "engine/entity/entity_test.h"
+#include "engine/entity/entity.h"
+#include "engine/entity/controller/entity_controller.h"
 #include "logging/logging.h"
 
 using namespace game;

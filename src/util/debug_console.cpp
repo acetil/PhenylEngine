@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "debug_console.h"
+#include "util/debug_console.h"
 
 #include "logging/logging.h"
 #include "event/events/debug/profiler_change.h"

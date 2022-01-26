@@ -1,4 +1,5 @@
 add_library(maths include/graphics/maths_headers.h src/maths_headers.cpp)
+find_package(glm REQUIRED)
 
 set_property(TARGET maths PROPERTY CXX_STANDARD 20)
 

@@ -1,5 +1,5 @@
-#include "entity_bullet.h"
-#include "controller/bullet_controller.h"
+#include "engine/entity/entity_bullet.h"
+#include "engine/entity/controller/bullet_controller.h"
 
 using namespace game;
 

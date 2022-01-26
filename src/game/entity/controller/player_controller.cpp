@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "player_controller.h"
+#include "engine/entity/controller/player_controller.h"
 #include "logging/logging.h"
 
 #include "util/string_help.h"

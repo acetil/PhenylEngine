@@ -1,4 +1,4 @@
-#include "game/game_object.h"
+#include "engine/game_object.h"
 #include "util/data.h"
 #ifndef GAME_VIEW_H
 #define GAME_VIEW_H

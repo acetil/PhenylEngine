@@ -1,4 +1,4 @@
-#include "wall_controller.h"
+#include "engine/entity/controller/wall_controller.h"
 
 #include "util/string_help.h"
 

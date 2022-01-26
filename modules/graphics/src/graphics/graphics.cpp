@@ -6,10 +6,10 @@
 #include <utility>
 #include "graphics/renderlayer/entity_layer.h"
 #include "logging/logging.h"
-#include "game/entity/entity.h"
+#include "engine/entity/entity.h"
 #include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/renderers/window_callbacks.h"
-#include "game/entity/controller/entity_controller.h"
+#include "engine/entity/controller/entity_controller.h"
 #include "graphics/font/font_manager.h"
 #include "graphics/renderlayer/map_layer.h"
 

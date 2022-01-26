@@ -1,4 +1,4 @@
-#include "game/game_object.h"
+#include "engine/game_object.h"
 #include "ui_manager.h"
 
 #ifndef DEBUG_UI_H

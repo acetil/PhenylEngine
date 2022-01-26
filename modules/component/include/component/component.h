@@ -21,7 +21,7 @@
 #include "component/main_component.h"
 #include "util/meta.h"
 #include "rotation_component.h"
-#include "game/entity/entity_type.h"
+#include "engine/entity/entity_type.h"
 #include "util/smart_help.h"
 #if MAX_COMPONENT_ENTITIES <= 256
 namespace component {
