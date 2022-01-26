@@ -1,4 +1,4 @@
-#include "collision_component.h"
+#include "physics/collision_component.h"
 #include <vector>
 #ifndef COLLISIONS_H
 #define COLLISIONS_H

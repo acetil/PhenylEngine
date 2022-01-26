@@ -1,5 +1,5 @@
 #include <string>
-#include "../../../util/include/util/format.h"
+#include "util/format.h"
 #ifndef LOGGING_H
 #define LOGGING_H
 

@@ -29,6 +29,8 @@ namespace util {
         DataObject();
         explicit DataObject(DataValue& val);
 
+        operator DataValue() const;
+
         Map<std::string, DataValue>::iterator begin ();
         Map<std::string, DataValue>::const_iterator begin () const;
         Map<std::string, DataValue>::iterator end ();
@@ -295,6 +297,10 @@ namespace util {
 
         friend class internal::DataObserver;
     };
+
+    inline DataObject::operator DataValue() const {
+        return DataValue(*this);
+    }
 
     template<typename T>
     DataValue& DataObject::operator[] (const T& key) {
