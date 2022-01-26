@@ -22,8 +22,10 @@
 #define PHYSICS_FPS 60
 using namespace game; 
 
-int game::gameloop (graphics::Graphics::SharedPtr& graphics) {
-    GameObject::SharedPtr gameObject = initGame(graphics);
+int game::gameloop (engine::PhenylEngine& engine) {
+    //GameObject::SharedPtr gameObject = initGame(graphics);
+    auto graphics = engine.getGraphics();
+    auto gameObject = engine.getGame();
 
     auto& uiManager = graphics->getUIManager();
 

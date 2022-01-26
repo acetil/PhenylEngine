@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/graphics.h"
+#include "engine/engine.h"
 namespace game {
-    int gameloop (graphics::Graphics::SharedPtr& graphics);
+    int gameloop (engine::PhenylEngine& engine);
 }
