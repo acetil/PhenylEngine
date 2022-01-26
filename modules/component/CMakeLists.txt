@@ -5,4 +5,4 @@ set_property(TARGET component PROPERTY CXX_STANDARD 20)
 target_include_directories(component PUBLIC include)
 target_include_directories(component PRIVATE src)
 
-target_link_libraries(component PRIVATE logger util eventbus)
+target_link_libraries(component PRIVATE logger util eventbus maths graphics)

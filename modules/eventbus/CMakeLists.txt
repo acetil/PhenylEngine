@@ -5,4 +5,4 @@ add_library(eventbus INTERFACE include/event/event.h)
 target_include_directories(eventbus INTERFACE include)
 #target_include_directories(eventbus PRIVATE src)
 
-target_link_libraries(util PRIVATE logger)
+#target_link_libraries(eventbus PRIVATE logger)

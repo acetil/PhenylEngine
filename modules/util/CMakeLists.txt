@@ -1,4 +1,4 @@
-add_library(util src/data.cpp ../logger/src/format.cpp src/profiler.cpp src/string_help.cpp src/test_data.cpp include/util/optional.h include/util/detail/memory.h)
+add_library(util src/data.cpp src/profiler.cpp src/string_help.cpp src/test_data.cpp include/util/optional.h include/util/detail/memory.h)
 
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
