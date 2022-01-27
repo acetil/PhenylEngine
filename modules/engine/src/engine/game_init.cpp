@@ -17,10 +17,10 @@
 #include "graphics/ui/debug_ui.h"
 
 using namespace game;
-void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphics::SharedPtr graphics);
+void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::detail::Graphics::SharedPtr graphics);
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
-void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::Graphics::SharedPtr& graphics);
-GameObject::SharedPtr game::initGame (const graphics::Graphics::SharedPtr& graphics) {
+void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::detail::Graphics::SharedPtr& graphics);
+GameObject::SharedPtr game::initGame (const graphics::detail::Graphics::SharedPtr& graphics) {
     auto gameObject = GameObject::NewSharedPtr();
     addEventHandlers(gameObject, graphics);
     addControlEventHandlers(gameObject->getEventBus());
@@ -43,11 +43,11 @@ GameObject::SharedPtr game::initGame (const graphics::Graphics::SharedPtr& graph
     return gameObject;
 }
 
-void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Graphics::SharedPtr graphics) {
+void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::detail::Graphics::SharedPtr graphics) {
     gameObject->getEventBus()->subscribeHandler(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
-    gameObject->getEventBus()->subscribeHandler(&graphics::Graphics::onEntityCreation, std::move(graphics));
+    gameObject->getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, std::move(graphics));
     gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
     gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
 
@@ -67,7 +67,7 @@ component::EntityComponentManager::SharedPtr getEntityComponentManager (event::E
     return manager;
 }
 
-void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::Graphics::SharedPtr& graphics) {
+void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::detail::Graphics::SharedPtr& graphics) {
     graphics->getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas) {
         gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
                                           atlas, 0.1, 0.1));

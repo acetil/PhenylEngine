@@ -3,6 +3,7 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics_new_include.h"
 #include "graphics/graphics.h"
+#include "graphics.h"
 
 #define DEFAULT_WINDOW_X 800
 #define DEFAULT_WINDOW_Y 600
@@ -11,6 +12,6 @@
 #define GRAPHICS_INIT_FAILURE -1
 namespace graphics {
     int initWindow (GLFWwindow** windowPtr);
-    int initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew);
-    void destroyGraphics (const Graphics::SharedPtr& graphics);
+    int initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew);
+    void destroyGraphics (const detail::Graphics::SharedPtr& graphics);
 }

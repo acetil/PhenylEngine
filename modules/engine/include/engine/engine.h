@@ -20,6 +20,6 @@ namespace engine {
 
         game::GameObject::SharedPtr getGame ();
 
-        graphics::Graphics::SharedPtr getGraphics ();
+        graphics::detail::Graphics::SharedPtr getGraphics ();
     };
 }

@@ -90,7 +90,7 @@ FontManager initFonts () {
     return manager;
 }
 
-int graphics::initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew) {
+int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew) {
     auto renderer = new GLRenderer(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
@@ -102,7 +102,7 @@ int graphics::initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew
 
     auto manager = initFonts();
 
-    auto graphics = std::make_shared<Graphics>(renderer, manager);
+    auto graphics = std::make_shared<detail::Graphics>(renderer, manager);
 
     graphicsNew = graphics;
     logging::log(LEVEL_INFO, "Adding images!");
@@ -120,7 +120,7 @@ int graphics::initGraphics (GLFWwindow* window, Graphics::SharedPtr& graphicsNew
 
 }
 
-void graphics::destroyGraphics (const Graphics::SharedPtr& graphics) {
+void graphics::destroyGraphics (const detail::Graphics::SharedPtr& graphics) {
     graphics->deleteWindowCallbacks();
     //delete graphics;
     //glfwTerminate(); // TODO: move to renderer

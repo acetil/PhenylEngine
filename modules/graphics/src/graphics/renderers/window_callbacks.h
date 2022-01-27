@@ -6,7 +6,7 @@
 
 namespace graphics {
     struct WindowCallbackContext {
-        Graphics* graphics;
+        detail::Graphics* graphics;
         Renderer* renderer;
         std::weak_ptr<event::EventBus> eventBus;
 

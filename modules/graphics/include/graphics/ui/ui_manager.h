@@ -22,7 +22,9 @@ class Font;
     //#endif
 
     //#ifndef GRAPHICS_H
-    class Graphics;
+    namespace detail {
+        class Graphics;
+    }
     //#endif
 
     class UIManager {
@@ -34,6 +36,6 @@ class Font;
         UIManager(Renderer* renderer, FontManager& _fontManager);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        void addRenderLayer (const std::shared_ptr<Graphics>& graphics, Renderer* renderer);
+        void addRenderLayer (const std::shared_ptr<detail::Graphics>& graphics, Renderer* renderer);
     };
 }

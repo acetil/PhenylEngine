@@ -12,13 +12,13 @@ using namespace engine;
 
 class engine::detail::Engine {
 private:
-    graphics::Graphics::SharedPtr graphics;
+    graphics::detail::Graphics::SharedPtr graphics;
     game::GameObject::SharedPtr gameObj;
 public:
     Engine ();
     ~Engine();
 
-    graphics::Graphics::SharedPtr getGraphics () const;
+    graphics::detail::Graphics::SharedPtr getGraphics () const;
     game::GameObject::SharedPtr getGameObject () const;
 };
 
@@ -28,7 +28,7 @@ engine::PhenylEngine::PhenylEngine () {
 
 engine::PhenylEngine::~PhenylEngine () = default;
 
-graphics::Graphics::SharedPtr engine::PhenylEngine::getGraphics () {
+graphics::detail::Graphics::SharedPtr engine::PhenylEngine::getGraphics () {
     return internal->getGraphics();
 }
 
@@ -58,7 +58,7 @@ engine::detail::Engine::~Engine () {
     graphics::destroyGraphics(graphics);
 }
 
-graphics::Graphics::SharedPtr detail::Engine::getGraphics () const {
+graphics::detail::Graphics::SharedPtr detail::Engine::getGraphics () const {
     return graphics;
 }
 

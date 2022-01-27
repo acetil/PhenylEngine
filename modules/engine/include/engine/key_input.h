@@ -28,7 +28,7 @@ class KeyboardInput : public util::SmartHelper<KeyboardInput> {
         [[maybe_unused]] virtual void replaceKey (int after, int before) = 0;
         virtual void handleKeyPresses () = 0;
     };
-    KeyboardInput::SharedPtr getKeyboardInput (const graphics::Graphics::SharedPtr& graphics);
+    KeyboardInput::SharedPtr getKeyboardInput (const graphics::detail::Graphics::SharedPtr& graphics);
 
     void setupKeyboardInputListeners (const KeyboardInput::SharedPtr& input, const event::EventBus::SharedPtr& bus);
 }

@@ -4,5 +4,5 @@
 #include "graphics/graphics.h"
 
 namespace game {
-    GameObject::SharedPtr initGame (const graphics::Graphics::SharedPtr& graphics);
+    GameObject::SharedPtr initGame (const graphics::detail::Graphics::SharedPtr& graphics);
 }
