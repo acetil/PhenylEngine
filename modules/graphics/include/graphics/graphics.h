@@ -18,6 +18,7 @@
 #include "graphics/renderers/renderer.h"
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/ui_manager.h"
+#include "graphics/phenyl_graphics.h"
 
 #include "util/smart_help.h"
 #include "util/optional.h"
@@ -102,5 +103,5 @@ namespace graphics {
         };
     }
 
-    void addMapRenderLayer (detail::Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus);
+    void addMapRenderLayer (PhenylGraphics graphics, event::EventBus::SharedPtr bus);
 }

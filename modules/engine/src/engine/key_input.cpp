@@ -18,7 +18,7 @@ namespace game {
         glm::vec2 windowMousePos;
         glm::vec2 screenMousePos;
     public:
-        explicit KeyboardInputImpl (graphics::detail::Graphics::SharedPtr graphics);
+        explicit KeyboardInputImpl (const graphics::PhenylGraphics& graphics);
 
         ~KeyboardInputImpl ();
 
@@ -34,9 +34,9 @@ namespace game {
     };
 }
 
-game::KeyboardInputImpl::KeyboardInputImpl (graphics::detail::Graphics::SharedPtr graphics) {
+game::KeyboardInputImpl::KeyboardInputImpl (const graphics::PhenylGraphics& graphics) {
 
-    window = ((graphics::GLRenderer*)graphics->getRenderer())->getWindow();
+    window = ((graphics::GLRenderer*)graphics.getRenderer())->getWindow();
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
     // TODO: add key press preference reading here
 }
@@ -74,7 +74,7 @@ void KeyboardInputImpl::onCursorPosChange (event::CursorPosChangeEvent& event) {
     screenMousePos = event.screenPos;
 }
 
-KeyboardInput::SharedPtr game::getKeyboardInput (const graphics::detail::Graphics::SharedPtr& graphics) {
+KeyboardInput::SharedPtr game::getKeyboardInput (const graphics::PhenylGraphics& graphics) {
     return std::make_shared<KeyboardInputImpl>(graphics);
 }
 

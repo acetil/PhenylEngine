@@ -12,6 +12,7 @@
 #include "engine/entity/controller/entity_controller.h"
 #include "graphics/font/font_manager.h"
 #include "graphics/renderlayer/map_layer.h"
+#include "graphics/phenyl_graphics.h"
 
 using namespace graphics;
 
@@ -29,10 +30,10 @@ void detail::Graphics::setupWindowCallbacks (event::EventBus::SharedPtr bus) {
 }
 
 // TODO: move
-void graphics::addMapRenderLayer (detail::Graphics::SharedPtr graphics, event::EventBus::SharedPtr bus) {
-    graphics->getTextureAtlas("sprite").ifPresent([&graphics, &bus](auto& atlas) {
-        auto layer = std::make_shared<MapRenderLayer>(graphics->getRenderer(), atlas);
-        graphics->getRenderLayer()->addRenderLayer(layer);
+void graphics::addMapRenderLayer (PhenylGraphics graphics, event::EventBus::SharedPtr bus) {
+    graphics.getTextureAtlas("sprite").ifPresent([&graphics, &bus](auto& atlas) {
+        auto layer = std::make_shared<MapRenderLayer>(graphics.getRenderer(), atlas);
+        graphics.getRenderLayer()->addRenderLayer(layer);
         bus->subscribeHandler(&MapRenderLayer::onMapLoad, layer);
     });
 }
@@ -65,8 +66,6 @@ void detail::Graphics::render () {
     }
     atlases["sprite"].bindTextureAtlas(); // TODO: get layers to specify
     FrameBuffer* buf = renderer->getWindowBuffer();
-
-
 
 
     renderLayer->gatherData();

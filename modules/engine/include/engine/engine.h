@@ -4,6 +4,7 @@
 
 #include "game_object.h"
 #include "graphics/graphics.h"
+#include "graphics/phenyl_graphics.h"
 
 namespace engine {
 
@@ -20,6 +21,6 @@ namespace engine {
 
         game::GameObject::SharedPtr getGame ();
 
-        graphics::detail::Graphics::SharedPtr getGraphics ();
+        graphics::PhenylGraphics getGraphics ();
     };
 }

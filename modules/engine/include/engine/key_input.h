@@ -2,6 +2,7 @@
 
 #include "graphics/graphics_headers.h"
 #include "graphics/graphics.h"
+#include "graphics/phenyl_graphics.h"
 
 #include "util/smart_help.h"
 
@@ -28,7 +29,7 @@ class KeyboardInput : public util::SmartHelper<KeyboardInput> {
         [[maybe_unused]] virtual void replaceKey (int after, int before) = 0;
         virtual void handleKeyPresses () = 0;
     };
-    KeyboardInput::SharedPtr getKeyboardInput (const graphics::detail::Graphics::SharedPtr& graphics);
+    KeyboardInput::SharedPtr getKeyboardInput (const graphics::PhenylGraphics& graphics);
 
     void setupKeyboardInputListeners (const KeyboardInput::SharedPtr& input, const event::EventBus::SharedPtr& bus);
 }

@@ -12,14 +12,15 @@ using namespace engine;
 
 class engine::detail::Engine {
 private:
-    graphics::detail::Graphics::SharedPtr graphics;
+    //graphics::detail::Graphics::SharedPtr graphics;
     game::GameObject::SharedPtr gameObj;
+    graphics::PhenylGraphicsHolder graphicsHolder;
 public:
     Engine ();
     ~Engine();
 
-    graphics::detail::Graphics::SharedPtr getGraphics () const;
-    game::GameObject::SharedPtr getGameObject () const;
+    [[nodiscard]] game::GameObject::SharedPtr getGameObject () const;
+    [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
 };
 
 engine::PhenylEngine::PhenylEngine () {
@@ -28,16 +29,16 @@ engine::PhenylEngine::PhenylEngine () {
 
 engine::PhenylEngine::~PhenylEngine () = default;
 
-graphics::detail::Graphics::SharedPtr engine::PhenylEngine::getGraphics () {
-    return internal->getGraphics();
-}
-
 game::GameObject::SharedPtr engine::PhenylEngine::getGame () {
     return internal->getGameObject();
 }
 
+graphics::PhenylGraphics PhenylEngine::getGraphics () {
+    return internal->getGraphics();
+}
+
 engine::detail::Engine::Engine () {
-    GLFWwindow* window = nullptr;
+    /*GLFWwindow* window = nullptr;
     if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
         logger::log(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
         throw std::runtime_error("Window creation failed!");
@@ -48,20 +49,20 @@ engine::detail::Engine::Engine () {
         throw std::runtime_error("Graphics init failed!");
     }
 
-    logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");
+    logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");*/
 
-    gameObj = game::initGame(graphics);
+    gameObj = game::initGame(graphicsHolder.getGraphics());
 }
 
 engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
-    graphics::destroyGraphics(graphics);
-}
-
-graphics::detail::Graphics::SharedPtr detail::Engine::getGraphics () const {
-    return graphics;
+    //graphics::destroyGraphics(graphics);
 }
 
 game::GameObject::SharedPtr detail::Engine::getGameObject () const {
     return gameObj;
+}
+
+graphics::PhenylGraphics detail::Engine::getGraphics () const {
+    return graphicsHolder.getGraphics();
 }

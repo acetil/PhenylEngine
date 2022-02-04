@@ -27,11 +27,11 @@ int game::gameloop (engine::PhenylEngine& engine) {
     auto graphics = engine.getGraphics();
     auto gameObject = engine.getGame();
 
-    auto& uiManager = graphics->getUIManager();
+    auto& uiManager = graphics.getUIManager();
 
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
-    KeyboardInput::SharedPtr keyInput = getKeyboardInput(graphics);
+    KeyboardInput::SharedPtr keyInput = getKeyboardInput(engine.getGraphics());
     setupMovementKeys(keyInput, gameObject->getEventBus());
 
     float deltaTime;
@@ -49,9 +49,9 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
-    while (!graphics->shouldClose()) {
+    while (!graphics.shouldClose()) {
         util::startProfileFrame();
-        deltaTime = (float) graphics->getDeltaTime();
+        deltaTime = (float) graphics.getDeltaTime();
         deltaPhysicsFrame += deltaTime;
         //timeSinceFpsUpdate += deltaTime;
         keyInput->handleKeyPresses();
@@ -63,7 +63,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
             util::endProfile();
 
-            gameObject->updateCamera(graphics->getCamera());
+            gameObject->updateCamera(graphics.getCamera());
             //fpsFrames++;
         }
         /*if (timeSinceFpsUpdate >= 1.0f) {
@@ -78,15 +78,15 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
         graphics::renderDebugUi(gameObject, uiManager, deltaTime);
 
-        graphics->render();
+        graphics.render();
 
         util::endProfile();
 
-        graphics->pollEvents();
+        graphics.pollEvents();
         //frames++;
         util::endProfileFrame();
 
-        graphics->sync(TARGET_FPS);
+        graphics.sync(TARGET_FPS);
     }
     return 0;
 }
