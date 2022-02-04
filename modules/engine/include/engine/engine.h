@@ -19,7 +19,7 @@ namespace engine {
         PhenylEngine ();
         ~PhenylEngine();
 
-        game::GameObject::SharedPtr getGame ();
+        game::detail::GameObject::SharedPtr getGame ();
 
         graphics::PhenylGraphics getGraphics ();
     };

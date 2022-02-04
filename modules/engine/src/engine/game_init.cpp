@@ -16,14 +16,15 @@
 #include "graphics/phenyl_graphics.h"
 
 #include "graphics/ui/debug_ui.h"
+#include "game_object.h"
 
 using namespace game;
-void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::PhenylGraphics graphics);
+void addEventHandlers (const detail::GameObject::SharedPtr& gameObject, graphics::PhenylGraphics graphics);
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
-void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::PhenylGraphics& graphics);
+void registerTiles (const detail::GameObject::SharedPtr& gameObject, const graphics::PhenylGraphics& graphics);
 
-GameObject::SharedPtr game::initGame (graphics::PhenylGraphics graphics) {
-    auto gameObject = GameObject::NewSharedPtr();
+detail::GameObject::SharedPtr game::initGame (graphics::PhenylGraphics graphics) {
+    auto gameObject = detail::GameObject::NewSharedPtr();
     addEventHandlers(gameObject, graphics);
     addControlEventHandlers(gameObject->getEventBus());
     auto manager = getEntityComponentManager(gameObject->getEventBus());
@@ -45,7 +46,7 @@ GameObject::SharedPtr game::initGame (graphics::PhenylGraphics graphics) {
     return gameObject;
 }
 
-void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::PhenylGraphics graphics) {
+void addEventHandlers (const detail::GameObject::SharedPtr& gameObject, graphics::PhenylGraphics graphics) {
     gameObject->getEventBus()->subscribeHandler(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
@@ -53,9 +54,9 @@ void addEventHandlers (const GameObject::SharedPtr& gameObject, graphics::Phenyl
     gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
     gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
 
-    gameObject->getEventBus()->subscribeHandler(&GameObject::mapReloadRequest, gameObject);
-    gameObject->getEventBus()->subscribeHandler(&GameObject::mapDumpRequest, gameObject);
-    gameObject->getEventBus()->subscribeHandler(&GameObject::mapLoadRequest, gameObject);
+    gameObject->getEventBus()->subscribeHandler(&detail::GameObject::mapReloadRequest, gameObject);
+    gameObject->getEventBus()->subscribeHandler(&detail::GameObject::mapDumpRequest, gameObject);
+    gameObject->getEventBus()->subscribeHandler(&detail::GameObject::mapLoadRequest, gameObject);
 
     graphics::addDebugEventHandlers(gameObject->getEventBus());
 }
@@ -69,7 +70,7 @@ component::EntityComponentManager::SharedPtr getEntityComponentManager (event::E
     return manager;
 }
 
-void registerTiles (const GameObject::SharedPtr& gameObject, const graphics::PhenylGraphics& graphics) {
+void registerTiles (const detail::GameObject::SharedPtr& gameObject, const graphics::PhenylGraphics& graphics) {
     graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas) {
         gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
                                           atlas, 0.1, 0.1));

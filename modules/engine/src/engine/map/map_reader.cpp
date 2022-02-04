@@ -16,6 +16,7 @@
 #include "util/string_help.h"
 
 #include "util/data.h"
+#include "game_object.h"
 
 #define MAGIC_LEN 4
 #define DIMENSION_SIZE 4
@@ -31,10 +32,10 @@
 
 using namespace game;
 
-Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gameObject);
-Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameObject);
+Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::SharedPtr gameObject);
+Map::SharedPtr readMapJson (const std::string& path, detail::GameObject::SharedPtr gameObject);
 
-Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gameObject) {
+Map::SharedPtr game::readMap (const std::string& path, detail::GameObject::SharedPtr gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
     //logging::log(LEVEL_DEBUG, path.substr(path.size() - 4, std::string::npos));
@@ -170,7 +171,7 @@ Map::SharedPtr game::readMap (const std::string& path, GameObject::SharedPtr gam
     return map;
 }
 
-Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gameObject) {
+Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::SharedPtr gameObject) {
     std::ifstream file(path);
 
     if (!file) {
@@ -255,7 +256,7 @@ Map::SharedPtr readMapSimple (const std::string& path, GameObject::SharedPtr gam
     return map;
 }
 
-Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameObject) {
+Map::SharedPtr readMapJson (const std::string& path, detail::GameObject::SharedPtr gameObject) {
     util::DataValue mapVal = util::parseFromFile(path);
     if (mapVal.empty()) {
         logging::log(LEVEL_ERROR, "Failed to read map file {}", path);
@@ -302,7 +303,7 @@ Map::SharedPtr readMapJson (const std::string& path, GameObject::SharedPtr gameO
     return map;
 }
 
-Map::SharedPtr game::readMapNew (const std::string& path, GameObject::SharedPtr gameObject) {
+Map::SharedPtr game::readMapNew (const std::string& path, detail::GameObject::SharedPtr gameObject) {
     util::DataValue mapVal = util::parseFromFile(path);
     if (mapVal.empty()) {
         logging::log(LEVEL_ERROR, "Failed to read map file {}", path);

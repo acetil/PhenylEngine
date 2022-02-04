@@ -27,8 +27,9 @@
 
 #include "engine/map/map.h"
 #include "engine/game_object.h"
+#include "game_object.h"
 
 namespace game {
-    Map::SharedPtr readMap (const std::string& path, GameObject::SharedPtr gameObject);
-    Map::SharedPtr readMapNew (const std::string& path, GameObject::SharedPtr gameObject);
+    Map::SharedPtr readMap (const std::string& path, game::detail::GameObject::SharedPtr gameObject);
+    Map::SharedPtr readMapNew (const std::string& path, detail::GameObject::SharedPtr gameObject);
 }

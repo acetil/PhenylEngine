@@ -15,7 +15,7 @@
 
 using namespace game;
 
-game::GameObject::~GameObject () {
+detail::GameObject::~GameObject () {
     for (auto const& x : entityRegistry) {
         delete x.second;
     }
@@ -44,7 +44,7 @@ game::GameObject::~GameObject () {
         return nullptr;
     }
 }*/
-int game::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
+int detail::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
     // TODO: requires refactor
     if (entityTypes.count(name) == 0) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with name '{}' which doesn't exist!", name);
@@ -63,7 +63,7 @@ int game::GameObject::createNewEntityInstance (const std::string& name, float x,
     }
 }
 
-int game::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
+int detail::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
     int entityId = entityComponentManager->addObject();
     auto serialisedObj = serialised.get<util::DataObject>();
     setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
@@ -96,7 +96,7 @@ void game::GameObject::deleteEntityInstance (int entityId) {
     deleteEntityInstance(entities[entityId]);
 }*/
 
-void game::GameObject::registerTile (Tile* tile) {
+void detail::GameObject::registerTile (Tile* tile) {
     if (tileMap.count(tile->getName()) > 0) {
         logging::log(LEVEL_WARNING, "Duplicate registry of tile with name '{}'!", tile->getName());
         return;
@@ -105,16 +105,16 @@ void game::GameObject::registerTile (Tile* tile) {
     tileRegistry.push_back(tile);
     tileMap[tile->getName()] = pos;
 }
-int game::GameObject::getTileId (const std::string& name) {
+int detail::GameObject::getTileId (const std::string& name) {
     return tileMap[name];
 }
-Tile* game::GameObject::getTile (int tileId) {
+Tile* detail::GameObject::getTile (int tileId) {
     if (tileRegistry.size() < tileId || tileId < 0) {
         return nullptr;
     }
     return tileRegistry[tileId];
 }
-Tile* game::GameObject::getTile (const std::string& name) {
+Tile* detail::GameObject::getTile (const std::string& name) {
     // convenience function
     return getTile(getTileId(name));
 }
@@ -124,18 +124,18 @@ Tile* game::GameObject::getTile (const std::string& name) {
         it.second->update(deltaTime);
     }
 }*/
-void game::GameObject::setTextureIds (graphics::TextureAtlas& atlas) {
+void detail::GameObject::setTextureIds (graphics::TextureAtlas& atlas) {
     for (auto const& it : controllers) {
         it.second->setTextureIds(atlas);
     }
 }
-event::EventBus::SharedPtr game::GameObject::getEventBus () {
+event::EventBus::SharedPtr detail::GameObject::getEventBus () {
     return eventBus;
 }
-void game::GameObject::setEntityComponentManager (component::EntityComponentManager::SharedPtr manager) {
+void detail::GameObject::setEntityComponentManager (component::EntityComponentManager::SharedPtr manager) {
     this->entityComponentManager = std::move(manager);
 }
-void game::GameObject::updateEntityPosition () {
+void detail::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
     physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
 }
@@ -145,37 +145,37 @@ void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direc
 void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& bus, view::GameView gameView) {
     controlEntitiesPostPhysics(manager, gameView, 0, numEntities, direction, bus);
 }
-void game::GameObject::updateEntitiesPrePhysics () {
+void detail::GameObject::updateEntitiesPrePhysics () {
     // TODO: make better way
     auto gameView = view::GameView(this);
     entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus, gameView);
 }
 
-void GameObject::updateEntitiesPostPhysics () {
+void detail::GameObject::updateEntitiesPostPhysics () {
     // TODO: make better way
     auto gameView = view::GameView(this);
     entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus, gameView);
 }
 
-void GameObject::deleteEntityInstance (int entityId) {
+void detail::GameObject::deleteEntityInstance (int entityId) {
     entityComponentManager->removeObject(entityId); // TODO: implement queue
 }
 
-void GameObject::registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder) {
+void detail::GameObject::registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder) {
     entityTypeBuilders[name] = std::move(entityTypeBuilder);
 }
 
-void GameObject::buildEntityTypes () {
+void detail::GameObject::buildEntityTypes () {
     for (auto [name, builder] : entityTypeBuilders) {
         entityTypes[name] = builder.build(controllers);
     }
 }
 
-std::shared_ptr<EntityController> GameObject::getController (const std::string& name) {
+std::shared_ptr<EntityController> detail::GameObject::getController (const std::string& name) {
     return controllers[name];
 }
 
-void GameObject::loadMap (Map::SharedPtr map) {
+void detail::GameObject::loadMap (Map::SharedPtr map) {
     entityComponentManager->clear();
     this->gameMap = std::move(map);
 
@@ -187,23 +187,23 @@ void GameObject::loadMap (Map::SharedPtr map) {
     eventBus->raiseEvent(event::MapLoadEvent(gameMap));
 }
 
-void GameObject::reloadMap () {
+void detail::GameObject::reloadMap () {
     loadMap(gameMap);
 }
 
-void GameObject::mapReloadRequest (event::ReloadMapEvent& event) {
+void detail::GameObject::mapReloadRequest (event::ReloadMapEvent& event) {
     reloadMap();
 }
 
-void GameObject::updateCamera (graphics::Camera& _camera) {
+void detail::GameObject::updateCamera (graphics::Camera& _camera) {
     this->camera.updateCamera(_camera);
 }
 
-GameCamera& GameObject::getCamera () {
+GameCamera& detail::GameObject::getCamera () {
     return camera;
 }
 
-void GameObject::dumpMap (const std::string& filepath) {
+void detail::GameObject::dumpMap (const std::string& filepath) {
     util::DataArray entities;
     auto gameView = view::GameView(this);
     for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
@@ -219,10 +219,10 @@ void GameObject::dumpMap (const std::string& filepath) {
     gameMap->writeMapJson(filepath, (util::DataValue)entities);
 }
 
-void GameObject::mapDumpRequest (event::DumpMapEvent& event) {
+void detail::GameObject::mapDumpRequest (event::DumpMapEvent& event) {
     dumpMap(event.filepath);
 }
 
-void GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
+void detail::GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
     loadMap(readMap(event.filepath, shared_from_this()));
 }

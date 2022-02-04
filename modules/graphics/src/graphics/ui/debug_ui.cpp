@@ -8,6 +8,7 @@
 #include "util/smooth_queue.h"
 
 #include "event/events/debug/profiler_change.h"
+#include "game_object.h"
 
 using namespace graphics;
 
@@ -18,7 +19,7 @@ static util::SmoothQueue<double, 30> physicsQueue;
 static util::SmoothQueue<double, 30> frameQueue;
 static util::SmoothQueue<float, 30> deltaTimeQueue;
 
-void graphics::renderDebugUi (game::GameObject::SharedPtr gameObject, UIManager& uiManager, float deltaTime) {
+void graphics::renderDebugUi (game::detail::GameObject::SharedPtr gameObject, UIManager& uiManager, float deltaTime) {
 
     deltaTimeQueue.pushPop(deltaTime);
     frameQueue.pushPop(util::getProfileFrameTime());

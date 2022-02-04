@@ -3,7 +3,8 @@
 #include "engine/game_object.h"
 #include "graphics/graphics.h"
 #include "graphics/phenyl_graphics.h"
+#include "game_object.h"
 
 namespace game {
-    GameObject::SharedPtr initGame (graphics::PhenylGraphics graphics);
+    detail::GameObject::SharedPtr initGame (graphics::PhenylGraphics graphics);
 }

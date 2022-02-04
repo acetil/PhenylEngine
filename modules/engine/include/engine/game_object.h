@@ -24,75 +24,75 @@ namespace view {
     class DebugGameView;
 };
 
-namespace game {
-class GameObject : public util::SmartHelper<GameObject>, public std::enable_shared_from_this<GameObject> {
-        private:
-        std::map<std::string, AbstractEntity*> entityRegistry;
-        std::unordered_map<std::string, EntityType> entityTypes;
-        std::unordered_map<std::string, std::shared_ptr<EntityController>> controllers;
-        std::unordered_map<std::string, EntityTypeBuilder> entityTypeBuilders;
-        //std::map<int, AbstractEntity*> entities;
-        std::map<std::string, int> tileMap;
-        std::vector<Tile*> tileRegistry;
-        //int currentEntityId = 0;
-        event::EventBus::SharedPtr eventBus = event::EventBus::NewSharedPtr();
-        component::EntityComponentManager::SharedPtr entityComponentManager;
+namespace game::detail {
+        class GameObject : public util::SmartHelper<GameObject>, public std::enable_shared_from_this<GameObject> {
+                private:
+                std::map<std::string, AbstractEntity*> entityRegistry;
+                std::unordered_map<std::string, EntityType> entityTypes;
+                std::unordered_map<std::string, std::shared_ptr<EntityController>> controllers;
+                std::unordered_map<std::string, EntityTypeBuilder> entityTypeBuilders;
+                //std::map<int, AbstractEntity*> entities;
+                std::map<std::string, int> tileMap;
+                std::vector<Tile*> tileRegistry;
+                //int currentEntityId = 0;
+                SharedPtr eventBus = NewSharedPtr();
+                SharedPtr entityComponentManager;
 
-        Map::SharedPtr gameMap;
+                SharedPtr gameMap;
 
-        GameCamera camera;
+                GameCamera camera;
 
-        int deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
+                int deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
 
-        public:
-        ~GameObject();
+                public:
+                ~GameObject();
 
-        //void registerEntity (const std::string& name, AbstractEntity* entity);
-        void registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder);
-        template <typename T>
-        void registerEntityController (const std::string& name) {
-            static_assert(std::is_base_of<EntityController, T>::value, "Type must be child of EntityController!");
-            controllers[name] = std::make_shared<T>();
-        }
-        void buildEntityTypes ();
-        //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
+                //void registerEntity (const std::string& name, AbstractEntity* entity);
+                void registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder);
+                template <typename T>
+                void registerEntityController (const std::string& name) {
+                    static_assert(std::is_base_of_v<EntityController, T>, "Type must be child of EntityController!");
+                    controllers[name] = std::make_shared<T>();
+                }
+                void buildEntityTypes ();
+                //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
 
-        int createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue());
-        /*AbstractEntity* getEntityInstance (int entityId);
-        void deleteEntityInstance (AbstractEntity* entity);*/
+                int createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue());
+                /*AbstractEntity* getEntityInstance (int entityId);
+                void deleteEntityInstance (AbstractEntity* entity);*/
 
-        void deleteEntityInstance (int entityId);
-        void registerTile (Tile* tile);
-        int getTileId (const std::string& name);
-        Tile* getTile (const std::string& name);
-        Tile* getTile (int tileId);
+                void deleteEntityInstance (int entityId);
+                void registerTile (Tile* tile);
+                int getTileId (const std::string& name);
+                Tile* getTile (const std::string& name);
+                Tile* getTile (int tileId);
 
-        //void updateEntities (float deltaTime);
-        void updateEntityPosition ();
-        //void updateEntityPositions (float deltaTime);
-        void setTextureIds (graphics::TextureAtlas& atlas);
-        //void renderEntities (graphics::Graphics* graphics);
-        void setEntityComponentManager (component::EntityComponentManager::SharedPtr manager);
+                //void updateEntities (float deltaTime);
+                void updateEntityPosition ();
+                //void updateEntityPositions (float deltaTime);
+                void setTextureIds (graphics::TextureAtlas& atlas);
+                //void renderEntities (graphics::Graphics* graphics);
+                void setEntityComponentManager (SharedPtr manager);
 
-        void updateEntitiesPrePhysics ();
-        void updateEntitiesPostPhysics ();
-        event::EventBus::SharedPtr getEventBus();
+                void updateEntitiesPrePhysics ();
+                void updateEntitiesPostPhysics ();
+                SharedPtr getEventBus();
 
-        std::shared_ptr<EntityController> getController (const std::string& name);
+                std::shared_ptr<EntityController> getController (const std::string& name);
 
-        void reloadMap ();
-        void loadMap (Map::SharedPtr map);
+                void reloadMap ();
+                void loadMap (SharedPtr map);
 
-        void dumpMap (const std::string& filepath);
+                void dumpMap (const std::string& filepath);
 
-        void mapReloadRequest (event::ReloadMapEvent& event);
-        void mapDumpRequest (event::DumpMapEvent& event);
-        void mapLoadRequest (event::MapLoadRequestEvent& event);
+                void mapReloadRequest (event::ReloadMapEvent& event);
+                void mapDumpRequest (event::DumpMapEvent& event);
+                void mapLoadRequest (event::MapLoadRequestEvent& event);
 
-        void updateCamera (graphics::Camera& camera);
+                void updateCamera (graphics::Camera& camera);
 
-        GameCamera& getCamera ();
+                GameCamera& getCamera ();
 
-        friend view::DebugGameView;
-    };
-}
+                friend view::DebugGameView;
+            };
+    }

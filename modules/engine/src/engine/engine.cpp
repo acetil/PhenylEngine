@@ -7,19 +7,20 @@
 #include "graphics/graphics_headers.h"
 
 #include "logging/logging.h"
+#include "game_object.h"
 
 using namespace engine;
 
 class engine::detail::Engine {
 private:
     //graphics::detail::Graphics::SharedPtr graphics;
-    game::GameObject::SharedPtr gameObj;
+    game::detail::GameObject::SharedPtr gameObj;
     graphics::PhenylGraphicsHolder graphicsHolder;
 public:
     Engine ();
     ~Engine();
 
-    [[nodiscard]] game::GameObject::SharedPtr getGameObject () const;
+    [[nodiscard]] game::detail::GameObject::SharedPtr getGameObject () const;
     [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
 };
 
@@ -29,7 +30,7 @@ engine::PhenylEngine::PhenylEngine () {
 
 engine::PhenylEngine::~PhenylEngine () = default;
 
-game::GameObject::SharedPtr engine::PhenylEngine::getGame () {
+game::detail::GameObject::SharedPtr engine::PhenylEngine::getGame () {
     return internal->getGameObject();
 }
 
@@ -59,7 +60,7 @@ engine::detail::Engine::~Engine () {
     //graphics::destroyGraphics(graphics);
 }
 
-game::GameObject::SharedPtr detail::Engine::getGameObject () const {
+game::detail::GameObject::SharedPtr detail::Engine::getGameObject () const {
     return gameObj;
 }
 
