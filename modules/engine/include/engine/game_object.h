@@ -35,10 +35,10 @@ namespace game::detail {
                 std::map<std::string, int> tileMap;
                 std::vector<Tile*> tileRegistry;
                 //int currentEntityId = 0;
-                SharedPtr eventBus = NewSharedPtr();
-                SharedPtr entityComponentManager;
+                event::EventBus::SharedPtr eventBus = event::EventBus::NewSharedPtr();
+                component::EntityComponentManager::SharedPtr entityComponentManager;
 
-                SharedPtr gameMap;
+                Map::SharedPtr gameMap;
 
                 GameCamera camera;
 
@@ -72,16 +72,16 @@ namespace game::detail {
                 //void updateEntityPositions (float deltaTime);
                 void setTextureIds (graphics::TextureAtlas& atlas);
                 //void renderEntities (graphics::Graphics* graphics);
-                void setEntityComponentManager (SharedPtr manager);
+                void setEntityComponentManager (component::EntityComponentManager::SharedPtr manager);
 
                 void updateEntitiesPrePhysics ();
                 void updateEntitiesPostPhysics ();
-                SharedPtr getEventBus();
+                event::EventBus::SharedPtr getEventBus();
 
                 std::shared_ptr<EntityController> getController (const std::string& name);
 
                 void reloadMap ();
-                void loadMap (SharedPtr map);
+                void loadMap (Map::SharedPtr map);
 
                 void dumpMap (const std::string& filepath);
 

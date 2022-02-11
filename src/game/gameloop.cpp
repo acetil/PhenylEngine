@@ -32,7 +32,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
     KeyboardInput::SharedPtr keyInput = getKeyboardInput(engine.getGraphics());
-    setupMovementKeys(keyInput, gameObject->getEventBus());
+    setupMovementKeys(keyInput, gameObject.getEventBus());
 
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
@@ -43,7 +43,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     Map::SharedPtr map = readMap("resources/maps/testmap.json", gameObject);
     //map->setAtlas(graphics->getTextureAtlas("sprite").value());
-    gameObject->loadMap(map);
+    gameObject.loadMap(map);
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //map->initGraphicsData(graphics, "default");
     //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
@@ -57,13 +57,13 @@ int game::gameloop (engine::PhenylEngine& engine) {
         keyInput->handleKeyPresses();
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
-            gameObject->updateEntitiesPrePhysics();
-            gameObject->updateEntityPosition();
-            gameObject->updateEntitiesPostPhysics();
+            gameObject.updateEntitiesPrePhysics();
+            gameObject.updateEntityPosition();
+            gameObject.updateEntitiesPostPhysics();
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
             util::endProfile();
 
-            gameObject->updateCamera(graphics.getCamera());
+            gameObject.updateCamera(graphics.getCamera());
             //fpsFrames++;
         }
         /*if (timeSinceFpsUpdate >= 1.0f) {

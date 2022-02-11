@@ -16,7 +16,6 @@
 #include "util/string_help.h"
 
 #include "util/data.h"
-#include "game_object.h"
 
 #define MAGIC_LEN 4
 #define DIMENSION_SIZE 4
@@ -32,10 +31,10 @@
 
 using namespace game;
 
-Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::SharedPtr gameObject);
-Map::SharedPtr readMapJson (const std::string& path, detail::GameObject::SharedPtr gameObject);
+Map::SharedPtr readMapSimple (const std::string& path, PhenylGame gameObject);
+Map::SharedPtr readMapJson (const std::string& path, PhenylGame gameObject);
 
-Map::SharedPtr game::readMap (const std::string& path, detail::GameObject::SharedPtr gameObject) {
+Map::SharedPtr game::readMap (const std::string& path, PhenylGame gameObject) {
     // TODO: refactor
     // TODO: replace uint32_t with fast version
     //logging::log(LEVEL_DEBUG, path.substr(path.size() - 4, std::string::npos));
@@ -93,7 +92,7 @@ Map::SharedPtr game::readMap (const std::string& path, detail::GameObject::Share
 
     std::map<uint32_t, Tile*> tileTypeMap;
     char charBuf[STRING_BUFF_SIZE];
-    Tile* emptyTile = gameObject->getTile("empty_tile");
+    Tile* emptyTile = gameObject.getTile("empty_tile");
 
     for (auto i = 0; i < numTiles; i++) {
         // tile number
@@ -122,7 +121,7 @@ Map::SharedPtr game::readMap (const std::string& path, detail::GameObject::Share
         } while (c != '\0' && c != EOF);
 
         if (isValid) {
-            Tile* tile = gameObject->getTile(std::string(charBuf));
+            Tile* tile = gameObject.getTile(std::string(charBuf));
             if (tile == nullptr) {
                 //logging::logf(LEVEL_WARNING, "Unknown tile '%s' in map file at path %s", charBuf, path.c_str());
                 tile = emptyTile;
@@ -171,7 +170,7 @@ Map::SharedPtr game::readMap (const std::string& path, detail::GameObject::Share
     return map;
 }
 
-Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::SharedPtr gameObject) {
+Map::SharedPtr readMapSimple (const std::string& path, PhenylGame gameObject) {
     std::ifstream file(path);
 
     if (!file) {
@@ -196,7 +195,7 @@ Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::Share
     int numEntities = std::stoi(header[3]);
 
     std::unordered_map<int, Tile*> tileIdMap;
-    auto emptyTile = gameObject->getTile("empty_tile");
+    auto emptyTile = gameObject.getTile("empty_tile");
 
     for (int i = 0; i < numTiles; i++) {
         std::string line;
@@ -205,7 +204,7 @@ Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::Share
         if (lineSplit.size() < 2) {
             logging::log(LEVEL_WARNING, "Simple map tile line \"{}\" is too short!", line);
         }
-        auto t = gameObject->getTile(lineSplit[1]);
+        auto t = gameObject.getTile(lineSplit[1]);
         if (t == nullptr) {
             t = emptyTile;
         }
@@ -256,7 +255,7 @@ Map::SharedPtr readMapSimple (const std::string& path, detail::GameObject::Share
     return map;
 }
 
-Map::SharedPtr readMapJson (const std::string& path, detail::GameObject::SharedPtr gameObject) {
+Map::SharedPtr readMapJson (const std::string& path, PhenylGame gameObject) {
     util::DataValue mapVal = util::parseFromFile(path);
     if (mapVal.empty()) {
         logging::log(LEVEL_ERROR, "Failed to read map file {}", path);
@@ -267,10 +266,10 @@ Map::SharedPtr readMapJson (const std::string& path, detail::GameObject::SharedP
 
     util::DataArray tileIdArray = mapData.at("tile_ids");
     std::unordered_map<int, Tile*> tileIds;
-    auto emptyTile = gameObject->getTile("empty_tile");
+    auto emptyTile = gameObject.getTile("empty_tile");
     for (auto& i : tileIdArray) {
         auto& tileObj = i.get<util::DataObject>();
-        auto t = gameObject->getTile(tileObj.at("tile").get<std::string>());
+        auto t = gameObject.getTile(tileObj.at("tile").get<std::string>());
         tileIds[tileObj.at("id")] = t ? t : emptyTile;
     }
 
@@ -303,7 +302,7 @@ Map::SharedPtr readMapJson (const std::string& path, detail::GameObject::SharedP
     return map;
 }
 
-Map::SharedPtr game::readMapNew (const std::string& path, detail::GameObject::SharedPtr gameObject) {
+Map::SharedPtr game::readMapNew (const std::string& path, PhenylGame gameObject) {
     util::DataValue mapVal = util::parseFromFile(path);
     if (mapVal.empty()) {
         logging::log(LEVEL_ERROR, "Failed to read map file {}", path);
@@ -314,10 +313,10 @@ Map::SharedPtr game::readMapNew (const std::string& path, detail::GameObject::Sh
 
     util::DataArray tileIdArray = mapData.at("tile_ids");
     std::unordered_map<int, Tile*> tileIds;
-    auto emptyTile = gameObject->getTile("empty_tile");
+    auto emptyTile = gameObject.getTile("empty_tile");
     for (auto& i : tileIdArray) {
         auto& tileObj = i.get<util::DataObject>();
-        auto t = gameObject->getTile(tileObj.at("tile").get<std::string>());
+        auto t = gameObject.getTile(tileObj.at("tile").get<std::string>());
         tileIds[tileObj.at("id")] = t ? t : emptyTile;
     }
 

@@ -2,7 +2,6 @@
 #include <utility>
 
 #include "engine/game_object.h"
-#include "game_object.h"
 
 namespace view {
     class DebugGameView {

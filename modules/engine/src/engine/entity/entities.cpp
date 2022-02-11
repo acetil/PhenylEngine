@@ -37,20 +37,20 @@ void game::addEntities(event::EntityRegisterEvent& event) {
             .addLayers(2);
 
 
-    event.gameObject->registerEntityType("test_entity", entityTestType);
-    event.gameObject->registerEntityType("bullet", entityBulletType);
-    event.gameObject->registerEntityType("wall_entity", entityWallType);
-    event.gameObject->registerEntityController<PlayerController>("test_entity");
-    event.gameObject->registerEntityController<BulletController>("bullet");
-    event.gameObject->registerEntityController<WallController>("wall_entity");
+    event.gameObject.registerEntityType("test_entity", entityTestType);
+    event.gameObject.registerEntityType("bullet", entityBulletType);
+    event.gameObject.registerEntityType("wall_entity", entityWallType);
+    event.gameObject.tempGetPtr()->registerEntityController<PlayerController>("test_entity");
+    event.gameObject.tempGetPtr()->registerEntityController<BulletController>("bullet");
+    event.gameObject.tempGetPtr()->registerEntityController<WallController>("wall_entity");
 
-    event.gameObject->buildEntityTypes();
+    event.gameObject.buildEntityTypes();
 
-    auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject->getController("test_entity"));
+    auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject.getController("test_entity"));
 
-    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateMovement, playerController);
-    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateCursorPos, playerController);
-    event.gameObject->getEventBus()->subscribeHandler(&game::PlayerController::updateDoShoot, playerController);
+    event.gameObject.getEventBus()->subscribeHandler(&game::PlayerController::updateMovement, playerController);
+    event.gameObject.getEventBus()->subscribeHandler(&game::PlayerController::updateCursorPos, playerController);
+    event.gameObject.getEventBus()->subscribeHandler(&game::PlayerController::updateDoShoot, playerController);
 
     //event.gameObject->registerEntity("test_entity", entityTest);
     //event.gameObject->registerEntity("bullet", entityBullet);

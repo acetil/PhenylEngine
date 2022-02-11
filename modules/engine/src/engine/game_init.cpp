@@ -14,51 +14,51 @@
 #include "engine/entity/controller/entity_controller.h"
 #include "graphics/graphics_update.h"
 #include "graphics/phenyl_graphics.h"
+#include "engine/phenyl_game.h"
 
 #include "graphics/ui/debug_ui.h"
-#include "game_object.h"
 
 using namespace game;
-void addEventHandlers (const detail::GameObject::SharedPtr& gameObject, graphics::PhenylGraphics graphics);
+void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics graphics);
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
-void registerTiles (const detail::GameObject::SharedPtr& gameObject, const graphics::PhenylGraphics& graphics);
+void registerTiles (game::PhenylGame gameObject, const graphics::PhenylGraphics& graphics);
 
-detail::GameObject::SharedPtr game::initGame (graphics::PhenylGraphics graphics) {
-    auto gameObject = detail::GameObject::NewSharedPtr();
+void game::initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObject) {
+    //auto gameObject = detail::GameObject::NewSharedPtr();
     addEventHandlers(gameObject, graphics);
-    addControlEventHandlers(gameObject->getEventBus());
-    auto manager = getEntityComponentManager(gameObject->getEventBus());
-    gameObject->setEntityComponentManager(manager);
+    addControlEventHandlers(gameObject.getEventBus());
+    auto manager = getEntityComponentManager(gameObject.getEventBus());
+    gameObject.setEntityComponentManager(manager);
     logging::log(LEVEL_INFO, "Starting init of entities!");
-    gameObject->getEventBus()->raiseEvent(event::EntityRegisterEvent(gameObject));
+    gameObject.getEventBus()->raiseEvent(event::EntityRegisterEvent(gameObject));
     logging::log(LEVEL_DEBUG, "Finished entity init!");
 
-    graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject->setTextureIds(atlas);});
-    graphics::addMapRenderLayer(graphics, gameObject->getEventBus());
+    graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject.setTextureIds(atlas);});
+    graphics::addMapRenderLayer(graphics, gameObject.getEventBus());
     graphics.addEntityLayer(manager); // TODO: unhackify
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
 
     registerTiles(gameObject, graphics);
     logging::log(LEVEL_DEBUG, "Set texture ids!");
 
-    graphics.setupWindowCallbacks(gameObject->getEventBus());
+    graphics.setupWindowCallbacks(gameObject.getEventBus());
 
-    return gameObject;
+    //return gameObject;
 }
 
-void addEventHandlers (const detail::GameObject::SharedPtr& gameObject, graphics::PhenylGraphics graphics) {
-    gameObject->getEventBus()->subscribeHandler(game::addEntities);
+void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics graphics) {
+    gameObject.getEventBus()->subscribeHandler(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
-    gameObject->getEventBus()->subscribeHandler(physics::onEntityCreation);
-    gameObject->getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
-    gameObject->getEventBus()->subscribeHandler(graphics::updateEntityRotation);
-    gameObject->getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
+    gameObject.getEventBus()->subscribeHandler(physics::onEntityCreation);
+    gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
+    gameObject.getEventBus()->subscribeHandler(graphics::updateEntityRotation);
+    gameObject.getEventBus()->subscribeHandler(physics::updateEntityHitboxRotation);
 
-    gameObject->getEventBus()->subscribeHandler(&detail::GameObject::mapReloadRequest, gameObject);
-    gameObject->getEventBus()->subscribeHandler(&detail::GameObject::mapDumpRequest, gameObject);
-    gameObject->getEventBus()->subscribeHandler(&detail::GameObject::mapLoadRequest, gameObject);
+    gameObject.getEventBus()->subscribeHandler(&detail::GameObject::mapReloadRequest, gameObject.tempGetPtr());
+    gameObject.getEventBus()->subscribeHandler(&detail::GameObject::mapDumpRequest, gameObject.tempGetPtr());
+    gameObject.getEventBus()->subscribeHandler(&detail::GameObject::mapLoadRequest, gameObject.tempGetPtr());
 
-    graphics::addDebugEventHandlers(gameObject->getEventBus());
+    graphics::addDebugEventHandlers(gameObject.getEventBus());
 }
 
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus) {
@@ -70,11 +70,11 @@ component::EntityComponentManager::SharedPtr getEntityComponentManager (event::E
     return manager;
 }
 
-void registerTiles (const detail::GameObject::SharedPtr& gameObject, const graphics::PhenylGraphics& graphics) {
+void registerTiles (game::PhenylGame gameObject, const graphics::PhenylGraphics& graphics) {
     graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas) {
-        gameObject->registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
+        gameObject.registerTile(new Tile("test_tile1", atlas.getModelId("test6"),
                                           atlas, 0.1, 0.1));
-        gameObject->registerTile(new Tile("test_tile2", atlas.getModelId("test7"),
+        gameObject.registerTile(new Tile("test_tile2", atlas.getModelId("test7"),
                                           atlas, 0.1, 0.1));
     });
 }

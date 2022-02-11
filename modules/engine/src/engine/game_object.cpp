@@ -224,5 +224,5 @@ void detail::GameObject::mapDumpRequest (event::DumpMapEvent& event) {
 }
 
 void detail::GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
-    loadMap(readMap(event.filepath, shared_from_this()));
+    loadMap(readMap(event.filepath, PhenylGame(shared_from_this())));
 }

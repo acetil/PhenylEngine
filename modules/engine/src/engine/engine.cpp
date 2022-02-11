@@ -7,20 +7,20 @@
 #include "graphics/graphics_headers.h"
 
 #include "logging/logging.h"
-#include "game_object.h"
 
 using namespace engine;
 
 class engine::detail::Engine {
 private:
     //graphics::detail::Graphics::SharedPtr graphics;
-    game::detail::GameObject::SharedPtr gameObj;
+    game::PhenylGameHolder gameObjHolder;
     graphics::PhenylGraphicsHolder graphicsHolder;
 public:
     Engine ();
     ~Engine();
 
-    [[nodiscard]] game::detail::GameObject::SharedPtr getGameObject () const;
+    [[nodiscard]] game::detail::GameObject::SharedPtr getGameObjectTemp () const;
+    [[nodiscard]] game::PhenylGame getGameObject () const;
     [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
 };
 
@@ -30,12 +30,16 @@ engine::PhenylEngine::PhenylEngine () {
 
 engine::PhenylEngine::~PhenylEngine () = default;
 
-game::detail::GameObject::SharedPtr engine::PhenylEngine::getGame () {
-    return internal->getGameObject();
+game::detail::GameObject::SharedPtr engine::PhenylEngine::getGameTemp () {
+    return internal->getGameObjectTemp();
 }
 
 graphics::PhenylGraphics PhenylEngine::getGraphics () {
     return internal->getGraphics();
+}
+
+game::PhenylGame PhenylEngine::getGame () {
+    return internal->getGameObject();
 }
 
 engine::detail::Engine::Engine () {
@@ -52,7 +56,7 @@ engine::detail::Engine::Engine () {
 
     logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");*/
 
-    gameObj = game::initGame(graphicsHolder.getGraphics());
+    gameObjHolder.initGame(graphicsHolder.getGraphics());
 }
 
 engine::detail::Engine::~Engine () {
@@ -60,10 +64,14 @@ engine::detail::Engine::~Engine () {
     //graphics::destroyGraphics(graphics);
 }
 
-game::detail::GameObject::SharedPtr detail::Engine::getGameObject () const {
-    return gameObj;
+game::detail::GameObject::SharedPtr detail::Engine::getGameObjectTemp () const {
+    return gameObjHolder.tempGetGameObject();
 }
 
 graphics::PhenylGraphics detail::Engine::getGraphics () const {
     return graphicsHolder.getGraphics();
+}
+
+game::PhenylGame detail::Engine::getGameObject () const {
+    return gameObjHolder.getGameObject();
 }

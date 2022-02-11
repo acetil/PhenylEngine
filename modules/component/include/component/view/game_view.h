@@ -1,7 +1,7 @@
 #pragma once
 #include "engine/game_object.h"
 #include "util/data.h"
-#include "game_object.h"
+//#include "engine/game_object.h"
 
 namespace view {
     class GameView {

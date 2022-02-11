@@ -8,7 +8,6 @@
 #include "util/smooth_queue.h"
 
 #include "event/events/debug/profiler_change.h"
-#include "game_object.h"
 
 using namespace graphics;
 
@@ -19,14 +18,14 @@ static util::SmoothQueue<double, 30> physicsQueue;
 static util::SmoothQueue<double, 30> frameQueue;
 static util::SmoothQueue<float, 30> deltaTimeQueue;
 
-void graphics::renderDebugUi (game::detail::GameObject::SharedPtr gameObject, UIManager& uiManager, float deltaTime) {
+void graphics::renderDebugUi (game::PhenylGame gameObject, UIManager& uiManager, float deltaTime) {
 
     deltaTimeQueue.pushPop(deltaTime);
     frameQueue.pushPop(util::getProfileFrameTime());
     graphicsQueue.pushPop(util::getProfileTime("graphics"));
     physicsQueue.pushPop(util::getProfileTime("physics"));
 
-    view::DebugGameView debugView(std::move(gameObject));
+    //view::DebugGameView debugView(std::move(gameObject));
 
     if (doDisplayProfiler) {
         uiManager.renderText("noto-serif", "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5, 15);
