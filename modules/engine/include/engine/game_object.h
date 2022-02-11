@@ -25,7 +25,7 @@ namespace view {
 };
 
 namespace game::detail {
-        class GameObject : public util::SmartHelper<GameObject>, public std::enable_shared_from_this<GameObject> {
+        class GameObject : public util::SmartHelper<GameObject, true>/*, public std::enable_shared_from_this<GameObject>*/ {
                 private:
                 std::map<std::string, AbstractEntity*> entityRegistry;
                 std::unordered_map<std::string, EntityType> entityTypes;
@@ -35,7 +35,7 @@ namespace game::detail {
                 std::map<std::string, int> tileMap;
                 std::vector<Tile*> tileRegistry;
                 //int currentEntityId = 0;
-                event::EventBus::SharedPtr eventBus = event::EventBus::NewSharedPtr();
+                event::EventBus::SharedPtr eventBus;
                 component::EntityComponentManager::SharedPtr entityComponentManager;
 
                 Map::SharedPtr gameMap;
@@ -90,6 +90,8 @@ namespace game::detail {
                 void mapLoadRequest (event::MapLoadRequestEvent& event);
 
                 void updateCamera (graphics::Camera& camera);
+
+                void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
                 GameCamera& getCamera ();
 

@@ -13,6 +13,7 @@ using namespace engine;
 class engine::detail::Engine {
 private:
     //graphics::detail::Graphics::SharedPtr graphics;
+    event::EventBus::SharedPtr eventBus;
     game::PhenylGameHolder gameObjHolder;
     graphics::PhenylGraphicsHolder graphicsHolder;
 public:
@@ -22,6 +23,7 @@ public:
     [[nodiscard]] game::detail::GameObject::SharedPtr getGameObjectTemp () const;
     [[nodiscard]] game::PhenylGame getGameObject () const;
     [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
+    event::EventBus::SharedPtr getEventBus ();
 };
 
 engine::PhenylEngine::PhenylEngine () {
@@ -42,6 +44,10 @@ game::PhenylGame PhenylEngine::getGame () {
     return internal->getGameObject();
 }
 
+event::EventBus::SharedPtr PhenylEngine::getEventBus () {
+    return internal->getEventBus();
+}
+
 engine::detail::Engine::Engine () {
     /*GLFWwindow* window = nullptr;
     if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
@@ -56,7 +62,8 @@ engine::detail::Engine::Engine () {
 
     logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");*/
 
-    gameObjHolder.initGame(graphicsHolder.getGraphics());
+    eventBus = event::EventBus::NewSharedPtr();
+    gameObjHolder.initGame(graphicsHolder.getGraphics(), eventBus);
 }
 
 engine::detail::Engine::~Engine () {
@@ -74,4 +81,8 @@ graphics::PhenylGraphics detail::Engine::getGraphics () const {
 
 game::PhenylGame detail::Engine::getGameObject () const {
     return gameObjHolder.getGameObject();
+}
+
+event::EventBus::SharedPtr detail::Engine::getEventBus () {
+    return eventBus;
 }

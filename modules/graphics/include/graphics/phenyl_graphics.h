@@ -48,7 +48,7 @@ namespace graphics {
 
         Renderer* getRenderer () const; // TODO: remove
 
-        void setupWindowCallbacks (const event::EventBus::SharedPtr& bus);
+        //void setupWindowCallbacks (const event::EventBus::SharedPtr& bus);
 
         void deleteWindowCallbacks ();
 
@@ -57,6 +57,8 @@ namespace graphics {
         std::shared_ptr<detail::Graphics> tempGetGraphics () {
             return getGraphics();
         }
+
+        void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
     };
 
     class PhenylGraphicsHolder {

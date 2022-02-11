@@ -58,6 +58,8 @@ namespace game {
 
         void updateCamera (graphics::Camera& camera);
 
+        void addEventHandlers (event::EventBus::SharedPtr eventBus);
+
         GameCamera& getCamera ();
 
         std::shared_ptr<game::detail::GameObject> tempGetPtr () {
@@ -79,6 +81,6 @@ namespace game {
             return gameObject;
         };
 
-        void initGame (graphics::PhenylGraphics graphics);
+        void initGame (const graphics::PhenylGraphics& graphics, event::EventBus::SharedPtr eventBus);
     };
 }

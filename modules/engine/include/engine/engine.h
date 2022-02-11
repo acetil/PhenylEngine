@@ -25,5 +25,7 @@ namespace engine {
         game::PhenylGame getGame ();
 
         graphics::PhenylGraphics getGraphics ();
+
+        event::EventBus::SharedPtr getEventBus ();
     };
 }

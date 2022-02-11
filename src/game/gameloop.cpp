@@ -32,7 +32,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
     KeyboardInput::SharedPtr keyInput = getKeyboardInput(engine.getGraphics());
-    setupMovementKeys(keyInput, gameObject.getEventBus());
+    setupMovementKeys(keyInput, engine.getEventBus());
 
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;

@@ -19,6 +19,7 @@
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/ui_manager.h"
 #include "graphics/phenyl_graphics.h"
+#include "event/event.h"
 
 #include "util/smart_help.h"
 #include "util/optional.h"
@@ -50,7 +51,7 @@ namespace graphics {
 
                                     };*/
 
-        class Graphics : public util::SmartHelper<Graphics> {
+        class Graphics : public util::SmartHelper<Graphics, true> {
         private:
             Renderer* renderer;
 
@@ -100,6 +101,8 @@ namespace graphics {
             void deleteWindowCallbacks ();
 
             UIManager& getUIManager ();
+
+            void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
         };
     }
 

@@ -226,3 +226,10 @@ void detail::GameObject::mapDumpRequest (event::DumpMapEvent& event) {
 void detail::GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
     loadMap(readMap(event.filepath, PhenylGame(shared_from_this())));
 }
+
+void detail::GameObject::addEventHandlers (event::EventBus::SharedPtr _eventBus) {
+    eventBus = std::move(_eventBus);
+    eventBus->subscribeHandler(&detail::GameObject::mapReloadRequest, shared_from_this());
+    eventBus->subscribeHandler(&detail::GameObject::mapDumpRequest, shared_from_this());
+    eventBus->subscribeHandler(&detail::GameObject::mapLoadRequest, shared_from_this());
+}

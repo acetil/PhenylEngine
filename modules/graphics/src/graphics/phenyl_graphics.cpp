@@ -91,9 +91,9 @@ Renderer* PhenylGraphics::getRenderer () const {
     return getGraphics()->getRenderer();
 }
 
-void PhenylGraphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
+/*void PhenylGraphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
     getGraphics()->setupWindowCallbacks(bus);
-}
+}*/
 
 void PhenylGraphics::deleteWindowCallbacks () {
     getGraphics()->deleteWindowCallbacks();
@@ -101,6 +101,10 @@ void PhenylGraphics::deleteWindowCallbacks () {
 
 UIManager& PhenylGraphics::getUIManager () {
     return getGraphics()->getUIManager();
+}
+
+void PhenylGraphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
+    getGraphics()->addEventHandlers(eventBus);
 }
 
 

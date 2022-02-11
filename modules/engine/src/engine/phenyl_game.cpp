@@ -113,6 +113,10 @@ GameCamera& PhenylGame::getCamera () {
     return getShared()->getCamera();
 }
 
+void PhenylGame::addEventHandlers (event::EventBus::SharedPtr eventBus) {
+    getShared()->addEventHandlers(eventBus);
+}
+
 PhenylGameHolder::~PhenylGameHolder () = default;
 
 PhenylGame PhenylGameHolder::getGameObject () const {
@@ -123,6 +127,6 @@ PhenylGameHolder::PhenylGameHolder () {
     gameObject = detail::GameObject::NewSharedPtr();
 }
 
-void PhenylGameHolder::initGame (graphics::PhenylGraphics graphics) {
-    game::initGame(std::move(graphics), getGameObject());
+void PhenylGameHolder::initGame (const graphics::PhenylGraphics& graphics, event::EventBus::SharedPtr eventBus) {
+    game::initGame(graphics, getGameObject(), eventBus);
 }

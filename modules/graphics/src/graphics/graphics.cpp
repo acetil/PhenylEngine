@@ -140,4 +140,11 @@ UIManager& detail::Graphics::getUIManager () {
 
 void detail::Graphics::deleteWindowCallbacks () {
     renderer->invalidateWindowCallbacks();
+}
+
+void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
+    //eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, );
+    eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, this->shared_from_this());
+
+    setupWindowCallbacks(eventBus);
 };
