@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "component/component.h"
 #include "game_object.h"
 #include "graphics/graphics.h"
 #include "graphics/phenyl_graphics.h"
@@ -27,5 +28,7 @@ namespace engine {
         graphics::PhenylGraphics getGraphics ();
 
         event::EventBus::SharedPtr getEventBus ();
+
+        component::EntityComponentManager::SharedPtr getComponentManager ();
     };
 }

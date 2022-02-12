@@ -23,20 +23,20 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
 void registerTiles (game::PhenylGame gameObject, const graphics::PhenylGraphics& graphics);
 
-void game::initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObject, event::EventBus::SharedPtr eventBus) {
+void game::initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObject, const event::EventBus::SharedPtr& eventBus) {
     //auto gameObject = detail::GameObject::NewSharedPtr();
-    addEventHandlers(gameObject, graphics, eventBus);
-    addControlEventHandlers(eventBus);
-    auto manager = getEntityComponentManager(eventBus);
-    gameObject.setEntityComponentManager(manager);
-    logging::log(LEVEL_INFO, "Starting init of entities!");
+    //addEventHandlers(gameObject, graphics, eventBus);
+    //addControlEventHandlers(eventBus);
+    //auto manager = getEntityComponentManager(eventBus);
+    //gameObject.setEntityComponentManager(manager);
+    /*logging::log(LEVEL_INFO, "Starting init of entities!");
     eventBus->raiseEvent(event::EntityRegisterEvent(gameObject));
-    logging::log(LEVEL_DEBUG, "Finished entity init!");
+    logging::log(LEVEL_DEBUG, "Finished entity init!");*/
 
-    graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject.setTextureIds(atlas);});
+    /*graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject.setTextureIds(atlas);});
     graphics::addMapRenderLayer(graphics, eventBus);
-    graphics.addEntityLayer(manager); // TODO: unhackify
-    graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
+    graphics.addEntityLayer(gameObject.c); // TODO: unhackify
+    graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());*/
 
     registerTiles(gameObject, graphics);
     logging::log(LEVEL_DEBUG, "Set texture ids!");

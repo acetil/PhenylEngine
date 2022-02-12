@@ -8,5 +8,5 @@
 #include "event/event.h"
 
 namespace game {
-    void initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObject, event::EventBus::SharedPtr eventBus);
+    void initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObject, const event::EventBus::SharedPtr& eventBus);
 }
