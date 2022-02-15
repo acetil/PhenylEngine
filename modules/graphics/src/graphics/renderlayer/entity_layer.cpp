@@ -33,7 +33,7 @@ void EntityRenderLayer::gatherData () {
 
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
     componentManager->applyFunc<FixedModel>(bufferPosData, std::pair(&buffers[0],
-                                                            componentManager->getComponent<AbsolutePosition>()));
+                                                            componentManager->getComponent<AbsolutePosition>().orElse(nullptr)));
     componentManager->applyFunc<FixedModel>(bufferUvData, &buffers[1]);
     componentManager->applyFunc<AbsolutePosition>(bufferActualPosData, &buffers[2]);
 

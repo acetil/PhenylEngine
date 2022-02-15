@@ -2,11 +2,11 @@
 using namespace graphics;
 
 void graphics::updateEntityRotation (event::EntityRotationEvent &event) {
-    auto ptr = event.manager->getObjectDataPtr<AbsolutePosition>(event.entityId);
+    auto ptr = event.manager->getObjectDataPtr<AbsolutePosition>(event.entityId).orElse(nullptr);
     ptr->transform *= event.rotMatrix;
 }
 
-util::DataValue FixedModel::serialise () {
+util::DataValue FixedModel::serialise () const{
     return util::DataValue(modelName);
 }
 
@@ -14,7 +14,7 @@ void FixedModel::deserialise (util::DataValue const& val) {
     modelName = val.get<std::string>(); // TODO
 }
 
-util::DataValue AbsolutePosition::serialise () {
+util::DataValue AbsolutePosition::serialise () const {
     util::DataObject obj;
     util::DataArray arr;
     for (int i = 0; i < 2; i++) {

@@ -36,13 +36,13 @@ namespace game::detail {
                 std::vector<Tile*> tileRegistry;
                 //int currentEntityId = 0;
                 event::EventBus::SharedPtr eventBus;
-                component::EntityComponentManager::SharedPtr entityComponentManager;
+                component::ComponentManagerNew::SharedPtr entityComponentManager;
 
                 Map::SharedPtr gameMap;
 
                 GameCamera camera;
 
-                int deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
+                component::EntityId deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
 
                 public:
                 ~GameObject();
@@ -57,11 +57,11 @@ namespace game::detail {
                 void buildEntityTypes ();
                 //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
 
-                int createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue());
+                component::EntityId createNewEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue());
                 /*AbstractEntity* getEntityInstance (int entityId);
                 void deleteEntityInstance (AbstractEntity* entity);*/
 
-                void deleteEntityInstance (int entityId);
+                void deleteEntityInstance (component::EntityId entityId);
                 void registerTile (Tile* tile);
                 int getTileId (const std::string& name);
                 Tile* getTile (const std::string& name);

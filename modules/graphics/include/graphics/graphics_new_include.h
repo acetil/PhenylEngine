@@ -44,7 +44,7 @@ namespace graphics {
             return _name;
         }
 
-        util::DataValue serialise ();
+        util::DataValue serialise () const;
         void deserialise (util::DataValue const& val);
 
     public:
@@ -76,7 +76,7 @@ namespace graphics {
         static std::string_view const& getName () {
             return _name;
         }
-        util::DataValue serialise ();
+        util::DataValue serialise () const;
         void deserialise (util::DataValue const& val);
     public:
         AbsolutePosition() = default;

@@ -1,4 +1,5 @@
 #include "logging/logging.h"
+#include "component/component_new.h"
 #include "collisions.h"
 #include <tuple>
 #include <float.h>
@@ -123,13 +124,13 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
     return std::pair(true, smallestDispVec);
 }
 
-void physics::checkCollisionsEntity (CollisionComponent* comp, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<int, int, glm::vec2>>* collisionResults) {
+void physics::checkCollisionsEntity (CollisionComponent* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults) {
     for (int i = 0; i < numEntities; i++) {
         auto compPtr = comp + 1;
         for (int j = i + 1; j < numEntities; j++) {
             auto coll = entityCollision(*comp, *compPtr);
             if (coll.first) {
-                collisionResults->emplace_back(std::tuple(i, j, coll.second));
+                collisionResults->emplace_back(std::tuple(ids[i], ids[j], coll.second));
             }
             compPtr++;
         }
@@ -137,7 +138,7 @@ void physics::checkCollisionsEntity (CollisionComponent* comp, int numEntities, 
     }
 }
 
-util::DataValue physics::CollisionComponent::serialise () {
+util::DataValue physics::CollisionComponent::serialise () const {
     util::DataObject obj;
     util::DataArray collScale;
     for (int i = 0; i < 2; i++) {

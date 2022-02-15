@@ -21,7 +21,7 @@ namespace event {
         float size;
         component::EntityComponentManager::SharedPtr compManager;
         game::AbstractEntity* entity{};
-        int entityId;
+        component::EntityId entityId;
         view::EntityView entityView;
         view::GameView gameView;
         event::EventBus* eventBus = nullptr; // TODO: remove
@@ -32,7 +32,7 @@ namespace event {
             compManager = nullptr;
             entityId = 0;
         };*/
-        EntityCreationEvent (float x, float y, float size, component::EntityComponentManager::SharedPtr compManager, game::AbstractEntity* entity, int entityId,
+        EntityCreationEvent (float x, float y, float size, component::EntityComponentManager::SharedPtr compManager, game::AbstractEntity* entity, component::EntityId entityId,
                              view::EntityView _entityView, view::GameView _gameView) : entityView(std::move(_entityView)), gameView(_gameView) {
             this->x = x;
             this->y = y;

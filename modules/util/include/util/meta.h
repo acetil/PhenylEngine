@@ -390,4 +390,22 @@ namespace meta {
     };
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
+    namespace detail {
+        struct curr_type_index {
+        public:
+            static std::size_t getNext () {
+                static std::size_t val = 0;
+                return val++;
+            }
+        };
+    }
+
+    template <typename T>
+    struct type_index {
+    public:
+        static std::size_t val () {
+            static std::size_t index = detail::curr_type_index::getNext();
+            return index;
+        }
+    };
 }

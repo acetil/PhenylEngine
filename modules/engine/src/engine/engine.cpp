@@ -80,7 +80,7 @@ engine::detail::Engine::Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");*/
 
     eventBus = event::EventBus::NewSharedPtr();
-    componentManager = component::EntityComponentManager::NewSharedPtr(255, eventBus);
+    componentManager = component::EntityComponentManager::NewSharedPtr(255);
     addEventHandlers();
 
     auto gameObj = gameObjHolder.getGameObject();

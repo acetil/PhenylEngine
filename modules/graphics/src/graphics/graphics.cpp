@@ -128,7 +128,10 @@ void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
     int texId = event.entityView.controller()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
     //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
     getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
-        event.entityView.model = atlas.getModel((texId));
+
+        event.compManager->addComponent<FixedModel>(event.entityId, atlas.getModel(texId));
+
+        //event.entityView.model = atlas.getModel((texId));
     });
     //Texture* tex = atlas.getTexture(texId);
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));

@@ -5,7 +5,7 @@
 #include "event/event_bus.h"
 
 namespace component {
-    void rotateEntity (int entityId, float newRotation, EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& eventBus);
-    void rotateEntityBy (int entityId, float deltaTheta, EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& eventBus);
+    void rotateEntity (EntityId entityId, float newRotation, EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& eventBus);
+    void rotateEntityBy (EntityId entityId, float deltaTheta, const EntityComponentManager::SharedPtr& manager, const event::EventBus::SharedPtr& eventBus);
 }
 

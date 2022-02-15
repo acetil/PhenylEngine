@@ -104,52 +104,60 @@ namespace view {
     template <typename T>
     using add_pointer = T*;
 
-    template <typename ...Args>
     class ViewBaseImpl;
 
-    template <typename ...Args>
     class ViewCore {
     private:
-        const std::tuple<add_pointer<Args>...> pointerTuple{};
+        //const std::tuple<add_pointer<Args>...> pointerTuple{};
         template <typename T>
         T* getPointer () {
-            return std::get<add_pointer<T>>(pointerTuple);
+            //return std::get<add_pointer<T>>(pointerTuple);
+            return manager->getComponent<T>().orElse(nullptr);
         }
+
+        std::size_t getPos (component::EntityId entityId) {
+            return manager->tempGetPos(entityId).orElse(-1);
+        }
+
         component::EntityComponentManager::SharedPtr manager;
     public:
         /*explicit ViewCore(const component::ComponentManagerImpl<Args...>& compManager) {
             pointerTuple = std::move(compManager.ptrTuple);
         }*/
-        explicit ViewCore(std::shared_ptr<component::ComponentManagerImpl<Args...>> compManager) :
-            pointerTuple{compManager->ptrTuple}, manager(std::move(compManager)) {};
+        explicit ViewCore(component::EntityComponentManager::SharedPtr compManager) :
+            /*pointerTuple{compManager->ptrTuple},*/ manager(std::move(compManager)) {};
         explicit ViewCore () : manager{} {};
         //explicit ViewCore(std::tuple<add_pointer<Args>...> tup) : pointerTuple{tup} {};
-        friend class ViewBaseImpl<Args...>;
+        friend class ViewBaseImpl;
         friend class ViewPropertyRotation;
     };
-    template <typename ...Args>
+
     class ViewBaseImpl {
     protected:
-        ViewCore<Args...> viewCore;
+        ViewCore viewCore;
         template <typename T>
         T* getPointer () {
-            return viewCore.template getPointer<T>();
+            return viewCore.getPointer<T>();
+        }
+
+        std::size_t getPos (component::EntityId entityId) {
+            return viewCore.getPos(entityId);
         }
         ViewBaseImpl() : viewCore() {};
-        explicit ViewBaseImpl(ViewCore<Args...> core) : viewCore{std::move(core)} {}
+        explicit ViewBaseImpl(ViewCore core) : viewCore{std::move(core)} {}
     };
 
 /*#define VIEW_GET_PROPERTY_PTR (MANAGER_PTR, COMP_ID, STRUCT_TYPE, STRUCT_MEMBER, ID) \
     (((std::byte*)MANAGER_PTR.getObjectDataPtr<add_pointer<STRUCT_TYPE>>(COMP_ID, ID)) + offsetof(STRUCT_TYPE, STRUCT_MEMBER))*/
 #define VIEW_GET_PROPERTY_PTR(STRUCT_TYPE, MEMBER_NAME, ENTITY_ID) \
-    (&(getPointer<STRUCT_TYPE>()[ENTITY_ID].MEMBER_NAME))
+    (&(getPointer<STRUCT_TYPE>()[getPos(ENTITY_ID)].MEMBER_NAME))
 
     template <typename T, typename = typename T::args>
     struct ViewBaseWrap;
 
     template <typename T, typename ...Args>
     struct ViewBaseWrap <T, meta::type_list<Args...>> {
-        using type = ViewBaseImpl<Args...>;
+        using type = ViewBaseImpl;
     };
 
     template <typename T, typename = typename T::args>
@@ -157,7 +165,7 @@ namespace view {
 
     template <typename T, typename ...Args>
     struct ViewCoreListImpl <T, meta::type_list<Args...>> {
-        using type = ViewCore<Args...>;
+        using type = ViewCore;
     };
 
     template <typename T>
@@ -172,12 +180,12 @@ namespace view {
         component::RotationComponent* compPtr{};
         component::EntityComponentManager::SharedPtr manager{};
         event::EventBus::SharedPtr eventBus{};
-        int entityId{};
+        component::EntityId entityId{};
     public:
         explicit ViewPropertyRotation (ViewCoreList<component::entity_list> core,
-                                       event::EventBus::SharedPtr bus, int _entityId) :
-                ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::RotationComponent>() + _entityId),
-                newVal((core.getPointer<component::RotationComponent>() + _entityId)->rotation),
+                                       event::EventBus::SharedPtr bus, component::EntityId _entityId) :
+                ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::RotationComponent>() + core.getPos(_entityId)),
+                newVal((core.getPointer<component::RotationComponent>() + core.getPos(_entityId))->rotation),
                 manager(core.manager), eventBus(std::move(bus)), entityId(_entityId) {};
         ViewPropertyRotation () : ViewPropertyCustom<float, ViewPropertyRotation>(nullptr) {}
         void fieldChangeCallback () {
@@ -241,7 +249,7 @@ namespace view {
 
     class EntityView : public ViewBase<component::entity_list> {
     public:
-        const int entityId;
+        const component::EntityId entityId;
         event::EventBus::SharedPtr eventBus;
         ViewProperty<game::AbstractEntity*> entity;
 
@@ -267,7 +275,7 @@ namespace view {
         ViewPropertyCollisionBox hitboxScale;
 
         EntityView () : ViewBase<component::entity_list>(),
-            entityId(-1),
+            entityId(0, 0),
             eventBus{nullptr},
             rotation(),
             entity(),
@@ -283,12 +291,12 @@ namespace view {
             resolveLayers(),
             eventLayers() {};
         // TODO: add scaling
-        EntityView (ViewCoreList<component::entity_list> core, int id, const event::EventBus::SharedPtr& bus) : ViewBase<component::entity_list>(core),
+        EntityView (const ViewCoreList<component::entity_list>& core, component::EntityId id, const event::EventBus::SharedPtr& bus) : ViewBase<component::entity_list>(core),
             entityId(id),
             eventBus(bus),
             rotation(core, bus, id),
-            entity(getPointer<game::AbstractEntity*>() +  id),
-            controller(getPointer<std::shared_ptr<game::EntityController>>() + id),
+            entity(getPointer<game::AbstractEntity*>() +  getPos(id)),
+            controller(getPointer<std::shared_ptr<game::EntityController>>() + getPos(id)),
             position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, pos, id))),
             velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, vel, id))),
             acceleration(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, acc, id))),
@@ -296,7 +304,7 @@ namespace view {
             constantFriction(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, constFriction, id))),
             linearFriction(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, linFriction, id))),
 
-            model(ViewProperty(getPointer<graphics::FixedModel>() + id)),
+            model(ViewProperty(getPointer<graphics::FixedModel>() + getPos(id))),
 
             collisionLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))),
             resolveLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, resolveLayers, id))),
@@ -305,8 +313,8 @@ namespace view {
             hitboxScale(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, bbMap, id),
                         VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, outerRadius, id)){};
 
-        EntityView withId (int id) {
-            return EntityView(viewCore, id, eventBus);
+        EntityView withId (component::EntityId id) {
+            return {viewCore, id, eventBus};
         }
     };
 }

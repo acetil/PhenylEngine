@@ -10,7 +10,7 @@ namespace physics {
         static constexpr std::string_view const& getName () {
             return name;
         }
-        util::DataValue serialise ();
+        util::DataValue serialise () const;
         void deserialise (const util::DataValue& val);
     public:
         glm::vec2 pos;

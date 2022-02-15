@@ -24,6 +24,8 @@
 #include "rotation_component.h"
 #include "engine/entity/entity_type.h"
 #include "util/smart_help.h"
+
+#include "component_new.h"
 #if MAX_COMPONENT_ENTITIES <= 256
 namespace component {
     typedef uint16_t id_type_t;
@@ -42,7 +44,6 @@ namespace game {
 #endif
 };
 namespace view {
-    template<typename ...Args>
     class ViewCore;
 }
 namespace component {
@@ -169,7 +170,7 @@ namespace component {
             f(std::get<meta::add_pointer<T>>(ptrTuple), numEntities, 0, std::get<meta::add_pointer<A>>(ptrTuple), args...);
         }
 
-        friend class view::ViewCore<Args...>;
+        friend class view::ViewCore;
     };
 
 
@@ -185,8 +186,10 @@ namespace component {
 
     using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
             graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>>; // TODO: remove includes like AbstractEntity*
+#define ENTITY_LIST game::AbstractEntity*, component::EntityMainComponent, graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, component::RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>
 
-    using EntityComponentManager = ComponentManager2<entity_list>;
+    //using EntityComponentManager = ComponentManager2<entity_list>;
+    using EntityComponentManager = ComponentManagerNew;
 
     extern template class ComponentManagerWrap<entity_list>;
 }

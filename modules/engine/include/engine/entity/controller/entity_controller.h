@@ -15,7 +15,7 @@ namespace game {
     public:
         virtual void controlEntityPrePhysics (view::EntityView& entityView, view::GameView& gameView);
         virtual void controlEntityPostPhysics (view::EntityView& entityView, view::GameView& gameView);
-        virtual void onEntityCollision (view::EntityView& entityView, view::GameView& gameView, int otherEntityId, unsigned int layers); // TODO: hit/hurtbox
+        virtual void onEntityCollision (view::EntityView& entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers); // TODO: hit/hurtbox
         virtual int getTextureId (view::EntityView& entityView, view::GameView& gameView);
         virtual void setTextureIds (graphics::TextureAtlas& atlas);
         virtual void initEntity (view::EntityView& entityView, view::GameView&) {};

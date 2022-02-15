@@ -61,7 +61,7 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
 }
 
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus) {
-    auto manager = component::EntityComponentManager::NewSharedPtr(255, std::move(bus));
+    auto manager = component::EntityComponentManager::NewSharedPtr(255);
     /*manager->addComponent<component::EntityMainComponent>("main_component");
     manager->addComponent<graphics::FixedModel>("model");
     manager->addComponent<physics::CollisionComponent>("collision_component");

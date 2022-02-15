@@ -44,7 +44,7 @@ namespace game {
         std::string typeName;
 
         EntityType () = default;
-        util::DataValue serialise () {
+        util::DataValue serialise () const {
             util::DataObject obj;
             obj["controller"] = controller;
             obj["scale"] = scale;

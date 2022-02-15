@@ -10,10 +10,10 @@ namespace view {
     public:
         explicit GameView (game::detail::GameObject* _gameObject) :
             gameObject(_gameObject) {}
-        int createEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue()) {
+        component::EntityId createEntityInstance (const std::string& name, float x, float y, float rot = 0.0f, const util::DataValue& data = util::DataValue()) {
             return gameObject->createNewEntityInstance(name, x, y, rot, data);
         }
-        void destroyEntityInstance (int entityId) {
+        void destroyEntityInstance (component::EntityId entityId) {
             gameObject->deleteEntityInstance(entityId);
         }
         game::GameCamera& getCamera () {

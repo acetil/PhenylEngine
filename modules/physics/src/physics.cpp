@@ -66,21 +66,50 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
 }
 
 void physics::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
-    componentManager->applyFunc<component::EntityMainComponent>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent>(),
-                                        componentManager->getComponent<graphics::AbsolutePosition>()));
+    componentManager->applyFunc<component::EntityMainComponent>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent>().orElse(nullptr),
+                                        componentManager->getComponent<graphics::AbsolutePosition>().orElse(nullptr)));
 }
 
 void physics::checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView gameView) {
     //logging::log(LEVEL_DEBUG, "Checking collisions!");
-    std::vector<std::tuple<int,int, glm::vec2>> collisionResults; // TODO: do caching or something
+    std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>> collisionResults; // TODO: do caching or something
     collisionResults.reserve(componentManager->getNumObjects());
-    componentManager->applyFunc<CollisionComponent>(checkCollisionsEntity, &collisionResults);
+    componentManager->applyFunc<CollisionComponent, component::EntityId>(checkCollisionsEntity, &collisionResults);
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;
-        logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!", x, y, dVec.x, dVec.y);
+        logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!", x.value(), y.value(), dVec.x, dVec.y);
         // TODO: collision event
-        auto comp1 = componentManager->getObjectData<CollisionComponent>(x);
-        auto comp2 = componentManager->getObjectData<CollisionComponent>(y);
+        auto comp1Opt = componentManager->getObjectData<CollisionComponent>(x);
+        auto comp2Opt = componentManager->getObjectData<CollisionComponent>(y);
+
+        auto& dVec1 = dVec;
+        auto& x1 = x;
+        auto& y1 = y;
+        comp1Opt.ifPresent([&comp2Opt, &componentManager, &dVec1, &x1, &y1, &eventBus, &gameView](auto& comp1) {
+            comp2Opt.ifPresent([&comp1, &componentManager, &dVec1, &x1, &y1, &eventBus, &gameView](auto& comp2) {
+                auto comp1Mass = comp1.resolveLayers & comp2.layers ? comp1.mass : 0.0f;
+                auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
+                float totalMass = comp1Mass + comp2Mass;
+                if (totalMass != 0) {
+                    componentManager->getObjectDataPtr<component::EntityMainComponent>(x1).orElse(nullptr)->pos +=
+                            dVec1 * comp1Mass / totalMass;
+                    componentManager->getObjectDataPtr<component::EntityMainComponent>(x1).orElse(nullptr)->vel -=
+                            projectVec(dVec1, componentManager->getObjectData<component::EntityMainComponent>(x1).orElse(component::EntityMainComponent()).vel);
+                    componentManager->getObjectDataPtr<component::EntityMainComponent>(y1).orElse(nullptr)->pos -=
+                            dVec1 * comp2Mass / totalMass;
+                    componentManager->getObjectDataPtr<component::EntityMainComponent>(y1).orElse(nullptr)->vel -=
+                            projectVec(dVec1, componentManager->getObjectData<component::EntityMainComponent>(y1).orElse(component::EntityMainComponent()).vel);
+                }
+                if (comp1.layers & comp2.eventLayer) {
+                    eventBus->raiseEvent(event::EntityCollisionEvent(y1, x1, comp1.layers & comp2.eventLayer, componentManager, eventBus, gameView));
+                }
+                if (comp2.layers & comp1.eventLayer) {
+                    eventBus->raiseEvent(event::EntityCollisionEvent(x1, y1, comp2.layers & comp1.eventLayer, componentManager, eventBus, gameView));
+                }
+            });
+        });
+
+        /*auto comp2 = componentManager->getObjectData<CollisionComponent>(y);
         auto comp1Mass = comp1.resolveLayers & comp2.layers ? comp1.mass : 0.0f;
         auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
         float totalMass = comp1Mass + comp2Mass;
@@ -99,10 +128,13 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
         }
         if (comp2.layers & comp1.eventLayer) {
             eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager, eventBus, gameView));
-        }
+        }*/
     }
 }
 void physics::updateEntityHitboxRotation (event::EntityRotationEvent& event) {
     auto ptr = event.manager->getObjectDataPtr<CollisionComponent>(event.entityId);
-    ptr->bbMap *= event.rotMatrix;
+    event.manager->getObjectData<CollisionComponent>(event.entityId).ifPresent([&event](auto& ptr) {
+        ptr.bbMap *= event.rotMatrix;
+    });
+    //ptr->bbMap *= event.rotMatrix;
 }

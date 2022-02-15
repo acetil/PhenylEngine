@@ -6,5 +6,5 @@
 #include "util/data_funcs.h"
 namespace glm {
     bool fromdata (const util::DataValue& val, vec2& v);
-    util::DataValue todata (vec2& v);
+    util::DataValue todata (const vec2& v);
 }

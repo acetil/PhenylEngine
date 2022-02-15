@@ -27,9 +27,9 @@ namespace game {
 
         void buildEntityTypes ();
 
-        int createNewEntityInstance (const std::string& name, float x, float y, float rot=0.0f, const util::DataValue& data=util::DataValue());
+        component::EntityId createNewEntityInstance (const std::string& name, float x, float y, float rot=0.0f, const util::DataValue& data=util::DataValue());
 
-        void deleteEntityInstance (int entityId);
+        void deleteEntityInstance (component::EntityId entityId);
         void registerTile (Tile* tile);
         int getTileId (const std::string& name);
         Tile* getTile (const std::string& name);

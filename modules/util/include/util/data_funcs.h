@@ -5,6 +5,6 @@ namespace util {
     template <typename T>
     bool fromdata (const DataValue& dataVal, T& val);
     template <typename T>
-    DataValue todata (T& val);
+    DataValue todata (const T& val);
 }
 

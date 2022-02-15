@@ -369,7 +369,7 @@ namespace util {
 
     template <typename T>
     void DataArray::push_back (const T& val) {
-        values.push_back(val);
+        values.push_back(util::DataValue(val));
     }
 
     template <typename T>

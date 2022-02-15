@@ -15,7 +15,7 @@ void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& e
 }
 
 void game::PlayerController::controlEntityPrePhysics (view::EntityView& entityView, view::GameView& gameView) {
-   if (entityView.entityId != 0) return; // TODO: remove
+   //if (entityView.entityId != 0) return; // TODO: remove
    entityView.acceleration += glm::vec2(deltaXForce, deltaYForce);
    deltaXForce = 0;
    deltaYForce = 0;

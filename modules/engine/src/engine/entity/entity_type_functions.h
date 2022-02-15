@@ -5,5 +5,5 @@
 
 namespace game {
     void setInitialEntityValues (const component::EntityComponentManager::SharedPtr& componentManager,
-                                 EntityType& type, int entityId, float x, float y, float rot);
+                                 EntityType& type, component::EntityId entityId, float x, float y, float rot);
 }

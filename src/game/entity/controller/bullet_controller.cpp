@@ -2,7 +2,7 @@
 
 #include "util/string_help.h"
 
-void game::BulletController::onEntityCollision (view::EntityView &entityView, view::GameView& gameView, int otherEntityId, unsigned int layers) {
+void game::BulletController::onEntityCollision (view::EntityView &entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) {
     gameView.destroyEntityInstance(entityView.entityId);
 }
 

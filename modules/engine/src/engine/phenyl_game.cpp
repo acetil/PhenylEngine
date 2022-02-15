@@ -28,12 +28,12 @@ void PhenylGame::buildEntityTypes () {
     getShared()->buildEntityTypes();
 }
 
-int PhenylGame::createNewEntityInstance (const std::string& name, float x, float y, float rot,
+component::EntityId PhenylGame::createNewEntityInstance (const std::string& name, float x, float y, float rot,
                                          const util::DataValue& data) {
     return getShared()->createNewEntityInstance(name, x, y, rot, data);
 }
 
-void PhenylGame::deleteEntityInstance (int entityId) {
+void PhenylGame::deleteEntityInstance (component::EntityId entityId) {
     getShared()->deleteEntityInstance(entityId);
 }
 

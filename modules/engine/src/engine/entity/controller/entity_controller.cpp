@@ -13,7 +13,7 @@ void EntityController::controlEntityPostPhysics (view::EntityView& entityView, v
     //logging::log(LEVEL_INFO, "Controlling entity pre physics!");
 }
 
-void EntityController::onEntityCollision (view::EntityView& entityView, view::GameView& gameView, int otherId, unsigned int layers) {
+void EntityController::onEntityCollision (view::EntityView& entityView, view::GameView& gameView, component::EntityId otherId, unsigned int layers) {
     logging::log(LEVEL_DEBUG, "On entity collision!");
 }
 
@@ -32,17 +32,19 @@ util::DataObject EntityController::getData (view::EntityView& entityView, view::
 
 void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, const event::EventBus::SharedPtr& bus) {
+    auto entityIds = manager->getComponent<component::EntityId>().orElse(nullptr);
     auto viewCore = view::ViewCore(std::move(manager));
     for (int i = 0; i < numEntities; i++) {
-        view::EntityView entityView = view::EntityView(viewCore, i, bus);
+        view::EntityView entityView = view::EntityView(viewCore, entityIds[i], bus);
         entityView.controller()->controlEntityPrePhysics(entityView, gameView);
     }
 }
 void game::controlEntitiesPostPhysics(component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, const event::EventBus::SharedPtr& bus) {
+    auto entityIds = manager->getComponent<component::EntityId>().orElse(nullptr);
     auto viewCore = view::ViewCore(std::move(manager));
     for (int i = 0; i < numEntities; i++) {
-        auto entityView = view::EntityView(viewCore, i, bus);
+        auto entityView = view::EntityView(viewCore, entityIds[i], bus);
         entityView.controller()->controlEntityPostPhysics(entityView, gameView);
     }
 }

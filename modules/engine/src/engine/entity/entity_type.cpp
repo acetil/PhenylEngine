@@ -6,38 +6,63 @@
 using namespace game;
 
 void game::setInitialEntityValues (const component::EntityComponentManager::SharedPtr& componentManager,
-                                        EntityType& type, int entityId, float x, float y, float rot) {
-    *componentManager->getObjectDataPtr<EntityType>(entityId) = type;
+                                        EntityType& type, component::EntityId entityId, float x, float y, float rot) {
+    //*componentManager->getObjectDataPtr<EntityType>(entityId).orElse(nullptr) = type;
+    componentManager->addComponent<EntityType>(entityId, type);
 
-    auto physComp = componentManager->getObjectDataPtr<component::EntityMainComponent>(entityId);
-    physComp->linFriction = type.defaultLinFriction;
-    physComp->constFriction = type.defaultConstFriction;
-    physComp->pos = {x, y};
-    physComp->vel = {0, 0};
-    physComp->acc = {0, 0};
-    auto absPos = componentManager->getObjectDataPtr<graphics::AbsolutePosition>(entityId);
-    absPos->transform = {{type.scale.x, 0}, {0, type.scale.y}};
-    absPos->pos = {x, y};
+    //auto physComp = componentManager->getObjectDataPtr<component::EntityMainComponent>(entityId).orElse(nullptr);
 
-    auto collComp = componentManager->getObjectDataPtr<physics::CollisionComponent>(entityId);
-    collComp->layers = type.defaultLayers;
-    collComp->resolveLayers = type.defaultResolveLayers;
-    collComp->eventLayer = type.defaultEventLayers;
-    collComp->masks = type.defaultCollisionMask;
-    collComp->bbMap = glm::mat2({{type.collisionScale.x, 0}, {0, type.collisionScale.y}});
-    collComp->mass = type.defaultMass;
-    collComp->outerRadius = sqrt(type.scale.x * type.scale.x + type.scale.y * type.scale.y);
-    collComp->pos = {x, y};
+    component::EntityMainComponent physCompImpl{};
 
-    auto rotComp = componentManager->getObjectDataPtr<component::RotationComponent>(entityId);
-    rotComp->rotation = rot;
-    rotComp->rotMatrix = {{cos(rot), -sin(rot)}, {sin(rot), cos(rot)}};
+    physCompImpl.linFriction = type.defaultLinFriction;
+    physCompImpl.constFriction = type.defaultConstFriction;
+    physCompImpl.pos = {x, y};
+    physCompImpl.vel = {0, 0};
+    physCompImpl.acc = {0, 0};
 
-    collComp->bbMap *= rotComp->rotMatrix;
-    absPos->transform *= rotComp->rotMatrix;
+    componentManager->addComponent<component::EntityMainComponent>(entityId, physCompImpl);
 
-    *componentManager->getObjectDataPtr<std::shared_ptr<EntityController>>(entityId) = type.defaultController;
-    *componentManager->getObjectDataPtr<AbstractEntity*>(entityId) = type.entityFactory();
+    //auto absPos = componentManager->getObjectDataPtr<graphics::AbsolutePosition>(entityId).orElse(nullptr);
+
+    graphics::AbsolutePosition absPosImpl{};
+
+
+    absPosImpl.transform = {{type.scale.x, 0}, {0, type.scale.y}};
+    absPosImpl.pos = {x, y};
+
+
+    //auto collComp = componentManager->getObjectDataPtr<physics::CollisionComponent>(entityId).orElse(nullptr);
+
+    physics::CollisionComponent collCompImpl;
+
+    collCompImpl.layers = type.defaultLayers;
+    collCompImpl.resolveLayers = type.defaultResolveLayers;
+    collCompImpl.eventLayer = type.defaultEventLayers;
+    collCompImpl.masks = type.defaultCollisionMask;
+    collCompImpl.bbMap = glm::mat2({{type.collisionScale.x, 0}, {0, type.collisionScale.y}});
+    collCompImpl.mass = type.defaultMass;
+    collCompImpl.outerRadius = sqrt(type.scale.x * type.scale.x + type.scale.y * type.scale.y);
+    collCompImpl.pos = {x, y};
+
+    //auto rotComp = componentManager->getObjectDataPtr<component::RotationComponent>(entityId).orElse(nullptr);
+
+    component::RotationComponent rotCompImpl{};
+
+    rotCompImpl.rotation = rot;
+    rotCompImpl.rotMatrix = {{cos(rot), -sin(rot)}, {sin(rot), cos(rot)}};
+
+    collCompImpl.bbMap *= rotCompImpl.rotMatrix;
+    absPosImpl.transform *= rotCompImpl.rotMatrix;
+
+
+    componentManager->addComponent<graphics::AbsolutePosition>(entityId, absPosImpl);
+    componentManager->addComponent<physics::CollisionComponent>(entityId, collCompImpl);
+    componentManager->addComponent<component::RotationComponent>(entityId, rotCompImpl);
+
+    //*componentManager->getObjectDataPtr<std::shared_ptr<EntityController>>(entityId).orElse(nullptr) = type.defaultController;
+    componentManager->addComponent<std::shared_ptr<EntityController>>(entityId, type.defaultController);
+    //*componentManager->getObjectDataPtr<AbstractEntity*>(entityId).orElse(nullptr) = type.entityFactory();
+    componentManager->addComponent<AbstractEntity*>(entityId, type.entityFactory());
 
 }
 

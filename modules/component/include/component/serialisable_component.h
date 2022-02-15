@@ -12,10 +12,10 @@ namespace component {
     template <typename T>
     class SerialisableComponent {
     private:
-        SerialisableComponent() = default;
+        //SerialisableComponent() = default;
     public:
-        util::DataValue _serialise () {
-            return static_cast<T&>(*this).serialise();
+        util::DataValue _serialise () const {
+            return static_cast<const T&>(*this).serialise();
         };
         void _deserialise (const util::DataValue& val) {
             static_cast<T&>(*this).deserialise(val);

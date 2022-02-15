@@ -11,7 +11,7 @@ bool glm::fromdata (const util::DataValue& val, vec2& v) {
     v.y = obj.at("y").get<float>();
     return true;
 }
-util::DataValue glm::todata (vec2& v) {
+util::DataValue glm::todata (const vec2& v) {
     util::DataObject obj;
     obj["x"] = v.x;
     obj["y"] = v.y;

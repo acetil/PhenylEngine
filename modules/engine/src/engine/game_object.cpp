@@ -44,38 +44,38 @@ detail::GameObject::~GameObject () {
         return nullptr;
     }
 }*/
-int detail::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
+component::EntityId detail::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
     // TODO: requires refactor
     if (entityTypes.count(name) == 0) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with name '{}' which doesn't exist!", name);
-        return -1;
+        return {0, 0};
     } else {
-        int entityId = entityComponentManager->addObject();
+        auto entityId = entityComponentManager->createEntity();
         setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y, rot);
         auto viewCore = view::ViewCore(entityComponentManager);
         auto entityView = view::EntityView(viewCore, entityId, eventBus);
         auto gameView = view::GameView(this);
         entityView.controller()->initEntity(entityView, gameView, data);
         eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
-                                                        entityComponentManager->getObjectData<AbstractEntity*>(entityId), entityId,
+                                                        entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(nullptr), entityId,
                              entityView, gameView));
         return entityId;
     }
 }
 
-int detail::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
-    int entityId = entityComponentManager->addObject();
+component::EntityId detail::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
+    auto entityId = entityComponentManager->createEntity();
     auto serialisedObj = serialised.get<util::DataObject>();
     setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
 
-    component::deserialiseComps(entityComponentManager, entityId, serialisedObj);
+    component::deserialiseComps<ENTITY_LIST>(entityComponentManager, entityId, serialisedObj);
 
     auto viewCore = view::ViewCore(entityComponentManager);
     auto entityView = view::EntityView(viewCore, entityId, eventBus);
     auto gameView = view::GameView(this);
     entityView.controller()->initEntity(entityView, gameView, serialisedObj["data"]);
     eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
-                                                    entityComponentManager->getObjectData<AbstractEntity*>(entityId), entityId,
+                                                    entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(nullptr), entityId,
                                                     entityView, gameView));
     return entityId;
 }
@@ -157,8 +157,8 @@ void detail::GameObject::updateEntitiesPostPhysics () {
     entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus, gameView);
 }
 
-void detail::GameObject::deleteEntityInstance (int entityId) {
-    entityComponentManager->removeObject(entityId); // TODO: implement queue
+void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
+    entityComponentManager->removeEntity(entityId); // TODO: implement queue
 }
 
 void detail::GameObject::registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder) {
@@ -206,12 +206,13 @@ GameCamera& detail::GameObject::getCamera () {
 void detail::GameObject::dumpMap (const std::string& filepath) {
     util::DataArray entities;
     auto gameView = view::GameView(this);
+    auto ids = entityComponentManager->getComponent<component::EntityId>().orElse(nullptr);
     for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
-        auto compData = component::serialise(entityComponentManager, i);
-        auto entityView = view::EntityView(view::ViewCore(entityComponentManager), i, eventBus);
+        auto compData = component::serialise<ENTITY_LIST>(entityComponentManager, ids[i]);
+        auto entityView = view::EntityView(view::ViewCore(entityComponentManager), ids[i], eventBus);
         compData.get<util::DataObject>()["data"] =
-                entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(i)->getData(entityView, gameView);
-        compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(i).typeName;
+                entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(ids[i]).orElse(nullptr)->getData(entityView, gameView);
+        compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(ids[i]).orElse(game::EntityType()).typeName;
         entities.push_back(compData);
         //compData.get<util::DataObject>()[""]
     }
