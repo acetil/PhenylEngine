@@ -11,6 +11,7 @@ void rotateEntityBy2 (EntityId entityId, RotationComponent& comp, float deltaThe
     auto oldMat = comp.rotMatrix;
     auto rotMat = glm::mat2{{cos(deltaTheta), -1.0f * sin(deltaTheta)}, {sin(deltaTheta), cos(deltaTheta)}};
     comp.rotMatrix = oldMat * rotMat;
+    comp.rotation += deltaTheta;
     eventBus->raiseEvent(event::EntityRotationEvent(entityId, manager, oldMat, rotMat));
 }
 
