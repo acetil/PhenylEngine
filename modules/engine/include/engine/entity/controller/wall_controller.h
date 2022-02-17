@@ -7,16 +7,16 @@ namespace game {
     private:
         int texId;
     public:
-        void controlEntityPrePhysics (view::EntityView& entityView, view::GameView& gameView) override {};
-        void onEntityCollision (view::EntityView& entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) override {}; // TODO: hit/hurtbox
-        int getTextureId (view::EntityView& entityView, view::GameView& gameView) override {
+        void controlEntityPrePhysics (component::view::EntityView& entityView, view::GameView& gameView) override {};
+        void onEntityCollision (component::view::EntityView& entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) override {}; // TODO: hit/hurtbox
+        int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const override {
             return texId;
         }
         void setTextureIds (graphics::TextureAtlas& atlas) override {
             texId = atlas.getModelId("test10");
         }
 
-        void initEntity (view::EntityView& entityView, view::GameView&, const util::DataValue& data) override; // TODO: convert to binary format
-        util::DataObject getData(view::EntityView &entityView, view::GameView &gameView) override;
+        void initEntity (component::view::EntityView& entityView, view::GameView&, const util::DataValue& data) override; // TODO: convert to binary format
+        util::DataObject getData(component::view::EntityView &entityView, view::GameView &gameView) override;
     };
 }

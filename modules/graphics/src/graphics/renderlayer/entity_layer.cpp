@@ -35,7 +35,20 @@ void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
     componentManager->applyFunc<FixedModel>(bufferPosData, std::pair(&buffers[0],
                                                             componentManager->getComponent<AbsolutePosition>().orElse(nullptr)));
     componentManager->applyFunc<FixedModel>(bufferUvData, &buffers[1]);
+
+    componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
+        for (int i = 0; i < numEntities; i++) {
+            absPos[i].transform *= rotComp[i].rotMatrix;
+        }
+    });
+
     componentManager->applyFunc<AbsolutePosition>(bufferActualPosData, &buffers[2]);
+
+    componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
+        for (int i = 0; i < numEntities; i++) {
+            absPos[i].transform *= glm::inverse(rotComp[i].rotMatrix);
+        }
+    });
 
     numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
     renderer->bufferData(buffIds, buffers);

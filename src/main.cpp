@@ -6,6 +6,7 @@
 #include "game/gameloop.h"
 
 #include "logging/logging.h"
+
 //#include "util/format.h"
 
 //#include "util/data.h"
@@ -37,6 +38,7 @@ int main (int argv, char* argc[]) {
     engine::PhenylEngine engine;
 
     game::gameloop(engine);
+    
 
     return EXIT_SUCCESS;
 }

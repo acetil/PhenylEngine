@@ -170,7 +170,7 @@ namespace component {
             f(std::get<meta::add_pointer<T>>(ptrTuple), numEntities, 0, std::get<meta::add_pointer<A>>(ptrTuple), args...);
         }
 
-        friend class view::ViewCore;
+        //friend class view::ViewCore;
     };
 
 
@@ -192,4 +192,12 @@ namespace component {
     using EntityComponentManager = ComponentManagerNew;
 
     extern template class ComponentManagerWrap<entity_list>;
+}
+
+#include "view/entity_view.h"
+
+namespace component {
+    inline component::view::EntityView ComponentManagerNew::getEntityView (EntityId entityId) {
+        return {entityId, shared_from_this()};
+    }
 }

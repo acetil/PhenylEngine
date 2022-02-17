@@ -15,6 +15,11 @@ namespace component {
     public:
         glm::mat2 rotMatrix;
         float rotation;
+        RotationComponent& operator= (float newRot) {
+            rotation = newRot;
+            rotMatrix = {{glm::cos(newRot), glm::sin(newRot)}, {-glm::sin(newRot), glm::cos(newRot)}};
+            return *this;
+        }
         friend SerialisableComponent<RotationComponent>;
     };
 }

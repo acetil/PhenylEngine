@@ -125,7 +125,7 @@ std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
 }
 
 void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
-    int texId = event.entityView.controller()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
+    int texId = event.entityView.getComponent<std::shared_ptr<game::EntityController>>().getUnsafe()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
     //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
     getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
 

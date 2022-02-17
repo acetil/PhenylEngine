@@ -74,7 +74,21 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
     //logging::log(LEVEL_DEBUG, "Checking collisions!");
     std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>> collisionResults; // TODO: do caching or something
     collisionResults.reserve(componentManager->getNumObjects());
+
+    componentManager->applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent* coll, component::RotationComponent* rot, int numEntities, int direction) {
+        for (int i = 0; i < numEntities; i++) {
+            coll[i].bbMap *= rot[i].rotMatrix;
+        }
+    });
+
     componentManager->applyFunc<CollisionComponent, component::EntityId>(checkCollisionsEntity, &collisionResults);
+
+    componentManager->applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent* coll, component::RotationComponent* rot, int numEntities, int direction) {
+        for (int i = 0; i < numEntities; i++) {
+            coll[i].bbMap *= glm::inverse(rot[i].rotMatrix);
+        }
+    });
+
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;
         logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!", x.value(), y.value(), dVec.x, dVec.y);

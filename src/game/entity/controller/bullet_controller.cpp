@@ -2,11 +2,11 @@
 
 #include "util/string_help.h"
 
-void game::BulletController::onEntityCollision (view::EntityView &entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) {
-    gameView.destroyEntityInstance(entityView.entityId);
+void game::BulletController::onEntityCollision (component::view::EntityView &entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) {
+    gameView.destroyEntityInstance(entityView.getId());
 }
 
-int game::BulletController::getTextureId (view::EntityView& entityView, view::GameView& gameView) {
+int game::BulletController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
     return texId;
 }
 
@@ -14,7 +14,10 @@ void game::BulletController::setTextureIds (graphics::TextureAtlas& atlas) {
     texId = atlas.getModelId("test9");
 }
 
-void game::BulletController::initEntity (view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
-    const util::DataObject& velocity = data.get<util::DataObject>().at("vel").get<util::DataObject>();
-    entityView.velocity = glm::vec2{velocity.at("x"), velocity.at("y")};
+void game::BulletController::initEntity (component::view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
+    const auto& velocity = data.get<util::DataObject>().at("vel").get<util::DataObject>();
+    entityView.getComponent<component::EntityMainComponent>().ifPresent([&velocity] (component::EntityMainComponent& comp) {
+       comp.vel = glm::vec2{velocity.at("x"), velocity.at("y")};
+    });
+    //entityView.velocity = glm::vec2{velocity.at("x"), velocity.at("y")};
 }

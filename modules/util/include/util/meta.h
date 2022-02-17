@@ -408,4 +408,23 @@ namespace meta {
             return index;
         }
     };
+
+    template <int ...>
+    struct meta_seq {};
+
+    template <int N, int ...S>
+    struct meta_range_impl : meta_range_impl<N - 1, N - 1, S...> {};
+
+    template <int ...S>
+    struct meta_range_impl<0, S...> {
+        using type = meta_range_impl<S...>;
+    };
+
+    template <int N>
+    using meta_range = typename meta_range_impl<N>::type;
+
+    template <typename F, typename ...Ts, typename ...Args, int ...S>
+    consteval void callFunc (F f, std::tuple<Ts...> tup, meta_seq<S...>, Args... args) {
+        f(std::get<S>(tup)..., args...);
+    }
 }

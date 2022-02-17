@@ -13,14 +13,14 @@ namespace game {
     private:
         int testTexId = 0;
     public:
-        virtual void controlEntityPrePhysics (view::EntityView& entityView, view::GameView& gameView);
-        virtual void controlEntityPostPhysics (view::EntityView& entityView, view::GameView& gameView);
-        virtual void onEntityCollision (view::EntityView& entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers); // TODO: hit/hurtbox
-        virtual int getTextureId (view::EntityView& entityView, view::GameView& gameView);
+        virtual void controlEntityPrePhysics (component::view::EntityView& entityView, view::GameView& gameView);
+        virtual void controlEntityPostPhysics (component::view::EntityView& entityView, view::GameView& gameView);
+        virtual void onEntityCollision (component::view::EntityView& entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers); // TODO: hit/hurtbox
+        virtual int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const;
         virtual void setTextureIds (graphics::TextureAtlas& atlas);
-        virtual void initEntity (view::EntityView& entityView, view::GameView&) {};
-        virtual void initEntity (view::EntityView& entityView, view::GameView&, const util::DataValue& data) {}; // TODO: convert to binary format
-        virtual util::DataObject getData (view::EntityView& entityView, view::GameView& gameView);
+        virtual void initEntity (component::view::EntityView& entityView, view::GameView&) {};
+        virtual void initEntity (component::view::EntityView& entityView, view::GameView&, const util::DataValue& data) {}; // TODO: convert to binary format
+        virtual util::DataObject getData (component::view::EntityView& entityView, view::GameView& gameView);
 
     };
     void controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId,

@@ -21,6 +21,10 @@ namespace component {
         }
     }
 
+    namespace view {
+        class EntityView;
+    }
+
     class ComponentManagerNew;
 
     struct EntityId {
@@ -38,7 +42,7 @@ namespace component {
         friend class ComponentManagerNew;
     };
 
-    class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew> {
+    class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew, true> {
     private:
         using DeleterFunc = void (*)(unsigned char*);
         std::size_t numEntities{};
@@ -237,5 +241,9 @@ namespace component {
         util::Optional<std::size_t> tempGetPos (EntityId entityId) {
             return getEntityPos(entityId);
         }
+
+        // TODO
+        inline view::EntityView getEntityView (EntityId entityId);
     };
+
 }

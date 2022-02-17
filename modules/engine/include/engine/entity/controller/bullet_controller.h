@@ -7,9 +7,9 @@ namespace game {
     private:
         int texId = 0;
     public:
-        void onEntityCollision(view::EntityView &entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) override;
-        int getTextureId (view::EntityView& entityView, view::GameView& gameView) override;
+        void onEntityCollision(component::view::EntityView &entityView, view::GameView& gameView, component::EntityId otherEntityId, unsigned int layers) override;
+        int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const override;
         void setTextureIds (graphics::TextureAtlas& atlas) override;
-        void initEntity (view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) override;
+        void initEntity (component::view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) override;
     };
 }

@@ -1,4 +1,4 @@
-add_library(component src/component/main_component.cpp include/component/main_component.h src/component/component_extern.cpp src/component/rotation_component.cpp include/component/component_new.h)
+add_library(component src/component/main_component.cpp include/component/main_component.h src/component/component_extern.cpp src/component/rotation_component.cpp include/component/component_new.h include/component/view/entity_view.h)
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)
 

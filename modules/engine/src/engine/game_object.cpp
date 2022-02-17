@@ -52,10 +52,10 @@ component::EntityId detail::GameObject::createNewEntityInstance (const std::stri
     } else {
         auto entityId = entityComponentManager->createEntity();
         setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y, rot);
-        auto viewCore = view::ViewCore(entityComponentManager);
-        auto entityView = view::EntityView(viewCore, entityId, eventBus);
+        //auto viewCore = view::ViewCore(entityComponentManager);
+        auto entityView = entityComponentManager->getEntityView(entityId);
         auto gameView = view::GameView(this);
-        entityView.controller()->initEntity(entityView, gameView, data);
+        entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
         eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
                                                         entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(nullptr), entityId,
                              entityView, gameView));
@@ -70,10 +70,16 @@ component::EntityId detail::GameObject::deserialiseEntity (const std::string& ty
 
     component::deserialiseComps<ENTITY_LIST>(entityComponentManager, entityId, serialisedObj);
 
-    auto viewCore = view::ViewCore(entityComponentManager);
-    auto entityView = view::EntityView(viewCore, entityId, eventBus);
+    //auto viewCore = view::ViewCore(entityComponentManager);
+    //auto entityView = view::EntityView(viewCore, entityId, eventBus);
+    auto entityView = entityComponentManager->getEntityView(entityId);
     auto gameView = view::GameView(this);
-    entityView.controller()->initEntity(entityView, gameView, serialisedObj["data"]);
+
+    //entityView.
+
+    entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &serialisedObj](std::shared_ptr<EntityController>& controller){
+        controller->initEntity(entityView, gameView, serialisedObj["data"]);
+    });
     eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
                                                     entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(nullptr), entityId,
                                                     entityView, gameView));
@@ -209,7 +215,8 @@ void detail::GameObject::dumpMap (const std::string& filepath) {
     auto ids = entityComponentManager->getComponent<component::EntityId>().orElse(nullptr);
     for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
         auto compData = component::serialise<ENTITY_LIST>(entityComponentManager, ids[i]);
-        auto entityView = view::EntityView(view::ViewCore(entityComponentManager), ids[i], eventBus);
+        //auto entityView = view::EntityView(view::ViewCore(entityComponentManager), ids[i], eventBus);
+        auto entityView = entityComponentManager->getEntityView(ids[i]);
         compData.get<util::DataObject>()["data"] =
                 entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(ids[i]).orElse(nullptr)->getData(entityView, gameView);
         compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(ids[i]).orElse(game::EntityType()).typeName;

@@ -48,8 +48,8 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
 
     component::RotationComponent rotCompImpl{};
 
-    rotCompImpl.rotation = rot;
-    rotCompImpl.rotMatrix = {{cos(rot), -sin(rot)}, {sin(rot), cos(rot)}};
+    rotCompImpl = rot;
+    //rotCompImpl.rotMatrix = {{cos(rot), sin(rot)}, {-sin(rot), cos(rot)}};
 
     collCompImpl.bbMap *= rotCompImpl.rotMatrix;
     absPosImpl.transform *= rotCompImpl.rotMatrix;
