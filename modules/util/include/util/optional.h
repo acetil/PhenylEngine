@@ -2,6 +2,10 @@
 
 #include <type_traits>
 
+#ifndef NDEBUG
+#include <source_location>
+#endif
+
 #include "detail/memory.h"
 //#include "meta.h"
 
@@ -51,9 +55,18 @@ namespace util {
             return hasVal ? memory.get() : otherVal;
         }
 
+#ifdef NDEBUG
         const T& getUnsafe () const {
             return memory.get();
         }
+#else
+        const T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
+            if (!hasVal) {
+                logging::log(LEVEL_FATAL, "Unsafe optional get of empty opt at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
+            }
+            return memory.get();
+        }
+#endif
 
         template <typename F>
         const T& orElseGet (F f) const noexcept {
@@ -112,10 +125,18 @@ namespace util {
             return hasVal ? memory.get() : otherVal;
         }
 
+#ifdef NDEBUG
         const T& getUnsafe () const {
             return memory.get();
         }
-
+#else
+        const T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
+            if (!hasVal) {
+                logging::log(LEVEL_FATAL, "Unsafe optional get at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
+            }
+            return memory.get();
+        }
+#endif
         template <typename F>
         const T& orElseGet (F f) const noexcept {
             return hasVal ? memory.get() : f();
