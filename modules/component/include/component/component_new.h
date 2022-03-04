@@ -23,6 +23,10 @@ namespace component {
 
     namespace view {
         class EntityView;
+        template <typename ...Args>
+        class ConstrainedEntityView;
+        template <typename ...Args>
+        class ConstrainedView;
     }
 
     class ComponentManagerNew;
@@ -57,6 +61,23 @@ namespace component {
 
 
         template <typename T>
+        bool hasComp () {
+            auto typeId = meta::type_index<T>::val();
+
+            return compMap.contains(typeId);
+        }
+
+        template <typename T,  typename ...Args>
+        auto hasAllComps () -> std::enable_if_t<sizeof...(Args) != 0, bool> {
+            return hasComp<T>() && hasAllComps<Args...>();
+        }
+
+        template <typename T>
+        bool hasAllComps () {
+            return hasComp<T>();
+        }
+
+        template <typename T>
         void addComp () {
             auto typeId = meta::type_index<T>::val();
 
@@ -76,7 +97,7 @@ namespace component {
             return reinterpret_cast<T*>(std::get<0>(components[compMap[typeId]]).get());
         }
 
-        util::Optional<std::size_t> getEntityPos (EntityId entityId) {
+        util::Optional<std::size_t> getEntityPos (EntityId entityId) const {
 #ifndef NDEBUG
             if (entityId.id >= maxNumEntities) {
                 logging::log(LEVEL_ERROR, "Bad entity id {}: maxEntities = {}, id num = {}", entityId.value(), maxNumEntities, entityId.id);
@@ -238,12 +259,18 @@ namespace component {
             });
         }
 
-        util::Optional<std::size_t> tempGetPos (EntityId entityId) {
+        util::Optional<std::size_t> tempGetPos (EntityId entityId) const {
             return getEntityPos(entityId);
         }
 
         // TODO
         inline view::EntityView getEntityView (EntityId entityId);
+        // TODO
+        template <typename ...Args>
+        util::Optional<view::ConstrainedEntityView<Args...>> getConstrainedEntityView (EntityId entityId);
+
+        template <typename ...Args>
+        util::Optional<view::ConstrainedView<Args...>> getConstrainedView ();
     };
 
 }

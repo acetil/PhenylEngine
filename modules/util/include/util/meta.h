@@ -427,4 +427,20 @@ namespace meta {
     consteval void callFunc (F f, std::tuple<Ts...> tup, meta_seq<S...>, Args... args) {
         f(std::get<S>(tup)..., args...);
     }
+
+    template <typename L, typename ...Args>
+    struct is_all_in_impl;
+
+    template <typename L, typename T>
+    struct is_all_in_impl<L, T> {
+        static constexpr bool val = is_in_typelist<T, L>;
+    };
+
+    template <typename L, typename T, typename ...Args>
+    struct is_all_in_impl<L, T, Args...> {
+        static constexpr bool val = is_in_typelist<L, T> && is_all_in_impl<L, Args...>::val;
+    };
+
+    template <typename L, typename ...Args>
+    static constexpr bool is_all_in = is_all_in_impl<L, Args...>::val;
 }

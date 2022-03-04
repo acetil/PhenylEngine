@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <exception>
 
 #ifndef NDEBUG
 #include <source_location>
@@ -55,16 +56,23 @@ namespace util {
             return hasVal ? memory.get() : otherVal;
         }
 
+        T& orThrow () const {
+            if (!hasVal) {
+                throw std::runtime_error("Bad exception access!");
+            }
+            return memory.mget();
+        }
+
 #ifdef NDEBUG
         const T& getUnsafe () const {
             return memory.get();
         }
 #else
-        const T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
+        T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
             if (!hasVal) {
                 logging::log(LEVEL_FATAL, "Unsafe optional get of empty opt at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
             }
-            return memory.get();
+            return memory.mget();
         }
 #endif
 
@@ -125,12 +133,19 @@ namespace util {
             return hasVal ? memory.get() : otherVal;
         }
 
+        T& orThrow () const {
+            if (!hasVal) {
+                throw std::runtime_error("Bad exception access!");
+            }
+            return memory.mget();
+        }
+
 #ifdef NDEBUG
         const T& getUnsafe () const {
             return memory.get();
         }
 #else
-        const T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
+        T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
             if (!hasVal) {
                 logging::log(LEVEL_FATAL, "Unsafe optional get at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
             }

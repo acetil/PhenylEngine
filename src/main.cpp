@@ -11,6 +11,8 @@
 
 //#include "util/data.h"
 
+#include "component/component.h"
+
 int main (int argv, char* argc[]) {
     // TODO: move to exceptions
 
@@ -38,7 +40,26 @@ int main (int argv, char* argc[]) {
     engine::PhenylEngine engine;
 
     game::gameloop(engine);
-    
+
+    auto compManager = component::ComponentManagerNew::NewSharedPtr(256);
+
+    compManager->addComponentType<int>();
+    compManager->addComponentType<glm::vec2>();
+
+    auto eId = compManager->createEntity();
+    compManager->addComponent<int>(eId, 4);
+    compManager->addComponent<glm::vec2>(eId, glm::vec2{3, 3});
+
+    auto view = compManager->getConstrainedView<int, glm::vec2>().orThrow();
+
+    component::view::ConstrainedEntityView<int, glm::vec2> eView = view.getEntityView(eId).orThrow();
+    logger::log(LEVEL_DEBUG, "MAIN", util::format("Comp: {}", eView.get<int>()));
+
+    auto view2 = view.constrain<glm::vec2>();
+    auto eView2 = view2.getEntityView(eId).orThrow();
+
+    logger::log(LEVEL_DEBUG, "MAIN", util::format("Comp2: <{}, {}>", eView2.get<glm::vec2>()[0], eView.get<glm::vec2>()[1]));
+    //auto view3 = view.constrain<float>();
 
     return EXIT_SUCCESS;
 }

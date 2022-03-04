@@ -195,9 +195,28 @@ namespace component {
 }
 
 #include "view/entity_view.h"
+#include "view/constrained_view.h"
 
 namespace component {
     inline component::view::EntityView ComponentManagerNew::getEntityView (EntityId entityId) {
         return {entityId, shared_from_this()};
+    }
+
+    template <typename ...Args>
+    util::Optional<view::ConstrainedEntityView<Args...>> ComponentManagerNew::getConstrainedEntityView (EntityId entityId) {
+        if (hasAllComps<Args...>()) {
+            return util::Optional<view::ConstrainedEntityView<Args...>>(view::ConstrainedEntityView<Args...>{entityId, getObjectData<Args>(entityId).getUnsafe()...});
+        } else {
+            return util::NullOpt;
+        }
+    }
+
+    template <typename ...Args>
+    util::Optional<view::ConstrainedView<Args...>> ComponentManagerNew::getConstrainedView () {
+        if (hasAllComps<Args...>()) {
+            return util::Optional<view::ConstrainedView<Args...>>{shared_from_this(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...};
+        } else {
+            return util::NullOpt;
+        }
     }
 }
