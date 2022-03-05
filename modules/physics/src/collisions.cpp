@@ -1,5 +1,5 @@
 #include "logging/logging.h"
-#include "component/component_new.h"
+#include "component/component.h"
 #include "collisions.h"
 #include <tuple>
 #include <float.h>
@@ -124,7 +124,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
     return std::pair(true, smallestDispVec);
 }
 
-void physics::checkCollisionsEntity (CollisionComponent* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults) {
+/*void physics::checkCollisionsEntity (CollisionComponent* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults) {
     for (int i = 0; i < numEntities; i++) {
         auto compPtr = comp + 1;
         for (int j = i + 1; j < numEntities; j++) {
@@ -135,6 +135,21 @@ void physics::checkCollisionsEntity (CollisionComponent* comp, component::Entity
             compPtr++;
         }
         comp++;
+    }
+}*/
+
+void physics::checkCollisionsEntity (const component::ComponentManagerNew::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
+    for (auto i = compManager->begin(); i != compManager->end(); i++) {
+        for (auto j = i + 1; j != compManager->end(); j++) {
+            (*i).applyFunc<component::EntityId, CollisionComponent>([&j, &collisionResults](component::EntityId& id1, CollisionComponent& comp1) {
+                (*j).applyFunc<component::EntityId, CollisionComponent>([&](component::EntityId& id2, CollisionComponent& comp2) {
+                    auto coll = entityCollision(comp1, comp2);
+                    if (coll.first) {
+                        collisionResults.emplace_back(id1, id2, coll.second);
+                    }
+                });
+            });
+        }
     }
 }
 

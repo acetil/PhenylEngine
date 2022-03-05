@@ -12,9 +12,12 @@
 
 using namespace graphics;
 
-void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup);
-void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf);
-void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs);
+//void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup);
+void bufferPosData (component::EntityComponentManager::SharedPtr manager, Buffer* buffers);
+//void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf);
+void bufferUvData (component::EntityComponentManager::SharedPtr manager, Buffer* buffer);
+//void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs);
+void bufferActualPosData (component::EntityComponentManager::SharedPtr manager, Buffer* buffer);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
 }
@@ -32,23 +35,37 @@ void EntityRenderLayer::gatherData () {
 }
 
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
-    componentManager->applyFunc<FixedModel>(bufferPosData, std::pair(&buffers[0],
-                                                            componentManager->getComponent<AbsolutePosition>().orElse(nullptr)));
-    componentManager->applyFunc<FixedModel>(bufferUvData, &buffers[1]);
+    /*componentManager->applyFunc<FixedModel>(bufferPosData, std::pair(&buffers[0],
+                                                            componentManager->getComponent<AbsolutePosition>().orElse(nullptr)));*/
+    bufferPosData(componentManager, &buffers[0]);
+    //componentManager->applyFunc<FixedModel>(bufferUvData, &buffers[1]);
+    bufferUvData(componentManager, &buffers[1]);
 
-    componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
+    for (auto i : *componentManager) {
+        i.applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition& absPos, component::RotationComponent& rotComp) {
+            absPos.transform *= rotComp.rotMatrix;
+        });
+    }
+
+    /*componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
         for (int i = 0; i < numEntities; i++) {
             absPos[i].transform *= rotComp[i].rotMatrix;
         }
-    });
+    });*/
 
-    componentManager->applyFunc<AbsolutePosition>(bufferActualPosData, &buffers[2]);
+    //componentManager->applyFunc<AbsolutePosition>(bufferActualPosData, &buffers[2]);
+    bufferActualPosData(componentManager, &buffers[2]);
 
-    componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
+    /*componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
         for (int i = 0; i < numEntities; i++) {
             absPos[i].transform *= glm::inverse(rotComp[i].rotMatrix);
         }
-    });
+    });*/
+    for (auto i : *componentManager) {
+        i.applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition& absPos, component::RotationComponent& rotComp) {
+            absPos.transform *= glm::inverse(rotComp.rotMatrix);
+        });
+    }
 
     numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
     renderer->bufferData(buffIds, buffers);
@@ -87,7 +104,7 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
     this->buffers[4] = Buffer(BUFFER_SIZE * 4, sizeof(float), false); // TODO: better way to input matrices
 }
 
-void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
+/*void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
     auto [buf, modComp] = tup;
     for (int i = 0; i < numEntities; i++) {
         //logging::logf(LEVEL_DEBUG, "Num vertices: %d", comp[i].positionData.size());
@@ -101,7 +118,7 @@ void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int dire
         for (int j = 0; j < NUM_TRIANGLE_VERTICES * TRIANGLES_PER_SPRITE; j++) {
             int correctedVertex = j % NUM_TRIANGLE_VERTICES + j / NUM_TRIANGLE_VERTICES;
             buffer->pushData(&vertices[correctedVertex].x, 2);
-        }*/
+        } *//*
 
         buf->pushData(comp->positionData.begin(), comp->positionData.size());
         modComp->vertices = comp->positionData.size() / 2;
@@ -109,14 +126,31 @@ void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int dire
         modComp++;
     }
 
+}*/
+
+void bufferPosData (component::EntityComponentManager::SharedPtr manager, Buffer* buffer) {
+    for (auto i : *manager) {
+        i.applyFunc<FixedModel, AbsolutePosition>([&buffer] (FixedModel& model, AbsolutePosition& absPos) {
+            buffer->pushData(model.positionData.begin(), model.positionData.size());
+            absPos.vertices = model.positionData.size() / 2;
+        });
+    }
 }
-void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf) {
+/*void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf) {
     for (int i = 0; i < numEntities; i++) {
         buf->pushData(comp->uvData.begin(), comp->uvData.size());
         comp++;
     }
+}*/
+
+void bufferUvData (component::EntityComponentManager::SharedPtr manager, Buffer* buffer) {
+    for (auto i : *manager) {
+        i.applyFunc<FixedModel>([&buffer](FixedModel& model) {
+            buffer->pushData(model.uvData.begin(), model.uvData.size());
+        });
+    }
 }
-void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs) {
+/*void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs) {
     for (int i = 0; i < numEntities; i++) {
         //logging::logf(LEVEL_DEBUG, "Abs pos: <%f, %f>", comp->pos.x, comp->pos.y);
         for (int j = 0; j < comp->vertices; j++) {
@@ -126,5 +160,17 @@ void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unuse
             //buf.second->pushData(&comp->transform[2], 2); // TODO: update buffer implementation
         }
         comp++;
+    }
+}*/
+
+void bufferActualPosData (component::EntityComponentManager::SharedPtr manager, Buffer* buffer) {
+    for (auto i : *manager) {
+        i.getComponent<AbsolutePosition>().ifPresent([&buffer](AbsolutePosition& absPos) {
+            for (int j = 0; j < absPos.vertices; j++) {
+                buffer->pushData(&absPos.pos[0], 2);
+                (buffer + 1)->pushData(&absPos.transform[0][0], 2);
+                (buffer + 2)->pushData(&absPos.transform[1][0], 2); // TODO: update buffer implementation
+            }
+        });
     }
 }

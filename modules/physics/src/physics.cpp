@@ -8,7 +8,7 @@
 
 using namespace physics;
 
-void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntities, int direction, std::pair<physics::CollisionComponent*,
+/*void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntities, int direction, std::pair<physics::CollisionComponent*,
                             graphics::AbsolutePosition*> comp2) {
     // TODO: consider writing fully in assembly
     for (int i = 0; i < numEntities; i ++) {
@@ -32,6 +32,24 @@ void updatePhysicsInternal (component::EntityMainComponent* comp, int numEntitie
         comp2.second++;
         //logging::logf(LEVEL_DEBUG, "Current pos: (%f, %f). Current vel: (%f, %f).", comp->pos[0], comp->pos[1], comp->vel[0], comp->vel[1]);
     }
+}*/
+
+void updatePhysicsInternal (component::EntityMainComponent& mainComp, CollisionComponent& collComp, graphics::AbsolutePosition& posComp) {
+    int isPosXVel = mainComp.vel.x > 0;
+    int isPosYVel = mainComp.vel.y > 0;
+
+    mainComp.vel.x -= ((float)mainComp.vel.x * mainComp.linFriction) + mainComp.constFriction * (isPosXVel * 2 - 1);
+    mainComp.vel.y -= ((float)mainComp.vel.y * mainComp.linFriction) + mainComp.constFriction * (isPosYVel * 2 - 1);
+
+    mainComp.vel.x *= (mainComp.vel.x > 0 && isPosXVel) || (mainComp.vel.x < 0 && !isPosXVel);
+    mainComp.vel.y *= (mainComp.vel.y > 0 && isPosYVel) || (mainComp.vel.y < 0 && !isPosYVel);
+
+    mainComp.vel += mainComp.acc;
+
+    mainComp.pos += mainComp.vel;
+
+    collComp.pos = mainComp.pos;
+    posComp.pos = mainComp.pos;
 }
 void physics::onEntityCreation (event::EntityCreationEvent& event) {
     /*logging::log(LEVEL_DEBUG, "About to get main component!");
@@ -66,8 +84,11 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
 }
 
 void physics::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
-    componentManager->applyFunc<component::EntityMainComponent>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent>().orElse(nullptr),
-                                        componentManager->getComponent<graphics::AbsolutePosition>().orElse(nullptr)));
+    /*componentManager->applyFunc<component::EntityMainComponent>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent>().orElse(nullptr),
+                                        componentManager->getComponent<graphics::AbsolutePosition>().orElse(nullptr)));*/
+    for (auto i : *componentManager) {
+        i.applyFunc<component::EntityMainComponent, CollisionComponent, graphics::AbsolutePosition>(updatePhysicsInternal);
+    }
 }
 
 void physics::checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView gameView) {
@@ -75,19 +96,31 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
     std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>> collisionResults; // TODO: do caching or something
     collisionResults.reserve(componentManager->getNumObjects());
 
-    componentManager->applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent* coll, component::RotationComponent* rot, int numEntities, int direction) {
+    /*componentManager->applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent* coll, component::RotationComponent* rot, int numEntities, int direction) {
         for (int i = 0; i < numEntities; i++) {
             coll[i].bbMap *= rot[i].rotMatrix;
         }
-    });
+    });*/
 
-    componentManager->applyFunc<CollisionComponent, component::EntityId>(checkCollisionsEntity, &collisionResults);
+    for (auto i : *componentManager) {
+        i.applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent& coll, component::RotationComponent& rot) {
+            coll.bbMap *= rot.rotMatrix;
+        });
+    }
 
-    componentManager->applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent* coll, component::RotationComponent* rot, int numEntities, int direction) {
+    //componentManager->applyFunc<CollisionComponent, component::EntityId>(checkCollisionsEntity, &collisionResults);
+    checkCollisionsEntity(componentManager, collisionResults);
+
+    /*componentManager->applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent* coll, component::RotationComponent* rot, int numEntities, int direction) {
         for (int i = 0; i < numEntities; i++) {
             coll[i].bbMap *= glm::inverse(rot[i].rotMatrix);
         }
-    });
+    });*/
+    for (auto i : *componentManager) {
+        i.applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent& coll, component::RotationComponent& rot) {
+            coll.bbMap *= glm::inverse(rot.rotMatrix);
+        });
+    }
 
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;

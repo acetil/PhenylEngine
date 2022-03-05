@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstring>
 #include <memory>
 #include <utility>
@@ -27,6 +28,10 @@ namespace component {
         class ConstrainedEntityView;
         template <typename ...Args>
         class ConstrainedView;
+
+        namespace detail {
+            class EntityViewIterator;
+        }
     }
 
     class ComponentManagerNew;
@@ -144,6 +149,8 @@ namespace component {
         }
 
     public:
+        using iterator = view::detail::EntityViewIterator;
+        using const_iterator = view::detail::EntityViewIterator;
 
         explicit ComponentManagerNew (std::size_t maxEntities) : maxNumEntities{maxEntities}, ids{std::make_unique<std::pair<unsigned int, std::size_t>[]>(maxEntities)},
                                                                  availableIds{maxEntities} {
@@ -240,7 +247,7 @@ namespace component {
             }
         }
 
-        template <typename T, typename F, typename ...Args>
+        /*template <typename T, typename F, typename ...Args>
         void applyFunc (F f, Args... args) {
             static_assert(meta::is_callable<meta::add_pointer<T>, int, int, Args...>(f), "Function has incorrect parameters!");
             getComponent<T>().ifPresent([&f, &args..., this] (T* ptr) {
@@ -257,11 +264,17 @@ namespace component {
                     f(ptr, ptr1, numEntities, 0, args...);
                 });
             });
-        }
+        }*/
 
         util::Optional<std::size_t> tempGetPos (EntityId entityId) const {
             return getEntityPos(entityId);
         }
+
+        iterator begin ();
+        iterator end ();
+
+        const_iterator cbegin ();
+        const_iterator cend ();
 
         // TODO
         inline view::EntityView getEntityView (EntityId entityId);
@@ -271,6 +284,8 @@ namespace component {
 
         template <typename ...Args>
         util::Optional<view::ConstrainedView<Args...>> getConstrainedView ();
+
+        friend view::detail::EntityViewIterator;
     };
 
 }

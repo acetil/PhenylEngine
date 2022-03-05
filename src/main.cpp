@@ -12,6 +12,7 @@
 //#include "util/data.h"
 
 #include "component/component.h"
+#include "util/map.h"
 
 int main (int argv, char* argc[]) {
     // TODO: move to exceptions
@@ -60,6 +61,9 @@ int main (int argv, char* argc[]) {
 
     logger::log(LEVEL_DEBUG, "MAIN", util::format("Comp2: <{}, {}>", eView2.get<glm::vec2>()[0], eView.get<glm::vec2>()[1]));
     //auto view3 = view.constrain<float>();
+
+    static_assert(std::forward_iterator<util::MapIterator<std::string, int>>);
+    static_assert(std::random_access_iterator<component::view::detail::EntityViewIterator>);
 
     return EXIT_SUCCESS;
 }

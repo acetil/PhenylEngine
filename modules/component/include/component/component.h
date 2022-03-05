@@ -219,4 +219,20 @@ namespace component {
             return util::NullOpt;
         }
     }
+
+    inline ComponentManagerNew::iterator ComponentManagerNew::begin () {
+        return {shared_from_this(), 0};
+    }
+
+    inline ComponentManagerNew::iterator ComponentManagerNew::end () {
+        return {shared_from_this(), numEntities};
+    }
+
+    inline ComponentManagerNew::const_iterator ComponentManagerNew::cbegin () {
+        return {shared_from_this(), 0};
+    }
+
+    inline ComponentManagerNew::const_iterator ComponentManagerNew::cend () {
+        return {shared_from_this(), numEntities};
+    }
 }

@@ -30,7 +30,7 @@ util::DataObject EntityController::getData (component::view::EntityView& entityV
 }
 
 
-void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
+/*void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, const event::EventBus::SharedPtr& bus) {
     auto entityIds = manager->getComponent<component::EntityId>().orElse(nullptr);
     //auto viewCore = view::ViewCore(std::move(manager));
@@ -44,8 +44,17 @@ void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedP
 
         //entityView.controller()->controlEntityPrePhysics(entityView, gameView);
     }
+}*/
+
+void game::controlEntitiesPrePhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
+    for (auto i : *manager) {
+        i.getComponent<std::shared_ptr<EntityController>>().ifPresent([&gameView, &i] (std::shared_ptr<EntityController>& ptr) {
+            ptr->controlEntityPrePhysics(i, gameView);
+        });
+    }
 }
-void game::controlEntitiesPostPhysics(component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
+
+/*void game::controlEntitiesPostPhysics(component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, const event::EventBus::SharedPtr& bus) {
     auto entityIds = manager->getComponent<component::EntityId>().orElse(nullptr);
     //auto viewCore = view::ViewCore(std::move(manager));
@@ -58,6 +67,14 @@ void game::controlEntitiesPostPhysics(component::EntityComponentManager::SharedP
         });
 
         //entityView.controller()->controlEntityPostPhysics(entityView, gameView);
+    }
+}*/
+
+void game::controlEntitiesPostPhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
+    for (auto i : *manager) {
+        i.getComponent<std::shared_ptr<EntityController>>().ifPresent([&i, &gameView] (std::shared_ptr<EntityController>& ptr) {
+           ptr->controlEntityPostPhysics(i, gameView);
+        });
     }
 }
 

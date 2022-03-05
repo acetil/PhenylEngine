@@ -99,7 +99,7 @@ namespace util {
         template <typename F>
         void ifPresent (F f) noexcept {
             if (hasVal) {
-                f(memory.get());
+                f(memory.mget());
             }
         }
 
@@ -164,7 +164,7 @@ namespace util {
 
         template <typename F>
         auto thenMap (F f) const noexcept -> Optional<decltype(f(memory.get()))> {
-            return hasVal ? Optional(f(memory.get())) : Optional();
+            return hasVal ? Optional<decltype(f(memory.get()))>{f(memory.get())} : NullOpt;
         }
 
         template <typename F>

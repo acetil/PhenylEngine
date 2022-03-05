@@ -338,7 +338,7 @@ namespace util {
         V* data = nullptr;
         int maxSize = 0;
         std::size_t index = 0;
-        std::pair<K, Wt> p{};
+        mutable std::pair<K, Wt> p{};
 
         void nextIndex () {
             while (index < maxSize && exists[index].first != 1) {
@@ -346,7 +346,7 @@ namespace util {
             }
         }
 
-        void getPair () {
+        void getPair () const {
             if (index >= maxSize) {
                 throw std::exception();
             }
@@ -365,28 +365,35 @@ namespace util {
 
         // Iterator
         MapIterator (const MapIterator<K, V, Wrapper>& it) : exists(it.exists), data(it.data), maxSize(it.maxSize), index(it.index) {}
-        MapIterator& operator= (iterator& other) {
+        /*MapIterator& operator= (const iterator& other) {
             exists = other.exists;
             data = other.data;
             maxSize = other.maxSize;
             index = other.index;
             return *this;
         }
+        MapIterator& operator= (iterator&& other) noexcept {
+            exists = std::move(other.exists);
+            data = std::move(other.data);
+            maxSize = std::move(other.maxSize);
+            index = std::move(other.index);
+            p = std::move(other.p);
+        }*/
         // prefix
         iterator& operator++ () {
             index++;
             nextIndex();
             return *this;
         }
-        reference operator* () {
+        reference operator* () const {
             getPair();
-            return (std::pair<const K, Wrapper>&)p;
+            return (reference)p;
         }
         ~MapIterator () = default;
 
         // Input / Output Iterator
         // postfix
-        const iterator operator++ (int) {
+        iterator operator++ (int) {
             auto cpy(*this);
             index++;
             nextIndex();

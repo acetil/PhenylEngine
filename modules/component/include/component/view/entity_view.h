@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+#include <iterator>
 #include <unordered_set>
 #include <tuple>
 #include <utility>
@@ -15,14 +17,17 @@ namespace component::view {
 
         std::unordered_set<std::size_t> bannedTypes;
 
-        template <typename ...Ts>
+        template <typename T, typename ...Ts>
         bool allValid () {
-            for (auto& x : meta::type_index<Ts...>()) {
-                if (bannedTypes.contains(x)) {
-                    return false;
-                }
+            if (bannedTypes.contains(meta::type_index<T>::val())) {
+                return false;
             }
-            return true;
+
+            if constexpr (sizeof...(Ts) > 0) {
+                return allValid<Ts...>();
+            } else {
+                return true;
+            }
         }
 
         template <typename T>
@@ -33,18 +38,18 @@ namespace component::view {
         }
 
         template <typename T, typename ...Ts>
-        util::Optional<std::tuple<T&, Ts&...>> getAllComps () {
+        auto getAllComps () -> std::enable_if_t<0 < sizeof...(Ts), util::Optional<std::tuple<T&, Ts&...>>> {
             auto othersOpt = getAllComps<Ts...>();
 
             auto compOpt = getAllComps<T>();
 
-            return othersOpt.thenMap([&compOpt] (auto& t1) {
+            return othersOpt.then([&compOpt] (auto& t1) {
                 return compOpt.thenMap([&t1] (auto& t2) {
-                    return std::tuple_cat(t1, t2);
+                    return std::tuple_cat(t2, t1);
                 });
             });
         }
-
+        EntityView() : entityId{0, 0}, compManager(nullptr) {}
     public:
         EntityView (component::EntityId _entityId, component::ComponentManagerNew::SharedPtr  _compManager) : entityId{_entityId}, compManager{std::move(_compManager)} {}
         EntityView (component::EntityId _entityId, component::ComponentManagerNew::SharedPtr  _compManager, std::unordered_set<std::size_t> _bannedTypes) :
@@ -76,13 +81,132 @@ namespace component::view {
             return {newId, compManager, bannedTypes};
         }
 
-        template <typename F, typename ...Ts, typename ...Args>
-        void applyFunc (F f, Args... args) {
+        template <typename ...Ts, typename F>
+        void applyFunc (F f) {
             if (allValid<Ts...>()) {
-                getAllComps<Ts...>().ifPresent([&f, &args...](auto& tup) {
-                    f(std::get<meta::meta_range<sizeof...(Ts)>>(tup), args...);
+                getAllComps<Ts...>().ifPresent([&f](std::tuple<Ts&...>& tup) {
+                    f(std::get<Ts&>(tup)...);
                 });
             }
         }
+
+        friend detail::EntityViewIterator;
     };
+
+    namespace detail {
+        class EntityViewIterator {
+        private:
+            ComponentManagerNew::SharedPtr compManager{};
+            std::size_t pos{};
+
+        public:
+            EntityViewIterator () {}
+            EntityViewIterator (ComponentManagerNew::SharedPtr _compManager, std::size_t startPos) : compManager{std::move(_compManager)} , pos{startPos} {}
+            using iterator_category = std::random_access_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = EntityView;
+            using reference = EntityView&;
+            value_type operator* () const {
+                return compManager->getEntityView(compManager->getComponent<component::EntityId>().orThrow()[pos]);
+            }
+
+            value_type operator[] (std::ptrdiff_t shift) const {
+                return *(*this + shift);
+            }
+
+            EntityViewIterator& operator++ () {
+                pos++;
+                return *this;
+            }
+
+            EntityViewIterator operator++ (int) {
+                EntityViewIterator other = *this;
+
+                pos++;
+
+                return other;
+            }
+
+            bool operator== (const EntityViewIterator& other) const {
+                return pos == other.pos;
+            }
+
+            /*bool operator!= (const EntityViewIterator& other) const {
+                return pos != other.pos;
+            }*/
+
+            EntityViewIterator& operator-- () {
+                pos--;
+                return *this;
+            }
+
+            EntityViewIterator operator-- (int) {
+                EntityViewIterator other = *this;
+
+                pos--;
+
+                return other;
+            }
+
+            /*EntityViewIterator operator+ (std::ptrdiff_t amount) const {
+                return {compManager, pos + amount};
+            }*/
+
+            friend EntityViewIterator operator+ (EntityViewIterator lhs, const std::ptrdiff_t rhs);
+            friend EntityViewIterator operator+ (const std::ptrdiff_t rhs, EntityViewIterator lhs);
+            friend EntityViewIterator operator- (EntityViewIterator lhs, const std::ptrdiff_t rhs);
+
+            /*EntityViewIterator operator- (std::ptrdiff_t amount) const {
+                return {compManager, pos - amount};
+            }*/
+
+            EntityViewIterator& operator+= (std::ptrdiff_t amount) {
+                pos += amount;
+                return *this;
+            }
+
+            EntityViewIterator& operator-= (std::ptrdiff_t amount) {
+                pos -= amount;
+                return *this;
+            }
+
+            bool operator< (const EntityViewIterator& other) const {
+                return pos < other.pos;
+            }
+
+            bool operator<= (const EntityViewIterator& other) const {
+                return !(*this > other);
+            }
+
+            bool operator> (const EntityViewIterator& other) const {
+                return other < *this;
+            }
+
+            bool operator>= (const EntityViewIterator& other) const {
+                return !(*this < other);
+            }
+
+            std::ptrdiff_t operator- (const EntityViewIterator& other) const {
+                return (std::ptrdiff_t)pos - (std::ptrdiff_t)other.pos;
+            }
+        };
+
+        inline EntityViewIterator operator+ (EntityViewIterator lhs, const std::ptrdiff_t rhs) {
+            lhs += rhs;
+
+            return lhs;
+        }
+
+        inline EntityViewIterator operator+ (const std::ptrdiff_t rhs, EntityViewIterator lhs) {
+            return std::move(lhs) + rhs;
+        }
+
+        inline EntityViewIterator operator- (EntityViewIterator lhs, const std::ptrdiff_t rhs) {
+            lhs -= rhs;
+
+            return lhs;
+        }
+    }
+
+
 }

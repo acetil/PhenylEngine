@@ -4,7 +4,10 @@
 #include <vector>
 
 namespace physics {
-    void checkCollisionsEntity (CollisionComponent* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults);
+    //void checkCollisionsEntity (CollisionComponent* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults);
+
+    void checkCollisionsEntity (const component::ComponentManagerNew::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults);
+
     // TODO: move to specialised maths help header
     inline float squaredDistance (glm::vec2 vec) {
         return glm::dot(vec, vec);

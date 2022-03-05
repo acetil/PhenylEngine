@@ -145,22 +145,24 @@ void detail::GameObject::updateEntityPosition () {
     physics::updatePhysics(entityComponentManager);
     physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
 }
-void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& bus, view::GameView gameView) {
+/*void entityPrePhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& bus, view::GameView gameView) {
     controlEntitiesPrePhysics(manager, gameView, 0, numEntities, direction, bus);
 }
 void entityPostPhysicsFunc (AbstractEntity** entities, int numEntities, int direction, component::EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& bus, view::GameView gameView) {
     controlEntitiesPostPhysics(manager, gameView, 0, numEntities, direction, bus);
-}
+}*/
 void detail::GameObject::updateEntitiesPrePhysics () {
     // TODO: make better way
     auto gameView = view::GameView(this);
-    entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus, gameView);
+    controlEntitiesPrePhysics(entityComponentManager, gameView, eventBus);
+    //entityComponentManager->applyFunc<AbstractEntity*>(entityPrePhysicsFunc, entityComponentManager, eventBus, gameView);
 }
 
 void detail::GameObject::updateEntitiesPostPhysics () {
     // TODO: make better way
     auto gameView = view::GameView(this);
-    entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus, gameView);
+    //entityComponentManager->applyFunc<AbstractEntity*>(entityPostPhysicsFunc, entityComponentManager, eventBus, gameView);
+    controlEntitiesPostPhysics(entityComponentManager, gameView, eventBus);
 }
 
 void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
