@@ -86,8 +86,11 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
 void physics::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
     /*componentManager->applyFunc<component::EntityMainComponent>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent>().orElse(nullptr),
                                         componentManager->getComponent<graphics::AbsolutePosition>().orElse(nullptr)));*/
-    for (auto i : *componentManager) {
+    /*for (auto i : *componentManager) {
         i.applyFunc<component::EntityMainComponent, CollisionComponent, graphics::AbsolutePosition>(updatePhysicsInternal);
+    }*/
+    for (const auto& i : componentManager->getConstrainedView<component::EntityMainComponent, CollisionComponent, graphics::AbsolutePosition>()) {
+        updatePhysicsInternal(i.get<component::EntityMainComponent>(), i.get<CollisionComponent>(), i.get<graphics::AbsolutePosition>());
     }
 }
 
@@ -102,10 +105,13 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
         }
     });*/
 
-    for (auto i : *componentManager) {
+    /*for (auto i : *componentManager) {
         i.applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent& coll, component::RotationComponent& rot) {
             coll.bbMap *= rot.rotMatrix;
         });
+    }*/
+    for (const auto& i : componentManager->getConstrainedView<CollisionComponent, component::RotationComponent>()) {
+        i.get<CollisionComponent>().bbMap *= i.get<component::RotationComponent>().rotMatrix;
     }
 
     //componentManager->applyFunc<CollisionComponent, component::EntityId>(checkCollisionsEntity, &collisionResults);
@@ -116,10 +122,13 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
             coll[i].bbMap *= glm::inverse(rot[i].rotMatrix);
         }
     });*/
-    for (auto i : *componentManager) {
+    /*for (auto i : *componentManager) {
         i.applyFunc<CollisionComponent, component::RotationComponent>([](CollisionComponent& coll, component::RotationComponent& rot) {
             coll.bbMap *= glm::inverse(rot.rotMatrix);
         });
+    }*/
+    for (const auto& i : componentManager->getConstrainedView<CollisionComponent, component::RotationComponent>()) {
+        i.get<CollisionComponent>().bbMap *= glm::inverse(i.get<component::RotationComponent>().rotMatrix);
     }
 
     for (auto p : collisionResults) {

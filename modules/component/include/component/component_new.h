@@ -283,7 +283,7 @@ namespace component {
         util::Optional<view::ConstrainedEntityView<Args...>> getConstrainedEntityView (EntityId entityId);
 
         template <typename ...Args>
-        util::Optional<view::ConstrainedView<Args...>> getConstrainedView ();
+        view::ConstrainedView<Args...> getConstrainedView ();
 
         friend view::detail::EntityViewIterator;
     };

@@ -212,11 +212,11 @@ namespace component {
     }
 
     template <typename ...Args>
-    util::Optional<view::ConstrainedView<Args...>> ComponentManagerNew::getConstrainedView () {
+    view::ConstrainedView<Args...> ComponentManagerNew::getConstrainedView () {
         if (hasAllComps<Args...>()) {
-            return util::Optional<view::ConstrainedView<Args...>>{shared_from_this(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...};
+            return {shared_from_this(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...};
         } else {
-            return util::NullOpt;
+            return {};
         }
     }
 

@@ -139,7 +139,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
 }*/
 
 void physics::checkCollisionsEntity (const component::ComponentManagerNew::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
-    for (auto i = compManager->begin(); i != compManager->end(); i++) {
+    /*for (auto i = compManager->begin(); i != compManager->end(); i++) {
         for (auto j = i + 1; j != compManager->end(); j++) {
             (*i).applyFunc<component::EntityId, CollisionComponent>([&j, &collisionResults](component::EntityId& id1, CollisionComponent& comp1) {
                 (*j).applyFunc<component::EntityId, CollisionComponent>([&](component::EntityId& id2, CollisionComponent& comp2) {
@@ -149,6 +149,21 @@ void physics::checkCollisionsEntity (const component::ComponentManagerNew::Share
                     }
                 });
             });
+        }
+    }*/
+    auto consView = compManager->getConstrainedView<CollisionComponent>();
+
+    for (auto i = consView.begin(); i != consView.end(); i++) {
+        auto j = i;
+        j++;
+        /*if (j == consView.end()) {
+            break;
+        }*/
+        for ( ; j != consView.end(); j++) {
+            auto coll = entityCollision((*i).get<CollisionComponent>(), (*j).get<CollisionComponent>());
+            if (coll.first) {
+                collisionResults.emplace_back((*i).getId(), (*j).getId(), coll.second);
+            }
         }
     }
 }

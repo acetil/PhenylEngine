@@ -7,6 +7,11 @@
 
 namespace component::view {
 
+    namespace detail {
+        template<typename ...Args>
+        class ConstrainedViewIterator;
+    }
+
     template <typename ...Args>
     class ConstrainedView;
 
@@ -42,17 +47,24 @@ namespace component::view {
 
         friend ComponentManagerNew;
         friend ConstrainedView<Args...>;
+        friend detail::ConstrainedViewIterator<Args...>;
     };
 
     template <typename ...Args>
     class ConstrainedView {
     private:
-        std::tuple<component::EntityId*, Args*...> comps;
-        component::ComponentManagerNew::SharedPtr componentManager;
+        std::tuple<component::EntityId*, Args*...> comps{};
+        component::ComponentManagerNew::SharedPtr componentManager{nullptr};
+        ConstrainedView () = default;
     public:
+        using iterator = detail::ConstrainedViewIterator<Args...>;
         ConstrainedView (component::ComponentManagerNew::SharedPtr _compManager, component::EntityId* ids, Args*... compPtrs) : componentManager{std::move(_compManager)}, comps{ids, compPtrs...} {}
 
         util::Optional<ConstrainedEntityView<Args...>> getEntityView (component::EntityId entityId) const {
+            if (!componentManager) {
+                return util::NullOpt;
+            }
+
             return componentManager->tempGetPos(entityId).thenMap([this](const size_t& pos){
                 return ConstrainedEntityView<Args...>{std::get<EntityId*>(comps)[pos], std::get<Args*>(comps)[pos]...};
             });
@@ -64,5 +76,88 @@ namespace component::view {
 
             return ConstrainedView<Args2...>(componentManager, std::get<EntityId*>(comps), std::get<Args2*>(comps)...);
         }
+
+        inline iterator begin ();
+        inline iterator end ();
+
+        friend detail::ConstrainedViewIterator<Args...>;
+        friend ComponentManagerNew;
     };
+
+    namespace detail {
+        template<typename ...Args>
+        class ConstrainedViewIterator {
+        private:
+            ConstrainedView<Args...> constrainedView;
+            std::size_t pos{};
+
+            void findFirst () {
+
+            }
+
+            void findNext () {
+                pos++;
+            }
+
+            void findPrev () {
+                pos--;
+            }
+
+        public:
+            ConstrainedViewIterator () = default;
+
+            ConstrainedViewIterator (ConstrainedView<Args...> _constrainedView, std::size_t startPos) : constrainedView {
+                    _constrainedView}, pos{startPos} {
+                findFirst();
+            }
+
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = ConstrainedEntityView<Args...>;
+            using difference_type = std::ptrdiff_t;
+
+            value_type operator* () const {
+                return ConstrainedEntityView<Args...>(std::get<component::EntityId*>(constrainedView.comps)[pos],
+                                                      std::get<Args*>(constrainedView.comps)[pos]...);
+            }
+
+            ConstrainedViewIterator<Args...>& operator++ () {
+                findNext();
+                return *this;
+            }
+
+            ConstrainedViewIterator<Args...> operator++ (int) {
+                ConstrainedViewIterator other = *this;
+                findNext();
+                return other;
+            }
+
+            ConstrainedViewIterator<Args...>& operator-- () {
+                findPrev();
+                return *this;
+            }
+
+            ConstrainedViewIterator<Args...> operator-- (int) {
+                ConstrainedViewIterator other = *this;
+                findPrev();
+                return other;
+            }
+
+            bool operator== (const ConstrainedViewIterator<Args...>& other) const {
+                return pos == other.pos || (!constrainedView.componentManager && !other.constrainedView.componentManager);
+            }
+        };
+
+    }
+    template <typename ...Args>
+    inline typename ConstrainedView<Args...>::iterator ConstrainedView<Args...>::begin () {
+        return {*this, 0};
+    }
+
+    template <typename ...Args>
+    inline typename ConstrainedView<Args...>::iterator ConstrainedView<Args...>::end () {
+        if (!componentManager) {
+            return begin();
+        }
+        return {*this, componentManager->getNumObjects()};
+    }
 }
