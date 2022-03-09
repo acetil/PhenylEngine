@@ -6,6 +6,8 @@
 #include <cstring>
 #include <cstdint>
 
+#include "util/meta.h"
+
 namespace util {
     // This specifically exists because c++ standard is stupid
     // Not thread safe

@@ -39,7 +39,7 @@ void graphics::UIRenderLayer::applyCamera (graphics::Camera camera) {
 }
 
 void graphics::UIRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
-    textProgram->useProgram();
+    textProgram.bind();
 
     fontTexture.bindTexture();
 
@@ -55,7 +55,8 @@ void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string
 }
 
 UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) : fontTexture(_fontTexture),
-                                                                                  textProgram(renderer->getProgram("text").value()) {
+                                                                                  textProgram(renderer->getProgramNew(
+                                                                                          "text").orThrow()) {
     textIds = renderer->getBufferIds(3, 200 * 12 * sizeof(float), {2, 2, 3});
     textBuffer[0] = Buffer(200 * 12, sizeof(float), false);
     textBuffer[1] = Buffer(200 * 12, sizeof(float), false);

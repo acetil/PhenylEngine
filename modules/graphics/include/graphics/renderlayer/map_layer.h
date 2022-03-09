@@ -14,7 +14,7 @@ namespace graphics {
         GraphicsBufferIds bufferIds;
         bool needDataBuffer = true;
         int numTriangles;
-        ShaderProgram* program;
+        ShaderProgramNew program;
         TextureAtlas& atlas;
     public:
         explicit MapRenderLayer(Renderer* renderer, TextureAtlas& atlas);

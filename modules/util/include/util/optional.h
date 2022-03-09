@@ -46,8 +46,8 @@ namespace util {
         Optional () : memory{}, hasVal{false} {}
         Optional (detail::NullOpt_t) : memory{}, hasVal{false} {}
 
-        explicit Optional (T& val) : memory{val}, hasVal(true) {}
-        explicit Optional (T&& val) : memory{std::forward<T&&>(val)}, hasVal(true) {}
+        Optional (T& val) : memory{val}, hasVal(true) {}
+        Optional (T&& val) : memory{std::forward<T&&>(val)}, hasVal(true) {}
 
         template <typename ...Args>
         explicit Optional (Args&&... args) : memory{args...}, hasVal{true} {}

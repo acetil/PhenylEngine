@@ -1,5 +1,5 @@
 #include "glcallbacks.h"
-#include "window_callbacks.h"
+#include "graphics/renderers/window_callbacks.h"
 
 using namespace graphics;
 

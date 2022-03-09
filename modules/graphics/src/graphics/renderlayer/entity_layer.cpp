@@ -86,22 +86,22 @@ void EntityRenderLayer::applyUniform (int uniformId, void* data) {
 }
 
 void EntityRenderLayer::applyCamera (graphics::Camera camera) {
-    shaderProgram->useProgram();
-    shaderProgram->applyUniform(camera.getUniformName(), camera.getCamMatrix());
+    shaderProgram.bind();
+    shaderProgram.applyUniform(camera.getUniformName(), camera.getCamMatrix());
 }
 
 void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
-    shaderProgram->useProgram();
+    shaderProgram.bind();
     frameBuf->bind();
     //printf("Num triangles: %d\n", numTriangles);
     renderer->render(buffIds, shaderProgram, numTriangles); // TODO: Make better
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
-                                                component::EntityComponentManager::SharedPtr componentManager) {
+                                                component::EntityComponentManager::SharedPtr componentManager) : shaderProgram{renderer->getProgramNew("default").orThrow()} {
     this->componentManager = std::move(componentManager);
     //this->shaderProgram = renderer->getProgram("entity").value();
-    this->shaderProgram = renderer->getProgram("default").value(); // TODO
+    //this->shaderProgram = renderer->getProgramNew("default").orThrow(); // TODO
     this->buffIds = renderer->getBufferIds(5, BUFFER_SIZE * 2 * sizeof(float), {2, 2, 2, 2, 2});
     this->buffers[0] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
     this->buffers[1] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);

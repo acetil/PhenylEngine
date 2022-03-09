@@ -11,7 +11,7 @@ namespace graphics {
         //Buffer buffer;
         //bool needsBuffer = true;
         component::EntityComponentManager::SharedPtr componentManager;
-        ShaderProgram* shaderProgram;
+        ShaderProgramNew shaderProgram;
         Buffer buffers[5];
         //int numBuffers = 0;
         GraphicsBufferIds buffIds;

@@ -3,7 +3,7 @@
 
 #include "engine/key_input.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/renderers/glrenderer.h"
+#include "graphics/opengl/glrenderer.h"
 
 #include "event/events/cursor_position_change.h"
 

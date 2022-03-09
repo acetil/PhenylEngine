@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "renderer.h"
+#include "graphics/renderers/renderer.h"
 
 namespace graphics {
     class GLFrameBuffer : public FrameBuffer {
@@ -22,6 +22,7 @@ namespace graphics {
         GLFWwindow* window;
         std::shared_ptr<GLFrameBuffer> windowBuf;
         std::unordered_map<std::string, ShaderProgram*> shaderPrograms;
+        util::Map<std::string, ShaderProgramNew> shaderProgramsNew;
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
 
@@ -40,15 +41,19 @@ namespace graphics {
 
         FrameBuffer* getWindowBuffer () override;
 
-        std::optional<ShaderProgram*> getProgram (std::string program) override;
+       //std::optional<ShaderProgram*> getProgram (std::string program) override;
+
+        util::Optional<ShaderProgramNew> getProgramNew (const std::string& program) override;
 
         GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) override;
 
         void bufferData (GraphicsBufferIds& ids, Buffer* buffers) override; // TODO: make more safe
 
-        void render (GraphicsBufferIds& ids, ShaderProgram* program, int numTriangles) override; // TODO: put rendering through frame buffer?
+        void render (GraphicsBufferIds& ids, ShaderProgramNew& program, int numTriangles) override; // TODO: put rendering through frame buffer?
 
         void finishRender () override;
+
+        void addShader(const std::string &shaderName, const ShaderProgramBuilder& shaderBuilder) override;
 
         void addShader (const std::string& name, ShaderProgram* program);
 

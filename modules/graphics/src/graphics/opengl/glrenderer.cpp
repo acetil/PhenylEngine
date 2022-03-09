@@ -1,5 +1,6 @@
-#include "graphics/renderers/glrenderer.h"
-#include "window_callbacks.h"
+#include "graphics/opengl/glrenderer.h"
+#include "graphics/opengl/glshader.h"
+#include "graphics/renderers/window_callbacks.h"
 #include "glcallbacks.h"
 #include "util/profiler.h"
 #include <vector>
@@ -33,12 +34,12 @@ FrameBuffer* GLRenderer::getWindowBuffer () {
     return windowBuf.get();
 }
 
-std::optional<ShaderProgram*> GLRenderer::getProgram (std::string program) {
+/*std::optional<ShaderProgram*> GLRenderer::getProgram (std::string program) {
     if (shaderPrograms.find(program) == shaderPrograms.end()) {
         return std::nullopt;
     }
     return std::optional(shaderPrograms[program]);
-}
+}*/
 
 GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) {
     GLuint vao;
@@ -75,8 +76,8 @@ void GLRenderer::bufferData (GraphicsBufferIds& ids, Buffer* buffers) {
     }
 }
 
-void GLRenderer::render (GraphicsBufferIds& ids, ShaderProgram* program, int numTriangles) {
-    program->useProgram();
+void GLRenderer::render (GraphicsBufferIds& ids, ShaderProgramNew& program, int numTriangles) {
+    program.bind();
     glBindVertexArray(ids.vaoId);
     glDrawArrays(GL_TRIANGLES, 0, numTriangles * 3);
     //logging::logf(LEVEL_DEBUG, "Rendered %d triangles!", numTriangles);
@@ -216,6 +217,18 @@ GLRenderer::~GLRenderer () {
     }
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+void GLRenderer::addShader (const std::string& shaderName, const ShaderProgramBuilder& shaderBuilder) {
+    shaderProgramsNew[shaderName] = ShaderProgramNew{GLShaderProgram::NewSharedPtr(shaderBuilder)};
+}
+
+util::Optional<ShaderProgramNew> GLRenderer::getProgramNew (const std::string& program) {
+    if (shaderProgramsNew.contains(program)) {
+        return {shaderProgramsNew.at(program)};
+    } else {
+        return util::NullOpt;
+    }
 }
 
 

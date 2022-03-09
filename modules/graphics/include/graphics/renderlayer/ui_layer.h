@@ -12,7 +12,7 @@ namespace graphics {
         GraphicsBufferIds textIds;
         Buffer textBuffer[3];
         GraphicsTexture fontTexture;
-        ShaderProgram* textProgram;
+        ShaderProgramNew textProgram;
     public:
         explicit UIRenderLayer(GraphicsTexture _fontTexture, Renderer* renderer);
 

@@ -7,10 +7,10 @@
 using namespace graphics;
 
 
-MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas& _atlas) : atlas(_atlas){
+MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas& _atlas) : atlas(_atlas), program{renderer->getProgramNew("default").orThrow()} {
     map = nullptr;
     numTriangles = 0;
-    program = renderer->getProgram("default").value();
+    //program = renderer->getProgramNew("default").orThrow();
     //this->atlas = atlas;
 }
 
@@ -90,12 +90,12 @@ void MapRenderLayer::applyUniform (int uniformId, void* data) {
 }
 
 void MapRenderLayer::applyCamera (Camera camera) {
-    program->useProgram();
-    program->applyUniform(camera.getUniformName(), camera.getCamMatrix());
+    program.bind();
+    program.applyUniform(camera.getUniformName(), camera.getCamMatrix());
 }
 
 void MapRenderLayer::render (Renderer* renderer, FrameBuffer* frameBuf) {
-    program->useProgram();
+    program.bind();
     frameBuf->bind();
     renderer->render(bufferIds, program, numTriangles);
 }

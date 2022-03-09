@@ -8,7 +8,7 @@ using namespace graphics;
 
 GraphicsRenderLayer::GraphicsRenderLayer (Renderer* renderer) {
     //program = renderer->getProgram("graphics_program").value();
-    program = renderer->getProgram("default").value(); // TODO
+    program = renderer->getProgramNew("default").orThrow(); // TODO
     //renderLayers.push_back(std::make_shared<MapRenderLayer>(renderer));
     // TODO: remove
     //graphics::FontManager manager;
