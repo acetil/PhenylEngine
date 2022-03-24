@@ -43,7 +43,7 @@ std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> Map::ge
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
             auto model = atlas.getModel(tiles[i]->getModelId());
-            auto pos = graphics::AbsolutePosition{static_cast<int>(model.positionData.size() / 2),
+            auto pos = graphics::AbsolutePosition{static_cast<int>(model.positionData.size()),
                                                   glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize},
                                                   glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
             models.emplace_back(std::pair(pos,model));

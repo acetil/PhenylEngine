@@ -48,16 +48,16 @@ namespace graphics {
         void deserialise (util::DataValue const& val);
 
     public:
-        util::span<float> positionData;
-        util::span<float> uvData;
+        util::span<glm::vec2> positionData;
+        util::span<glm::vec2> uvData;
         std::string modelName;
         FixedModel () : positionData(), uvData() {}
-        FixedModel (float* posPtr, float* uvPtr, int size, std::string name) {
-            positionData = util::span(posPtr, size);
-            uvData = util::span(uvPtr, size);
+        FixedModel (glm::vec2* posPtr, glm::vec2* uvPtr, int size, std::string name) {
+            positionData = util::span(posPtr, size / 2);
+            uvData = util::span(uvPtr, size / 2);
             modelName = std::move(name);
         }
-        FixedModel (float* posStart, float* posEnd, float* uvStart, float* uvEnd, std::string name) {
+        FixedModel (glm::vec2* posStart, glm::vec2* posEnd, glm::vec2* uvStart, glm::vec2 * uvEnd, std::string name) {
             /*logging::logf(LEVEL_DEBUG, "Pos size: %ld", posEnd - posStart);
             logging::logf(LEVEL_DEBUG, "UV size: %ld", uvEnd - uvStart);*/
 #ifndef NDEBUG

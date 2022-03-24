@@ -10,7 +10,7 @@ namespace graphics {
 
     struct GLUniform {
         GLint uniformId;
-        UniformType uniformType;
+        ShaderDataType uniformType;
     };
 
     class GLShaderProgram : public RendererShaderProgram, public util::SmartHelper<GLShaderProgram> {
@@ -25,7 +25,7 @@ namespace graphics {
         explicit GLShaderProgram (ShaderProgramBuilder& builder);
         ~GLShaderProgram() override;
 
-        void applyUniform(const std::string &uniformName, UniformType uniformType, const unsigned char *uniformPtr) override;
+        void applyUniform(const std::string &uniformName, ShaderDataType uniformType, const unsigned char *uniformPtr) override;
         void bind() override;
     };
 }

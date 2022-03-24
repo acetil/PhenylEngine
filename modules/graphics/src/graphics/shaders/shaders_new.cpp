@@ -3,24 +3,26 @@
 
 using namespace graphics;
 
-const char* graphics::getUniformTypeName (UniformType type) {
+const char* graphics::getUniformTypeName (ShaderDataType type) {
     switch (type) {
-        case UniformType::FLOAT:
+        case ShaderDataType::FLOAT:
             return "float";
-        case UniformType::INT:
+        case ShaderDataType::INT:
             return "int";
-        case UniformType::VEC2F:
+        case ShaderDataType::VEC2F:
             return "vec2f";
-        case UniformType::VEC3F:
+        case ShaderDataType::VEC3F:
             return "vec3f";
-        case UniformType::VEC4F:
+        case ShaderDataType::VEC4F:
             return "vec4f";
-        case UniformType::MAT2F:
+        case ShaderDataType::MAT2F:
             return "mat2f";
-        case UniformType::MAT3F:
+        case ShaderDataType::MAT3F:
             return "mat3f";
-        case UniformType::MAT4F:
+        case ShaderDataType::MAT4F:
             return "mat4f";
+        case ShaderDataType::UNKNOWN:
+            return "<unknown>";
         default:
             return "<unspecified>";
     }
@@ -28,7 +30,7 @@ const char* graphics::getUniformTypeName (UniformType type) {
 
 graphics::ShaderProgramNew::~ShaderProgramNew () = default;
 
-void ShaderProgramNew::applyUniform (const std::string& uniform, UniformType uniformType, const unsigned char* dataPtr) {
+void ShaderProgramNew::applyUniform (const std::string& uniform, ShaderDataType uniformType, const unsigned char* dataPtr) {
     if (debugCheckShared()) {
         internal->applyUniform(uniform, uniformType, dataPtr);
     }

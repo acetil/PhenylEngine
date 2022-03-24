@@ -13,7 +13,7 @@ namespace graphics {
         FRAGMENT
     };
 
-    enum class UniformType {
+    enum class ShaderDataType {
         FLOAT,
         INT,
         VEC2F,
@@ -21,19 +21,43 @@ namespace graphics {
         VEC4F,
         MAT2F,
         MAT3F,
-        MAT4F
+        MAT4F,
+        UNKNOWN
     };
 
-    const char* getUniformTypeName (UniformType type);
+    template <typename T>
+    ShaderDataType getShaderDataType () {
+        if constexpr (std::is_same_v<T, float>) {
+            return ShaderDataType::FLOAT;
+        } else if constexpr (std::is_same_v<T, int>) {
+            return ShaderDataType::INT;
+        } else if constexpr (std::is_same_v<T, glm::vec2>) {
+            return ShaderDataType::VEC2F;
+        } else if constexpr (std::is_same_v<T, glm::vec3>) {
+            return ShaderDataType::VEC3F;
+        } else if constexpr (std::is_same_v<T, glm::vec4>) {
+            return ShaderDataType::VEC4F;
+        } else if constexpr (std::is_same_v<T, glm::mat2>) {
+            return ShaderDataType::MAT2F;
+        } else if constexpr (std::is_same_v<T, glm::mat3>) {
+            return ShaderDataType::MAT3F;
+        } else if constexpr (std::is_same_v<T, glm::mat4>) {
+            return ShaderDataType::MAT4F;
+        } else {
+            return ShaderDataType::UNKNOWN;
+        }
+    }
+
+    const char* getUniformTypeName (ShaderDataType type);
 
     class RendererShaderProgram;
 
     class ShaderProgramNew {
     private:
         std::shared_ptr<RendererShaderProgram> internal;
-        void applyUniform (const std::string& uniformName, UniformType uniformType, const unsigned char* dataPtr);
+        void applyUniform (const std::string& uniformName, ShaderDataType uniformType, const unsigned char* dataPtr);
         template <typename T>
-        void applyUniform (const std::string& uniformName, UniformType uniformType, const T* dataPtr) {
+        void applyUniform (const std::string& uniformName, ShaderDataType uniformType, const T* dataPtr) {
             applyUniform(uniformName, uniformType, (const unsigned char*)dataPtr);
         }
         inline bool debugCheckShared () {
@@ -52,7 +76,35 @@ namespace graphics {
 
         template <typename T>
         void applyUniform (const std::string& uniformName, const T& val) {
-            if constexpr (std::is_same_v<T, float>) {
+
+            auto uniformType = getShaderDataType<T>();
+
+            /*if (uniformType == UniformType::UNKNOWN) {
+                logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
+                return;
+            }*/
+
+            switch (uniformType) {
+                case ShaderDataType::FLOAT:
+                case ShaderDataType::INT:
+                    applyUniform(uniformName, uniformType, &val);
+                    break;
+                case ShaderDataType::VEC2F:
+                case ShaderDataType::VEC3F:
+                case ShaderDataType::VEC4F:
+                    applyUniform(uniformName, uniformType, &val[0]);
+                    break;
+                case ShaderDataType::MAT2F:
+                case ShaderDataType::MAT3F:
+                case ShaderDataType::MAT4F:
+                    applyUniform(uniformName, uniformType, &val[0][0]);
+                    break;
+                default:
+                    logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
+                    break;
+            }
+
+            /*if constexpr (std::is_same_v<T, float>) {
                 applyUniform(uniformName, UniformType::FLOAT, &val);
             } else if constexpr (std::is_same_v<T, int>) {
                 applyUniform(uniformName, UniformType::INT, &val);
@@ -71,7 +123,7 @@ namespace graphics {
             } else {
                 //static_assert(false, "Unknown uniform type!");
                 logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
-            }
+            }*/
         }
 
         void bind ();
@@ -79,14 +131,14 @@ namespace graphics {
 
     struct ShaderProgramSpec {
         util::Map<ShaderType, std::string> shaderPaths;
-        util::Map<std::string, UniformType> uniforms;
+        util::Map<std::string, ShaderDataType> uniforms;
     };
 
 
     class ShaderProgramBuilder {
     private:
         util::Map<ShaderType, std::string> shaderPaths;
-        util::Map<std::string, UniformType> uniforms;
+        util::Map<std::string, ShaderDataType> uniforms;
     public:
         ShaderProgramBuilder (const std::string& vertexPath, const std::string& fragmentPath) {
             shaderPaths[ShaderType::VERTEX] = vertexPath;
@@ -104,7 +156,7 @@ namespace graphics {
 
         template <typename T>
         ShaderProgramBuilder& addUniform (const std::string& uniform) {
-            if constexpr (std::is_same_v<T, float>) {
+            /*if constexpr (std::is_same_v<T, float>) {
                 uniforms[uniform] = UniformType::FLOAT;
             } else if constexpr (std::is_same_v<T, int>) {
                 uniforms[uniform] = UniformType::INT;
@@ -120,7 +172,8 @@ namespace graphics {
                 uniforms[uniform] = UniformType::MAT3F;
             } else if constexpr (std::is_same_v<T, glm::mat4>) {
                 uniforms[uniform] = UniformType::MAT4F;
-            }
+            }*/
+            uniforms[uniform] = getShaderDataType<T>();
             return *this;
         }
 

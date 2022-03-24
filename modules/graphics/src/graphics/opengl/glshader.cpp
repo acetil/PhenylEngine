@@ -62,7 +62,7 @@ void GLShaderProgram::initShaders (util::Map<ShaderType, std::string>& shaders) 
     }
 }
 
-void GLShaderProgram::applyUniform (const std::string& uniformName, UniformType uniformType, const unsigned char* uniformPtr) {
+void GLShaderProgram::applyUniform (const std::string& uniformName, ShaderDataType uniformType, const unsigned char* uniformPtr) {
     if (!uniformMap.contains(uniformName) || uniformMap.at(uniformName).uniformType != uniformType) {
         logging::log(LEVEL_DEBUG, "Wrong uniform type for uniform \"{}\": expected {}, got {}", uniformName,
                      getUniformTypeName(uniformMap.at(uniformName).uniformType), getUniformTypeName(uniformType));
@@ -75,13 +75,13 @@ void GLShaderProgram::applyUniform (const std::string& uniformName, UniformType 
 void GLShaderProgram::applyUniform (GLUniform uniform, const unsigned char* uniformPtr) {
     bind();
     switch (uniform.uniformType) {
-        case UniformType::VEC2F:
+        case ShaderDataType::VEC2F:
             glUniform2fv(uniform.uniformId, 1, (float*)uniformPtr);
             break;
-        case UniformType::MAT2F:
+        case ShaderDataType::MAT2F:
             glUniformMatrix2fv(uniform.uniformId, 1, GL_FALSE, (float*)uniformPtr);
             break;
-        case UniformType::MAT4F:
+        case ShaderDataType::MAT4F:
             glUniformMatrix4fv(uniform.uniformId, 1, GL_FALSE, (float*)uniformPtr);
             break;
         default:

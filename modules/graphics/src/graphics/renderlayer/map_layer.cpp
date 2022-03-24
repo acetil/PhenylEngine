@@ -44,8 +44,8 @@ void MapRenderLayer::preRender (Renderer* renderer) {
         buffers[3] = Buffer(numVertices * 2, sizeof(float), true);
         buffers[4] = Buffer(numVertices * 2, sizeof(float), true);
         for (auto& m : models) {
-            buffers[0].pushData(m.second.positionData.begin(), m.second.positionData.size());
-            buffers[1].pushData(m.second.uvData.begin(), m.second.uvData.size());
+            buffers[0].pushData((float*)m.second.positionData.begin(), m.second.positionData.size() * 2);
+            buffers[1].pushData((float*)m.second.uvData.begin(), m.second.uvData.size() * 2);
             for (int i = 0; i < m.first.vertices; i++) {
                 buffers[2].pushData(&m.first.pos[0], 2);
                 buffers[3].pushData(&m.first.transform[0][0], 2);

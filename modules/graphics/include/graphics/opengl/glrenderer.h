@@ -26,6 +26,9 @@ namespace graphics {
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
 
+    protected:
+        std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
+
     public:
         explicit GLRenderer (GLFWwindow* window);
 
@@ -70,5 +73,7 @@ namespace graphics {
         void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
 
         void invalidateWindowCallbacks () override;
+
+        PipelineStage buildPipelineStage(const PipelineStageBuilder &stageBuilder) override;
     };
 }

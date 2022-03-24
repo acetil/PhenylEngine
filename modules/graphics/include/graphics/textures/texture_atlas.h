@@ -17,8 +17,8 @@ namespace graphics {
             GraphicsTexture graphicsTexture;
             int sideLength;
             //float* positionData;
-            std::shared_ptr<float[]> positionData;
-            std::shared_ptr<float[]> uvData;
+            std::shared_ptr<glm::vec2[]> positionData;
+            std::shared_ptr<glm::vec2[]> uvData;
             //float* uvData;
             std::vector<FixedModel> models;
             std::unordered_map<std::string, int> modelIdMap;

@@ -197,25 +197,26 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
         numModelComponents += m.textures.size();
     }
 
-    positionData = std::shared_ptr<float[]>(new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents]);
-    uvData = std::shared_ptr<float[]>(new float[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * COMP_PER_VERTEX * numModelComponents]);
+    positionData = std::shared_ptr<glm::vec2[]>(new glm::vec2[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * numModelComponents]);
+    uvData = std::shared_ptr<glm::vec2[]>(new glm::vec2[TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE * numModelComponents]);
     auto posPtr = positionData.get();
-    uvPtr = uvData.get();
+    auto uvPtrN = uvData.get();
     for (const auto& m : modelsIn) {
         auto originalPos = posPtr;
-        auto originalUv = uvPtr;
+        auto originalUv = uvPtrN;
         for (auto pair : m.textures) {
             for (int i = 0; i < TRIANGLES_PER_IMAGE * VERTICES_PER_TRIANGLE; i++) {
                 glm::vec2 offVec = getVertexVec(i) * 2.0f - glm::vec2{1.0f, 1.0f};
                 glm::vec2 finalVec = pair.first.recMat *  offVec + pair.first.offset;
-                *(posPtr++) = finalVec.x;
-                *(posPtr++) = finalVec.y * -1.0f;
+                //*(posPtr++) = finalVec.x;
+                //*(posPtr++) = finalVec.y * -1.0f;
+                *(posPtr++) = {finalVec.x, finalVec.y * -1.0f};
             }
             auto uvSpan = imageMap[pair.second.get()];
-            memcpy(uvPtr, uvSpan.begin(), uvSpan.size() * sizeof(float));
-            uvPtr += uvSpan.size();
+            memcpy(uvPtrN, uvSpan.begin(), uvSpan.size() * sizeof(float));
+            uvPtrN += uvSpan.size() / 2;
         }
-        models.emplace_back(FixedModel(originalPos, posPtr, originalUv, uvPtr, m.modelName));
+        models.emplace_back(FixedModel(originalPos, posPtr, originalUv, uvPtrN, m.modelName));
         modelIdMap[m.modelName] = models.size() - 1;
     }
 

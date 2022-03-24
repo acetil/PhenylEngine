@@ -1,5 +1,6 @@
 #include "graphics/opengl/glrenderer.h"
 #include "graphics/opengl/glshader.h"
+#include "graphics/opengl/glpipelinestage.h"
 #include "graphics/renderers/window_callbacks.h"
 #include "glcallbacks.h"
 #include "util/profiler.h"
@@ -229,6 +230,15 @@ util::Optional<ShaderProgramNew> GLRenderer::getProgramNew (const std::string& p
     } else {
         return util::NullOpt;
     }
+}
+
+PipelineStage GLRenderer::buildPipelineStage (const PipelineStageBuilder& stageBuilder) {
+    auto spec = stageBuilder.build();
+    return PipelineStage{spec.shader, std::make_unique<GLPipelineStage>(spec)};
+}
+
+std::shared_ptr<RendererBufferHandle> GLRenderer::makeBufferHandle () {
+    return std::make_shared<GlBuffer>();
 }
 
 

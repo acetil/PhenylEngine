@@ -7,6 +7,7 @@
 #include "graphics/buffer.h"
 #include "graphics/shaders/shaders.h"
 #include "graphics/shaders/shader_new.h"
+#include "graphics/pipeline/pipeline_stage.h"
 
 #include "util/optional.h"
 
@@ -28,6 +29,8 @@ namespace graphics {
     };
 
     class Renderer {
+    protected:
+        virtual std::shared_ptr<RendererBufferHandle> makeBufferHandle () = 0;
     public:
 
         virtual ~Renderer() = default;
@@ -60,6 +63,13 @@ namespace graphics {
         virtual void invalidateWindowCallbacks () = 0;
 
         virtual void addShader (const std::string& shaderName, const ShaderProgramBuilder& shaderBuilder) = 0;
+
+        virtual PipelineStage buildPipelineStage (const PipelineStageBuilder& stageBuilder) = 0;
+
+        template <typename T>
+        BufferNew<T> makeBuffer (unsigned int bufferCapacity, std::size_t elementSize=1) {
+            return BufferNew<T>{makeBufferHandle(), elementSize, bufferCapacity};
+        }
     };
     class GraphicsTexture {
         Renderer* renderer;
