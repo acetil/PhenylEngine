@@ -17,14 +17,22 @@ namespace util {
             return ptr;
         };
 
+        const T* cbegin () const {
+            return ptr;
+        }
+
         [[maybe_unused]] auto end () {
             return ptr + ptrSize;
         }
-        size_t size () {
+
+        const T* cend () const {
+            return ptr + ptrSize;
+        }
+        [[nodiscard]] size_t size () const {
             return ptrSize;
         }
 
-        [[maybe_unused]] size_t sizeBytes () {
+        [[maybe_unused]] [[nodiscard]] size_t sizeBytes () const {
             return ptrSize * sizeof(T);
         }
     };

@@ -72,7 +72,7 @@ namespace graphics {
         private:
             std::shared_ptr<RendererBufferHandle> bufferHandle{};
         protected:
-            void pushDataInt (unsigned char* dataInternal, std::size_t size);
+            void pushDataInt (const unsigned char* dataInternal, std::size_t size);
             void resizeInt (std::size_t newMemSize);
             void setElementSize (std::size_t elementSize);
         public:
@@ -99,18 +99,18 @@ namespace graphics {
             setElementSize(elementSize * sizeof(T));
         }
 
-        void pushData (T* data, std::size_t num) {
+        void pushData (const T* data, std::size_t num) {
             pushDataInt((unsigned char*)data, num * elementSize * sizeof(T));
         }
 
-        void pushData (T& data) {
+        void pushData (const T& data) {
 #ifndef NDEBUG
             if (elementSize > 1) {
                 logging::log(LEVEL_WARNING, "Pushing single data item to buffer when element size is not 1!");
                 return;
             }
 #endif
-            pushDataInt(&data, sizeof(T));
+            pushDataInt((const unsigned char*)&data, sizeof(T));
         }
 
         void resizeBuffer (std::size_t newNumVertices) {

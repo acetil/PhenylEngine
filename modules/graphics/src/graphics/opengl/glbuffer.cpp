@@ -21,7 +21,7 @@ void GlBuffer::bindBuffer () const {
     glBindBuffer(GL_ARRAY_BUFFER, bufferId);
 }
 
-void GlBuffer::bufferItems (void* _data, std::size_t size) {
+void GlBuffer::bufferItems (const void* _data, std::size_t size) {
 #ifndef NDEBUG
     if (currentSize + size > maxSize) {
         logging::log(LEVEL_ERROR, "Buffer to GlBuffer failed: max size of {} exceeded!", maxSize);

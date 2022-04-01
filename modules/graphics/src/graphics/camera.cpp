@@ -28,7 +28,7 @@ graphics::Camera::Camera() {
     scaleMat = glm::mat4(scale);
     camMatrix = scaleMat * positionMat;
 }
-glm::mat4 graphics::Camera::getCamMatrix () {
+glm::mat4 graphics::Camera::getCamMatrix () const {
     return camMatrix;
 }
 std::string graphics::Camera::getUniformName () {

@@ -3,8 +3,19 @@
 #include "engine/map/map.h"
 #include "render_layer.h"
 #include "event/events/map_load.h"
+#include "graphics/pipeline/pipeline.h"
 
 namespace graphics {
+
+    class MapPipeline : public Pipeline<game::Map::SharedPtr> {
+    public:
+        void onMapLoad (game::Map::SharedPtr newMap) {
+            bufferData(newMap);
+        }
+
+        virtual void applyCamera (const Camera& camera) = 0;
+    };
+
     class MapRenderLayer : public RenderLayer {
     private:
         bool active = false;
@@ -16,6 +27,8 @@ namespace graphics {
         int numTriangles;
         ShaderProgramNew program;
         TextureAtlas& atlas;
+
+        std::unique_ptr<MapPipeline> mapPipeline;
     public:
         explicit MapRenderLayer(Renderer* renderer, TextureAtlas& atlas);
         std::string getName () override;

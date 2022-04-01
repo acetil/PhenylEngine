@@ -6,10 +6,77 @@
 
 using namespace graphics;
 
+class MapPipelineInt : public MapPipeline {
+private:
+    PipelineStage mapRenderStage;
+    ShaderProgramNew shader;
+
+    BufferNew<glm::vec2> posBuffer;
+    BufferNew<glm::vec2> uvBuffer;
+    BufferNew<glm::vec2> offsetBuffer;
+    BufferNew<glm::mat2> transformBuffer;
+public:
+    MapPipelineInt (const ShaderProgramNew& _shader) : shader{_shader} {}
+    void init (Renderer* renderer) override {
+        mapRenderStage = std::move(renderer->buildPipelineStage(PipelineStageBuilder(shader)
+                .addVertexAttrib<glm::vec2>(0)
+                .addVertexAttrib<glm::vec2>(1)
+                .addVertexAttrib<glm::vec2>(2)
+                .addVertexAttrib<glm::mat2>(3)));
+
+        posBuffer = renderer->makeBuffer<glm::vec2>(0);
+        uvBuffer = renderer->makeBuffer<glm::vec2>(0);
+        offsetBuffer = renderer->makeBuffer<glm::vec2>(0);
+        transformBuffer = renderer->makeBuffer<glm::mat2>(0);
+
+        mapRenderStage.bindBuffer(0, posBuffer);
+        mapRenderStage.bindBuffer(1, uvBuffer);
+        mapRenderStage.bindBuffer(2, offsetBuffer);
+        mapRenderStage.bindBuffer(3, transformBuffer);
+    }
+
+    void bufferData (game::Map::SharedPtr& map) override {
+        mapRenderStage.clearBuffers();
+        auto models = map->getModels();
+        std::size_t numVertices = 0;
+
+        for (const auto& m : models) {
+            numVertices += m.first.vertices;
+        }
+
+        posBuffer.resizeBuffer(numVertices);
+        uvBuffer.resizeBuffer(numVertices);
+        offsetBuffer.resizeBuffer(numVertices);
+        transformBuffer.resizeBuffer(numVertices);
+
+        for (const auto& m : models) {
+            posBuffer.pushData(m.second.positionData.cbegin(), m.second.positionData.size());
+            uvBuffer.pushData(m.second.uvData.cbegin(), m.second.uvData.size());
+
+            for (std::size_t i = 0; i < m.first.vertices; i++) {
+                offsetBuffer.pushData(m.first.pos);
+                transformBuffer.pushData(m.first.transform);
+            }
+        }
+
+        mapRenderStage.bufferAllData();
+    }
+
+    void applyCamera(const Camera& camera) override {
+        mapRenderStage.applyUniform(graphics::Camera::getUniformName(), camera.getCamMatrix());
+    }
+
+    void render () override {
+        mapRenderStage.render();
+    }
+};
+
 
 MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas& _atlas) : atlas(_atlas), program{renderer->getProgramNew("default").orThrow()} {
     map = nullptr;
     numTriangles = 0;
+    mapPipeline = std::make_unique<MapPipelineInt>(program);
+    mapPipeline->init(renderer);
     //program = renderer->getProgramNew("default").orThrow();
     //this->atlas = atlas;
 }
@@ -31,7 +98,7 @@ void MapRenderLayer::gatherData () {
 }
 
 void MapRenderLayer::preRender (Renderer* renderer) {
-    if (needDataBuffer) {
+    /*if (needDataBuffer) {
         auto models = map->getModels();
         int numVertices = 0;
         for (const auto& m : models) {
@@ -59,7 +126,7 @@ void MapRenderLayer::preRender (Renderer* renderer) {
         numTriangles = numVertices / 3;
         logging::log(LEVEL_DEBUG, "Buffered map data with {} vertices!", numVertices);
 
-    }
+    }*/
     /*if (requiresBuffer) {
         bufferIds = renderer->getBufferIds(2, map->getNumTileVertices() * 6 * sizeof(float));
         requiresBuffer = false;
@@ -90,22 +157,31 @@ void MapRenderLayer::applyUniform (int uniformId, void* data) {
 }
 
 void MapRenderLayer::applyCamera (Camera camera) {
-    program.bind();
-    program.applyUniform(camera.getUniformName(), camera.getCamMatrix());
+    //program.bind();
+    //program.applyUniform(camera.getUniformName(), camera.getCamMatrix());
+    mapPipeline->applyCamera(camera);
 }
 
 void MapRenderLayer::render (Renderer* renderer, FrameBuffer* frameBuf) {
-    program.bind();
+    /*program.bind();
     frameBuf->bind();
-    renderer->render(bufferIds, program, numTriangles);
+    renderer->render(bufferIds, program, numTriangles);*/
+    mapPipeline->render();
 }
 
 void MapRenderLayer::attachMap (game::Map::SharedPtr _map) {
-    logging::log(LEVEL_DEBUG, "Map attached!");
+    /*logging::log(LEVEL_DEBUG, "Map attached!");
     this->map = std::move(_map);
     this->map->setAtlas(atlas);
     active = true;
-    needDataBuffer = true;
+    needDataBuffer = true;*/
+    if (!_map) {
+        active = false;
+        return;
+    }
+    _map->setAtlas(atlas);
+    mapPipeline->bufferData(_map);
+    active = true;
 }
 
 void MapRenderLayer::onMapLoad (event::MapLoadEvent& event) {

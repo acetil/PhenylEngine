@@ -19,8 +19,8 @@ namespace graphics {
         [[maybe_unused]] void setPosition (float x, float y);
 
         [[maybe_unused]] void setScale (float scale);
-        glm::mat4 getCamMatrix ();
-        std::string getUniformName ();
+        [[nodiscard]] glm::mat4 getCamMatrix () const ;
+        static std::string getUniformName () ;
         Camera();
     };
 }

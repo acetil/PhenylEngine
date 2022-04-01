@@ -31,7 +31,7 @@ void detail::BufferNewBase::bufferData () {
     bufferHandle->bufferData();
 }
 
-void detail::BufferNewBase::pushDataInt (unsigned char* dataInternal, std::size_t size) {
+void detail::BufferNewBase::pushDataInt (const unsigned char* dataInternal, std::size_t size) {
     bufferHandle->bufferItems(dataInternal, size);
 }
 

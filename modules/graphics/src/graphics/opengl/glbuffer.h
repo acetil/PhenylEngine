@@ -21,7 +21,7 @@ namespace graphics {
 
         void allocBufferMemory(std::size_t memSize) override;
         void setElementSize(std::size_t elementSize) override;
-        void bufferItems(void* _data, std::size_t size) override;
+        void bufferItems(const void* _data, std::size_t size) override;
         void bufferData() override;
         void clearBuffer() override;
 

@@ -10,7 +10,7 @@ namespace graphics {
         virtual void allocBufferMemory (std::size_t memSize) = 0;
         virtual void setElementSize (std::size_t elementSize) = 0;
         virtual void bufferData () = 0;
-        virtual void bufferItems (void* data, std::size_t size) = 0;
+        virtual void bufferItems (const void* data, std::size_t size) = 0;
         virtual void clearBuffer () = 0;
     };
 }
