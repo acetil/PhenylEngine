@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "graphics/shaders/shader_new.h"
-#include "graphics/renderers/buffer_new.h"
+#include "graphics/renderers/buffer.h"
 #include "util/meta.h"
 
 namespace graphics {
@@ -24,7 +24,7 @@ namespace graphics {
         void bindBuffer (int location, ShaderDataType attribType, const std::shared_ptr<RendererBufferHandle>& handle);
 
         template <typename T>
-        void bindBuffer (int location, BufferNew<T> buffer) {
+        void bindBuffer (int location, Buffer<T> buffer) {
             bindBuffer(location, getShaderDataType<T>(), buffer.bufferHandle);
         }
 

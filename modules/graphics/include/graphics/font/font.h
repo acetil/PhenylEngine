@@ -19,7 +19,6 @@ namespace graphics {
         Font (FontFace& _face, int targetRes) : atlas(face.getGlyphs(), targetRes), face(std::move(_face)) {
             face.updateResolution(72, 72);
         };
-        void renderText (const std::string& text, int size, int x, int y, glm::vec3 colour, Buffer* buffer);
         RenderedText renderText (const std::string& text, int size, int x, int y, glm::vec3 colour);
         void bindAtlasTexture ();
         void loadAtlas (Renderer* renderer);

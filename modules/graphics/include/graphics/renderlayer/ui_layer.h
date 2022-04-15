@@ -17,8 +17,6 @@ namespace graphics {
 
     class UIRenderLayer : public RenderLayer {
     private:
-        GraphicsBufferIds textIds;
-        Buffer textBuffer[3];
         GraphicsTexture fontTexture;
         ShaderProgramNew textProgram;
         std::unique_ptr<UIPipeline> pipeline;

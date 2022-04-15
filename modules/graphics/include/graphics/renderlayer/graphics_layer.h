@@ -15,7 +15,6 @@ namespace graphics {
         bool active = true;
         ShaderProgramNew program;
         std::vector<std::shared_ptr<RenderLayer>> renderLayers;
-        //std::queue<int> bufferGets;
     public:
         explicit GraphicsRenderLayer(Renderer* renderer);
         std::string getName () override;

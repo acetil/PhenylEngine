@@ -10,14 +10,9 @@ namespace graphics {
     class EntityRenderLayer : public RenderLayer {
     private:
         bool active = true;
-        //Buffer buffer;
-        //bool needsBuffer = true;
         component::EntityComponentManager::SharedPtr componentManager;
         ShaderProgramNew shaderProgram;
-        Buffer buffers[5];
-        //int numBuffers = 0;
-        GraphicsBufferIds buffIds;
-        int numTriangles = 0;
+
         std::unique_ptr<EntityPipeline> entityPipeline;
     public:
         EntityRenderLayer (Renderer* renderer, component::EntityComponentManager::SharedPtr componentManager);

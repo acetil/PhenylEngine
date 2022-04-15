@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/renderers/buffer_new.h"
+#include "graphics/renderers/buffer.h"
 
 namespace graphics {
     class RendererBufferHandle {

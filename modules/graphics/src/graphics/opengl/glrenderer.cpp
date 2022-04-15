@@ -42,48 +42,6 @@ FrameBuffer* GLRenderer::getWindowBuffer () {
     return std::optional(shaderPrograms[program]);
 }*/
 
-GraphicsBufferIds GLRenderer::getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) {
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    auto buffers = new GLuint[requestedBufs];
-
-    glGenBuffers(requestedBufs, buffers);
-
-    for (int i = 0; i < requestedBufs; i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-        glBufferData(GL_ARRAY_BUFFER, bufferSize, nullptr, GL_DYNAMIC_DRAW);
-        glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, attribSizes[i], GL_FLOAT, GL_FALSE, 0, nullptr); // TODO: update to be more generic
-    }
-
-    std::vector<GLuint> bufVec;
-    bufVec.reserve(requestedBufs);
-    for (int i = 0; i < requestedBufs; i++) {
-        bufVec.push_back(buffers[i]);
-    }
-    delete[] buffers;
-    return GraphicsBufferIds(vao, bufVec);
-
-}
-
-void GLRenderer::bufferData (GraphicsBufferIds& ids, Buffer* buffers) {
-    glBindVertexArray(ids.vaoId);
-    for (int i = 0; i < ids.vboIds.size(); i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, ids.vboIds[i]);
-        //printf("Current size: %d\n", buffers[i].currentSize());
-        glBufferData(GL_ARRAY_BUFFER, buffers[i].currentSize(), buffers[i].getData(), GL_DYNAMIC_DRAW);
-        buffers[i].clearData();
-    }
-}
-
-void GLRenderer::render (GraphicsBufferIds& ids, ShaderProgramNew& program, int numTriangles) {
-    program.bind();
-    glBindVertexArray(ids.vaoId);
-    glDrawArrays(GL_TRIANGLES, 0, numTriangles * 3);
-    //logging::logf(LEVEL_DEBUG, "Rendered %d triangles!", numTriangles);
-}
-
 void GLRenderer::finishRender () {
     glfwSwapBuffers(window);
 }

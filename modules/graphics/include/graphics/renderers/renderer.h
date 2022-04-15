@@ -4,7 +4,6 @@
 #include <optional>
 #include <memory>
 
-#include "graphics/buffer.h"
 #include "graphics/shaders/shaders.h"
 #include "graphics/shaders/shader_new.h"
 #include "graphics/pipeline/pipeline_stage.h"
@@ -19,13 +18,6 @@ namespace graphics {
     class FrameBuffer {
     public:
         virtual void bind () = 0;
-    };
-    // TODO: roll into Buffer
-    struct GraphicsBufferIds {
-        unsigned int vaoId;
-        std::vector<unsigned int> vboIds;
-        GraphicsBufferIds (): vaoId(0), vboIds({}) {};
-        GraphicsBufferIds (unsigned int _vaoId, std::vector<unsigned int> _vboIds): vaoId(_vaoId), vboIds(std::move(_vboIds)) {};
     };
 
     class Renderer {
@@ -46,10 +38,6 @@ namespace graphics {
         virtual FrameBuffer* getWindowBuffer () = 0;
         //virtual std::optional<ShaderProgram*> getProgram (std::string program) = 0;
         virtual util::Optional<ShaderProgramNew> getProgramNew (const std::string& program) = 0;
-        virtual GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) = 0;
-        virtual void bufferData (GraphicsBufferIds& ids, Buffer* buffers) = 0; // TODO: make more safe
-
-        virtual void render (GraphicsBufferIds& ids, ShaderProgramNew& program, int numTriangles) = 0; // TODO: put rendering through frame buffer?
 
         virtual void finishRender () = 0;
 
@@ -67,8 +55,8 @@ namespace graphics {
         virtual PipelineStage buildPipelineStage (const PipelineStageBuilder& stageBuilder) = 0;
 
         template <typename T>
-        BufferNew<T> makeBuffer (unsigned int bufferCapacity, std::size_t elementSize=1) {
-            return BufferNew<T>{makeBufferHandle(), elementSize, bufferCapacity};
+        Buffer<T> makeBuffer (unsigned int bufferCapacity, std::size_t elementSize=1) {
+            return Buffer<T>{makeBufferHandle(), elementSize, bufferCapacity};
         }
     };
     class GraphicsTexture {

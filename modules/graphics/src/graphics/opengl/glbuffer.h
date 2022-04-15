@@ -2,7 +2,7 @@
 
 #include "graphics/graphics_headers.h"
 
-#include "graphics/renderers/buffer_new.h"
+#include "graphics/renderers/buffer.h"
 #include "graphics/renderers/renderer_buffer.h"
 
 namespace graphics {

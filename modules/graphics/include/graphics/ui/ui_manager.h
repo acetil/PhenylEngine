@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "graphics/font/font_manager.h"
-#include "graphics/buffer.h"
 #include "graphics/font/font.h"
 #include "graphics/maths_headers.h"
 

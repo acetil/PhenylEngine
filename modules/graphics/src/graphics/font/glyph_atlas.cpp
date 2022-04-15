@@ -198,15 +198,6 @@ void GlyphAtlas::loadAtlas (Renderer* renderer) {
     }*/
 }
 
-void GlyphAtlas::bufferChar (Buffer& uvBuffer, int c) {
-    if (!charUvs.contains(c)) {
-        logging::log(LEVEL_DEBUG, "No glyph found with code {}", c);
-        uvBuffer.pushData(charUvs[0].begin(), charUvs[0].size());
-    } else {
-        uvBuffer.pushData(charUvs[c].begin(), charUvs[c].size());
-    }
-}
-
 util::span<glm::vec2> GlyphAtlas::getCharUvs (int c) {
     if (!charUvs.contains(c)) {
         logging::log(LEVEL_DEBUG, "No glyph found with code {}", c);

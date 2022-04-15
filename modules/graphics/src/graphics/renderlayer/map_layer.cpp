@@ -11,10 +11,10 @@ private:
     PipelineStage mapRenderStage;
     ShaderProgramNew shader;
 
-    BufferNew<glm::vec2> posBuffer;
-    BufferNew<glm::vec2> uvBuffer;
-    BufferNew<glm::vec2> offsetBuffer;
-    BufferNew<glm::mat2> transformBuffer;
+    Buffer<glm::vec2> posBuffer;
+    Buffer<glm::vec2> uvBuffer;
+    Buffer<glm::vec2> offsetBuffer;
+    Buffer<glm::mat2> transformBuffer;
 public:
     MapPipelineInt (const ShaderProgramNew& _shader) : shader{_shader} {}
     void init (Renderer* renderer) override {
@@ -74,7 +74,6 @@ public:
 
 MapRenderLayer::MapRenderLayer (Renderer* renderer, TextureAtlas& _atlas) : atlas(_atlas), program{renderer->getProgramNew("default").orThrow()} {
     map = nullptr;
-    numTriangles = 0;
     mapPipeline = std::make_unique<MapPipelineInt>(program);
     mapPipeline->init(renderer);
     //program = renderer->getProgramNew("default").orThrow();

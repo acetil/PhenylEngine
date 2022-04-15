@@ -46,7 +46,6 @@ namespace graphics {
         GraphicsTexture& getTex () {
             return texture;
         }
-        void bufferChar (Buffer& uvBuffer, int c);
         util::span<glm::vec2> getCharUvs (int c);
         ~GlyphAtlas ();
     };

@@ -68,7 +68,7 @@ namespace graphics {
     };*/
 
     namespace detail {
-        class BufferNewBase {
+        class BufferBase {
         private:
             std::shared_ptr<RendererBufferHandle> bufferHandle{};
         protected:
@@ -76,8 +76,8 @@ namespace graphics {
             void resizeInt (std::size_t newMemSize);
             void setElementSize (std::size_t elementSize);
         public:
-            explicit BufferNewBase (std::shared_ptr<RendererBufferHandle> _bufferHandle) : bufferHandle{std::move(_bufferHandle)} {}
-            ~BufferNewBase();
+            explicit BufferBase (std::shared_ptr<RendererBufferHandle> _bufferHandle) : bufferHandle{std::move(_bufferHandle)} {}
+            ~BufferBase();
 
             void clearData ();
 
@@ -88,13 +88,13 @@ namespace graphics {
     }
 
     template <typename T>
-    class BufferNew : public detail::BufferNewBase {
+    class Buffer : public detail::BufferBase {
     private:
         std::size_t elementSize{};
     public:
-        BufferNew () : detail::BufferNewBase(nullptr) {};
-        explicit BufferNew (std::shared_ptr<RendererBufferHandle> _bufferHandle, std::size_t _elementSize, std::size_t initialNumElements) : detail::BufferNewBase(std::move(_bufferHandle)),
-                elementSize{_elementSize} {
+        Buffer () : detail::BufferBase(nullptr) {};
+        explicit Buffer (std::shared_ptr<RendererBufferHandle> _bufferHandle, std::size_t _elementSize, std::size_t initialNumElements) : detail::BufferBase(std::move(_bufferHandle)),
+                                                                                                                                          elementSize{_elementSize} {
             resizeBuffer(initialNumElements);
             setElementSize(elementSize * sizeof(T));
         }

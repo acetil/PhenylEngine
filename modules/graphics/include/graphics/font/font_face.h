@@ -5,7 +5,6 @@
 #include <utility>
 #include "harfbuzz_typedefs.h"
 #include "glyph_image.h"
-#include "graphics/buffer.h"
 
 namespace graphics {
     struct CharOffsets {

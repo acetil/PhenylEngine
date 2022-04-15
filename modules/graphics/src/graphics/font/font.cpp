@@ -8,7 +8,7 @@
 
 using namespace graphics;
 
-void graphics::Font::renderText (const std::string& text, int size, int x, int y, glm::vec3 colour, Buffer* buffer) {
+/*void graphics::Font::renderText (const std::string& text, int size, int x, int y, glm::vec3 colour, Buffer* buffer) {
     float vertexPositions[NUM_VERTICES * NUM_POS_COMP];
     float vertexColour[NUM_VERTICES * NUM_COLOUR_COMP];
     face.setFontSize(size);
@@ -36,7 +36,7 @@ void graphics::Font::renderText (const std::string& text, int size, int x, int y
         currX += off.advance;
         last = curr;
     }
-}
+}*/
 
 void Font::loadAtlas (Renderer* renderer) {
     atlas.loadAtlas(renderer);

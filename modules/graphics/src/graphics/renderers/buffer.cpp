@@ -1,4 +1,4 @@
-#include "graphics/renderers/buffer_new.h"
+#include "graphics/renderers/buffer.h"
 #include "graphics/renderers/renderer_buffer.h"
 
 using namespace graphics;
@@ -21,24 +21,24 @@ void detail::BufferNewBase::resetBufferInternal () {
     numElements = 0;
 }*/
 
-detail::BufferNewBase::~BufferNewBase () = default;
+detail::BufferBase::~BufferBase () = default;
 
-void detail::BufferNewBase::clearData () {
+void detail::BufferBase::clearData () {
     bufferHandle->clearBuffer();
 }
 
-void detail::BufferNewBase::bufferData () {
+void detail::BufferBase::bufferData () {
     bufferHandle->bufferData();
 }
 
-void detail::BufferNewBase::pushDataInt (const unsigned char* dataInternal, std::size_t size) {
+void detail::BufferBase::pushDataInt (const unsigned char* dataInternal, std::size_t size) {
     bufferHandle->bufferItems(dataInternal, size);
 }
 
-void detail::BufferNewBase::resizeInt (std::size_t newMemSize) {
+void detail::BufferBase::resizeInt (std::size_t newMemSize) {
     bufferHandle->allocBufferMemory(newMemSize);
 }
 
-void detail::BufferNewBase::setElementSize (std::size_t elementSize) {
+void detail::BufferBase::setElementSize (std::size_t elementSize) {
     bufferHandle->setElementSize(elementSize);
 }

@@ -48,12 +48,6 @@ namespace graphics {
 
         util::Optional<ShaderProgramNew> getProgramNew (const std::string& program) override;
 
-        GraphicsBufferIds getBufferIds (int requestedBufs, int bufferSize, std::vector<int> attribSizes) override;
-
-        void bufferData (GraphicsBufferIds& ids, Buffer* buffers) override; // TODO: make more safe
-
-        void render (GraphicsBufferIds& ids, ShaderProgramNew& program, int numTriangles) override; // TODO: put rendering through frame buffer?
-
         void finishRender () override;
 
         void addShader(const std::string &shaderName, const ShaderProgramBuilder& shaderBuilder) override;

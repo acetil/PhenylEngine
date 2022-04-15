@@ -19,12 +19,7 @@ namespace graphics {
     class MapRenderLayer : public RenderLayer {
     private:
         bool active = false;
-        Buffer buffers[5];
-        //bool requiresBuffer = true;
         game::Map::SharedPtr map;
-        GraphicsBufferIds bufferIds;
-        bool needDataBuffer = true;
-        int numTriangles;
         ShaderProgramNew program;
         TextureAtlas& atlas;
 

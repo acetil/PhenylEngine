@@ -12,19 +12,19 @@
 
 using namespace graphics;
 
-static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2>& buffer);
-static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2> buffer);
-static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2>& offsetBuffer, BufferNew<glm::mat2>& transformBuffer);
+static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& buffer);
+static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2> buffer);
+static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& offsetBuffer, Buffer<glm::mat2>& transformBuffer);
 
 namespace graphics {
     class EntityPipeline : public Pipeline<component::EntityComponentManager::SharedPtr> {
     private:
         PipelineStage renderStage;
         ShaderProgramNew shader;
-        BufferNew<glm::vec2> posBuffer;
-        BufferNew<glm::vec2> uvBuffer;
-        BufferNew<glm::vec2> offsetBuffer;
-        BufferNew<glm::mat2> transformBuffer;
+        Buffer<glm::vec2> posBuffer;
+        Buffer<glm::vec2> uvBuffer;
+        Buffer<glm::vec2> offsetBuffer;
+        Buffer<glm::mat2> transformBuffer;
 
     public:
         EntityPipeline () = default;
@@ -80,11 +80,11 @@ namespace graphics {
 
 
 //void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup);
-static void bufferPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffers);
+//static void bufferPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffers);
 //void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf);
-static void bufferUvData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer);
+//static void bufferUvData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer);
 //void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs);
-static void bufferActualPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer);
+//static void bufferActualPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
 }
@@ -175,12 +175,12 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
     this->componentManager = std::move(componentManager);
     //this->shaderProgram = renderer->getProgram("entity").value();
     //this->shaderProgram = renderer->getProgramNew("default").orThrow(); // TODO
-    this->buffIds = renderer->getBufferIds(5, BUFFER_SIZE * 2 * sizeof(float), {2, 2, 2, 2, 2});
+    /*this->buffIds = renderer->getBufferIds(5, BUFFER_SIZE * 2 * sizeof(float), {2, 2, 2, 2, 2});
     this->buffers[0] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
     this->buffers[1] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
     this->buffers[2] = Buffer(BUFFER_SIZE * 2, sizeof(float), false);
     this->buffers[3] = Buffer(BUFFER_SIZE * 4, sizeof(float), false);
-    this->buffers[4] = Buffer(BUFFER_SIZE * 4, sizeof(float), false); // TODO: better way to input matrices
+    this->buffers[4] = Buffer(BUFFER_SIZE * 4, sizeof(float), false); // TODO: better way to input matrices*/
 
     this->entityPipeline = std::make_unique<EntityPipeline>(shaderProgram);
     this->entityPipeline->init(renderer);
@@ -211,24 +211,11 @@ EntityRenderLayer::~EntityRenderLayer () = default;
     }
 
 }*/
-static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2>& buffer) {
+static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& buffer) {
     for (const auto& i : manager->getConstrainedView<FixedModel, AbsolutePosition>()) {
         auto& model = i.get<FixedModel>();
         buffer.pushData(model.positionData.begin(), model.positionData.end());
         i.get<AbsolutePosition>().vertices = model.positionData.size();
-    }
-}
-static void bufferPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer) {
-    /*for (auto i : *manager) {
-        i.applyFunc<FixedModel, AbsolutePosition>([&buffer] (FixedModel& model, AbsolutePosition& absPos) {
-            buffer->pushData(model.positionData.begin(), model.positionData.size());
-            absPos.vertices = model.positionData.size() / 2;
-        });
-    }*/
-    for (const auto& i : manager->getConstrainedView<FixedModel, AbsolutePosition>()) {
-        auto& model = i.get<FixedModel>();
-        buffer->pushData(model.positionData.begin(), model.positionData.size());
-        i.get<AbsolutePosition>().vertices = model.positionData.size() / 2;
     }
 }
 /*void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf) {
@@ -238,19 +225,9 @@ static void bufferPosData (const component::EntityComponentManager::SharedPtr& m
     }
 }*/
 
-static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2> buffer) {
+static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2> buffer) {
     for (const auto& i : manager->getConstrainedView<FixedModel>()) {
         buffer.pushData(i.get<FixedModel>().uvData.begin(), i.get<FixedModel>().uvData.end());
-    }
-}
-static void bufferUvData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer) {
-    /*for (auto i : *manager) {
-        i.applyFunc<FixedModel>([&buffer](FixedModel& model) {
-            buffer->pushData(model.uvData.begin(), model.uvData.size());
-        });
-    }*/
-    for (const auto& i : manager->getConstrainedView<FixedModel>()) {
-        buffer->pushData(i.get<FixedModel>().uvData.begin(), i.get<FixedModel>().uvData.size());
     }
 }
 /*void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs) {
@@ -266,7 +243,7 @@ static void bufferUvData (const component::EntityComponentManager::SharedPtr& ma
     }
 }*/
 
-static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2>& offsetBuffer, BufferNew<glm::mat2>& transformBuffer) {
+static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& offsetBuffer, Buffer<glm::mat2>& transformBuffer) {
     for (const auto& i : manager->getConstrainedView<AbsolutePosition>()) {
         auto& absPos = i.get<AbsolutePosition>();
         for (int j = 0; j < absPos.vertices; j++) {
@@ -274,25 +251,6 @@ static void bufferActualPosDataNew (const component::EntityComponentManager::Sha
             //(buffer + 1)->pushData(&absPos.transform[0][0], 2);
             //(buffer + 2)->pushData(&absPos.transform[1][0], 2); // TODO: update buffer implementation
             transformBuffer.pushData(&absPos.transform, 1);
-        }
-    }
-}
-static void bufferActualPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer) {
-    /*for (auto i : *manager) {
-        i.getComponent<AbsolutePosition>().ifPresent([&buffer](AbsolutePosition& absPos) {
-            for (int j = 0; j < absPos.vertices; j++) {
-                buffer->pushData(&absPos.pos[0], 2);
-                (buffer + 1)->pushData(&absPos.transform[0][0], 2);
-                (buffer + 2)->pushData(&absPos.transform[1][0], 2); // TODO: update buffer implementation
-            }
-        });
-    }*/
-    for (const auto& i : manager->getConstrainedView<AbsolutePosition>()) {
-        auto& absPos = i.get<AbsolutePosition>();
-        for (int j = 0; j < absPos.vertices; j++) {
-            buffer->pushData(&absPos.pos[0], 2);
-            (buffer + 1)->pushData(&absPos.transform[0][0], 2);
-            (buffer + 2)->pushData(&absPos.transform[1][0], 2); // TODO: update buffer implementation
         }
     }
 }

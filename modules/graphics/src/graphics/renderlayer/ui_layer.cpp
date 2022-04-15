@@ -15,9 +15,9 @@ private:
     ShaderProgramNew shader;
     GraphicsTexture fontTexture;
 
-    BufferNew<glm::vec2> textPosBuffer;
-    BufferNew<glm::vec2> textUvBuffer;
-    BufferNew<glm::vec3> textColourBuffer;
+    Buffer<glm::vec2> textPosBuffer;
+    Buffer<glm::vec2> textUvBuffer;
+    Buffer<glm::vec3> textColourBuffer;
 public:
     UIPipelineInt (const ShaderProgramNew& _shader, GraphicsTexture _fontTexture) : shader{_shader}, fontTexture{_fontTexture} {}
     void init (Renderer* renderer) override {
@@ -98,7 +98,7 @@ void graphics::UIRenderLayer::render (graphics::Renderer* renderer, graphics::Fr
 }
 
 void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour) {
-    font.renderText(text, size, x, y, colour, textBuffer);
+    //font.renderText(text, size, x, y, colour, textBuffer);
 }
 
 UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) : fontTexture(_fontTexture),
@@ -106,10 +106,10 @@ UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) 
                                                                                           "text").orThrow()) {
     pipeline = std::make_unique<UIPipelineInt>(textProgram, fontTexture);
     pipeline->init(renderer);
-    textIds = renderer->getBufferIds(3, 200 * 12 * sizeof(float), {2, 2, 3});
+    /*textIds = renderer->getBufferIds(3, 200 * 12 * sizeof(float), {2, 2, 3});
     textBuffer[0] = Buffer(200 * 12, sizeof(float), false);
     textBuffer[1] = Buffer(200 * 12, sizeof(float), false);
-    textBuffer[2] = Buffer(200 * 18, sizeof(float), false);
+    textBuffer[2] = Buffer(200 * 18, sizeof(float), false);*/
 }
 
 void UIRenderLayer::bufferText (const RenderedText& text) {
