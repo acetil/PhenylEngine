@@ -4,7 +4,7 @@ project(action-game)
 enable_language(CXX)
 
 add_compile_options("-D C_LOGGING")
-set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb")
 #set(CMAKE_CXX_STANDARD 20)
 
 #add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES} modules/graphics/src/graphics/ui/ui_manager.cpp modules/graphics/include/graphics/renderlayer/ui_layer.h modules/graphics/src/graphics/renderlayer/ui_layer.cpp modules/component/include/component/view/debug_game_view.h modules/graphics/include/graphics/ui/debug_ui.h modules/graphics/src/graphics/ui/debug_ui.cpp src/util/debug_console.h src/util/debug_console.cpp src/event/events/debug/profiler_change.h src/event/events/map_load.h src/event/events/debug/reload_map.h src/game/entity/controller/wall_controller.h src/game/entity/controller/wall_controller.cpp modules/engine/src/engine/entity/basic_entity.h modules/engine/src/engine/game_camera.h modules/engine/src/engine/game_camera.cpp modules/component/include/component/serialisable_component.h modules/component/include/component/component_serialisation.h src/event/events/debug/dump_map.h modules/component/src/component/main_component.cpp modules/maths/src/maths_headers.cpp src/event/events/map_load_request.h)

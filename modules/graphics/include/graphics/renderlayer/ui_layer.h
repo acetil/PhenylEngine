@@ -7,6 +7,7 @@ namespace graphics {
 //#ifndef FONT_H
     class Font;
 //#endif
+    class RenderedText;
     class UIRenderLayer : public RenderLayer {
     private:
         GraphicsBufferIds textIds;
@@ -35,5 +36,7 @@ namespace graphics {
         void render (Renderer* renderer, FrameBuffer* frameBuf) override;
 
         void bufferStr(Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
+
+        void bufferText (const RenderedText& text);
     };
 }

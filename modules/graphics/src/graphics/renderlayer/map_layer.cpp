@@ -50,8 +50,8 @@ public:
         transformBuffer.resizeBuffer(numVertices);
 
         for (const auto& m : models) {
-            posBuffer.pushData(m.second.positionData.cbegin(), m.second.positionData.size());
-            uvBuffer.pushData(m.second.uvData.cbegin(), m.second.uvData.size());
+            posBuffer.pushData(m.second.positionData.cbegin(), m.second.positionData.cend());
+            uvBuffer.pushData(m.second.uvData.cbegin(), m.second.uvData.cend());
 
             for (std::size_t i = 0; i < m.first.vertices; i++) {
                 offsetBuffer.pushData(m.first.pos);

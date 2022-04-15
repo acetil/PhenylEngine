@@ -1,6 +1,7 @@
 #include "graphics/renderlayer/ui_layer.h"
 
 #include "graphics/font/font.h"
+#include "graphics/font/rendered_text.h"
 
 #include "logging/logging.h"
 
@@ -61,6 +62,12 @@ UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) 
     textBuffer[0] = Buffer(200 * 12, sizeof(float), false);
     textBuffer[1] = Buffer(200 * 12, sizeof(float), false);
     textBuffer[2] = Buffer(200 * 18, sizeof(float), false);
+}
+
+void UIRenderLayer::bufferText (const RenderedText& text) {
+    textBuffer[0].pushData((float*)text.getPosComp().begin(), text.getPosComp().size() * 2);
+    textBuffer[1].pushData((float*)text.getUvComp().begin(), text.getPosComp().size() * 2);
+    textBuffer[2].pushData((float*)text.getColourComp().begin(), text.getPosComp().size() * 3);
 }
 
 

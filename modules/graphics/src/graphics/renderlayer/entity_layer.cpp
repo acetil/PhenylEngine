@@ -214,7 +214,7 @@ EntityRenderLayer::~EntityRenderLayer () = default;
 static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2>& buffer) {
     for (const auto& i : manager->getConstrainedView<FixedModel, AbsolutePosition>()) {
         auto& model = i.get<FixedModel>();
-        buffer.pushData(model.positionData.begin(), model.positionData.size());
+        buffer.pushData(model.positionData.begin(), model.positionData.end());
         i.get<AbsolutePosition>().vertices = model.positionData.size();
     }
 }
@@ -240,7 +240,7 @@ static void bufferPosData (const component::EntityComponentManager::SharedPtr& m
 
 static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, BufferNew<glm::vec2> buffer) {
     for (const auto& i : manager->getConstrainedView<FixedModel>()) {
-        buffer.pushData(i.get<FixedModel>().uvData.begin(), i.get<FixedModel>().uvData.size());
+        buffer.pushData(i.get<FixedModel>().uvData.begin(), i.get<FixedModel>().uvData.end());
     }
 }
 static void bufferUvData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer) {

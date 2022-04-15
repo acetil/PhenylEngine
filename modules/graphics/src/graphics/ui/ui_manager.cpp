@@ -2,6 +2,7 @@
 #include "graphics/renderers/renderer.h"
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/ui_layer.h"
+#include "graphics/font/rendered_text.h"
 #include "event/events/map_load.h"
 
 #include "logging/logging.h"
@@ -30,12 +31,28 @@ void UIManager::addRenderLayer (const detail::Graphics::SharedPtr& graphics, Ren
     graphics->getRenderLayer()->addRenderLayer(uiLayer);
 }
 
-void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
+/*void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
                             glm::vec3 colour) {
     if (!fonts.contains(font)) {
         logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
     } else {
         uiLayer->bufferStr(fonts.at(font), text, size, x, y, colour);
     }
+}*/
+
+void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
+                            glm::vec3 colour) {
+    if (!fonts.contains(font)) {
+        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
+    } else {
+        textBuf.push_back(fonts.at(font).renderText(text, size, x, y, colour));
+    }
+}
+
+void UIManager::renderUI () {
+    for (auto& text : textBuf) {
+        uiLayer->bufferText(text);
+    }
+    textBuf.clear();
 }
 

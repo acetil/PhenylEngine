@@ -4,6 +4,7 @@
 
 #include "font_face.h"
 #include "graphics/font/glyph_atlas.h"
+#include "graphics/font/rendered_text.h"
 
 #include "graphics/maths_headers.h"
 
@@ -19,6 +20,7 @@ namespace graphics {
             face.updateResolution(72, 72);
         };
         void renderText (const std::string& text, int size, int x, int y, glm::vec3 colour, Buffer* buffer);
+        RenderedText renderText (const std::string& text, int size, int x, int y, glm::vec3 colour);
         void bindAtlasTexture ();
         void loadAtlas (Renderer* renderer);
         GraphicsTexture& getAtlasTexture ();

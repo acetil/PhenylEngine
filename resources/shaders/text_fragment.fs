@@ -26,6 +26,7 @@ void main() {
     } else {
         color = vec4(color_pass * s, 1.0f);
     }
+    //color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
     //color = vec4(v, v, v, 1.0f);
     //color = texture(textureSampler, uv);
     //color = vec4(val, val, val, 1.0f);

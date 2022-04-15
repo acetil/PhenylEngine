@@ -206,3 +206,12 @@ void GlyphAtlas::bufferChar (Buffer& uvBuffer, int c) {
         uvBuffer.pushData(charUvs[c].begin(), charUvs[c].size());
     }
 }
+
+util::span<glm::vec2> GlyphAtlas::getCharUvs (int c) {
+    if (!charUvs.contains(c)) {
+        logging::log(LEVEL_DEBUG, "No glyph found with code {}", c);
+        return {(glm::vec2*)charUvs[0].begin(), charUvs[0].size() / 2};
+    } else {
+        return {(glm::vec2*)charUvs[c].begin(), charUvs[c].size() / 2};
+    }
+}

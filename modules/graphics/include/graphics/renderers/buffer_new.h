@@ -103,6 +103,15 @@ namespace graphics {
             pushDataInt((unsigned char*)data, num * elementSize * sizeof(T));
         }
 
+        template <typename DataIt>
+        void pushData (DataIt begin, DataIt end) {
+            static_assert(std::is_assignable_v<T, decltype(*begin)>, "Error: must be correct iterator type!");
+
+            for (auto curr = begin; curr != end; curr++) {
+                pushData(*curr);
+            }
+        }
+
         void pushData (const T& data) {
 #ifndef NDEBUG
             if (elementSize > 1) {

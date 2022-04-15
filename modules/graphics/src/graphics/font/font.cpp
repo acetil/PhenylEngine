@@ -49,3 +49,21 @@ void Font::bindAtlasTexture () {
 GraphicsTexture& Font::getAtlasTexture () {
     return atlas.getTex();
 }
+
+RenderedText Font::renderText (const std::string& text, int size, int x, int y, glm::vec3 colour) {
+    RenderedText renderedText{text.size()};
+    face.setFontSize(size);
+
+    int last = 0;
+    int currX = x;
+    for (char c : text) {
+        int curr = (int)((unsigned int) c);
+        auto off = face.renderText(curr, last);
+
+        renderedText.addGlyph({(currX + off.offsetX), y + off.offsetY}, {off.width, off.height}, {screenX, screenY}, atlas.getCharUvs(c), colour);
+        currX += off.advance;
+        last = curr;
+    }
+
+    return renderedText;
+}

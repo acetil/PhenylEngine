@@ -78,6 +78,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
         graphics::renderDebugUi(gameObject, uiManager, deltaTime);
 
+        uiManager.renderUI();
         graphics.render();
 
         util::endProfile();
