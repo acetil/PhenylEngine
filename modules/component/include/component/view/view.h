@@ -3,11 +3,10 @@
 #include "graphics/maths_headers.h"
 #include "component/component.h"
 #include "util/meta.h"
-#include "component/rotation_update.h"
 #include <stddef.h>
 #include <tuple>
 #include <utility>
-#include "graphics/graphics_new_include.h"
+//#include "graphics/graphics_new_include.h"
 
 // TODO: clean up
 
@@ -174,7 +173,7 @@ namespace view {
     template <typename T>
     using ViewBase = typename ViewBaseWrap<T>::type;
 
-    class ViewPropertyRotation : public ViewPropertyCustom<float, ViewPropertyRotation> {
+    /*class ViewPropertyRotation : public ViewPropertyCustom<float, ViewPropertyRotation> {
     private:
         float newVal{};
         component::RotationComponent* compPtr{};
@@ -197,7 +196,7 @@ namespace view {
             fieldChangeCallback();
             return *this;
         }
-    };
+    };*/
 
     class ViewPropertyScale {
     protected:
@@ -247,7 +246,7 @@ namespace view {
 
     };
 
-    class EntityView : public ViewBase<component::entity_list> {
+    /*class EntityView : public ViewBase<component::entity_list> {
     public:
         const component::EntityId entityId;
         event::EventBus::SharedPtr eventBus;
@@ -316,5 +315,5 @@ namespace view {
         EntityView withId (component::EntityId id) {
             return {viewCore, id, eventBus};
         }
-    };
+    };*/
 }

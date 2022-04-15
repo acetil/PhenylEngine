@@ -13,16 +13,16 @@
 #include <stdint.h>
 #include <memory>
 
-#include "events/object_id_swap.h"
+//#include "events/object_id_swap.h"
 
 #include <cmath>
-#include "graphics/graphics_new_include.h"
+//#include "graphics/graphics_new_include.h"
 #include "physics/collision_component.h"
-#include "event/event_bus.h"
+//#include "event/event_bus.h"
 #include "component/main_component.h"
 #include "util/meta.h"
 #include "rotation_component.h"
-#include "engine/entity/entity_type.h"
+//#include "engine/entity/entity_type.h"
 #include "util/smart_help.h"
 
 #include "component_new.h"
@@ -42,12 +42,18 @@ namespace game {
 #ifndef CONTROLLER_H
         class EntityController;
 #endif
+    class EntityType;
 };
 namespace view {
     class ViewCore;
 }
+
+namespace graphics {
+    class FixedModel;
+    class AbsolutePosition;
+}
 namespace component {
-    template <typename ...Args>
+/*    template <typename ...Args>
     class ComponentManagerImpl : public util::SmartHelper<ComponentManagerImpl<Args...>> {
         using FirstType = meta::get_first<Args...>;
     private:
@@ -182,7 +188,7 @@ namespace component {
     };
     template <typename T>
     using ComponentManager2 = typename ComponentManagerWrap<T>::type;
-
+*/
 
     using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
             graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>>; // TODO: remove includes like AbstractEntity*
@@ -191,7 +197,7 @@ namespace component {
     //using EntityComponentManager = ComponentManager2<entity_list>;
     using EntityComponentManager = ComponentManagerNew;
 
-    extern template class ComponentManagerWrap<entity_list>;
+    //extern template class ComponentManagerWrap<entity_list>;
 }
 
 #include "view/entity_view.h"

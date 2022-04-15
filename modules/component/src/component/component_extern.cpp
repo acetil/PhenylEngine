@@ -2,6 +2,6 @@
 
 using namespace component;
 namespace component {
-    template class ComponentManagerWrap<entity_list>;
+    //template class ComponentManagerWrap<entity_list>;
 }
 

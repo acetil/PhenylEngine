@@ -7,7 +7,6 @@
 #include "physics/physics.h"
 #include "event/events/entity_creation.h"
 #include "engine/entity/controller/entity_controller.h"
-#include "component/rotation_update.h"
 #include "entity/entity_type_functions.h"
 #include "event/events/map_load.h"
 #include "component/component_serialisation.h"
