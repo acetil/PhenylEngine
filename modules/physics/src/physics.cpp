@@ -48,8 +48,8 @@ void updatePhysicsInternal (component::EntityMainComponent& mainComp, CollisionC
 
     mainComp.pos += mainComp.vel;
 
-    collComp.pos = mainComp.pos;
-    posComp.pos = mainComp.pos;
+    //collComp.pos = mainComp.pos;
+    //posComp.pos = mainComp.pos;
 }
 void physics::onEntityCreation (event::EntityCreationEvent& event) {
     /*logging::log(LEVEL_DEBUG, "About to get main component!");
@@ -111,7 +111,7 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
         });
     }*/
     for (const auto& i : componentManager->getConstrainedView<CollisionComponent, component::RotationComponent>()) {
-        i.get<CollisionComponent>().bbMap *= i.get<component::RotationComponent>().rotMatrix;
+        i.get<CollisionComponent>().rotBBMap =  i.get<CollisionComponent>().bbMap * i.get<component::RotationComponent>().rotMatrix;
     }
 
     //componentManager->applyFunc<CollisionComponent, component::EntityId>(checkCollisionsEntity, &collisionResults);
@@ -127,9 +127,9 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
             coll.bbMap *= glm::inverse(rot.rotMatrix);
         });
     }*/
-    for (const auto& i : componentManager->getConstrainedView<CollisionComponent, component::RotationComponent>()) {
+    /*for (const auto& i : componentManager->getConstrainedView<CollisionComponent, component::RotationComponent>()) {
         i.get<CollisionComponent>().bbMap *= glm::inverse(i.get<component::RotationComponent>().rotMatrix);
-    }
+    }*/
 
     for (auto p : collisionResults) {
         auto [x,y,dVec] = p;

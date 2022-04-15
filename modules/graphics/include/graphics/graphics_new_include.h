@@ -80,12 +80,13 @@ namespace graphics {
         void deserialise (util::DataValue const& val);
     public:
         AbsolutePosition() = default;
-        AbsolutePosition (int _vertices, glm::vec2 _pos, glm::mat2 _transform) : component::SerialisableComponent<AbsolutePosition>(),
-                                                                                 vertices{_vertices}, pos{_pos}, transform{_transform} {}
+        AbsolutePosition (int _vertices, /*glm::vec2 _pos,*/ glm::mat2 _transform) : component::SerialisableComponent<AbsolutePosition>(),
+                                                                                 vertices{_vertices}, /*pos{_pos},*/ transform{_transform}, rotTransform{_transform} {}
 
         int vertices;
-        glm::vec2 pos;
+        //glm::vec2 pos;
         glm::mat2 transform;
+        glm::mat2 rotTransform;
         friend component::SerialisableComponent<AbsolutePosition>;
     };
 

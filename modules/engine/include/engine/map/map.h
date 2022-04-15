@@ -40,7 +40,7 @@ namespace game {
         //virtual int getNumTileVertices (); // TODO: move to models
         //virtual float* getTileVertices ();
         //virtual float* getTileUvs ();
-        virtual std::vector<std::pair<graphics::AbsolutePosition, graphics::FixedModel>> getModels ();
+        virtual std::vector<std::tuple<glm::vec2, graphics::AbsolutePosition, graphics::FixedModel>> getModels ();
         virtual void setAtlas (graphics::TextureAtlas atlas);
 
         virtual void setEntities (std::vector<MapEntity>& _entities) {

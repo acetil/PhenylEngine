@@ -116,7 +116,7 @@ void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
         });
     }*/
     for (const auto& i : componentManager->getConstrainedView<AbsolutePosition, component::RotationComponent>()) {
-        i.get<AbsolutePosition>().transform *= i.get<component::RotationComponent>().rotMatrix;
+        i.get<AbsolutePosition>().rotTransform = i.get<AbsolutePosition>().transform * i.get<component::RotationComponent>().rotMatrix;
     }
 
     /*componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
@@ -140,9 +140,9 @@ void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
             absPos.transform *= glm::inverse(rotComp.rotMatrix);
         });
     }*/
-    for (const auto& i :  componentManager->getConstrainedView<AbsolutePosition, component::RotationComponent>()) {
+    /*for (const auto& i :  componentManager->getConstrainedView<AbsolutePosition, component::RotationComponent>()) {
         i.get<AbsolutePosition>().transform *= glm::inverse(i.get<component::RotationComponent>().rotMatrix);
-    }
+    }*/
 
     //numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
     //renderer->bufferData(buffIds, buffers);
@@ -244,13 +244,14 @@ static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr&
 }*/
 
 static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& offsetBuffer, Buffer<glm::mat2>& transformBuffer) {
-    for (const auto& i : manager->getConstrainedView<AbsolutePosition>()) {
+    for (const auto& i : manager->getConstrainedView<AbsolutePosition, component::EntityMainComponent>()) {
         auto& absPos = i.get<AbsolutePosition>();
+        auto& mainComp = i.get<component::EntityMainComponent>();
         for (int j = 0; j < absPos.vertices; j++) {
-            offsetBuffer.pushData(&absPos.pos, 1);
+            offsetBuffer.pushData(mainComp.pos);
             //(buffer + 1)->pushData(&absPos.transform[0][0], 2);
             //(buffer + 2)->pushData(&absPos.transform[1][0], 2); // TODO: update buffer implementation
-            transformBuffer.pushData(&absPos.transform, 1);
+            transformBuffer.pushData(absPos.rotTransform);
         }
     }
 }

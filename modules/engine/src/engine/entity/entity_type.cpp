@@ -28,7 +28,8 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
 
 
     absPosImpl.transform = {{type.scale.x, 0}, {0, type.scale.y}};
-    absPosImpl.pos = {x, y};
+    absPosImpl.rotTransform = absPosImpl.transform;
+    //absPosImpl.pos = {x, y};
 
 
     //auto collComp = componentManager->getObjectDataPtr<physics::CollisionComponent>(entityId).orElse(nullptr);
@@ -40,9 +41,10 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     collCompImpl.eventLayer = type.defaultEventLayers;
     collCompImpl.masks = type.defaultCollisionMask;
     collCompImpl.bbMap = glm::mat2({{type.collisionScale.x, 0}, {0, type.collisionScale.y}});
+    collCompImpl.rotBBMap = collCompImpl.bbMap;
     collCompImpl.mass = type.defaultMass;
     collCompImpl.outerRadius = sqrt(type.scale.x * type.scale.x + type.scale.y * type.scale.y);
-    collCompImpl.pos = {x, y};
+    //collCompImpl.pos = {x, y};
 
     //auto rotComp = componentManager->getObjectDataPtr<component::RotationComponent>(entityId).orElse(nullptr);
 
@@ -51,8 +53,8 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     rotCompImpl = rot;
     //rotCompImpl.rotMatrix = {{cos(rot), sin(rot)}, {-sin(rot), cos(rot)}};
 
-    collCompImpl.bbMap *= rotCompImpl.rotMatrix;
-    absPosImpl.transform *= rotCompImpl.rotMatrix;
+    //collCompImpl.bbMap *= rotCompImpl.rotMatrix;
+    //absPosImpl.transform *= rotCompImpl.rotMatrix;
 
 
     componentManager->addComponent<graphics::AbsolutePosition>(entityId, absPosImpl);

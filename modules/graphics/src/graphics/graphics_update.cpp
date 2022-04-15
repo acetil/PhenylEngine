@@ -3,7 +3,7 @@ using namespace graphics;
 
 void graphics::updateEntityRotation (event::EntityRotationEvent &event) {
     auto ptr = event.manager->getObjectDataPtr<AbsolutePosition>(event.entityId).orElse(nullptr);
-    ptr->transform *= event.rotMatrix;
+    //ptr->transform *= event.rotMatrix;
 }
 
 util::DataValue FixedModel::serialise () const{
@@ -32,4 +32,5 @@ void AbsolutePosition::deserialise (const util::DataValue& val) {
             transform[i] = arr[i].get<glm::vec2>();
         }
     }
+    rotTransform = transform;
 }

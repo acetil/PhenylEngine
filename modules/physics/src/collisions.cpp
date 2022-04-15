@@ -17,18 +17,18 @@ inline float getSign (glm::vec2 vec, glm::vec2 basis) {
     }
 }
 
-inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, CollisionComponent& comp2) {
+inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, CollisionComponent& comp2, glm::vec2 displacement) {
     if (!(comp1.layers & comp2.masks) && !(comp2.layers & comp1.masks)) {
         return std::pair(false, glm::vec2({0,0}));
     }
-    glm::vec2 displacement = comp1.pos - comp2.pos;
+    //glm::vec2 displacement = comp1.pos - comp2.pos;
     float outerRadiusDist = comp1.outerRadius + comp2.outerRadius;
     if (squaredDistance(displacement) >
             outerRadiusDist * outerRadiusDist) {
         return std::pair(false, glm::vec2({0,0}));
     }
-    glm::mat2 inv1 = glm::inverse(comp1.bbMap);
-    glm::mat2 inv2 = glm::inverse(comp2.bbMap);
+    glm::mat2 inv1 = glm::inverse(comp1.rotBBMap);
+    glm::mat2 inv2 = glm::inverse(comp2.rotBBMap);
 
     glm::vec2 basisVec[2] = {{1,0}, {0,1}};
     float leastSquaredDist = FLT_MAX;
@@ -41,7 +41,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
         glm::vec2 maxIntersectVec = {0.0f, 0.0f};
         float posMax = 0.0f;
         float negMax = -0.0f;
-        glm::mat2 transMat = i < 2 ? comp1.bbMap : comp2.bbMap;
+        glm::mat2 transMat = i < 2 ? comp1.rotBBMap : comp2.rotBBMap;
         glm::mat2 invMat = i < 2 ? inv2 : inv1;
         glm::vec2 relDisplacement = i < 2 ? displacement : -displacement;
         for (unsigned int j = 0; j < 4; j++) {
@@ -95,7 +95,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
         if (isIntersection) {
             float sign = getSign(maxIntersectVec - minIntersectVec, basis1);
             glm::vec2 overlapVec = basis1 * sign - minIntersectVec;
-            auto dispVec = (i < 2 ? comp2.bbMap : comp1.bbMap) * overlapVec;
+            auto dispVec = (i < 2 ? comp2.rotBBMap : comp1.rotBBMap) * overlapVec;
             if (squaredDistance(dispVec) < leastSquaredDist) {
                 smallestDispVec = dispVec * (i < 2 ? 1.0f : -1.0f);
                 leastSquaredDist = squaredDistance(dispVec);
@@ -108,7 +108,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
                 minDist = negMax - 1.0f;
             }
             glm::vec2 overlapVec = basis1 * minDist;
-            auto dispVec = (i < 2 ? comp2.bbMap : comp1.bbMap) * overlapVec;
+            auto dispVec = (i < 2 ? comp2.rotBBMap : comp1.rotBBMap) * overlapVec;
             if (squaredDistance(dispVec) < leastSquaredDist) {
                 smallestDispVec = dispVec * (i < 2 ? 1.0f : -1.0f);;
                 leastSquaredDist = squaredDistance(dispVec);
@@ -151,7 +151,7 @@ void physics::checkCollisionsEntity (const component::ComponentManagerNew::Share
             });
         }
     }*/
-    auto consView = compManager->getConstrainedView<CollisionComponent>();
+    auto consView = compManager->getConstrainedView<CollisionComponent, component::EntityMainComponent>();
 
     for (auto i = consView.begin(); i != consView.end(); i++) {
         auto j = i;
@@ -160,7 +160,8 @@ void physics::checkCollisionsEntity (const component::ComponentManagerNew::Share
             break;
         }*/
         for ( ; j != consView.end(); j++) {
-            auto coll = entityCollision((*i).get<CollisionComponent>(), (*j).get<CollisionComponent>());
+            auto coll = entityCollision((*i).get<CollisionComponent>(), (*j).get<CollisionComponent>(),
+                    (*i).get<component::EntityMainComponent>().pos - (*j).get<component::EntityMainComponent>().pos);
             if (coll.first) {
                 collisionResults.emplace_back((*i).getId(), (*j).getId(), coll.second);
             }
@@ -206,4 +207,6 @@ void physics::CollisionComponent::deserialise (const util::DataValue& val) {
     if (obj.contains("event_layers")) {
         eventLayer = obj.at("event_layers").get<int>();
     }
+    outerRadius = glm::sqrt(glm::dot(bbMap[0], bbMap[0]) + glm::dot(bbMap[1],bbMap[1]));
+    rotBBMap = bbMap;
 }

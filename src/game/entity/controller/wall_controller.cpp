@@ -15,6 +15,7 @@ void WallController::initEntity (component::view::EntityView& entityView, view::
 
     entityView.getComponent<graphics::AbsolutePosition>().ifPresent([&size] (graphics::AbsolutePosition& comp) {
         comp.transform = glm::mat2{{size.at("x").get<float>(), 0.0f}, {0.0f, size.at("y").get<float>()}} * comp.transform;
+        comp.rotTransform = comp.transform;
     });
 
     entityView.getComponent<physics::CollisionComponent>().ifPresent([&dataObj, &size] (physics::CollisionComponent& comp) {
@@ -27,6 +28,7 @@ void WallController::initEntity (component::view::EntityView& entityView, view::
 
         auto vec = comp.bbMap[0] + comp.bbMap[1];
         comp.outerRadius = glm::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+        comp.rotBBMap = comp.bbMap;
     });
     //entityView.modelScale.scaleBy(size.at("x"), size.at("y"));
 

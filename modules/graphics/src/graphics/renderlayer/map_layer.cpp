@@ -41,7 +41,7 @@ public:
         std::size_t numVertices = 0;
 
         for (const auto& m : models) {
-            numVertices += m.first.vertices;
+            numVertices += std::get<AbsolutePosition>(m).vertices;
         }
 
         posBuffer.resizeBuffer(numVertices);
@@ -50,12 +50,12 @@ public:
         transformBuffer.resizeBuffer(numVertices);
 
         for (const auto& m : models) {
-            posBuffer.pushData(m.second.positionData.cbegin(), m.second.positionData.cend());
-            uvBuffer.pushData(m.second.uvData.cbegin(), m.second.uvData.cend());
+            posBuffer.pushData(std::get<FixedModel>(m).positionData.cbegin(), std::get<FixedModel>(m).positionData.cend());
+            uvBuffer.pushData(std::get<FixedModel>(m).uvData.cbegin(), std::get<FixedModel>(m).uvData.cend());
 
-            for (std::size_t i = 0; i < m.first.vertices; i++) {
-                offsetBuffer.pushData(m.first.pos);
-                transformBuffer.pushData(m.first.transform);
+            for (std::size_t i = 0; i < std::get<AbsolutePosition>(m).vertices; i++) {
+                offsetBuffer.pushData(std::get<glm::vec2>(m));
+                transformBuffer.pushData(std::get<AbsolutePosition>(m).transform);
             }
         }
 

@@ -13,8 +13,9 @@ namespace physics {
         util::DataValue serialise () const;
         void deserialise (const util::DataValue& val);
     public:
-        glm::vec2 pos;
+        //glm::vec2 pos;
         glm::mat2 bbMap;
+        glm::mat2 rotBBMap;
         float outerRadius;
         float mass;
         unsigned int layers = 0;

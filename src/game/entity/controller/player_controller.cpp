@@ -82,7 +82,7 @@ void game::PlayerController::controlEntityPostPhysics (component::view::EntityVi
         bData["vel"] = bVel;
 
         gameView.createEntityInstance("bullet", pos.x + relPos.x,
-                                                      pos.y + relPos.y, rot / 2, util::DataValue(bData));
+                                                      pos.y + relPos.y, rot, util::DataValue(bData));
         /*auto bulletView = entityView.withId(bulletId);
         //bulletView.rotation = rot(); // TODO: look into difference with ()
         bulletView.velocity = rotVec * SHOOT_VEL;*/
