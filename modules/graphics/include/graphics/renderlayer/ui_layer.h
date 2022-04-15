@@ -2,18 +2,26 @@
 
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/maths_headers.h"
+#include "graphics/pipeline/pipeline.h"
 
 namespace graphics {
 //#ifndef FONT_H
     class Font;
 //#endif
     class RenderedText;
+
+    class UIPipeline : public Pipeline<> {
+    public:
+        virtual void bufferText (const RenderedText& text) = 0;
+    };
+
     class UIRenderLayer : public RenderLayer {
     private:
         GraphicsBufferIds textIds;
         Buffer textBuffer[3];
         GraphicsTexture fontTexture;
         ShaderProgramNew textProgram;
+        std::unique_ptr<UIPipeline> pipeline;
     public:
         explicit UIRenderLayer(GraphicsTexture _fontTexture, Renderer* renderer);
 
