@@ -12,16 +12,27 @@ using namespace graphics;
 class UIPipelineInt : public UIPipeline {
 private:
     PipelineStage textStage;
-    ShaderProgramNew shader;
+    ShaderProgramNew textShader;
     GraphicsTexture fontTexture;
 
     Buffer<glm::vec2> textPosBuffer;
     Buffer<glm::vec2> textUvBuffer;
     Buffer<glm::vec3> textColourBuffer;
+
+    PipelineStage boxStage;
+    ShaderProgramNew boxShader;
+
+    Buffer<glm::vec2> boxPosBuffer;
+    Buffer<glm::vec2> boxRectPosBuffer;
+    Buffer<glm::vec4> boxBorderBuffer;
+    Buffer<glm::vec4> boxBgBuffer;
+    Buffer<glm::vec4> boxDetailsBuffer;
+
+    glm::vec2 screenSize = {800, 600};
 public:
-    UIPipelineInt (const ShaderProgramNew& _shader, GraphicsTexture _fontTexture) : shader{_shader}, fontTexture{_fontTexture} {}
+    UIPipelineInt (const ShaderProgramNew& _textShader, const ShaderProgramNew& _boxShader, GraphicsTexture _fontTexture) : textShader{_textShader}, boxShader{_boxShader}, fontTexture{_fontTexture} {}
     void init (Renderer* renderer) override {
-        textStage = renderer->buildPipelineStage(PipelineStageBuilder(shader)
+        textStage = renderer->buildPipelineStage(PipelineStageBuilder(textShader)
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec3>(2));
@@ -33,22 +44,62 @@ public:
         textStage.bindBuffer(0, textPosBuffer);
         textStage.bindBuffer(1, textUvBuffer);
         textStage.bindBuffer(2, textColourBuffer);
+
+        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(boxShader)
+                .addVertexAttrib<glm::vec2>(0)
+                .addVertexAttrib<glm::vec2>(1)
+                .addVertexAttrib<glm::vec4>(2)
+                .addVertexAttrib<glm::vec4>(3)
+                .addVertexAttrib<glm::vec4>(4));
+
+        boxPosBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
+        boxRectPosBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
+        boxBorderBuffer = renderer->makeBuffer<glm::vec4>(BUFFER_SIZE);
+        boxBgBuffer = renderer->makeBuffer<glm::vec4>(BUFFER_SIZE);
+        boxDetailsBuffer = renderer->makeBuffer<glm::vec4>(BUFFER_SIZE);
+
+        boxStage.bindBuffer(0, boxPosBuffer);
+        boxStage.bindBuffer(1, boxRectPosBuffer);
+        boxStage.bindBuffer(2, boxBorderBuffer);
+        boxStage.bindBuffer(3, boxBgBuffer);
+        boxStage.bindBuffer(4, boxDetailsBuffer);
     }
 
     void bufferData () override {
         textStage.bufferAllData();
+        boxStage.bufferAllData();
     }
 
     void render () override {
         fontTexture.bindTexture();
         textStage.render();
         textStage.clearBuffers();
+
+        boxShader.applyUniform<glm::vec2>("screenSize", screenSize);
+        boxStage.render();
+        boxStage.clearBuffers();
     }
 
     void bufferText(const RenderedText &text) override {
         textPosBuffer.pushData(text.getPosComp().cbegin(), text.getPosComp().cend());
         textUvBuffer.pushData(text.getUvComp().cbegin(), text.getUvComp().cend());
         textColourBuffer.pushData(text.getColourComp().cbegin(), text.getColourComp().cend());
+    }
+
+    void bufferRect(const UIRect &rect) override {
+        for (int i = 0; i < 6; i++) {
+            int vertexNum = i == 3 ? i : i % 3;
+
+            boxPosBuffer.pushData({rect.screenPos.x + (float)(vertexNum % 2 == 1) * rect.size.x, rect.screenPos.y + (float)(vertexNum / 2 == 1) * rect.size.y});
+            boxRectPosBuffer.pushData({-1.0f + (float)(vertexNum % 2 == 1) * 2.0f, -1.0f + (float)(vertexNum / 2 == 1) * 2.0f});
+            boxBorderBuffer.pushData(rect.borderColour);
+            boxBgBuffer.pushData(rect.bgColour);
+            boxDetailsBuffer.pushData(rect.details);
+        }
+    }
+
+    void setScreenSize(glm::vec2 _screenSize) override {
+        screenSize = _screenSize;
     }
 };
 
@@ -104,7 +155,7 @@ void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string
 UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) : fontTexture(_fontTexture),
                                                                                   textProgram(renderer->getProgramNew(
                                                                                           "text").orThrow()) {
-    pipeline = std::make_unique<UIPipelineInt>(textProgram, fontTexture);
+    pipeline = std::make_unique<UIPipelineInt>(textProgram, renderer->getProgramNew("box").orThrow(), fontTexture);
     pipeline->init(renderer);
     /*textIds = renderer->getBufferIds(3, 200 * 12 * sizeof(float), {2, 2, 3});
     textBuffer[0] = Buffer(200 * 12, sizeof(float), false);
@@ -117,6 +168,14 @@ void UIRenderLayer::bufferText (const RenderedText& text) {
     textBuffer[1].pushData((float*)text.getUvComp().begin(), text.getPosComp().size() * 2);
     textBuffer[2].pushData((float*)text.getColourComp().begin(), text.getPosComp().size() * 3);*/
     pipeline->bufferText(text);
+}
+
+void UIRenderLayer::bufferRect (const UIRect& rect) {
+    pipeline->bufferRect(rect);
+}
+
+void UIRenderLayer::setScreenSize (glm::vec2 screenSize) {
+    pipeline->setScreenSize(screenSize);
 }
 
 

@@ -102,6 +102,7 @@ int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& gra
 
     renderer->addShader("default", ShaderProgramBuilder("resources/shaders/vertex.vs", "resources/shaders/fragment.fs").addUniform<glm::mat4>("camera"));
     renderer->addShader("text", ShaderProgramBuilder("resources/shaders/text_vertex.vs", "resources/shaders/text_fragment.fs").addUniform<glm::mat4>("camera"));
+    renderer->addShader("box", ShaderProgramBuilder("resources/shaders/box_vertex.vs", "resources/shaders/box_fragment.fs").addUniform<glm::vec2>("screenSize"));
 
     auto manager = initFonts();
 

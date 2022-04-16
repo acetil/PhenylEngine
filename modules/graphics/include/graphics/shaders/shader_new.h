@@ -26,7 +26,7 @@ namespace graphics {
     };
 
     template <typename T>
-    ShaderDataType getShaderDataType () {
+    consteval ShaderDataType getShaderDataType () {
         if constexpr (std::is_same_v<T, float>) {
             return ShaderDataType::FLOAT;
         } else if constexpr (std::is_same_v<T, int>) {
@@ -74,17 +74,28 @@ namespace graphics {
         explicit ShaderProgramNew (std::shared_ptr<RendererShaderProgram> _internal) : internal{std::move(_internal)} {};
         ~ShaderProgramNew();
 
+
+
         template <typename T>
         void applyUniform (const std::string& uniformName, const T& val) {
-
-            auto uniformType = getShaderDataType<T>();
+            constexpr auto uniformType = getShaderDataType<T>();
 
             /*if (uniformType == UniformType::UNKNOWN) {
                 logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
                 return;
             }*/
 
-            switch (uniformType) {
+            if constexpr (uniformType == ShaderDataType::FLOAT || uniformType == ShaderDataType::INT) {
+                applyUniform(uniformName, uniformType, &val);
+            } else if constexpr (uniformType == ShaderDataType::VEC2F || uniformType == ShaderDataType::VEC3F || uniformType == ShaderDataType::VEC4F) {
+                applyUniform(uniformName, uniformType, &val[0]);
+            } else if constexpr (uniformType == ShaderDataType::MAT2F || uniformType == ShaderDataType::MAT3F || uniformType == ShaderDataType::MAT4F) {
+                applyUniform(uniformName, uniformType, &val[0][0]);
+            } else {
+                logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
+            }
+
+            /*switch (uniformType) {
                 case ShaderDataType::FLOAT:
                 case ShaderDataType::INT:
                     applyUniform(uniformName, uniformType, &val);
@@ -102,7 +113,7 @@ namespace graphics {
                 default:
                     logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
                     break;
-            }
+            }*/
 
             /*if constexpr (std::is_same_v<T, float>) {
                 applyUniform(uniformName, UniformType::FLOAT, &val);

@@ -35,11 +35,13 @@ class Font;
         std::unordered_map<std::string, Font> fonts;
         std::shared_ptr<UIRenderLayer> uiLayer;
         std::vector<RenderedText> textBuf;
+        glm::vec2 screenSize = {800, 600};
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);
         //void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
         void renderText (const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
+        void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
         void renderUI ();
         void addRenderLayer (const std::shared_ptr<detail::Graphics>& graphics, Renderer* renderer);
     };

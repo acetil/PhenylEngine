@@ -3,6 +3,7 @@
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/maths_headers.h"
 #include "graphics/pipeline/pipeline.h"
+#include "graphics/ui/ui_rect.h"
 
 namespace graphics {
 //#ifndef FONT_H
@@ -13,6 +14,8 @@ namespace graphics {
     class UIPipeline : public Pipeline<> {
     public:
         virtual void bufferText (const RenderedText& text) = 0;
+        virtual void bufferRect (const UIRect& rect) = 0;
+        virtual void setScreenSize (glm::vec2 screenSize) = 0;
     };
 
     class UIRenderLayer : public RenderLayer {
@@ -44,5 +47,9 @@ namespace graphics {
         void bufferStr(Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
 
         void bufferText (const RenderedText& text);
+
+        void bufferRect (const UIRect& rect);
+
+        void setScreenSize (glm::vec2 screenSize);
     };
 }

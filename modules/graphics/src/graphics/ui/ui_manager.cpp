@@ -50,9 +50,14 @@ void UIManager::renderText (const std::string& font, const std::string& text, in
 }
 
 void UIManager::renderUI () {
+    uiLayer->setScreenSize(screenSize);
     for (auto& text : textBuf) {
         uiLayer->bufferText(text);
     }
     textBuf.clear();
+}
+
+void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius, float borderSize) {
+    uiLayer->bufferRect({topLeftPos, size, borderColour, bgColour, {size, cornerRadius, borderSize}});
 }
 

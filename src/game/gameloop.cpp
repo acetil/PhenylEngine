@@ -78,6 +78,8 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
         graphics::renderDebugUi(gameObject, uiManager, deltaTime);
 
+        uiManager.renderRect({100, 200}, {50, 200}, {0.0f, 0.0f, 1.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, 8, 2);
+
         uiManager.renderUI();
         graphics.render();
 
