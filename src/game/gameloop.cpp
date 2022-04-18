@@ -10,6 +10,7 @@
 
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/map_layer.h"
+#include "graphics/ui/components/ui_button.h"
 
 #include "graphics/font/font_manager.h"
 #include "graphics/font/glyph_atlas.h"
@@ -49,6 +50,11 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
+    auto button = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
+            glm::vec2{200, 50}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f});
+
+    uiManager.addUINode(button, {100, 100});
+
     while (!graphics.shouldClose()) {
         util::startProfileFrame();
         deltaTime = (float) graphics.getDeltaTime();
@@ -78,7 +84,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
         graphics::renderDebugUi(gameObject, uiManager, deltaTime);
 
-        uiManager.renderRect({100, 200}, {50, 200}, {0.0f, 0.0f, 1.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, 8, 2);
+        //uiManager.renderRect({100, 200}, {50, 200}, {0.0f, 0.0f, 1.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, 8, 2);
 
         uiManager.renderUI();
         graphics.render();

@@ -4,6 +4,7 @@
 #include "graphics/renderlayer/ui_layer.h"
 #include "graphics/font/rendered_text.h"
 #include "event/events/map_load.h"
+#include "graphics/ui/components/ui_root.h"
 
 #include "logging/logging.h"
 
@@ -20,6 +21,9 @@ graphics::UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) :
 
     fonts.at("noto-serif").loadAtlas(renderer);
     uiLayer = nullptr;
+    offsetStack.emplace_back(0,0);
+
+    uiRoot = std::make_shared<ui::UIRootNode>();
 }
 
 void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y) {
@@ -45,12 +49,16 @@ void UIManager::renderText (const std::string& font, const std::string& text, in
     if (!fonts.contains(font)) {
         logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
     } else {
-        textBuf.push_back(fonts.at(font).renderText(text, size, x, y, colour));
+        auto off = offsetStack.back();
+        textBuf.push_back(fonts.at(font).renderText(text, size, (int)glm::floor(off.x) + x, (int)glm::floor(off.y) + y, colour));
     }
 }
 
 void UIManager::renderUI () {
     uiLayer->setScreenSize(screenSize);
+
+    uiRoot->render(*this);
+
     for (auto& text : textBuf) {
         uiLayer->bufferText(text);
     }
@@ -58,6 +66,39 @@ void UIManager::renderUI () {
 }
 
 void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius, float borderSize) {
-    uiLayer->bufferRect({topLeftPos, size, borderColour, bgColour, {size, cornerRadius, borderSize}});
+    uiLayer->bufferRect({topLeftPos + offsetStack.back(), size, borderColour, bgColour, {size, cornerRadius, borderSize}});
+}
+
+void UIManager::setMousePos (glm::vec2 _mousePos) {
+    mousePos = _mousePos;
+    uiRoot->setMousePos(mousePos);
+}
+
+bool UIManager::setMouseDown (bool _mouseDown) {
+    if (mouseDown != _mouseDown) {
+        mouseDown = _mouseDown;
+        if (mouseDown) {
+            return uiRoot->onMousePress();
+        } else {
+            uiRoot->onMouseRelease();
+        }
+    }
+    return false;
+}
+
+void UIManager::pushOffset (glm::vec2 relOffset) {
+    offsetStack.push_back(offsetStack[offsetStack.size() - 1] + relOffset);
+}
+
+void UIManager::popOffset () {
+    if (offsetStack.size() == 1) {
+        logging::log(LEVEL_ERROR, "Attempted to pop too many elements off offset stack!");
+    } else {
+        offsetStack.pop_back();
+    }
+}
+
+void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos) {
+    uiRoot->addChildNode(uiNode, pos);
 }
 

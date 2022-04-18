@@ -148,6 +148,16 @@ void detail::Graphics::deleteWindowCallbacks () {
 void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     //eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, );
     eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, this->shared_from_this());
+    eventBus->subscribeHandler(&graphics::detail::Graphics::onMousePosChange, this->shared_from_this());
+    eventBus->subscribeHandler(&graphics::detail::Graphics::onMouseDown, this->shared_from_this());
 
     setupWindowCallbacks(eventBus);
-};
+}
+
+void detail::Graphics::onMousePosChange (event::CursorPosChangeEvent& event) {
+    uiManager.setMousePos(event.windowPos);
+}
+
+void detail::Graphics::onMouseDown (event::PlayerShootChangeEvent& event) {
+    uiManager.setMouseDown(event.doShoot);
+}

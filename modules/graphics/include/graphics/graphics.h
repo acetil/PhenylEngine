@@ -19,6 +19,8 @@
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/ui_manager.h"
 #include "graphics/phenyl_graphics.h"
+#include "event/events/cursor_position_change.h"
+#include "event/events/player_shoot_change.h"
 #include "event/event.h"
 
 #include "util/smart_help.h"
@@ -89,6 +91,8 @@ namespace graphics {
             [[maybe_unused]] Camera& getCamera ();
             void addEntityLayer (component::EntityComponentManager::SharedPtr compManager);
             void onEntityCreation (event::EntityCreationEvent& event);
+            void onMousePosChange (event::CursorPosChangeEvent& event);
+            void onMouseDown (event::PlayerShootChangeEvent& event); // TODO change
             Renderer* getRenderer () {
                 return renderer; // TODO: remove
             }

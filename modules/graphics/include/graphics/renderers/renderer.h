@@ -4,7 +4,6 @@
 #include <optional>
 #include <memory>
 
-#include "graphics/shaders/shaders.h"
 #include "graphics/shaders/shader_new.h"
 #include "graphics/pipeline/pipeline_stage.h"
 

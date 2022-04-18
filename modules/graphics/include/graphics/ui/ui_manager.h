@@ -8,6 +8,7 @@
 #include "graphics/font/font_manager.h"
 #include "graphics/font/font.h"
 #include "graphics/maths_headers.h"
+#include "graphics/ui/components/ui_component.h"
 
 namespace graphics {
 //#ifndef FONT_H
@@ -28,6 +29,9 @@ class Font;
     //#endif
 
     class RenderedText;
+    namespace ui {
+        class UIRootNode;
+    }
 
     class UIManager {
     private:
@@ -36,6 +40,10 @@ class Font;
         std::shared_ptr<UIRenderLayer> uiLayer;
         std::vector<RenderedText> textBuf;
         glm::vec2 screenSize = {800, 600};
+        glm::vec2 mousePos = {0, 0};
+        bool mouseDown = false;
+        std::vector<glm::vec2> offsetStack;
+        std::shared_ptr<ui::UIRootNode> uiRoot;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);
@@ -44,5 +52,12 @@ class Font;
         void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
         void renderUI ();
         void addRenderLayer (const std::shared_ptr<detail::Graphics>& graphics, Renderer* renderer);
+        void setMousePos (glm::vec2 _mousePos);
+        bool setMouseDown (bool mouseDown);
+
+        void addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos);
+
+        void pushOffset (glm::vec2 relOffset);
+        void popOffset ();
     };
 }
