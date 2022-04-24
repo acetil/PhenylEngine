@@ -5,10 +5,10 @@
 #include "engine/game_object.h"
 #include "logging/logging.h"
 #include "physics/physics.h"
-#include "event/events/entity_creation.h"
+#include "common/events/entity_creation.h"
 #include "engine/entity/controller/entity_controller.h"
 #include "entity/entity_type_functions.h"
-#include "event/events/map_load.h"
+#include "common/events/map_load.h"
 #include "component/component_serialisation.h"
 #include "engine/map/map_reader.h"
 
@@ -238,7 +238,12 @@ void detail::GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
 
 void detail::GameObject::addEventHandlers (event::EventBus::SharedPtr _eventBus) {
     eventBus = std::move(_eventBus);
+    gameInput.setEventBus(eventBus);
     eventBus->subscribeHandler(&detail::GameObject::mapReloadRequest, shared_from_this());
     eventBus->subscribeHandler(&detail::GameObject::mapDumpRequest, shared_from_this());
     eventBus->subscribeHandler(&detail::GameObject::mapLoadRequest, shared_from_this());
+}
+
+GameInput& detail::GameObject::getInput () {
+    return gameInput;
 }

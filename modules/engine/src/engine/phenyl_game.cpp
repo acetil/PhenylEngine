@@ -114,7 +114,11 @@ GameCamera& PhenylGame::getCamera () {
 }
 
 void PhenylGame::addEventHandlers (event::EventBus::SharedPtr eventBus) {
-    getShared()->addEventHandlers(eventBus);
+    getShared()->addEventHandlers(std::move(eventBus));
+}
+
+GameInput& PhenylGame::getGameInput () {
+    return getShared()->getInput();
 }
 
 PhenylGameHolder::~PhenylGameHolder () = default;

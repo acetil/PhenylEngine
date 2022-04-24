@@ -4,10 +4,10 @@
 #include "util/debug_console.h"
 
 #include "logging/logging.h"
-#include "event/events/debug/profiler_change.h"
-#include "event/events/debug/reload_map.h"
-#include "event/events/debug/dump_map.h"
-#include "event/events/map_load_request.h"
+#include "common/events/debug/profiler_change.h"
+#include "common/events/debug/reload_map.h"
+#include "common/events/debug/dump_map.h"
+#include "common/events/map_load_request.h"
 #include "util/string_help.h"
 
 using namespace util;
@@ -27,7 +27,7 @@ using namespace util;
     return substrings;
 }*/
 
-void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::string>& args) {
+static void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::string>& args) {
     if (args.empty()) {
         logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
@@ -41,7 +41,7 @@ void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::string>& a
     }
 }
 
-void util::doDebugConsole (event::EventBus::SharedPtr bus) {
+static void doDebugConsole (event::EventBus::SharedPtr bus) {
     std::cout << ">";
     std::string debugInput;
     std::getline(std::cin, debugInput);
@@ -67,4 +67,13 @@ void util::doDebugConsole (event::EventBus::SharedPtr bus) {
         logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
     }
 
+}
+
+void util::doDebugConsole (DebugConsoleEvent& event) {
+    event::EventBus::SharedPtr eventBus;
+    if (!(eventBus = event.eventBus.lock())) {
+        logging::log(LEVEL_WARNING, "Debug console event bus pointer invalid!");
+    } else {
+        ::doDebugConsole(eventBus);
+    }
 }

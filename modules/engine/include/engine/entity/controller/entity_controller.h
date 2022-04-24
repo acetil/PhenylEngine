@@ -3,7 +3,7 @@
 #include "component/main_component.h"
 #include "component/component.h"
 #include "engine/entity/entity.h"
-#include "event/events/entity_collision.h"
+#include "common/events/entity_collision.h"
 #include "component/view/view.h"
 #include "component/view/game_view.h"
 #include "util/data.h"

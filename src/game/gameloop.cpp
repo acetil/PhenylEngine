@@ -4,8 +4,6 @@
 #include "graphics/graphics_headers.h"
 #include "logging/logging.h"
 #include "graphics/shaders/shaders.h"
-#include "engine/key_input.h"
-#include "engine/key_defaults.h"
 #include "engine/map/map_reader.h"
 
 #include "graphics/graphics.h"
@@ -18,6 +16,7 @@
 #include "graphics/ui/debug_ui.h"
 
 #include "util/profiler.h"
+#include "default_input.h"
 
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
@@ -32,8 +31,9 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     logging::log(LEVEL_INFO, "Created player");
-    KeyboardInput::SharedPtr keyInput = getKeyboardInput(engine.getGraphics());
-    setupMovementKeys(keyInput, engine.getEventBus());
+
+    game::GameInput& gameInput = gameObject.getGameInput();
+    setupDefaultInput(gameInput, gameObject.getEventBus());
 
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
@@ -60,7 +60,8 @@ int game::gameloop (engine::PhenylEngine& engine) {
         deltaTime = (float) graphics.getDeltaTime();
         deltaPhysicsFrame += deltaTime;
         //timeSinceFpsUpdate += deltaTime;
-        keyInput->handleKeyPresses();
+        //keyInput->handleKeyPresses();
+        gameInput.poll();
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
             gameObject.updateEntitiesPrePhysics();

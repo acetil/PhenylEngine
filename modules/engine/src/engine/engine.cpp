@@ -99,6 +99,8 @@ engine::detail::Engine::Engine () {
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
 
     gameObjHolder.initGame(graphics, eventBus);
+
+    gameObjHolder.getGameObject().getGameInput().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
 }
 
 engine::detail::Engine::~Engine () {

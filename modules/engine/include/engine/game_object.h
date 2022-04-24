@@ -15,9 +15,10 @@
 #include "util/smart_help.h"
 #include "util/optional.h"
 #include "engine/map/map.h"
-#include "event/events/debug/reload_map.h"
-#include "event/events/debug/dump_map.h"
-#include "event/events/map_load_request.h"
+#include "common/events/debug/reload_map.h"
+#include "common/events/debug/dump_map.h"
+#include "common/events/map_load_request.h"
+#include "input/game_input.h"
 #include "game_camera.h"
 
 namespace view {
@@ -41,6 +42,7 @@ namespace game::detail {
                 Map::SharedPtr gameMap;
 
                 GameCamera camera;
+                GameInput gameInput;
 
                 component::EntityId deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
 
@@ -94,6 +96,7 @@ namespace game::detail {
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
                 GameCamera& getCamera ();
+                GameInput& getInput ();
 
                 friend view::DebugGameView;
             };

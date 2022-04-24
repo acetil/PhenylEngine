@@ -7,6 +7,7 @@
 #include "component/component.h"
 #include "entity/controller/entity_controller.h"
 #include "util/data.h"
+#include "engine/input/game_input.h"
 
 namespace graphics {
     class PhenylGraphics;
@@ -65,6 +66,8 @@ namespace game {
         std::shared_ptr<game::detail::GameObject> tempGetPtr () {
             return getShared();
         }
+
+        GameInput& getGameInput ();
     };
 
     class PhenylGameHolder {

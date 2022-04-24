@@ -17,6 +17,9 @@ namespace graphics {
         }
     };
 
+    class GLFWKeyInput;
+    class GLFWMouseInput;
+
     class GLRenderer : public Renderer {
     private:
         GLFWwindow* window;
@@ -25,6 +28,9 @@ namespace graphics {
         util::Map<std::string, ShaderProgramNew> shaderProgramsNew;
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
+
+        std::shared_ptr<GLFWKeyInput> keyInput;
+        std::shared_ptr<GLFWMouseInput> mouseInput;
 
     protected:
         std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
@@ -69,5 +75,9 @@ namespace graphics {
         void invalidateWindowCallbacks () override;
 
         PipelineStage buildPipelineStage(const PipelineStageBuilder &stageBuilder) override;
+
+        std::shared_ptr<common::InputSource> getMouseInput() override;
+
+        std::vector<std::shared_ptr<common::InputSource>> getInputSources () override;
     };
 }

@@ -6,6 +6,7 @@
 
 #include "graphics/shaders/shader_new.h"
 #include "graphics/pipeline/pipeline_stage.h"
+#include "common/input/input_source.h"
 
 #include "util/optional.h"
 
@@ -52,6 +53,10 @@ namespace graphics {
         virtual void addShader (const std::string& shaderName, const ShaderProgramBuilder& shaderBuilder) = 0;
 
         virtual PipelineStage buildPipelineStage (const PipelineStageBuilder& stageBuilder) = 0;
+
+        virtual std::shared_ptr<common::InputSource> getMouseInput () = 0;
+
+        virtual std::vector<std::shared_ptr<common::InputSource>> getInputSources () = 0;
 
         template <typename T>
         Buffer<T> makeBuffer (unsigned int bufferCapacity, std::size_t elementSize=1) {

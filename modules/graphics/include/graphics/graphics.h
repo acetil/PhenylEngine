@@ -10,7 +10,7 @@
 #include <optional>
 #include "logging/logging.h"
 #include "component/component.h"
-#include "event/events/entity_creation.h"
+#include "common/events/entity_creation.h"
 #include "graphics/textures/texture_atlas.h"
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/graphics_new_include.h"
@@ -19,8 +19,8 @@
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/ui_manager.h"
 #include "graphics/phenyl_graphics.h"
-#include "event/events/cursor_position_change.h"
-#include "event/events/player_shoot_change.h"
+#include "common/events/cursor_position_change.h"
+#include "common/events/player_shoot_change.h"
 #include "event/event.h"
 
 #include "util/smart_help.h"
@@ -107,6 +107,7 @@ namespace graphics {
             UIManager& getUIManager ();
 
             void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
+            std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
         };
     }
 

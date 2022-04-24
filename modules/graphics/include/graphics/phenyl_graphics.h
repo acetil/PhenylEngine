@@ -9,7 +9,7 @@
 #include "ui/ui_manager.h"
 
 #include "component/component.h"
-#include "event/events/entity_creation.h"
+#include "common/events/entity_creation.h"
 #include "util/optional.h"
 
 namespace graphics {

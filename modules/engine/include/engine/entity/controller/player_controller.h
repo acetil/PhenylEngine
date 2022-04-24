@@ -1,9 +1,9 @@
 #pragma once
 
-#include "event/events/player_movement_change.h"
+#include "common/events/player_movement_change.h"
 #include "engine/entity/controller/entity_controller.h"
-#include "event/events/cursor_position_change.h"
-#include "event/events/player_shoot_change.h"
+#include "common/events/cursor_position_change.h"
+#include "common/events/player_shoot_change.h"
 
 namespace game {
     class PlayerController : public EntityController {

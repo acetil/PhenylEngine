@@ -2,6 +2,10 @@
 #include "graphics/opengl/glshader.h"
 #include "graphics/opengl/glpipelinestage.h"
 #include "graphics/renderers/window_callbacks.h"
+
+#include "graphics/opengl/input/glfw_key_input.h"
+#include "graphics/opengl/input/glfw_mouse_input.h"
+
 #include "glcallbacks.h"
 #include "util/profiler.h"
 #include <vector>
@@ -13,6 +17,10 @@ GLRenderer::GLRenderer (GLFWwindow* window) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
+
+    keyInput = std::make_shared<GLFWKeyInput>(window);
+    mouseInput = std::make_shared<GLFWMouseInput>(window);
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
 }
 
 double GLRenderer::getCurrentTime () {
@@ -25,6 +33,8 @@ bool GLRenderer::shouldClose () {
 
 void GLRenderer::pollEvents () {
     glfwPollEvents();
+    keyInput->update();
+    mouseInput->update();
 }
 
 void GLRenderer::clearWindow () {
@@ -197,6 +207,14 @@ PipelineStage GLRenderer::buildPipelineStage (const PipelineStageBuilder& stageB
 
 std::shared_ptr<RendererBufferHandle> GLRenderer::makeBufferHandle () {
     return std::make_shared<GlBuffer>();
+}
+
+std::shared_ptr<common::InputSource> GLRenderer::getMouseInput () {
+    return mouseInput;
+}
+
+std::vector<std::shared_ptr<common::InputSource>> GLRenderer::getInputSources () {
+    return {mouseInput, keyInput};
 }
 
 

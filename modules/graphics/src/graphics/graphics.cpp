@@ -161,3 +161,7 @@ void detail::Graphics::onMousePosChange (event::CursorPosChangeEvent& event) {
 void detail::Graphics::onMouseDown (event::PlayerShootChangeEvent& event) {
     uiManager.setMouseDown(event.doShoot);
 }
+
+std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSources () {
+    return renderer->getInputSources();
+}

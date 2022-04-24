@@ -7,7 +7,7 @@
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
 
-#include "event/events/debug/profiler_change.h"
+#include "common/events/debug/profiler_change.h"
 
 using namespace graphics;
 

@@ -1,7 +1,7 @@
 #include "physics/physics.h"
 #include "math.h"
 #include "collisions.h"
-#include "event/events/entity_collision.h"
+#include "common/events/entity_collision.h"
 #include <tuple>
 #include "graphics/graphics_new_include.h"
 

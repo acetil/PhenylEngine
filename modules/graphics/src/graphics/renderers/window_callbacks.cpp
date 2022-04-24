@@ -1,6 +1,6 @@
 #include "window_callbacks.h"
 #include "graphics/maths_headers.h"
-#include "event/events/cursor_position_change.h"
+#include "common/events/cursor_position_change.h"
 using namespace graphics;
 
 void graphics::onMousePosChange (WindowCallbackContext* ctx, double windowX, double windowY,
