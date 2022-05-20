@@ -49,8 +49,8 @@ void UIManager::renderText (const std::string& font, const std::string& text, in
     if (!fonts.contains(font)) {
         logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
     } else {
-        auto off = offsetStack.back();
-        textBuf.push_back(fonts.at(font).renderText(text, size, (int)glm::floor(off.x) + x, (int)glm::floor(off.y) + y, colour));
+        auto offVec = offsetStack.back() + glm::vec2{x, y};
+        textBuf.emplace_back(offVec, fonts.at(font).renderText(text, size, 0, 0, colour));
     }
 }
 
@@ -59,10 +59,19 @@ void UIManager::renderUI () {
 
     uiRoot->render(*this);
 
-    for (auto& text : textBuf) {
+    for (auto& textPair : textBuf) {
+        auto& text = textPair.second;
+        text.setOffset(textPair.first, screenSize);
+        uiLayer->bufferText(text);
+    }
+
+    for (auto& textPair : textBuf2) {
+        auto& text = textPair.second;
+        text.setOffset(textPair.first, screenSize);
         uiLayer->bufferText(text);
     }
     textBuf.clear();
+    textBuf2.clear();
 }
 
 void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius, float borderSize) {
@@ -100,5 +109,22 @@ void UIManager::popOffset () {
 
 void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos) {
     uiRoot->addChildNode(uiNode, pos);
+}
+
+RenderedText UIManager::getRenderedText (const std::string& font, const std::string& text, int size, glm::vec3 colour) {
+    if (!fonts.contains(font)) {
+        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
+        return RenderedText{0};
+    } else {
+        return fonts.at(font).renderText(text, size, 0, 0, colour);
+    }
+}
+
+void UIManager::renderText (RenderedText& text, int x, int y) {
+    auto offVec = offsetStack.back() + glm::vec2{x, y};
+    //text.setOffset(offVec, screenSize);
+
+    //uiLayer->bufferText(text);
+    textBuf2.emplace_back(offVec, text);
 }
 

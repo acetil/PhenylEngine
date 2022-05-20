@@ -10,6 +10,7 @@
 #include "graphics/renderlayer/map_layer.h"
 #include "graphics/ui/components/ui_button.h"
 #include "graphics/ui/components/ui_flexbox.h"
+#include "graphics/ui/components/ui_label.h"
 
 #include "graphics/font/font_manager.h"
 #include "graphics/font/glyph_atlas.h"
@@ -59,20 +60,30 @@ int game::gameloop (engine::PhenylEngine& engine) {
                                                                 glm::vec2{80, 40}, glm::vec4{0.4f, 1.0f, 0.5f, 1.0f}, glm::vec4{0.5f, 0.4f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.5f, 0.4f, 1.0f});
     auto flexBox = std::make_shared<graphics::ui::UIFlexBoxNode>(std::weak_ptr<graphics::ui::UIComponentNode>());
 
+    auto labelNode = std::make_shared<graphics::ui::UILabelNode>(std::weak_ptr<graphics::ui::UIComponentNode>());
+    labelNode->setFont("noto-serif");
+    labelNode->setColour({1.0f, 1.0f, 1.0f, 1.0f});
+    labelNode->setDebug(false);
+    labelNode->setTextSize(14);
+    labelNode->setText("Hello World!");
+
     flexBox->setMaxSize({200, 300});
     flexBox->addComponent(button);
     flexBox->addComponent(button2);
+    flexBox->addComponent(labelNode);
     flexBox->addComponent(button3);
     flexBox->setAxes(graphics::ui::Axis::DOWN, graphics::ui::Axis::RIGHT);
-    flexBox->setJustify(graphics::ui::FlexJustify::SPACE_EVENLY);
+    //flexBox->setJustify(graphics::ui::FlexJustify::SPACE_EVENLY);
     flexBox->setAlign(graphics::ui::FlexAlign::CENTRE);
 
     //uiManager.addUINode(button, {100, 100});
     uiManager.addUINode(flexBox, {100, 100});
+    //uiManager.addUINode(labelNode, {500, 300});
 
 
     while (!graphics.shouldClose()) {
         util::startProfileFrame();
+        flexBox->setAxes(graphics::ui::Axis::DOWN, graphics::ui::Axis::RIGHT);
         deltaTime = (float) graphics.getDeltaTime();
         deltaPhysicsFrame += deltaTime;
         //timeSinceFpsUpdate += deltaTime;

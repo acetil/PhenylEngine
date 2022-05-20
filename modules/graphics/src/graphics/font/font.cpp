@@ -64,6 +64,6 @@ RenderedText Font::renderText (const std::string& text, int size, int x, int y, 
         currX += off.advance;
         last = curr;
     }
-
+    renderedText.finishRender({screenX, screenY});
     return renderedText;
 }
