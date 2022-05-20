@@ -18,7 +18,7 @@ void UIButtonNode::render (UIManager& uiManager) {
 }
 
 UIAnchor UIButtonNode::getAnchor () {
-    return UIAnchor().withMinimumSize(minSize);
+    return UIAnchor().withFixedSize(minSize);
 }
 
 bool UIButtonNode::onMousePress () {

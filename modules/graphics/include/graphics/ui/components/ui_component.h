@@ -27,6 +27,7 @@ namespace graphics::ui {
 
     public:
         explicit UIComponentNode (std::weak_ptr<UIComponentNode> _parent) : parent{std::move(_parent)} {}
+        virtual ~UIComponentNode() = default;
         virtual void render (UIManager& uiManager) = 0;
         virtual UIAnchor getAnchor () = 0;
         virtual void setSize (glm::vec2 _size) {

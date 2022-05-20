@@ -9,6 +9,7 @@
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/map_layer.h"
 #include "graphics/ui/components/ui_button.h"
+#include "graphics/ui/components/ui_flexbox.h"
 
 #include "graphics/font/font_manager.h"
 #include "graphics/font/glyph_atlas.h"
@@ -51,9 +52,24 @@ int game::gameloop (engine::PhenylEngine& engine) {
     logging::log(LEVEL_DEBUG, "Starting loop");
 
     auto button = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
-            glm::vec2{200, 50}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f});
+            glm::vec2{100, 50}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f});
+    auto button2 = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
+                                                               glm::vec2{80, 40}, glm::vec4{1.0f, 1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.0f, 1.0f, 1.0f});
+    auto button3 = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
+                                                                glm::vec2{80, 40}, glm::vec4{0.4f, 1.0f, 0.5f, 1.0f}, glm::vec4{0.5f, 0.4f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.5f, 0.4f, 1.0f});
+    auto flexBox = std::make_shared<graphics::ui::UIFlexBoxNode>(std::weak_ptr<graphics::ui::UIComponentNode>());
 
-    uiManager.addUINode(button, {100, 100});
+    flexBox->setMaxSize({200, 300});
+    flexBox->addComponent(button);
+    flexBox->addComponent(button2);
+    flexBox->addComponent(button3);
+    flexBox->setAxes(graphics::ui::Axis::DOWN, graphics::ui::Axis::RIGHT);
+    flexBox->setJustify(graphics::ui::FlexJustify::SPACE_EVENLY);
+    flexBox->setAlign(graphics::ui::FlexAlign::CENTRE);
+
+    //uiManager.addUINode(button, {100, 100});
+    uiManager.addUINode(flexBox, {100, 100});
+
 
     while (!graphics.shouldClose()) {
         util::startProfileFrame();

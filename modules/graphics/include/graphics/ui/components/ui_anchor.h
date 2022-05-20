@@ -4,91 +4,90 @@
 
 namespace graphics::ui {
 
-    enum class SizeAnchor {
+    /*enum class SizeAnchor {
         FIXED_SIZE,
         FILL,
         FILL_UP,
         FILL_DOWN,
         FILL_LEFT,
         FILL_RIGHT
-    };
+    };*/
 
     enum class FloatAnchor {
-        FREE,
-        FIXED,
-        FLOAT_CENTER,
-        FLOAT_LEFT,
-        FLOAT_RIGHT,
-        FLOAT_UP,
-        FLOAT_DOWN
+        AUTO,
+        FLOAT_START,
+        FLOAT_END,
+        FLOAT_CENTRE
     };
 
 
     class UIAnchor {
     public:
-        const glm::vec2 minimumSize{};
+        const glm::vec2 minimumSize{0, 0};
+        const glm::vec2 maximumSize{-1, -1};
         const glm::vec2 topLeftMargin{};
         const glm::vec2 bottomRightMargin{};
 
-        const SizeAnchor horizSizeAnchor = SizeAnchor::FIXED_SIZE;
-        const SizeAnchor vertSizeAnchor = SizeAnchor::FIXED_SIZE;
-
-        const FloatAnchor horizFloatAnchor = FloatAnchor::FREE;
-        const FloatAnchor vertFloatAnchor = FloatAnchor::FREE;
-        const glm::vec2 fixedPos{};
+        const FloatAnchor horizFloatAnchor = FloatAnchor::AUTO;
+        const FloatAnchor vertFloatAnchor = FloatAnchor::AUTO;
 
         //UIAnchor () = default;
 
         UIAnchor withMinimumSize (glm::vec2 _minimumSize) {
-            return {_minimumSize, topLeftMargin, bottomRightMargin, horizSizeAnchor, vertSizeAnchor, horizFloatAnchor, vertFloatAnchor, fixedPos};
+            return {_minimumSize, maximumSize, topLeftMargin, bottomRightMargin, horizFloatAnchor, vertFloatAnchor};
+        }
+
+        UIAnchor withMaximumSize (glm::vec2 _maximumSize) {
+            return {.minimumSize = minimumSize, .maximumSize = _maximumSize, .topLeftMargin = topLeftMargin,
+                    .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizFloatAnchor,
+                    .vertFloatAnchor = vertFloatAnchor};
+        }
+
+        UIAnchor withWidthRange (float minWidth, float maxWidth) {
+            return {.minimumSize = {minWidth, minimumSize.y}, .maximumSize = {maxWidth, maximumSize.y}, .topLeftMargin = topLeftMargin,
+                    .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizFloatAnchor,
+                    .vertFloatAnchor = vertFloatAnchor};
+        }
+
+        UIAnchor withHeightRange (float minHeight, float maxHeight) {
+            return {.minimumSize = {minimumSize.x, minHeight}, .maximumSize = {maximumSize.x, maxHeight}, .topLeftMargin = topLeftMargin,
+                    .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizFloatAnchor,
+                    .vertFloatAnchor = vertFloatAnchor};
         }
 
         UIAnchor withMargin (float upMargin, float leftMargin, float downMargin, float rightMargin) {
-            return {.minimumSize = minimumSize, .topLeftMargin = {leftMargin, upMargin}, .bottomRightMargin = {rightMargin, downMargin}, .horizSizeAnchor = horizSizeAnchor,
-                    .vertSizeAnchor = vertSizeAnchor, .horizFloatAnchor = horizFloatAnchor,
-                    .vertFloatAnchor = vertFloatAnchor, .fixedPos = fixedPos};
+            return {.minimumSize = minimumSize, .maximumSize = maximumSize, .topLeftMargin = {leftMargin, upMargin}, .bottomRightMargin = {rightMargin, downMargin}, .horizFloatAnchor = horizFloatAnchor,
+                    .vertFloatAnchor = vertFloatAnchor};
         }
 
-        UIAnchor withHorizontalSizeAnchor (SizeAnchor horizontalSize) {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = horizontalSize,
-                    .vertSizeAnchor = vertSizeAnchor, .horizFloatAnchor = horizFloatAnchor,
+        /*UIAnchor withHorizontalSizeAnchor (SizeAnchor horizontalSize) {
+            return {.minimumSize = minimumSize, .maximumSize = maximumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizFloatAnchor,
                     .vertFloatAnchor = vertFloatAnchor, .fixedPos = fixedPos};
         }
 
         UIAnchor withVerticalSizeAnchor (SizeAnchor verticalSize) {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = horizSizeAnchor,
-                    .vertSizeAnchor = verticalSize, .horizFloatAnchor = horizFloatAnchor,
+            return {.minimumSize = minimumSize, .maximumSize = maximumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin,  .horizFloatAnchor = horizFloatAnchor,
                     .vertFloatAnchor = vertFloatAnchor, .fixedPos = fixedPos};
-        }
+        }*/
 
         UIAnchor withHorizontalFloatAnchor (FloatAnchor horizontalFloat) {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = horizSizeAnchor,
-                    .vertSizeAnchor = vertSizeAnchor, .horizFloatAnchor = horizontalFloat,
-                    .vertFloatAnchor = vertFloatAnchor, .fixedPos = fixedPos};
+            return {.minimumSize = minimumSize, .maximumSize = maximumSize,.topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizontalFloat,
+                    .vertFloatAnchor = vertFloatAnchor};
         }
 
         UIAnchor withVerticalFloatAnchor (FloatAnchor verticalFloat) {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = horizSizeAnchor,
-                    .vertSizeAnchor = vertSizeAnchor, .horizFloatAnchor = horizFloatAnchor,
-                    .vertFloatAnchor = vertFloatAnchor, .fixedPos = fixedPos};
+            return {.minimumSize = minimumSize, .maximumSize = maximumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizFloatAnchor,
+                    .vertFloatAnchor = verticalFloat};
         }
 
-        UIAnchor withFixedSize () {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = SizeAnchor::FIXED_SIZE,
-                    .vertSizeAnchor = SizeAnchor::FIXED_SIZE, .horizFloatAnchor = horizFloatAnchor,
-                    .vertFloatAnchor = vertFloatAnchor, .fixedPos = fixedPos};
+        UIAnchor withFloatAnchor (FloatAnchor anchor) {
+            return {.minimumSize = minimumSize, .maximumSize = maximumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = anchor,
+                    .vertFloatAnchor = anchor};
         }
 
-        UIAnchor withFixedHorizontalFloat (float horizontalPos) {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = horizSizeAnchor,
-                    .vertSizeAnchor = vertSizeAnchor, .horizFloatAnchor = FloatAnchor::FIXED,
-                    .vertFloatAnchor = vertFloatAnchor, .fixedPos = {horizontalPos, fixedPos.y}};
-        }
-
-        UIAnchor withFixedVerticalFloat (float verticalPos) {
-            return {.minimumSize = minimumSize, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizSizeAnchor = horizSizeAnchor,
-                    .vertSizeAnchor = vertSizeAnchor, .horizFloatAnchor = horizFloatAnchor,
-                    .vertFloatAnchor = FloatAnchor::FIXED, .fixedPos = {fixedPos.x, verticalPos}};
+        UIAnchor withFixedSize (glm::vec2 size) {
+            return {.minimumSize = size, .maximumSize = size, .topLeftMargin = topLeftMargin, .bottomRightMargin = bottomRightMargin, .horizFloatAnchor = horizFloatAnchor,
+                    .vertFloatAnchor = vertFloatAnchor};
         }
     };
 }
