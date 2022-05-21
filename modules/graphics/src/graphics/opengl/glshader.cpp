@@ -15,7 +15,7 @@ GLShaderProgram::GLShaderProgram (ShaderProgramBuilder& builder) {
 
     initShaders(spec.shaderPaths);
 
-    for (auto [name, type] : spec.uniforms) {
+    for (auto [name, type] : spec.uniforms.kv()) {
         uniformMap[name] = {glGetUniformLocation(programId, name.c_str()), type};
     }
 }
@@ -23,7 +23,7 @@ GLShaderProgram::GLShaderProgram (ShaderProgramBuilder& builder) {
 void GLShaderProgram::initShaders (util::Map<ShaderType, std::string>& shaders) {
     std::vector<GLuint> shaderIds;
 
-    for (auto& [type, path] : shaders) {
+    for (auto [type, path] : shaders.kv()) {
         shaderIds.push_back(loadShader(type, path));
     }
 

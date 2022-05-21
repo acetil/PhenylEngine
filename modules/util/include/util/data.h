@@ -39,6 +39,14 @@ namespace util {
         Map<std::string, DataValue>::const_iterator cbegin () const;
         Map<std::string, DataValue>::const_iterator cend () const;
 
+        Map<std::string, DataValue>::kv_view kv () {
+            return values.kv();
+        }
+
+        Map<std::string, DataValue>::const_kv_view kv () const {
+            return values.kv();
+        }
+
         template <typename T>
         DataValue& operator[] (const T& key);
 
@@ -327,14 +335,14 @@ namespace util {
         std::stringstream stream;
         stream << "{";
         bool first = true;
-        for (auto& [key, val] : values) {
+        for (auto [key, val] : values.kv()) {
             if (first) {
                 first = false;
             } else {
                 stream << ", ";
             }
 
-            stream << key << " : " << val().toString();
+            stream << key << " : " << val.toString();
         }
         stream << "}";
         return stream.str();

@@ -24,7 +24,7 @@ void graphics::GLFWKeyInput::consume (long inputNum) {
 
 void graphics::GLFWKeyInput::update () {
     std::vector<long> toRemove;
-    for (auto& [k, v] : consumed) {
+    for (auto [k, v] : consumed.kv()) {
         if (glfwGetKey(window, (int)k) == GLFW_RELEASE) {
             toRemove.push_back(k);
         }

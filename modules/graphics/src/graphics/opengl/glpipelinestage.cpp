@@ -12,7 +12,7 @@ GLPipelineStage::GLPipelineStage (PipelineStageSpec& spec) {
     glGenVertexArrays(1, &vaoId);
     glBindVertexArray(vaoId);
     //std::size_t i = 0;
-    for (auto& [k, v] : spec.vertexAttribs) {
+    for (auto [k, v] : spec.vertexAttribs.kv()) {
         vertexAttribs[k] = {v, nullptr};
     }
 }
@@ -37,8 +37,8 @@ void GLPipelineStage::bindBuffer (int location, ShaderDataType attribType, std::
 
 void GLPipelineStage::render () {
     std::size_t numVertices = -1;
-    for (auto& [k, buf] : vertexAttribs) {
-        auto n = buf().second->getNumElements();
+    for (auto [k, buf] : vertexAttribs.kv()) {
+        auto n = buf.second->getNumElements();
 
         if (n < numVertices) {
             numVertices = n;
@@ -55,14 +55,14 @@ GLPipelineStage::~GLPipelineStage () {
 }
 
 void GLPipelineStage::clearBuffers () {
-    for (auto& [k, buf] : vertexAttribs) {
-        buf().second->clearBuffer();
+    for (auto [k, buf] : vertexAttribs.kv()) {
+        buf.second->clearBuffer();
     }
 }
 
 void GLPipelineStage::bufferData () {
-    for (auto& [k, buf] : vertexAttribs) {
-        buf().second->bufferData();
+    for (auto [k, buf] : vertexAttribs.kv()) {
+        buf.second->bufferData();
     }
 }
 

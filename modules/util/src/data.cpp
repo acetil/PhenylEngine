@@ -24,7 +24,7 @@ namespace util {
             }
             static void toJsonObj (nlohmann::json& json, const DataObject& obj) {
                 nlohmann::json jsonObj(nlohmann::json::value_t::object);
-                for (auto& [key, val] : obj) {
+                for (auto [key, val] : obj.kv()) {
                     jsonObj[key] = nlohmann::json(val);
                 }
                 json = std::move(jsonObj);

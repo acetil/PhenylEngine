@@ -25,7 +25,7 @@ void GLFWMouseInput::consume (long inputNum) {
 
 void GLFWMouseInput::update () {
     std::vector<long> toRemove;
-    for (auto& [k, v] : consumed) {
+    for (auto [k, v] : consumed.kv()) {
         if (glfwGetMouseButton(window, (int)k) == GLFW_RELEASE) {
             toRemove.push_back(k);
         }

@@ -133,7 +133,7 @@ void testCopyMove () {
         mapMvEq["test" + std::to_string(i)] = i * i;
     }
 
-    for (auto& i : map) {
+    for (auto i : map.kv()) {
         assert(map.contains(i.first));
         assert(map[i.first] == i.second);
     }

@@ -10,6 +10,7 @@
 //#include "util/format.h"
 
 //#include "util/data.h"
+#include "util/set.h"
 
 #include "component/component.h"
 #include "util/map.h"
@@ -65,6 +66,8 @@ int main (int argv, char* argc[]) {
     static_assert(std::forward_iterator<util::MapIterator<std::string, int>>);
     static_assert(std::random_access_iterator<component::view::detail::EntityViewIterator>);
     static_assert(std::bidirectional_iterator<component::view::detail::ConstrainedViewIterator<int>>);
+
+    //util::setTest();
 
     return EXIT_SUCCESS;
 }
