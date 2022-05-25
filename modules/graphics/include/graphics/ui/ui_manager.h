@@ -47,6 +47,8 @@ class Font;
         std::vector<glm::vec2> offsetStack;
         std::shared_ptr<ui::UIRootNode> uiRoot;
         util::Map<std::string, std::unique_ptr<ui::Theme>> themes;
+        util::Map<std::string, std::string> themeLocations;
+        std::string currentTheme;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         ~UIManager();
@@ -64,6 +66,7 @@ class Font;
         void addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos);
         void addTheme (const std::string& themePath);
         void setCurrentTheme (const std::string& themeName);
+        void reloadCurrentTheme ();
 
         void pushOffset (glm::vec2 relOffset);
         void popOffset ();

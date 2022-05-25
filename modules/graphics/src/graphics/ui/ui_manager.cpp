@@ -133,6 +133,7 @@ void UIManager::renderText (RenderedText& text, int x, int y) {
 void UIManager::addTheme (const std::string& themePath) {
     auto theme = ui::loadTheme(themePath);
 
+    themeLocations[theme->getThemeName()] = themePath;
     themes[theme->getThemeName()] = std::move(theme);
 }
 
@@ -142,6 +143,15 @@ void UIManager::setCurrentTheme (const std::string& themeName) {
     } else {
         std::unique_ptr<ui::Theme>& theme = themes.at(themeName);
         uiRoot->applyTheme(theme.get());
+        currentTheme = themeName;
+    }
+}
+
+void UIManager::reloadCurrentTheme () {
+    if (themes.contains(currentTheme)) {
+        themes.remove(currentTheme);
+        addTheme(themeLocations[currentTheme]);
+        setCurrentTheme(currentTheme);
     }
 }
 

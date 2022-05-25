@@ -150,6 +150,8 @@ void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& event
     eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, this->shared_from_this());
     eventBus->subscribeHandler(&graphics::detail::Graphics::onMousePosChange, this->shared_from_this());
     eventBus->subscribeHandler(&graphics::detail::Graphics::onMouseDown, this->shared_from_this());
+    eventBus->subscribeHandler(&graphics::detail::Graphics::onThemeChange, this->shared_from_this());
+    eventBus->subscribeHandler(&graphics::detail::Graphics::onThemeReload, this->shared_from_this());
 
     setupWindowCallbacks(eventBus);
 }
@@ -164,4 +166,12 @@ void detail::Graphics::onMouseDown (event::PlayerShootChangeEvent& event) {
 
 std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSources () {
     return renderer->getInputSources();
+}
+
+void detail::Graphics::onThemeReload (event::ReloadThemeEvent& event) {
+    uiManager.reloadCurrentTheme();
+}
+
+void detail::Graphics::onThemeChange (event::ChangeThemeEvent& event) {
+    uiManager.setCurrentTheme(event.themeName);
 }

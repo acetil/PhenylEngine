@@ -21,6 +21,8 @@
 #include "graphics/phenyl_graphics.h"
 #include "common/events/cursor_position_change.h"
 #include "common/events/player_shoot_change.h"
+#include "common/events/theme_change.h"
+#include "common/events/debug/reload_theme.h"
 #include "event/event.h"
 
 #include "util/smart_help.h"
@@ -93,6 +95,10 @@ namespace graphics {
             void onEntityCreation (event::EntityCreationEvent& event);
             void onMousePosChange (event::CursorPosChangeEvent& event);
             void onMouseDown (event::PlayerShootChangeEvent& event); // TODO change
+
+            void onThemeReload (event::ReloadThemeEvent& event);
+            void onThemeChange (event::ChangeThemeEvent& event);
+
             Renderer* getRenderer () {
                 return renderer; // TODO: remove
             }

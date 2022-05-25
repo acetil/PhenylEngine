@@ -8,6 +8,8 @@
 #include "common/events/debug/reload_map.h"
 #include "common/events/debug/dump_map.h"
 #include "common/events/map_load_request.h"
+#include "common/events/debug/reload_theme.h"
+#include "common/events/theme_change.h"
 #include "util/string_help.h"
 
 using namespace util;
@@ -27,7 +29,7 @@ using namespace util;
     return substrings;
 }*/
 
-static void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::string>& args) {
+static void handleProfiler (const event::EventBus::SharedPtr& bus, const std::vector<std::string>& args) {
     if (args.empty()) {
         logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
@@ -38,6 +40,20 @@ static void handleProfiler (event::EventBus::SharedPtr bus, std::vector<std::str
         }
     } else {
         logging::log(LEVEL_WARNING, "Unknown argument: \"{}\"", args[0]);
+    }
+}
+
+static void handleThemes (const event::EventBus::SharedPtr& bus, std::vector<std::string>& args) {
+    if (args.empty()) {
+        logging::log(LEVEL_WARNING, "Missing argument after \"theme\"!");
+    } else if (args[0] == "reload") {
+        bus->raiseEvent(event::ReloadThemeEvent{});
+    } else if (args[0] == "load") {
+        if (args.size() != 2) {
+            logging::log(LEVEL_WARNING, R"(Unknown argument after "theme".)");
+        } else {
+            bus->raiseEvent(event::ChangeThemeEvent{args[1]});
+        }
     }
 }
 
@@ -63,7 +79,9 @@ static void doDebugConsole (event::EventBus::SharedPtr bus) {
         } else {
             logging::log(LEVEL_WARNING, "Unknown arguments for map command: \"{}\"", util::joinStrings(" ", args));
         }
-    } else {
+    } else if (command == "theme") {
+        handleThemes(bus, args);
+    }else {
         logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
     }
 

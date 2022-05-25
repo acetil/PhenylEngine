@@ -1,5 +1,5 @@
 #add_library(common)
-add_library(common include/common include/common/input/input_source.h include/common/input/remappable_input.h src/common/input/remappable_input.cpp)
+add_library(common include/common include/common/input/input_source.h include/common/input/remappable_input.h src/common/input/remappable_input.cpp include/common/events/debug/reload_theme.h include/common/events/theme_change.h)
 
 set_property(TARGET common PROPERTY CXX_STANDARD 20)
 
