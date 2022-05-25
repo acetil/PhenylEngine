@@ -52,15 +52,15 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
-    auto button = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
+    auto button = std::make_shared<graphics::ui::UIButtonNode>("button",
             glm::vec2{100, 50}, glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 0.0f, 1.0f, 1.0f});
-    auto button2 = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
+    auto button2 = std::make_shared<graphics::ui::UIButtonNode>("button2",
                                                                glm::vec2{80, 40}, glm::vec4{1.0f, 1.0f, 0.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.0f, 1.0f, 1.0f});
-    auto button3 = std::make_shared<graphics::ui::UIButtonNode>(std::weak_ptr<graphics::ui::UIComponentNode>(),
+    auto button3 = std::make_shared<graphics::ui::UIButtonNode>("button3",
                                                                 glm::vec2{80, 40}, glm::vec4{0.4f, 1.0f, 0.5f, 1.0f}, glm::vec4{0.5f, 0.4f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.5f, 0.4f, 1.0f});
-    auto flexBox = std::make_shared<graphics::ui::UIFlexBoxNode>(std::weak_ptr<graphics::ui::UIComponentNode>());
+    auto flexBox = std::make_shared<graphics::ui::UIFlexBoxNode>("flex_box");
 
-    auto labelNode = std::make_shared<graphics::ui::UILabelNode>(std::weak_ptr<graphics::ui::UIComponentNode>());
+    auto labelNode = std::make_shared<graphics::ui::UILabelNode>("label");
     labelNode->setFont("noto-serif");
     labelNode->setColour({1.0f, 1.0f, 1.0f, 1.0f});
     labelNode->setDebug(false);
@@ -78,6 +78,8 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     //uiManager.addUINode(button, {100, 100});
     uiManager.addUINode(flexBox, {100, 100});
+    uiManager.addTheme("resources/themes/default_theme.json");
+    uiManager.setCurrentTheme("default_theme");
     //uiManager.addUINode(labelNode, {500, 300});
 
 

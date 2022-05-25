@@ -270,17 +270,17 @@ Map::SharedPtr readMapJson (const std::string& path, PhenylGame gameObject) {
     for (auto& i : tileIdArray) {
         auto& tileObj = i.get<util::DataObject>();
         auto t = gameObject.getTile(tileObj.at("tile").get<std::string>());
-        tileIds[tileObj.at("id")] = t ? t : emptyTile;
+        tileIds[tileObj.at("id").get<int>()] = t ? t : emptyTile;
     }
 
     util::DataObject dims = mapData.at("dimensions");
 
-    int width = dims.at("width");
-    int height = dims.at("height");
+    int width = dims.at("width").get<int>();
+    int height = dims.at("height").get<int>();
     Tile** tiles = new Tile*[width * height]{emptyTile};
     util::DataArray tileArray = mapData.at("tiles");
     for (int i = 0; i < tileArray.size(); i++) {
-        tiles[i] = tileIds[tileArray[i]];
+        tiles[i] = tileIds[tileArray[i].get<int>()];
     }
 
     std::vector<MapEntity> entities;
@@ -289,10 +289,10 @@ Map::SharedPtr readMapJson (const std::string& path, PhenylGame gameObject) {
         auto entityObj = i.get<util::DataObject>();
         util::DataObject pos = entityObj.at("pos");
         if (entityObj.contains("data")) {
-            entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"),
+            entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(),
                                   entityObj.at("data"));
         } else {
-            entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"), util::DataValue());
+            entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(), util::DataValue());
         }
     }
 
@@ -317,17 +317,17 @@ Map::SharedPtr game::readMapNew (const std::string& path, PhenylGame gameObject)
     for (auto& i : tileIdArray) {
         auto& tileObj = i.get<util::DataObject>();
         auto t = gameObject.getTile(tileObj.at("tile").get<std::string>());
-        tileIds[tileObj.at("id")] = t ? t : emptyTile;
+        tileIds[tileObj.at("id").get<int>()] = t ? t : emptyTile;
     }
 
     util::DataObject dims = mapData.at("dimensions");
 
-    int width = dims.at("width");
-    int height = dims.at("height");
+    int width = dims.at("width").get<float>();
+    int height = dims.at("height").get<float>();
     Tile** tiles = new Tile*[width * height]{emptyTile};
     util::DataArray tileArray = mapData.at("tiles");
     for (int i = 0; i < tileArray.size(); i++) {
-        tiles[i] = tileIds[tileArray[i]];
+        tiles[i] = tileIds[tileArray[i].get<int>()];
     }
 
     std::vector<MapEntity> entities;
@@ -336,7 +336,7 @@ Map::SharedPtr game::readMapNew (const std::string& path, PhenylGame gameObject)
         auto entityObj = i.get<util::DataObject>();
         util::DataObject pos = entityObj.at("main_comp").get<util::DataObject>().at("pos");
 
-        entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"), (util::DataValue)entityObj);
+        entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(), (util::DataValue)entityObj);
         /*if (entityObj.contains("data")) {
             entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"),
                                   entityObj.at("data"));

@@ -14,7 +14,7 @@ namespace graphics::ui {
         bool isPressed = false;
         bool isHovered = false;
     public:
-        UIButtonNode (std::weak_ptr<UIComponentNode> parent, glm::vec2 size, glm::vec4 _bgColour, glm::vec4 _hoverColour, glm::vec4 _pressColour) : UIComponentNode(std::move(parent)),
+        UIButtonNode (const std::string& themeClass, glm::vec2 size, glm::vec4 _bgColour, glm::vec4 _hoverColour, glm::vec4 _pressColour) : UIComponentNode(themeClass),
                 minSize{size}, bgColour{_bgColour}, pressColour{_pressColour}, hoverColour{_hoverColour} {}
 
         void render(UIManager &uiManager) override;
@@ -22,5 +22,6 @@ namespace graphics::ui {
         void onMousePosChange(glm::vec2 oldMousePos) override;
         bool onMousePress() override;
         void onMouseRelease() override;
+        void onThemeUpdate(Theme *theme) override;
     };
 }

@@ -48,7 +48,7 @@ namespace graphics::ui {
         void updateLayout ();
 
     public:
-        explicit UIFlexBoxNode (std::weak_ptr<UIComponentNode> parent);
+        explicit UIFlexBoxNode (const std::string& themeClass);
         ~UIFlexBoxNode() override;
         void setAxes (Axis primaryAxis, Axis secondaryAxis);
         void addComponent (const std::shared_ptr<UIComponentNode>& uiNode);
@@ -65,5 +65,6 @@ namespace graphics::ui {
         void onMousePosChange(glm::vec2 oldMousePos) override;
         bool onMousePress() override;
         void onMouseRelease() override;
+        void onThemeUpdate(Theme *theme) override;
     };
 }

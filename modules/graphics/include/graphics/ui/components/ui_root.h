@@ -10,7 +10,7 @@ namespace graphics::ui {
     private:
         std::vector<std::tuple<glm::vec2, glm::vec2, std::shared_ptr<UIComponentNode>>> childNodes;
     public:
-        UIRootNode () : UIComponentNode(std::weak_ptr<UIComponentNode>{}) {}
+        UIRootNode () : UIComponentNode("default") {}
 
         void render(UIManager &uiManager) override;
         UIAnchor getAnchor() override;
@@ -21,5 +21,7 @@ namespace graphics::ui {
 
         bool onMousePress() override;
         void onMouseRelease() override;
+
+        void onThemeUpdate(Theme *theme) override;
     };
 }

@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include "util/data.h"
+#include "util/data_funcs.h"
 #include "nlohmann/json.hpp"
 
 
@@ -80,7 +81,7 @@ DataArray::DataArray (std::vector<DataValue>&& _values) {
     values = std::move(_values);
 }
 
-std::size_t DataArray::size () {
+std::size_t DataArray::size () const {
     return values.size();
 }
 
@@ -215,6 +216,23 @@ void util::to_json (nlohmann::json& json, const DataArray& val) {
 }
 void util::to_json (nlohmann::json& json, const DataObject& val) {
     internal::DataObserver::toJsonObj(json, val);
+}
+
+DataValue util::todata (const DataValue& val) {
+    return val;
+}
+
+bool util::fromdata (const DataValue& dataVal, DataValue& val) {
+    val = dataVal;
+    return true;
+}
+
+meta::type_list_unroll<std::variant, util::data_types>& util::internal::internalGetData (util::DataValue& val) {
+    return val.obj;
+}
+
+const meta::type_list_unroll<std::variant, data_types>& util::internal::internalGetDataConst (const util::DataValue& val) {
+    return val.obj;
 }
 
 /*util::DataValue todata (unsigned int& val) {

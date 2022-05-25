@@ -16,10 +16,32 @@
 #include "logging/logging.h"
 
 namespace util {
+
+    class DataValue;
+    class DataObject;
+    class DataArray;
+    using data_types = meta::type_list_wrapper<int, float, bool, std::string, DataObject, DataArray, std::monostate>;
+
     namespace internal {
         class DataObserver;
+        meta::type_list_unroll<std::variant, data_types>& internalGetData (util::DataValue& val);
+        const meta::type_list_unroll<std::variant, data_types>& internalGetDataConst (const util::DataValue& val);
+        template <typename T>
+        static constexpr bool is_any_convertible = meta::type_list_unroll<std::disjunction, meta::type_list_map<meta::apply<meta::flip_args<std::is_convertible>::val, T>::template val, util::data_types>>::value;
+
+        template <typename T>
+        static constexpr bool is_convertible_to_any = meta::type_list_unroll<std::disjunction, meta::type_list_map<meta::apply<std::is_convertible, T>::template val, util::data_types>>::value;
+
+        template <class T, std::enable_if_t<is_any_convertible<T>, bool> = true>
+        bool getDataValue (const util::DataValue& val, T& obj);
+
+        template <class T, std::enable_if_t<!is_any_convertible<T>, bool> = true>
+        bool getDataValue (const util::DataValue& val, T& obj);
+
+        //std::string& getDataValue (util::DataValue& val);
+
+        //const std::string& getDataValue (const util::DataValue& val);
     }
-    class DataValue;
 
     class DataObject {
     private:
@@ -83,7 +105,7 @@ namespace util {
         DataArray (std::vector<DataValue>& _values);
         DataArray (std::vector<DataValue>&& _values);
 
-        std::size_t size ();
+        std::size_t size () const;
 
         DataValue& operator[] (std::size_t index);
 
@@ -143,22 +165,36 @@ namespace util {
         //std::variant<int, float, std::string, DataObject, DataArray> obj;
         meta::type_list_unroll<std::variant, data_types> obj{};
         template <typename T>
-        void setObj (T& v) {
+        void setObj (T&& v) {
             obj = v;
         }
+
+
     public:
         DataValue() {
             static_assert(std::is_same_v<DataObject, meta::get_nth_typelist<4, data_types>>);
             obj = std::monostate{};
         }
 
-        DataValue (DataValue& other) = default;
-        DataValue (DataValue const& other) = default; // Both are necessary because c++ is dumb
+        // Explicit implementations are necessary because c++ is dumb
+        DataValue (DataValue const& other) {
+            obj = other.obj;
+        }; // Both are necessary because c++ is dumb
 
-        DataValue& operator= (DataValue const& other) = default;
-        DataValue& operator= (DataValue&& other) = default;
+        DataValue& operator= (DataValue const& other) {
+            obj = other.obj;
 
-        DataValue (DataValue&& other) = default;
+            return *this;
+        };
+        DataValue& operator= (DataValue&& other)  noexcept {
+            obj = std::move(other.obj);
+
+            return *this;
+        };
+
+        DataValue (DataValue&& other) {
+            obj = std::move(other.obj);
+        };
 
 
 
@@ -169,17 +205,21 @@ namespace util {
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<std::remove_cvref_t<T>, data_types>, bool> = true>
         explicit DataValue (T&& val) {
-            setObj(std::forward<T&>(val));
+            setObj(std::forward<T&&>(val));
         }
 
-        template <typename T, std::enable_if_t<!meta::is_in_typelist<std::remove_const_t<T>, data_types>, bool> = true>
-        explicit DataValue (T& val) {
+        template <typename T, std::enable_if_t<!meta::is_in_typelist<std::remove_cvref_t<T>, data_types>, bool> = true>
+        explicit DataValue (T&& val) {
             obj = std::move(todata(val).obj);
+        }
+
+        explicit DataValue (const char* str) {
+            obj = std::string{str};
         }
 
         //template <typename T>
         //bool getValue (T& val);
-        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        /*template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         bool getValue  (T& val) const {
             auto p = std::get_if<T>(&obj);
             if (p) {
@@ -191,16 +231,27 @@ namespace util {
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
         bool getValue (T& val) {
             return fromdata<T>(*this, val);
+        }*/
+        template <typename T>
+        bool getValue (T& val) const {
+            return internal::getDataValue<T>(*this, val);
+        }
+
+
+        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        DataValue& operator= (const T& val) {
+            obj = val;
+            return *this;
         }
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
-        DataValue& operator= (T val) {
+        DataValue& operator= (T&& val) {
             obj = val;
             return *this;
         }
 
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
-        DataValue& operator= (T val) {
+        DataValue& operator= (const T& val) {
             obj = std::move(todata(val).obj);
             return *this;
         }
@@ -210,45 +261,46 @@ namespace util {
             return *this;
         }
 
-        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
-        operator T() {
+        template <typename T, std::enable_if_t<!(std::is_same_v<T, DataValue> || std::is_same_v<T, DataObject> || std::is_same_v<T, DataArray>), bool> = true>
+        explicit operator T() const {
+            return get<T>();
+        }
+
+        template <typename T, std::enable_if_t<std::is_same_v<T, DataObject> || std::is_same_v<T, DataArray>, bool> = true>
+        operator T() const {
             return std::get<T>(obj);
         }
 
-        template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
-         operator T(){
+        /*template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
+        explicit operator T(){
              T val;
              if (fromdata(*this, val)) {
                  return val;
              } else {
                  throw std::bad_variant_access();
              }
-        }
+        }*/
 
-        operator unsigned int () {
+        /*operator unsigned int () {
             int val;
             if (fromdata(*this, val)) {
                 return *((unsigned int*)&val);
             } else {
                 throw std::bad_variant_access();
             }
-        }
+        }*/
 
-        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        /*template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types> && !std::is_same_v<T, float>, bool> = true>
         T& get () {
             return std::get<T>(obj);
         }
 
-        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
+        template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types> && !std::is_same_v<T, float>, bool> = true>
         T const& get () const {
             return std::get<T>(obj);
         }
 
-        unsigned int get () const {
-            return *((unsigned int*)&std::get<int>(obj));
-        }
-
-        template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
+        template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types> || std::is_same_v<T, float>, bool> = true>
         T get () const {
             T val;
             if (fromdata(*this, val)) {
@@ -256,6 +308,43 @@ namespace util {
             } else {
                 throw std::bad_variant_access();
             }
+        }
+
+        //template<>
+        unsigned int get () const {
+            return *((unsigned int*)&std::get<int>(obj));
+        }
+
+        //template<>
+        [[nodiscard]] float get<float> () const {
+            if (is<float>()) {
+                return std::get<float>(obj);
+            } else if (is<int>()) {
+                return (float)std::get<int>(obj);
+            } else {
+                throw std::bad_variant_access();
+            }
+        }*/
+
+        template <typename T, std::enable_if_t<!(std::is_same_v<T, DataObject> || std::is_same_v<T, DataArray> || std::is_same_v<T, std::string>), bool> = true>
+        T get () const {
+            T val;
+
+            if (internal::getDataValue<T>(*this, val)) {
+                return val;
+            } else {
+                throw std::bad_variant_access();
+            }
+        }
+
+        template <typename T, std::enable_if_t<std::is_same_v<T, DataObject> || std::is_same_v<T, DataArray> || std::is_same_v<T, std::string>, bool> = true>
+        T& get () {
+            return std::get<T>(obj);
+        }
+
+        template <typename T, std::enable_if_t<std::is_same_v<T, DataObject> || std::is_same_v<T, DataArray> || std::is_same_v<T, std::string>, bool> = true>
+        const T& get () const {
+            return std::get<T>(obj);
         }
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
@@ -304,6 +393,8 @@ namespace util {
         friend bool operator>= (DataValue& v1, const T& v2);
 
         friend class internal::DataObserver;
+        friend meta::type_list_unroll<std::variant, data_types>& internal::internalGetData (util::DataValue& val);
+        friend const meta::type_list_unroll<std::variant, data_types>& internal::internalGetDataConst (const util::DataValue& val);
     };
 
     inline DataObject::operator DataValue() const {
@@ -521,4 +612,50 @@ namespace util {
 
     DataValue parseJson (const std::string& json);
     DataValue parseFromFile (const std::string& filepath);
+
+    namespace internal {
+        template <class T, std::enable_if_t<is_any_convertible<T>, bool>>
+        bool getDataValue (const util::DataValue& val, T& obj) {
+            const auto& data = internalGetDataConst(val);
+
+            return std::visit([&obj](const auto& v) {
+                    if constexpr (std::is_same_v<std::remove_cvref<decltype(v)>, T>) {
+                        obj = v;
+                        return true;
+                    } else if constexpr (std::is_convertible_v<decltype(v), T>) {
+                        obj = (T)v;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }, data);
+        }
+
+        template <class T, std::enable_if_t<!is_any_convertible<T>, bool>>
+        bool getDataValue (const util::DataValue& val, T& obj) {
+            return util::fromdata(val, obj);
+        }
+
+        /*std::string& getDataValue (util::DataValue& val) {
+            auto& data = internalGetDataConst(val);
+            return std::visit([] (auto& v) {
+                if constexpr (std::is_same_v<std::remove_cvref_t<decltype(v)>, std::string>) {
+                    return v;
+                } else {
+                    throw std::bad_variant_access();
+                }
+            }, data);
+        }
+
+        const std::string& getDataValue<std::string> (const util::DataValue& val) {
+            const auto& data = internalGetDataConst(val);
+            return std::visit([] (const auto& val) {
+                if constexpr (std::is_same_v<std::remove_cvref_t<decltype(val), std::string>) {
+                    return val;
+                } else {
+                    throw std::bad_variant_access();
+                }
+            }, data);
+        }*/
+    }
 }

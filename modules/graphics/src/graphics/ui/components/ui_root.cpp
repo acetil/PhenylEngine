@@ -54,3 +54,9 @@ void UIRootNode::onMouseRelease () {
         std::get<std::shared_ptr<UIComponentNode>>(i)->onMouseRelease();
     }
 }
+
+void UIRootNode::onThemeUpdate (Theme* theme) {
+    for (auto& i : childNodes) {
+        std::get<2>(i)->applyTheme(theme);
+    }
+}

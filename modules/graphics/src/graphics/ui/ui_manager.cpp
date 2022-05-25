@@ -5,6 +5,8 @@
 #include "graphics/font/rendered_text.h"
 #include "common/events/map_load.h"
 #include "graphics/ui/components/ui_root.h"
+#include "graphics/ui/themes/theme.h"
+#include "graphics/ui/themes/theme_class.h"
 
 #include "logging/logging.h"
 
@@ -127,4 +129,21 @@ void UIManager::renderText (RenderedText& text, int x, int y) {
     //uiLayer->bufferText(text);
     textBuf2.emplace_back(offVec, text);
 }
+
+void UIManager::addTheme (const std::string& themePath) {
+    auto theme = ui::loadTheme(themePath);
+
+    themes[theme->getThemeName()] = std::move(theme);
+}
+
+void UIManager::setCurrentTheme (const std::string& themeName) {
+    if (!themes.contains(themeName)) {
+        logging::log(LEVEL_ERROR, "Theme {} does not exist!", themeName);
+    } else {
+        std::unique_ptr<ui::Theme>& theme = themes.at(themeName);
+        uiRoot->applyTheme(theme.get());
+    }
+}
+
+UIManager::~UIManager () = default;
 

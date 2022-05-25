@@ -5,6 +5,7 @@
 
 #ifndef NDEBUG
 #include <source_location>
+#include "logging/logging.h"
 #endif
 
 #include "detail/memory.h"
@@ -46,11 +47,17 @@ namespace util {
         Optional () : memory{}, hasVal{false} {}
         Optional (detail::NullOpt_t) : memory{}, hasVal{false} {}
 
+        Optional (const Optional<T>& other) : hasVal{other.hasVal}, memory{} {
+            if (hasVal) {
+                memory.mget() = other.memory.get();
+            }
+        }
+
         Optional (T& val) : memory{val}, hasVal(true) {}
         Optional (T&& val) : memory{std::forward<T&&>(val)}, hasVal(true) {}
 
         template <typename ...Args>
-        explicit Optional (Args&&... args) : memory{args...}, hasVal{true} {}
+        Optional (Args&&... args) : memory{args...}, hasVal{true} {}
 
         const T& orElse (const T& otherVal) const noexcept {
             return hasVal ? memory.get() : otherVal;
@@ -82,6 +89,11 @@ namespace util {
         }
 
         template <typename F>
+        Optional<T> orOpt (F f) const noexcept {
+            return hasVal ? *this : f();
+        }
+
+        template <typename F>
         auto then (F f) const noexcept -> decltype(f(memory.get())){
             return hasVal ? f(memory.get()) : NullOpt;
         }
@@ -101,6 +113,37 @@ namespace util {
             if (hasVal) {
                 f(memory.mget());
             }
+        }
+
+        template <typename F>
+        Optional<T>& thenIfPresent (F f) noexcept {
+            if (hasVal) {
+                f(memory.mget());
+            }
+            return *this;
+        }
+
+        template <typename F>
+        const Optional<T>& thenIfPresent (F f) const noexcept {
+            if (hasVal) {
+                f(memory.mget());
+            }
+            return *this;
+        }
+
+        template <typename F>
+        void ifNotPresent (F f) const noexcept {
+            if (!hasVal) {
+                f();
+            }
+        }
+
+        template <typename F>
+        Optional<T>& thenIfNotPresent (F f) const noexcept {
+            if (!hasVal) {
+                f();
+            }
+            return *this;
         }
 
         template <typename Dummy = T>
@@ -158,8 +201,13 @@ namespace util {
         }
 
         template <typename F>
+        Optional<T&> orOpt (F f) const noexcept {
+            return hasVal ? *this : f();
+        }
+
+        template <typename F>
         auto then (F f) const noexcept -> decltype(f(memory.get())){
-            return hasVal ? f(memory.get()) : Optional();
+            return hasVal ? f(memory.get()) : NullOpt;
         }
 
         template <typename F>
@@ -172,6 +220,29 @@ namespace util {
             if (hasVal) {
                 f(memory.get());
             }
+        }
+
+        template <typename F>
+        const Optional<T&>& thenIfPresent (F f) const noexcept {
+            if (hasVal) {
+                f(memory.get());
+            }
+            return *this;
+        }
+
+        template <typename F>
+        void ifNotPresent (F f) const noexcept {
+            if (!hasVal) {
+                f();
+            }
+        }
+
+        template <typename F>
+        const Optional<T&>& thenIfNotPresent (F f) const noexcept {
+            if (!hasVal) {
+                f();
+            }
+            return *this;
         }
 
         template <typename Dummy = T>

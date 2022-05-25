@@ -118,8 +118,8 @@ namespace util::detail {
             *reinterpret_cast<T**>(&data) = (reinterpret_cast<T*>(&val));
         }
 
-        RefMemory<T>& operator= (RefMemory<T>&) = delete;
-        RefMemory<T>& operator= (RefMemory<T>&&) = delete;
+        //RefMemory<T>& operator= (RefMemory<T>&) = delete;
+        //RefMemory<T>& operator= (RefMemory<T>&&) = delete;
 
         T& get () const {
             return **reinterpret_cast<T* const*>(&data);

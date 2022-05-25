@@ -16,7 +16,7 @@ namespace graphics::ui {
         bool doTextRender = false;
         bool doDebugRender = false;
     public:
-        explicit UILabelNode (std::weak_ptr<UIComponentNode> parent) : UIComponentNode(std::move(parent)) {}
+        explicit UILabelNode (const std::string& themeClass) : UIComponentNode(themeClass) {}
         void render(UIManager &uiManager) override;
         UIAnchor getAnchor() override;
 
@@ -25,5 +25,7 @@ namespace graphics::ui {
         void setTextSize (int newTextSize);
         void setColour (glm::vec4 newColour);
         void setDebug (bool isDebug);
+
+        void onThemeUpdate(Theme *theme) override;
     };
 }

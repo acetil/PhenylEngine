@@ -45,3 +45,10 @@ void UILabelNode::setColour (glm::vec4 newColour) {
 void UILabelNode::setDebug (bool isDebug) {
     doDebugRender = isDebug;
 }
+
+void UILabelNode::onThemeUpdate (Theme* theme) {
+    font = getTheme().getProperty<std::string>("font").orElse("noto-serif");
+    textSize = getTheme().getProperty<int>("text_size").orElse(12);
+    colour = getTheme().getProperty<glm::vec4>("text_color").orElse({0.0f, 0.0f, 0.0f, 0.0f});
+    doTextRender = true;
+}

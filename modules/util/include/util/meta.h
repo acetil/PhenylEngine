@@ -443,4 +443,21 @@ namespace meta {
 
     template <typename L, typename ...Args>
     static constexpr bool is_all_in = is_all_in_impl<L, Args...>::val;
+
+    template <template <typename A, typename ...> typename T, typename B>
+    struct apply {
+        template <typename ...Args>
+        using val = T<B, Args...>;
+    };
+
+    template <template <typename A, typename B> typename T>
+    struct flip_args {
+        template <typename B, typename ...A>
+        using val = T<A..., B>;
+    };
+
+    template <template <typename A> typename F, typename ...Args>
+    struct pack_apply_impl {
+
+    };
 }

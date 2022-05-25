@@ -140,7 +140,11 @@ namespace util {
 
         public:
             BasicMapIterator () : data{nullptr}, maxSize{0}, pos{0} {}
-            BasicMapIterator (detail::MapPair<K, V>* _data, std::size_t _maxSize, std::size_t _pos = 0) : data{_data}, maxSize{_maxSize}, pos{_pos} {}
+            BasicMapIterator (detail::MapPair<K, V>* _data, std::size_t _maxSize, std::size_t _pos = 0) : data{_data}, maxSize{_maxSize}, pos{_pos} {
+                while (pos < maxSize && !data[pos].exists()) {
+                    pos++;
+                }
+            }
 
             using iterator_category = std::bidirectional_iterator_tag;
             using difference_type = std::ptrdiff_t;
@@ -194,7 +198,11 @@ namespace util {
             std::size_t maxSize;
         public:
             BasicMapKVIterator () : data{nullptr}, pos{0}, maxSize{0} {}
-            BasicMapKVIterator (detail::MapPair<K, V>* _data, std::size_t _maxSize, std::size_t _pos = 0) : data{_data}, pos{_pos}, maxSize{_maxSize} {}
+            BasicMapKVIterator (detail::MapPair<K, V>* _data, std::size_t _maxSize, std::size_t _pos = 0) : data{_data}, pos{_pos}, maxSize{_maxSize} {
+                while (pos < maxSize && !data[pos].exists()) {
+                    pos++;
+                }
+            }
 
             using iterator_category = std::bidirectional_iterator_tag;
             using difference_type = std::ptrdiff_t;

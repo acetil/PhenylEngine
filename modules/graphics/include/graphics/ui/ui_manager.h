@@ -9,6 +9,7 @@
 #include "graphics/font/font.h"
 #include "graphics/maths_headers.h"
 #include "graphics/ui/components/ui_component.h"
+#include "graphics/ui/themes/forward.h"
 
 namespace graphics {
 //#ifndef FONT_H
@@ -45,8 +46,10 @@ class Font;
         bool mouseDown = false;
         std::vector<glm::vec2> offsetStack;
         std::shared_ptr<ui::UIRootNode> uiRoot;
+        util::Map<std::string, std::unique_ptr<ui::Theme>> themes;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
+        ~UIManager();
         void renderText(const std::string& font, const std::string& text, int size, int x, int y);
         //void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
         void renderText (const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
@@ -59,6 +62,8 @@ class Font;
         bool setMouseDown (bool mouseDown);
 
         void addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos);
+        void addTheme (const std::string& themePath);
+        void setCurrentTheme (const std::string& themeName);
 
         void pushOffset (glm::vec2 relOffset);
         void popOffset ();

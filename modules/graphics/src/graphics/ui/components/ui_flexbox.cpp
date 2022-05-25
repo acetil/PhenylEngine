@@ -1,5 +1,6 @@
 #include "graphics/ui/components/ui_flexbox.h"
 #include "graphics/ui/ui_manager.h"
+#include "graphics/ui/ui_data.h"
 
 #include <utility>
 #include "logging/logging.h"
@@ -81,7 +82,7 @@ void UIFlexBoxNode::setAxes (Axis primaryAxis, Axis secondaryAxis) {
     updateLayout();
 }
 
-UIFlexBoxNode::UIFlexBoxNode (std::weak_ptr<UIComponentNode> parent) : UIComponentNode(std::move(parent)) {
+UIFlexBoxNode::UIFlexBoxNode (const std::string& themeClass) : UIComponentNode(themeClass) {
 
 }
 
@@ -303,6 +304,28 @@ void UIFlexBoxNode::alignChildren (const std::vector<UIAnchor>& anchors) {
         expandSecondaryAxis(item, secondaryAxisVec, glm::abs(glm::dot(size, secondaryAxisVec)), anchor);
         alignItem(item, secondaryAxisVec, glm::abs(glm::dot(size, secondaryAxisVec)), floatAnchor);
     }
+}
+
+void UIFlexBoxNode::onThemeUpdate (Theme* theme) {
+    minSize = getTheme().getProperty<glm::vec2>("size")
+            .orOpt([this] () {return getTheme().getProperty<glm::vec2>("min_size");})
+            .orElse({0, 0});
+
+    maxSize = getTheme().getProperty<glm::vec2>("size")
+            .orOpt([this] () {return getTheme().getProperty<glm::vec2>("max_size");})
+            .orElse({-1, -1});
+
+    Axis primAxis = getTheme().getProperty<Axis>("primary_axis").orElse(Axis::DOWN);
+    Axis secondAxis = getTheme().getProperty<Axis>("secondary_axis").orElse(Axis::RIGHT);
+    setAxes(primAxis, secondAxis);
+
+    setAlign(getTheme().getProperty<FlexAlign>("align_items").orElse(FlexAlign::START));
+    setJustify(getTheme().getProperty<FlexJustify>("justify_items").orElse(FlexJustify::NONE));
+
+    for (auto& i : children) {
+        i->applyTheme(theme);
+    }
+    updateLayout();
 }
 
 UIFlexBoxNode::~UIFlexBoxNode () = default;

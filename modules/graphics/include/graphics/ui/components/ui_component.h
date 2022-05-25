@@ -5,6 +5,7 @@
 
 //#include "graphics/ui/ui_manager.h"
 #include "ui_anchor.h"
+#include "graphics/ui/themes/theme_properties.h"
 
 namespace graphics {
     class UIManager;
@@ -14,7 +15,8 @@ namespace graphics::ui {
     class UIComponentNode {
     private:
         std::weak_ptr<UIComponentNode> parent{};
-        glm::vec2 mousePos;
+        glm::vec2 mousePos{};
+        ThemeProperties themeProperties;
     protected:
         std::shared_ptr<UIComponentNode> getParent () {
             return parent.lock();
@@ -25,8 +27,16 @@ namespace graphics::ui {
             return mousePos;
         }
 
+        [[nodiscard]] const ThemeProperties& getTheme () const {
+            return themeProperties;
+        };
+
+        virtual void onThemeUpdate (Theme* theme) {
+
+        }
+
     public:
-        explicit UIComponentNode (std::weak_ptr<UIComponentNode> _parent) : parent{std::move(_parent)} {}
+        explicit UIComponentNode (const std::string& themeClass, const std::string& fallbackClass = "default", const std::string& classPrefix = "") : themeProperties(themeClass, fallbackClass, classPrefix) {}
         virtual ~UIComponentNode() = default;
         virtual void render (UIManager& uiManager) = 0;
         virtual UIAnchor getAnchor () = 0;
@@ -50,6 +60,11 @@ namespace graphics::ui {
 
         virtual void onMouseRelease () {
 
+        }
+
+        void applyTheme (Theme* theme) {
+            themeProperties.applyTheme(theme);
+            onThemeUpdate(theme);
         }
     };
 }

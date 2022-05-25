@@ -44,3 +44,10 @@ void UIButtonNode::onMousePosChange (glm::vec2 oldMousePos) {
         isHovered = false;
     }
 }
+
+void UIButtonNode::onThemeUpdate (Theme* theme) {
+    minSize = getTheme().getProperty<glm::vec2>("size").orElse({0, 0});
+    bgColour = getTheme().getProperty<glm::vec4>("color").orElse({0.0f, 0.0f, 0.0f, 1.0f});
+    hoverColour = getTheme().getProperty<glm::vec4>("hover_color").orElse({0.0f, 0.0f, 0.0f, 1.0f});
+    pressColour = getTheme().getProperty<glm::vec4>("press_color").orElse({0.0f, 0.0f, 0.0f, 1.0f});
+}

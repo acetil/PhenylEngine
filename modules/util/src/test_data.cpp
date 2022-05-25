@@ -212,11 +212,11 @@ void testDataTypes () {
     util::DataValue val;
     //assert(val == std::monostate());
     val = 4;
-    int v = val;
+    int v = (int)val;
     assert (v == 4);
     bool threw = false;
     try {
-        float f = val;
+        float f = (float)val;
     } catch (std::exception&) {
         threw = true;
     }
@@ -228,7 +228,7 @@ void testDataTypes () {
 
     val = std::string("Hello World!");
 
-    std::string s = val;
+    std::string s = (std::string)val;
     assert(s == "Hello World!");
 
     util::DataObject obj;
@@ -243,10 +243,10 @@ void testDataTypes () {
     assert(obj.contains("test3"));
     assert(obj.contains("test4"));
 
-    int t1 = obj["test1"];
-    float t2 = obj["test2"];
-    bool t3 = obj["test3"];
-    std::string t4 = obj["test4"];
+    int t1 = (int)obj["test1"];
+    float t2 = (float)obj["test2"];
+    bool t3 = (bool)obj["test3"];
+    std::string t4 = (std::string)obj["test4"];
     assert(t1 == 1);
     assert(t2 == 3.0f);
     assert(t3);
@@ -262,8 +262,8 @@ void testDataTypes () {
 
     assert(!arr.empty());
     assert(arr.size() == 2);
-    v = arr[0];
-    f = arr[1];
+    v = (int)arr[0];
+    f = (float)arr[1];
 
     assert(v == 4);
     assert(f == 4.5f);
@@ -295,7 +295,7 @@ void testJson () {
     auto jsonStr = R"({"hello" : 1, "world" : true, "test" : {"meme" : "lol", "testing" : 1.1}, "test2" : [4, 3, 2, 1, {}]})";
     auto val = util::parseJson(jsonStr);
 
-    DataObject obj = val;
+    DataObject obj = (DataObject)val;
 
     assert(obj.contains("hello"));
     assert(obj.contains("world"));
@@ -305,17 +305,17 @@ void testJson () {
     assert(obj["hello"] == 1);
     assert(obj["world"] == true);
 
-    DataObject obj2 = obj["test"];
+    DataObject obj2 = (DataObject)obj["test"];
 
     assert(obj2.contains("meme"));
     assert(obj2.contains("testing"));
 
     //logging::log(LEVEL_DEBUG, "meme = {}", (std::string)obj2["meme"]);
-    std::string x = obj2["meme"];
+    std::string x = (std::string)obj2["meme"];
     assert(x == std::string("lol"));
     assert(obj2["testing"] == 1.1f);
 
-    DataArray arr = obj["test2"];
+    DataArray arr = (DataArray)obj["test2"];
     assert(arr.size() == 5);
 
     for (int i = 0; i < arr.size() - 1; i++) {
