@@ -115,8 +115,8 @@ void UIFlexBoxNode::updateLayout () {
         minSecondarySize = glm::max(glm::abs(glm::dot(curr.minimumSize + curr.topLeftMargin + curr.bottomRightMargin, secondaryAxisVec)), minSecondarySize);
     }
 
-    minSize = minPrimarySize * primaryAxisVec + minSecondarySize * secondaryAxisVec;
-    minSize = {glm::abs(minSize.x), glm::abs(minSize.y)};
+    componentMinSize = minPrimarySize * primaryAxisVec + minSecondarySize * secondaryAxisVec;
+    componentMinSize = {glm::abs(componentMinSize.x), glm::abs(componentMinSize.y)};
 
     placeChildren(anchors);
 
@@ -149,12 +149,12 @@ void UIFlexBoxNode::render (graphics::UIManager& uiManager) {
         uiManager.popOffset();
     }
     uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
-    uiManager.renderRect({0,0}, minSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
+    uiManager.renderRect({0,0}, componentMinSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
 }
 
 UIAnchor UIFlexBoxNode::getAnchor () {
     return UIAnchor()
-        .withMinimumSize(minSize)
+        .withMinimumSize({glm::max(componentMinSize.x, minSize.x), glm::max(componentMinSize.y, minSize.y)})
         .withMaximumSize(maxSize);
 }
 

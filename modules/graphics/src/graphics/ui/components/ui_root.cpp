@@ -57,6 +57,21 @@ void UIRootNode::onMouseRelease () {
 
 void UIRootNode::onThemeUpdate (Theme* theme) {
     for (auto& i : childNodes) {
-        std::get<2>(i)->applyTheme(theme);
+        auto& child = std::get<2>(i);
+        child->applyTheme(theme);
+
+        auto anchor = child->getAnchor();
+        // TODO: deal with anchor
+
+        glm::vec2 size = anchor.minimumSize;
+
+        if (anchor.maximumSize.x != -1) {
+            size.x = anchor.maximumSize.x;
+        }
+        if (anchor.maximumSize.y != -1) {
+            size.y = anchor.maximumSize.y;
+        }
+
+        child->setSize(size);
     }
 }

@@ -37,6 +37,7 @@ namespace graphics::ui {
         FlexAlign alignment = FlexAlign::START;
 
         glm::vec2 minSize = {0, 0};
+        glm::vec2 componentMinSize = {0, 0};
         glm::vec2 maxSize = {-1, -1};
 
         void placeChildren (const std::vector<UIAnchor>& anchors);
