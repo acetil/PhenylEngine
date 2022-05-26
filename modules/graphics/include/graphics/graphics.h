@@ -57,6 +57,7 @@ namespace graphics {
 
         class Graphics : public util::SmartHelper<Graphics, true> {
         private:
+            event::EventScope eventScope;
             Renderer* renderer;
 
             double lastTime;

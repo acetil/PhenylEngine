@@ -187,5 +187,9 @@ void MapRenderLayer::onMapLoad (event::MapLoadEvent& event) {
     attachMap(event.map);
 }
 
+event::EventScope& MapRenderLayer::getEventScope () {
+    return eventScope;
+}
+
 
 

@@ -90,5 +90,5 @@ void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
 }
 
 void game::addControlEventHandlers (const event::EventBus::SharedPtr& eventBus) {
-    eventBus->subscribeHandler(controlOnCollision);
+    eventBus->subscribeUnscoped(controlOnCollision);
 }

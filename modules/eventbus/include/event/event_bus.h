@@ -1,299 +1,202 @@
 #pragma once
 
-#include <string>
-#include <utility>
 #include <vector>
 #include <functional>
-#include <unordered_map>
-#include <type_traits>
 #include <algorithm>
 #include <memory>
 
 #include "logging/logging.h"
 #include "util/meta.h"
+#include "util/map.h"
 #include "util/smart_help.h"
 #include "event.h"
-
-// TODO: remove duplication
+#include "event_scope.h"
+#include "common/scope.h"
 
 namespace event {
-    /*template<typename T, bool _doDebugLog = true, typename ...Args>
-    class Event {
-    public:
-        using CallbackArgsList = meta::type_list_wrapper<Args...>;
+    namespace detail {
 
-        Event () = default;
+        template <typename T>
+        static constexpr bool is_event_impl = std::disjunction_v<std::is_base_of<Event<T, false>, T>, std::is_base_of<Event<T, true>, T>>;
 
-        [[nodiscard]]
-        std::string getEventName () const {
-            const T& underlying = static_cast<const T&>(*this);
-            return underlying.name;
+        template <typename T>
+        static constexpr bool is_event = is_event_impl<std::remove_cvref_t<T>>;
+
+        class EventHandlerBase {
+        public:
+            template <typename T>
+            void _handle (T& t);
+
+            template <typename T>
+            [[nodiscard]] bool _hasExpired () const;
+
+            virtual ~EventHandlerBase() = default;
         };
 
-        void debugLog () {
-            logging::log("Raised event: \"{}\"", getEventName());
-        }
-
-        static constexpr bool doDebugLog () {
-            return _doDebugLog;
-        }
-
-        friend T;
-    };*/
-
-    class EventHandlerBase {
-    protected:
-        bool doCallback;
-
-    public:
-        EventHandlerBase () : doCallback(false) {};
-
-        explicit EventHandlerBase (bool _doCallback) : doCallback{_doCallback} {};
-
-        template<class T>
-        void handle (T& t);
-
-        template<typename T, typename F>
-        void handle (T& t, F f);
-
-        template<typename T>
-        bool hasExpired ();
-    };
-
-    template<typename T, bool doesCallback = false>
-    class EventHandler;
-
-    template<typename T>
-    class EventHandler<T, false> : public EventHandlerBase {
-    private:
-        void (* fun) (T&);
-
-    protected:
-        explicit EventHandler (const std::string& name) : EventHandlerBase(false) {
-            fun = nullptr;
-            this->eventName = name;
-        }
-
-    public:
-        using type = T;
-        std::string eventName;
-
-        EventHandler (void (* fun) (T&), const std::string& name) : EventHandlerBase(false) {
-            this->fun = fun;
-            this->eventName = name;
-        };
-
-        virtual void handle (T& t) {
-            fun(t);
-        };
-
-        virtual bool hasExpired () {
-            return false;
-        }
-    };
-
-    template<typename T>
-    class EventHandler<T, true> : public EventHandlerBase {
-    private:
-        meta::type_list_tuple<typename T::CallbackArgsList> (* fun) (T&);
-
-    protected:
-        explicit EventHandler (const std::string& name) : EventHandlerBase(true) {
-            fun = nullptr;
-            this->eventName = name;
-        }
-
-    public:
-        using type = T;
-        std::string eventName;
-
-        EventHandler (meta::type_list_tuple<typename T::CallbackArgsList> (* fun) (T&), const std::string& name)
-                : EventHandlerBase(true) {
-            this->fun = fun;
-            this->eventName = name;
-        };
-
-        virtual meta::type_list_tuple<typename T::CallbackArgsList> handle (T& t) {
-            return fun(t);
-        };
-
-        virtual bool hasExpired () {
-            return false;
-        }
-    };
-
-    template<typename T, typename A, bool hasCallback = false>
-    class EventHandlerMember;
-
-    template<typename T, typename A>
-    class EventHandlerMember<T, A, false> : public EventHandler<T, false> {
-    private:
-        void (A::*fun) (T&);
-
-        std::weak_ptr<A> obj;
-    public:
-        EventHandlerMember (void (A::*fun) (T&), const std::string& name, std::weak_ptr<A> obj) : EventHandler<T>(
-                name) {
-            this->fun = fun;
-            this->obj = obj;
-        }
-
-        virtual bool hasExpired () {
-            return obj.expired();
-        }
-
-        virtual void handle (T& t) {
-            (obj.lock().get()->*fun)(t);
-        }
-    };
-
-    template<typename T, typename A>
-    class EventHandlerMember<T, A, true> : public EventHandler<T, true> {
-    private:
-        meta::type_list_tuple<typename T::CallbackArgs> (A::*fun) (T&);
-
-        std::weak_ptr<A> obj;
-    public:
-        EventHandlerMember (meta::type_list_tuple<typename T::CallbackArgsList> (A::*fun) (T&), const std::string& name,
-                            std::weak_ptr<A> obj) : EventHandler<T>(name) {
-            this->fun = fun;
-            this->obj = obj;
-        }
-
-        bool hasExpired () override {
-            return obj.expired();
-        }
-
-        virtual meta::type_list_tuple<typename T::CallbackArgs> handle (T& t) {
-            return (obj.get()->*fun)(t);
-        }
-    };
-
-    template<class T>
-    void EventHandlerBase::handle (T& t) {
-        if (doCallback) {
-            static_cast<EventHandler<T, true>*>(this)->handle(t);
-        } else {
-            static_cast<EventHandler<T, false>*>(this)->handle(t);
-        }
-    }
-
-    template<typename T, typename F>
-    void EventHandlerBase::handle (T& t, F f) {
-        if (doCallback) {
-            auto tup = static_cast<EventHandler<T, true>*>(this)->handle(t);
-            std::apply(f, tup);
-        } else {
-            static_cast<EventHandler<T, false>*>(this)->handle(t);
-        }
-    }
-
-    template<typename T>
-    bool EventHandlerBase::hasExpired () {
-        if (doCallback) {
-            return static_cast<EventHandler<T, true>*>(this)->hasExpired();
-        } else {
-            return static_cast<EventHandler<T, false>*>(this)->hasExpired();
-        }
-    }
-    template<typename T>
-    void canaryDeleter(EventHandlerBase** ptr) {
-        delete (T*)*ptr;
-        delete ptr;
-    }
-
-class EventBus : public util::SmartHelper<EventBus>{
+        template <typename T>
+        class EventHandler : public event::detail::EventHandlerBase {
         private:
-        std::unordered_map<std::string, std::vector<std::shared_ptr<EventHandlerBase*>>> handlerMap;
-        template <typename T>
-        std::shared_ptr<EventHandlerBase*> addHandlerInt (EventHandler<T>* handler, void (*deleter)(EventHandlerBase**)) {
-            //T val;
-            const std::string& type = T::getEventName();
-            if (handlerMap.count(type) == 0) {
-                handlerMap[type] = std::vector<std::shared_ptr<EventHandlerBase*>>();
-            }
-            std::shared_ptr<EventHandlerBase*> handlerPtr = std::shared_ptr<EventHandlerBase*>(new EventHandlerBase*, deleter);
-            *handlerPtr = handler;
-            handlerMap[type].push_back(handlerPtr);
+            EventScopeObserver scopeObserver;
 
-            return handlerPtr;
-        }
+        public:
+            explicit EventHandler (EventScopeObserver observer) : scopeObserver{std::move(observer)} {}
+
+            virtual void handle (T& t) = 0;
+
+            [[nodiscard]] virtual bool hasExpired () const {
+                return !scopeObserver;
+            }
+        };
+
+        template <typename T, class O>
+        class EventMemberHandler : public event::detail::EventHandler<T> {
+        public:
+            typedef void (O::*FuncType) (T&);
+        private:
+            FuncType func;
+            O* obj;
+        public:
+            EventMemberHandler (FuncType _func, O* _obj, EventScopeObserver observer) : event::detail::EventHandler<T>(observer), func{_func}, obj{_obj} {}
+
+            void handle (T& t) override {
+                (obj->*func)(t);
+            }
+        };
+
         template <typename T>
-        std::shared_ptr<EventHandlerBase*> addHandler (T* handler) {
-            return addHandlerInt(handler, canaryDeleter<T>);
-        }
-public:
-        template <class T, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        std::shared_ptr<EventHandlerBase*> subscribeHandler (void eventHandler(T&)) {
-            //T val;
-            const std::string& type = T::getEventName();
-            auto* handler = new EventHandler<T>(eventHandler, type);
-            //addHandler(handler);
-            //EventHandler<T> test(eventHandler, type);
-            return addHandler(handler);
-        };
-        template <class T, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        std::shared_ptr<EventHandlerBase*> subscribeHandler (meta::type_list_tuple<typename T::CallbackArgsList> eventHandler(T&)) {
-            //T val;
-            const std::string& type = T::getEventName();
-            auto* handler = new EventHandler<T>(eventHandler, type);
-            //addHandler(handler);
-            return addHandler(handler);
-        };
-        template <class T, class A, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        std::shared_ptr<EventHandlerBase*> subscribeHandler (void (A::*eventHandler)(T&), std::shared_ptr<A> obj) {
-            //T val;
-            const std::string& type = T::getEventName();
-            auto handler = new EventHandlerMember<T, A>(eventHandler, type, obj);
-            //addHandler(handler);
-            return addHandler(handler);
-        }
-        template <class T, class A, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        std::shared_ptr<EventHandlerBase*> subscribeHandler (meta::type_list_tuple<typename T::CallbackArgsList>  (A::*eventHandler)(T&), std::shared_ptr<A> obj) {
-            //T val;
-            const std::string& type = T::getEventName();
-            auto handler = new EventHandlerMember<T, A>(eventHandler, type, obj);
-            //addHandler(handler);
-            return addHandler(handler);
-        }
-        template <class T, class = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        void unsubscribeHandler (EventHandler<T>* eventHandler) {
-            std::string type = eventHandler->eventName;
-            if (handlerMap.count(type) != 0) {
-                handlerMap[type].erase(std::find(handlerMap[type].begin(), handlerMap[type].end(), eventHandler));
+        class EventFunctionHandler : public event::detail::EventHandler<T> {
+        private:
+            std::function<void(T&)> func;
+        public:
+            EventFunctionHandler (const std::function<void(T&)>& _func, EventScopeObserver observer) : event::detail::EventHandler<T>(observer), func{_func} {}
+
+            void handle (T& t) override {
+                func(t);
             }
         };
-        template <class T, typename = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        void raiseEvent (const T& t) {
-            // TODO: other forms of Event
-            if constexpr (T::DoDebugLog) {
-                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", T::getEventName());
-            }
-            std::vector<std::shared_ptr<EventHandlerBase*>>& vec = handlerMap[T::getEventName()];
-            vec.erase(std::remove_if(vec.begin(), vec.end(), [](const std::shared_ptr<EventHandlerBase*>& base){return (*base)->hasExpired<T>();}), vec.end());
-            //if (t.getEventType()->immediateEval) {
-                for (const auto& handler : vec) {
-                    (*handler)->handle(t);
+
+        template <typename T>
+        void event::detail::EventHandlerBase::_handle (T& t) {
+            static_cast<EventHandler<T>*>(this)->handle(t);
+        }
+
+        template <typename T>
+        bool event::detail::EventHandlerBase::_hasExpired () const {
+            return static_cast<const EventHandler<T>*>(this)->hasExpired();
+        }
+
+        class EventBus : public util::SmartHelper<EventBus> {
+        private:
+            util::Map<std::size_t, std::vector<std::unique_ptr<EventHandlerBase>>> handlerMap;
+
+
+            template <typename T>
+            void addHandler (std::unique_ptr<detail::EventHandlerBase> handler) {
+                std::size_t index = meta::type_index<std::remove_cvref_t<T>>();
+
+                if (!handlerMap.contains(index)) {
+                    handlerMap[index] = std::vector<std::unique_ptr<EventHandlerBase>>{};
                 }
-            //};
-            //delete t;
-        }
-        template <class T, typename F, typename = std::enable_if<std::is_base_of<Event<T>, T>::value>>
-        void raiseEvent (const T& t, F f) {
-            // TODO: other forms of Event
-            static_assert(meta::is_callable_list<T::CallbackArgs>(f), "Invalid callback function!");
-            if constexpr (T::DoDebugLog) {
-                logging::log(LEVEL_DEBUG, "Raised event \"{}\"", T::getEventName());
+                handlerMap[meta::type_index<std::remove_cvref_t<T>>()].emplace_back(std::move(handler));
             }
-            std::vector<std::shared_ptr<EventHandlerBase*>>& vec = handlerMap[T::getEventName()];
-            vec.erase(std::remove_if(vec.begin(), vec.end(), [](const std::shared_ptr<EventHandlerBase*>& base){return (*base)->hasExpired<T>();}));
-            //if (t.getEventType()->immediateEval) {
-            for (const auto& handler : vec) {
-                (*handler)->handle(t, f);
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void raiseEventInt (T& event) {
+                std::size_t eIndex = meta::type_index<std::remove_cvref_t<T>>();
+
+                if constexpr (T::DoDebugLog) {
+                    logging::log(LEVEL_DEBUG, "Raised event \"{}\"", T::getEventName());
+                }
+
+                if (!handlerMap.contains(eIndex)) {
+                    return;
+                }
+
+                std::vector<std::unique_ptr<event::detail::EventHandlerBase>>& handlerVec = handlerMap.at(eIndex);
+
+                handlerVec.erase(std::remove_if(handlerVec.begin(), handlerVec.end(), [] (const std::unique_ptr<event::detail::EventHandlerBase>& i) {
+                    return i->_hasExpired<T>();
+                }), handlerVec.end());
+
+                for (auto& i : handlerVec) {
+                    if (!i->_hasExpired<T>()) {
+                        i->_handle<T>(event);
+                    }
+                }
             }
-            //};
-            //delete t;
-        }
-    };
+
+        public:
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            [[nodiscard]] EventScope subscribe (std::function<void(T&)> func) {
+                EventScope scope = getScope();
+
+                addHandler<T>(std::make_unique<EventFunctionHandler<T>>(func, scope));
+
+                return scope;
+            }
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void subscribe (std::function<void(T&)> func, const EventScope& scope) {
+                addHandler<T>(std::make_unique<EventFunctionHandler<T>>(func, scope));
+            }
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void subscribeUnscoped (std::function<void(T&)> func) {
+                addHandler<T>(std::make_unique<EventFunctionHandler<T>>(func, EventScopeObserver()));
+            }
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            [[nodiscard]] EventScope subscribe (void (*func) (T&)) {
+                EventScope scope = getScope();
+
+                addHandler<T>(std::make_unique<EventFunctionHandler<T>>(func, scope));
+
+                return scope;
+            }
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void subscribe (void (*func) (T&), const EventScope& scope) {
+                addHandler<T>(std::make_unique<EventFunctionHandler<T>>(func, scope));
+            }
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void subscribeUnscoped (void (*func) (T&)) {
+                addHandler<T>(std::make_unique<EventFunctionHandler<T>>(func, EventScopeObserver()));
+            }
+
+            template <typename T, class O, std::enable_if_t<is_event<T>, bool> = true>
+            [[nodiscard]] EventScope subscribe (void (O::*func) (T&), O* obj) {
+                EventScope scope = getScope();
+
+                addHandler<T>(std::make_unique<EventMemberHandler<T, O>>(func, obj, scope));
+
+                return scope;
+            }
+
+            template <typename T, class O, std::enable_if_t<is_event<T>, bool> = true>
+            void subscribe (void (O::*func) (T&), O* obj, const EventScope& scope) {
+                addHandler<T>(std::make_unique<EventMemberHandler<T, O>>(func, obj, scope));
+            }
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void raise (T& event) {
+                raiseEventInt(event);
+            }
+
+            template <typename T, std::enable_if_t<is_event<T>, bool> = true>
+            void raise (T&& event) {
+                T eventInstance = event;
+                raiseEventInt(eventInstance);
+            }
+
+            [[nodiscard]] EventScope getScope () const {
+                EventScope scope;
+                scope.initScope();
+
+                return scope;
+            }
+        };
+    }
+
+    using EventBus = detail::EventBus;
    
 }

@@ -39,6 +39,7 @@ void game::initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObj
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());*/
 
     registerTiles(gameObject, graphics);
+    //addEventHandlers(gameObject, graphics, eventBus);
     logging::log(LEVEL_DEBUG, "Set texture ids!");
 
     //graphics.setupWindowCallbacks(gameObject.getEventBus());
@@ -50,12 +51,12 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
     graphics.addEventHandlers(eventBus);
     gameObject.addEventHandlers(eventBus);
 
-    eventBus->subscribeHandler(game::addEntities);
+    eventBus->subscribeUnscoped(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
-    eventBus->subscribeHandler(physics::onEntityCreation);
+    eventBus->subscribeUnscoped(physics::onEntityCreation);
     //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
-    eventBus->subscribeHandler(graphics::updateEntityRotation);
-    eventBus->subscribeHandler(physics::updateEntityHitboxRotation);
+    eventBus->subscribeUnscoped(graphics::updateEntityRotation);
+    eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
 
     graphics::addDebugEventHandlers(eventBus);
 }

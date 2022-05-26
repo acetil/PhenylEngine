@@ -44,6 +44,8 @@ namespace game::detail {
                 GameCamera camera;
                 GameInput gameInput;
 
+                event::EventScope eventScope;
+
                 component::EntityId deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
 
                 public:

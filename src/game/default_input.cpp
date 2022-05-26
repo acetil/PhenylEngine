@@ -25,5 +25,5 @@ void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::Share
     gameInput.addInputEvent(shootKey, event::PlayerShootChangeEvent(true), event::PlayerShootChangeEvent(false));
 
     gameInput.addInputEvent(debugKey, game::EmptyEventAction(), util::DebugConsoleEvent{eventBus});
-    eventBus->subscribeHandler(util::doDebugConsole);
+    eventBus->subscribeUnscoped(util::doDebugConsole);
 }

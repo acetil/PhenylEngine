@@ -4,6 +4,7 @@
 #include "engine/entity/controller/entity_controller.h"
 #include "common/events/cursor_position_change.h"
 #include "common/events/player_shoot_change.h"
+#include "event/event_scope.h"
 
 namespace game {
     class PlayerController : public EntityController {
@@ -14,6 +15,7 @@ namespace game {
         bool doShoot = false;
         bool hasShot = false;
         int texId = 0;
+        event::EventScope eventScope;
     public:
         PlayerController () {
             deltaXForce = 0;
@@ -26,5 +28,10 @@ namespace game {
         void updateDoShoot (event::PlayerShootChangeEvent& event);
         int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const override;
         void setTextureIds (graphics::TextureAtlas& atlas) override;
+
+        event::EventScope& getEventScope () {
+            // TODO remove
+            return eventScope;
+        }
     };
 }

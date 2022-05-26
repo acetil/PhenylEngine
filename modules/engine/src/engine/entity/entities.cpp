@@ -48,9 +48,14 @@ void game::addEntities(event::EntityRegisterEvent& event) {
 
     auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject.getController("test_entity"));
 
-    event.gameObject.getEventBus()->subscribeHandler(&game::PlayerController::updateMovement, playerController);
-    event.gameObject.getEventBus()->subscribeHandler(&game::PlayerController::updateCursorPos, playerController);
-    event.gameObject.getEventBus()->subscribeHandler(&game::PlayerController::updateDoShoot, playerController);
+    playerController->getEventScope() = event.gameObject.getEventBus()->getScope();
+
+    event.gameObject.getEventBus()->subscribe(&game::PlayerController::updateMovement, playerController.get(),
+                                              playerController->getEventScope());
+    event.gameObject.getEventBus()->subscribe(&game::PlayerController::updateCursorPos, playerController.get(),
+                                              playerController->getEventScope());
+    event.gameObject.getEventBus()->subscribe(&game::PlayerController::updateDoShoot, playerController.get(),
+                                              playerController->getEventScope());
 
     //event.gameObject->registerEntity("test_entity", entityTest);
     //event.gameObject->registerEntity("bullet", entityBullet);

@@ -89,7 +89,7 @@ engine::detail::Engine::Engine () {
     gameObj.setEntityComponentManager(componentManager);
 
     logger::log(LEVEL_INFO, "GAME", "Starting init of entities!");
-    eventBus->raiseEvent(event::EntityRegisterEvent(gameObj));
+    eventBus->raise(event::EntityRegisterEvent(gameObj));
     logger::log(LEVEL_DEBUG, "GAME", "Finished entity init!");
 
     // TODO: move all to user
@@ -128,12 +128,12 @@ void detail::Engine::addEventHandlers () {
     graphicsHolder.getGraphics().addEventHandlers(eventBus);
     gameObjHolder.getGameObject().addEventHandlers(eventBus);
 
-    eventBus->subscribeHandler(game::addEntities);
+    eventBus->subscribeUnscoped(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
-    eventBus->subscribeHandler(physics::onEntityCreation);
+    eventBus->subscribeUnscoped(physics::onEntityCreation);
     //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
-    eventBus->subscribeHandler(graphics::updateEntityRotation);
-    eventBus->subscribeHandler(physics::updateEntityHitboxRotation);
+    eventBus->subscribeUnscoped(graphics::updateEntityRotation);
+    eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
 
     graphics::addDebugEventHandlers(eventBus);
 

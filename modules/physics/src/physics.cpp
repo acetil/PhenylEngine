@@ -156,10 +156,14 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
                             projectVec(dVec1, componentManager->getObjectData<component::EntityMainComponent>(y1).orElse(component::EntityMainComponent()).vel);
                 }
                 if (comp1.layers & comp2.eventLayer) {
-                    eventBus->raiseEvent(event::EntityCollisionEvent(y1, x1, comp1.layers & comp2.eventLayer, componentManager, eventBus, gameView));
+                    eventBus->raise(
+                            event::EntityCollisionEvent(y1, x1, comp1.layers & comp2.eventLayer, componentManager,
+                                                        eventBus, gameView));
                 }
                 if (comp2.layers & comp1.eventLayer) {
-                    eventBus->raiseEvent(event::EntityCollisionEvent(x1, y1, comp2.layers & comp1.eventLayer, componentManager, eventBus, gameView));
+                    eventBus->raise(
+                            event::EntityCollisionEvent(x1, y1, comp2.layers & comp1.eventLayer, componentManager,
+                                                        eventBus, gameView));
                 }
             });
         });

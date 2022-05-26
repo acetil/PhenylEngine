@@ -55,9 +55,10 @@ component::EntityId detail::GameObject::createNewEntityInstance (const std::stri
         auto entityView = entityComponentManager->getEntityView(entityId);
         auto gameView = view::GameView(this);
         entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
-        eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
-                                                        entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(nullptr), entityId,
-                             entityView, gameView));
+        eventBus->raise(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
+                                                   entityComponentManager->getObjectData<AbstractEntity*>(
+                                                           entityId).orElse(nullptr), entityId,
+                                                   entityView, gameView));
         return entityId;
     }
 }
@@ -79,9 +80,10 @@ component::EntityId detail::GameObject::deserialiseEntity (const std::string& ty
     entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &serialisedObj](std::shared_ptr<EntityController>& controller){
         controller->initEntity(entityView, gameView, serialisedObj["data"]);
     });
-    eventBus->raiseEvent(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
-                                                    entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(nullptr), entityId,
-                                                    entityView, gameView));
+    eventBus->raise(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
+                                               entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(
+                                                       nullptr), entityId,
+                                               entityView, gameView));
     return entityId;
 }
 /*AbstractEntity* game::GameObject::getEntityInstance (int entityId) {
@@ -191,7 +193,7 @@ void detail::GameObject::loadMap (Map::SharedPtr map) {
         deserialiseEntity(i.entityType, i.x, i.y, i.rotation, i.data);
     }
 
-    eventBus->raiseEvent(event::MapLoadEvent(gameMap));
+    eventBus->raise(event::MapLoadEvent(gameMap));
 }
 
 void detail::GameObject::reloadMap () {
@@ -239,9 +241,10 @@ void detail::GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
 void detail::GameObject::addEventHandlers (event::EventBus::SharedPtr _eventBus) {
     eventBus = std::move(_eventBus);
     gameInput.setEventBus(eventBus);
-    eventBus->subscribeHandler(&detail::GameObject::mapReloadRequest, shared_from_this());
-    eventBus->subscribeHandler(&detail::GameObject::mapDumpRequest, shared_from_this());
-    eventBus->subscribeHandler(&detail::GameObject::mapLoadRequest, shared_from_this());
+    eventScope = eventBus->getScope();
+    eventBus->subscribe(&detail::GameObject::mapReloadRequest, this, eventScope);
+    eventBus->subscribe(&detail::GameObject::mapDumpRequest, this, eventScope);
+    eventBus->subscribe(&detail::GameObject::mapLoadRequest, this, eventScope);
 }
 
 GameInput& detail::GameObject::getInput () {

@@ -4,10 +4,10 @@
 #include "util/meta.h"
 
 namespace event {
-    template<typename T, bool _doDebugLog = true, typename ...Args>
+    template<typename T, bool _doDebugLog = true>
     class Event {
     public:
-        using CallbackArgsList = meta::type_list_wrapper<Args...>;
+        //using CallbackArgsList = meta::type_list_wrapper<Args...>;
 
         static constexpr bool DoDebugLog = _doDebugLog;
 

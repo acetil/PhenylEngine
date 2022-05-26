@@ -67,7 +67,7 @@ namespace component {
 
         template <typename T>
         bool hasComp () {
-            auto typeId = meta::type_index<T>::val();
+            auto typeId = meta::type_index<T>();
 
             return compMap.contains(typeId);
         }
@@ -84,7 +84,7 @@ namespace component {
 
         template <typename T>
         void addComp () {
-            auto typeId = meta::type_index<T>::val();
+            auto typeId = meta::type_index<T>();
 
             auto pos = components.size();
 
@@ -95,7 +95,7 @@ namespace component {
 
         template <typename T>
         T* getOrCreate () {
-            auto typeId = meta::type_index<T>::val();
+            auto typeId = meta::type_index<T>();
             if (!compMap.contains(typeId)) {
                 addComp<T>();
             }
@@ -175,7 +175,7 @@ namespace component {
 
         template <typename T>
         util::Optional<T*> getComponent () {
-            auto typeId = meta::type_index<T>::val();
+            auto typeId = meta::type_index<T>();
             if (compMap.contains(typeId)) {
                 return util::Optional<T*>(reinterpret_cast<T*>(std::get<0>(components[compMap[typeId]]).get()));
             } else {

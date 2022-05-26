@@ -42,5 +42,5 @@ void handleProfilerChange(const event::ProfilerChangeEvent& event) {
 }
 
 void graphics::addDebugEventHandlers (const event::EventBus::SharedPtr& bus) {
-    bus->subscribeHandler(handleProfilerChange);
+    bus->subscribeUnscoped(handleProfilerChange);
 }

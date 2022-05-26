@@ -3,6 +3,7 @@
 #include "engine/map/map.h"
 #include "render_layer.h"
 #include "common/events/map_load.h"
+#include "event/event_scope.h"
 #include "graphics/pipeline/pipeline.h"
 
 namespace graphics {
@@ -22,6 +23,7 @@ namespace graphics {
         game::Map::SharedPtr map;
         ShaderProgramNew program;
         TextureAtlas& atlas;
+        event::EventScope eventScope;
 
         std::unique_ptr<MapPipeline> mapPipeline;
     public:
@@ -47,6 +49,8 @@ namespace graphics {
         void attachMap (game::Map::SharedPtr map);
 
         void onMapLoad (event::MapLoadEvent& event);
+
+        event::EventScope& getEventScope ();
     };
 
 };

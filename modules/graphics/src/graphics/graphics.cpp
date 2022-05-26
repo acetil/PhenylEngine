@@ -34,7 +34,7 @@ void graphics::addMapRenderLayer (PhenylGraphics graphics, event::EventBus::Shar
     graphics.getTextureAtlas("sprite").ifPresent([&graphics, &bus](auto& atlas) {
         auto layer = std::make_shared<MapRenderLayer>(graphics.getRenderer(), atlas);
         graphics.getRenderLayer()->addRenderLayer(layer);
-        bus->subscribeHandler(&MapRenderLayer::onMapLoad, layer);
+        layer->getEventScope() = bus->subscribe(&MapRenderLayer::onMapLoad, layer.get());
     });
 }
 
@@ -147,11 +147,12 @@ void detail::Graphics::deleteWindowCallbacks () {
 
 void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     //eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, );
-    eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, this->shared_from_this());
-    eventBus->subscribeHandler(&graphics::detail::Graphics::onMousePosChange, this->shared_from_this());
-    eventBus->subscribeHandler(&graphics::detail::Graphics::onMouseDown, this->shared_from_this());
-    eventBus->subscribeHandler(&graphics::detail::Graphics::onThemeChange, this->shared_from_this());
-    eventBus->subscribeHandler(&graphics::detail::Graphics::onThemeReload, this->shared_from_this());
+    eventScope = eventBus->getScope();
+    eventBus->subscribe(&graphics::detail::Graphics::onEntityCreation, this, eventScope);
+    eventBus->subscribe(&graphics::detail::Graphics::onMousePosChange, this, eventScope);
+    eventBus->subscribe(&graphics::detail::Graphics::onMouseDown, this, eventScope);
+    eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
+    eventBus->subscribe(&graphics::detail::Graphics::onThemeReload, this, eventScope);
 
     setupWindowCallbacks(eventBus);
 }

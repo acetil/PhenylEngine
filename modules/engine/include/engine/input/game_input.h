@@ -19,7 +19,7 @@ namespace game {
         public:
             EventActionRaiser (T _event) : event{_event} {};
             void raiseEvent (const event::EventBus::SharedPtr& eventBus) {
-                eventBus->raiseEvent(event);
+                eventBus->raise(event);
             }
         };
 

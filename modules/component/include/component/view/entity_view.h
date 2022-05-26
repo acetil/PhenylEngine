@@ -19,7 +19,7 @@ namespace component::view {
 
         template <typename T, typename ...Ts>
         bool allValid () {
-            if (bannedTypes.contains(meta::type_index<T>::val())) {
+            if (bannedTypes.contains(meta::type_index<T>())) {
                 return false;
             }
 
@@ -57,7 +57,7 @@ namespace component::view {
 
         template <typename T>
         void banType () {
-            bannedTypes.insert(meta::type_index<T>::val());
+            bannedTypes.insert(meta::type_index<T>());
         }
 
         component::EntityId getId () {
@@ -66,7 +66,7 @@ namespace component::view {
 
         template <typename T>
         util::Optional<T&> getComponent () {
-            if (bannedTypes.contains(meta::type_index<T>::val())) {
+            if (bannedTypes.contains(meta::type_index<T>())) {
 
             }
             return compManager->getObjectData<T>(entityId);

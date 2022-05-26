@@ -36,7 +36,7 @@ static void handleProfiler (const event::EventBus::SharedPtr& bus, const std::ve
         if (args.size() == 1 || (args[1] != "on" && args[1] != "off")) {
             logging::log(LEVEL_WARNING, R"(Unknown or missing argument after "display". Should be either "on" or "off")");
         } else {
-            bus->raiseEvent(event::ProfilerChangeEvent(args[1] == "on"));
+            bus->raise(event::ProfilerChangeEvent(args[1] == "on"));
         }
     } else {
         logging::log(LEVEL_WARNING, "Unknown argument: \"{}\"", args[0]);
@@ -47,12 +47,12 @@ static void handleThemes (const event::EventBus::SharedPtr& bus, std::vector<std
     if (args.empty()) {
         logging::log(LEVEL_WARNING, "Missing argument after \"theme\"!");
     } else if (args[0] == "reload") {
-        bus->raiseEvent(event::ReloadThemeEvent{});
+        bus->raise(event::ReloadThemeEvent{});
     } else if (args[0] == "load") {
         if (args.size() != 2) {
             logging::log(LEVEL_WARNING, R"(Unknown argument after "theme".)");
         } else {
-            bus->raiseEvent(event::ChangeThemeEvent{args[1]});
+            bus->raise(event::ChangeThemeEvent{args[1]});
         }
     }
 }
@@ -71,11 +71,11 @@ static void doDebugConsole (event::EventBus::SharedPtr bus) {
         handleProfiler(bus, args);
     } else if (command == "map"){
         if (args.size() == 1 && args[0] == "reload") {
-            bus->raiseEvent(event::ReloadMapEvent());
+            bus->raise(event::ReloadMapEvent());
         } else if (args.size() == 2 && args[0] == "dump") {
-            bus->raiseEvent(event::DumpMapEvent(args[1]));
+            bus->raise(event::DumpMapEvent(args[1]));
         } else if (args.size() == 2 && args[0] == "load") {
-          bus->raiseEvent(event::MapLoadRequestEvent(args[1]));
+            bus->raise(event::MapLoadRequestEvent(args[1]));
         } else {
             logging::log(LEVEL_WARNING, "Unknown arguments for map command: \"{}\"", util::joinStrings(" ", args));
         }

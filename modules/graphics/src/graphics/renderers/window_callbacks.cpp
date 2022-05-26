@@ -14,7 +14,7 @@ void graphics::onMousePosChange (WindowCallbackContext* ctx, double windowX, dou
     //auto invMat = glm::inverse(cam.getCamMatrix());
     //glm::vec4 worldPos4 = invMat * glm::vec4(realPos, 0, 1);
     if (!ctx->eventBus.expired()) {
-        ctx->eventBus.lock()->raiseEvent(event::CursorPosChangeEvent(glm::vec2((float) windowX, (float) windowY),
-                                                                     glm::vec2(realPos.x, realPos.y)));
+        ctx->eventBus.lock()->raise(event::CursorPosChangeEvent(glm::vec2((float) windowX, (float) windowY),
+                                                                glm::vec2(realPos.x, realPos.y)));
     }
 }

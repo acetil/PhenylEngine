@@ -401,13 +401,18 @@ namespace meta {
     }
 
     template <typename T>
-    struct type_index {
+    struct type_index_impl {
     public:
         static std::size_t val () {
             static std::size_t index = detail::curr_type_index::getNext();
             return index;
         }
     };
+
+    template <typename T>
+    std::size_t type_index () {
+        return type_index_impl<T>::val();
+    }
 
     template <int ...>
     struct meta_seq {};
