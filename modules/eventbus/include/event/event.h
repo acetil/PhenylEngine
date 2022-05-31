@@ -2,6 +2,7 @@
 
 #include <string>
 #include "util/meta.h"
+#include "forward.h"
 
 namespace event {
     template<typename T, bool _doDebugLog = true>

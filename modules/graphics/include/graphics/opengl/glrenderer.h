@@ -9,6 +9,7 @@
 
 #include "graphics/renderers/renderer.h"
 
+
 namespace graphics {
     class GLFrameBuffer : public FrameBuffer {
     public:
@@ -19,6 +20,9 @@ namespace graphics {
 
     class GLFWKeyInput;
     class GLFWMouseInput;
+    class GLFWInput;
+
+    class GLWindowCallbackCtx;
 
     class GLRenderer : public Renderer {
     private:
@@ -29,8 +33,12 @@ namespace graphics {
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
 
-        std::shared_ptr<GLFWKeyInput> keyInput;
-        std::shared_ptr<GLFWMouseInput> mouseInput;
+        std::shared_ptr<GLFWInput> keyInput;
+        std::shared_ptr<GLFWInput> mouseInput;
+
+        std::unique_ptr<GLWindowCallbackCtx> windowCallbackCtx;
+
+        glm::vec2 screenSize;
 
     protected:
         std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
@@ -71,6 +79,10 @@ namespace graphics {
         void bindTexture (unsigned int textureId) override;
 
         void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
+        void setupCallbacks(const std::shared_ptr<event::EventBus> &eventBus) override;
+
+        glm::vec2 getScreenSize() override;
+        void setScreenSize (glm::vec2 screenSize);
 
         void invalidateWindowCallbacks () override;
 
@@ -79,5 +91,8 @@ namespace graphics {
         std::shared_ptr<common::InputSource> getMouseInput() override;
 
         std::vector<std::shared_ptr<common::InputSource>> getInputSources () override;
+
+        void onKeyChange (int key, int scancode, int action, int mods);
+        void onMouseButtonChange (int button, int action, int mods);
     };
 }

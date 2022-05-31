@@ -1,4 +1,4 @@
-add_library(eventbus INTERFACE include/event/event.h include/event/event_scope.h)
+add_library(eventbus INTERFACE include/event/event.h include/event/event_scope.h include/event/forward.h)
 
 #set_property(TARGET util PROPERTY CXX_STANDARD 20)
 

@@ -20,12 +20,13 @@ void detail::Graphics::addEntityLayer (component::EntityComponentManager::Shared
     renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, std::move(compManager)));
 }
 
-void detail::Graphics::setupWindowCallbacks (event::EventBus::SharedPtr bus) {
-    auto ctx = std::make_unique<WindowCallbackContext>();
-    ctx->graphics = this;
-    ctx->eventBus = std::move(bus);
-    ctx->renderer = renderer;
-    renderer->setupWindowCallbacks(std::move(ctx));
+void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
+    //auto ctx = std::make_unique<WindowCallbackContext>();
+    //ctx->graphics = this;
+    //ctx->eventBus = std::move(bus);
+    //ctx->renderer = renderer;
+    //renderer->setupWindowCallbacks(std::move(ctx));
+    renderer->setupCallbacks(bus);
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
 }
 

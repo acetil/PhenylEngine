@@ -18,5 +18,7 @@ namespace common {
         void consume (const std::string& inputStr) {
             consume(getInputNum(inputStr));
         }
+
+        virtual std::size_t getStateNum (long inputNum) = 0;
     };
 }

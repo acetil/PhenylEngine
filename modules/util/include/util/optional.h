@@ -4,7 +4,15 @@
 #include <exception>
 
 #ifndef NDEBUG
+// Fix for clangd incorrectly warning about source_location
+#ifndef PHENYL_CLANGD
 #include <source_location>
+#else
+#include <experimental/source_location>
+namespace std {
+    using source_location = std::experimental::source_location;
+}
+#endif
 #include "logging/logging.h"
 #endif
 

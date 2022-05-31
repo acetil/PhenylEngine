@@ -18,9 +18,15 @@ GLRenderer::GLRenderer (GLFWwindow* window) {
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
 
-    keyInput = std::make_shared<GLFWKeyInput>(window);
-    mouseInput = std::make_shared<GLFWMouseInput>(window);
+    //keyInput = std::make_shared<GLFWKeyInput>(window);
+    keyInput = std::make_shared<GLFWKeyInput2>();
+    //mouseInput = std::make_shared<GLFWMouseInput>(window);
+    mouseInput = std::make_shared<GLFWMouseInput2>();
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    screenSize = {width, height};
 }
 
 double GLRenderer::getCurrentTime () {
@@ -33,8 +39,8 @@ bool GLRenderer::shouldClose () {
 
 void GLRenderer::pollEvents () {
     glfwPollEvents();
-    keyInput->update();
-    mouseInput->update();
+    //keyInput->update();
+    //mouseInput->update();
 }
 
 void GLRenderer::clearWindow () {
@@ -215,6 +221,27 @@ std::shared_ptr<common::InputSource> GLRenderer::getMouseInput () {
 
 std::vector<std::shared_ptr<common::InputSource>> GLRenderer::getInputSources () {
     return {mouseInput, keyInput};
+}
+
+void GLRenderer::setupCallbacks (const std::shared_ptr<event::EventBus>& eventBus) {
+    windowCallbackCtx = std::make_unique<GLWindowCallbackCtx>(eventBus, this);
+    setupGLWindowCallbacks(window, windowCallbackCtx.get());
+}
+
+glm::vec2 GLRenderer::getScreenSize () {
+    return screenSize;
+}
+
+void GLRenderer::setScreenSize (glm::vec2 _screenSize) {
+    screenSize = _screenSize;
+}
+
+void GLRenderer::onKeyChange (int key, int scancode, int action, int mods) {
+    keyInput->onButtonChange(scancode, action, mods);
+}
+
+void GLRenderer::onMouseButtonChange (int button, int action, int mods) {
+    mouseInput->onButtonChange(button, action, mods);
 }
 
 

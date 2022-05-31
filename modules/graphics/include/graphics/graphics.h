@@ -107,7 +107,7 @@ namespace graphics {
                 glyphAtlas = std::move(atlas);
                 renderLayer->addTex(glyphAtlas.getTex());
             }*/
-            void setupWindowCallbacks (event::EventBus::SharedPtr bus);
+            void setupWindowCallbacks (const event::EventBus::SharedPtr& bus);
 
             void deleteWindowCallbacks ();
 

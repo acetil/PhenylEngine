@@ -1,11 +1,11 @@
 #pragma once
 
 #include "common/scope.h"
+#include "forward.h"
 
 namespace event {
     namespace detail {
         class EventScopeObserver;
-        class EventBus;
     }
 
     class EventScope {

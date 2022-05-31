@@ -7,6 +7,7 @@
 #include "graphics/shaders/shader_new.h"
 #include "graphics/pipeline/pipeline_stage.h"
 #include "common/input/input_source.h"
+#include "event/forward.h"
 
 #include "util/optional.h"
 
@@ -47,6 +48,9 @@ namespace graphics {
         virtual void bindTexture (unsigned int textureId) = 0;
 
         virtual void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) = 0;
+        virtual void setupCallbacks (const std::shared_ptr<event::EventBus>& eventBus) = 0;
+
+        virtual glm::vec2 getScreenSize () = 0;
 
         virtual void invalidateWindowCallbacks () = 0;
 

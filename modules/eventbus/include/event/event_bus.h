@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "forward.h"
 #include "logging/logging.h"
 #include "util/meta.h"
 #include "util/map.h"
@@ -196,7 +197,5 @@ namespace event {
             }
         };
     }
-
-    using EventBus = detail::EventBus;
    
 }
