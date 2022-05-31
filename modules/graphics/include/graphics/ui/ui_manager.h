@@ -10,6 +10,8 @@
 #include "graphics/maths_headers.h"
 #include "graphics/ui/components/ui_component.h"
 #include "graphics/ui/themes/forward.h"
+#include "common/input/forward.h"
+#include "common/input/remappable_proxy_input.h"
 
 namespace graphics {
 //#ifndef FONT_H
@@ -49,6 +51,10 @@ class Font;
         util::Map<std::string, std::unique_ptr<ui::Theme>> themes;
         util::Map<std::string, std::string> themeLocations;
         std::string currentTheme;
+
+        //std::vector<std::shared_ptr<common::ProxySource>> inputSources;
+        common::RemappableProxyInput uiInput;
+        common::InputAction selectAction;
     public:
         UIManager(Renderer* renderer, FontManager& _fontManager);
         ~UIManager();
@@ -70,5 +76,8 @@ class Font;
 
         void pushOffset (glm::vec2 relOffset);
         void popOffset ();
+        void addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources);
+        void setupInputActions ();
+        void updateUI ();
     };
 }

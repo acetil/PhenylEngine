@@ -107,6 +107,10 @@ void PhenylGraphics::addEventHandlers (const event::EventBus::SharedPtr& eventBu
     getGraphics()->addEventHandlers(eventBus);
 }
 
+void PhenylGraphics::updateUI () {
+    getGraphics()->updateUI();
+}
+
 
 
 

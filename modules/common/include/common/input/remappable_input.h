@@ -35,12 +35,13 @@ namespace common {
     };
 
     class RemappableInput {
-    private:
+    protected:
         std::vector<std::shared_ptr<InputSource>> inputSources;
         util::Map<std::string, InputAction> actionMap;
         std::vector<detail::SourceAction> actions;
 
         detail::SourceAction getSourceAction (const std::string& inputName);
+        uint32_t getActionIndex (InputAction action);
 
     public:
         void addInputSource (const std::shared_ptr<InputSource>& source);

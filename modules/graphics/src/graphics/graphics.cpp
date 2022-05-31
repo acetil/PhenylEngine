@@ -13,6 +13,7 @@
 #include "graphics/font/font_manager.h"
 #include "graphics/renderlayer/map_layer.h"
 #include "graphics/phenyl_graphics.h"
+#include "common/input/proxy_source.h"
 
 using namespace graphics;
 
@@ -46,6 +47,15 @@ detail::Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManage
     this->lastTime = renderer->getCurrentTime();
 
     this->renderLayer = std::make_shared<GraphicsRenderLayer>(renderer);
+
+    auto rendererSources = renderer->getInputSources();
+
+    for (auto& i : rendererSources) {
+        inputSources.emplace_back(std::make_shared<common::ProxySource>(i));
+    }
+
+    uiManager.addProxyInputSources(inputSources);
+    uiManager.setupInputActions();
 }
 
 double detail::Graphics::getDeltaTime() const {
@@ -151,7 +161,6 @@ void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& event
     eventScope = eventBus->getScope();
     eventBus->subscribe(&graphics::detail::Graphics::onEntityCreation, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onMousePosChange, this, eventScope);
-    eventBus->subscribe(&graphics::detail::Graphics::onMouseDown, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeReload, this, eventScope);
 
@@ -162,12 +171,13 @@ void detail::Graphics::onMousePosChange (event::CursorPosChangeEvent& event) {
     uiManager.setMousePos(event.windowPos);
 }
 
-void detail::Graphics::onMouseDown (event::PlayerShootChangeEvent& event) {
-    uiManager.setMouseDown(event.doShoot);
-}
-
 std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSources () {
-    return renderer->getInputSources();
+    std::vector<std::shared_ptr<common::InputSource>> proxies;
+    for (auto& i : inputSources) {
+        proxies.emplace_back(i->getProxy());
+    }
+
+    return proxies;
 }
 
 void detail::Graphics::onThemeReload (event::ReloadThemeEvent& event) {
@@ -176,4 +186,12 @@ void detail::Graphics::onThemeReload (event::ReloadThemeEvent& event) {
 
 void detail::Graphics::onThemeChange (event::ChangeThemeEvent& event) {
     uiManager.setCurrentTheme(event.themeName);
+}
+
+detail::Graphics::~Graphics () {
+    delete renderer;
+}
+
+void detail::Graphics::updateUI () {
+    uiManager.updateUI();
 }

@@ -170,7 +170,9 @@ void UIFlexBoxNode::onMousePosChange (glm::vec2 oldMousePos) {
 
 bool UIFlexBoxNode::onMousePress () {
     for (auto& i : items) {
-        i.node.onMousePress();
+        if (i.node.onMousePress()) {
+            return true;
+        }
     }
     return false;
 }

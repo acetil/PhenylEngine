@@ -24,7 +24,7 @@
 #include "common/events/theme_change.h"
 #include "common/events/debug/reload_theme.h"
 #include "event/event.h"
-
+#include "common/input/forward.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
 
@@ -67,6 +67,7 @@ namespace graphics {
 
             std::unordered_map<std::string, TextureAtlas> atlases;
 
+            std::vector<std::shared_ptr<common::ProxySource>> inputSources;
 
             Camera camera;
 
@@ -76,9 +77,7 @@ namespace graphics {
 
         public:
             explicit Graphics (Renderer* renderer, FontManager& manager);
-            ~Graphics () {
-                delete renderer;
-            }
+            ~Graphics ();
             bool shouldClose ();
             void pollEvents ();
             void render ();
@@ -95,7 +94,6 @@ namespace graphics {
             void addEntityLayer (component::EntityComponentManager::SharedPtr compManager);
             void onEntityCreation (event::EntityCreationEvent& event);
             void onMousePosChange (event::CursorPosChangeEvent& event);
-            void onMouseDown (event::PlayerShootChangeEvent& event); // TODO change
 
             void onThemeReload (event::ReloadThemeEvent& event);
             void onThemeChange (event::ChangeThemeEvent& event);
@@ -112,6 +110,7 @@ namespace graphics {
             void deleteWindowCallbacks ();
 
             UIManager& getUIManager ();
+            void updateUI ();
 
             void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();

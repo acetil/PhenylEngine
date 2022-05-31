@@ -155,5 +155,29 @@ void UIManager::reloadCurrentTheme () {
     }
 }
 
+void UIManager::addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources) {
+    for (const auto& i : proxySources) {
+        uiInput.addInputSource(i);
+    }
+}
+
+void UIManager::setupInputActions () {
+    selectAction = uiInput.addInputMapping("ui_select", "mouse_left");
+}
+
+void UIManager::updateUI () {
+    bool newMouse = uiInput.isActive(selectAction);
+    if (newMouse != mouseDown) {
+        if (newMouse) {
+            if (uiRoot->onMousePress()) {
+                uiInput.consumeProxyInput(selectAction);
+            }
+        } else {
+            uiRoot->onMouseRelease();
+        }
+    }
+    mouseDown = newMouse;
+}
+
 UIManager::~UIManager () = default;
 

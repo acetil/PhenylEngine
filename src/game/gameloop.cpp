@@ -81,6 +81,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
         deltaPhysicsFrame += deltaTime;
         //timeSinceFpsUpdate += deltaTime;
         //keyInput->handleKeyPresses();
+        graphics.updateUI();
         gameInput.poll();
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");

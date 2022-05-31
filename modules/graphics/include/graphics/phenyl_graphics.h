@@ -59,6 +59,7 @@ namespace graphics {
         }
 
         void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
+        void updateUI ();
     };
 
     class PhenylGraphicsHolder {

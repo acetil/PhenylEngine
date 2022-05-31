@@ -81,3 +81,7 @@ bool RemappableInput::isActive (const InputAction& action) {
 
     return inputSources.at(sourceAction.sourceIndex)->isDown(sourceAction.actionIndex);
 }
+
+uint32_t RemappableInput::getActionIndex (InputAction action) {
+    return action.actionIndex;
+}
