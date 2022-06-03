@@ -8,6 +8,9 @@
 
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/map_layer.h"
+#include "graphics/ui/nodes/ui_button.h"
+#include "graphics/ui/nodes/ui_flexbox.h"
+#include "graphics/ui/nodes/ui_label.h"
 #include "graphics/ui/components/ui_button.h"
 #include "graphics/ui/components/ui_flexbox.h"
 #include "graphics/ui/components/ui_label.h"
@@ -52,22 +55,27 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)
     logging::log(LEVEL_DEBUG, "Starting loop");
 
-    auto button = std::make_shared<graphics::ui::UIButtonNode>("button");
-    auto button2 = std::make_shared<graphics::ui::UIButtonNode>("button2");
-    auto button3 = std::make_shared<graphics::ui::UIButtonNode>("button3");
-    auto flexBox = std::make_shared<graphics::ui::UIFlexBoxNode>("flex_box");
+    auto buttonC = graphics::ui::UIButton("button");
+    auto buttonC2 = graphics::ui::UIButton("button2");
+    auto buttonC3 = graphics::ui::UIButton("button3");
+    auto flexBoxC = graphics::ui::UIFlexbox("flex_box");
 
-    auto labelNode = std::make_shared<graphics::ui::UILabelNode>("label");
-    labelNode->setDebug(false);
-    labelNode->setText("Hello World!");
+    auto label = graphics::ui::UILabel("label");
+    label.text = "Hello World!";
+    logging::log(LEVEL_DEBUG, "Component label text: {}", (std::string)label.text);
 
-    flexBox->addComponent(button);
-    flexBox->addComponent(button2);
-    flexBox->addComponent(labelNode);
-    flexBox->addComponent(button3);
+    flexBoxC.add(buttonC.detach());
+    flexBoxC.add(buttonC2.detach());
+    flexBoxC.add(label);
+    flexBoxC.add(buttonC3.detach());
 
-    //uiManager.addUINode(button, {100, 100});
-    uiManager.addUINode(flexBox, {0, 100});
+    auto button4 = graphics::ui::UIButton("button");
+
+    int numPresses = 0;
+    bool isButtonDown = false;
+
+    uiManager.addUIComp(flexBoxC.detach(), {0, 100});
+    uiManager.addUIComp(button4, {500, 300});
     uiManager.addTheme("resources/themes/default_theme.json");
     uiManager.addTheme("resources/themes/alt_theme.json");
     uiManager.setCurrentTheme("default_theme");
@@ -76,7 +84,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     while (!graphics.shouldClose()) {
         util::startProfileFrame();
-        flexBox->setAxes(graphics::ui::Axis::DOWN, graphics::ui::Axis::RIGHT);
+        flexBoxC.setAxes(graphics::ui::Axis::DOWN, graphics::ui::Axis::RIGHT);
         deltaTime = (float) graphics.getDeltaTime();
         deltaPhysicsFrame += deltaTime;
         //timeSinceFpsUpdate += deltaTime;
@@ -107,6 +115,17 @@ int game::gameloop (engine::PhenylEngine& engine) {
         graphics::renderDebugUi(gameObject, uiManager, deltaTime);
 
         //uiManager.renderRect({100, 200}, {50, 200}, {0.0f, 0.0f, 1.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, 8, 2);
+
+        if (button4 && !isButtonDown) {
+            logging::log(LEVEL_INFO, "Button down, changing text!");
+            isButtonDown = true;
+            numPresses++;
+            label.text = "Pressed " + std::to_string(numPresses) + " times!";
+            //button4.detachNode();
+            //button4 = graphics::ui::UIButton("button");
+        } else if (!button4 && isButtonDown) {
+            isButtonDown = false;
+        }
 
         uiManager.renderUI();
         graphics.render();

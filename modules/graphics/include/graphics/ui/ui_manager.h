@@ -8,6 +8,7 @@
 #include "graphics/font/font_manager.h"
 #include "graphics/font/font.h"
 #include "graphics/maths_headers.h"
+#include "graphics/ui/nodes/ui_node.h"
 #include "graphics/ui/components/ui_component.h"
 #include "graphics/ui/themes/forward.h"
 #include "common/input/forward.h"
@@ -70,6 +71,10 @@ class Font;
         bool setMouseDown (bool mouseDown);
 
         void addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos);
+        template <typename T>
+        void addUIComp (ui::UIComponent<T>& component, glm::vec2 pos) {
+            addUINode(component.transferNode(), pos);
+        }
         void addTheme (const std::string& themePath);
         void setCurrentTheme (const std::string& themeName);
         void reloadCurrentTheme ();

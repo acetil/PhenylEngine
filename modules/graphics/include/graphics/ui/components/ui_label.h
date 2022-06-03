@@ -1,31 +1,26 @@
 #pragma once
 
-#include <utility>
-
 #include "ui_component.h"
-#include "graphics/font/rendered_text.h"
+#include "graphics/ui/nodes/ui_label.h"
+#include "util/callback_member.h"
 
 namespace graphics::ui {
-    class UILabelNode : public UIComponentNode {
+    class UILabel : public UIComponent<UILabelNode> {
     private:
-        std::string text;
-        std::string font = "noto-serif";
-        int textSize = 12;
-        glm::vec4 colour = {1.0f, 1.0f, 1.0f, 1.0f};
-        RenderedText renderedText{0};
-        bool doTextRender = false;
-        bool doDebugRender = false;
+        void setText (std::string&& newText);
+        const std::string& getText ();
+
     public:
-        explicit UILabelNode (const std::string& themeClass) : UIComponentNode(themeClass) {}
-        void render(UIManager &uiManager) override;
-        UIAnchor getAnchor() override;
+        explicit UILabel (const std::string& themeClass) : UIComponent<UILabelNode>(std::make_shared<UILabelNode>(themeClass)), text{*this, &UILabel::getText, &UILabel::setText} {}
 
-        void setText (std::string newText);
-        void setFont (std::string newFont);
-        void setTextSize (int newTextSize);
-        void setColour (glm::vec4 newColour);
-        void setDebug (bool isDebug);
+        util::CallbackMember<std::string, UILabel> text;
 
-        void onThemeUpdate(Theme *theme) override;
+        const std::string& tempGetText () {
+            return getText();
+        }
+
+        void tempSetText (std::string&& newText) {
+            setText(std::forward<std::string>(newText));
+        }
     };
 }

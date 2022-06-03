@@ -3,7 +3,7 @@
 #include <utility>
 #include <vector>
 
-#include "ui_component.h"
+#include "ui_node.h"
 
 namespace graphics::ui {
     class UIRootNode : public UIComponentNode {

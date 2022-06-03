@@ -2,8 +2,8 @@
 
 #include "util/data_funcs.h"
 #include "ui_defs.h"
-#include "components/ui_anchor.h"
-#include "components/ui_flexbox.h"
+#include "nodes/ui_anchor.h"
+#include "nodes/ui_flexbox.h"
 
 namespace graphics::ui {
     bool fromdata (const util::DataValue& dataVal, Axis& val);

@@ -1,4 +1,4 @@
-#include "graphics/ui/components/ui_root.h"
+#include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/ui_manager.h"
 
 using namespace graphics::ui;

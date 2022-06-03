@@ -1,70 +1,107 @@
 #pragma once
 
+#include <concepts>
 #include <memory>
 #include <utility>
 
-//#include "graphics/ui/ui_manager.h"
-#include "ui_anchor.h"
-#include "graphics/ui/themes/theme_properties.h"
+#include "graphics/ui/nodes/forward.h"
+#include "util/optional.h"
 
 namespace graphics {
     class UIManager;
 }
 
 namespace graphics::ui {
-    class UIComponentNode {
+
+    template <typename T>
+    concept UIComp = requires (T t) {
+        {t.makeUINode()} -> std::same_as<std::shared_ptr<UIComponentNode>>;
+    };
+
+    template <std::derived_from<UIComponentNode> T>
+    class UIComponent {
     private:
-        std::weak_ptr<UIComponentNode> parent{};
-        glm::vec2 mousePos{};
-        ThemeProperties themeProperties;
+        std::shared_ptr<T> owningUINode;
+        std::weak_ptr<T> uiNode;
+        bool destroyOnDelete = true;
+        /*std::shared_ptr<UIComponentNode> _makeNode () {
+            T& derived = static_cast<T&>(*this);
+            auto node = derived.makeUINode();
+            uiNode = node;
+            return node;
+        }*/
     protected:
-        std::shared_ptr<UIComponentNode> getParent () {
-            return parent.lock();
+        std::shared_ptr<T> getNode () {
+            if (!uiNode.expired()) {
+                return uiNode.lock();
+            } else {
+                return nullptr;
+            }
         }
 
-        glm::vec2 size{};
-        glm::vec2 getMousePos () {
-            return mousePos;
+        util::Optional<std::shared_ptr<T>> getNodeOpt () {
+            if (!uiNode.expired()) {
+                return uiNode.lock();
+            } else {
+                return util::NullOpt;
+            }
         }
-
-        [[nodiscard]] const ThemeProperties& getTheme () const {
-            return themeProperties;
+    public:
+        explicit UIComponent(std::shared_ptr<T> owningNode) : owningUINode{std::move(owningNode)}, uiNode{owningUINode} {
+            //static_assert(UIComp<T>);
         };
 
-        virtual void onThemeUpdate (Theme* theme) {
-
+        ~UIComponent() {
+            if (destroyOnDelete) {
+                destroy();
+            }
         }
 
-    public:
-        explicit UIComponentNode (const std::string& themeClass, const std::string& fallbackClass = "default", const std::string& classPrefix = "") : themeProperties(themeClass, fallbackClass, classPrefix) {}
-        virtual ~UIComponentNode() = default;
-        virtual void render (UIManager& uiManager) = 0;
-        virtual UIAnchor getAnchor () = 0;
-        virtual void setSize (glm::vec2 _size) {
-            size = _size;
+        UIComponent(const UIComponent<T>&) = delete;
+        UIComponent(UIComponent<T>&& other) noexcept {
+            uiNode = std::move(other.uiNode);
+            owningUINode = std::move(other.owningUINode);
+            destroyOnDelete = other.destroyOnDelete;
+            other.destroyOnDelete = false;
         }
 
-        void setMousePos (glm::vec2 _mousePos) {
-            auto oldPos = mousePos;
-            mousePos = _mousePos;
-            onMousePosChange(oldPos);
+        UIComponent<T>& operator= (const UIComponent<T>& other) = delete;
+        UIComponent<T>& operator= (UIComponent<T>&& other) noexcept {
+            uiNode = std::move(other.uiNode);
+            owningUINode = std::move(other.owningUINode);
+            destroyOnDelete = other.destroyOnDelete;
+            other.destroyOnDelete = false;
+
+            return *this;
         }
 
-        virtual void onMousePosChange (glm::vec2 oldMousePos) {
-
+        void destroy () {
+            // TODO
+            uiNode = std::weak_ptr<T>{};
+            owningUINode = nullptr;
+            destroyOnDelete = false;
         }
 
-        virtual bool onMousePress () {
-            return false;
+        bool destroyed () {
+            return uiNode.expired();
         }
 
-        virtual void onMouseRelease () {
-
+        void detachNode () {
+            destroyOnDelete = false;
         }
 
-        void applyTheme (Theme* theme) {
-            themeProperties.applyTheme(theme);
-            onThemeUpdate(theme);
+        UIComponent<T>& detach () {
+            detachNode();
+            return *this;
         }
+
+        std::shared_ptr<UIComponentNode> transferNode () {
+            // TODO: handle moving of nodes between components
+            auto oldOwningNode = std::move(owningUINode);
+            owningUINode = nullptr;
+            return oldOwningNode;
+        }
+
+        friend graphics::UIManager;
     };
 }
