@@ -76,7 +76,13 @@ namespace graphics::ui {
         }
 
         void destroy () {
-            // TODO
+            std::shared_ptr<T> ptr;
+
+            if ((ptr = uiNode.lock())) {
+                ptr->queueDestroy();
+            }
+
+
             uiNode = std::weak_ptr<T>{};
             owningUINode = nullptr;
             destroyOnDelete = false;

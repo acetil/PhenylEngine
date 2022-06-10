@@ -29,6 +29,7 @@ using namespace game;
 
 int game::gameloop (engine::PhenylEngine& engine) {
     //GameObject::SharedPtr gameObject = initGame(graphics);
+    std::vector<graphics::ui::UILabel> extraLabels;
     auto graphics = engine.getGraphics();
     auto gameObject = engine.getGame();
 
@@ -57,7 +58,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     auto buttonC = graphics::ui::UIButton("button");
     auto buttonC2 = graphics::ui::UIButton("button2");
-    auto buttonC3 = graphics::ui::UIButton("button3");
+    //auto buttonC3 = graphics::ui::UIButton("button3");
     auto flexBoxC = graphics::ui::UIFlexbox("flex_box");
 
     auto label = graphics::ui::UILabel("label");
@@ -67,15 +68,18 @@ int game::gameloop (engine::PhenylEngine& engine) {
     flexBoxC.add(buttonC.detach());
     flexBoxC.add(buttonC2.detach());
     flexBoxC.add(label);
-    flexBoxC.add(buttonC3.detach());
+    //flexBoxC.add(buttonC3.detach());
 
     auto button4 = graphics::ui::UIButton("button");
+    auto button5 = graphics::ui::UIButton("button");
 
     int numPresses = 0;
     bool isButtonDown = false;
+    bool isButtonDown2 = false;
 
     uiManager.addUIComp(flexBoxC.detach(), {0, 100});
     uiManager.addUIComp(button4, {500, 300});
+    uiManager.addUIComp(button5, {500, 385});
     uiManager.addTheme("resources/themes/default_theme.json");
     uiManager.addTheme("resources/themes/alt_theme.json");
     uiManager.setCurrentTheme("default_theme");
@@ -117,14 +121,29 @@ int game::gameloop (engine::PhenylEngine& engine) {
         //uiManager.renderRect({100, 200}, {50, 200}, {0.0f, 0.0f, 1.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, 8, 2);
 
         if (button4 && !isButtonDown) {
-            logging::log(LEVEL_INFO, "Button down, changing text!");
+            //logging::log(LEVEL_INFO, "Button down, changing text!");
             isButtonDown = true;
             numPresses++;
             label.text = "Pressed " + std::to_string(numPresses) + " times!";
+            auto newLabel = graphics::ui::UILabel("label");
+            newLabel.text = "Label " + std::to_string(extraLabels.size());
+            flexBoxC.add(newLabel);
+            extraLabels.emplace_back(std::move(newLabel));
             //button4.detachNode();
             //button4 = graphics::ui::UIButton("button");
         } else if (!button4 && isButtonDown) {
             isButtonDown = false;
+        }
+
+        if (button5 && !isButtonDown2) {
+            isButtonDown2 = true;
+
+            if (!extraLabels.empty()) {
+                //extraLabels.at(extraLabels.size() - 1).destroy();
+                extraLabels.pop_back();
+            }
+        } else if (!button5 && isButtonDown2){
+            isButtonDown2 = false;
         }
 
         uiManager.renderUI();

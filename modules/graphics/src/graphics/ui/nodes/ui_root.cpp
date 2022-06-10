@@ -4,11 +4,13 @@
 using namespace graphics::ui;
 
 void UIRootNode::render (UIManager& uiManager) {
+    lockChildDestruction();
     for (auto& i : childNodes) {
         uiManager.pushOffset(std::get<0>(i));
         std::get<std::shared_ptr<UIComponentNode>>(i)->render(uiManager);
         uiManager.popOffset();
     }
+    unlockChildDestruction();
 }
 
 UIAnchor UIRootNode::getAnchor () {
@@ -30,32 +32,39 @@ void UIRootNode::addChildNode (const std::shared_ptr<UIComponentNode>& child, gl
 
     childNodes.emplace_back(pos, size, child);
     child->setSize(size);
+    addChild(child);
 }
 
 void UIRootNode::onMousePosChange (glm::vec2 oldMousePos) {
+    lockChildDestruction();
     for (auto& i : childNodes) {
         std::get<std::shared_ptr<UIComponentNode>>(i)->setMousePos(getMousePos() - std::get<0>(i));
     }
 }
 
 bool UIRootNode::onMousePress () {
+    lockChildDestruction();
     for (auto& i : childNodes) {
         auto b = std::get<std::shared_ptr<UIComponentNode>>(i)->onMousePress();
         if (b) {
+            unlockChildDestruction();
             return true;
         }
     }
-
+    unlockChildDestruction();
     return false;
 }
 
 void UIRootNode::onMouseRelease () {
+    lockChildDestruction();
     for (auto& i : childNodes) {
         std::get<std::shared_ptr<UIComponentNode>>(i)->onMouseRelease();
     }
+    unlockChildDestruction();
 }
 
 void UIRootNode::onThemeUpdate (Theme* theme) {
+    lockChildDestruction();
     for (auto& i : childNodes) {
         auto& child = std::get<2>(i);
         child->applyTheme(theme);
@@ -74,4 +83,11 @@ void UIRootNode::onThemeUpdate (Theme* theme) {
 
         child->setSize(size);
     }
+    unlockChildDestruction();
+}
+
+void UIRootNode::destroyChild (UIComponentNode* childNode) {
+    childNodes.erase(std::remove_if(childNodes.begin(), childNodes.end(), [childNode] (auto& i) {
+        return std::get<2>(i).get() == childNode;
+    }), childNodes.end());
 }

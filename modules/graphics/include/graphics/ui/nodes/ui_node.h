@@ -12,14 +12,19 @@ namespace graphics {
 }
 
 namespace graphics::ui {
+    class UIContainerNode;
     class UIComponentNode {
     private:
-        std::weak_ptr<UIComponentNode> parent{};
+        UIContainerNode* parent = nullptr;
         glm::vec2 mousePos{};
         ThemeProperties themeProperties;
+
+        bool dirty = false;
+
+        void setParent (UIContainerNode* parent);
     protected:
-        std::shared_ptr<UIComponentNode> getParent () {
-            return parent.lock();
+        UIContainerNode* getParent () {
+            return parent;
         }
 
         glm::vec2 size{};
@@ -38,6 +43,9 @@ namespace graphics::ui {
         virtual void onDestroyRequest () {
 
         }
+
+        void clearDirty ();
+        void markDirty ();
 
     public:
         explicit UIComponentNode (const std::string& themeClass, const std::string& fallbackClass = "default", const std::string& classPrefix = "") : themeProperties(themeClass, fallbackClass, classPrefix) {}
@@ -71,9 +79,12 @@ namespace graphics::ui {
             onThemeUpdate(theme);
         }
 
-        void destroy () {
-            // TODO: queue destroy from parent
-        }
+        void queueDestroy ();
+
+        virtual bool isDirty ();
+
+
+        friend class UIContainerNode;
 
     };
 }

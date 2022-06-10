@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "ui_node.h"
+#include "ui_container.h"
 #include "graphics/ui/ui_defs.h"
 
 namespace graphics::ui {
@@ -25,7 +26,7 @@ namespace graphics::ui {
         CENTRE
     };
 
-    class UIFlexBoxNode : public UIComponentNode {
+    class UIFlexBoxNode : public UIContainerNode {
     private:
         glm::vec2 primaryAxisVec = getAxisVec(Axis::DOWN);
         glm::vec2 secondaryAxisVec = getAxisVec(Axis::RIGHT);
@@ -47,7 +48,7 @@ namespace graphics::ui {
 
     protected:
         void updateLayout ();
-
+        void destroyChild(UIComponentNode *childNode) override;
     public:
         explicit UIFlexBoxNode (const std::string& themeClass);
         ~UIFlexBoxNode() override;
@@ -67,5 +68,7 @@ namespace graphics::ui {
         bool onMousePress() override;
         void onMouseRelease() override;
         void onThemeUpdate(Theme *theme) override;
-    };
+
+        bool isDirty () override;
+     };
 }

@@ -2,6 +2,7 @@
 #include "graphics/ui/ui_manager.h"
 #include "graphics/ui/ui_data.h"
 
+#include <algorithm>
 #include <utility>
 #include "logging/logging.h"
 
@@ -9,7 +10,7 @@ using namespace graphics::ui;
 
 namespace graphics::ui::detail {
     struct FlexBoxItem {
-        UIComponentNode& node;
+        UIComponentNode* node;
         glm::vec2 offset;
         glm::vec2 size;
         glm::vec2 bounds;
@@ -82,17 +83,21 @@ void UIFlexBoxNode::setAxes (Axis primaryAxis, Axis secondaryAxis) {
     updateLayout();
 }
 
-UIFlexBoxNode::UIFlexBoxNode (const std::string& themeClass) : UIComponentNode(themeClass) {
+UIFlexBoxNode::UIFlexBoxNode (const std::string& themeClass) : UIContainerNode(themeClass) {
 
 }
 
 void UIFlexBoxNode::addComponent (const std::shared_ptr<UIComponentNode>& uiNode) {
-    children.emplace_back(uiNode);
+    std::shared_ptr<UIComponentNode> node = uiNode;
+    addChild(node);
+    children.emplace_back(std::move(node));
     updateLayout();
 }
 
 void UIFlexBoxNode::addComponent (const std::shared_ptr<UIComponentNode>& uiNode, int index) {
-    children.emplace(children.begin() + index, uiNode);
+    std::shared_ptr<UIComponentNode> node = uiNode;
+    addChild(node);
+    children.emplace(children.begin() + index, node);
     updateLayout();
 }
 
@@ -137,7 +142,7 @@ void UIFlexBoxNode::updateLayout () {
     }
 
     for (auto& i : items) {
-        i.node.setSize(i.size);
+        i.node->setSize(i.size);
     }
 
 }
@@ -145,7 +150,7 @@ void UIFlexBoxNode::updateLayout () {
 void UIFlexBoxNode::render (graphics::UIManager& uiManager) {
     for (auto& i : items) {
         uiManager.pushOffset(i.offset);
-        i.node.render(uiManager);
+        i.node->render(uiManager);
         uiManager.popOffset();
     }
     uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
@@ -164,13 +169,13 @@ void UIFlexBoxNode::setMaxSize (glm::vec2 _maxSize) {
 
 void UIFlexBoxNode::onMousePosChange (glm::vec2 oldMousePos) {
     for (auto& i : items) {
-        i.node.setMousePos(getMousePos() - i.offset);
+        i.node->setMousePos(getMousePos() - i.offset);
     }
 }
 
 bool UIFlexBoxNode::onMousePress () {
     for (auto& i : items) {
-        if (i.node.onMousePress()) {
+        if (i.node->onMousePress()) {
             return true;
         }
     }
@@ -179,7 +184,7 @@ bool UIFlexBoxNode::onMousePress () {
 
 void UIFlexBoxNode::onMouseRelease () {
     for (auto& i : items) {
-        i.node.onMouseRelease();
+        i.node->onMouseRelease();
     }
 }
 
@@ -196,7 +201,7 @@ void UIFlexBoxNode::placeChildren (const std::vector<UIAnchor>& anchors) {
 
         glm::vec2 offset = primaryOffset * primaryAxisVec + secondaryOffset * secondaryAxisVec;
 
-        items.push_back({*children[i], offset, anchors[i].minimumSize, anchors[i].minimumSize + anchors[i].topLeftMargin + anchors[i].bottomRightMargin});
+        items.push_back({children[i].get(), offset, anchors[i].minimumSize, anchors[i].minimumSize + anchors[i].topLeftMargin + anchors[i].bottomRightMargin});
 
         currOffset += glm::abs(glm::dot(primaryAxisVec, anchors[i].topLeftMargin)) + glm::abs(glm::dot(primaryAxisVec, anchors[i].minimumSize))
                       + glm::abs(glm::dot(primaryAxisVec, anchors[i].bottomRightMargin));
@@ -329,5 +334,31 @@ void UIFlexBoxNode::onThemeUpdate (Theme* theme) {
     }
     updateLayout();
 }
+
+void UIFlexBoxNode::destroyChild (UIComponentNode* childNode) {
+    items.erase(std::remove_if(items.begin(), items.end(), [childNode] (detail::FlexBoxItem& i) {
+        return i.node == childNode;
+    }), items.end());
+
+    children.erase(std::remove_if(children.begin(), children.end(), [childNode] (std::shared_ptr<UIComponentNode>& i) {
+        return i.get() == childNode;
+    }), children.end());
+}
+
+bool UIFlexBoxNode::isDirty () {
+    if (UIComponentNode::isDirty()) {
+        return true;
+    }
+
+    if (std::any_of(children.begin(), children.end(), [] (std::shared_ptr<UIComponentNode>& i) {
+        return i->isDirty();
+    })) {
+        markDirty();
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 UIFlexBoxNode::~UIFlexBoxNode () = default;

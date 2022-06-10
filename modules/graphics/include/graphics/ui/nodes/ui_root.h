@@ -4,13 +4,14 @@
 #include <vector>
 
 #include "ui_node.h"
+#include "ui_container.h"
 
 namespace graphics::ui {
-    class UIRootNode : public UIComponentNode {
+    class UIRootNode : public UIContainerNode {
     private:
         std::vector<std::tuple<glm::vec2, glm::vec2, std::shared_ptr<UIComponentNode>>> childNodes;
     public:
-        UIRootNode () : UIComponentNode("default") {}
+        UIRootNode () : UIContainerNode("default") {}
 
         void render(UIManager &uiManager) override;
         UIAnchor getAnchor() override;
@@ -23,5 +24,7 @@ namespace graphics::ui {
         void onMouseRelease() override;
 
         void onThemeUpdate(Theme *theme) override;
+
+        void destroyChild(UIComponentNode *childNode) override;
     };
 }
