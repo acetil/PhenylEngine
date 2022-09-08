@@ -195,7 +195,10 @@ namespace component {
 #define ENTITY_LIST game::AbstractEntity*, component::EntityMainComponent, graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, component::RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>
 
     //using EntityComponentManager = ComponentManager2<entity_list>;
-    using EntityComponentManager = ComponentManagerNew;
+    using EntityComponentManager = ComponentManagerNew<64>;
+    namespace view {
+        using EntityView = view::ComponentView<64>;
+    }
 
     //extern template class ComponentManagerWrap<entity_list>;
 }
@@ -204,41 +207,49 @@ namespace component {
 #include "view/constrained_view.h"
 
 namespace component {
-    inline component::view::EntityView ComponentManagerNew::getEntityView (EntityId entityId) {
-        return {entityId, shared_from_this()};
+    template <std::size_t N>
+    inline component::view::ComponentView<N> ComponentManagerNew<N>::getEntityView (EntityId entityId) {
+        return {entityId, this->shared_from_this()};
     }
 
+    template <std::size_t N>
     template <typename ...Args>
-    util::Optional<view::ConstrainedEntityView<Args...>> ComponentManagerNew::getConstrainedEntityView (EntityId entityId) {
-        if (hasAllComps<Args...>()) {
-            return util::Optional<view::ConstrainedEntityView<Args...>>(view::ConstrainedEntityView<Args...>{entityId, getObjectData<Args>(entityId).getUnsafe()...});
+    util::Optional<view::ConstrainedEntityView<N, Args...>> ComponentManagerNew<N>::getConstrainedEntityView (EntityId entityId) {
+        if (entityHasAllComps<Args...>(entityId)) {
+            return util::Optional<view::ConstrainedEntityView<N, Args...>>(view::ConstrainedEntityView<N, Args...>{entityId, getObjectData<Args>(entityId).getUnsafe()...});
         } else {
             return util::NullOpt;
         }
     }
 
+    template <std::size_t N>
     template <typename ...Args>
-    view::ConstrainedView<Args...> ComponentManagerNew::getConstrainedView () {
+    view::ConstrainedView<N, Args...> ComponentManagerNew<N>::getConstrainedView () {
         if (hasAllComps<Args...>()) {
-            return {shared_from_this(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...};
+            return {this->shared_from_this(), this->entityComponentBitmaps.get(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...,
+                    makeMask<Args...>()};
         } else {
             return {};
         }
     }
 
-    inline ComponentManagerNew::iterator ComponentManagerNew::begin () {
-        return {shared_from_this(), 0};
+    template <std::size_t N>
+    inline typename ComponentManagerNew<N>::iterator ComponentManagerNew<N>::begin () {
+        return {this->shared_from_this(), 0};
     }
 
-    inline ComponentManagerNew::iterator ComponentManagerNew::end () {
-        return {shared_from_this(), numEntities};
+    template <std::size_t N>
+    inline typename ComponentManagerNew<N>::iterator ComponentManagerNew<N>::end () {
+        return {this->shared_from_this(), numEntities};
     }
 
-    inline ComponentManagerNew::const_iterator ComponentManagerNew::cbegin () {
-        return {shared_from_this(), 0};
+    template <std::size_t N>
+    inline typename ComponentManagerNew<N>::const_iterator ComponentManagerNew<N>::cbegin () {
+        return {this->shared_from_this(), 0};
     }
 
-    inline ComponentManagerNew::const_iterator ComponentManagerNew::cend () {
-        return {shared_from_this(), numEntities};
+    template <std::size_t N>
+    inline typename ComponentManagerNew<N>::const_iterator ComponentManagerNew<N>::cend () {
+        return {this->shared_from_this(), numEntities};
     }
 }

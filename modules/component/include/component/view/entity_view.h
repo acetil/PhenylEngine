@@ -10,10 +10,11 @@
 
 
 namespace component::view {
-    class EntityView {
+    template <std::size_t MaxComponents>
+    class ComponentView {
     private:
         component::EntityId entityId;
-        component::ComponentManagerNew::SharedPtr compManager;
+        typename component::ComponentManagerNew<MaxComponents>::SharedPtr compManager;
 
         std::unordered_set<std::size_t> bannedTypes;
 
@@ -49,10 +50,10 @@ namespace component::view {
                 });
             });
         }
-        EntityView() : entityId{0, 0}, compManager(nullptr) {}
+        ComponentView() : entityId{0, 0}, compManager(nullptr) {}
     public:
-        EntityView (component::EntityId _entityId, component::ComponentManagerNew::SharedPtr  _compManager) : entityId{_entityId}, compManager{std::move(_compManager)} {}
-        EntityView (component::EntityId _entityId, component::ComponentManagerNew::SharedPtr  _compManager, std::unordered_set<std::size_t> _bannedTypes) :
+        ComponentView( component::EntityId _entityId, typename component::ComponentManagerNew<MaxComponents>::SharedPtr  _compManager) : entityId{_entityId}, compManager{std::move(_compManager)} {}
+        ComponentView(component::EntityId _entityId, typename component::ComponentManagerNew<MaxComponents>::SharedPtr  _compManager, std::unordered_set<std::size_t> _bannedTypes) :
                 entityId{_entityId}, compManager{std::move(_compManager)}, bannedTypes{std::move(_bannedTypes)} {}
 
         template <typename T>
@@ -69,15 +70,20 @@ namespace component::view {
             if (bannedTypes.contains(meta::type_index<T>())) {
 
             }
-            return compManager->getObjectData<T>(entityId);
+            return compManager->template getObjectData<T>(entityId);
         }
 
         template <typename T, typename ...Args>
         void addComponent (Args... args) {
-            compManager->addComponent<T>(entityId, args...);
+            compManager->template addComponent<T>(entityId, args...);
         }
 
-        EntityView withId (component::EntityId newId) {
+        template <typename T>
+        void removeComponent () {
+            compManager->template removeComponent<T>(entityId);
+        }
+
+        ComponentView<MaxComponents> withId (component::EntityId newId) {
             return {newId, compManager, bannedTypes};
         }
 
@@ -90,44 +96,45 @@ namespace component::view {
             }
         }
 
-        friend detail::EntityViewIterator;
+        friend detail::EntityViewIterator<MaxComponents>;
     };
 
     namespace detail {
+        template <std::size_t MaxComponents>
         class EntityViewIterator {
         private:
-            ComponentManagerNew::SharedPtr compManager{};
+            typename ComponentManagerNew<MaxComponents>::SharedPtr compManager{};
             std::size_t pos{};
 
         public:
             EntityViewIterator () {}
-            EntityViewIterator (ComponentManagerNew::SharedPtr _compManager, std::size_t startPos) : compManager{std::move(_compManager)} , pos{startPos} {}
+            EntityViewIterator (typename ComponentManagerNew<MaxComponents>::SharedPtr _compManager, std::size_t startPos) : compManager{std::move(_compManager)} , pos{startPos} {}
             using iterator_category = std::random_access_iterator_tag;
             using difference_type = std::ptrdiff_t;
-            using value_type = EntityView;
-            using reference = EntityView&;
+            using value_type = ComponentView<MaxComponents>;
+            using reference = ComponentView<MaxComponents>&;
             value_type operator* () const {
-                return compManager->getEntityView(compManager->getComponent<component::EntityId>().orThrow()[pos]);
+                return compManager->getEntityView(compManager->template getComponent<component::EntityId>().orThrow()[pos]);
             }
 
             value_type operator[] (std::ptrdiff_t shift) const {
                 return *(*this + shift);
             }
 
-            EntityViewIterator& operator++ () {
+            EntityViewIterator<MaxComponents>& operator++ () {
                 pos++;
                 return *this;
             }
 
-            EntityViewIterator operator++ (int) {
-                EntityViewIterator other = *this;
+            EntityViewIterator<MaxComponents> operator++ (int) {
+                EntityViewIterator<MaxComponents> other = *this;
 
                 pos++;
 
                 return other;
             }
 
-            bool operator== (const EntityViewIterator& other) const {
+            bool operator== (const EntityViewIterator<MaxComponents>& other) const {
                 return pos == other.pos;
             }
 
@@ -135,13 +142,13 @@ namespace component::view {
                 return pos != other.pos;
             }*/
 
-            EntityViewIterator& operator-- () {
+            EntityViewIterator<MaxComponents>& operator-- () {
                 pos--;
                 return *this;
             }
 
-            EntityViewIterator operator-- (int) {
-                EntityViewIterator other = *this;
+            EntityViewIterator<MaxComponents> operator-- (int) {
+                EntityViewIterator<MaxComponents> other = *this;
 
                 pos--;
 
@@ -152,56 +159,62 @@ namespace component::view {
                 return {compManager, pos + amount};
             }*/
 
-            friend EntityViewIterator operator+ (EntityViewIterator lhs, const std::ptrdiff_t rhs);
-            friend EntityViewIterator operator+ (const std::ptrdiff_t rhs, EntityViewIterator lhs);
-            friend EntityViewIterator operator- (EntityViewIterator lhs, const std::ptrdiff_t rhs);
+            template <std::size_t N>
+            friend EntityViewIterator<N> operator+ (EntityViewIterator<N> lhs, const std::ptrdiff_t rhs);
+            template <std::size_t N>
+            friend EntityViewIterator<N> operator+ (const std::ptrdiff_t rhs, EntityViewIterator<N> lhs);
+            template <std::size_t N>
+            friend EntityViewIterator<N> operator- (EntityViewIterator<N> lhs, const std::ptrdiff_t rhs);
 
             /*EntityViewIterator operator- (std::ptrdiff_t amount) const {
                 return {compManager, pos - amount};
             }*/
 
-            EntityViewIterator& operator+= (std::ptrdiff_t amount) {
+            EntityViewIterator<MaxComponents>& operator+= (std::ptrdiff_t amount) {
                 pos += amount;
                 return *this;
             }
 
-            EntityViewIterator& operator-= (std::ptrdiff_t amount) {
+            EntityViewIterator<MaxComponents>& operator-= (std::ptrdiff_t amount) {
                 pos -= amount;
                 return *this;
             }
 
-            bool operator< (const EntityViewIterator& other) const {
+            bool operator< (const EntityViewIterator<MaxComponents>& other) const {
                 return pos < other.pos;
             }
 
-            bool operator<= (const EntityViewIterator& other) const {
+            bool operator<= (const EntityViewIterator<MaxComponents>& other) const {
                 return !(*this > other);
             }
 
-            bool operator> (const EntityViewIterator& other) const {
+            bool operator> (const EntityViewIterator<MaxComponents>& other) const {
                 return other < *this;
             }
 
-            bool operator>= (const EntityViewIterator& other) const {
+            bool operator>= (const EntityViewIterator<MaxComponents>& other) const {
                 return !(*this < other);
             }
 
-            std::ptrdiff_t operator- (const EntityViewIterator& other) const {
+            std::ptrdiff_t operator- (const EntityViewIterator<MaxComponents>& other) const {
                 return (std::ptrdiff_t)pos - (std::ptrdiff_t)other.pos;
             }
         };
 
-        inline EntityViewIterator operator+ (EntityViewIterator lhs, const std::ptrdiff_t rhs) {
+        template <std::size_t MaxComponents>
+        inline EntityViewIterator<MaxComponents> operator+ (EntityViewIterator<MaxComponents> lhs, const std::ptrdiff_t rhs) {
             lhs += rhs;
 
             return lhs;
         }
 
-        inline EntityViewIterator operator+ (const std::ptrdiff_t rhs, EntityViewIterator lhs) {
+        template <std::size_t MaxComponents>
+        inline EntityViewIterator<MaxComponents> operator+ (const std::ptrdiff_t rhs, EntityViewIterator<MaxComponents> lhs) {
             return std::move(lhs) + rhs;
         }
 
-        inline EntityViewIterator operator- (EntityViewIterator lhs, const std::ptrdiff_t rhs) {
+        template <std::size_t MaxComponents>
+        inline EntityViewIterator<MaxComponents> operator- (EntityViewIterator<MaxComponents> lhs, const std::ptrdiff_t rhs) {
             lhs -= rhs;
 
             return lhs;

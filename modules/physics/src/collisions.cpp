@@ -138,7 +138,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
     }
 }*/
 
-void physics::checkCollisionsEntity (const component::ComponentManagerNew::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
+void physics::checkCollisionsEntity (const component::EntityComponentManager::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
     /*for (auto i = compManager->begin(); i != compManager->end(); i++) {
         for (auto j = i + 1; j != compManager->end(); j++) {
             (*i).applyFunc<component::EntityId, CollisionComponent>([&j, &collisionResults](component::EntityId& id1, CollisionComponent& comp1) {

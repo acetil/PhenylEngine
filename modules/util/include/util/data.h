@@ -175,6 +175,7 @@ namespace util {
             static_assert(std::is_same_v<DataObject, meta::get_nth_typelist<4, data_types>>);
             obj = std::monostate{};
         }
+        ~DataValue() = default;
 
         // Explicit implementations are necessary because c++ is dumb
         DataValue (DataValue const& other) {

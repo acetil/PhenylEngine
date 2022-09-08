@@ -9,7 +9,13 @@ void WallController::initEntity (component::view::EntityView& entityView, view::
     if (data.empty() || data.get<util::DataObject>().empty()) {
         return;
     }
+
     auto dataObj = data.get<util::DataObject>();
+
+    if (dataObj.contains("no_coll") && dataObj.at("no_coll").is<bool>() && dataObj.at("no_coll").get<bool>()) {
+        entityView.removeComponent<physics::CollisionComponent>();
+        return;
+    }
 
     util::DataObject size = dataObj.at("size");
 

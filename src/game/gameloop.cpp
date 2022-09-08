@@ -40,7 +40,6 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     game::GameInput& gameInput = gameObject.getGameInput();
     setupDefaultInput(gameInput, gameObject.getEventBus());
-
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
     //float timeSinceFpsUpdate = 0.0f;
@@ -48,7 +47,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //int fpsFrames = 0;
     //Map::SharedPtr map = readMap("resources/maps/testmap.acmp", gameObject);
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
-    Map::SharedPtr map = readMap("resources/maps/testmap.json", gameObject);
+    Map::SharedPtr map = readMap("resources/maps/testmap2.json", gameObject);
     //map->setAtlas(graphics->getTextureAtlas("sprite").value());
     gameObject.loadMap(map);
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);

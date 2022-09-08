@@ -37,7 +37,7 @@ namespace game::detail {
                 std::vector<Tile*> tileRegistry;
                 //int currentEntityId = 0;
                 event::EventBus::SharedPtr eventBus;
-                component::ComponentManagerNew::SharedPtr entityComponentManager;
+                component::EntityComponentManager::SharedPtr entityComponentManager;
 
                 Map::SharedPtr gameMap;
 

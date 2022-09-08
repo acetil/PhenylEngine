@@ -43,7 +43,7 @@ int main (int argv, char* argc[]) {
 
     game::gameloop(engine);
 
-    auto compManager = component::ComponentManagerNew::NewSharedPtr(256);
+    auto compManager = component::EntityComponentManager::NewSharedPtr(256);
 
     compManager->addComponentType<int>();
     compManager->addComponentType<glm::vec2>();
@@ -54,7 +54,7 @@ int main (int argv, char* argc[]) {
 
     auto view = compManager->getConstrainedView<int, glm::vec2>();
 
-    component::view::ConstrainedEntityView<int, glm::vec2> eView = view.getEntityView(eId).orThrow();
+    component::view::ConstrainedEntityView<64, int, glm::vec2> eView = view.getEntityView(eId).orThrow();
     logger::log(LEVEL_DEBUG, "MAIN", util::format("Comp: {}", eView.get<int>()));
 
     auto view2 = view.constrain<glm::vec2>();
@@ -64,8 +64,8 @@ int main (int argv, char* argc[]) {
     //auto view3 = view.constrain<float>();
 
     static_assert(std::forward_iterator<util::MapIterator<std::string, int>>);
-    static_assert(std::random_access_iterator<component::view::detail::EntityViewIterator>);
-    static_assert(std::bidirectional_iterator<component::view::detail::ConstrainedViewIterator<int>>);
+    static_assert(std::random_access_iterator<component::view::detail::EntityViewIterator<64>>);
+    static_assert(std::bidirectional_iterator<component::view::detail::ConstrainedViewIterator<64, int>>);
 
     //util::setTest();
 

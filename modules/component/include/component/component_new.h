@@ -12,28 +12,40 @@
 #include "util/smart_help.h"
 #include "util/optional.h"
 #include "util/fixed_stack.h"
+#include "util/bitfield.h"
 
 namespace component {
-
     namespace detail {
         template <typename T>
         void deleterFunc (unsigned char* tPtr) {
             ((T*)tPtr)->~T();
         }
+
+        struct ComponentType {
+        private:
+            using DeleterFunc = void (*)(unsigned char*);
+        public:
+            std::unique_ptr<unsigned char[]> components;
+            std::size_t componentSize;
+            DeleterFunc deleter;
+        };
     }
 
     namespace view {
-        class EntityView;
-        template <typename ...Args>
+        template <std::size_t MaxComponents>
+        class ComponentView;
+        template <std::size_t MaxComponents, typename ...Args>
         class ConstrainedEntityView;
-        template <typename ...Args>
+        template <std::size_t MaxComponents, typename ...Args>
         class ConstrainedView;
 
         namespace detail {
+            template <std::size_t MaxComponents>
             class EntityViewIterator;
         }
     }
 
+    template <std::size_t MaxComponents>
     class ComponentManagerNew;
 
     struct EntityId {
@@ -48,15 +60,19 @@ namespace component {
             return (static_cast<std::size_t>(generation) << 32) | id;
         }
 
+        template <std::size_t N>
         friend class ComponentManagerNew;
     };
 
-    class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew, true> {
+    template <std::size_t MaxComponents>
+    class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew<MaxComponents>, true> {
     private:
         using DeleterFunc = void (*)(unsigned char*);
         std::size_t numEntities{};
         std::size_t maxNumEntities{};
-        std::vector<std::tuple<std::unique_ptr<unsigned char[]>, std::size_t, DeleterFunc>> components;
+        util::Bitfield<MaxComponents> componentBitmap;
+        std::unique_ptr<util::Bitfield<MaxComponents>[]> entityComponentBitmaps;
+        std::vector<detail::ComponentType> components;
 
         util::Map<std::size_t, std::size_t> compMap;
 
@@ -83,14 +99,35 @@ namespace component {
         }
 
         template <typename T>
+        bool entityHasComp (EntityId id) {
+            auto typeId = meta::type_index<T>();
+            return compMap.contains(typeId) && getEntityPos(id).thenMap([this, typeId](const std::size_t& pos) -> bool {
+                return entityComponentBitmaps[pos].hasBit(compMap.at(typeId));
+            }).orElse(false);
+            //return compMap.contains(typeId) && entityComponentBitmaps[];
+        }
+
+        template <typename T,  typename ...Args>
+        auto entityHasAllComps (EntityId id) -> std::enable_if_t<sizeof...(Args) != 0, bool> {
+            return entityHasComp<T>(id) && entityHasAllComps<Args...>(id);
+        }
+
+        template <typename T>
+        bool entityHasAllComps (EntityId id) {
+            return entityHasComp<T>(id);
+        }
+
+        template <typename T>
         void addComp () {
+            assert(components.size() < MaxComponents);
             auto typeId = meta::type_index<T>();
 
             auto pos = components.size();
 
-            components.emplace_back(std::make_unique<unsigned char[]>(sizeof(T) * maxNumEntities), sizeof(T), detail::deleterFunc<T>);
+            components.emplace_back(detail::ComponentType{std::make_unique<unsigned char[]>(sizeof(T) * maxNumEntities), sizeof(T), detail::deleterFunc<T>});
 
             compMap[typeId] = pos;
+            componentBitmap.putBit(pos);
         }
 
         template <typename T>
@@ -99,10 +136,10 @@ namespace component {
             if (!compMap.contains(typeId)) {
                 addComp<T>();
             }
-            return reinterpret_cast<T*>(std::get<0>(components[compMap[typeId]]).get());
+            return reinterpret_cast<T*>(components[compMap[typeId]].components.get());
         }
 
-        util::Optional<std::size_t> getEntityPos (EntityId entityId) const {
+        [[nodiscard]] util::Optional<std::size_t> getEntityPos (EntityId entityId) const {
 #ifndef NDEBUG
             if (entityId.id >= maxNumEntities) {
                 logging::log(LEVEL_ERROR, "Bad entity id {}: maxEntities = {}, id num = {}", entityId.value(), maxNumEntities, entityId.id);
@@ -116,7 +153,7 @@ namespace component {
                 return util::NullOpt;
             }
 
-            return util::Optional<std::size_t>(ids[entityId.id].second);
+            return {ids[entityId.id].second};
         }
 
         void swapLastEntity (std::size_t entityPos, unsigned int entityId) {
@@ -124,15 +161,26 @@ namespace component {
                 numEntities--;
                 return;
             }
-
+            std::size_t index = 0;
             for (auto& [x, size, deleter] : components) {
-                deleter(x.get() + size * entityPos);
-                std::memcpy(x.get() + size * entityPos, x.get() + size * (numEntities - 1), size);
+                if (entityComponentBitmaps[entityPos].hasBit(index)) {
+                    deleter(x.get() + size * entityPos);
+                }
+
+                if (entityComponentBitmaps[numEntities - 1].hasBit(index)) {
+                    // TODO
+                    std::memcpy(x.get() + size * entityPos, x.get() + size * (numEntities - 1), size);
+                }
+                index++;
             }
             getComponent<EntityId>().ifPresent([this, &entityPos](auto& ptr) {
                 ids[ptr[entityPos].id].second = entityPos;
             });
 
+            entityComponentBitmaps[entityPos] = entityComponentBitmaps[numEntities - 1];
+
+            // Move necessary because cpp is dumb
+            // TODO
             availableIds.push(std::move(entityId));
 
             numEntities--;
@@ -148,12 +196,32 @@ namespace component {
             }
         }
 
+        template <typename T, typename ...Args>
+        std::enable_if_t<sizeof...(Args) != 0, util::Bitfield<MaxComponents>> makeMask () {
+            auto mask1 = makeMask<T>();
+            auto mask2 = makeMask<Args...>();
+            return mask1 | mask2;
+        }
+
+        template <typename T>
+        util::Bitfield<MaxComponents> makeMask () {
+            auto typeId = meta::type_index<T>();
+            if (!compMap.contains(typeId)) {
+                logging::log(LEVEL_DEBUG, "Not in comp map!");
+                return {};
+            }
+            util::Bitfield<MaxComponents> bitfield;
+            auto compId = compMap.at(typeId);
+            bitfield.putBit(compId);
+            return bitfield;
+        }
+
     public:
-        using iterator = view::detail::EntityViewIterator;
-        using const_iterator = view::detail::EntityViewIterator;
+        using iterator = view::detail::EntityViewIterator<MaxComponents>;
+        using const_iterator = view::detail::EntityViewIterator<MaxComponents>;
 
         explicit ComponentManagerNew (std::size_t maxEntities) : maxNumEntities{maxEntities}, ids{std::make_unique<std::pair<unsigned int, std::size_t>[]>(maxEntities)},
-                                                                 availableIds{maxEntities} {
+                                                                 availableIds{maxEntities}, entityComponentBitmaps{std::make_unique<util::Bitfield<MaxComponents>[]>(maxEntities)} {
             for (std::size_t i = 0; i < maxNumEntities; i++) {
                 ids[i] = {1, 0};
                 availableIds.push(maxNumEntities - i - 1);
@@ -177,7 +245,7 @@ namespace component {
         util::Optional<T*> getComponent () {
             auto typeId = meta::type_index<T>();
             if (compMap.contains(typeId)) {
-                return util::Optional<T*>(reinterpret_cast<T*>(std::get<0>(components[compMap[typeId]]).get()));
+                return util::Optional<T*>(reinterpret_cast<T*>(components[compMap[typeId]].components.get()));
             } else {
                 return util::NullOpt;
             }
@@ -188,8 +256,16 @@ namespace component {
             auto entityPos = getEntityPos(entityId);
 
             return getComponent<T>()
-                .then([&entityPos](T* ptr){
-                    return entityPos.then([&ptr](const std::size_t& pos) {return util::Optional<T&>(*(ptr + pos));});
+                .then([&entityPos, this](T* ptr) {
+                    return entityPos.then([&ptr, this](const std::size_t& pos) -> util::Optional<T&> {
+                        auto typeId = meta::type_index<T>();
+                        auto compIndex = compMap.at(typeId);
+                        if (entityComponentBitmaps[pos].hasBit(compIndex)) {
+                            return util::Optional<T&>(*(ptr + pos));
+                        } else {
+                            return util::NullOpt;
+                        }
+                    });
                 });
         }
 
@@ -197,8 +273,17 @@ namespace component {
         util::Optional<T*> getObjectDataPtr (EntityId entityId) {
             auto entityPos = getEntityPos(entityId);
 
-            return getComponent<T>().then([&entityPos](T* ptr) {
-                return entityPos.thenMap([&ptr](const std::size_t& pos){return ptr + pos;});
+            return getComponent<T>().then([&entityPos, this](T* ptr) {
+                return entityPos.then([&ptr, this](const std::size_t& pos) -> util::Optional<T*> {
+                    auto typeId = meta::type_index<T>();
+                    auto compIndex = compMap.at(typeId);
+
+                    if (entityComponentBitmaps[pos].hasBit(compIndex)) {
+                        return util::Optional<T*>{ptr + pos};
+                    } else {
+                        return util::NullOpt;
+                    }
+                });
             });
         }
 
@@ -207,6 +292,11 @@ namespace component {
             getEntityPos(entityId)
                 .ifPresent([&args..., this](auto& pos) {
                     new(getOrCreate<T>() + pos) T(args...);
+
+                    auto typeId = meta::type_index<T>();
+                    auto compIndex = compMap.at(typeId);
+
+                    entityComponentBitmaps[pos].putBit(compIndex);
                 });
         }
 
@@ -232,6 +322,23 @@ namespace component {
                 ids[entityId.id].first++;
                 if (ids[entityId.id].first == 0) {
                     ids[entityId.id].first = 1;
+                }
+            });
+        }
+
+        template <typename T>
+        void removeComponent (EntityId entityId) {
+            getEntityPos(entityId).ifPresent([this](const std::size_t& pos) {
+                auto typeId = meta::type_index<T>();
+                if (compMap.contains(typeId)) {
+                    auto compIndex = compMap.at(typeId);
+                    if (entityComponentBitmaps[pos].hasBit(compIndex)) {
+                        auto& component = components[compIndex];
+                        auto ptr = (T*) component.components.get();
+                        ptr->~T();
+
+                        entityComponentBitmaps[pos].maskBit(compIndex);
+                    }
                 }
             });
         }
@@ -277,15 +384,16 @@ namespace component {
         const_iterator cend ();
 
         // TODO
-        inline view::EntityView getEntityView (EntityId entityId);
+        inline view::ComponentView<MaxComponents> getEntityView (EntityId entityId);
         // TODO
         template <typename ...Args>
-        util::Optional<view::ConstrainedEntityView<Args...>> getConstrainedEntityView (EntityId entityId);
+        util::Optional<view::ConstrainedEntityView<MaxComponents, Args...>> getConstrainedEntityView (EntityId entityId);
 
         template <typename ...Args>
-        view::ConstrainedView<Args...> getConstrainedView ();
+        view::ConstrainedView<MaxComponents, Args...> getConstrainedView ();
 
-        friend view::detail::EntityViewIterator;
+        friend view::detail::EntityViewIterator<MaxComponents>;
+        friend view::ComponentView<MaxComponents>;
     };
 
 }

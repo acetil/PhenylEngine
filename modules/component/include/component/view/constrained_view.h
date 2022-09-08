@@ -8,14 +8,14 @@
 namespace component::view {
 
     namespace detail {
-        template<typename ...Args>
+        template<std::size_t MaxComponents, typename ...Args>
         class ConstrainedViewIterator;
     }
 
-    template <typename ...Args>
+    template <std::size_t MaxComponents, typename ...Args>
     class ConstrainedView;
 
-    template <typename ...Args>
+    template <std::size_t MaxComponents, typename ...Args>
     class ConstrainedEntityView {
     private:
         std::tuple<Args&...> comps;
@@ -35,126 +35,150 @@ namespace component::view {
         }
 
         template <typename ...Args2>
-        util::Optional<ConstrainedEntityView<Args2...>> constrain () {
+        ConstrainedEntityView<MaxComponents, Args2...> constrain () {
             static_assert(meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>, "All requested types must be accessible!");
             /*if constexpr (meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>) {
                 return util::Optional<ConstrainedEntityView<Args2...>>(ConstrainedEntityView(entityId, std::get<Args2...>(comps)));
             } else {
                 return util::NullOpt;
             }*/
-            return ConstrainedEntityView(entityId, std::get<Args2...>(comps));
+            return {entityId, std::get<Args2...>(comps)};
         }
 
-        friend ComponentManagerNew;
-        friend ConstrainedView<Args...>;
-        friend detail::ConstrainedViewIterator<Args...>;
+        friend ComponentManagerNew<MaxComponents>;
+        friend ConstrainedView<MaxComponents, Args...>;
+        friend detail::ConstrainedViewIterator<MaxComponents, Args...>;
     };
 
-    template <typename ...Args>
+    template <std::size_t MaxComponents, typename ...Args>
     class ConstrainedView {
     private:
-        std::tuple<component::EntityId*, Args*...> comps{};
-        component::ComponentManagerNew::SharedPtr componentManager{nullptr};
+        std::tuple<util::Bitfield<MaxComponents>*, component::EntityId*, Args*...> comps{};
+        typename component::ComponentManagerNew<MaxComponents>::SharedPtr componentManager{nullptr};
+        util::Bitfield<MaxComponents> mask{};
         ConstrainedView () = default;
+        std::size_t numObjects () {
+            return componentManager->getNumObjects();
+        }
     public:
-        using iterator = detail::ConstrainedViewIterator<Args...>;
-        ConstrainedView (component::ComponentManagerNew::SharedPtr _compManager, component::EntityId* ids, Args*... compPtrs) : componentManager{std::move(_compManager)}, comps{ids, compPtrs...} {}
+        using iterator = detail::ConstrainedViewIterator<MaxComponents, Args...>;
+        ConstrainedView (typename component::ComponentManagerNew<MaxComponents>::SharedPtr _compManager, util::Bitfield<MaxComponents>* bitfields, component::EntityId* ids, Args*... compPtrs,
+                         util::Bitfield<MaxComponents> mask = {}) : componentManager{std::move(_compManager)}, comps{bitfields, ids, compPtrs...}, mask{mask} {}
 
-        util::Optional<ConstrainedEntityView<Args...>> getEntityView (component::EntityId entityId) const {
+        util::Optional<ConstrainedEntityView<MaxComponents, Args...>> getEntityView (component::EntityId entityId) const {
             if (!componentManager) {
                 return util::NullOpt;
             }
 
-            return componentManager->tempGetPos(entityId).thenMap([this](const size_t& pos){
-                return ConstrainedEntityView<Args...>{std::get<EntityId*>(comps)[pos], std::get<Args*>(comps)[pos]...};
+            return componentManager->tempGetPos(entityId).then([this](const size_t& pos) -> util::Optional<ConstrainedEntityView<MaxComponents, Args...>> {
+                if ((std::get<util::Bitfield<MaxComponents>*>(comps)[pos] & mask) == mask) {
+                    return {ConstrainedEntityView<MaxComponents, Args...>{std::get<EntityId*>(comps)[pos],
+                                                                         std::get<Args*>(comps)[pos]...}};
+                } else {
+                    return util::NullOpt;
+                }
             });
         }
 
         template <typename ...Args2>
-        ConstrainedView<Args2...> constrain () const {
+        ConstrainedView<MaxComponents, Args2...> constrain () const {
             static_assert(meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>, "All requested types must be accessible!");
 
-            return ConstrainedView<Args2...>(componentManager, std::get<EntityId*>(comps), std::get<Args2*>(comps)...);
+            return ConstrainedView<MaxComponents, Args2...>(componentManager, std::get<util::Bitfield<MaxComponents>*>(comps), std::get<EntityId*>(comps), std::get<Args2*>(comps)..., mask);
         }
 
         inline iterator begin ();
         inline iterator end ();
 
-        friend detail::ConstrainedViewIterator<Args...>;
-        friend ComponentManagerNew;
+        friend detail::ConstrainedViewIterator<MaxComponents, Args...>;
+        friend ComponentManagerNew<MaxComponents>;
     };
 
     namespace detail {
-        template<typename ...Args>
+        template<std::size_t MaxComponents, typename ...Args>
         class ConstrainedViewIterator {
         private:
-            ConstrainedView<Args...> constrainedView;
+            ConstrainedView<MaxComponents, Args...> constrainedView;
             std::size_t pos{};
 
-            void findFirst () {
+            bool isValidObject (std::size_t checkPos) {
+                auto val = std::get<util::Bitfield<MaxComponents>*>(constrainedView.comps)[checkPos];
+                return (val & constrainedView.mask) == constrainedView.mask;
+            }
 
+            void findFirst () {
+                while (pos < constrainedView.numObjects() && !isValidObject(pos)) {
+                    pos++;
+                }
             }
 
             void findNext () {
                 pos++;
+
+                while (pos < constrainedView.numObjects() && !isValidObject(pos)) {
+                    pos++;
+                }
             }
 
             void findPrev () {
                 pos--;
+                while (pos >= 0 && !isValidObject(pos)) {
+                    pos--;
+                }
             }
 
         public:
             ConstrainedViewIterator () = default;
 
-            ConstrainedViewIterator (ConstrainedView<Args...> _constrainedView, std::size_t startPos) : constrainedView {
+            ConstrainedViewIterator (ConstrainedView<MaxComponents, Args...> _constrainedView, std::size_t startPos) : constrainedView {
                     _constrainedView}, pos{startPos} {
                 findFirst();
             }
 
             using iterator_category = std::bidirectional_iterator_tag;
-            using value_type = ConstrainedEntityView<Args...>;
+            using value_type = ConstrainedEntityView<MaxComponents, Args...>;
             using difference_type = std::ptrdiff_t;
 
             value_type operator* () const {
-                return ConstrainedEntityView<Args...>(std::get<component::EntityId*>(constrainedView.comps)[pos],
+                return ConstrainedEntityView<MaxComponents, Args...>(std::get<component::EntityId*>(constrainedView.comps)[pos],
                                                       std::get<Args*>(constrainedView.comps)[pos]...);
             }
 
-            ConstrainedViewIterator<Args...>& operator++ () {
+            ConstrainedViewIterator<MaxComponents, Args...>& operator++ () {
                 findNext();
                 return *this;
             }
 
-            ConstrainedViewIterator<Args...> operator++ (int) {
+            ConstrainedViewIterator<MaxComponents, Args...> operator++ (int) {
                 ConstrainedViewIterator other = *this;
                 findNext();
                 return other;
             }
 
-            ConstrainedViewIterator<Args...>& operator-- () {
+            ConstrainedViewIterator<MaxComponents, Args...>& operator-- () {
                 findPrev();
                 return *this;
             }
 
-            ConstrainedViewIterator<Args...> operator-- (int) {
+            ConstrainedViewIterator<MaxComponents, Args...> operator-- (int) {
                 ConstrainedViewIterator other = *this;
                 findPrev();
                 return other;
             }
 
-            bool operator== (const ConstrainedViewIterator<Args...>& other) const {
+            bool operator== (const ConstrainedViewIterator<MaxComponents, Args...>& other) const {
                 return pos == other.pos || (!constrainedView.componentManager && !other.constrainedView.componentManager);
             }
         };
 
     }
-    template <typename ...Args>
-    inline typename ConstrainedView<Args...>::iterator ConstrainedView<Args...>::begin () {
+    template <std::size_t N, typename ...Args>
+    inline typename ConstrainedView<N, Args...>::iterator ConstrainedView<N, Args...>::begin () {
         return {*this, 0};
     }
 
-    template <typename ...Args>
-    inline typename ConstrainedView<Args...>::iterator ConstrainedView<Args...>::end () {
+    template <std::size_t N, typename ...Args>
+    inline typename ConstrainedView<N, Args...>::iterator ConstrainedView<N, Args...>::end () {
         if (!componentManager) {
             return begin();
         }

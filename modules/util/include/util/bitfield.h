@@ -22,19 +22,23 @@ namespace util {
     public:
         Bitfield () : data{{0}} {}
 
-        Bitfield (const Bitfield<N>& other) : data{other.data} {}
+        Bitfield (const Bitfield<N>& other) {
+            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
+        }
         Bitfield<N>& operator= (const Bitfield<N>& other) {
             if (this == &other) {
                 return *this;
             }
-            data = other.data;
+            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
 
             return *this;
         }
 
-        Bitfield (Bitfield<N>&& other) noexcept : data{other} {}
+        Bitfield (Bitfield<N>&& other) noexcept {
+            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
+        }
         Bitfield<N>& operator= (Bitfield<N>&& other) noexcept {
-            data = other.data;
+            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
 
             return *this;
         }
@@ -122,11 +126,14 @@ namespace util {
 
             return *this;
         }
-
-        friend bool operator== (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2);
-        friend Bitfield<N> operator& (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2);
-        friend Bitfield<N> operator| (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2);
-        friend Bitfield<N> operator^ (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2);
+        template <std::size_t N2>
+        friend bool operator== (const Bitfield<N2>& bitfield1, const Bitfield<N2>& bitfield2);
+        template <std::size_t N2>
+        friend Bitfield<N2> operator& (const Bitfield<N2>& bitfield1, const Bitfield<N2>& bitfield2);
+        template <std::size_t N2>
+        friend Bitfield<N2> operator| (const Bitfield<N2>& bitfield1, const Bitfield<N2>& bitfield2);
+        template <std::size_t N2>
+        friend Bitfield<N2> operator^ (const Bitfield<N2>& bitfield1, const Bitfield<N2>& bitfield2);
     };
 
     template <std::size_t N>
