@@ -121,6 +121,66 @@ GameInput& PhenylGame::getGameInput () {
     return getShared()->getInput();
 }
 
+void PhenylGame::addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser) {
+    getShared()->addComponentSerialiser(component, std::move(serialiser));
+}
+
+void PhenylGame::addDefaultSerialisers () {
+    addComponentSerialiser<component::EntityMainComponent>("main_comp", [](const component::EntityMainComponent& comp) -> util::DataValue {
+             return comp._serialise();
+        }, [] (const util::DataValue& val) -> util::Optional<component::EntityMainComponent> {
+            component::EntityMainComponent comp{};
+            comp._deserialise(val);
+
+            return {comp};
+        });
+
+    addComponentSerialiser<graphics::FixedModel>("fixed_model", [](graphics::FixedModel& comp) -> util::DataValue {
+            return comp._serialise();
+        }, [] (const util::DataValue& val) -> util::Optional<graphics::FixedModel> {
+            graphics::FixedModel comp{};
+            comp._deserialise(val);
+
+            return {comp};
+        });
+
+    addComponentSerialiser<physics::CollisionComponent>("collision_comp", [](const physics::CollisionComponent& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<physics::CollisionComponent> {
+        physics::CollisionComponent comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
+
+    addComponentSerialiser<graphics::AbsolutePosition>("absolute_position", [](const graphics::AbsolutePosition& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<graphics::AbsolutePosition> {
+        graphics::AbsolutePosition comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
+
+    addComponentSerialiser<component::RotationComponent>("rotation", [](const component::RotationComponent& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<component::RotationComponent> {
+        component::RotationComponent comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
+
+    addComponentSerialiser<EntityType>("entity_type", [](const EntityType& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<EntityType> {
+        EntityType comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
+}
+
 PhenylGameHolder::~PhenylGameHolder () = default;
 
 PhenylGame PhenylGameHolder::getGameObject () const {

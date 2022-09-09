@@ -85,7 +85,7 @@ namespace graphics {
 
         int vertices;
         //glm::vec2 pos;
-        glm::mat2 transform;
+        glm::mat2 transform{{1.0f, 0.0f}, {0.0f, 1.0f}};
         glm::mat2 rotTransform;
         friend component::SerialisableComponent<AbsolutePosition>;
     };

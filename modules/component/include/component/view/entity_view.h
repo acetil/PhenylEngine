@@ -74,8 +74,8 @@ namespace component::view {
         }
 
         template <typename T, typename ...Args>
-        void addComponent (Args... args) {
-            compManager->template addComponent<T>(entityId, args...);
+        void addComponent (Args&&... args) {
+            compManager->template addComponent<T>(entityId, std::forward<Args>(args)...);
         }
 
         template <typename T>

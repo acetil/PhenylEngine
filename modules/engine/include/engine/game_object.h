@@ -23,9 +23,11 @@
 
 namespace view {
     class DebugGameView;
+
 };
 
 namespace game::detail {
+    class ComponentSerialiser;
         class GameObject : public util::SmartHelper<GameObject, true>/*, public std::enable_shared_from_this<GameObject>*/ {
                 private:
                 std::map<std::string, AbstractEntity*> entityRegistry;
@@ -46,7 +48,12 @@ namespace game::detail {
 
                 event::EventScope eventScope;
 
+                util::Map<std::string, std::unique_ptr<ComponentSerialiser>> serialiserMap;
+
                 component::EntityId deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
+
+                void deserialiseEntity2 (component::view::EntityView& entityView, const util::DataValue& entityData);
+                util::DataObject serialiseEntity (component::view::EntityView& entityView);
 
                 public:
                 ~GameObject();
@@ -96,6 +103,8 @@ namespace game::detail {
                 void updateCamera (graphics::Camera& camera);
 
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
+
+                void addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser);
 
                 GameCamera& getCamera ();
                 GameInput& getInput ();

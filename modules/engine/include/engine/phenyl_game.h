@@ -16,13 +16,49 @@ namespace graphics {
 namespace game {
     namespace detail {
         class GameObject;
+        class ComponentSerialiser {
+        public:
+            virtual ~ComponentSerialiser() = default;
+            virtual bool deserialiseComp (component::view::EntityView& entityView, const util::DataValue& serialisedComp) = 0;
+            virtual util::DataValue serialiseComp (component::view::EntityView& entityView) = 0;
+        };
+
+        template <class T, typename SerialiseF, typename DeserialiseF>
+        class ComponentSerialiserImpl : public ComponentSerialiser {
+        private:
+            SerialiseF serialiseF; // (const T&) -> util::DataValue
+            DeserialiseF deserialiseF; // (const util::DataValue&) -> util::Optional<T>
+        public:
+            ComponentSerialiserImpl (SerialiseF f1, DeserialiseF f2) : serialiseF{f1}, deserialiseF{f2} {}
+
+            util::DataValue serialiseComp (component::view::EntityView& entityView) override {
+                return entityView.getComponent<T>()
+                        .thenMap([this](T& comp) -> util::DataValue {
+                            return serialiseF(comp);
+                        })
+                        .orElse({});
+            }
+
+             bool deserialiseComp (component::view::EntityView& entityView, const util::DataValue& serialisedComp) override {
+                auto opt = deserialiseF(serialisedComp);
+
+                opt.ifPresent([&entityView] (T& val) {
+                    entityView.addComponent<T>(std::move(val));
+                });
+
+                return opt;
+            }
+        };
     }
     class PhenylGame {
     private:
         std::weak_ptr<game::detail::GameObject> gameObject;
         [[nodiscard]] std::shared_ptr<game::detail::GameObject> getShared () const;
+        void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser);
     public:
-        explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {}
+        explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {
+            addDefaultSerialisers();
+        }
 
         void registerEntityType (const std::string& name, EntityTypeBuilder entityType);
 
@@ -68,6 +104,13 @@ namespace game {
         }
 
         GameInput& getGameInput ();
+
+        template <class T, typename F1, typename F2>
+        void addComponentSerialiser (const std::string& component, F1 serialiseFunc, F2 deserialiseFunc) {
+            addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl<T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
+        }
+
+        void addDefaultSerialisers ();
     };
 
     class PhenylGameHolder {

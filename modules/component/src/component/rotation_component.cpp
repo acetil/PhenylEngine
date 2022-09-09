@@ -42,5 +42,5 @@ util::DataValue RotationComponent::serialise () const {
 }
 
 void RotationComponent::deserialise (const util::DataValue& val) {
-    rotation = val.get<float>();
+    *this = val.get<float>();
 }

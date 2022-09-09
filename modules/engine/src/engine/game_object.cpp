@@ -11,6 +11,7 @@
 #include "common/events/map_load.h"
 #include "component/component_serialisation.h"
 #include "engine/map/map_reader.h"
+#include "engine/phenyl_game.h"
 
 using namespace game;
 
@@ -66,13 +67,21 @@ component::EntityId detail::GameObject::createNewEntityInstance (const std::stri
 component::EntityId detail::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
     auto entityId = entityComponentManager->createEntity();
     auto serialisedObj = serialised.get<util::DataObject>();
-    setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
+    //setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
 
-    component::deserialiseComps<ENTITY_LIST>(entityComponentManager, entityId, serialisedObj);
+
+    //component::deserialiseComps<ENTITY_LIST>(entityComponentManager, entityId, serialisedObj);
+
 
     //auto viewCore = view::ViewCore(entityComponentManager);
     //auto entityView = view::EntityView(viewCore, entityId, eventBus);
     auto entityView = entityComponentManager->getEntityView(entityId);
+    const auto& entityType = entityTypes.at(type);
+    entityView.addComponent<EntityType>(entityType);
+    entityView.addComponent<AbstractEntity*>(entityType.entityFactory());
+    entityView.addComponent<std::shared_ptr<EntityController>>(entityType.defaultController);
+
+    deserialiseEntity2(entityView, serialisedObj);
     auto gameView = view::GameView(this);
 
     //entityView.
@@ -217,7 +226,10 @@ void detail::GameObject::dumpMap (const std::string& filepath) {
     auto gameView = view::GameView(this);
     auto ids = entityComponentManager->getComponent<component::EntityId>().orElse(nullptr);
     for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
-        auto compData = component::serialise<ENTITY_LIST>(entityComponentManager, ids[i]);
+        //auto compData = component::serialise<ENTITY_LIST>(entityComponentManager, ids[i]);
+        auto view = entityComponentManager->getEntityView(ids[i]);
+        auto compDataObj = serialiseEntity(view);
+        auto compData = util::DataValue{std::move(compDataObj)};
         //auto entityView = view::EntityView(view::ViewCore(entityComponentManager), ids[i], eventBus);
         auto entityView = entityComponentManager->getEntityView(ids[i]);
         compData.get<util::DataObject>()["data"] =
@@ -249,4 +261,37 @@ void detail::GameObject::addEventHandlers (event::EventBus::SharedPtr _eventBus)
 
 GameInput& detail::GameObject::getInput () {
     return gameInput;
+}
+
+void detail::GameObject::addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser) {
+    serialiserMap[component] = std::move(serialiser);
+}
+
+void detail::GameObject::deserialiseEntity2 (component::view::EntityView& entityView, const util::DataValue& entityData) {
+    if (!entityData.is<util::DataObject>()) {
+        logging::log(LEVEL_DEBUG, "Not object!");
+        return;
+    }
+    logging::log(LEVEL_DEBUG, "Entity id: {}", entityView.getId().value());
+    logging::log(LEVEL_DEBUG, entityData.toString());
+    const auto& dataObj = entityData.get<util::DataObject>();
+
+    for (const auto& [compId, serialiser] : serialiserMap.kv()) {
+        if (dataObj.contains(compId)) {
+            serialiser->deserialiseComp(entityView, dataObj.at(compId));
+        }
+    }
+}
+
+util::DataObject detail::GameObject::serialiseEntity (component::view::EntityView& entityView) {
+    util::DataObject entityData;
+
+    for (const auto& [compId, serialiser] : serialiserMap.kv()) {
+        util::DataValue val = serialiser->serialiseComp(entityView);
+        if (!val.empty()) {
+            entityData[compId] = std::move(val);
+        }
+    }
+
+    return entityData;
 }
