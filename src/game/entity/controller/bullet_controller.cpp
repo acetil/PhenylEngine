@@ -15,9 +15,9 @@ void game::BulletController::setTextureIds (graphics::TextureAtlas& atlas) {
 }
 
 void game::BulletController::initEntity (component::view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
-    const auto& velocity = data.get<util::DataObject>().at("vel").get<util::DataObject>();
-    entityView.getComponent<component::EntityMainComponent>().ifPresent([&velocity] (component::EntityMainComponent& comp) {
-       comp.vel = glm::vec2{velocity.at("x"), velocity.at("y")};
+    const auto& velocity = data.get<util::DataObject>().at("velocity").get<util::DataObject>();
+    entityView.getComponent<component::FrictionKinematicsMotion2D>().ifPresent([&velocity] (component::FrictionKinematicsMotion2D& comp) {
+       comp.velocity = glm::vec2{velocity.at("x"), velocity.at("y")};
     });
     //entityView.velocity = glm::vec2{velocity.at("x"), velocity.at("y")};
 }

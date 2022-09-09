@@ -2532,9 +2532,9 @@ static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])
    int32x4_t out##_l = vmull_s16(vget_low_s16(inq), coeff); \
    int32x4_t out##_h = vmull_s16(vget_high_s16(inq), coeff)
 
-#define dct_long_mac(out, acc, inq, coeff) \
-   int32x4_t out##_l = vmlal_s16(acc##_l, vget_low_s16(inq), coeff); \
-   int32x4_t out##_h = vmlal_s16(acc##_h, vget_high_s16(inq), coeff)
+#define dct_long_mac(out, acceleration, inq, coeff) \
+   int32x4_t out##_l = vmlal_s16(acceleration##_l, vget_low_s16(inq), coeff); \
+   int32x4_t out##_h = vmlal_s16(acceleration##_h, vget_high_s16(inq), coeff)
 
 #define dct_widen(out, inq) \
    int32x4_t out##_l = vshll_n_s16(vget_low_s16(inq), 12); \

@@ -4,7 +4,7 @@
 #include "serialisable_component.h"
 
 namespace component {
-    struct EntityMainComponent : SerialisableComponent<EntityMainComponent> {
+    struct FrictionKinematicsMotion2D : SerialisableComponent<FrictionKinematicsMotion2D> {
     private:
         static constexpr std::string_view name = "main_comp";
         util::DataValue serialise () const;
@@ -14,10 +14,11 @@ namespace component {
         }
     public:
         //glm::vec2 pos;
-        glm::vec2 vel;
-        glm::vec2 acc;
+        glm::vec2 velocity;
+        glm::vec2 acceleration;
         float constFriction;
         float linFriction;
-        friend SerialisableComponent<EntityMainComponent>;
+
+        friend SerialisableComponent<FrictionKinematicsMotion2D>;
     };
 }

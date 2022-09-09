@@ -5,7 +5,7 @@
     },
     "entities": [
         {
-            "absolute_position": {
+            "transform_2D": {
                 "transform": [
                     {
                         "x": -4.371139006309477e-09,
@@ -17,7 +17,7 @@
                     }
                 ]
             },
-            "collision_comp": {
+            "collision_comp_2D": {
                 "coll_scale": [
                     {
                         "x": -4.371139006309477e-09,
@@ -54,8 +54,8 @@
                 },
                 "type_name": "test_entity"
             },
-            "fixed_model": "test8",
-            "main_comp": {
+            "model_2D": "test8",
+            "friction_kinematics_2D": {
                 "acc": {
                     "x": 0.0,
                     "y": 0.0
@@ -75,11 +75,11 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "rotation": -1.5707963705062866,
+            "rotation_2D": -1.5707963705062866,
             "type": "test_entity"
         },
         {
-            "absolute_position": {
+            "transform_2D": {
                 "transform": [
                     {
                         "x": 0.08000000566244125,
@@ -91,7 +91,7 @@
                     }
                 ]
             },
-            "collision_comp": {
+            "collision_comp_2D": {
                 "coll_scale": [
                     {
                         "x": 0.08000000566244125,
@@ -128,8 +128,8 @@
                 },
                 "type_name": "wall_entity"
             },
-            "fixed_model": "test10",
-            "main_comp": {
+            "model_2D": "test10",
+            "friction_kinematics_2D": {
                 "acc": {
                     "x": 0.0,
                     "y": 0.0
@@ -149,11 +149,11 @@
                 "x": -0.4000000059604645,
                 "y": 0.0
             },
-            "rotation": 0.0,
+            "rotation_2D": 0.0,
             "type": "wall_entity"
         },
         {
-            "absolute_position": {
+            "transform_2D": {
                 "transform": [
                     {
                         "x": 0.08000000566244125,
@@ -165,7 +165,7 @@
                     }
                 ]
             },
-            "collision_comp": {
+            "collision_comp_2D": {
                 "coll_scale": [
                     {
                         "x": 0.08000000566244125,
@@ -202,8 +202,8 @@
                 },
                 "type_name": "wall_entity"
             },
-            "fixed_model": "test10",
-            "main_comp": {
+            "model_2D": "test10",
+            "friction_kinematics_2D": {
                 "acc": {
                     "x": 0.0,
                     "y": 0.0
@@ -223,11 +223,11 @@
                 "x": 0.4000000059604645,
                 "y": 0.0
             },
-            "rotation": 0.0,
+            "rotation_2D": 0.0,
             "type": "wall_entity"
         },
         {
-            "absolute_position": {
+            "transform_2D": {
                 "transform": [
                     {
                         "x": 0.48000001907348633,
@@ -239,7 +239,7 @@
                     }
                 ]
             },
-            "collision_comp": {
+            "collision_comp_2D": {
                 "coll_scale": [
                     {
                         "x": 0.48000001907348633,
@@ -278,8 +278,8 @@
                 },
                 "type_name": "wall_entity"
             },
-            "fixed_model": "test10",
-            "main_comp": {
+            "model_2D": "test10",
+            "friction_kinematics_2D": {
                 "acc": {
                     "x": 0.0,
                     "y": 0.0
@@ -299,7 +299,7 @@
                 "x": 0.0,
                 "y": -0.5
             },
-            "rotation": 0.0,
+            "rotation_2D": 0.0,
             "type": "wall_entity"
         }
     ],

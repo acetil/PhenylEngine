@@ -4,7 +4,7 @@
 #include "serialisable_component.h"
 
 namespace component {
-    struct RotationComponent : SerialisableComponent<RotationComponent> {
+    struct Rotation2D : SerialisableComponent<Rotation2D> {
     private:
         static constexpr std::string_view name = "rotation";
         util::DataValue serialise () const;
@@ -15,11 +15,11 @@ namespace component {
     public:
         glm::mat2 rotMatrix;
         float rotation;
-        RotationComponent& operator= (float newRot) {
+        Rotation2D& operator= (float newRot) {
             rotation = newRot;
             rotMatrix = {{glm::cos(newRot), glm::sin(newRot)}, {-glm::sin(newRot), glm::cos(newRot)}};
             return *this;
         }
-        friend SerialisableComponent<RotationComponent>;
+        friend SerialisableComponent<Rotation2D>;
     };
 }

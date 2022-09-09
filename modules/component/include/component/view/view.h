@@ -176,15 +176,15 @@ namespace view {
     /*class ViewPropertyRotation : public ViewPropertyCustom<float, ViewPropertyRotation> {
     private:
         float newVal{};
-        component::RotationComponent* compPtr{};
+        component::Rotation2D* compPtr{};
         component::EntityComponentManager::SharedPtr manager{};
         event::EventBus::SharedPtr eventBus{};
         component::EntityId entityId{};
     public:
         explicit ViewPropertyRotation (ViewCoreList<component::entity_list> core,
                                        event::EventBus::SharedPtr bus, component::EntityId _entityId) :
-                ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::RotationComponent>() + core.getPos(_entityId)),
-                newVal((core.getPointer<component::RotationComponent>() + core.getPos(_entityId))->rotation),
+                ViewPropertyCustom<float, ViewPropertyRotation>(&newVal), compPtr(core.getPointer<component::Rotation2D>() + core.getPos(_entityId)),
+                newVal((core.getPointer<component::Rotation2D>() + core.getPos(_entityId))->rotation),
                 manager(core.manager), eventBus(std::move(bus)), entityId(_entityId) {};
         ViewPropertyRotation () : ViewPropertyCustom<float, ViewPropertyRotation>(nullptr) {}
         void fieldChangeCallback () {
@@ -261,7 +261,7 @@ namespace view {
         ViewProperty<float> constantFriction;
         ViewProperty<float> linearFriction;
 
-        ViewProperty<graphics::FixedModel> model; // TODO: fix
+        ViewProperty<graphics::Model2D> model; // TODO: fix
 
         ViewPropertyRotation rotation;
 
@@ -296,21 +296,21 @@ namespace view {
             rotation(core, bus, id),
             entity(getPointer<game::AbstractEntity*>() +  getPos(id)),
             controller(getPointer<std::shared_ptr<game::EntityController>>() + getPos(id)),
-            position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, pos, id))),
-            velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, vel, id))),
-            acceleration(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, acc, id))),
+            position(ViewProperty(VIEW_GET_PROPERTY_PTR(component::FrictionKinematicsMotion2D, pos, id))),
+            velocity(ViewProperty(VIEW_GET_PROPERTY_PTR(component::FrictionKinematicsMotion2D, velocity, id))),
+            acceleration(ViewProperty(VIEW_GET_PROPERTY_PTR(component::FrictionKinematicsMotion2D, acceleration, id))),
 
-            constantFriction(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, constFriction, id))),
-            linearFriction(ViewProperty(VIEW_GET_PROPERTY_PTR(component::EntityMainComponent, linFriction, id))),
+            constantFriction(ViewProperty(VIEW_GET_PROPERTY_PTR(component::FrictionKinematicsMotion2D, constFriction, id))),
+            linearFriction(ViewProperty(VIEW_GET_PROPERTY_PTR(component::FrictionKinematicsMotion2D, linFriction, id))),
 
-            model(ViewProperty(getPointer<graphics::FixedModel>() + getPos(id))),
+            model(ViewProperty(getPointer<graphics::Model2D>() + getPos(id))),
 
-            collisionLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))),
-            resolveLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, resolveLayers, id))),
-            eventLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, layers, id))),
-            modelScale(VIEW_GET_PROPERTY_PTR(graphics::AbsolutePosition, transform, id)),
-            hitboxScale(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, bbMap, id),
-                        VIEW_GET_PROPERTY_PTR(physics::CollisionComponent, outerRadius, id)){};
+            collisionLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent2D, layers, id))),
+            resolveLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent2D, resolveLayers, id))),
+            eventLayers(ViewProperty(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent2D, layers, id))),
+            modelScale(VIEW_GET_PROPERTY_PTR(graphics::Transform2D, transform, id)),
+            hitboxScale(VIEW_GET_PROPERTY_PTR(physics::CollisionComponent2D, bbMap, id),
+                        VIEW_GET_PROPERTY_PTR(physics::CollisionComponent2D, outerRadius, id)){};
 
         EntityView withId (component::EntityId id) {
             return {viewCore, id, eventBus};

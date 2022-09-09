@@ -127,46 +127,46 @@ void PhenylGame::addComponentSerialiserInt (const std::string& component, std::u
 }
 
 void PhenylGame::addDefaultSerialisers () {
-    addComponentSerialiser<component::EntityMainComponent>("main_comp", [](const component::EntityMainComponent& comp) -> util::DataValue {
+    addComponentSerialiser<component::FrictionKinematicsMotion2D>("friction_kinematics_2D", [](const component::FrictionKinematicsMotion2D& comp) -> util::DataValue {
              return comp._serialise();
-        }, [] (const util::DataValue& val) -> util::Optional<component::EntityMainComponent> {
-            component::EntityMainComponent comp{};
+        }, [] (const util::DataValue& val) -> util::Optional<component::FrictionKinematicsMotion2D> {
+            component::FrictionKinematicsMotion2D comp{};
             comp._deserialise(val);
 
             return {comp};
         });
 
-    addComponentSerialiser<graphics::FixedModel>("fixed_model", [](graphics::FixedModel& comp) -> util::DataValue {
+    addComponentSerialiser<graphics::Model2D>("model_2D", [](graphics::Model2D& comp) -> util::DataValue {
             return comp._serialise();
-        }, [] (const util::DataValue& val) -> util::Optional<graphics::FixedModel> {
-            graphics::FixedModel comp{};
+        }, [] (const util::DataValue& val) -> util::Optional<graphics::Model2D> {
+            graphics::Model2D comp{};
             comp._deserialise(val);
 
             return {comp};
         });
 
-    addComponentSerialiser<physics::CollisionComponent>("collision_comp", [](const physics::CollisionComponent& comp) -> util::DataValue {
+    addComponentSerialiser<physics::CollisionComponent2D>("collision_comp_2D", [](const physics::CollisionComponent2D& comp) -> util::DataValue {
         return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<physics::CollisionComponent> {
-        physics::CollisionComponent comp{};
+    }, [] (const util::DataValue& val) -> util::Optional<physics::CollisionComponent2D> {
+        physics::CollisionComponent2D comp{};
         comp._deserialise(val);
 
         return {comp};
     });
 
-    addComponentSerialiser<graphics::AbsolutePosition>("absolute_position", [](const graphics::AbsolutePosition& comp) -> util::DataValue {
+    addComponentSerialiser<graphics::Transform2D>("transform_2D", [](const graphics::Transform2D& comp) -> util::DataValue {
         return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<graphics::AbsolutePosition> {
-        graphics::AbsolutePosition comp{};
+    }, [] (const util::DataValue& val) -> util::Optional<graphics::Transform2D> {
+        graphics::Transform2D comp{};
         comp._deserialise(val);
 
         return {comp};
     });
 
-    addComponentSerialiser<component::RotationComponent>("rotation", [](const component::RotationComponent& comp) -> util::DataValue {
+    addComponentSerialiser<component::Rotation2D>("rotation_2D", [](const component::Rotation2D& comp) -> util::DataValue {
         return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<component::RotationComponent> {
-        component::RotationComponent comp{};
+    }, [] (const util::DataValue& val) -> util::Optional<component::Rotation2D> {
+        component::Rotation2D comp{};
         comp._deserialise(val);
 
         return {comp};

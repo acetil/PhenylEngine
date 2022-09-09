@@ -6,7 +6,7 @@
 
 using namespace component;
 
-/*void rotateEntityBy2 (EntityId entityId, RotationComponent& comp, float deltaTheta, const EntityComponentManager::SharedPtr& manager, const event::EventBus::SharedPtr& eventBus) {
+/*void rotateEntityBy2 (EntityId entityId, Rotation2D& comp, float deltaTheta, const EntityComponentManager::SharedPtr& manager, const event::EventBus::SharedPtr& eventBus) {
     auto oldMat = comp.rotMatrix;
     auto rotMat = glm::mat2{{cos(deltaTheta), -1.0f * sin(deltaTheta)}, {sin(deltaTheta), cos(deltaTheta)}};
     comp.rotMatrix = oldMat * rotMat;
@@ -15,8 +15,8 @@ using namespace component;
 }
 
 void component::rotateEntity (EntityId entityId, float newRotation, EntityComponentManager::SharedPtr manager, const event::EventBus::SharedPtr& eventBus) {
-    //auto component = manager->getObjectDataPtr<RotationComponent>(entityId);
-    manager->getObjectData<RotationComponent>(entityId).ifPresent([entityId, newRotation, &manager, eventBus](RotationComponent& comp) {
+    //auto component = manager->getObjectDataPtr<Rotation2D>(entityId);
+    manager->getObjectData<Rotation2D>(entityId).ifPresent([entityId, newRotation, &manager, eventBus](Rotation2D& comp) {
        if (abs(newRotation - comp.rotation) > std::numeric_limits<float>::epsilon()) {
            rotateEntityBy2(entityId, comp, newRotation - comp.rotation, manager, eventBus);
        }
@@ -26,21 +26,21 @@ void component::rotateEntity (EntityId entityId, float newRotation, EntityCompon
     }
 }
 void component::rotateEntityBy (EntityId entityId, float deltaTheta, const EntityComponentManager::SharedPtr& manager, const event::EventBus::SharedPtr& eventBus) {
-    /*auto component = manager->getObjectDataPtr<RotationComponent>(entityId);
+    /*auto component = manager->getObjectDataPtr<Rotation2D>(entityId);
     glm::mat2 oldMat = component->rotMatrix;
     auto rotMat = glm::mat2({{cos(deltaTheta), -1.0f * sin(deltaTheta)}, {sin(deltaTheta), cos(deltaTheta)}});
     component->rotMatrix = oldMat * rotMat;
     eventBus->raiseEvent(event::EntityRotationEvent(entityId, manager, oldMat, rotMat));
     component->rotation += deltaTheta;
-    manager->getObjectData<RotationComponent>(entityId).ifPresent([entityId, deltaTheta, &manager, eventBus](RotationComponent& comp) {
+    manager->getObjectData<Rotation2D>(entityId).ifPresent([entityId, deltaTheta, &manager, eventBus](Rotation2D& comp) {
         rotateEntityBy2(entityId, comp, deltaTheta, manager, eventBus);
     });
 }*/
 
-util::DataValue RotationComponent::serialise () const {
+util::DataValue Rotation2D::serialise () const {
     return (util::DataValue)rotation;
 }
 
-void RotationComponent::deserialise (const util::DataValue& val) {
+void Rotation2D::deserialise (const util::DataValue& val) {
     *this = val.get<float>();
 }

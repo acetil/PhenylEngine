@@ -80,11 +80,11 @@ namespace graphics {
 }
 
 
-//void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup);
+//void bufferPosData (Model2D* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, Transform2D*> tup);
 //static void bufferPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffers);
-//void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf);
+//void bufferUvData (Model2D* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf);
 //static void bufferUvData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer);
-//void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs);
+//void bufferActualPosData (Transform2D* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs);
 //static void bufferActualPosData (const component::EntityComponentManager::SharedPtr& manager, Buffer* buffer);
 std::string EntityRenderLayer::getName () {
     return "entity_layer";
@@ -103,46 +103,46 @@ void EntityRenderLayer::gatherData () {
 }
 
 void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
-    /*componentManager->applyFunc<FixedModel>(bufferPosData, std::pair(&buffers[0],
-                                                            componentManager->getComponent<AbsolutePosition>().orElse(nullptr)));*/
+    /*componentManager->applyFunc<Model2D>(bufferPosData, std::pair(&buffers[0],
+                                                            componentManager->getComponent<Transform2D>().orElse(nullptr)));*/
     //bufferPosData(componentManager, &buffers[0]);
 
-    //componentManager->applyFunc<FixedModel>(bufferUvData, &buffers[1]);
+    //componentManager->applyFunc<Model2D>(bufferUvData, &buffers[1]);
 
     //bufferUvData(componentManager, &buffers[1]);
 
     /*for (auto i : *componentManager) {
-        i.applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition& absPos, component::RotationComponent& rotComp) {
+        i.applyFunc<Transform2D, component::Rotation2D>([](Transform2D& absPos, component::Rotation2D& rotComp) {
             absPos.transform *= rotComp.rotMatrix;
         });
     }*/
-    for (const auto& i : componentManager->getConstrainedView<AbsolutePosition, component::RotationComponent>()) {
-        i.get<AbsolutePosition>().rotTransform = i.get<AbsolutePosition>().transform * i.get<component::RotationComponent>().rotMatrix;
+    for (const auto& i : componentManager->getConstrainedView<Transform2D, component::Rotation2D>()) {
+        i.get<Transform2D>().rotTransform = i.get<Transform2D>().transform * i.get<component::Rotation2D>().rotMatrix;
     }
 
-    /*componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
+    /*componentManager->applyFunc<Transform2D, component::Rotation2D>([](Transform2D* absPos, component::Rotation2D* rotComp, int numEntities, int) {
         for (int i = 0; i < numEntities; i++) {
             absPos[i].transform *= rotComp[i].rotMatrix;
         }
     });*/
 
-    //componentManager->applyFunc<AbsolutePosition>(bufferActualPosData, &buffers[2]);
+    //componentManager->applyFunc<Transform2D>(bufferActualPosData, &buffers[2]);
     //bufferActualPosData(componentManager, &buffers[2]);
 
     entityPipeline->bufferData(componentManager);
 
-    /*componentManager->applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition* absPos, component::RotationComponent* rotComp, int numEntities, int) {
+    /*componentManager->applyFunc<Transform2D, component::Rotation2D>([](Transform2D* absPos, component::Rotation2D* rotComp, int numEntities, int) {
         for (int i = 0; i < numEntities; i++) {
             absPos[i].transform *= glm::inverse(rotComp[i].rotMatrix);
         }
     });*/
     /*for (auto i : *componentManager) {
-        i.applyFunc<AbsolutePosition, component::RotationComponent>([](AbsolutePosition& absPos, component::RotationComponent& rotComp) {
+        i.applyFunc<Transform2D, component::Rotation2D>([](Transform2D& absPos, component::Rotation2D& rotComp) {
             absPos.transform *= glm::inverse(rotComp.rotMatrix);
         });
     }*/
-    /*for (const auto& i :  componentManager->getConstrainedView<AbsolutePosition, component::RotationComponent>()) {
-        i.get<AbsolutePosition>().transform *= glm::inverse(i.get<component::RotationComponent>().rotMatrix);
+    /*for (const auto& i :  componentManager->getConstrainedView<Transform2D, component::Rotation2D>()) {
+        i.get<Transform2D>().transform *= glm::inverse(i.get<component::Rotation2D>().rotMatrix);
     }*/
 
     //numTriangles = buffers[0].currentSize() / sizeof(float) / 2 / 3;
@@ -189,7 +189,7 @@ EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
 
 EntityRenderLayer::~EntityRenderLayer () = default;
 
-/*void bufferPosData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, AbsolutePosition*> tup) {
+/*void bufferPosData (Model2D* comp, int numEntities, [[maybe_unused]] int direction, std::pair<Buffer*, Transform2D*> tup) {
     auto [buf, modComp] = tup;
     for (int i = 0; i < numEntities; i++) {
         //logging::logf(LEVEL_DEBUG, "Num vertices: %d", comp[i].positionData.size());
@@ -213,13 +213,13 @@ EntityRenderLayer::~EntityRenderLayer () = default;
 
 }*/
 static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& buffer) {
-    for (const auto& i : manager->getConstrainedView<FixedModel, AbsolutePosition>()) {
-        auto& model = i.get<FixedModel>();
+    for (const auto& i : manager->getConstrainedView<Model2D, Transform2D>()) {
+        auto& model = i.get<Model2D>();
         buffer.pushData(model.positionData.begin(), model.positionData.end());
-        i.get<AbsolutePosition>().vertices = model.positionData.size();
+        i.get<Transform2D>().vertices = model.positionData.size();
     }
 }
-/*void bufferUvData (FixedModel* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf) {
+/*void bufferUvData (Model2D* comp, int numEntities, [[maybe_unused]] int direction, Buffer* buf) {
     for (int i = 0; i < numEntities; i++) {
         buf->pushData(comp->uvData.begin(), comp->uvData.size());
         comp++;
@@ -227,11 +227,11 @@ static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr
 }*/
 
 static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2> buffer) {
-    for (const auto& i : manager->getConstrainedView<FixedModel>()) {
-        buffer.pushData(i.get<FixedModel>().uvData.begin(), i.get<FixedModel>().uvData.end());
+    for (const auto& i : manager->getConstrainedView<Model2D>()) {
+        buffer.pushData(i.get<Model2D>().uvData.begin(), i.get<Model2D>().uvData.end());
     }
 }
-/*void bufferActualPosData (AbsolutePosition* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs) {
+/*void bufferActualPosData (Transform2D* comp, int numEntities, [[maybe_unused]] int direction, Buffer* bufs) {
     for (int i = 0; i < numEntities; i++) {
         //logging::logf(LEVEL_DEBUG, "Abs pos: <%f, %f>", comp->pos.x, comp->pos.y);
         for (int j = 0; j < comp->vertices; j++) {
@@ -245,8 +245,8 @@ static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr&
 }*/
 
 static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& offsetBuffer, Buffer<glm::mat2>& transformBuffer) {
-    for (const auto& i : manager->getConstrainedView<AbsolutePosition, component::Position2D>()) {
-        auto& absPos = i.get<AbsolutePosition>();
+    for (const auto& i : manager->getConstrainedView<Transform2D, component::Position2D>()) {
+        auto& absPos = i.get<Transform2D>();
         auto& posComp = i.get<component::Position2D>();
         for (int j = 0; j < absPos.vertices; j++) {
             offsetBuffer.pushData(posComp.get());

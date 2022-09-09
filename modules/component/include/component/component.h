@@ -49,8 +49,8 @@ namespace view {
 }
 
 namespace graphics {
-    class FixedModel;
-    class AbsolutePosition;
+    class Model2D;
+    class Transform2D;
 }
 namespace component {
 /*    template <typename ...Args>
@@ -190,8 +190,8 @@ namespace component {
     using ComponentManager2 = typename ComponentManagerWrap<T>::type;
 */
 
-    using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::EntityMainComponent,
-            graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>>; // TODO: remove includes like AbstractEntity*
+    using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::FrictionKinematicsMotion2D,
+            graphics::Model2D, physics::CollisionComponent2D, graphics::Transform2D, Rotation2D, game::EntityType, std::shared_ptr<game::EntityController>>; // TODO: remove includes like AbstractEntity*
 #define ENTITY_LIST game::AbstractEntity*, component::EntityMainComponent, graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, component::RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>
 
     //using EntityComponentManager = ComponentManager2<entity_list>;

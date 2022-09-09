@@ -38,13 +38,13 @@ int game::Map::getHeight () {
     return height;
 }
 
-std::vector<std::tuple<glm::vec2, graphics::AbsolutePosition, graphics::FixedModel>> Map::getModels () {
-    std::vector<std::tuple<glm::vec2, graphics::AbsolutePosition, graphics::FixedModel>> models;
+std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> Map::getModels () {
+    std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> models;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
             auto model = atlas.getModel(tiles[i]->getModelId());
-            auto transform = graphics::AbsolutePosition{static_cast<int>(model.positionData.size()),
-                                                  glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
+            auto transform = graphics::Transform2D{static_cast<int>(model.positionData.size()),
+                                                   glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
             models.emplace_back(glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize}, transform, model);
         }
     }

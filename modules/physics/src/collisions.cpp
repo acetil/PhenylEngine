@@ -18,7 +18,7 @@ inline float getSign (glm::vec2 vec, glm::vec2 basis) {
     }
 }
 
-inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, CollisionComponent& comp2, glm::vec2 displacement) {
+inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent2D& comp1, CollisionComponent2D& comp2, glm::vec2 displacement) {
     if (!(comp1.layers & comp2.masks) && !(comp2.layers & comp1.masks)) {
         return std::pair(false, glm::vec2({0,0}));
     }
@@ -125,7 +125,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
     return std::pair(true, smallestDispVec);
 }
 
-/*void physics::checkCollisionsEntity (CollisionComponent* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults) {
+/*void physics::checkCollisionsEntity (CollisionComponent2D* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults) {
     for (int i = 0; i < numEntities; i++) {
         auto compPtr = comp + 1;
         for (int j = i + 1; j < numEntities; j++) {
@@ -142,8 +142,8 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent& comp1, Col
 void physics::checkCollisionsEntity (const component::EntityComponentManager::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
     /*for (auto i = compManager->begin(); i != compManager->end(); i++) {
         for (auto j = i + 1; j != compManager->end(); j++) {
-            (*i).applyFunc<component::EntityId, CollisionComponent>([&j, &collisionResults](component::EntityId& id1, CollisionComponent& comp1) {
-                (*j).applyFunc<component::EntityId, CollisionComponent>([&](component::EntityId& id2, CollisionComponent& comp2) {
+            (*i).applyFunc<component::EntityId, CollisionComponent2D>([&j, &collisionResults](component::EntityId& id1, CollisionComponent2D& comp1) {
+                (*j).applyFunc<component::EntityId, CollisionComponent2D>([&](component::EntityId& id2, CollisionComponent2D& comp2) {
                     auto coll = entityCollision(comp1, comp2);
                     if (coll.first) {
                         collisionResults.emplace_back(id1, id2, coll.second);
@@ -152,7 +152,7 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
             });
         }
     }*/
-    auto consView = compManager->getConstrainedView<CollisionComponent, component::EntityMainComponent, component::Position2D>();
+    auto consView = compManager->getConstrainedView<CollisionComponent2D, component::FrictionKinematicsMotion2D, component::Position2D>();
 
     for (auto i = consView.begin(); i != consView.end(); i++) {
         auto j = i;
@@ -161,7 +161,7 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
             break;
         }*/
         for ( ; j != consView.end(); j++) {
-            auto coll = entityCollision((*i).get<CollisionComponent>(), (*j).get<CollisionComponent>(),
+            auto coll = entityCollision((*i).get<CollisionComponent2D>(), (*j).get<CollisionComponent2D>(),
                     (*i).get<component::Position2D>().get() - (*j).get<component::Position2D>().get());
             if (coll.first) {
                 collisionResults.emplace_back((*i).getId(), (*j).getId(), coll.second);
@@ -170,7 +170,7 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
     }
 }
 
-util::DataValue physics::CollisionComponent::serialise () const {
+util::DataValue physics::CollisionComponent2D::serialise () const {
     util::DataObject obj;
     util::DataArray collScale;
     for (int i = 0; i < 2; i++) {
@@ -185,7 +185,7 @@ util::DataValue physics::CollisionComponent::serialise () const {
     return (util::DataValue) obj;
 }
 
-void physics::CollisionComponent::deserialise (const util::DataValue& val) {
+void physics::CollisionComponent2D::deserialise (const util::DataValue& val) {
     auto& obj = val.get<util::DataObject>();
     if (obj.contains("coll_scale")) {
         // TODO

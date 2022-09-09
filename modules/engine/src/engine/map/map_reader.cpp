@@ -334,9 +334,9 @@ Map::SharedPtr game::readMapNew (const std::string& path, PhenylGame gameObject)
 
     for (auto& i : mapData.at("entities").get<util::DataArray>()) {
         auto entityObj = i.get<util::DataObject>();
-        util::DataObject pos = entityObj.at("main_comp").get<util::DataObject>().at("pos");
+        auto pos = entityObj.at("pos_2D").get<glm::vec2>();
 
-        entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(), (util::DataValue)entityObj);
+        entities.emplace_back(entityObj.at("type").get<std::string>(), pos.x, pos.y, entityObj.at("rotation_2D").get<float>(), (util::DataValue)entityObj);
         /*if (entityObj.contains("data")) {
             entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"),
                                   entityObj.at("data"));

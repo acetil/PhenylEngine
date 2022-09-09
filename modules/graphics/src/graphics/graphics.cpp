@@ -140,7 +140,7 @@ void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
     //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
     getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
 
-        event.compManager->addComponent<FixedModel>(event.entityId, atlas.getModel(texId));
+        event.compManager->addComponent<Model2D>(event.entityId, atlas.getModel(texId));
 
         //event.entityView.model = atlas.getModel((texId));
     });

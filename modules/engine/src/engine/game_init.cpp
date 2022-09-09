@@ -63,10 +63,10 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
 
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus) {
     auto manager = component::EntityComponentManager::NewSharedPtr(255);
-    /*manager->addComponent<component::EntityMainComponent>("main_component");
-    manager->addComponent<graphics::FixedModel>("model");
-    manager->addComponent<physics::CollisionComponent>("collision_component");
-    manager->addComponent<graphics::AbsolutePosition>("model_pos");*/
+    /*manager->addComponent<component::FrictionKinematicsMotion2D>("main_component");
+    manager->addComponent<graphics::Model2D>("model");
+    manager->addComponent<physics::CollisionComponent2D>("collision_component");
+    manager->addComponent<graphics::Transform2D>("model_pos");*/
     return manager;
 }
 

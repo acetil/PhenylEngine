@@ -216,7 +216,7 @@ void graphics::TextureAtlas::createAtlas (const std::vector<Model>& modelsIn) {
             memcpy(uvPtrN, uvSpan.begin(), uvSpan.size() * sizeof(float));
             uvPtrN += uvSpan.size() / 2;
         }
-        models.emplace_back(FixedModel(originalPos, posPtr, originalUv, uvPtrN, m.modelName));
+        models.emplace_back(Model2D(originalPos, posPtr, originalUv, uvPtrN, m.modelName));
         modelIdMap[m.modelName] = models.size() - 1;
     }
 
@@ -247,11 +247,11 @@ void TextureAtlas::loadTextureAtlas (Renderer* renderer) {
     //delete[] data;
 }
 
-FixedModel TextureAtlas::getModel (int modelId) {
+Model2D TextureAtlas::getModel (int modelId) {
     return models[modelId];
 }
 
-[[maybe_unused]] FixedModel TextureAtlas::getModel (const std::string& name) {
+[[maybe_unused]] Model2D TextureAtlas::getModel (const std::string& name) {
     return models[modelIdMap[name]];
 }
 

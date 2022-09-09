@@ -20,7 +20,7 @@ namespace graphics {
             std::shared_ptr<glm::vec2[]> positionData;
             std::shared_ptr<glm::vec2[]> uvData;
             //float* uvData;
-            std::vector<FixedModel> models;
+            std::vector<Model2D> models;
             std::unordered_map<std::string, int> modelIdMap;
         public:
             void createAtlas (const std::vector<Model>& modelsIn);
@@ -28,10 +28,10 @@ namespace graphics {
             void loadTextureAtlas (Renderer* renderer);
             //Texture* getTexture (int textureId);
             //Texture* getTexture (std::string name);
-            FixedModel getModel (int modelId);
+            Model2D getModel (int modelId);
 
             [[maybe_unused]]
-            FixedModel getModel (const std::string& name);
+            Model2D getModel (const std::string& name);
             int getModelId (const std::string& name);
             void bindTextureAtlas ();
             //TextureAtlas(TextureAtlas&) = delete;

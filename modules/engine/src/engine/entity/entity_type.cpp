@@ -11,21 +11,21 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     //*componentManager->getObjectDataPtr<EntityType>(entityId).orElse(nullptr) = type;
     componentManager->addComponent<EntityType>(entityId, type);
 
-    //auto physComp = componentManager->getObjectDataPtr<component::EntityMainComponent>(entityId).orElse(nullptr);
+    //auto physComp = componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(entityId).orElse(nullptr);
 
-    component::EntityMainComponent physCompImpl{};
+    component::FrictionKinematicsMotion2D physCompImpl{};
 
     physCompImpl.linFriction = type.defaultLinFriction;
     physCompImpl.constFriction = type.defaultConstFriction;
     //physCompImpl.pos = {x, y};
-    physCompImpl.vel = {0, 0};
-    physCompImpl.acc = {0, 0};
+    physCompImpl.velocity = {0, 0};
+    physCompImpl.acceleration = {0, 0};
 
-    componentManager->addComponent<component::EntityMainComponent>(entityId, physCompImpl);
+    componentManager->addComponent<component::FrictionKinematicsMotion2D>(entityId, physCompImpl);
 
-    //auto absPos = componentManager->getObjectDataPtr<graphics::AbsolutePosition>(entityId).orElse(nullptr);
+    //auto absPos = componentManager->getObjectDataPtr<graphics::Transform2D>(entityId).orElse(nullptr);
 
-    graphics::AbsolutePosition absPosImpl{};
+    graphics::Transform2D absPosImpl{};
 
 
     absPosImpl.transform = {{type.scale.x, 0}, {0, type.scale.y}};
@@ -33,9 +33,9 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     //absPosImpl.pos = {x, y};
 
 
-    //auto collComp = componentManager->getObjectDataPtr<physics::CollisionComponent>(entityId).orElse(nullptr);
+    //auto collComp = componentManager->getObjectDataPtr<physics::CollisionComponent2D>(entityId).orElse(nullptr);
 
-    physics::CollisionComponent collCompImpl;
+    physics::CollisionComponent2D collCompImpl;
 
     collCompImpl.layers = type.defaultLayers;
     collCompImpl.resolveLayers = type.defaultResolveLayers;
@@ -47,9 +47,9 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     collCompImpl.outerRadius = sqrt(type.scale.x * type.scale.x + type.scale.y * type.scale.y);
     //collCompImpl.pos = {x, y};
 
-    //auto rotComp = componentManager->getObjectDataPtr<component::RotationComponent>(entityId).orElse(nullptr);
+    //auto rotComp = componentManager->getObjectDataPtr<component::Rotation2D>(entityId).orElse(nullptr);
 
-    component::RotationComponent rotCompImpl{};
+    component::Rotation2D rotCompImpl{};
 
     rotCompImpl = rot;
     //rotCompImpl.rotMatrix = {{cos(rot), sin(rot)}, {-sin(rot), cos(rot)}};
@@ -58,9 +58,9 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     //absPosImpl.transform *= rotCompImpl.rotMatrix;
 
 
-    componentManager->addComponent<graphics::AbsolutePosition>(entityId, absPosImpl);
-    componentManager->addComponent<physics::CollisionComponent>(entityId, collCompImpl);
-    componentManager->addComponent<component::RotationComponent>(entityId, rotCompImpl);
+    componentManager->addComponent<graphics::Transform2D>(entityId, absPosImpl);
+    componentManager->addComponent<physics::CollisionComponent2D>(entityId, collCompImpl);
+    componentManager->addComponent<component::Rotation2D>(entityId, rotCompImpl);
 
     //*componentManager->getObjectDataPtr<std::shared_ptr<EntityController>>(entityId).orElse(nullptr) = type.defaultController;
     componentManager->addComponent<std::shared_ptr<EntityController>>(entityId, type.defaultController);
