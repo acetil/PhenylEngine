@@ -229,6 +229,7 @@ namespace component {
             return {this->shared_from_this(), this->entityComponentBitmaps.get(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...,
                     makeMask<Args...>()};
         } else {
+            logging::log(LEVEL_ERROR, "Failed to find all component types!");
             return {};
         }
     }

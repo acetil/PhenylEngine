@@ -4,6 +4,7 @@
 #include "logging/logging.h"
 
 #include "util/string_help.h"
+#include "component/position.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 0.15f
@@ -19,11 +20,14 @@ void game::PlayerController::controlEntityPrePhysics (component::view::EntityVie
 
    glm::vec2 cursorDisp = gameView.getCamera().getWorldPos(cursorScreenPos);
 
-   entityView.getComponent<component::EntityMainComponent>().ifPresent([this, &cursorDisp](component::EntityMainComponent& comp) {
+   entityView.getComponent<component::EntityMainComponent>().ifPresent([this](component::EntityMainComponent& comp) {
        comp.acc += glm::vec2(deltaXForce, deltaYForce);
        deltaXForce = 0;
        deltaYForce = 0;
-       cursorDisp -= comp.pos;
+   });
+
+   entityView.getComponent<component::Position2D>().ifPresent([&cursorDisp] (auto& comp) {
+       cursorDisp -= comp.get();
    });
 
    //entityView.acceleration += glm::vec2(deltaXForce, deltaYForce);
@@ -67,7 +71,7 @@ void game::PlayerController::setTextureIds (graphics::TextureAtlas& atlas) {
 }
 
 void game::PlayerController::controlEntityPostPhysics (component::view::EntityView& entityView, view::GameView& gameView) {
-    auto pos = entityView.getComponent<component::EntityMainComponent>().getUnsafe().pos;
+    auto pos = entityView.getComponent<component::Position2D>().getUnsafe().get();
     if (!hasShot && doShoot) {
         auto rot = entityView.getComponent<component::RotationComponent>().getUnsafe().rotation + M_PI_2;
         glm::vec2 rotVec = glm::vec2{cos(rot), sin(rot)};

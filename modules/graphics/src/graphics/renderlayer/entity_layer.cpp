@@ -1,5 +1,6 @@
 #include "component/main_component.h"
 #include "entity_layer.h"
+#include "component/position.h"
 
 #include <utility>
 
@@ -244,11 +245,11 @@ static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr&
 }*/
 
 static void bufferActualPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& offsetBuffer, Buffer<glm::mat2>& transformBuffer) {
-    for (const auto& i : manager->getConstrainedView<AbsolutePosition, component::EntityMainComponent>()) {
+    for (const auto& i : manager->getConstrainedView<AbsolutePosition, component::Position2D>()) {
         auto& absPos = i.get<AbsolutePosition>();
-        auto& mainComp = i.get<component::EntityMainComponent>();
+        auto& posComp = i.get<component::Position2D>();
         for (int j = 0; j < absPos.vertices; j++) {
-            offsetBuffer.pushData(mainComp.pos);
+            offsetBuffer.pushData(posComp.get());
             //(buffer + 1)->pushData(&absPos.transform[0][0], 2);
             //(buffer + 2)->pushData(&absPos.transform[1][0], 2); // TODO: update buffer implementation
             transformBuffer.pushData(absPos.rotTransform);

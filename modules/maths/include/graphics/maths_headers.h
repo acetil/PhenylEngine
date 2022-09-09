@@ -5,6 +5,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "util/data_funcs.h"
 #include "util/data.h"
+
+namespace util {
+    class DataValue;
+}
+
 namespace glm {
     bool fromdata (const util::DataValue& val, vec2& v);
     util::DataValue todata (const vec2& v);

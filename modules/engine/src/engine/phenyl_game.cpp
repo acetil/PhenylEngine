@@ -4,6 +4,7 @@
 #include "graphics/phenyl_graphics.h"
 #include "engine/game_object.h"
 #include "engine/game_init.h"
+#include "component/position.h"
 
 using namespace game;
 
@@ -179,6 +180,8 @@ void PhenylGame::addDefaultSerialisers () {
 
         return {comp};
     });
+
+    addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
 }
 
 PhenylGameHolder::~PhenylGameHolder () = default;

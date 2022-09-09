@@ -13,7 +13,7 @@ namespace component {
             return name;
         }
     public:
-        glm::vec2 pos;
+        //glm::vec2 pos;
         glm::vec2 vel;
         glm::vec2 acc;
         float constFriction;

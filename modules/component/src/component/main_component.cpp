@@ -4,7 +4,7 @@
 
 util::DataValue component::EntityMainComponent::serialise () const {
     util::DataObject obj;
-    obj["pos"] = pos;
+    //obj["pos"] = pos;
     obj["vel"] = vel;
     obj["acc"] = acc;
     obj["const_friction"] = constFriction;
@@ -14,9 +14,9 @@ util::DataValue component::EntityMainComponent::serialise () const {
 
 void component::EntityMainComponent::deserialise (const util::DataValue& val) {
     auto& obj = val.get<util::DataObject>();
-    if (obj.contains("pos")) {
+    /*if (obj.contains("pos")) {
         pos = obj.at("pos").get<glm::vec2>();
-    }
+    }*/
     if (obj.contains("vel")) {
         vel = obj.at("vel").get<glm::vec2>();
     }

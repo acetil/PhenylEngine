@@ -1,6 +1,7 @@
 #include "logging/logging.h"
 #include "component/component.h"
 #include "collisions.h"
+#include "component/position.h"
 #include <tuple>
 #include <float.h>
 using namespace physics;
@@ -151,7 +152,7 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
             });
         }
     }*/
-    auto consView = compManager->getConstrainedView<CollisionComponent, component::EntityMainComponent>();
+    auto consView = compManager->getConstrainedView<CollisionComponent, component::EntityMainComponent, component::Position2D>();
 
     for (auto i = consView.begin(); i != consView.end(); i++) {
         auto j = i;
@@ -161,7 +162,7 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
         }*/
         for ( ; j != consView.end(); j++) {
             auto coll = entityCollision((*i).get<CollisionComponent>(), (*j).get<CollisionComponent>(),
-                    (*i).get<component::EntityMainComponent>().pos - (*j).get<component::EntityMainComponent>().pos);
+                    (*i).get<component::Position2D>().get() - (*j).get<component::Position2D>().get());
             if (coll.first) {
                 collisionResults.emplace_back((*i).getId(), (*j).getId(), coll.second);
             }

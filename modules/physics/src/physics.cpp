@@ -4,6 +4,7 @@
 #include "common/events/entity_collision.h"
 #include <tuple>
 #include "graphics/graphics_new_include.h"
+#include "component/position.h"
 
 using namespace physics;
 
@@ -33,7 +34,7 @@ using namespace physics;
     }
 }*/
 
-void updatePhysicsInternal (component::EntityMainComponent& mainComp, CollisionComponent& collComp, graphics::AbsolutePosition& posComp) {
+void updatePhysicsInternal (component::EntityMainComponent& mainComp, component::Position2D& posComp) {
     int isPosXVel = mainComp.vel.x > 0;
     int isPosYVel = mainComp.vel.y > 0;
 
@@ -45,10 +46,7 @@ void updatePhysicsInternal (component::EntityMainComponent& mainComp, CollisionC
 
     mainComp.vel += mainComp.acc;
 
-    mainComp.pos += mainComp.vel;
-
-    //collComp.pos = mainComp.pos;
-    //posComp.pos = mainComp.pos;
+    posComp += mainComp.vel;
 }
 void physics::onEntityCreation (event::EntityCreationEvent& event) {
     /*logging::log(LEVEL_DEBUG, "About to get main component!");
@@ -88,8 +86,8 @@ void physics::updatePhysics (const component::EntityComponentManager::SharedPtr&
     /*for (auto i : *componentManager) {
         i.applyFunc<component::EntityMainComponent, CollisionComponent, graphics::AbsolutePosition>(updatePhysicsInternal);
     }*/
-    for (const auto& i : componentManager->getConstrainedView<component::EntityMainComponent, CollisionComponent, graphics::AbsolutePosition>()) {
-        updatePhysicsInternal(i.get<component::EntityMainComponent>(), i.get<CollisionComponent>(), i.get<graphics::AbsolutePosition>());
+    for (const auto& i : componentManager->getConstrainedView<component::EntityMainComponent, component::Position2D>()) {
+        updatePhysicsInternal(i.get<component::EntityMainComponent>(), i.get<component::Position2D>());
     }
 }
 
@@ -146,11 +144,11 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
                 auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
                 float totalMass = comp1Mass + comp2Mass;
                 if (totalMass != 0) {
-                    componentManager->getObjectDataPtr<component::EntityMainComponent>(x1).orElse(nullptr)->pos +=
+                    *componentManager->getObjectDataPtr<component::Position2D>(x1).orElse(nullptr) +=
                             dVec1 * comp1Mass / totalMass;
                     componentManager->getObjectDataPtr<component::EntityMainComponent>(x1).orElse(nullptr)->vel -=
                             projectVec(dVec1, componentManager->getObjectData<component::EntityMainComponent>(x1).orElse(component::EntityMainComponent()).vel);
-                    componentManager->getObjectDataPtr<component::EntityMainComponent>(y1).orElse(nullptr)->pos -=
+                    *componentManager->getObjectDataPtr<component::Position2D>(y1).orElse(nullptr) -=
                             dVec1 * comp2Mass / totalMass;
                     componentManager->getObjectDataPtr<component::EntityMainComponent>(y1).orElse(nullptr)->vel -=
                             projectVec(dVec1, componentManager->getObjectData<component::EntityMainComponent>(y1).orElse(component::EntityMainComponent()).vel);

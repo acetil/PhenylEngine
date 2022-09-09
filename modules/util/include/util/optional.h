@@ -20,9 +20,11 @@ namespace std {
 //#include "meta.h"
 
 namespace util {
+#ifndef PHENYL_OPTIONAL_DECLARE
+#define PHENYL_OPTIONAL_DECLARE
     template <typename T, typename = void>
     class Optional;
-
+#endif
     namespace detail {
         class NullOpt_t {
             int val;

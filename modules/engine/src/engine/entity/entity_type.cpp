@@ -2,6 +2,7 @@
 #include "entity_type_functions.h"
 
 #include "math.h"
+#include "component/position.h"
 
 using namespace game;
 
@@ -16,7 +17,7 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
 
     physCompImpl.linFriction = type.defaultLinFriction;
     physCompImpl.constFriction = type.defaultConstFriction;
-    physCompImpl.pos = {x, y};
+    //physCompImpl.pos = {x, y};
     physCompImpl.vel = {0, 0};
     physCompImpl.acc = {0, 0};
 
@@ -65,6 +66,7 @@ void game::setInitialEntityValues (const component::EntityComponentManager::Shar
     componentManager->addComponent<std::shared_ptr<EntityController>>(entityId, type.defaultController);
     //*componentManager->getObjectDataPtr<AbstractEntity*>(entityId).orElse(nullptr) = type.entityFactory();
     componentManager->addComponent<AbstractEntity*>(entityId, type.entityFactory());
+    componentManager->addComponent<component::Position2D>(entityId, glm::vec2{x, y});
 
 }
 
