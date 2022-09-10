@@ -5,35 +5,6 @@
     },
     "entities": [
         {
-            "transform_2D": {
-                "transform": [
-                    {
-                        "x": -4.371139006309477e-09,
-                        "y": 0.10000000149011612
-                    },
-                    {
-                        "x": -0.10000000149011612,
-                        "y": -4.371139006309477e-09
-                    }
-                ]
-            },
-            "collision_comp_2D": {
-                "coll_scale": [
-                    {
-                        "x": -4.371139006309477e-09,
-                        "y": 0.10000000149011612
-                    },
-                    {
-                        "x": -0.10000000149011612,
-                        "y": -4.371139006309477e-09
-                    }
-                ],
-                "event_layers": 1,
-                "layers": 1,
-                "masks": 3,
-                "mass": 10.0,
-                "resolve_layers": 3
-            },
             "data": {},
             "entity_type": {
                 "collision_scale": {
@@ -53,23 +24,6 @@
                     "y": 0.10000000149011612
                 },
                 "type_name": "test_entity"
-            },
-            "model_2D": "test8",
-            "friction_kinematics_2D": {
-                "acc": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "const_friction": 0.004999999888241291,
-                "lin_friction": 0.27000001072883606,
-                "pos": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "vel": {
-                    "x": 0.0,
-                    "y": 0.0
-                }
             },
             "pos_2D": {
                 "x": 0.0,
@@ -128,23 +82,6 @@
                 },
                 "type_name": "wall_entity"
             },
-            "model_2D": "test10",
-            "friction_kinematics_2D": {
-                "acc": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "const_friction": 1.0,
-                "lin_friction": 1.0,
-                "pos": {
-                    "x": -0.4000000059604645,
-                    "y": 0.0
-                },
-                "vel": {
-                    "x": 0.0,
-                    "y": 0.0
-                }
-            },
             "pos_2D" : {
                 "x": -0.4000000059604645,
                 "y": 0.0
@@ -201,23 +138,6 @@
                     "y": 0.10000000149011612
                 },
                 "type_name": "wall_entity"
-            },
-            "model_2D": "test10",
-            "friction_kinematics_2D": {
-                "acc": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "const_friction": 1.0,
-                "lin_friction": 1.0,
-                "pos": {
-                    "x": 0.4000000059604645,
-                    "y": 0.0
-                },
-                "vel": {
-                    "x": 0.0,
-                    "y": 0.0
-                }
             },
             "pos_2D": {
                 "x": 0.4000000059604645,
@@ -277,23 +197,6 @@
                     "y": 0.10000000149011612
                 },
                 "type_name": "wall_entity"
-            },
-            "model_2D": "test10",
-            "friction_kinematics_2D": {
-                "acc": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "const_friction": 1.0,
-                "lin_friction": 1.0,
-                "pos": {
-                    "x": 0.0,
-                    "y": -0.5
-                },
-                "vel": {
-                    "x": 0.0,
-                    "y": 0.0
-                }
             },
             "pos_2D": {
                 "x": 0.0,

@@ -1,0 +1,50 @@
+{
+  "collision_comp_2D": {
+    "coll_scale": [
+      {
+        "x": 0.03,
+        "y": 0.0
+      },
+      {
+        "x": 0.0,
+        "y": 0.03
+      }
+    ],
+    "event_layers": 3,
+    "layers": 1,
+    "masks": 3,
+    "mass": 1.0,
+    "resolve_layers": 0
+  },
+  "controller" : "bullet",
+  "friction_kinematics_2D": {
+    "acceleration": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "const_friction": 0,
+    "lin_friction": 0.01,
+    "velocity": {
+      "x": 0.0,
+      "y": 0.0
+    }
+  },
+  "model_2D": "test9",
+  "pos_2D": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "rotation_2D": 0.0,
+  "transform_2D": {
+    "transform": [
+      {
+        "x": 0.03,
+        "y": 0.0
+      },
+      {
+        "x": 0.0,
+        "y": 0.03
+      }
+    ]
+  }
+}

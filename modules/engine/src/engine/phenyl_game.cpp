@@ -182,6 +182,37 @@ void PhenylGame::addDefaultSerialisers () {
     });
 
     addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
+
+    addComponentSerialiser<EntityTypeComponent>("type", [](const EntityTypeComponent& comp) -> util::DataValue {
+        return (util::DataValue)comp.typeId;
+    }, [](const util::DataValue& val) -> util::Optional<EntityTypeComponent> {
+        if (val.is<std::string>()) {
+            return {EntityTypeComponent{val.get<std::string>()}};
+        } else {
+            return util::NullOpt;
+        }
+    });
+
+    addComponentSerialiser<std::shared_ptr<EntityController>>("controller", [] (const std::shared_ptr<EntityController>& comp) -> util::DataValue {
+        return (util::DataValue)"TODO"; // TODO
+    }, [this](const util::DataValue& val) -> util::Optional<std::shared_ptr<EntityController>> {
+        if (!val.is<std::string>()) {
+            return util::NullOpt;
+        }
+
+        auto& controllerId = val.get<std::string>();
+
+        auto controller = getController(controllerId);
+        if (controller) {
+            return {std::move(controller)};
+        } else {
+            return util::NullOpt;
+        }
+    });
+}
+
+void PhenylGame::addEntityType (const std::string& typeId, const std::string& filepath) {
+    getShared()->addEntityType(typeId, filepath);
 }
 
 PhenylGameHolder::~PhenylGameHolder () = default;

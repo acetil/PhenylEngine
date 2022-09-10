@@ -1,0 +1,16 @@
+{
+  "controller" : "wall_entity",
+  "model_2D" : "test10",
+  "friction_kinematics_2D": {
+    "acc": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "const_friction": 1.0,
+    "lin_friction": 1.0,
+    "vel": {
+      "x": 0.0,
+      "y": 0.0
+    }
+  }
+}

@@ -96,6 +96,11 @@ namespace component::view {
             }
         }
 
+        template<class T>
+        bool hasComponent () {
+            return compManager->template entityHasComp<T>(entityId);
+        }
+
         friend detail::EntityViewIterator<MaxComponents>;
     };
 

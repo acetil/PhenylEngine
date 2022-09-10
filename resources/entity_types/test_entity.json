@@ -1,0 +1,49 @@
+{
+  "transform_2D": {
+    "transform": [
+      {
+        "x": 0.1,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0.1
+      }
+    ]
+  },
+  "collision_comp_2D": {
+    "coll_scale": [
+      {
+        "x": 0.1,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0.1
+      }
+    ],
+    "event_layers": 1,
+    "layers": 1,
+    "masks": 3,
+    "mass": 10.0,
+    "resolve_layers": 3
+  },
+  "controller": "test_entity",
+  "model_2D" : "test8",
+  "friction_kinematics_2D": {
+    "acc": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "const_friction": 0.005,
+    "lin_friction": 0.27,
+    "pos": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "vel": {
+      "x": 0.0,
+      "y": 0.0
+    }
+  }
+}

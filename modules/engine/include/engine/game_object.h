@@ -20,6 +20,7 @@
 #include "common/events/map_load_request.h"
 #include "input/game_input.h"
 #include "game_camera.h"
+#include "engine/entity/entity_type_new.h"
 
 namespace view {
     class DebugGameView;
@@ -49,6 +50,7 @@ namespace game::detail {
                 event::EventScope eventScope;
 
                 util::Map<std::string, std::unique_ptr<ComponentSerialiser>> serialiserMap;
+                util::Map<std::string, EntityTypeNew> entityTypesNew;
 
                 component::EntityId deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised = util::DataValue());
 
@@ -105,6 +107,10 @@ namespace game::detail {
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
                 void addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser);
+
+                ComponentSerialiser* getSerialiser (const std::string& component);
+
+                void addEntityType (const std::string& typeId, const std::string& filepath);
 
                 GameCamera& getCamera ();
                 GameInput& getInput ();

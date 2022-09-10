@@ -12,6 +12,7 @@
 #include "component/component_serialisation.h"
 #include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
+#include "component/position.h"
 
 using namespace game;
 
@@ -46,16 +47,31 @@ detail::GameObject::~GameObject () {
 }*/
 component::EntityId detail::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
     // TODO: requires refactor
-    if (entityTypes.count(name) == 0) {
-        logging::log(LEVEL_WARNING, "Attempted creation of entity with name '{}' which doesn't exist!", name);
+    if (!entityTypesNew.contains(name)) {
+        logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
         return {0, 0};
     } else {
         auto entityId = entityComponentManager->createEntity();
-        setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y, rot);
-        //auto viewCore = view::ViewCore(entityComponentManager);
         auto entityView = entityComponentManager->getEntityView(entityId);
+        const auto& entityType = entityTypesNew.at(name);
+        entityType.addDefaultComponents(entityView);
+
+        entityView.addComponent<component::Position2D>(component::Position2D{});
+        entityView.addComponent<component::Rotation2D>(component::Rotation2D{});
+
+        entityView.getComponent<component::Position2D>().getUnsafe() = {x, y};
+        entityView.getComponent<component::Rotation2D>().getUnsafe() = rot;
+
+
+        //setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y, rot);
+        //auto viewCore = view::ViewCore(entityComponentManager);
         auto gameView = view::GameView(this);
-        entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
+
+        entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &data] (std::shared_ptr<EntityController>& controller) {
+            controller->initEntity(entityView, gameView, data);
+        });
+
+        //entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
         eventBus->raise(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
                                                    entityComponentManager->getObjectData<AbstractEntity*>(
                                                            entityId).orElse(nullptr), entityId,
@@ -76,12 +92,21 @@ component::EntityId detail::GameObject::deserialiseEntity (const std::string& ty
     //auto viewCore = view::ViewCore(entityComponentManager);
     //auto entityView = view::EntityView(viewCore, entityId, eventBus);
     auto entityView = entityComponentManager->getEntityView(entityId);
-    const auto& entityType = entityTypes.at(type);
-    entityView.addComponent<EntityType>(entityType);
-    entityView.addComponent<AbstractEntity*>(entityType.entityFactory());
-    entityView.addComponent<std::shared_ptr<EntityController>>(entityType.defaultController);
+    //const auto& entityType = entityTypes.at(type);
+    //entityView.addComponent<EntityType>(entityType);
+    //entityView.addComponent<AbstractEntity*>(entityType.entityFactory());
+    //entityView.addComponent<std::shared_ptr<EntityController>>(entityType.defaultController);
 
     deserialiseEntity2(entityView, serialisedObj);
+
+    entityView.getComponent<EntityTypeComponent>().ifPresent([this, &entityView] (EntityTypeComponent& entityType) {
+        if (entityTypesNew.contains(entityType.typeId)) {
+            entityTypesNew.at(entityType.typeId).addDefaultComponents(entityView);
+        } else {
+            logging::log(LEVEL_WARNING, "Unknown entity type: {}!", entityType.typeId);
+        }
+    });
+
     auto gameView = view::GameView(this);
 
     //entityView.
@@ -294,4 +319,24 @@ util::DataObject detail::GameObject::serialiseEntity (component::view::EntityVie
     }
 
     return entityData;
+}
+
+detail::ComponentSerialiser* detail::GameObject::getSerialiser (const std::string& component) {
+    if (serialiserMap.contains(component)) {
+        return serialiserMap[component].get();
+    } else {
+        return nullptr;
+    }
+}
+
+void detail::GameObject::addEntityType (const std::string& typeId, const std::string& filepath) {
+    if (entityTypesNew.contains(typeId)) {
+        logging::log(LEVEL_WARNING, "Attempted to add duplicate entity type \"{}\"!", typeId);
+        return;
+    }
+
+    auto data = util::parseFromFile(filepath);
+    if (!data.empty()) {
+        entityTypesNew[typeId] = std::move(makeEntityType(data, *this));
+    }
 }

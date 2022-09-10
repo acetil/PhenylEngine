@@ -79,8 +79,8 @@ namespace util {
 
             template <typename ...Args>
             void constructKey (std::size_t _hash, Args&&... args) {
+                //new (getKeyPtr()) K(static_cast<const char*>(std::forward<Args>(args))...);
                 new (getKeyPtr()) K(std::forward<Args>(args)...);
-
                 constructValue();
                 hash = _hash;
                 state = 1;

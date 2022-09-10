@@ -21,6 +21,8 @@ namespace game {
             virtual ~ComponentSerialiser() = default;
             virtual bool deserialiseComp (component::view::EntityView& entityView, const util::DataValue& serialisedComp) = 0;
             virtual util::DataValue serialiseComp (component::view::EntityView& entityView) = 0;
+
+            virtual bool hasComp (component::view::EntityView& entityView) = 0;
         };
 
         template <class T, typename SerialiseF, typename DeserialiseF>
@@ -47,6 +49,10 @@ namespace game {
                 });
 
                 return opt;
+            }
+
+            bool hasComp(component::view::EntityView& entityView) override {
+                return entityView.hasComponent<T>();
             }
         };
     }
@@ -111,6 +117,8 @@ namespace game {
         }
 
         void addDefaultSerialisers ();
+
+        void addEntityType (const std::string& typeId, const std::string& filepath);
     };
 
     class PhenylGameHolder {
