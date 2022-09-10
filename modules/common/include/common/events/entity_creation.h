@@ -16,9 +16,9 @@ namespace event {
     class EntityCreationEvent : public Event<EntityCreationEvent> {
     public:
         inline static const std::string name = "entity_creation";
-        float x;
-        float y;
-        float size;
+        //float x;
+        //float y;
+        //float size;
         component::EntityComponentManager::SharedPtr compManager;
         game::AbstractEntity* entity{};
         component::EntityId entityId;
@@ -32,11 +32,11 @@ namespace event {
             compManager = nullptr;
             entityId = 0;
         };*/
-        EntityCreationEvent (float x, float y, float size, component::EntityComponentManager::SharedPtr compManager, game::AbstractEntity* entity, component::EntityId entityId,
+        EntityCreationEvent (component::EntityComponentManager::SharedPtr compManager, game::AbstractEntity* entity, component::EntityId entityId,
                              component::view::EntityView _entityView, view::GameView _gameView) : entityView(std::move(_entityView)), gameView(_gameView) {
-            this->x = x;
-            this->y = y;
-            this->size = size;
+            //this->x = x;
+            //this->y = y;
+            //this->size = size;
             this->compManager = std::move(compManager);
             this->entity = entity;
             this->entityId = entityId;

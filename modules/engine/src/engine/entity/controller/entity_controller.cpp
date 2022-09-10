@@ -1,4 +1,5 @@
 #include "engine/entity/controller/entity_controller.h"
+#include "graphics/textures/texture_atlas.h"
 
 #include <utility>
 #include "logging/logging.h"
@@ -17,13 +18,13 @@ void EntityController::onEntityCollision (component::view::EntityView& entityVie
     logging::log(LEVEL_DEBUG, "On entity collision!");
 }
 
-int EntityController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
+/*int EntityController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
     return testTexId;
 }
 
 void EntityController::setTextureIds (graphics::TextureAtlas& atlas) {
     testTexId = atlas.getModelId("test3");
-}
+}*/
 
 util::DataObject EntityController::getData (component::view::EntityView& entityView, view::GameView& gameView) {
     return util::DataObject();

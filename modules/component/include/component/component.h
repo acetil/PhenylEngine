@@ -17,41 +17,16 @@
 
 #include <cmath>
 //#include "graphics/graphics_new_include.h"
-#include "physics/collision_component.h"
+//#include "physics/collision_component.h"
 //#include "event/event_bus.h"
-#include "component/main_component.h"
+//#include "component/main_component.h"
 #include "util/meta.h"
-#include "rotation_component.h"
+//#include "rotation_component.h"
 //#include "engine/entity/entity_type.h"
 #include "util/smart_help.h"
 
 #include "component_new.h"
-#if MAX_COMPONENT_ENTITIES <= 256
-namespace component {
-    typedef uint16_t id_type_t;
-}
-#else
-namespace component {
-    typedef uint16_t id_type_t;
-}
-#endif
-namespace game {
-#ifndef ENTITY_H
-        class AbstractEntity;
-#endif
-#ifndef CONTROLLER_H
-        class EntityController;
-#endif
-    class EntityType;
-};
-namespace view {
-    class ViewCore;
-}
 
-namespace graphics {
-    class Model2D;
-    class Transform2D;
-}
 namespace component {
 /*    template <typename ...Args>
     class ComponentManagerImpl : public util::SmartHelper<ComponentManagerImpl<Args...>> {
@@ -189,11 +164,6 @@ namespace component {
     template <typename T>
     using ComponentManager2 = typename ComponentManagerWrap<T>::type;
 */
-
-    using entity_list = meta::type_list_wrapper<game::AbstractEntity*, component::FrictionKinematicsMotion2D,
-            graphics::Model2D, physics::CollisionComponent2D, graphics::Transform2D, Rotation2D, game::EntityType, std::shared_ptr<game::EntityController>>; // TODO: remove includes like AbstractEntity*
-#define ENTITY_LIST game::AbstractEntity*, component::EntityMainComponent, graphics::FixedModel, physics::CollisionComponent, graphics::AbsolutePosition, component::RotationComponent, game::EntityType, std::shared_ptr<game::EntityController>
-
     //using EntityComponentManager = ComponentManager2<entity_list>;
     using EntityComponentManager = ComponentManagerNew<64>;
     namespace view {

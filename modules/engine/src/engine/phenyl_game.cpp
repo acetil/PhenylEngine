@@ -5,6 +5,8 @@
 #include "engine/game_object.h"
 #include "engine/game_init.h"
 #include "component/position.h"
+#include "component/rotation_component.h"
+#include "physics/collision_component.h"
 
 using namespace game;
 
@@ -20,18 +22,8 @@ std::shared_ptr<game::detail::GameObject> PhenylGame::getShared () const {
     return ptr;
 }
 
-
-void PhenylGame::registerEntityType (const std::string& name, EntityTypeBuilder entityType) {
-    getShared()->registerEntityType(name, entityType);
-}
-
-void PhenylGame::buildEntityTypes () {
-    getShared()->buildEntityTypes();
-}
-
-component::EntityId PhenylGame::createNewEntityInstance (const std::string& name, float x, float y, float rot,
-                                         const util::DataValue& data) {
-    return getShared()->createNewEntityInstance(name, x, y, rot, data);
+component::view::EntityView PhenylGame::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
+    return getShared()->createNewEntityInstance(name, data);
 }
 
 void PhenylGame::deleteEntityInstance (component::EntityId entityId) {
@@ -58,9 +50,9 @@ void PhenylGame::updateEntityPosition () {
     getShared()->updateEntityPosition();
 }
 
-void PhenylGame::setTextureIds (graphics::TextureAtlas& atlas) {
+/*void PhenylGame::setTextureIds (graphics::TextureAtlas& atlas) {
     getShared()->setTextureIds(atlas);
-}
+}*/
 
 void PhenylGame::setEntityComponentManager (component::EntityComponentManager::SharedPtr compManager) {
     getShared()->setEntityComponentManager(compManager);
@@ -92,18 +84,6 @@ void PhenylGame::loadMap (Map::SharedPtr map) {
 
 void PhenylGame::dumpMap (const std::string& filepath) {
     getShared()->dumpMap(filepath);
-}
-
-void PhenylGame::mapReloadRequest (event::ReloadMapEvent& event) {
-    getShared()->mapReloadRequest(event);
-}
-
-void PhenylGame::mapDumpRequest (event::DumpMapEvent& event) {
-    getShared()->mapDumpRequest(event);
-}
-
-void PhenylGame::mapLoadRequest (event::MapLoadRequestEvent& event) {
-    getShared()->mapLoadRequest(event);
 }
 
 void PhenylGame::updateCamera (graphics::Camera& camera) {
@@ -172,14 +152,14 @@ void PhenylGame::addDefaultSerialisers () {
         return {comp};
     });
 
-    addComponentSerialiser<EntityType>("entity_type", [](const EntityType& comp) -> util::DataValue {
+    /*addComponentSerialiser<EntityType>("entity_type", [](const EntityType& comp) -> util::DataValue {
         return comp._serialise();
     }, [] (const util::DataValue& val) -> util::Optional<EntityType> {
         EntityType comp{};
         comp._deserialise(val);
 
         return {comp};
-    });
+    });*/
 
     addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
 

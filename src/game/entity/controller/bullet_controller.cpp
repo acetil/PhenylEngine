@@ -1,4 +1,5 @@
 #include "engine/entity/controller/bullet_controller.h"
+#include "graphics/textures/texture_atlas.h"
 
 #include "util/string_help.h"
 
@@ -6,13 +7,13 @@ void game::BulletController::onEntityCollision (component::view::EntityView &ent
     gameView.destroyEntityInstance(entityView.getId());
 }
 
-int game::BulletController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
+/*int game::BulletController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
     return texId;
 }
 
 void game::BulletController::setTextureIds (graphics::TextureAtlas& atlas) {
     texId = atlas.getModelId("test9");
-}
+}*/
 
 void game::BulletController::initEntity (component::view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
     const auto& velocity = data.get<util::DataObject>().at("velocity").get<util::DataObject>();

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "component/component.h"
+#include "component/view/game_view.h"
 #include "event/event.h"
+#include "event/event_bus.h"
 #include "component/view/game_view.h"
 #include <string>
 #include <utility>

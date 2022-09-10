@@ -3,7 +3,7 @@
 #include <utility>
 #include "engine/game_object.h"
 
-#include "engine/entity/entity_test.h"
+//#include "engine/entity/entity_test.h"
 #include "engine/entity/entities.h"
 #include "component/component.h"
 #include "component/main_component.h"

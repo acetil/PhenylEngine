@@ -93,7 +93,7 @@ engine::detail::Engine::Engine () {
     logger::log(LEVEL_DEBUG, "GAME", "Finished entity init!");
 
     // TODO: move all to user
-    graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
+    //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
     graphics::addMapRenderLayer(graphics, eventBus);
     graphics.addEntityLayer(componentManager); // TODO: unhackify
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());

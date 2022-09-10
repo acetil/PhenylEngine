@@ -1,6 +1,7 @@
 #include "component/main_component.h"
 #include "entity_layer.h"
 #include "component/position.h"
+#include "component/rotation_component.h"
 
 #include <utility>
 

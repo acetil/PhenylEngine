@@ -6,7 +6,6 @@
 #include <utility>
 #include "graphics/renderlayer/entity_layer.h"
 #include "logging/logging.h"
-#include "engine/entity/entity.h"
 #include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/renderers/window_callbacks.h"
 #include "engine/entity/controller/entity_controller.h"
@@ -136,14 +135,21 @@ std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
 }
 
 void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
-    int texId = event.entityView.getComponent<std::shared_ptr<game::EntityController>>().getUnsafe()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
+    /*int texId = event.entityView.getComponent<std::shared_ptr<game::EntityController>>().getUnsafe()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
     //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
     getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
 
         event.compManager->addComponent<Model2D>(event.entityId, atlas.getModel(texId));
 
         //event.entityView.model = atlas.getModel((texId));
+    });*/
+
+    event.entityView.getComponent<Model2D>().ifPresent([this] (Model2D& comp) {
+        getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
+            comp = atlas.getModel(comp.modelName);
+        });
     });
+
     //Texture* tex = atlas.getTexture(texId);
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
 }

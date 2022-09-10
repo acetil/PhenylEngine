@@ -7,19 +7,16 @@
 #include "physics/physics.h"
 #include "common/events/entity_creation.h"
 #include "engine/entity/controller/entity_controller.h"
-#include "entity/entity_type_functions.h"
 #include "common/events/map_load.h"
 #include "component/component_serialisation.h"
 #include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
 #include "component/position.h"
+#include "component/rotation_component.h"
 
 using namespace game;
 
 detail::GameObject::~GameObject () {
-    for (auto const& x : entityRegistry) {
-        delete x.second;
-    }
     /*for (auto const& x : entities) {
         delete x.second;
     }*/
@@ -45,22 +42,22 @@ detail::GameObject::~GameObject () {
         return nullptr;
     }
 }*/
-component::EntityId detail::GameObject::createNewEntityInstance (const std::string& name, float x, float y, float rot, const util::DataValue& data) {
+component::view::EntityView detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     // TODO: requires refactor
     if (!entityTypesNew.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
-        return {0, 0};
+        return {{0, 0}, nullptr};
     } else {
         auto entityId = entityComponentManager->createEntity();
         auto entityView = entityComponentManager->getEntityView(entityId);
         const auto& entityType = entityTypesNew.at(name);
         entityType.addDefaultComponents(entityView);
 
-        entityView.addComponent<component::Position2D>(component::Position2D{});
-        entityView.addComponent<component::Rotation2D>(component::Rotation2D{});
+        //entityView.addComponent<component::Position2D>(component::Position2D{});
+        //entityView.addComponent<component::Rotation2D>(component::Rotation2D{});
 
-        entityView.getComponent<component::Position2D>().getUnsafe() = {x, y};
-        entityView.getComponent<component::Rotation2D>().getUnsafe() = rot;
+        //entityView.getComponent<component::Position2D>().getUnsafe() = {x, y};
+        //entityView.getComponent<component::Rotation2D>().getUnsafe() = rot;
 
 
         //setInitialEntityValues(entityComponentManager, entityTypes[name], entityId, x, y, rot);
@@ -72,15 +69,15 @@ component::EntityId detail::GameObject::createNewEntityInstance (const std::stri
         });
 
         //entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
-        eventBus->raise(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
+        eventBus->raise(event::EntityCreationEvent(entityComponentManager,
                                                    entityComponentManager->getObjectData<AbstractEntity*>(
                                                            entityId).orElse(nullptr), entityId,
                                                    entityView, gameView));
-        return entityId;
+        return entityView;
     }
 }
 
-component::EntityId detail::GameObject::deserialiseEntity (const std::string& type, float x, float y, float rot, const util::DataValue& serialised) {
+component::EntityId detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
     auto entityId = entityComponentManager->createEntity();
     auto serialisedObj = serialised.get<util::DataObject>();
     //setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
@@ -114,10 +111,15 @@ component::EntityId detail::GameObject::deserialiseEntity (const std::string& ty
     entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &serialisedObj](std::shared_ptr<EntityController>& controller){
         controller->initEntity(entityView, gameView, serialisedObj["data"]);
     });
-    eventBus->raise(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
+
+    eventBus->raise(event::EntityCreationEvent(entityComponentManager, nullptr, entityId, entityView, gameView));
+    /*entityView.getComponent<component::Position2D>().ifPresent([&entityView, &gameView, this, &entityId] (component::Position2D& pos) {
+       eventBus->raise(event::EntityCreationEvent(entityComponentManager, nullptr, entityId, entityView, gameView));
+    });*/
+    /*eventBus->raise(event::EntityCreationEvent(x, y, 0.1f, entityComponentManager,
                                                entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(
                                                        nullptr), entityId,
-                                               entityView, gameView));
+                                               entityView, gameView));*/
     return entityId;
 }
 /*AbstractEntity* game::GameObject::getEntityInstance (int entityId) {
@@ -165,11 +167,11 @@ Tile* detail::GameObject::getTile (const std::string& name) {
         it.second->update(deltaTime);
     }
 }*/
-void detail::GameObject::setTextureIds (graphics::TextureAtlas& atlas) {
+/*void detail::GameObject::setTextureIds (graphics::TextureAtlas& atlas) {
     for (auto const& it : controllers) {
         it.second->setTextureIds(atlas);
     }
-}
+}*/
 event::EventBus::SharedPtr detail::GameObject::getEventBus () {
     return eventBus;
 }
@@ -204,16 +206,6 @@ void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
     entityComponentManager->removeEntity(entityId); // TODO: implement queue
 }
 
-void detail::GameObject::registerEntityType (const std::string& name, EntityTypeBuilder entityTypeBuilder) {
-    entityTypeBuilders[name] = std::move(entityTypeBuilder);
-}
-
-void detail::GameObject::buildEntityTypes () {
-    for (auto [name, builder] : entityTypeBuilders) {
-        entityTypes[name] = builder.build(controllers);
-    }
-}
-
 std::shared_ptr<EntityController> detail::GameObject::getController (const std::string& name) {
     return controllers[name];
 }
@@ -224,7 +216,7 @@ void detail::GameObject::loadMap (Map::SharedPtr map) {
 
     for (auto& i : gameMap->getEntities()) {
         //createNewEntityInstance(i.entityType, i.x, i.y, i.rotation, i.data);
-        deserialiseEntity(i.entityType, i.x, i.y, i.rotation, i.data);
+        makeDeserialisedEntity(i.data);
     }
 
     eventBus->raise(event::MapLoadEvent(gameMap));
@@ -259,7 +251,7 @@ void detail::GameObject::dumpMap (const std::string& filepath) {
         auto entityView = entityComponentManager->getEntityView(ids[i]);
         compData.get<util::DataObject>()["data"] =
                 entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(ids[i]).orElse(nullptr)->getData(entityView, gameView);
-        compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(ids[i]).orElse(game::EntityType()).typeName;
+        //compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(ids[i]).orElse(game::EntityType()).typeName;
         entities.push_back(compData);
         //compData.get<util::DataObject>()[""]
     }

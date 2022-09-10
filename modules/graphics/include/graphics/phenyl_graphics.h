@@ -11,6 +11,7 @@
 #include "component/component.h"
 #include "common/events/entity_creation.h"
 #include "util/optional.h"
+#include "event/event_bus.h"
 
 namespace graphics {
     namespace detail {

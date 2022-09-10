@@ -5,6 +5,7 @@
 #include <tuple>
 #include "graphics/graphics_new_include.h"
 #include "component/position.h"
+#include "component/rotation_component.h"
 
 using namespace physics;
 

@@ -14,7 +14,7 @@ namespace game {
         glm::vec2 cursorScreenPos = {0, 0};
         bool doShoot = false;
         bool hasShot = false;
-        int texId = 0;
+        //int texId = 0;
         event::EventScope eventScope;
     public:
         PlayerController () {
@@ -26,8 +26,8 @@ namespace game {
         void controlEntityPostPhysics(component::view::EntityView &entityView, view::GameView &gameView) override;
         void updateCursorPos (event::CursorPosChangeEvent& event);
         void updateDoShoot (event::PlayerShootChangeEvent& event);
-        int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const override;
-        void setTextureIds (graphics::TextureAtlas& atlas) override;
+        //int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const override;
+        //void setTextureIds (graphics::TextureAtlas& atlas) override;
 
         event::EventScope& getEventScope () {
             // TODO remove

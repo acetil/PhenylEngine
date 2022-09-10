@@ -1,18 +1,18 @@
 #include "engine/entity/controller/player_controller.h"
 #include "engine/entity/entities.h"
-#include "engine/entity/entity_test.h"
-#include "engine/entity/entity_bullet.h"
-#include "basic_entity.h"
-#include "engine/entity/entity_type.h"
+//#include "engine/entity/entity_test.h"
+//#include "engine/entity/entity_bullet.h"
+//#include "basic_entity.h"
 #include "engine/entity/controller/bullet_controller.h"
 #include "engine/entity/controller/wall_controller.h"
+#include "engine/game_object.h"
 using namespace game;
 
 void game::addEntities(event::EntityRegisterEvent& event) {
     //auto entityTest = new EntityTest();
     //auto entityBullet = new EntityBullet();
 
-    auto entityTestType = EntityTypeBuilder("test_entity", "test_entity", constructor_factory<AbstractEntity, EntityTest>)
+    /*auto entityTestType = EntityTypeBuilder("test_entity", "test_entity", constructor_factory<AbstractEntity, EntityTest>)
             .setMass(10.0f)
             .setConstFriction(0.005)
             .setLinearFriction(0.27)
@@ -39,12 +39,12 @@ void game::addEntities(event::EntityRegisterEvent& event) {
 
     event.gameObject.registerEntityType("test_entity", entityTestType);
     event.gameObject.registerEntityType("bullet", entityBulletType);
-    event.gameObject.registerEntityType("wall_entity", entityWallType);
+    event.gameObject.registerEntityType("wall_entity", entityWallType);*/
     event.gameObject.tempGetPtr()->registerEntityController<PlayerController>("test_entity");
     event.gameObject.tempGetPtr()->registerEntityController<BulletController>("bullet");
     event.gameObject.tempGetPtr()->registerEntityController<WallController>("wall_entity");
 
-    event.gameObject.buildEntityTypes();
+    //event.gameObject.buildEntityTypes();
 
     auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject.getController("test_entity"));
 

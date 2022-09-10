@@ -1,7 +1,11 @@
 #pragma once
 
 #include <string>
-#include "graphics/textures/texture_atlas.h"
+//#include "graphics/textures/texture_atlas.h"
+
+namespace graphics {
+    class TextureAtlas;
+}
 
 namespace game {
     class Tile {

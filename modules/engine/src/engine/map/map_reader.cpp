@@ -289,10 +289,10 @@ Map::SharedPtr readMapJson (const std::string& path, PhenylGame gameObject) {
         auto entityObj = i.get<util::DataObject>();
         util::DataObject pos = entityObj.at("pos");
         if (entityObj.contains("data")) {
-            entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(),
-                                  entityObj.at("data"));
+            /*entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(),
+                                  entityObj.at("data"));*/
         } else {
-            entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(), util::DataValue());
+            //entities.emplace_back(entityObj.at("type").get<std::string>(), pos.at("x").get<float>(), pos.at("y").get<float>(), entityObj.at("rotation").get<float>(), util::DataValue());
         }
     }
 
@@ -333,10 +333,10 @@ Map::SharedPtr game::readMapNew (const std::string& path, PhenylGame gameObject)
     std::vector<MapEntity> entities;
 
     for (auto& i : mapData.at("entities").get<util::DataArray>()) {
-        auto entityObj = i.get<util::DataObject>();
-        auto pos = entityObj.at("pos_2D").get<glm::vec2>();
+        //auto entityObj = i.get<util::DataObject>();
+        //auto pos = entityObj.at("pos_2D").get<glm::vec2>();
 
-        entities.emplace_back(entityObj.at("type").get<std::string>(), pos.x, pos.y, entityObj.at("rotation_2D").get<float>(), (util::DataValue)entityObj);
+        entities.emplace_back(i);
         /*if (entityObj.contains("data")) {
             entities.emplace_back(entityObj.at("type"), pos.at("x"), pos.at("y"), entityObj.at("rotation"),
                                   entityObj.at("data"));

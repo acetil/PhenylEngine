@@ -1,4 +1,5 @@
 #include "engine/entity/controller/wall_controller.h"
+#include "physics/collision_component.h"
 
 #include "util/string_help.h"
 

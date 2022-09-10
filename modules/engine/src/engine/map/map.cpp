@@ -7,6 +7,7 @@
 #include "engine/tile/tile.h"
 #include "logging/logging.h"
 #include "util/data.h"
+#include "graphics/textures/texture_atlas.h"
 
 #define VERTICES_PER_TILE 6
 #define VCOMP_PER_VERTEX 2
@@ -42,7 +43,7 @@ std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> Map
     std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> models;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
-            auto model = atlas.getModel(tiles[i]->getModelId());
+            auto model = atlas->getModel(tiles[i]->getModelId());
             auto transform = graphics::Transform2D{static_cast<int>(model.positionData.size()),
                                                    glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
             models.emplace_back(glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize}, transform, model);
@@ -51,8 +52,8 @@ std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> Map
     return models;
 }
 
-void Map::setAtlas (graphics::TextureAtlas _atlas) {
-    this->atlas = std::move(_atlas);
+void Map::setAtlas (graphics::TextureAtlas& _atlas) {
+    this->atlas = &_atlas;
 }
 
 void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
@@ -79,14 +80,14 @@ void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
     if (entitiesVal.empty()) {
         for (auto& entity : entities) {
             util::DataObject entityObj;
-            entityObj["type"] = entity.entityType;
-            util::DataObject pos;
-            pos["x"] = entity.x;
-            pos["y"] = entity.y;
-            entityObj["pos"] = std::move(pos);
-            entityObj["rotation"] = entity.rotation;
-            entityObj["data"] = entity.data;
-            entityArray.push_back(std::move(entityObj));
+            //entityObj["type"] = entity.entityType;
+            //util::DataObject pos;
+            //pos["x"] = entity.x;
+            //pos["y"] = entity.y;
+            //entityObj["pos"] = std::move(pos);
+            //entityObj["rotation"] = entity.rotation;
+            //entityObj["data"] = entity.data;
+            entityArray.push_back(entity.data);
         }
     } else {
         entityArray = entitiesVal.get<util::DataArray>();

@@ -4,17 +4,22 @@
 #include "engine/tile/tile.h"
 #include "util/smart_help.h"
 #include "util/data.h"
+#include "graphics/maths_headers.h"
+
+namespace graphics {
+    struct Transform2D;
+    struct Model2D;
+}
 
 namespace game {
     struct MapEntity {
-        std::string entityType;
+        /*std::string entityType;
         float x = 0.0f;
         float y = 0.0f;
-        float rotation = 0.0f;
+        float rotation = 0.0f;*/
         util::DataValue data;
         MapEntity () = default;
-        MapEntity(std::string _type, float _x, float _y, float _rot, util::DataValue _data) : entityType(std::move(_type)),
-                x(_x), y(_y), rotation(_rot), data(std::move(_data)) {};
+        MapEntity(util::DataValue _data) : data(std::move(_data)) {};
 
 
     };
@@ -25,7 +30,7 @@ namespace game {
         Tile** tiles;
         //graphics::StaticData* graphicsData;
         virtual Tile** getTiles ();
-        graphics::TextureAtlas atlas;
+        graphics::TextureAtlas* atlas;
         std::vector<MapEntity> entities;
         public:
         Map (int xSize, int ySize);
@@ -41,7 +46,7 @@ namespace game {
         //virtual float* getTileVertices ();
         //virtual float* getTileUvs ();
         virtual std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> getModels ();
-        virtual void setAtlas (graphics::TextureAtlas atlas);
+        virtual void setAtlas (graphics::TextureAtlas& atlas);
 
         virtual void setEntities (std::vector<MapEntity>& _entities) {
             entities = std::move(_entities);

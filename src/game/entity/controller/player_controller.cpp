@@ -5,6 +5,9 @@
 
 #include "util/string_help.h"
 #include "component/position.h"
+#include "engine/game_camera.h"
+#include "component/rotation_component.h"
+#include "graphics/textures/texture_atlas.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 0.15f
@@ -62,13 +65,13 @@ void game::PlayerController::updateDoShoot (event::PlayerShootChangeEvent &event
     hasShot &= doShoot;
 }
 
-int game::PlayerController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
+/*int game::PlayerController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
     return texId;
 }
 
 void game::PlayerController::setTextureIds (graphics::TextureAtlas& atlas) {
     texId = atlas.getModelId("test8");
-}
+}*/
 
 void game::PlayerController::controlEntityPostPhysics (component::view::EntityView& entityView, view::GameView& gameView) {
     auto pos = entityView.getComponent<component::Position2D>().getUnsafe().get();
@@ -85,8 +88,16 @@ void game::PlayerController::controlEntityPostPhysics (component::view::EntityVi
 
         bData["velocity"] = bVel;
 
-        gameView.createEntityInstance("bullet_entity", pos.x + relPos.x,
-                                                      pos.y + relPos.y, rot, util::DataValue(bData));
+        /*auto bulletView = gameView.createEntityInstance("bullet_entity", pos.x + relPos.x,
+                                                      pos.y + relPos.y, rot, util::DataValue(bData));*/
+        auto bulletView = gameView.createEntityInstance("bullet_entity", util::DataValue(bData));
+        bulletView.getComponent<component::Position2D>().ifPresent([&pos, relPos] (component::Position2D& comp) {
+            comp = pos + relPos;
+        });
+        bulletView.getComponent<component::Rotation2D>().ifPresent([&rot] (component::Rotation2D& comp) {
+            comp = rot;
+        });
+
         /*auto bulletView = entityView.withId(bulletId);
         //bulletView.rotation = rot(); // TODO: look into difference with ()
         bulletView.velocity = rotVec * SHOOT_VEL;*/

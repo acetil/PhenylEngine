@@ -1,5 +1,6 @@
 #include "logging/logging.h"
 #include "component/component.h"
+#include "component/main_component.h"
 #include "collisions.h"
 #include "component/position.h"
 #include <tuple>

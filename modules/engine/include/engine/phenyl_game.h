@@ -8,12 +8,15 @@
 #include "entity/controller/entity_controller.h"
 #include "util/data.h"
 #include "engine/input/game_input.h"
+#include "engine/map/map.h"
 
 namespace graphics {
     class PhenylGraphics;
+    class Camera;
 }
 
 namespace game {
+    class Tile;
     namespace detail {
         class GameObject;
         class ComponentSerialiser {
@@ -66,11 +69,7 @@ namespace game {
             addDefaultSerialisers();
         }
 
-        void registerEntityType (const std::string& name, EntityTypeBuilder entityType);
-
-        void buildEntityTypes ();
-
-        component::EntityId createNewEntityInstance (const std::string& name, float x, float y, float rot=0.0f, const util::DataValue& data=util::DataValue());
+        component::view::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
 
         void deleteEntityInstance (component::EntityId entityId);
         void registerTile (Tile* tile);
@@ -80,7 +79,7 @@ namespace game {
 
         void updateEntityPosition ();
 
-        void setTextureIds (graphics::TextureAtlas& atlas);
+        //void setTextureIds (graphics::TextureAtlas& atlas);
 
         void setEntityComponentManager (component::EntityComponentManager::SharedPtr compManager);
 
@@ -94,10 +93,6 @@ namespace game {
         void reloadMap ();
         void loadMap (Map::SharedPtr map);
         void dumpMap (const std::string& filepath);
-
-        void mapReloadRequest (event::ReloadMapEvent& event);
-        void mapDumpRequest (event::DumpMapEvent& event);
-        void mapLoadRequest (event::MapLoadRequestEvent& event);
 
         void updateCamera (graphics::Camera& camera);
 
