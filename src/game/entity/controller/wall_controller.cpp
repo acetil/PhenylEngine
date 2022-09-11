@@ -6,7 +6,7 @@
 
 using namespace game;
 
-void WallController::initEntity (component::view::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
+void WallController::initEntity (component::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
     if (data.empty() || data.get<util::DataObject>().empty()) {
         return;
     }
@@ -47,6 +47,6 @@ void WallController::initEntity (component::view::EntityView& entityView, view::
     }*/
 }
 
-util::DataObject WallController::getData (component::view::EntityView& entityView, view::GameView& gameView) {
+util::DataObject WallController::getData (component::EntityView& entityView, view::GameView& gameView) {
     return EntityController::getData(entityView, gameView);
 }

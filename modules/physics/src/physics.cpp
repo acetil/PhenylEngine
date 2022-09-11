@@ -108,8 +108,9 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
             coll.bbMap *= rot.rotMatrix;
         });
     }*/
-    for (const auto& i : componentManager->getConstrainedView<CollisionComponent2D, component::Rotation2D>()) {
-        i.get<CollisionComponent2D>().rotBBMap = i.get<CollisionComponent2D>().bbMap * i.get<component::Rotation2D>().rotMatrix;
+    for (const auto& i: componentManager->getConstrainedView<CollisionComponent2D, component::Rotation2D>()) {
+        i.get<CollisionComponent2D>().rotBBMap =
+                i.get<CollisionComponent2D>().bbMap * i.get<component::Rotation2D>().rotMatrix;
     }
 
     //componentManager->applyFunc<CollisionComponent2D, component::EntityId>(checkCollisionsEntity, &collisionResults);
@@ -129,9 +130,10 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
         i.get<CollisionComponent2D>().bbMap *= glm::inverse(i.get<component::Rotation2D>().rotMatrix);
     }*/
 
-    for (auto p : collisionResults) {
-        auto [x,y,dVec] = p;
-        logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!", x.value(), y.value(), dVec.x, dVec.y);
+    for (auto& p: collisionResults) {
+        auto& [x, y, dVec] = p;
+        logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!",
+                     x.value(), y.value(), dVec.x, dVec.y);
         // TODO: collision event
         auto comp1Opt = componentManager->getObjectData<CollisionComponent2D>(x);
         auto comp2Opt = componentManager->getObjectData<CollisionComponent2D>(y);
@@ -139,29 +141,37 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
         auto& dVec1 = dVec;
         auto& x1 = x;
         auto& y1 = y;
-        comp1Opt.ifPresent([&comp2Opt, &componentManager, &dVec1, &x1, &y1, &eventBus, &gameView](auto& comp1) {
-            comp2Opt.ifPresent([&comp1, &componentManager, &dVec1, &x1, &y1, &eventBus, &gameView](auto& comp2) {
+        comp1Opt.ifPresent([&comp2Opt, &componentManager, &dVec1, &x1, &y1, &eventBus, &gameView] (auto& comp1) {
+            comp2Opt.ifPresent([&comp1, &componentManager, &dVec1, &x1, &y1, &eventBus, &gameView] (auto& comp2) {
                 auto comp1Mass = comp1.resolveLayers & comp2.layers ? comp1.mass : 0.0f;
                 auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
                 float totalMass = comp1Mass + comp2Mass;
                 if (totalMass != 0) {
                     *componentManager->getObjectDataPtr<component::Position2D>(x1).orElse(nullptr) +=
                             dVec1 * comp1Mass / totalMass;
-                    componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(x1).orElse(nullptr)->velocity -=
-                            projectVec(dVec1, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(x1).orElse(component::FrictionKinematicsMotion2D()).velocity);
+                    componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(x1).orElse(
+                            nullptr)->velocity -=
+                            projectVec(dVec1, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(
+                                    x1).orElse(component::FrictionKinematicsMotion2D()).velocity);
                     *componentManager->getObjectDataPtr<component::Position2D>(y1).orElse(nullptr) -=
                             dVec1 * comp2Mass / totalMass;
-                    componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(y1).orElse(nullptr)->velocity -=
-                            projectVec(dVec1, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(y1).orElse(component::FrictionKinematicsMotion2D()).velocity);
+                    componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(y1).orElse(
+                            nullptr)->velocity -=
+                            projectVec(dVec1, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(
+                                    y1).orElse(component::FrictionKinematicsMotion2D()).velocity);
                 }
                 if (comp1.layers & comp2.eventLayer) {
                     eventBus->raise(
-                            event::EntityCollisionEvent(y1, x1, comp1.layers & comp2.eventLayer, componentManager,
+                            event::EntityCollisionEvent(componentManager->getEntityView(y1),
+                                                        componentManager->getEntityView(x1),
+                                                        comp1.layers & comp2.eventLayer, componentManager,
                                                         eventBus, gameView));
                 }
                 if (comp2.layers & comp1.eventLayer) {
                     eventBus->raise(
-                            event::EntityCollisionEvent(x1, y1, comp2.layers & comp1.eventLayer, componentManager,
+                            event::EntityCollisionEvent(componentManager->getEntityView(x1),
+                                                        componentManager->getEntityView(y1),
+                                                        comp2.layers & comp1.eventLayer, componentManager,
                                                         eventBus, gameView));
                 }
             });
@@ -188,11 +198,4 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
             eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager, eventBus, gameView));
         }*/
     }
-}
-void physics::updateEntityHitboxRotation (event::EntityRotationEvent& event) {
-    auto ptr = event.manager->getObjectDataPtr<CollisionComponent2D>(event.entityId);
-    event.manager->getObjectData<CollisionComponent2D>(event.entityId).ifPresent([&event](auto& ptr) {
-        ptr.bbMap *= event.rotMatrix;
-    });
-    //ptr->bbMap *= event.rotMatrix;
 }

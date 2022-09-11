@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 
 namespace util {
     namespace detail {

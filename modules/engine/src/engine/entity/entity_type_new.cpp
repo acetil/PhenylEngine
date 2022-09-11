@@ -13,7 +13,7 @@ namespace game::detail {
         util::DataValue compData;
     public:
         ComponentFactory (ComponentSerialiser* serialiser, util::DataValue compData) : serialiser{serialiser}, compData{std::move(compData)} {}
-        void addDefault (component::view::EntityView& entityView) const {
+        void addDefault (component::EntityView& entityView) const {
             if (!serialiser->hasComp(entityView)) {
                 serialiser->deserialiseComp(entityView, compData);
             }
@@ -23,7 +23,7 @@ namespace game::detail {
 
 EntityTypeNew::EntityTypeNew (std::vector<detail::ComponentFactory> factories) : factories{std::move(factories)} {}
 
-void EntityTypeNew::addDefaultComponents (component::view::EntityView& entityView) const {
+void EntityTypeNew::addDefaultComponents (component::EntityView& entityView) const {
     for (const auto& i : factories) {
         i.addDefault(entityView);
     }

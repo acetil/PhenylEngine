@@ -12,7 +12,6 @@
 #include "physics/physics.h"
 #include "physics/collision_component.h"
 #include "engine/entity/controller/entity_controller.h"
-#include "graphics/graphics_update.h"
 #include "graphics/phenyl_graphics.h"
 #include "engine/phenyl_game.h"
 
@@ -55,8 +54,8 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     eventBus->subscribeUnscoped(physics::onEntityCreation);
     //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
-    eventBus->subscribeUnscoped(graphics::updateEntityRotation);
-    eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
+    //eventBus->subscribeUnscoped(graphics::updateEntityRotation);
+    //eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
 
     graphics::addDebugEventHandlers(eventBus);
 }

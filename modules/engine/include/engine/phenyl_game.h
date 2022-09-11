@@ -22,10 +22,10 @@ namespace game {
         class ComponentSerialiser {
         public:
             virtual ~ComponentSerialiser() = default;
-            virtual bool deserialiseComp (component::view::EntityView& entityView, const util::DataValue& serialisedComp) = 0;
-            virtual util::DataValue serialiseComp (component::view::EntityView& entityView) = 0;
+            virtual bool deserialiseComp (component::EntityView& entityView, const util::DataValue& serialisedComp) = 0;
+            virtual util::DataValue serialiseComp (component::EntityView& entityView) = 0;
 
-            virtual bool hasComp (component::view::EntityView& entityView) = 0;
+            virtual bool hasComp (component::EntityView& entityView) = 0;
         };
 
         template <class T, typename SerialiseF, typename DeserialiseF>
@@ -36,7 +36,7 @@ namespace game {
         public:
             ComponentSerialiserImpl (SerialiseF f1, DeserialiseF f2) : serialiseF{f1}, deserialiseF{f2} {}
 
-            util::DataValue serialiseComp (component::view::EntityView& entityView) override {
+            util::DataValue serialiseComp (component::EntityView& entityView) override {
                 return entityView.getComponent<T>()
                         .thenMap([this](T& comp) -> util::DataValue {
                             return serialiseF(comp);
@@ -44,7 +44,7 @@ namespace game {
                         .orElse({});
             }
 
-             bool deserialiseComp (component::view::EntityView& entityView, const util::DataValue& serialisedComp) override {
+             bool deserialiseComp (component::EntityView& entityView, const util::DataValue& serialisedComp) override {
                 auto opt = deserialiseF(serialisedComp);
 
                 opt.ifPresent([&entityView] (T& val) {
@@ -54,7 +54,7 @@ namespace game {
                 return opt;
             }
 
-            bool hasComp(component::view::EntityView& entityView) override {
+            bool hasComp(component::EntityView& entityView) override {
                 return entityView.hasComponent<T>();
             }
         };
@@ -69,7 +69,7 @@ namespace game {
             addDefaultSerialisers();
         }
 
-        component::view::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
+        component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
 
         void deleteEntityInstance (component::EntityId entityId);
         void registerTile (Tile* tile);

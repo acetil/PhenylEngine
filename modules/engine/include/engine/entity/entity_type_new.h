@@ -26,7 +26,7 @@ namespace game {
         EntityTypeNew (EntityTypeNew&&) noexcept;
         EntityTypeNew& operator= (EntityTypeNew&&) noexcept;
 
-        void addDefaultComponents (component::view::EntityView& entityView) const;
+        void addDefaultComponents (component::EntityView& entityView) const;
     };
 
     struct EntityTypeComponent {

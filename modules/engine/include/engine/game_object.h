@@ -49,10 +49,10 @@ namespace game::detail {
                 util::Map<std::string, std::unique_ptr<ComponentSerialiser>> serialiserMap;
                 util::Map<std::string, EntityTypeNew> entityTypesNew;
 
-                component::EntityId makeDeserialisedEntity (const util::DataValue& serialised);
+                component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
 
-                void deserialiseEntity2 (component::view::EntityView& entityView, const util::DataValue& entityData);
-                util::DataObject serialiseEntity (component::view::EntityView& entityView);
+                void deserialiseEntity2 (component::EntityView& entityView, const util::DataValue& entityData);
+                util::DataObject serialiseEntity (component::EntityView& entityView);
 
                 public:
                 ~GameObject();
@@ -65,8 +65,7 @@ namespace game::detail {
                 }
                 //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
 
-                component::view::EntityView
-                createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
+                component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
                 /*AbstractEntity* getEntityInstance (int entityId);
                 void deleteEntityInstance (AbstractEntity* entity);*/
 

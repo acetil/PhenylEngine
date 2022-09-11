@@ -9,7 +9,6 @@
 
 #include "graphics/graphics_init.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/graphics_update.h"
 #include "graphics/ui/debug_ui.h"
 
 #include "physics/physics.h"
@@ -132,8 +131,8 @@ void detail::Engine::addEventHandlers () {
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     eventBus->subscribeUnscoped(physics::onEntityCreation);
     //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
-    eventBus->subscribeUnscoped(graphics::updateEntityRotation);
-    eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
+    //eventBus->subscribeUnscoped(graphics::updateEntityRotation);
+    //eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
 
     graphics::addDebugEventHandlers(eventBus);
 

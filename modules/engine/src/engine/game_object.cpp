@@ -8,7 +8,6 @@
 #include "common/events/entity_creation.h"
 #include "engine/entity/controller/entity_controller.h"
 #include "common/events/map_load.h"
-#include "component/component_serialisation.h"
 #include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
 #include "component/position.h"
@@ -42,14 +41,14 @@ detail::GameObject::~GameObject () {
         return nullptr;
     }
 }*/
-component::view::EntityView detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
+component::EntityView detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     // TODO: requires refactor
     if (!entityTypesNew.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
         return {{0, 0}, nullptr};
     } else {
-        auto entityId = entityComponentManager->createEntity();
-        auto entityView = entityComponentManager->getEntityView(entityId);
+        auto entityView = entityComponentManager->createEntity();
+        //auto entityView = entityComponentManager->getEntityView(entityId);
         const auto& entityType = entityTypesNew.at(name);
         entityType.addDefaultComponents(entityView);
 
@@ -69,16 +68,13 @@ component::view::EntityView detail::GameObject::createNewEntityInstance (const s
         });
 
         //entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
-        eventBus->raise(event::EntityCreationEvent(entityComponentManager,
-                                                   entityComponentManager->getObjectData<AbstractEntity*>(
-                                                           entityId).orElse(nullptr), entityId,
-                                                   entityView, gameView));
+        eventBus->raise(event::EntityCreationEvent(entityComponentManager, entityView, gameView));
         return entityView;
     }
 }
 
-component::EntityId detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
-    auto entityId = entityComponentManager->createEntity();
+component::EntityView detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
+    auto entityView = entityComponentManager->createEntity();
     auto serialisedObj = serialised.get<util::DataObject>();
     //setInitialEntityValues(entityComponentManager, entityTypes.at(type), entityId, x, y, rot);
 
@@ -88,7 +84,7 @@ component::EntityId detail::GameObject::makeDeserialisedEntity (const util::Data
 
     //auto viewCore = view::ViewCore(entityComponentManager);
     //auto entityView = view::EntityView(viewCore, entityId, eventBus);
-    auto entityView = entityComponentManager->getEntityView(entityId);
+    //auto entityView = entityComponentManager->getEntityView(entityId);
     //const auto& entityType = entityTypes.at(type);
     //entityView.addComponent<EntityType>(entityType);
     //entityView.addComponent<AbstractEntity*>(entityType.entityFactory());
@@ -112,7 +108,7 @@ component::EntityId detail::GameObject::makeDeserialisedEntity (const util::Data
         controller->initEntity(entityView, gameView, serialisedObj["data"]);
     });
 
-    eventBus->raise(event::EntityCreationEvent(entityComponentManager, nullptr, entityId, entityView, gameView));
+    eventBus->raise(event::EntityCreationEvent(entityComponentManager, entityView, gameView));
     /*entityView.getComponent<component::Position2D>().ifPresent([&entityView, &gameView, this, &entityId] (component::Position2D& pos) {
        eventBus->raise(event::EntityCreationEvent(entityComponentManager, nullptr, entityId, entityView, gameView));
     });*/
@@ -120,7 +116,7 @@ component::EntityId detail::GameObject::makeDeserialisedEntity (const util::Data
                                                entityComponentManager->getObjectData<AbstractEntity*>(entityId).orElse(
                                                        nullptr), entityId,
                                                entityView, gameView));*/
-    return entityId;
+    return entityView;
 }
 /*AbstractEntity* game::GameObject::getEntityInstance (int entityId) {
     if (entities.count(entityId) > 0) {
@@ -284,7 +280,7 @@ void detail::GameObject::addComponentSerialiser (const std::string& component, s
     serialiserMap[component] = std::move(serialiser);
 }
 
-void detail::GameObject::deserialiseEntity2 (component::view::EntityView& entityView, const util::DataValue& entityData) {
+void detail::GameObject::deserialiseEntity2 (component::EntityView& entityView, const util::DataValue& entityData) {
     if (!entityData.is<util::DataObject>()) {
         logging::log(LEVEL_DEBUG, "Not object!");
         return;
@@ -300,7 +296,7 @@ void detail::GameObject::deserialiseEntity2 (component::view::EntityView& entity
     }
 }
 
-util::DataObject detail::GameObject::serialiseEntity (component::view::EntityView& entityView) {
+util::DataObject detail::GameObject::serialiseEntity (component::EntityView& entityView) {
     util::DataObject entityData;
 
     for (const auto& [compId, serialiser] : serialiserMap.kv()) {

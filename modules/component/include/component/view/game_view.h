@@ -19,7 +19,7 @@ namespace view {
     public:
         explicit GameView (game::detail::GameObject* _gameObject) :
             gameObject(_gameObject) {}
-        component::view::EntityView createEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
+        component::EntityView createEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
         void destroyEntityInstance (component::EntityId entityId);
         game::GameCamera& getCamera ();
     };

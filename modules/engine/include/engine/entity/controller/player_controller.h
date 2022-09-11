@@ -22,11 +22,11 @@ namespace game {
             deltaYForce = 0;
         }
         void updateMovement (event::PlayerMovementChangeEvent& event);
-        void controlEntityPrePhysics (component::view::EntityView& entityView, view::GameView& gameView) override;
-        void controlEntityPostPhysics(component::view::EntityView &entityView, view::GameView &gameView) override;
+        void controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView) override;
+        void controlEntityPostPhysics(component::EntityView &entityView, view::GameView &gameView) override;
         void updateCursorPos (event::CursorPosChangeEvent& event);
         void updateDoShoot (event::PlayerShootChangeEvent& event);
-        //int getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const override;
+        //int getTextureId (component::EntityView& entityView, view::GameView& gameView) const override;
         //void setTextureIds (graphics::TextureAtlas& atlas) override;
 
         event::EventScope& getEventScope () {

@@ -18,7 +18,7 @@ void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& e
     //logging::logf(LEVEL_DEBUG, "Updating movement: (%f, %f)", deltaXForce, deltaYForce);
 }
 
-void game::PlayerController::controlEntityPrePhysics (component::view::EntityView& entityView, view::GameView& gameView) {
+void game::PlayerController::controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView) {
    //if (entityView.entityId != 0) return; // TODO: remove
 
    glm::vec2 cursorDisp = gameView.getCamera().getWorldPos(cursorScreenPos);
@@ -65,7 +65,7 @@ void game::PlayerController::updateDoShoot (event::PlayerShootChangeEvent &event
     hasShot &= doShoot;
 }
 
-/*int game::PlayerController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
+/*int game::PlayerController::getTextureId (component::EntityView& entityView, view::GameView& gameView) const {
     return texId;
 }
 
@@ -73,7 +73,7 @@ void game::PlayerController::setTextureIds (graphics::TextureAtlas& atlas) {
     texId = atlas.getModelId("test8");
 }*/
 
-void game::PlayerController::controlEntityPostPhysics (component::view::EntityView& entityView, view::GameView& gameView) {
+void game::PlayerController::controlEntityPostPhysics (component::EntityView& entityView, view::GameView& gameView) {
     auto pos = entityView.getComponent<component::Position2D>().getUnsafe().get();
     if (!hasShot && doShoot) {
         auto rot = entityView.getComponent<component::Rotation2D>().getUnsafe().rotation;

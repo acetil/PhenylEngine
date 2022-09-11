@@ -1,11 +1,6 @@
-#include "graphics/graphics_update.h"
 #include "graphics/graphics_new_include.h"
 using namespace graphics;
 
-void graphics::updateEntityRotation (event::EntityRotationEvent &event) {
-    auto ptr = event.manager->getObjectDataPtr<Transform2D>(event.entityId).orElse(nullptr);
-    //ptr->transform *= event.rotMatrix;
-}
 
 util::DataValue Model2D::serialise () const{
     return util::DataValue(modelName);

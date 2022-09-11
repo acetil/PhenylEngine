@@ -5,20 +5,20 @@
 #include "logging/logging.h"
 using namespace game;
 
-void EntityController::controlEntityPrePhysics (component::view::EntityView& entityView, view::GameView& gameView) {
+void EntityController::controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView) {
     //logging::log(LEVEL_INFO, "Controlling entity pre physics!");
 }
 
 
-void EntityController::controlEntityPostPhysics (component::view::EntityView& entityView, view::GameView& gameView) {
+void EntityController::controlEntityPostPhysics (component::EntityView& entityView, view::GameView& gameView) {
     //logging::log(LEVEL_INFO, "Controlling entity pre physics!");
 }
 
-void EntityController::onEntityCollision (component::view::EntityView& entityView, view::GameView& gameView, component::EntityId otherId, unsigned int layers) {
+void EntityController::onEntityCollision (component::EntityView& entityView, view::GameView& gameView, component::EntityView& otherView, unsigned int layers) {
     logging::log(LEVEL_DEBUG, "On entity collision!");
 }
 
-/*int EntityController::getTextureId (component::view::EntityView& entityView, view::GameView& gameView) const {
+/*int EntityController::getTextureId (component::EntityView& entityView, view::GameView& gameView) const {
     return testTexId;
 }
 
@@ -26,7 +26,7 @@ void EntityController::setTextureIds (graphics::TextureAtlas& atlas) {
     testTexId = atlas.getModelId("test3");
 }*/
 
-util::DataObject EntityController::getData (component::view::EntityView& entityView, view::GameView& gameView) {
+util::DataObject EntityController::getData (component::EntityView& entityView, view::GameView& gameView) {
     return util::DataObject();
 }
 
@@ -81,11 +81,16 @@ void game::controlEntitiesPostPhysics (const component::EntityComponentManager::
 
 void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
     //auto entityView = view::EntityView(view::ViewCore(collisionEvent.componentManager), collisionEvent.entityId, collisionEvent.eventBus);
-    auto entityView = collisionEvent.componentManager->getEntityView(collisionEvent.entityId);
-    collisionEvent.componentManager->getObjectData<std::shared_ptr<EntityController>>(collisionEvent.entityId).ifPresent([&entityView, &collisionEvent] (std::shared_ptr<EntityController>& ptr) {
+    auto& firstEntity = collisionEvent.firstEntity;
+    auto& secondEntity = collisionEvent.secondEntity;
+    firstEntity.getComponent<std::shared_ptr<EntityController>>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (std::shared_ptr<EntityController>& ptr) {
 
-        ptr->onEntityCollision(entityView, collisionEvent.gameView, collisionEvent.otherId, collisionEvent.collisionLayers);
+        ptr->onEntityCollision(firstEntity, collisionEvent.gameView, secondEntity, collisionEvent.collisionLayers);
     });
+
+    /*secondEntity.getComponent<std::shared_ptr<EntityController>>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (std::shared_ptr<EntityController>& ptr) {
+        ptr->onEntityCollision(secondEntity, collisionEvent.gameView, firstEntity.getId(), collisionEvent.collisionLayers);
+    });*/
 
     //entityView.controller()->onEntityCollision(entityView, collisionEvent.gameView, collisionEvent.otherId, collisionEvent.collisionLayers);
 }
