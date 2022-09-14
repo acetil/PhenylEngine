@@ -114,6 +114,8 @@ namespace graphics {
 
             void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
+
+            void addComponentSerialisers (component::EntitySerialiser& serialiser);
         };
     }
 

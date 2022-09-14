@@ -111,6 +111,10 @@ void PhenylGraphics::updateUI () {
     getGraphics()->updateUI();
 }
 
+void PhenylGraphics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
+    getGraphics()->addComponentSerialisers(serialiser);
+}
+
 
 
 

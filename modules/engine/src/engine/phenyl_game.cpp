@@ -107,92 +107,15 @@ void PhenylGame::addComponentSerialiserInt (const std::string& component, std::u
 }
 
 void PhenylGame::addDefaultSerialisers () {
-    addComponentSerialiser<component::FrictionKinematicsMotion2D>("friction_kinematics_2D", [](const component::FrictionKinematicsMotion2D& comp) -> util::DataValue {
-             return comp._serialise();
-        }, [] (const util::DataValue& val) -> util::Optional<component::FrictionKinematicsMotion2D> {
-            component::FrictionKinematicsMotion2D comp{};
-            comp._deserialise(val);
-
-            return {comp};
-        });
-
-    addComponentSerialiser<graphics::Model2D>("model_2D", [](graphics::Model2D& comp) -> util::DataValue {
-            return comp._serialise();
-        }, [] (const util::DataValue& val) -> util::Optional<graphics::Model2D> {
-            graphics::Model2D comp{};
-            comp._deserialise(val);
-
-            return {comp};
-        });
-
-    addComponentSerialiser<physics::CollisionComponent2D>("collision_comp_2D", [](const physics::CollisionComponent2D& comp) -> util::DataValue {
-        return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<physics::CollisionComponent2D> {
-        physics::CollisionComponent2D comp{};
-        comp._deserialise(val);
-
-        return {comp};
-    });
-
-    addComponentSerialiser<graphics::Transform2D>("transform_2D", [](const graphics::Transform2D& comp) -> util::DataValue {
-        return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<graphics::Transform2D> {
-        graphics::Transform2D comp{};
-        comp._deserialise(val);
-
-        return {comp};
-    });
-
-    addComponentSerialiser<component::Rotation2D>("rotation_2D", [](const component::Rotation2D& comp) -> util::DataValue {
-        return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<component::Rotation2D> {
-        component::Rotation2D comp{};
-        comp._deserialise(val);
-
-        return {comp};
-    });
-
-    /*addComponentSerialiser<EntityType>("entity_type", [](const EntityType& comp) -> util::DataValue {
-        return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<EntityType> {
-        EntityType comp{};
-        comp._deserialise(val);
-
-        return {comp};
-    });*/
-
-    addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
-
-    addComponentSerialiser<EntityTypeComponent>("type", [](const EntityTypeComponent& comp) -> util::DataValue {
-        return (util::DataValue)comp.typeId;
-    }, [](const util::DataValue& val) -> util::Optional<EntityTypeComponent> {
-        if (val.is<std::string>()) {
-            return {EntityTypeComponent{val.get<std::string>()}};
-        } else {
-            return util::NullOpt;
-        }
-    });
-
-    addComponentSerialiser<std::shared_ptr<EntityController>>("controller", [] (const std::shared_ptr<EntityController>& comp) -> util::DataValue {
-        return (util::DataValue)"TODO"; // TODO
-    }, [this](const util::DataValue& val) -> util::Optional<std::shared_ptr<EntityController>> {
-        if (!val.is<std::string>()) {
-            return util::NullOpt;
-        }
-
-        auto& controllerId = val.get<std::string>();
-
-        auto controller = getController(controllerId);
-        if (controller) {
-            return {std::move(controller)};
-        } else {
-            return util::NullOpt;
-        }
-    });
+    getShared()->addDefaultSerialisers();
 }
 
 void PhenylGame::addEntityType (const std::string& typeId, const std::string& filepath) {
     getShared()->addEntityType(typeId, filepath);
+}
+
+void PhenylGame::setSerialiser (component::EntitySerialiser* serialiser) {
+    getShared()->setSerialiser(serialiser);
 }
 
 PhenylGameHolder::~PhenylGameHolder () = default;

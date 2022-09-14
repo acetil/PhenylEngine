@@ -61,6 +61,8 @@ namespace graphics {
 
         void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
         void updateUI ();
+
+        void addComponentSerialisers (component::EntitySerialiser& serialiser);
     };
 
     class PhenylGraphicsHolder {

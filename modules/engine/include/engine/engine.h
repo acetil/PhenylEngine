@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "component/component.h"
+#include "component/forward.h"
 #include "game_object.h"
 #include "graphics/graphics.h"
 #include "graphics/phenyl_graphics.h"
@@ -30,5 +31,7 @@ namespace engine {
         event::EventBus::SharedPtr getEventBus ();
 
         component::EntityComponentManager::SharedPtr getComponentManager ();
+
+        component::EntitySerialiser& getEntitySerialiser ();
     };
 }

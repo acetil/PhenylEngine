@@ -13,6 +13,7 @@
 #include "graphics/renderlayer/map_layer.h"
 #include "graphics/phenyl_graphics.h"
 #include "common/input/proxy_source.h"
+#include "component/component_serialiser.h"
 
 using namespace graphics;
 
@@ -200,4 +201,24 @@ detail::Graphics::~Graphics () {
 
 void detail::Graphics::updateUI () {
     uiManager.updateUI();
+}
+
+void detail::Graphics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
+    serialiser.addComponentSerialiser<graphics::Model2D>("model_2D", [](graphics::Model2D& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<graphics::Model2D> {
+        graphics::Model2D comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
+
+    serialiser.addComponentSerialiser<graphics::Transform2D>("transform_2D", [](const graphics::Transform2D& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<graphics::Transform2D> {
+        graphics::Transform2D comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
 }

@@ -6,6 +6,7 @@
 #include "graphics/graphics_new_include.h"
 #include "component/position.h"
 #include "component/rotation_component.h"
+#include "component/component_serialiser.h"
 
 using namespace physics;
 
@@ -198,4 +199,24 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
             eventBus->raiseEvent(event::EntityCollisionEvent(x, y, comp2.layers & comp1.eventLayer, componentManager, eventBus, gameView));
         }*/
     }
+}
+
+void physics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
+    serialiser.addComponentSerialiser<component::FrictionKinematicsMotion2D>("friction_kinematics_2D", [](const component::FrictionKinematicsMotion2D& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<component::FrictionKinematicsMotion2D> {
+        component::FrictionKinematicsMotion2D comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
+
+    serialiser.addComponentSerialiser<physics::CollisionComponent2D>("collision_comp_2D", [](const physics::CollisionComponent2D& comp) -> util::DataValue {
+        return comp._serialise();
+    }, [] (const util::DataValue& val) -> util::Optional<physics::CollisionComponent2D> {
+        physics::CollisionComponent2D comp{};
+        comp._deserialise(val);
+
+        return {comp};
+    });
 }

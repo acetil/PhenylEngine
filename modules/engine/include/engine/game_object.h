@@ -48,6 +48,7 @@ namespace game::detail {
 
                 util::Map<std::string, std::unique_ptr<ComponentSerialiser>> serialiserMap;
                 util::Map<std::string, EntityTypeNew> entityTypesNew;
+                component::EntitySerialiser* serialiser;
 
                 component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
 
@@ -102,6 +103,9 @@ namespace game::detail {
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
                 void addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser);
+                void setSerialiser (component::EntitySerialiser* serialiser);
+
+                void addDefaultSerialisers ();
 
                 ComponentSerialiser* getSerialiser (const std::string& component);
 

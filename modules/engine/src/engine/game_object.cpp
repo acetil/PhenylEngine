@@ -12,6 +12,7 @@
 #include "engine/phenyl_game.h"
 #include "component/position.h"
 #include "component/rotation_component.h"
+#include "component/component_serialiser.h"
 
 using namespace game;
 
@@ -327,4 +328,37 @@ void detail::GameObject::addEntityType (const std::string& typeId, const std::st
     if (!data.empty()) {
         entityTypesNew[typeId] = std::move(makeEntityType(data, *this));
     }
+}
+
+void detail::GameObject::setSerialiser (component::EntitySerialiser* serialiser) {
+    this->serialiser = serialiser;
+}
+
+void detail::GameObject::addDefaultSerialisers () {
+    serialiser->addComponentSerialiser<EntityTypeComponent>("type", [](const EntityTypeComponent& comp) -> util::DataValue {
+        return (util::DataValue)comp.typeId;
+    }, [](const util::DataValue& val) -> util::Optional<EntityTypeComponent> {
+        if (val.is<std::string>()) {
+            return {EntityTypeComponent{val.get<std::string>()}};
+        } else {
+            return util::NullOpt;
+        }
+    });
+
+    serialiser->addComponentSerialiser<std::shared_ptr<EntityController>>("controller", [] (const std::shared_ptr<EntityController>& comp) -> util::DataValue {
+        return (util::DataValue)"TODO"; // TODO
+    }, [this](const util::DataValue& val) -> util::Optional<std::shared_ptr<EntityController>> {
+        if (!val.is<std::string>()) {
+            return util::NullOpt;
+        }
+
+        auto& controllerId = val.get<std::string>();
+
+        auto controller = getController(controllerId);
+        if (controller) {
+            return {std::move(controller)};
+        } else {
+            return util::NullOpt;
+        }
+    });
 }

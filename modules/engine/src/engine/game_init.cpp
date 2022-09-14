@@ -22,7 +22,7 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
 void registerTiles (game::PhenylGame gameObject, const graphics::PhenylGraphics& graphics);
 
-void game::initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObject, const event::EventBus::SharedPtr& eventBus) {
+void game::initGame (const graphics::PhenylGraphics& graphics, game::PhenylGame gameObject, const event::EventBus::SharedPtr& eventBus) {
     //auto gameObject = detail::GameObject::NewSharedPtr();
     //addEventHandlers(gameObject, graphics, eventBus);
     //addControlEventHandlers(eventBus);
@@ -37,7 +37,7 @@ void game::initGame (graphics::PhenylGraphics graphics, game::PhenylGame gameObj
     graphics.addEntityLayer(gameObject.c); // TODO: unhackify
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());*/
 
-    registerTiles(gameObject, graphics);
+    registerTiles(std::move(gameObject), graphics);
     //addEventHandlers(gameObject, graphics, eventBus);
     logging::log(LEVEL_DEBUG, "Set texture ids!");
 

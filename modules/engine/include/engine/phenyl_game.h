@@ -66,7 +66,7 @@ namespace game {
         void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser);
     public:
         explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {
-            addDefaultSerialisers();
+            //addDefaultSerialisers();
         }
 
         component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
@@ -110,6 +110,8 @@ namespace game {
         void addComponentSerialiser (const std::string& component, F1 serialiseFunc, F2 deserialiseFunc) {
             addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl<T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
         }
+
+        void setSerialiser (component::EntitySerialiser* serialiser);
 
         void addDefaultSerialisers ();
 

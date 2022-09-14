@@ -10,6 +10,7 @@
 #include <memory>
 
 //#include <cmath>
+#include "component/forward.h"
 #include "util/meta.h"
 #include "util/smart_help.h"
 #include "util/bitfield.h"
@@ -34,21 +35,6 @@ namespace component {
         };
     }
 
-    template <std::size_t MaxComponents>
-    class ComponentView;
-    template <std::size_t MaxComponents, typename ...Args>
-    class ConstrainedEntityView;
-    template <std::size_t MaxComponents, typename ...Args>
-    class ConstrainedView;
-
-    namespace detail {
-        template <std::size_t MaxComponents>
-        class EntityViewIterator;
-    }
-
-    template <std::size_t MaxComponents>
-    class ComponentManagerNew;
-
     struct EntityId {
     private:
         unsigned int generation;
@@ -64,6 +50,11 @@ namespace component {
         template <std::size_t N>
         friend class ComponentManagerNew;
     };
+
+    namespace detail {
+        template <std::size_t MaxComponents>
+        class EntityViewIterator;
+    }
 
     template <std::size_t MaxComponents>
     class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew<MaxComponents>, true> {
@@ -379,9 +370,6 @@ namespace component {
     };
 
     extern template class ComponentManagerNew<PHENYL_MAX_COMPONENTS>;
-
-    using EntityComponentManager = ComponentManagerNew<PHENYL_MAX_COMPONENTS>;
-    using EntityView = ComponentView<PHENYL_MAX_COMPONENTS>;
 
 
     template <std::size_t MaxComponents>

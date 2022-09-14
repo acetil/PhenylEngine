@@ -1,4 +1,4 @@
-add_library(component src/component/main_component.cpp include/component/main_component.h src/component/component_extern.cpp src/component/rotation_component.cpp include/component/position.h src/component/position.cpp src/component/view/game_view.cpp)
+add_library(component src/component/main_component.cpp include/component/main_component.h src/component/component_extern.cpp src/component/rotation_component.cpp include/component/position.h src/component/position.cpp src/component/view/game_view.cpp include/component/component_serialiser.h include/component/forward.h)
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)
 
