@@ -63,7 +63,7 @@ namespace game {
     private:
         std::weak_ptr<game::detail::GameObject> gameObject;
         [[nodiscard]] std::shared_ptr<game::detail::GameObject> getShared () const;
-        void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser);
+        //void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser);
     public:
         explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {
             //addDefaultSerialisers();
@@ -106,10 +106,10 @@ namespace game {
 
         GameInput& getGameInput ();
 
-        template <class T, typename F1, typename F2>
+        /*template <class T, typename F1, typename F2>
         void addComponentSerialiser (const std::string& component, F1 serialiseFunc, F2 deserialiseFunc) {
             addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl<T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
-        }
+        }*/
 
         void setSerialiser (component::EntitySerialiser* serialiser);
 

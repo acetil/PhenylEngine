@@ -8,7 +8,7 @@
 
 namespace component {
     template <std::size_t MaxComponents>
-    class ComponentManagerNew;
+    class ComponentManager;
     template <std::size_t MaxComponents>
     class ComponentView;
     template <std::size_t MaxComponents, typename ...Args>
@@ -21,7 +21,7 @@ namespace component {
     template <size_t MaxComponents>
     class ObjectComponentFactory;
 
-    using EntityComponentManager = ComponentManagerNew<PHENYL_MAX_COMPONENTS>;
+    using EntityComponentManager = ComponentManager<PHENYL_MAX_COMPONENTS>;
     using EntityView = ComponentView<PHENYL_MAX_COMPONENTS>;
 
     using EntitySerialiser = ObjectSerialiser<PHENYL_MAX_COMPONENTS>;

@@ -1,8 +1,9 @@
-#include "engine/entity/entity_type_new.h"
+#include "engine/entity/entity_type.h"
 
 #include <utility>
 #include "engine/phenyl_game.h"
 #include "engine/game_object.h"
+#include "component/component_serialiser.h"
 
 using namespace game;
 
@@ -21,36 +22,39 @@ namespace game::detail {
     };
 }
 
-EntityTypeNew::EntityTypeNew (std::vector<detail::ComponentFactory> factories) : factories{std::move(factories)} {}
+EntityType::EntityType (std::vector<component::EntityComponentFactory> factories) : factories{std::move(factories)} {}
 
-void EntityTypeNew::addDefaultComponents (component::EntityView& entityView) const {
+void EntityType::addDefaultComponents (component::EntityView& entityView) const {
     for (const auto& i : factories) {
         i.addDefault(entityView);
     }
 }
 
-EntityTypeNew::EntityTypeNew (EntityTypeNew&&) noexcept = default;
+EntityType::EntityType (EntityType&&) noexcept = default;
 
-EntityTypeNew& EntityTypeNew::operator= (EntityTypeNew&&) noexcept = default;
+EntityType& EntityType::operator= (EntityType&&) noexcept = default;
 
-EntityTypeNew::EntityTypeNew () = default;
+EntityType::EntityType () = default;
 
-EntityTypeNew::~EntityTypeNew () = default;
+EntityType::~EntityType () = default;
 
-EntityTypeNew game::makeEntityType (const util::DataValue& entityTypeData, detail::GameObject& gameObject) {
+EntityType game::makeEntityType (const util::DataValue& entityTypeData, component::EntitySerialiser& serialiser) {
     if (!entityTypeData.is<util::DataObject>()) {
         logging::log(LEVEL_WARNING, "Invalid data for entity type!");
-        return EntityTypeNew{{}};
+        return EntityType{{}};
     }
 
     const auto& obj = entityTypeData.get<util::DataObject>();
-    std::vector<detail::ComponentFactory> factories;
+    std::vector<component::EntityComponentFactory> factories;
     for (const auto& [k, v] : obj.kv()) {
-        auto* serialiser = gameObject.getSerialiser(k);
+        /*auto* serialiser = gameObject.getSerialiser(k);
         if (serialiser) {
             factories.emplace_back(serialiser, v);
-        }
+        }*/
+        serialiser.makeFactory(k, v).ifPresent([&factories](component::EntityComponentFactory& factory) {
+            factories.emplace_back(std::move(factory));
+        });
     }
 
-    return EntityTypeNew{std::move(factories)};
+    return EntityType{std::move(factories)};
 }

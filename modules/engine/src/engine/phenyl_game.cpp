@@ -102,9 +102,9 @@ GameInput& PhenylGame::getGameInput () {
     return getShared()->getInput();
 }
 
-void PhenylGame::addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser) {
+/*void PhenylGame::addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser) {
     getShared()->addComponentSerialiser(component, std::move(serialiser));
-}
+}*/
 
 void PhenylGame::addDefaultSerialisers () {
     getShared()->addDefaultSerialisers();

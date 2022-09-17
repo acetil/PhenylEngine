@@ -10,9 +10,10 @@
 #include "common/events/map_load.h"
 #include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
-#include "component/position.h"
-#include "component/rotation_component.h"
+//#include "component/position.h"
+//#include "component/rotation_component.h"
 #include "component/component_serialiser.h"
+#include "engine/entity/entity_type.h"
 
 using namespace game;
 
@@ -91,7 +92,8 @@ component::EntityView detail::GameObject::makeDeserialisedEntity (const util::Da
     //entityView.addComponent<AbstractEntity*>(entityType.entityFactory());
     //entityView.addComponent<std::shared_ptr<EntityController>>(entityType.defaultController);
 
-    deserialiseEntity2(entityView, serialisedObj);
+    //deserialiseEntity2(entityView, serialisedObj);
+    serialiser->deserialiseObject(entityView, serialisedObj);
 
     entityView.getComponent<EntityTypeComponent>().ifPresent([this, &entityView] (EntityTypeComponent& entityType) {
         if (entityTypesNew.contains(entityType.typeId)) {
@@ -277,7 +279,7 @@ GameInput& detail::GameObject::getInput () {
     return gameInput;
 }
 
-void detail::GameObject::addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser) {
+/*void detail::GameObject::addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser) {
     serialiserMap[component] = std::move(serialiser);
 }
 
@@ -295,28 +297,29 @@ void detail::GameObject::deserialiseEntity2 (component::EntityView& entityView, 
             serialiser->deserialiseComp(entityView, dataObj.at(compId));
         }
     }
-}
+}*/
 
 util::DataObject detail::GameObject::serialiseEntity (component::EntityView& entityView) {
-    util::DataObject entityData;
+    //util::DataObject entityData;
 
-    for (const auto& [compId, serialiser] : serialiserMap.kv()) {
+    /*for (const auto& [compId, serialiser] : serialiserMap.kv()) {
         util::DataValue val = serialiser->serialiseComp(entityView);
         if (!val.empty()) {
             entityData[compId] = std::move(val);
         }
-    }
+    }*/
 
-    return entityData;
+
+    return serialiser->serialiseObject(entityView);
 }
 
-detail::ComponentSerialiser* detail::GameObject::getSerialiser (const std::string& component) {
+/*detail::ComponentSerialiser* detail::GameObject::getSerialiser (const std::string& component) {
     if (serialiserMap.contains(component)) {
         return serialiserMap[component].get();
     } else {
         return nullptr;
     }
-}
+}*/
 
 void detail::GameObject::addEntityType (const std::string& typeId, const std::string& filepath) {
     if (entityTypesNew.contains(typeId)) {
@@ -326,7 +329,7 @@ void detail::GameObject::addEntityType (const std::string& typeId, const std::st
 
     auto data = util::parseFromFile(filepath);
     if (!data.empty()) {
-        entityTypesNew[typeId] = std::move(makeEntityType(data, *this));
+        entityTypesNew[typeId] = std::move(makeEntityType(data, *serialiser));
     }
 }
 
@@ -349,6 +352,7 @@ void detail::GameObject::addDefaultSerialisers () {
         return (util::DataValue)"TODO"; // TODO
     }, [this](const util::DataValue& val) -> util::Optional<std::shared_ptr<EntityController>> {
         if (!val.is<std::string>()) {
+            logging::log(LEVEL_ERROR, "Controller id must be a string!");
             return util::NullOpt;
         }
 
@@ -358,6 +362,7 @@ void detail::GameObject::addDefaultSerialisers () {
         if (controller) {
             return {std::move(controller)};
         } else {
+            logging::log(LEVEL_ERROR, "Failed to get controller \"{}\"!", controllerId);
             return util::NullOpt;
         }
     });

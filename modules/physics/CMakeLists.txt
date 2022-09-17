@@ -1,4 +1,4 @@
-add_library(physics src/collisions.cpp src/collisions.h src/physics.cpp)
+add_library(physics src/collisions.cpp src/collisions.h src/physics.cpp src/main_component.cpp)
 
 set_property(TARGET physics PROPERTY CXX_STANDARD 20)
 

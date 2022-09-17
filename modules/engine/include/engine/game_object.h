@@ -18,7 +18,7 @@
 #include "common/events/map_load_request.h"
 #include "input/game_input.h"
 #include "game_camera.h"
-#include "engine/entity/entity_type_new.h"
+#include "engine/entity/entity_type.h"
 #include "engine/entity/controller/entity_controller.h"
 
 namespace view {
@@ -46,13 +46,12 @@ namespace game::detail {
 
                 event::EventScope eventScope;
 
-                util::Map<std::string, std::unique_ptr<ComponentSerialiser>> serialiserMap;
-                util::Map<std::string, EntityTypeNew> entityTypesNew;
+                util::Map<std::string, EntityType> entityTypesNew;
                 component::EntitySerialiser* serialiser;
 
                 component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
 
-                void deserialiseEntity2 (component::EntityView& entityView, const util::DataValue& entityData);
+               // void deserialiseEntity2 (component::EntityView& entityView, const util::DataValue& entityData);
                 util::DataObject serialiseEntity (component::EntityView& entityView);
 
                 public:
@@ -102,12 +101,12 @@ namespace game::detail {
 
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
-                void addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser);
+                //void addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser);
                 void setSerialiser (component::EntitySerialiser* serialiser);
 
                 void addDefaultSerialisers ();
 
-                ComponentSerialiser* getSerialiser (const std::string& component);
+                //ComponentSerialiser* getSerialiser (const std::string& component);
 
                 void addEntityType (const std::string& typeId, const std::string& filepath);
 

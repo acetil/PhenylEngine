@@ -28,9 +28,9 @@ void game::initGame (const graphics::PhenylGraphics& graphics, game::PhenylGame 
     //addControlEventHandlers(eventBus);
     //auto manager = getEntityComponentManager(eventBus);
     //gameObject.setEntityComponentManager(manager);
-    /*logging::log(LEVEL_INFO, "Starting init of entities!");
-    eventBus->raiseEvent(event::EntityRegisterEvent(gameObject));
-    logging::log(LEVEL_DEBUG, "Finished entity init!");*/
+    logging::log(LEVEL_INFO, "Starting init of entities!");
+    eventBus->raise(event::EntityRegisterEvent(gameObject));
+    logging::log(LEVEL_DEBUG, "Finished entity init!");
 
     /*graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject.setTextureIds(atlas);});
     graphics::addMapRenderLayer(graphics, eventBus);

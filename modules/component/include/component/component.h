@@ -48,7 +48,7 @@ namespace component {
         }
 
         template <std::size_t N>
-        friend class ComponentManagerNew;
+        friend class ComponentManager;
     };
 
     namespace detail {
@@ -57,7 +57,7 @@ namespace component {
     }
 
     template <std::size_t MaxComponents>
-    class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew<MaxComponents>, true> {
+    class ComponentManager : public util::SmartHelper<ComponentManager<MaxComponents>, true> {
     private:
         using DeleterFunc = void (*)(unsigned char*);
         std::size_t numEntities{};
@@ -212,15 +212,15 @@ namespace component {
         using iterator = detail::EntityViewIterator<MaxComponents>;
         using const_iterator = detail::EntityViewIterator<MaxComponents>;
 
-        explicit ComponentManagerNew (std::size_t maxEntities) : maxNumEntities{maxEntities}, ids{std::make_unique<std::pair<unsigned int, std::size_t>[]>(maxEntities)},
-                                                                 availableIds{maxEntities}, entityComponentBitmaps{std::make_unique<util::Bitfield<MaxComponents>[]>(maxEntities)} {
+        explicit ComponentManager (std::size_t maxEntities) : maxNumEntities{maxEntities}, ids{std::make_unique<std::pair<unsigned int, std::size_t>[]>(maxEntities)},
+                                                              availableIds{maxEntities}, entityComponentBitmaps{std::make_unique<util::Bitfield<MaxComponents>[]>(maxEntities)} {
             for (std::size_t i = 0; i < maxNumEntities; i++) {
                 ids[i] = {1, 0};
                 availableIds.push(maxNumEntities - i - 1);
             }
         }
 
-        ~ComponentManagerNew() {
+        ~ComponentManager() {
             for (auto& [x, size, deleter] : components) {
                 for (int i = 0; i < numEntities; i++) {
                     deleter(x.get() + size * i);
@@ -369,14 +369,14 @@ namespace component {
         friend ComponentView<MaxComponents>;
     };
 
-    extern template class ComponentManagerNew<PHENYL_MAX_COMPONENTS>;
+    extern template class ComponentManager<PHENYL_MAX_COMPONENTS>;
 
 
     template <std::size_t MaxComponents>
     class ComponentView {
     private:
         component::EntityId entityId;
-        typename component::ComponentManagerNew<MaxComponents>::SharedPtr compManager;
+        typename component::ComponentManager<MaxComponents>::SharedPtr compManager;
 
         template <typename T, typename ...Ts>
         bool allValid () {
@@ -408,7 +408,7 @@ namespace component {
         }
         ComponentView() : entityId{0, 0}, compManager(nullptr) {}
     public:
-        ComponentView( component::EntityId _entityId, typename component::ComponentManagerNew<MaxComponents>::SharedPtr  _compManager) : entityId{_entityId}, compManager{std::move(_compManager)} {}
+        ComponentView( component::EntityId _entityId, typename component::ComponentManager<MaxComponents>::SharedPtr  _compManager) : entityId{_entityId}, compManager{std::move(_compManager)} {}
 
         component::EntityId getId () {
             return entityId;
@@ -456,12 +456,12 @@ namespace component {
         template <std::size_t MaxComponents>
         class EntityViewIterator {
         private:
-            typename ComponentManagerNew<MaxComponents>::SharedPtr compManager{};
+            typename ComponentManager<MaxComponents>::SharedPtr compManager{};
             std::size_t pos{};
 
         public:
             EntityViewIterator () {}
-            EntityViewIterator (typename ComponentManagerNew<MaxComponents>::SharedPtr _compManager, std::size_t startPos) : compManager{std::move(_compManager)} , pos{startPos} {}
+            EntityViewIterator (typename ComponentManager<MaxComponents>::SharedPtr _compManager, std::size_t startPos) : compManager{std::move(_compManager)} , pos{startPos} {}
             using iterator_category = std::random_access_iterator_tag;
             using difference_type = std::ptrdiff_t;
             using value_type = ComponentView<MaxComponents>;
@@ -605,7 +605,7 @@ namespace component {
             return {entityId, std::get<Args2...>(comps)};
         }
 
-        friend ComponentManagerNew<MaxComponents>;
+        friend ComponentManager<MaxComponents>;
         friend ConstrainedView<MaxComponents, Args...>;
         friend detail::ConstrainedViewIterator<MaxComponents, Args...>;
     };
@@ -614,7 +614,7 @@ namespace component {
     class ConstrainedView {
     private:
         std::tuple<util::Bitfield<MaxComponents>*, component::EntityId*, Args* ...> comps{};
-        typename component::ComponentManagerNew<MaxComponents>::SharedPtr componentManager{nullptr};
+        typename component::ComponentManager<MaxComponents>::SharedPtr componentManager{nullptr};
         util::Bitfield<MaxComponents> mask{};
 
         ConstrainedView () = default;
@@ -626,7 +626,7 @@ namespace component {
     public:
         using iterator = detail::ConstrainedViewIterator<MaxComponents, Args...>;
 
-        ConstrainedView (typename component::ComponentManagerNew<MaxComponents>::SharedPtr _compManager,
+        ConstrainedView (typename component::ComponentManager<MaxComponents>::SharedPtr _compManager,
                          util::Bitfield<MaxComponents>* bitfields, component::EntityId* ids, Args* ... compPtrs,
                          util::Bitfield<MaxComponents> mask = {}) : componentManager{std::move(_compManager)},
                                                                     comps{bitfields, ids, compPtrs...},
@@ -665,7 +665,7 @@ namespace component {
         inline iterator end ();
 
         friend detail::ConstrainedViewIterator<MaxComponents, Args...>;
-        friend ComponentManagerNew<MaxComponents>;
+        friend ComponentManager<MaxComponents>;
     };
 
     namespace detail {
@@ -765,13 +765,13 @@ namespace component {
 
 namespace component {
     template <std::size_t N>
-    inline component::ComponentView<N> ComponentManagerNew<N>::getEntityView (EntityId entityId) {
+    inline component::ComponentView<N> ComponentManager<N>::getEntityView (EntityId entityId) {
         return {entityId, this->shared_from_this()};
     }
 
     template <std::size_t N>
     template <typename ...Args>
-    util::Optional<ConstrainedEntityView<N, Args...>> ComponentManagerNew<N>::getConstrainedEntityView (EntityId entityId) {
+    util::Optional<ConstrainedEntityView<N, Args...>> ComponentManager<N>::getConstrainedEntityView (EntityId entityId) {
         if (entityHasAllComps<Args...>(entityId)) {
             return util::Optional<ConstrainedEntityView<N, Args...>>(ConstrainedEntityView<N, Args...>{entityId, getObjectData<Args>(entityId).getUnsafe()...});
         } else {
@@ -781,7 +781,7 @@ namespace component {
 
     template <std::size_t N>
     template <typename ...Args>
-    ConstrainedView<N, Args...> ComponentManagerNew<N>::getConstrainedView () {
+    ConstrainedView<N, Args...> ComponentManager<N>::getConstrainedView () {
         if (hasAllComps<Args...>()) {
             return {this->shared_from_this(), this->entityComponentBitmaps.get(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...,
                     makeMask<Args...>()};
@@ -792,22 +792,22 @@ namespace component {
     }
 
     template <std::size_t N>
-    inline typename ComponentManagerNew<N>::iterator ComponentManagerNew<N>::begin () {
+    inline typename ComponentManager<N>::iterator ComponentManager<N>::begin () {
         return {this->shared_from_this(), 0};
     }
 
     template <std::size_t N>
-    inline typename ComponentManagerNew<N>::iterator ComponentManagerNew<N>::end () {
+    inline typename ComponentManager<N>::iterator ComponentManager<N>::end () {
         return {this->shared_from_this(), numEntities};
     }
 
     template <std::size_t N>
-    inline typename ComponentManagerNew<N>::const_iterator ComponentManagerNew<N>::cbegin () {
+    inline typename ComponentManager<N>::const_iterator ComponentManager<N>::cbegin () {
         return {this->shared_from_this(), 0};
     }
 
     template <std::size_t N>
-    inline typename ComponentManagerNew<N>::const_iterator ComponentManagerNew<N>::cend () {
+    inline typename ComponentManager<N>::const_iterator ComponentManager<N>::cend () {
         return {this->shared_from_this(), numEntities};
     }
 }

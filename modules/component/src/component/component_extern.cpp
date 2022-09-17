@@ -4,7 +4,7 @@
 using namespace component;
 namespace component {
     //template class ComponentManagerWrap<entity_list>;
-    template class ComponentManagerNew<PHENYL_MAX_COMPONENTS>;
+    template class ComponentManager<PHENYL_MAX_COMPONENTS>;
     template class ComponentView<PHENYL_MAX_COMPONENTS>;
 
     template class ObjectSerialiser<PHENYL_MAX_COMPONENTS>;

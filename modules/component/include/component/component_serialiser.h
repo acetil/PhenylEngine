@@ -18,7 +18,7 @@ namespace component {
 
             virtual util::DataValue serialiseComp (component::EntityView& entityView) = 0;
 
-            virtual bool hasComp (component::EntityView& entityView) = 0;
+            virtual bool hasComp (component::EntityView& entityView) const = 0;
         };
 
         template<size_t MaxComponents, class T, typename SerialiseF, typename DeserialiseF>
@@ -47,7 +47,7 @@ namespace component {
                 return opt;
             }
 
-            bool hasComp (component::ComponentView<MaxComponents>& objectView) override {
+            bool hasComp (component::ComponentView<MaxComponents>& objectView) const override {
                 return objectView.template hasComponent<T>();
             }
         };
@@ -62,7 +62,7 @@ namespace component {
     public:
         ObjectComponentFactory (detail::ComponentSerialiser<MaxComponents>* serialiser, util::DataValue compData) : serialiser{serialiser}, compData{std::move(compData)} {}
 
-        void addDefault (component::ComponentView<MaxComponents>& objectView) {
+        void addDefault (component::ComponentView<MaxComponents>& objectView) const {
             if (!serialiser->hasComp(objectView)) {
                 serialiser->deserialiseComp(objectView, compData);
             }
@@ -105,7 +105,7 @@ namespace component {
 
             for (const auto& [compId, serialiser] : serialiserMap.kv()) {
                 if (dataObj.contains(compId)) {
-                    serialiser->deserialiseComp(entityView, dataVal);
+                    serialiser->deserialiseComp(entityView, dataObj.at(compId));
                 }
             }
         }
