@@ -34,7 +34,7 @@ namespace graphics::ui {
                 } else {
                     return util::Optional<T>();
                 }
-                /*if (util::fromdata(val, obj)) {
+                /*if (util::phenyl_from_data(val, obj)) {
                     return util::Optional<T>{obj};
                 } else {
                     return util::Optional<T>{util::NullOpt};

@@ -4,13 +4,14 @@
 #include "common/events/entity_collision.h"
 #include <tuple>
 #include "graphics/graphics_new_include.h"
-#include "component/position.h"
-#include "component/rotation_component.h"
+#include "component/components/2D/position.h"
+#include "component/components/2D/rotation.h"
 #include "component/component_serialiser.h"
+#include "physics/components/2D/simple_friction.h"
 
 using namespace physics;
 
-/*void updatePhysicsInternal (component::FrictionKinematicsMotion2D* comp, int numEntities, int direction, std::pair<physics::CollisionComponent2D*,
+/*void updatePhysicsInternal (component::SimpleFrictionMotion2D* comp, int numEntities, int direction, std::pair<physics::CollisionComponent2D*,
                             graphics::Transform2D*> comp2) {
     // TODO: consider writing fully in assembly
     for (int i = 0; i < numEntities; i ++) {
@@ -36,7 +37,7 @@ using namespace physics;
     }
 }*/
 
-void updatePhysicsInternal (component::FrictionKinematicsMotion2D& mainComp, component::Position2D& posComp) {
+void updatePhysicsInternal (SimpleFrictionMotion2D& mainComp, component::Position2D& posComp) {
     int isPosXVel = mainComp.velocity.x > 0;
     int isPosYVel = mainComp.velocity.y > 0;
 
@@ -52,7 +53,7 @@ void updatePhysicsInternal (component::FrictionKinematicsMotion2D& mainComp, com
 }
 void physics::onEntityCreation (event::EntityCreationEvent& event) {
     /*logging::log(LEVEL_DEBUG, "About to get main component!");
-    auto comp = event.compManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(event.entityId);
+    auto comp = event.compManager->getObjectDataPtr<component::SimpleFrictionMotion2D>(event.entityId);
     comp->pos[0] = event.x;
     comp->pos[1] = event.y;
     comp->velocity[0] = 0;
@@ -83,13 +84,13 @@ void physics::onEntityCreation (event::EntityCreationEvent& event) {
 }
 
 void physics::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
-    /*componentManager->applyFunc<component::FrictionKinematicsMotion2D>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent2D>().orElse(nullptr),
+    /*componentManager->applyFunc<component::SimpleFrictionMotion2D>(updatePhysicsInternal, std::pair(componentManager->getComponent<CollisionComponent2D>().orElse(nullptr),
                                         componentManager->getComponent<graphics::Transform2D>().orElse(nullptr)));*/
     /*for (auto i : *componentManager) {
-        i.applyFunc<component::FrictionKinematicsMotion2D, CollisionComponent2D, graphics::Transform2D>(updatePhysicsInternal);
+        i.applyFunc<component::SimpleFrictionMotion2D, CollisionComponent2D, graphics::Transform2D>(updatePhysicsInternal);
     }*/
-    for (const auto& i : componentManager->getConstrainedView<component::FrictionKinematicsMotion2D, component::Position2D>()) {
-        updatePhysicsInternal(i.get<component::FrictionKinematicsMotion2D>(), i.get<component::Position2D>());
+    for (const auto& i : componentManager->getConstrainedView<SimpleFrictionMotion2D, component::Position2D>()) {
+        updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
     }
 }
 
@@ -150,16 +151,16 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
                 if (totalMass != 0) {
                     *componentManager->getObjectDataPtr<component::Position2D>(x1).orElse(nullptr) +=
                             dVec1 * comp1Mass / totalMass;
-                    componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(x1).orElse(
+                    componentManager->getObjectDataPtr<SimpleFrictionMotion2D>(x1).orElse(
                             nullptr)->velocity -=
-                            projectVec(dVec1, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(
-                                    x1).orElse(component::FrictionKinematicsMotion2D()).velocity);
+                            projectVec(dVec1, componentManager->getObjectData<SimpleFrictionMotion2D>(
+                                    x1).orElse(SimpleFrictionMotion2D()).velocity);
                     *componentManager->getObjectDataPtr<component::Position2D>(y1).orElse(nullptr) -=
                             dVec1 * comp2Mass / totalMass;
-                    componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(y1).orElse(
+                    componentManager->getObjectDataPtr<SimpleFrictionMotion2D>(y1).orElse(
                             nullptr)->velocity -=
-                            projectVec(dVec1, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(
-                                    y1).orElse(component::FrictionKinematicsMotion2D()).velocity);
+                            projectVec(dVec1, componentManager->getObjectData<SimpleFrictionMotion2D>(
+                                    y1).orElse(SimpleFrictionMotion2D()).velocity);
                 }
                 if (comp1.layers & comp2.eventLayer) {
                     eventBus->raise(
@@ -183,14 +184,14 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
         auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
         float totalMass = comp1Mass + comp2Mass;
         if (totalMass != 0) {
-            componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(x)->pos +=
+            componentManager->getObjectDataPtr<component::SimpleFrictionMotion2D>(x)->pos +=
                     dVec * comp1Mass / totalMass;
-            componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(x)->velocity -=
-                    projectVec(dVec, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(x).velocity);
-            componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(y)->pos -=
+            componentManager->getObjectDataPtr<component::SimpleFrictionMotion2D>(x)->velocity -=
+                    projectVec(dVec, componentManager->getObjectData<component::SimpleFrictionMotion2D>(x).velocity);
+            componentManager->getObjectDataPtr<component::SimpleFrictionMotion2D>(y)->pos -=
                     dVec * comp2Mass / totalMass;
-            componentManager->getObjectDataPtr<component::FrictionKinematicsMotion2D>(y)->velocity -=
-                    projectVec(dVec, componentManager->getObjectData<component::FrictionKinematicsMotion2D>(y).velocity);
+            componentManager->getObjectDataPtr<component::SimpleFrictionMotion2D>(y)->velocity -=
+                    projectVec(dVec, componentManager->getObjectData<component::SimpleFrictionMotion2D>(y).velocity);
         }
         if (comp1.layers & comp2.eventLayer) {
             eventBus->raiseEvent(event::EntityCollisionEvent(y, x, comp1.layers & comp2.eventLayer, componentManager, eventBus, gameView));
@@ -202,21 +203,32 @@ void physics::checkCollisions (const component::EntityComponentManager::SharedPt
 }
 
 void physics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
-    serialiser.addComponentSerialiser<component::FrictionKinematicsMotion2D>("friction_kinematics_2D", [](const component::FrictionKinematicsMotion2D& comp) -> util::DataValue {
-        return comp._serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<component::FrictionKinematicsMotion2D> {
-        component::FrictionKinematicsMotion2D comp{};
-        comp._deserialise(val);
-
-        return {comp};
+    /*serialiser.addComponentSerialiser<component::SimpleFrictionMotion2D>("SimpleFrictionMotion2D", [](const component::SimpleFrictionMotion2D& comp) -> util::DataValue {
+        //return comp._serialise();
+        return component::phenyl_to_data(comp);
+    }, [] (const util::DataValue& val) -> util::Optional<component::SimpleFrictionMotion2D> {
+        component::SimpleFrictionMotion2D comp{};
+        //comp._deserialise(val);
+        if (component::phenyl_from_data(val, comp)) {
+            return {comp};
+        } else {
+            return util::NullOpt;
+        }
     });
 
     serialiser.addComponentSerialiser<physics::CollisionComponent2D>("collision_comp_2D", [](const physics::CollisionComponent2D& comp) -> util::DataValue {
-        return comp._serialise();
+        return phenyl_to_data(comp);
+        //return comp._serialise();
     }, [] (const util::DataValue& val) -> util::Optional<physics::CollisionComponent2D> {
         physics::CollisionComponent2D comp{};
-        comp._deserialise(val);
 
-        return {comp};
-    });
+        if (phenyl_from_data(val, comp)) {
+            return {comp};
+        } else {
+            return util::NullOpt;
+        }
+        //comp._deserialise(val);
+    });*/
+    serialiser.addComponentSerialiser<SimpleFrictionMotion2D>("SimpleFrictionMotion2D");
+    serialiser.addComponentSerialiser<CollisionComponent2D>("CollisionComponent2D");
 }

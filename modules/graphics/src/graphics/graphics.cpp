@@ -204,21 +204,30 @@ void detail::Graphics::updateUI () {
 }
 
 void detail::Graphics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
-    serialiser.addComponentSerialiser<graphics::Model2D>("model_2D", [](graphics::Model2D& comp) -> util::DataValue {
-        return comp._serialise();
+    /*serialiser.addComponentSerialiser<graphics::Model2D>("model_2D", [](graphics::Model2D& comp) -> util::DataValue {
+        //return comp._serialise();
+        return phenyl_to_data(comp);
     }, [] (const util::DataValue& val) -> util::Optional<graphics::Model2D> {
         graphics::Model2D comp{};
-        comp._deserialise(val);
+        if (phenyl_from_data(val, comp)) {
+            return {comp};
+        } else {
+            return util::NullOpt;
+        }
+    });*/
 
-        return {comp};
-    });
-
-    serialiser.addComponentSerialiser<graphics::Transform2D>("transform_2D", [](const graphics::Transform2D& comp) -> util::DataValue {
-        return comp._serialise();
+    /*serialiser.addComponentSerialiser<graphics::Transform2D>("transform_2D", [](const graphics::Transform2D& comp) -> util::DataValue {
+        return phenyl_to_data(comp);
     }, [] (const util::DataValue& val) -> util::Optional<graphics::Transform2D> {
         graphics::Transform2D comp{};
-        comp._deserialise(val);
 
-        return {comp};
-    });
+        if (phenyl_from_data(val, comp)) {
+            return {comp};
+        } else {
+            return util::NullOpt;
+        }
+    });*/
+
+    serialiser.addComponentSerialiser<graphics::Model2D>("Model2D");
+    serialiser.addComponentSerialiser<graphics::Transform2D>("Transform2D");
 }

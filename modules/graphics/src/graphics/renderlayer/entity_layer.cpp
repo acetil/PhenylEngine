@@ -1,7 +1,7 @@
-#include "component/main_component.h"
+#include "../../../../physics/include/physics/components/2D/simple_friction.h"
 #include "entity_layer.h"
-#include "component/position.h"
-#include "component/rotation_component.h"
+#include "component/components/2D/position.h"
+#include "component/components/2D/rotation.h"
 
 #include <utility>
 

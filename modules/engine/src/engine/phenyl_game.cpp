@@ -4,9 +4,9 @@
 #include "graphics/phenyl_graphics.h"
 #include "engine/game_object.h"
 #include "engine/game_init.h"
-#include "component/position.h"
-#include "component/rotation_component.h"
-#include "physics/collision_component.h"
+#include "component/components/2D/position.h"
+#include "component/components/2D/rotation.h"
+#include "physics/components/2D/collision_component.h"
 
 using namespace game;
 
@@ -70,7 +70,7 @@ event::EventBus::SharedPtr PhenylGame::getEventBus () {
     return getShared()->getEventBus();
 }
 
-std::shared_ptr<EntityController> PhenylGame::getController (const std::string& name) {
+util::Optional<EntityController*> PhenylGame::getController (const std::string& name) {
     return getShared()->getController(name);
 }
 

@@ -40,13 +40,8 @@ void game::addEntities(event::EntityRegisterEvent& event) {
     event.gameObject.registerEntityType("test_entity", entityTestType);
     event.gameObject.registerEntityType("bullet", entityBulletType);
     event.gameObject.registerEntityType("wall_entity", entityWallType);*/
-    event.gameObject.tempGetPtr()->registerEntityController<PlayerController>("test_entity");
-    event.gameObject.tempGetPtr()->registerEntityController<BulletController>("bullet");
-    event.gameObject.tempGetPtr()->registerEntityController<WallController>("wall_entity");
 
-    //event.gameObject.buildEntityTypes();
-
-    auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject.getController("test_entity"));
+    auto playerController = std::make_unique<PlayerController>();
 
     playerController->getEventScope() = event.gameObject.getEventBus()->getScope();
 
@@ -56,6 +51,17 @@ void game::addEntities(event::EntityRegisterEvent& event) {
                                               playerController->getEventScope());
     event.gameObject.getEventBus()->subscribe(&game::PlayerController::updateDoShoot, playerController.get(),
                                               playerController->getEventScope());
+
+    //event.gameObject.tempGetPtr()->registerEntityController<PlayerController>("test_entity");
+    event.gameObject.tempGetPtr()->registerEntityController(std::move(playerController));
+    //event.gameObject.tempGetPtr()->registerEntityController<BulletController>("bullet");
+    event.gameObject.tempGetPtr()->registerEntityController(std::make_unique<BulletController>());
+    //event.gameObject.tempGetPtr()->registerEntityController<WallController>("wall_entity");
+    event.gameObject.tempGetPtr()->registerEntityController(std::make_unique<WallController>());
+
+    //event.gameObject.buildEntityTypes();
+
+    //auto playerController = std::dynamic_pointer_cast<game::PlayerController>(event.gameObject.getController("test_entity"));
 
     //event.gameObject->registerEntity("test_entity", entityTest);
     //event.gameObject->registerEntity("bullet", entityBullet);

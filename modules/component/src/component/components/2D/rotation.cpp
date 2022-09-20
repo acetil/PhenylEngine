@@ -1,7 +1,8 @@
 #include <math.h>
 #include <limits>
 
-#include "component/rotation_component.h"
+#include "component/components/2D/rotation.h"
+#include "util/data.h"
 //#include "event/events/entity_rotation.h"
 
 using namespace component;
@@ -37,10 +38,16 @@ void component::rotateEntityBy (EntityId entityId, float deltaTheta, const Entit
     });
 }*/
 
-util::DataValue Rotation2D::serialise () const {
-    return (util::DataValue)rotation;
+util::DataValue component::phenyl_to_data (const component::Rotation2D& comp) {
+    return (util::DataValue)comp.rotation;
 }
 
-void Rotation2D::deserialise (const util::DataValue& val) {
-    *this = val.get<float>();
+bool component::phenyl_from_data (const util::DataValue& dataVal, component::Rotation2D& comp) {
+    if (!dataVal.is<float>()) {
+        return false;
+    }
+
+    comp = dataVal.get<float>();
+
+    return true;
 }

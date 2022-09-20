@@ -8,6 +8,7 @@ namespace game {
     private:
         //int texId;
     public:
+        WallController ();
         void controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView) override {};
         void onEntityCollision (component::EntityView& entityView, view::GameView& gameView, component::EntityView& otherEntity, unsigned int layers) override {}; // TODO: hit/hurtbox
         /*int getTextureId (component::EntityView& entityView, view::GameView& gameView) const override {

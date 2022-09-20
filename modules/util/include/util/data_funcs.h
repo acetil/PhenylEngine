@@ -2,12 +2,12 @@
 
 namespace util {
     class DataValue;
-    template <typename T>
-    bool fromdata (const DataValue& dataVal, T& val);
-    template <typename T>
-    DataValue todata (const T& val);
+    //template <typename T>
+    //bool phenyl_from_data (const DataValue& dataVal, T& val);
+    //template <typename T>
+    //DataValue phenyl_to_data (const T& val);
 
-    DataValue todata (const DataValue& val);
-    bool fromdata (const DataValue& dataVal, DataValue& val);
+    DataValue phenyl_to_data (const DataValue& val);
+    bool phenyl_from_data (const DataValue& dataVal, DataValue& val);
 }
 

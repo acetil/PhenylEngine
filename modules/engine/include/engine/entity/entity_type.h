@@ -7,11 +7,6 @@
 #include "util/data.h"
 
 namespace game {
-    namespace detail {
-        class ComponentFactory;
-        class GameObject;
-    }
-
     class EntityType {
     private:
         std::vector<component::EntityComponentFactory> factories;

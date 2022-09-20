@@ -3,7 +3,7 @@
 #include "component/view/game_view.h"
 #include "component/component.h"
 #include "component/forward.h"
-#include "component/main_component.h"
+#include "physics/components/2D/simple_friction.h"
 #include "common/events/entity_creation.h"
 #include "common/events/entity_rotation.h"
 #include "event/event_bus.h"

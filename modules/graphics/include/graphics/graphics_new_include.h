@@ -8,7 +8,6 @@
 #include <optional>
 
 #include "graphics/shaders/shaders.h"
-#include "component/serialisable_component.h"
 #include "graphics/textures/image.h"
 #include "logging/logging.h"
 #include "camera.h"
@@ -37,16 +36,8 @@ namespace graphics {
         }
     };
 
-    struct Model2D : component::SerialisableComponent<Model2D> {
+    struct Model2D {
     private:
-        static constexpr std::string_view _name = "fixed_model";
-        static std::string_view const& getName () {
-            return _name;
-        }
-
-        util::DataValue serialise () const;
-        void deserialise (util::DataValue const& val);
-
     public:
         util::span<glm::vec2> positionData;
         util::span<glm::vec2> uvData;
@@ -67,28 +58,24 @@ namespace graphics {
             uvData = util::span(uvStart, uvEnd);
             modelName = std::move(name);
         }
-        friend component::SerialisableComponent<Model2D>;
     };
 
-    struct Transform2D : component::SerialisableComponent<Transform2D> {
+    util::DataValue phenyl_to_data (const Model2D& comp);
+    bool phenyl_from_data (const util::DataValue& dataVal, Model2D& comp);
+
+    struct Transform2D {
     private:
-        static constexpr std::string_view _name = "absolute_position";
-        static std::string_view const& getName () {
-            return _name;
-        }
-        util::DataValue serialise () const;
-        void deserialise (util::DataValue const& val);
     public:
         Transform2D() = default;
-        Transform2D (int _vertices, /*glm::vec2 _pos,*/ glm::mat2 _transform) : component::SerialisableComponent<Transform2D>(),
-                                                                                vertices{_vertices}, /*pos{_pos},*/ transform{_transform}, rotTransform{_transform} {}
+        Transform2D (int _vertices, /*glm::vec2 _pos,*/ glm::mat2 _transform) : vertices{_vertices}, /*pos{_pos},*/ transform{_transform}, rotTransform{_transform} {}
 
         int vertices;
         //glm::vec2 pos;
         glm::mat2 transform{{1.0f, 0.0f}, {0.0f, 1.0f}};
         glm::mat2 rotTransform;
-        friend component::SerialisableComponent<Transform2D>;
     };
 
+    util::DataValue phenyl_to_data (const Transform2D& comp);
+    bool phenyl_from_data (const util::DataValue& dataVal, Transform2D& comp);
 
 }

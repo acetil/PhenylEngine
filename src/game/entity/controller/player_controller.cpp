@@ -4,10 +4,11 @@
 #include "logging/logging.h"
 
 #include "util/string_help.h"
-#include "component/position.h"
+#include "component/components/2D/position.h"
 #include "engine/game_camera.h"
-#include "component/rotation_component.h"
+#include "component/components/2D/rotation.h"
 #include "graphics/textures/texture_atlas.h"
+#include "physics/components/2D/simple_friction.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 0.15f
@@ -23,7 +24,7 @@ void game::PlayerController::controlEntityPrePhysics (component::EntityView& ent
 
    glm::vec2 cursorDisp = gameView.getCamera().getWorldPos(cursorScreenPos);
 
-   entityView.getComponent<component::FrictionKinematicsMotion2D>().ifPresent([this](component::FrictionKinematicsMotion2D& comp) {
+   entityView.getComponent<physics::SimpleFrictionMotion2D>().ifPresent([this](physics::SimpleFrictionMotion2D& comp) {
        comp.acceleration += glm::vec2(deltaXForce, deltaYForce);
        deltaXForce = 0;
        deltaYForce = 0;

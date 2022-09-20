@@ -82,6 +82,20 @@ namespace component {
             addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl<MaxComponents, T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
         }
 
+        template <class T>
+        void addComponentSerialiser (const std::string& component) {
+            addComponentSerialiser<T>(component, [] (const T& comp) -> util::DataValue {
+                return phenyl_to_data(comp);
+            }, [] (const util::DataValue& val) -> util::Optional<T> {
+                T comp{};
+                if (phenyl_from_data(val, comp)) {
+                    return {comp};
+                } else {
+                    return util::NullOpt;
+                }
+            });
+        }
+
         util::DataObject serialiseObject (component::ComponentView<MaxComponents>& entityView) const {
             util::DataObject dataObj;
 
@@ -95,6 +109,7 @@ namespace component {
 
             return dataObj;
         }
+
         void deserialiseObject (component::ComponentView<MaxComponents>& entityView, const util::DataValue& dataVal) const {
             if (!dataVal.is<util::DataObject>()) {
                 logging::log(LEVEL_WARNING, "Entity data is not an object!");

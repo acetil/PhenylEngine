@@ -2,16 +2,6 @@
 
 #include "graphics/maths_headers.h"
 
-namespace util {
-    class DataValue;
-
-#ifndef PHENYL_OPTIONAL_DECLARE
-#define PHENYL_OPTIONAL_DECLARE
-    template <typename T, typename = void>
-    class Optional;
-#endif
-}
-
 namespace component {
     class Position2D {
     private:
@@ -44,6 +34,9 @@ namespace component {
         }
     };
 
-    util::DataValue serialisePos2D (const Position2D& pos2D);
-    util::Optional<Position2D> deserialisePos2D (const util::DataValue& data);
+    util::DataValue phenyl_to_data (const Position2D& comp);
+    bool phenyl_from_data (const util::DataValue& dataVal, Position2D& comp);
+
+    //util::DataValue serialisePos2D (const Position2D& pos2D);
+    //util::Optional<Position2D> deserialisePos2D (const util::DataValue& data);
 }

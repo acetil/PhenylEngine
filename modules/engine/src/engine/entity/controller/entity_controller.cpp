@@ -30,6 +30,12 @@ util::DataObject EntityController::getData (component::EntityView& entityView, v
     return util::DataObject();
 }
 
+EntityController::EntityController (std::string entityId) : entityId{std::move(entityId)} {}
+
+const std::string& EntityController::getEntityId () const {
+    return entityId;
+}
+
 
 /*void game::controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId, int numEntities,
                                       int direction, const event::EventBus::SharedPtr& bus) {
@@ -49,8 +55,12 @@ util::DataObject EntityController::getData (component::EntityView& entityView, v
 
 void game::controlEntitiesPrePhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
     for (auto i : *manager) {
-        i.getComponent<std::shared_ptr<EntityController>>().ifPresent([&gameView, &i] (std::shared_ptr<EntityController>& ptr) {
+        /*i.getComponent<std::shared_ptr<EntityController>>().ifPresent([&gameView, &i] (std::shared_ptr<EntityController>& ptr) {
             ptr->controlEntityPrePhysics(i, gameView);
+        });*/
+
+        i.getComponent<EntityControllerComponent>().ifPresent([&gameView, &i] (EntityControllerComponent& comp) {
+            comp.get().controlEntityPrePhysics(i, gameView);
         });
     }
 }
@@ -73,8 +83,12 @@ void game::controlEntitiesPrePhysics (const component::EntityComponentManager::S
 
 void game::controlEntitiesPostPhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
     for (auto i : *manager) {
-        i.getComponent<std::shared_ptr<EntityController>>().ifPresent([&i, &gameView] (std::shared_ptr<EntityController>& ptr) {
+        /*i.getComponent<std::shared_ptr<EntityController>>().ifPresent([&i, &gameView] (std::shared_ptr<EntityController>& ptr) {
            ptr->controlEntityPostPhysics(i, gameView);
+        });*/
+
+        i.getComponent<EntityControllerComponent>().ifPresent([&i, &gameView] (EntityControllerComponent& comp) {
+           comp.get().controlEntityPostPhysics(i, gameView);
         });
     }
 }
@@ -83,11 +97,15 @@ void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
     //auto entityView = view::EntityView(view::ViewCore(collisionEvent.componentManager), collisionEvent.entityId, collisionEvent.eventBus);
     auto& firstEntity = collisionEvent.firstEntity;
     auto& secondEntity = collisionEvent.secondEntity;
-    firstEntity.getComponent<std::shared_ptr<EntityController>>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (std::shared_ptr<EntityController>& ptr) {
+    /*firstEntity.getComponent<std::shared_ptr<EntityController>>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (std::shared_ptr<EntityController>& ptr) {
 
         ptr->onEntityCollision(firstEntity, collisionEvent.gameView, secondEntity, collisionEvent.collisionLayers);
-    });
+    });*/
 
+
+    firstEntity.getComponent<EntityControllerComponent>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (EntityControllerComponent& comp) {
+        comp.get().onEntityCollision(firstEntity, collisionEvent.gameView, secondEntity, collisionEvent.collisionLayers);
+    });
     /*secondEntity.getComponent<std::shared_ptr<EntityController>>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (std::shared_ptr<EntityController>& ptr) {
         ptr->onEntityCollision(secondEntity, collisionEvent.gameView, firstEntity.getId(), collisionEvent.collisionLayers);
     });*/
@@ -98,3 +116,25 @@ void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
 void game::addControlEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     eventBus->subscribeUnscoped(controlOnCollision);
 }
+
+EntityController& EntityControllerComponent::get () {
+#ifndef NDEBUG
+    if (!controller) {
+        logging::log(LEVEL_FATAL, "Attempted to dereference null controller!");
+        assert(false);
+    }
+#endif
+    return *controller;
+}
+
+const EntityController& EntityControllerComponent::get () const {
+#ifndef NDEBUG
+    if (!controller) {
+        logging::log(LEVEL_FATAL, "Attempted to dereference null controller!");
+        assert(false);
+    }
+#endif
+    return *controller;
+}
+
+EntityControllerComponent::EntityControllerComponent (EntityController* controller) : controller{controller} {}

@@ -9,7 +9,7 @@
 #include "engine/tile/tile.h"
 #include "event/event_bus.h"
 #include "component/component.h"
-#include "component/main_component.h"
+//#include "physics/main_component.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
 #include "engine/map/map.h"
@@ -31,7 +31,7 @@ namespace game::detail {
         class GameObject : public util::SmartHelper<GameObject, true>/*, public std::enable_shared_from_this<GameObject>*/ {
                 private:
                 //std::map<std::string, AbstractEntity*> entityRegistry;
-                std::unordered_map<std::string, std::shared_ptr<game::EntityController>> controllers;
+                util::Map<std::string, std::unique_ptr<game::EntityController>> controllers;
                 //std::map<int, AbstractEntity*> entities;
                 std::map<std::string, int> tileMap;
                 std::vector<Tile*> tileRegistry;
@@ -46,7 +46,7 @@ namespace game::detail {
 
                 event::EventScope eventScope;
 
-                util::Map<std::string, EntityType> entityTypesNew;
+                util::Map<std::string, EntityType> entityTypes;
                 component::EntitySerialiser* serialiser;
 
                 component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
@@ -58,11 +58,15 @@ namespace game::detail {
                 ~GameObject();
 
                 //void registerEntity (const std::string& name, AbstractEntity* entity);
-                template <typename T>
-                void registerEntityController (const std::string& name) {
+                /*template <typename T>
+                void registerEntityController () {
                     static_assert(std::is_base_of_v<EntityController, T>, "Type must be child of EntityController!");
+                    std::shared_ptr<T> ptr = std::make_shared<T>();
                     controllers[name] = std::make_shared<T>();
-                }
+                }*/
+
+                void registerEntityController (std::unique_ptr<EntityController> controller);
+
                 //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
 
                 component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
@@ -86,7 +90,7 @@ namespace game::detail {
                 void updateEntitiesPostPhysics ();
                 event::EventBus::SharedPtr getEventBus();
 
-                std::shared_ptr<EntityController> getController (const std::string& name);
+                util::Optional<EntityController*> getController (const std::string& name);
 
                 void reloadMap ();
                 void loadMap (Map::SharedPtr map);

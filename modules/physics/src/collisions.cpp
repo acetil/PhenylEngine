@@ -1,10 +1,12 @@
 #include "logging/logging.h"
 #include "component/component.h"
-#include "component/main_component.h"
+#include "physics/components/2D/simple_friction.h"
+#include "util/data.h"
 #include "collisions.h"
-#include "component/position.h"
+#include "component/components/2D/position.h"
 #include <tuple>
 #include <float.h>
+
 using namespace physics;
 
 
@@ -153,7 +155,7 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
             });
         }
     }*/
-    auto consView = compManager->getConstrainedView<CollisionComponent2D, component::FrictionKinematicsMotion2D, component::Position2D>();
+    auto consView = compManager->getConstrainedView<CollisionComponent2D, SimpleFrictionMotion2D, component::Position2D>();
 
     for (auto i = consView.begin(); i != consView.end(); i++) {
         auto j = i;
@@ -171,44 +173,65 @@ void physics::checkCollisionsEntity (const component::EntityComponentManager::Sh
     }
 }
 
-util::DataValue physics::CollisionComponent2D::serialise () const {
+util::DataValue physics::phenyl_to_data (const physics::CollisionComponent2D& comp) {
     util::DataObject obj;
     util::DataArray collScale;
     for (int i = 0; i < 2; i++) {
-        collScale.push_back(bbMap[i]);
+        collScale.push_back(comp.bbMap[i]);
     }
+
     obj["coll_scale"] = std::move(collScale);
-    obj["mass"] = mass;
-    obj["layers"] = layers;
-    obj["masks"] = masks;
-    obj["resolve_layers"] = resolveLayers;
-    obj["event_layers"] = eventLayer;
-    return (util::DataValue) obj;
+    obj["mass"] = comp.mass;
+    obj["layers"] = comp.layers;
+    obj["masks"] = comp.masks;
+    obj["resolve_layers"] = comp.resolveLayers;
+    obj["event_layers"] = comp.eventLayer;
+
+    return obj;
 }
 
-void physics::CollisionComponent2D::deserialise (const util::DataValue& val) {
-    auto& obj = val.get<util::DataObject>();
+bool physics::phenyl_from_data (const util::DataValue& dataVal, physics::CollisionComponent2D& comp) {
+    if (!dataVal.is<util::DataObject>()) {
+        return false;
+    }
+
+    const auto& obj = dataVal.get<util::DataObject>();
+
+    physics::CollisionComponent2D newComp{};
+
     if (obj.contains("coll_scale")) {
-        // TODO
-        auto& arr = obj.at("coll_scale").get<util::DataArray>();
-        bbMap[0] = arr[0].get<glm::vec2>();
-        bbMap[1] = arr[1].get<glm::vec2>();
+        const auto& arrVal = obj.at("coll_scale");
+        if (!arrVal.is<util::DataArray>()) {
+            return false;
+        }
+
+        const auto& arr = arrVal.get<util::DataArray>();
+
+        newComp.bbMap[0] = arr[0].get<glm::vec2>();
+        newComp.bbMap[1] = arr[1].get<glm::vec2>();
     }
+
     if (obj.contains("mass")) {
-        mass = obj.at("mass").get<float>();
+        newComp.mass = obj.at("mass").get<float>();
     }
+
     if (obj.contains("layers")) {
-        layers = obj.at("layers").get<int>();
+        newComp.layers = obj.at("layers").get<int>();
     }
     if (obj.contains("masks")) {
-        masks = obj.at("masks").get<int>();
+        newComp.masks = obj.at("masks").get<int>();
     }
     if (obj.contains("resolve_layers")) {
-        resolveLayers = obj.at("resolve_layers").get<int>();
+        newComp.resolveLayers = obj.at("resolve_layers").get<int>();
     }
     if (obj.contains("event_layers")) {
-        eventLayer = obj.at("event_layers").get<int>();
+        newComp.eventLayer = obj.at("event_layers").get<int>();
     }
-    outerRadius = glm::sqrt(glm::dot(bbMap[0], bbMap[0]) + glm::dot(bbMap[1],bbMap[1]));
-    rotBBMap = bbMap;
+
+    newComp.outerRadius = glm::sqrt(glm::dot(newComp.bbMap[0], newComp.bbMap[0]) + glm::dot(newComp.bbMap[1], newComp.bbMap[1]));
+    newComp.rotBBMap = newComp.bbMap;
+
+    comp = newComp;
+
+    return true;
 }

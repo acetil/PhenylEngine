@@ -1,5 +1,5 @@
 {
-  "transform_2D": {
+  "Transform2D": {
     "transform": [
       {
         "x": 0.1,
@@ -11,7 +11,7 @@
       }
     ]
   },
-  "collision_comp_2D": {
+  "CollisionComponent2D": {
     "coll_scale": [
       {
         "x": 0.1,
@@ -28,9 +28,9 @@
     "mass": 10.0,
     "resolve_layers": 3
   },
-  "controller": "test_entity",
-  "model_2D" : "test8",
-  "friction_kinematics_2D": {
+  "Controller": "test_entity",
+  "Model2D" : "test8",
+  "SimpleFrictionMotion2D": {
     "acc": {
       "x": 0.0,
       "y": 0.0

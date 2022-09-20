@@ -218,11 +218,11 @@ void util::to_json (nlohmann::json& json, const DataObject& val) {
     internal::DataObserver::toJsonObj(json, val);
 }
 
-DataValue util::todata (const DataValue& val) {
+DataValue util::phenyl_to_data (const DataValue& val) {
     return val;
 }
 
-bool util::fromdata (const DataValue& dataVal, DataValue& val) {
+bool util::phenyl_from_data (const DataValue& dataVal, DataValue& val) {
     val = dataVal;
     return true;
 }
@@ -235,7 +235,7 @@ const meta::type_list_unroll<std::variant, data_types>& util::internal::internal
     return val.obj;
 }
 
-/*util::DataValue todata (unsigned int& val) {
+/*util::DataValue phenyl_to_data (unsigned int& val) {
     unsigned int v = val;
     int v2 = *((int*)&v);
     util::DataValue d;
@@ -243,7 +243,7 @@ const meta::type_list_unroll<std::variant, data_types>& util::internal::internal
     return d;
 }
 
-bool fromdata (const DataValue& val, unsigned int& out) {
+bool phenyl_from_data (const DataValue& val, unsigned int& out) {
     int v2;
     if (!val.getValue(v2)) {
         return false;

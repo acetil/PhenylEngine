@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/collision_component.h"
+#include "physics/components/2D/collision_component.h"
 #include <vector>
 
 namespace physics {

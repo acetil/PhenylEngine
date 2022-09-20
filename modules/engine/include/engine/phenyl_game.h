@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "component/component.h"
-#include "entity/controller/entity_controller.h"
+//#include "entity/controller/entity_controller.h"
 #include "util/data.h"
 #include "engine/input/game_input.h"
 #include "engine/map/map.h"
@@ -17,9 +17,11 @@ namespace graphics {
 
 namespace game {
     class Tile;
+    class EntityController;
+    class GameCamera;
     namespace detail {
         class GameObject;
-        class ComponentSerialiser {
+        /*class ComponentSerialiser {
         public:
             virtual ~ComponentSerialiser() = default;
             virtual bool deserialiseComp (component::EntityView& entityView, const util::DataValue& serialisedComp) = 0;
@@ -57,7 +59,7 @@ namespace game {
             bool hasComp(component::EntityView& entityView) override {
                 return entityView.hasComponent<T>();
             }
-        };
+        };*/
     }
     class PhenylGame {
     private:
@@ -88,7 +90,7 @@ namespace game {
 
         event::EventBus::SharedPtr getEventBus ();
 
-        std::shared_ptr<EntityController> getController (const std::string& name);
+        util::Optional<EntityController*> getController (const std::string& name);
 
         void reloadMap ();
         void loadMap (Map::SharedPtr map);

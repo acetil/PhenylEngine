@@ -45,13 +45,13 @@ detail::GameObject::~GameObject () {
 }*/
 component::EntityView detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     // TODO: requires refactor
-    if (!entityTypesNew.contains(name)) {
+    if (!entityTypes.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
         return {{0, 0}, nullptr};
     } else {
         auto entityView = entityComponentManager->createEntity();
         //auto entityView = entityComponentManager->getEntityView(entityId);
-        const auto& entityType = entityTypesNew.at(name);
+        const auto& entityType = entityTypes.at(name);
         entityType.addDefaultComponents(entityView);
 
         //entityView.addComponent<component::Position2D>(component::Position2D{});
@@ -65,8 +65,11 @@ component::EntityView detail::GameObject::createNewEntityInstance (const std::st
         //auto viewCore = view::ViewCore(entityComponentManager);
         auto gameView = view::GameView(this);
 
-        entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &data] (std::shared_ptr<EntityController>& controller) {
+        /*entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &data] (std::shared_ptr<EntityController>& controller) {
             controller->initEntity(entityView, gameView, data);
+        });*/
+        entityView.getComponent<EntityControllerComponent>().ifPresent([&entityView, &gameView, &data] (EntityControllerComponent& comp) {
+            comp.get().initEntity(entityView, gameView, data);
         });
 
         //entityView.getComponent<std::shared_ptr<EntityController>>().getUnsafe()->initEntity(entityView, gameView, data);
@@ -96,8 +99,8 @@ component::EntityView detail::GameObject::makeDeserialisedEntity (const util::Da
     serialiser->deserialiseObject(entityView, serialisedObj);
 
     entityView.getComponent<EntityTypeComponent>().ifPresent([this, &entityView] (EntityTypeComponent& entityType) {
-        if (entityTypesNew.contains(entityType.typeId)) {
-            entityTypesNew.at(entityType.typeId).addDefaultComponents(entityView);
+        if (entityTypes.contains(entityType.typeId)) {
+            entityTypes.at(entityType.typeId).addDefaultComponents(entityView);
         } else {
             logging::log(LEVEL_WARNING, "Unknown entity type: {}!", entityType.typeId);
         }
@@ -107,8 +110,12 @@ component::EntityView detail::GameObject::makeDeserialisedEntity (const util::Da
 
     //entityView.
 
-    entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &serialisedObj](std::shared_ptr<EntityController>& controller){
+    /*entityView.getComponent<std::shared_ptr<EntityController>>().ifPresent([&entityView, &gameView, &serialisedObj](std::shared_ptr<EntityController>& controller){
         controller->initEntity(entityView, gameView, serialisedObj["data"]);
+    });*/
+
+    entityView.getComponent<EntityControllerComponent>().ifPresent([&entityView, &gameView, &serialisedObj] (EntityControllerComponent& comp) {
+        comp.get().initEntity(entityView, gameView, serialisedObj["data"]);
     });
 
     eventBus->raise(event::EntityCreationEvent(entityComponentManager, entityView, gameView));
@@ -205,10 +212,6 @@ void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
     entityComponentManager->removeEntity(entityId); // TODO: implement queue
 }
 
-std::shared_ptr<EntityController> detail::GameObject::getController (const std::string& name) {
-    return controllers[name];
-}
-
 void detail::GameObject::loadMap (Map::SharedPtr map) {
     entityComponentManager->clear();
     this->gameMap = std::move(map);
@@ -240,7 +243,7 @@ GameCamera& detail::GameObject::getCamera () {
 void detail::GameObject::dumpMap (const std::string& filepath) {
     util::DataArray entities;
     auto gameView = view::GameView(this);
-    auto ids = entityComponentManager->getComponent<component::EntityId>().orElse(nullptr);
+    /*auto ids = entityComponentManager->getComponent<component::EntityId>().orElse(nullptr);
     for (int i = 0; i < entityComponentManager->getNumObjects(); i++) {
         //auto compData = component::serialise<ENTITY_LIST>(entityComponentManager, ids[i]);
         auto view = entityComponentManager->getEntityView(ids[i]);
@@ -248,12 +251,26 @@ void detail::GameObject::dumpMap (const std::string& filepath) {
         auto compData = util::DataValue{std::move(compDataObj)};
         //auto entityView = view::EntityView(view::ViewCore(entityComponentManager), ids[i], eventBus);
         auto entityView = entityComponentManager->getEntityView(ids[i]);
-        compData.get<util::DataObject>()["data"] =
-                entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(ids[i]).orElse(nullptr)->getData(entityView, gameView);
+        //compData.get<util::DataObject>()["data"] =
+        //        entityComponentManager->getObjectData<std::shared_ptr<game::EntityController>>(ids[i]).orElse(nullptr)->getData(entityView, gameView);
+        entityComponentManager->getObjectData<EntityControllerComponent>(ids[i]).ifPresent([&compData, &entityView, &gameView] (EntityControllerComponent& comp) {
+            compData.get<util::DataObject>()["data"] = comp.get().getData(entityView, gameView);
+        });
         //compData.get<util::DataObject>()["type"] = entityComponentManager->getObjectData<game::EntityType>(ids[i]).orElse(game::EntityType()).typeName;
         entities.push_back(compData);
         //compData.get<util::DataObject>()[""]
+    }*/
+
+    for (auto i : *entityComponentManager) {
+        auto compDataObj = serialiseEntity(i);
+
+        i.getComponent<EntityControllerComponent>().ifPresent([&compDataObj, &i, &gameView] (EntityControllerComponent& comp) {
+            compDataObj["data"] = comp.get().getData(i, gameView);
+        });
+
+        entities.push_back(std::move(compDataObj));
     }
+
     logging::log(LEVEL_DEBUG, "Num in array: {}", entities.size());
     gameMap->writeMapJson(filepath, (util::DataValue)entities);
 }
@@ -322,14 +339,14 @@ util::DataObject detail::GameObject::serialiseEntity (component::EntityView& ent
 }*/
 
 void detail::GameObject::addEntityType (const std::string& typeId, const std::string& filepath) {
-    if (entityTypesNew.contains(typeId)) {
+    if (entityTypes.contains(typeId)) {
         logging::log(LEVEL_WARNING, "Attempted to add duplicate entity type \"{}\"!", typeId);
         return;
     }
 
     auto data = util::parseFromFile(filepath);
     if (!data.empty()) {
-        entityTypesNew[typeId] = std::move(makeEntityType(data, *serialiser));
+        entityTypes[typeId] = std::move(makeEntityType(data, *serialiser));
     }
 }
 
@@ -338,7 +355,7 @@ void detail::GameObject::setSerialiser (component::EntitySerialiser* serialiser)
 }
 
 void detail::GameObject::addDefaultSerialisers () {
-    serialiser->addComponentSerialiser<EntityTypeComponent>("type", [](const EntityTypeComponent& comp) -> util::DataValue {
+    serialiser->addComponentSerialiser<EntityTypeComponent>("EntityType", [](const EntityTypeComponent& comp) -> util::DataValue {
         return (util::DataValue)comp.typeId;
     }, [](const util::DataValue& val) -> util::Optional<EntityTypeComponent> {
         if (val.is<std::string>()) {
@@ -348,8 +365,8 @@ void detail::GameObject::addDefaultSerialisers () {
         }
     });
 
-    serialiser->addComponentSerialiser<std::shared_ptr<EntityController>>("controller", [] (const std::shared_ptr<EntityController>& comp) -> util::DataValue {
-        return (util::DataValue)"TODO"; // TODO
+    /*serialiser->addComponentSerialiser<std::shared_ptr<EntityController>>("controller", [] (const std::shared_ptr<EntityController>& comp) -> util::DataValue {
+        return (util::DataValue)comp->getEntityId();
     }, [this](const util::DataValue& val) -> util::Optional<std::shared_ptr<EntityController>> {
         if (!val.is<std::string>()) {
             logging::log(LEVEL_ERROR, "Controller id must be a string!");
@@ -365,5 +382,38 @@ void detail::GameObject::addDefaultSerialisers () {
             logging::log(LEVEL_ERROR, "Failed to get controller \"{}\"!", controllerId);
             return util::NullOpt;
         }
+    });*/
+
+    serialiser->addComponentSerialiser<EntityControllerComponent>("Controller", [] (const EntityControllerComponent& comp) -> util::DataValue {
+        return (util::DataValue)comp.get().getEntityId();
+    }, [this] (const util::DataValue& val) -> util::Optional<EntityControllerComponent> {
+        if (!val.is<std::string>()) {
+            logging::log(LEVEL_ERROR, "Controller id must be a string!");
+            return util::NullOpt;
+        }
+
+        auto& controllerId = val.get<std::string>();
+
+        auto controller = getController(controllerId);
+        return controller.thenMap([](EntityController* controller) {
+            return EntityControllerComponent{controller};
+        });
     });
+}
+
+void detail::GameObject::registerEntityController (std::unique_ptr<EntityController> controller) {
+    if (controllers.contains(controller->getEntityId())) {
+        logging::log(LEVEL_WARNING, "Attempted to register entity controller with duplicate id \"{}\"!", controller->getEntityId());
+        return;
+    }
+
+    controllers[controller->getEntityId()] = std::move(controller);
+}
+
+util::Optional<EntityController*> detail::GameObject::getController (const std::string& name) {
+    if (controllers.contains(name)) {
+        return util::Optional<EntityController*>{controllers[name].get()};
+    } else {
+        return util::NullOpt;
+    }
 }

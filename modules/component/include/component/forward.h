@@ -6,6 +6,10 @@
 #define PHENYL_MAX_COMPONENTS 64
 #endif
 
+namespace util {
+    class DataValue;
+}
+
 namespace component {
     template <std::size_t MaxComponents>
     class ComponentManager;

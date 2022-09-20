@@ -1,6 +1,5 @@
 #pragma once
 
-#include "component/main_component.h"
 #include "component/component.h"
 //#include "engine/entity/entity.h"
 #include "common/events/entity_collision.h"
@@ -15,7 +14,9 @@ namespace game {
     class EntityController {
     private:
         //int testTexId = 0;
+        std::string entityId;
     public:
+        explicit EntityController (std::string entityId);
         virtual void controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView);
         virtual void controlEntityPostPhysics (component::EntityView& entityView, view::GameView& gameView);
         virtual void onEntityCollision (component::EntityView& entityView, view::GameView& gameView, component::EntityView& otherEntity, unsigned int layers); // TODO: hit/hurtbox
@@ -24,8 +25,20 @@ namespace game {
         virtual void initEntity (component::EntityView& entityView, view::GameView&) {};
         virtual void initEntity (component::EntityView& entityView, view::GameView&, const util::DataValue& data) {}; // TODO: convert to binary format
         virtual util::DataObject getData (component::EntityView& entityView, view::GameView& gameView);
-
+        [[nodiscard]] const std::string& getEntityId () const;
     };
+
+    struct EntityControllerComponent {
+    private:
+        EntityController* controller;
+        explicit EntityControllerComponent (EntityController* controller);
+    public:
+        EntityController& get ();
+        [[nodiscard]] const EntityController& get () const;
+
+        friend class detail::GameObject;
+    };
+
     /*void controlEntitiesPrePhysics (component::EntityComponentManager::SharedPtr manager, view::GameView& gameView, int startId,
                                     int numEntities, int direction, const event::EventBus::SharedPtr& bus);*/
 
@@ -38,4 +51,6 @@ namespace game {
 
     void controlOnCollision (event::EntityCollisionEvent& event);
     void addControlEventHandlers (const event::EventBus::SharedPtr& eventBus);
+
+
 }

@@ -17,7 +17,7 @@ namespace game {
         //int texId = 0;
         event::EventScope eventScope;
     public:
-        PlayerController () {
+        PlayerController () : EntityController("test_entity") {
             deltaXForce = 0;
             deltaYForce = 0;
         }

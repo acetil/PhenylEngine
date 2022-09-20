@@ -1,5 +1,5 @@
 #include "engine/entity/controller/wall_controller.h"
-#include "physics/collision_component.h"
+#include "physics/components/2D/collision_component.h"
 
 #include "util/string_help.h"
 
@@ -49,4 +49,8 @@ void WallController::initEntity (component::EntityView& entityView, view::GameVi
 
 util::DataObject WallController::getData (component::EntityView& entityView, view::GameView& gameView) {
     return EntityController::getData(entityView, gameView);
+}
+
+WallController::WallController () : EntityController("wall_entity") {
+
 }

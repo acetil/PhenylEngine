@@ -6,11 +6,11 @@
 //#include "engine/entity/entity_test.h"
 #include "engine/entity/entities.h"
 #include "component/component.h"
-#include "component/main_component.h"
+#include "physics/components/2D/simple_friction.h"
 #include "logging/logging.h"
 #include "graphics/graphics_handlers.h"
 #include "physics/physics.h"
-#include "physics/collision_component.h"
+#include "physics/components/2D/collision_component.h"
 #include "engine/entity/controller/entity_controller.h"
 #include "graphics/phenyl_graphics.h"
 #include "engine/phenyl_game.h"
@@ -62,7 +62,7 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
 
 component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus) {
     auto manager = component::EntityComponentManager::NewSharedPtr(255);
-    /*manager->addComponent<component::FrictionKinematicsMotion2D>("main_component");
+    /*manager->addComponent<component::SimpleFrictionMotion2D>("main_component");
     manager->addComponent<graphics::Model2D>("model");
     manager->addComponent<physics::CollisionComponent2D>("collision_component");
     manager->addComponent<graphics::Transform2D>("model_pos");*/

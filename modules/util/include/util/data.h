@@ -158,7 +158,7 @@ namespace util {
         friend class internal::DataObserver;
     };
 
-    using data_types = meta::type_list_wrapper<int, float, bool, std::string, DataObject, DataArray, std::monostate>;
+    //using data_types = meta::type_list_wrapper<float, bool, std::string, DataObject, DataArray, std::monostate, int>;
     //using data_types = meta::type_list_wrapper<int, float, bool, std::string, DataObject, DataArray, std::monostate>;
     class DataValue {
     private:
@@ -206,12 +206,12 @@ namespace util {
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<std::remove_cvref_t<T>, data_types>, bool> = true>
         explicit DataValue (T&& val) {
-            setObj(std::forward<T&&>(val));
+            setObj(std::forward<T>(val));
         }
 
         template <typename T, std::enable_if_t<!meta::is_in_typelist<std::remove_cvref_t<T>, data_types>, bool> = true>
         explicit DataValue (T&& val) {
-            obj = std::move(todata(val).obj);
+            obj = std::move(phenyl_to_data(val).obj);
         }
 
         explicit DataValue (const char* str) {
@@ -231,7 +231,7 @@ namespace util {
 
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
         bool getValue (T& val) {
-            return fromdata<T>(*this, val);
+            return phenyl_from_data<T>(*this, val);
         }*/
         template <typename T>
         bool getValue (T& val) const {
@@ -247,13 +247,13 @@ namespace util {
 
         template <typename T, std::enable_if_t<meta::is_in_typelist<T, data_types>, bool> = true>
         DataValue& operator= (T&& val) {
-            obj = val;
+            obj = std::forward<T>(val);
             return *this;
         }
 
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
         DataValue& operator= (const T& val) {
-            obj = std::move(todata(val).obj);
+            obj = std::move(phenyl_to_data(val).obj);
             return *this;
         }
 
@@ -275,7 +275,7 @@ namespace util {
         /*template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types>, bool> = true>
         explicit operator T(){
              T val;
-             if (fromdata(*this, val)) {
+             if (phenyl_from_data(*this, val)) {
                  return val;
              } else {
                  throw std::bad_variant_access();
@@ -284,7 +284,7 @@ namespace util {
 
         /*operator unsigned int () {
             int val;
-            if (fromdata(*this, val)) {
+            if (phenyl_from_data(*this, val)) {
                 return *((unsigned int*)&val);
             } else {
                 throw std::bad_variant_access();
@@ -304,7 +304,7 @@ namespace util {
         template <typename T, std::enable_if_t<!meta::is_in_typelist<T, data_types> || std::is_same_v<T, float>, bool> = true>
         T get () const {
             T val;
-            if (fromdata(*this, val)) {
+            if (phenyl_from_data(*this, val)) {
                 return val;
             } else {
                 throw std::bad_variant_access();
@@ -474,7 +474,7 @@ namespace util {
 
     template <typename T>
     void DataArray::push_back (T&& val) {
-        auto v = DataValue(std::forward<T&&>(val));
+        auto v = DataValue(std::forward<T>(val));
         values.push_back(std::move(v));
     }
 
@@ -634,7 +634,7 @@ namespace util {
 
         template <class T, std::enable_if_t<!is_any_convertible<T>, bool>>
         bool getDataValue (const util::DataValue& val, T& obj) {
-            return util::fromdata(val, obj);
+            return phenyl_from_data(val, obj);
         }
 
         /*std::string& getDataValue (util::DataValue& val) {

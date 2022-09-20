@@ -1,7 +1,7 @@
 {
-  "controller" : "wall_entity",
-  "model_2D" : "test10",
-  "friction_kinematics_2D": {
+  "Controller" : "wall_entity",
+  "Model2D" : "test10",
+  "SimpleFrictionMotion2D": {
     "acc": {
       "x": 0.0,
       "y": 0.0

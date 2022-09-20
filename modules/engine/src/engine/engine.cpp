@@ -15,8 +15,8 @@
 
 #include "logging/logging.h"
 #include "component/component_serialiser.h"
-#include "component/rotation_component.h"
-#include "component/position.h"
+#include "component/components/2D/rotation.h"
+#include "component/components/2D/position.h"
 
 using namespace engine;
 
@@ -159,14 +159,31 @@ component::EntitySerialiser& detail::Engine::getEntitySerialiser () {
 }
 
 void detail::Engine::addDefaultSerialisers () {
-    entitySerialiser->addComponentSerialiser<component::Rotation2D>("rotation_2D", [](const component::Rotation2D& comp) -> util::DataValue {
-        return comp._serialise();
+    /*entitySerialiser->addComponentSerialiser<component::Rotation2D>("rotation_2D", [](const component::Rotation2D& comp) -> util::DataValue {
+        //return comp._serialise();
+        return phenyl_to_data(comp);
     }, [] (const util::DataValue& val) -> util::Optional<component::Rotation2D> {
         component::Rotation2D comp{};
-        comp._deserialise(val);
+        //comp._deserialise(val);
+        if (phenyl_from_data(val, comp)) {
+            return {comp};
+        } else {
+            return util::NullOpt;
+        }
+    });*/
 
-        return {comp};
-    });
 
-    entitySerialiser->addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
+    //entitySerialiser->addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
+    /*entitySerialiser->addComponentSerialiser<component::Position2D>("pos_2D", [] (const component::Position2D& comp) -> util::DataValue {
+        return component::phenyl_to_data(comp);
+    }, [] (const util::DataValue& val) -> util::Optional<component::Position2D> {
+        component::Position2D comp{};
+        if (component::phenyl_from_data(val, comp)) {
+            return {comp};
+        } else {
+            return util::NullOpt;
+        }
+    });*/
+    entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
+    entitySerialiser->addComponentSerialiser<component::Rotation2D>("Rotation2D");
 }

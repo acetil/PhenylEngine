@@ -1,5 +1,5 @@
 {
-  "collision_comp_2D": {
+  "CollisionComponent2D": {
     "coll_scale": [
       {
         "x": 0.03,
@@ -16,8 +16,8 @@
     "mass": 1.0,
     "resolve_layers": 0
   },
-  "controller" : "bullet",
-  "friction_kinematics_2D": {
+  "Controller" : "bullet",
+  "SimpleFrictionMotion2D": {
     "acceleration": {
       "x": 0.0,
       "y": 0.0
@@ -29,13 +29,13 @@
       "y": 0.0
     }
   },
-  "model_2D": "test9",
-  "pos_2D": {
+  "Model2D": "test9",
+  "Position2D": {
     "x": 0.0,
     "y": 0.0
   },
-  "rotation_2D": 0.0,
-  "transform_2D": {
+  "Rotation2D": 0.0,
+  "Transform2D": {
     "transform": [
       {
         "x": 0.03,
