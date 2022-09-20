@@ -36,7 +36,4 @@ namespace component {
 
     util::DataValue phenyl_to_data (const Position2D& comp);
     bool phenyl_from_data (const util::DataValue& dataVal, Position2D& comp);
-
-    //util::DataValue serialisePos2D (const Position2D& pos2D);
-    //util::Optional<Position2D> deserialisePos2D (const util::DataValue& data);
 }

@@ -3,7 +3,7 @@
 #include <string>
 
 #include "util/map.h"
-#include "component/component.h"
+#include "component/forward.h"
 #include "util/data.h"
 
 namespace game {

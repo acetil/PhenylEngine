@@ -22,7 +22,6 @@ using namespace engine;
 
 class engine::detail::Engine {
 private:
-    //graphics::detail::Graphics::SharedPtr graphics;
     event::EventBus::SharedPtr eventBus;
     game::PhenylGameHolder gameObjHolder;
     graphics::PhenylGraphicsHolder graphicsHolder;
@@ -73,19 +72,6 @@ component::EntitySerialiser& PhenylEngine::getEntitySerialiser () {
 }
 
 engine::detail::Engine::Engine () {
-    /*GLFWwindow* window = nullptr;
-    if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
-        logger::log(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
-        throw std::runtime_error("Window creation failed!");
-    }
-
-    if (graphics::initGraphics(window, graphics) != GRAPHICS_INIT_SUCCESS) {
-        logger::log(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
-        throw std::runtime_error("Graphics init failed!");
-    }
-
-    logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");*/
-
     eventBus = event::EventBus::NewSharedPtr();
     componentManager = component::EntityComponentManager::NewSharedPtr(255);
     entitySerialiser = std::make_unique<component::EntitySerialiser>();
@@ -115,7 +101,6 @@ engine::detail::Engine::Engine () {
 
 engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
-    //graphics::destroyGraphics(graphics);
 }
 
 game::detail::GameObject::SharedPtr detail::Engine::getGameObjectTemp () const {
@@ -139,11 +124,7 @@ void detail::Engine::addEventHandlers () {
     gameObjHolder.getGameObject().addEventHandlers(eventBus);
 
     eventBus->subscribeUnscoped(game::addEntities);
-    //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     eventBus->subscribeUnscoped(physics::onEntityCreation);
-    //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
-    //eventBus->subscribeUnscoped(graphics::updateEntityRotation);
-    //eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);
 
     graphics::addDebugEventHandlers(eventBus);
 
@@ -159,31 +140,6 @@ component::EntitySerialiser& detail::Engine::getEntitySerialiser () {
 }
 
 void detail::Engine::addDefaultSerialisers () {
-    /*entitySerialiser->addComponentSerialiser<component::Rotation2D>("rotation_2D", [](const component::Rotation2D& comp) -> util::DataValue {
-        //return comp._serialise();
-        return phenyl_to_data(comp);
-    }, [] (const util::DataValue& val) -> util::Optional<component::Rotation2D> {
-        component::Rotation2D comp{};
-        //comp._deserialise(val);
-        if (phenyl_from_data(val, comp)) {
-            return {comp};
-        } else {
-            return util::NullOpt;
-        }
-    });*/
-
-
-    //entitySerialiser->addComponentSerialiser<component::Position2D>("pos_2D", component::serialisePos2D, component::deserialisePos2D);
-    /*entitySerialiser->addComponentSerialiser<component::Position2D>("pos_2D", [] (const component::Position2D& comp) -> util::DataValue {
-        return component::phenyl_to_data(comp);
-    }, [] (const util::DataValue& val) -> util::Optional<component::Position2D> {
-        component::Position2D comp{};
-        if (component::phenyl_from_data(val, comp)) {
-            return {comp};
-        } else {
-            return util::NullOpt;
-        }
-    });*/
     entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
     entitySerialiser->addComponentSerialiser<component::Rotation2D>("Rotation2D");
 }

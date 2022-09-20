@@ -21,55 +21,13 @@ namespace game {
     class GameCamera;
     namespace detail {
         class GameObject;
-        /*class ComponentSerialiser {
-        public:
-            virtual ~ComponentSerialiser() = default;
-            virtual bool deserialiseComp (component::EntityView& entityView, const util::DataValue& serialisedComp) = 0;
-            virtual util::DataValue serialiseComp (component::EntityView& entityView) = 0;
-
-            virtual bool hasComp (component::EntityView& entityView) = 0;
-        };
-
-        template <class T, typename SerialiseF, typename DeserialiseF>
-        class ComponentSerialiserImpl : public ComponentSerialiser {
-        private:
-            SerialiseF serialiseF; // (const T&) -> util::DataValue
-            DeserialiseF deserialiseF; // (const util::DataValue&) -> util::Optional<T>
-        public:
-            ComponentSerialiserImpl (SerialiseF f1, DeserialiseF f2) : serialiseF{f1}, deserialiseF{f2} {}
-
-            util::DataValue serialiseComp (component::EntityView& entityView) override {
-                return entityView.getComponent<T>()
-                        .thenMap([this](T& comp) -> util::DataValue {
-                            return serialiseF(comp);
-                        })
-                        .orElse({});
-            }
-
-             bool deserialiseComp (component::EntityView& entityView, const util::DataValue& serialisedComp) override {
-                auto opt = deserialiseF(serialisedComp);
-
-                opt.ifPresent([&entityView] (T& val) {
-                    entityView.addComponent<T>(std::move(val));
-                });
-
-                return opt;
-            }
-
-            bool hasComp(component::EntityView& entityView) override {
-                return entityView.hasComponent<T>();
-            }
-        };*/
     }
     class PhenylGame {
     private:
         std::weak_ptr<game::detail::GameObject> gameObject;
         [[nodiscard]] std::shared_ptr<game::detail::GameObject> getShared () const;
-        //void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser);
     public:
-        explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {
-            //addDefaultSerialisers();
-        }
+        explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {}
 
         component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
 
@@ -81,7 +39,6 @@ namespace game {
 
         void updateEntityPosition ();
 
-        //void setTextureIds (graphics::TextureAtlas& atlas);
 
         void setEntityComponentManager (component::EntityComponentManager::SharedPtr compManager);
 
@@ -108,11 +65,6 @@ namespace game {
 
         GameInput& getGameInput ();
 
-        /*template <class T, typename F1, typename F2>
-        void addComponentSerialiser (const std::string& component, F1 serialiseFunc, F2 deserialiseFunc) {
-            addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl<T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
-        }*/
-
         void setSerialiser (component::EntitySerialiser* serialiser);
 
         void addDefaultSerialisers ();
@@ -125,7 +77,6 @@ namespace game {
         std::shared_ptr<detail::GameObject> gameObject;
     public:
         PhenylGameHolder ();
-        //explicit PhenylGameHolder (std::shared_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {};
         ~PhenylGameHolder();
 
         [[nodiscard]] PhenylGame getGameObject () const;

@@ -4,12 +4,10 @@
 #define PHENYL_MAX_COMPONENTS 64
 #endif
 
-//#include <string>
 #include <utility>
 #include <vector>
 #include <memory>
 
-//#include <cmath>
 #include "component/forward.h"
 #include "util/meta.h"
 #include "util/smart_help.h"
@@ -96,7 +94,6 @@ namespace component {
             return compMap.contains(typeId) && getEntityPos(id).thenMap([this, typeId](const std::size_t& pos) -> bool {
                 return entityComponentBitmaps[pos].hasBit(compMap.at(typeId));
             }).orElse(false);
-            //return compMap.contains(typeId) && entityComponentBitmaps[];
         }
 
         template <typename T,  typename ...Args>
@@ -597,11 +594,6 @@ namespace component {
         ConstrainedEntityView<MaxComponents, Args2...> constrain () {
             static_assert(meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>,
                           "All requested types must be accessible!");
-            /*if constexpr (meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>) {
-                return util::Optional<ConstrainedEntityView<Args2...>>(ConstrainedEntityView(entityId, std::get<Args2...>(comps)));
-            } else {
-                return util::NullOpt;
-            }*/
             return {entityId, std::get<Args2...>(comps)};
         }
 

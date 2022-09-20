@@ -5,11 +5,9 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-//#include "graphics/textures/texture_atlas.h"
 #include "engine/tile/tile.h"
 #include "event/event_bus.h"
 #include "component/component.h"
-//#include "physics/main_component.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
 #include "engine/map/map.h"
@@ -28,14 +26,11 @@ namespace view {
 
 namespace game::detail {
     class ComponentSerialiser;
-        class GameObject : public util::SmartHelper<GameObject, true>/*, public std::enable_shared_from_this<GameObject>*/ {
+        class GameObject : public util::SmartHelper<GameObject, true>{
                 private:
-                //std::map<std::string, AbstractEntity*> entityRegistry;
                 util::Map<std::string, std::unique_ptr<game::EntityController>> controllers;
-                //std::map<int, AbstractEntity*> entities;
                 std::map<std::string, int> tileMap;
                 std::vector<Tile*> tileRegistry;
-                //int currentEntityId = 0;
                 event::EventBus::SharedPtr eventBus;
                 component::EntityComponentManager::SharedPtr entityComponentManager;
 
@@ -51,27 +46,14 @@ namespace game::detail {
 
                 component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
 
-               // void deserialiseEntity2 (component::EntityView& entityView, const util::DataValue& entityData);
                 util::DataObject serialiseEntity (component::EntityView& entityView);
 
                 public:
                 ~GameObject();
 
-                //void registerEntity (const std::string& name, AbstractEntity* entity);
-                /*template <typename T>
-                void registerEntityController () {
-                    static_assert(std::is_base_of_v<EntityController, T>, "Type must be child of EntityController!");
-                    std::shared_ptr<T> ptr = std::make_shared<T>();
-                    controllers[name] = std::make_shared<T>();
-                }*/
-
                 void registerEntityController (std::unique_ptr<EntityController> controller);
 
-                //[[maybe_unused]] AbstractEntity* getEntity (const std::string& name);
-
                 component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
-                /*AbstractEntity* getEntityInstance (int entityId);
-                void deleteEntityInstance (AbstractEntity* entity);*/
 
                 void deleteEntityInstance (component::EntityId entityId);
                 void registerTile (Tile* tile);
@@ -79,11 +61,7 @@ namespace game::detail {
                 Tile* getTile (const std::string& name);
                 Tile* getTile (int tileId);
 
-                //void updateEntities (float deltaTime);
                 void updateEntityPosition ();
-                //void updateEntityPositions (float deltaTime);
-                //void setTextureIds (graphics::TextureAtlas& atlas);
-                //void renderEntities (graphics::Graphics* graphics);
                 void setEntityComponentManager (component::EntityComponentManager::SharedPtr manager);
 
                 void updateEntitiesPrePhysics ();
@@ -105,12 +83,9 @@ namespace game::detail {
 
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
-                //void addComponentSerialiser (const std::string& component, std::unique_ptr<ComponentSerialiser> serialiser);
                 void setSerialiser (component::EntitySerialiser* serialiser);
 
                 void addDefaultSerialisers ();
-
-                //ComponentSerialiser* getSerialiser (const std::string& component);
 
                 void addEntityType (const std::string& typeId, const std::string& filepath);
 

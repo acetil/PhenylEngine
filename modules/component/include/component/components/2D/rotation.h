@@ -9,11 +9,7 @@ namespace component {
     public:
         glm::mat2 rotMatrix;
         float rotation;
-        Rotation2D& operator= (float newRot) {
-            rotation = newRot;
-            rotMatrix = {{glm::cos(newRot), glm::sin(newRot)}, {-glm::sin(newRot), glm::cos(newRot)}};
-            return *this;
-        }
+        Rotation2D& operator= (float newRot);
     };
 
     util::DataValue phenyl_to_data (const Rotation2D& comp);

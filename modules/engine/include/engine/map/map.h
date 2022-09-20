@@ -13,10 +13,6 @@ namespace graphics {
 
 namespace game {
     struct MapEntity {
-        /*std::string entityType;
-        float x = 0.0f;
-        float y = 0.0f;
-        float rotation = 0.0f;*/
         util::DataValue data;
         MapEntity () = default;
         MapEntity(util::DataValue _data) : data(std::move(_data)) {};
@@ -28,7 +24,6 @@ namespace game {
         int width;
         int height;
         Tile** tiles;
-        //graphics::StaticData* graphicsData;
         virtual Tile** getTiles ();
         graphics::TextureAtlas* atlas;
         std::vector<MapEntity> entities;
@@ -39,12 +34,7 @@ namespace game {
         virtual void setTiles (Tile** tiles);
         virtual int getWidth ();
         virtual int getHeight ();
-        //virtual void initGraphicsData (graphics::Graphics* graphics, std::string shader);
-        //virtual void unloadGraphicsData (graphics::Graphics* graphics);
 
-        //virtual int getNumTileVertices (); // TODO: move to models
-        //virtual float* getTileVertices ();
-        //virtual float* getTileUvs ();
         virtual std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> getModels ();
         virtual void setAtlas (graphics::TextureAtlas& atlas);
 

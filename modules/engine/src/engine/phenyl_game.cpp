@@ -4,9 +4,6 @@
 #include "graphics/phenyl_graphics.h"
 #include "engine/game_object.h"
 #include "engine/game_init.h"
-#include "component/components/2D/position.h"
-#include "component/components/2D/rotation.h"
-#include "physics/components/2D/collision_component.h"
 
 using namespace game;
 
@@ -49,10 +46,6 @@ Tile* PhenylGame::getTile (int tileId) {
 void PhenylGame::updateEntityPosition () {
     getShared()->updateEntityPosition();
 }
-
-/*void PhenylGame::setTextureIds (graphics::TextureAtlas& atlas) {
-    getShared()->setTextureIds(atlas);
-}*/
 
 void PhenylGame::setEntityComponentManager (component::EntityComponentManager::SharedPtr compManager) {
     getShared()->setEntityComponentManager(compManager);
@@ -101,10 +94,6 @@ void PhenylGame::addEventHandlers (event::EventBus::SharedPtr eventBus) {
 GameInput& PhenylGame::getGameInput () {
     return getShared()->getInput();
 }
-
-/*void PhenylGame::addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser) {
-    getShared()->addComponentSerialiser(component, std::move(serialiser));
-}*/
 
 void PhenylGame::addDefaultSerialisers () {
     getShared()->addDefaultSerialisers();

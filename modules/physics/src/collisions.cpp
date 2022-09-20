@@ -128,41 +128,12 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent2D& comp1, C
     return std::pair(true, smallestDispVec);
 }
 
-/*void physics::checkCollisionsEntity (CollisionComponent2D* comp, component::EntityId* ids, int numEntities, [[maybe_unused]] int direction, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>* collisionResults) {
-    for (int i = 0; i < numEntities; i++) {
-        auto compPtr = comp + 1;
-        for (int j = i + 1; j < numEntities; j++) {
-            auto coll = entityCollision(*comp, *compPtr);
-            if (coll.first) {
-                collisionResults->emplace_back(std::tuple(ids[i], ids[j], coll.second));
-            }
-            compPtr++;
-        }
-        comp++;
-    }
-}*/
-
 void physics::checkCollisionsEntity (const component::EntityComponentManager::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
-    /*for (auto i = compManager->begin(); i != compManager->end(); i++) {
-        for (auto j = i + 1; j != compManager->end(); j++) {
-            (*i).applyFunc<component::EntityId, CollisionComponent2D>([&j, &collisionResults](component::EntityId& id1, CollisionComponent2D& comp1) {
-                (*j).applyFunc<component::EntityId, CollisionComponent2D>([&](component::EntityId& id2, CollisionComponent2D& comp2) {
-                    auto coll = entityCollision(comp1, comp2);
-                    if (coll.first) {
-                        collisionResults.emplace_back(id1, id2, coll.second);
-                    }
-                });
-            });
-        }
-    }*/
     auto consView = compManager->getConstrainedView<CollisionComponent2D, SimpleFrictionMotion2D, component::Position2D>();
 
     for (auto i = consView.begin(); i != consView.end(); i++) {
         auto j = i;
         j++;
-        /*if (j == consView.end()) {
-            break;
-        }*/
         for ( ; j != consView.end(); j++) {
             auto coll = entityCollision((*i).get<CollisionComponent2D>(), (*j).get<CollisionComponent2D>(),
                     (*i).get<component::Position2D>().get() - (*j).get<component::Position2D>().get());

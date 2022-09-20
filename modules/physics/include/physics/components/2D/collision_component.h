@@ -7,7 +7,6 @@ namespace physics {
     struct CollisionComponent2D {
     private:
     public:
-        //glm::vec2 pos;
         glm::mat2 bbMap{{1.0f, 0.0f}, {0.0f, 1.0f}};
         glm::mat2 rotBBMap{{1.0f, 0.0f}, {0.0f, 1.0f}};
         float outerRadius{1.0f};

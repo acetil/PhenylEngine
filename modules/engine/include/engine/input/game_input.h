@@ -61,17 +61,13 @@ namespace game {
         class EventActionImpl : public EventAction {
             detail::EventActionRaiser<T> pressEventRaiser;
             detail::EventActionRaiser<U> releaseEventRaiser;
-            //T pressEvent;
-            //U releaseEvent;
 
         protected:
             void onPress(const event::EventBus::SharedPtr& eventBus) override {
-                //eventBus->raiseEvent(pressEvent);
                 pressEventRaiser.raiseEvent(eventBus);
             }
 
             void onRelease(const event::EventBus::SharedPtr& eventBus) override {
-                //eventBus->raiseEvent(releaseEvent);
                 releaseEventRaiser.raiseEvent(eventBus);
             }
 

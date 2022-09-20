@@ -13,5 +13,4 @@ namespace physics {
     void updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager);
     void checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView gameView);
     void addComponentSerialisers (component::EntitySerialiser& serialiser);
-    //void updateEntityHitboxRotation (event::EntityRotationEvent& event);
 }

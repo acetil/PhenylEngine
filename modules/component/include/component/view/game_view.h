@@ -1,8 +1,6 @@
 #pragma once
-//#include "engine/game_object.h"
 #include "util/data.h"
 #include "component/component.h"
-//#include "engine/game_object.h"
 
 namespace game {
     class GameCamera;
