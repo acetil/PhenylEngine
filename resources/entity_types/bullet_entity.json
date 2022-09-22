@@ -17,16 +17,14 @@
     "resolve_layers": 0
   },
   "Controller" : "bullet",
-  "SimpleFrictionMotion2D": {
-    "acceleration": {
-      "x": 0.0,
-      "y": 0.0
+  "KinematicMotion2D" : {
+    "vel" : {
+      "x" : 0.0,
+      "y" : 0.0
     },
-    "const_friction": 0,
-    "lin_friction": 0.01,
-    "velocity": {
-      "x": 0.0,
-      "y": 0.0
+    "acc" : {
+      "x" : 0.0,
+      "y" : 0.0
     }
   },
   "Model2D": "test9",

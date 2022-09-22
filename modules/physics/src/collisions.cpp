@@ -1,6 +1,6 @@
 #include "logging/logging.h"
 #include "component/component.h"
-#include "physics/components/2D/simple_friction.h"
+#include "physics/components/simple_friction.h"
 #include "util/data.h"
 #include "collisions.h"
 #include "component/components/2D/position.h"
@@ -129,7 +129,7 @@ inline std::pair<bool,glm::vec2> entityCollision (CollisionComponent2D& comp1, C
 }
 
 void physics::checkCollisionsEntity (const component::EntityComponentManager::SharedPtr& compManager, std::vector<std::tuple<component::EntityId, component::EntityId, glm::vec2>>& collisionResults) {
-    auto consView = compManager->getConstrainedView<CollisionComponent2D, SimpleFrictionMotion2D, component::Position2D>();
+    auto consView = compManager->getConstrainedView<CollisionComponent2D, component::Position2D>();
 
     for (auto i = consView.begin(); i != consView.end(); i++) {
         auto j = i;

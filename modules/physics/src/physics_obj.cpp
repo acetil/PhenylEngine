@@ -5,35 +5,27 @@
 #include "component/components/2D/rotation.h"
 #include "collisions.h"
 #include "common/events/entity_collision.h"
+#include "physics/components/2D/kinematic_motion.h"
 
 using namespace physics;
 
 namespace {
-    void updatePhysicsInternal (SimpleFrictionMotion2D& mainComp, component::Position2D& posComp) {
-        // TODO: refactor to somewhere else
-        int isPosXVel = mainComp.velocity.x > 0;
-        int isPosYVel = mainComp.velocity.y > 0;
-
-        mainComp.velocity.x -= ((float)mainComp.velocity.x * mainComp.linFriction) + mainComp.constFriction * (isPosXVel * 2 - 1);
-        mainComp.velocity.y -= ((float)mainComp.velocity.y * mainComp.linFriction) + mainComp.constFriction * (isPosYVel * 2 - 1);
-
-        mainComp.velocity.x *= (mainComp.velocity.x > 0 && isPosXVel) || (mainComp.velocity.x < 0 && !isPosXVel);
-        mainComp.velocity.y *= (mainComp.velocity.y > 0 && isPosYVel) || (mainComp.velocity.y < 0 && !isPosYVel);
-
-        mainComp.velocity += mainComp.acceleration;
-
-        posComp += mainComp.velocity;
-    }
-
     class DefaultPhysics : public IPhysics {
         void addComponentSerialisers (component::EntitySerialiser& serialiser) override {
-            serialiser.addComponentSerialiser<SimpleFrictionMotion2D>("SimpleFrictionMotion2D");
+            //serialiser.addComponentSerialiser<SimpleFrictionMotion2D>("SimpleFrictionMotion2D");
             serialiser.addComponentSerialiser<CollisionComponent2D>("CollisionComponent2D");
+            serialiser.addComponentSerialiser<KinematicMotion2D>("KinematicMotion2D");
+            serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
         }
 
         void updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) override {
-            for (const auto& i : componentManager->getConstrainedView<SimpleFrictionMotion2D, component::Position2D>()) {
-                updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
+            for (const auto& i : componentManager->getConstrainedView<KinematicMotion2D, SimpleFriction>()) {
+                i.get<SimpleFriction>().updateFriction2D(i.get<KinematicMotion2D>());
+            }
+
+            for (const auto& i : componentManager->getConstrainedView<KinematicMotion2D, component::Position2D>()) {
+                //updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
+                i.get<KinematicMotion2D>().doMotion(i.get<component::Position2D>());
             }
         }
 
@@ -67,18 +59,21 @@ namespace {
                         auto comp2Mass = comp2.resolveLayers & comp1.layers ? comp2.mass : 0.0f;
                         float totalMass = comp1Mass + comp2Mass;
                         if (totalMass != 0) {
-                            *componentManager->getObjectDataPtr<component::Position2D>(x1).orElse(nullptr) +=
-                                    dVec1 * comp1Mass / totalMass;
-                            componentManager->getObjectDataPtr<SimpleFrictionMotion2D>(x1).orElse(
-                                    nullptr)->velocity -=
-                                    projectVec(dVec1, componentManager->getObjectData<SimpleFrictionMotion2D>(
-                                            x1).orElse(SimpleFrictionMotion2D()).velocity);
-                            *componentManager->getObjectDataPtr<component::Position2D>(y1).orElse(nullptr) -=
-                                    dVec1 * comp2Mass / totalMass;
-                            componentManager->getObjectDataPtr<SimpleFrictionMotion2D>(y1).orElse(
-                                    nullptr)->velocity -=
-                                    projectVec(dVec1, componentManager->getObjectData<SimpleFrictionMotion2D>(
-                                            y1).orElse(SimpleFrictionMotion2D()).velocity);
+                            componentManager->getObjectData<component::Position2D>(x1).ifPresent([&dVec1, &comp1Mass, &totalMass](component::Position2D& pos2D) {
+                                pos2D += dVec1 * comp1Mass / totalMass;
+                            });
+
+                            componentManager->getObjectData<KinematicMotion2D>(x1).ifPresent([&dVec1] (KinematicMotion2D& comp) {
+                                comp.velocity -= projectVec(dVec1, comp.velocity);
+                            });
+
+                            componentManager->getObjectData<component::Position2D>(y1).ifPresent([&dVec1, &comp2Mass, &totalMass](component::Position2D& pos2D) {
+                                pos2D += dVec1 * comp2Mass / totalMass;
+                            });
+
+                            componentManager->getObjectData<KinematicMotion2D>(y1).ifPresent([&dVec1] (KinematicMotion2D& comp) {
+                                comp.velocity -= projectVec(-dVec1, comp.velocity);
+                            });
                         }
                         if (comp1.layers & comp2.eventLayer) {
                             eventBus->raise(

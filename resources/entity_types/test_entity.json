@@ -30,20 +30,18 @@
   },
   "Controller": "test_entity",
   "Model2D" : "test8",
-  "SimpleFrictionMotion2D": {
-    "acc": {
-      "x": 0.0,
-      "y": 0.0
+  "SimpleFriction" : {
+    "const_friction" : 0.005,
+    "lin_friction" : 0.27
+  },
+  "KinematicMotion2D" : {
+    "vel" : {
+      "x" : 0.0,
+      "y" : 0.0
     },
-    "const_friction": 0.005,
-    "lin_friction": 0.27,
-    "pos": {
-      "x": 0.0,
-      "y": 0.0
-    },
-    "vel": {
-      "x": 0.0,
-      "y": 0.0
+    "acc" : {
+      "x" : 0.0,
+      "y" : 0.0
     }
   }
 }

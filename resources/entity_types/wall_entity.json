@@ -1,16 +1,4 @@
 {
   "Controller" : "wall_entity",
-  "Model2D" : "test10",
-  "SimpleFrictionMotion2D": {
-    "acc": {
-      "x": 0.0,
-      "y": 0.0
-    },
-    "const_friction": 1.0,
-    "lin_friction": 1.0,
-    "vel": {
-      "x": 0.0,
-      "y": 0.0
-    }
-  }
+  "Model2D" : "test10"
 }
