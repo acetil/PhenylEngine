@@ -17,6 +17,7 @@
 #include "component/component_serialiser.h"
 #include "component/components/2D/rotation.h"
 #include "component/components/2D/position.h"
+#include "physics/physics.h"
 
 using namespace engine;
 
@@ -27,6 +28,7 @@ private:
     graphics::PhenylGraphicsHolder graphicsHolder;
     component::EntityComponentManager::SharedPtr componentManager;
     std::unique_ptr<component::EntitySerialiser> entitySerialiser;
+    std::unique_ptr<physics::IPhysics> physicsObj;
     void addEventHandlers ();
     void addDefaultSerialisers ();
 public:
@@ -39,6 +41,9 @@ public:
     component::EntityComponentManager::SharedPtr getComponentManager () const;
     event::EventBus::SharedPtr getEventBus ();
     component::EntitySerialiser& getEntitySerialiser ();
+    physics::PhenylPhysics getPhysics ();
+
+    void updateEntityPosition ();
 };
 
 engine::PhenylEngine::PhenylEngine () {
@@ -71,10 +76,19 @@ component::EntitySerialiser& PhenylEngine::getEntitySerialiser () {
     return internal->getEntitySerialiser();
 }
 
+physics::PhenylPhysics PhenylEngine::getPhysics () {
+    return internal->getPhysics();
+}
+
+void PhenylEngine::updateEntityPosition () {
+    internal->updateEntityPosition();
+}
+
 engine::detail::Engine::Engine () {
     eventBus = event::EventBus::NewSharedPtr();
     componentManager = component::EntityComponentManager::NewSharedPtr(255);
     entitySerialiser = std::make_unique<component::EntitySerialiser>();
+    physicsObj = physics::makeDefaultPhysics();
     addEventHandlers();
 
     auto gameObj = gameObjHolder.getGameObject();
@@ -86,7 +100,8 @@ engine::detail::Engine::Engine () {
     addDefaultSerialisers();
     gameObj.addDefaultSerialisers();
     graphics.addComponentSerialisers(getEntitySerialiser());
-    physics::addComponentSerialisers(getEntitySerialiser());
+    physicsObj->addComponentSerialisers(getEntitySerialiser());
+    //physics::addComponentSerialisers(getEntitySerialiser());
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
@@ -124,7 +139,7 @@ void detail::Engine::addEventHandlers () {
     gameObjHolder.getGameObject().addEventHandlers(eventBus);
 
     eventBus->subscribeUnscoped(game::addEntities);
-    eventBus->subscribeUnscoped(physics::onEntityCreation);
+    //eventBus->subscribeUnscoped(physics::onEntityCreation);
 
     graphics::addDebugEventHandlers(eventBus);
 
@@ -142,4 +157,15 @@ component::EntitySerialiser& detail::Engine::getEntitySerialiser () {
 void detail::Engine::addDefaultSerialisers () {
     entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
     entitySerialiser->addComponentSerialiser<component::Rotation2D>("Rotation2D");
+}
+
+physics::PhenylPhysics detail::Engine::getPhysics () {
+    return physics::PhenylPhysics(physicsObj.get());
+}
+
+void detail::Engine::updateEntityPosition () {
+    // TODO: remove function?
+    physicsObj->updatePhysics(getComponentManager());
+    view::GameView gameView{gameObjHolder.tempGetGameObject().get()}; // TODO
+    physicsObj->checkCollisions(getComponentManager(), getEventBus(), gameView);
 }

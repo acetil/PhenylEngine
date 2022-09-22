@@ -1,4 +1,4 @@
-add_library(physics src/collisions.cpp src/collisions.h src/physics.cpp src/simple_friction.cpp)
+add_library(physics src/collisions.cpp src/collisions.h src/simple_friction.cpp include/physics/phenyl_physics.h src/phenyl_physics.cpp src/physics_obj.cpp)
 
 set_property(TARGET physics PROPERTY CXX_STANDARD 20)
 

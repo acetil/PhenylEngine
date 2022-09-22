@@ -8,6 +8,7 @@
 #include "graphics/graphics.h"
 #include "graphics/phenyl_graphics.h"
 #include "engine/phenyl_game.h"
+#include "physics/phenyl_physics.h"
 
 namespace engine {
 
@@ -33,5 +34,9 @@ namespace engine {
         component::EntityComponentManager::SharedPtr getComponentManager ();
 
         component::EntitySerialiser& getEntitySerialiser ();
+
+        physics::PhenylPhysics getPhysics ();
+
+        void updateEntityPosition ();
     };
 }

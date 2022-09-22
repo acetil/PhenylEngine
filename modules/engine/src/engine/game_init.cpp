@@ -52,7 +52,7 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
 
     eventBus->subscribeUnscoped(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
-    eventBus->subscribeUnscoped(physics::onEntityCreation);
+    //eventBus->subscribeUnscoped(physics::onEntityCreation);
     //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());
     //eventBus->subscribeUnscoped(graphics::updateEntityRotation);
     //eventBus->subscribeUnscoped(physics::updateEntityHitboxRotation);

@@ -100,7 +100,8 @@ int game::gameloop (engine::PhenylEngine& engine) {
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
             gameObject.updateEntitiesPrePhysics();
-            gameObject.updateEntityPosition();
+            //gameObject.updateEntityPosition();
+            engine.updateEntityPosition();
             gameObject.updateEntitiesPostPhysics();
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
             util::endProfile();

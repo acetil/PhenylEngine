@@ -96,8 +96,9 @@ void detail::GameObject::setEntityComponentManager (component::EntityComponentMa
     this->entityComponentManager = std::move(manager);
 }
 void detail::GameObject::updateEntityPosition () {
-    physics::updatePhysics(entityComponentManager);
-    physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
+    logging::log(LEVEL_ERROR, "Do not call this function!");
+    //physics::updatePhysics(entityComponentManager);
+    //physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
 }
 
 void detail::GameObject::updateEntitiesPrePhysics () {

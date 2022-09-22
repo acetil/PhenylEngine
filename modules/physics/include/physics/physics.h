@@ -9,8 +9,13 @@
 #include "event/event_bus.h"
 
 namespace physics {
-    void onEntityCreation (event::EntityCreationEvent& event);
-    void updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager);
-    void checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView gameView);
-    void addComponentSerialisers (component::EntitySerialiser& serialiser);
+    class IPhysics {
+    public:
+        virtual ~IPhysics() = default;
+        virtual void addComponentSerialisers (component::EntitySerialiser& serialiser) = 0;
+        virtual void updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) = 0;
+        virtual void checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) = 0;
+    };
+
+    std::unique_ptr<IPhysics> makeDefaultPhysics ();
 }
