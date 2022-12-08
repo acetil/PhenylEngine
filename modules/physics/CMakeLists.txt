@@ -1,4 +1,4 @@
-add_library(physics src/collisions.cpp src/collisions.h src/components/simple_friction.cpp include/physics/phenyl_physics.h src/phenyl_physics.cpp src/physics_obj.cpp include/physics/components/2D/kinematic_motion.h src/components/2D/kinematic_motion.cpp)
+add_library(physics src/physics/collisions.cpp src/physics/collisions.h src/physics/components/simple_friction.cpp include/physics/phenyl_physics.h src/physics/phenyl_physics.cpp src/physics/physics_obj.cpp include/physics/components/2D/kinematic_motion.h src/physics/components/2D/kinematic_motion.cpp include/physics/physics_core.h include/physics/shape/physics_shape.h src/physics/shape/physics_shape.cpp src/physics/2d/physics_obj_2d.h src/physics/2d/physics_obj_2d.cpp src/physics/2d/collider_2d.h src/physics/2d/shapes/shape_2d.h src/physics/2d/collision_response_2d.h src/physics/2d/shapes/shape_2d.cpp src/physics/2d/shapes/primitive_shapes_2d.h src/physics/2d/shapes/primitive_shapes_2d.cpp)
 
 set_property(TARGET physics PROPERTY CXX_STANDARD 20)
 
