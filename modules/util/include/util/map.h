@@ -8,7 +8,7 @@
 #include <cstring>
 #include <cstdint>
 
-#include "util/meta.h"
+//#include "util/meta.h"
 
 namespace util {
     namespace detail {
@@ -479,8 +479,10 @@ namespace util {
             if (pair->exists()) {
                 pair->constructValue(std::forward<Args>(args)...);
             } else {
-                pair->constructKey(hash, key, std::forward<Args>(args)...);
+                pair->emplaceKValue(hash, key, std::forward<Args>(args)...);
             }
+            currentSize++;
+            resizeIfNecessary();
         }
 
         [[nodiscard]] std::size_t size () const {
@@ -863,7 +865,8 @@ namespace util {
     class MapIterator {
     private:
 
-        using Wt = meta::remove_const_if_exist<Wrapper>;
+        //using Wt = meta::remove_const_if_exist<Wrapper>;
+        using Wt = std::remove_const_t<Wrapper>;
         std::pair<char, K>* exists = nullptr;
         V* data = nullptr;
         int maxSize = 0;

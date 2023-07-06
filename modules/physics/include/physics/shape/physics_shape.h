@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <cassert>
+
+#include "util/meta.h"
 
 namespace physics {
     enum class PrimitiveShape {
@@ -35,4 +38,25 @@ namespace physics {
             return T{data};
         }
     };
+
+    template <typename T>
+    class ShapeView;
+
+    class ShapeDataNew {
+    private:
+        std::size_t shapeTypeIndex;
+        void* data;
+    public:
+        ShapeDataNew (std::size_t shapeTypeIndex, void* data) : shapeTypeIndex{shapeTypeIndex}, data{data} {}
+
+        template <typename T>
+        ShapeView<T> as () {
+            assert(meta::type_index<T>() == shapeTypeIndex);
+
+            return ShapeView<T>{data};
+        }
+    };
+
+    template <typename T>
+    class ShapeRequest;
 }

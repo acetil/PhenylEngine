@@ -26,7 +26,20 @@
     "layers": 1,
     "masks": 3,
     "mass": 10.0,
-    "resolve_layers": 3
+    "resolve_layers": 3,
+    "shape" : {
+      "type" : "BoxShape2D",
+      "scale_matrix" : [
+        {
+          "x" : 1.0,
+          "y" : 0.0
+        },
+        {
+          "x" : 0.0,
+          "y" : 1.0
+        }
+      ]
+    }
   },
   "Controller": "test_entity",
   "Model2D" : "test8",

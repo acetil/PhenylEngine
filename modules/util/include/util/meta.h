@@ -394,7 +394,7 @@ namespace meta {
         struct curr_type_index {
         public:
             static std::size_t getNext () {
-                static std::size_t val = 0;
+                static std::size_t val = 1;
                 return val++;
             }
         };
@@ -465,4 +465,26 @@ namespace meta {
     struct pack_apply_impl {
 
     };
+
+    template <std::size_t I, typename Target, typename ...Args>
+    struct pack_type_index_impl;
+
+    template <std::size_t I, typename Target, typename ...Args>
+    struct pack_type_index_impl <I, Target, Target, Args...> {
+        static constexpr std::size_t val = I;
+    };
+
+    template <std::size_t I, typename Target, typename T, typename ...Args>
+    struct pack_type_index_impl <I, Target, T, Args...> {
+        static constexpr std::size_t val = pack_type_index_impl<I + 1, Target, Args...>::val;
+    };
+
+    template <typename Target, typename ...Args>
+    static constexpr std::size_t pack_type_index = pack_type_index_impl<0, Target, Args...>::val;
+
+    template <typename T, typename ...Args>
+    static constexpr bool is_in_pack = is_in_typelist<T, type_list_wrapper<Args...>>;
+
+    template <typename T, typename ...Args>
+    concept IsInPack = is_in_pack<T, Args...>;
 }

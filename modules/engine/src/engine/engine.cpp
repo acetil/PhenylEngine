@@ -144,6 +144,7 @@ void detail::Engine::addEventHandlers () {
     graphics::addDebugEventHandlers(eventBus);
 
     game::addControlEventHandlers(eventBus);
+    physicsObj->addEventHandlers(eventBus);
 }
 
 component::EntityComponentManager::SharedPtr detail::Engine::getComponentManager () const {

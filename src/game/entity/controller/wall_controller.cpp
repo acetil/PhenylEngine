@@ -14,7 +14,7 @@ void WallController::initEntity (component::EntityView& entityView, view::GameVi
     auto dataObj = data.get<util::DataObject>();
 
     if (dataObj.contains("no_coll") && dataObj.at("no_coll").is<bool>() && dataObj.at("no_coll").get<bool>()) {
-        entityView.removeComponent<physics::CollisionComponent2D>();
+        //entityView.removeComponent<physics::CollisionComponent2DNew>();
         return;
     }
 
@@ -25,17 +25,15 @@ void WallController::initEntity (component::EntityView& entityView, view::GameVi
         comp.rotTransform = comp.transform;
     });
 
-    entityView.getComponent<physics::CollisionComponent2D>().ifPresent([&dataObj, &size] (physics::CollisionComponent2D& comp) {
-        if (dataObj.contains("htibox_size")) {
+    entityView.getComponent<physics::CollisionComponent2DNew>().ifPresent([&dataObj, &size, &gameView] (physics::CollisionComponent2DNew& comp) {
+        if (dataObj.contains("hitbox_size")) {
             util::DataObject hitboxSize = dataObj.at("hitbox_size");
-            comp.bbMap = glm::mat2{{hitboxSize.at("x"), 0.0f}, {0.0f, hitboxSize.at("y")}} * comp.bbMap;
+            //comp.bbMap = glm::mat2{{hitboxSize.at("x"), 0.0f}, {0.0f, hitboxSize.at("y")}} * comp.bbMap;
+            comp.transform = glm::mat2{{hitboxSize.at("x"), 0.0f}, {0.0f, hitboxSize.at("y")}};
         } else {
-            comp.bbMap = glm::mat2{{size.at("x").get<float>(), 0.0f}, {0.0f, size.at("y").get<float>()}} * comp.bbMap;
+            //comp.bbMap = glm::mat2{{size.at("x").get<float>(), 0.0f}, {0.0f, size.at("y").get<float>()}} * comp.bbMap;
+            comp.transform = glm::mat2{{size.at("x").get<float>(), 0.0f}, {0.0f, size.at("y").get<float>()}} * comp.transform;
         }
-
-        auto vec = comp.bbMap[0] + comp.bbMap[1];
-        comp.outerRadius = glm::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
-        comp.rotBBMap = comp.bbMap;
     });
     //entityView.modelScale.scaleBy(size.at("x"), size.at("y"));
 

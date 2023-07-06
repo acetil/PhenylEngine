@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 #include <cstring>
+#include <cstdint>
 
 namespace util {
     std::vector<std::string> stringSplit (const std::string& str, const std::string& delim = " ", int maxSplits = INT32_MAX);

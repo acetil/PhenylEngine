@@ -5,7 +5,7 @@
 namespace physics {
     struct Collider2D {
         ShapeId hitbox{};
-        ShapeId eventbox{};
+        //ShapeId eventbox{};
 
         glm::vec2 currentPos = {0, 0};
         glm::vec2 nextPos = {0, 0};
@@ -17,9 +17,12 @@ namespace physics {
         std::uint64_t hitboxLayers = 0;
         std::uint64_t eventboxMask = 0;
 
-        component::EntityId entityId{};
+        float mass{100};
 
-        Collider2D ();
-        Collider2D (component::EntityId entityId);
+        component::EntityId entityId{};
+        bool updated = false;
+
+        Collider2D () = default;
+        Collider2D (component::EntityId entityId) {};
     };
 }

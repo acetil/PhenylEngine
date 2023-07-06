@@ -23,13 +23,23 @@ namespace component {
             ((T*)tPtr)->~T();
         }
 
+        template <typename T>
+        void moverFunc (unsigned char* destPtr, unsigned char* srcPtr) {
+            T* dest = (T*)destPtr;
+            T* src = (T*)srcPtr;
+
+            new(dest) T(std::move(*src));
+        }
+
         struct ComponentType {
         private:
             using DeleterFunc = void (*)(unsigned char*);
+            using MoverFunc = void (*) (unsigned char*, unsigned char*);
         public:
             std::unique_ptr<unsigned char[]> components;
             std::size_t componentSize;
             DeleterFunc deleter;
+            MoverFunc mover;
         };
     }
 
@@ -113,7 +123,7 @@ namespace component {
 
             auto pos = components.size();
 
-            components.emplace_back(detail::ComponentType{std::make_unique<unsigned char[]>(sizeof(T) * maxNumEntities), sizeof(T), detail::deleterFunc<T>});
+            components.emplace_back(detail::ComponentType{std::make_unique<unsigned char[]>(sizeof(T) * maxNumEntities), sizeof(T), detail::deleterFunc<T>, detail::moverFunc<T>});
 
             compMap[typeId] = pos;
             componentBitmap.putBit(pos);
@@ -146,19 +156,34 @@ namespace component {
         }
 
         void swapLastEntity (std::size_t entityPos, unsigned int entityId) {
+            // TODO: refactor and fix
             if (entityPos == numEntities - 1) {
                 numEntities--;
+
+                std::size_t index = 0;
+                for (auto& [x, size, deleter, mover] : components) {
+                    if (entityComponentBitmaps[entityPos].hasBit(index)) {
+                        deleter(x.get() + size * entityPos);
+                    }
+
+                    index++;
+                }
+
+                entityComponentBitmaps[entityPos].clear();
+
                 return;
             }
             std::size_t index = 0;
-            for (auto& [x, size, deleter] : components) {
+            for (auto& [x, size, deleter, mover] : components) {
                 if (entityComponentBitmaps[entityPos].hasBit(index)) {
                     deleter(x.get() + size * entityPos);
                 }
 
                 if (entityComponentBitmaps[numEntities - 1].hasBit(index)) {
                     // TODO
-                    std::memcpy(x.get() + size * entityPos, x.get() + size * (numEntities - 1), size);
+                    //std::memcpy(x.get() + size * entityPos, x.get() + size * (numEntities - 1), size);
+                    mover(x.get() + size * entityPos, x.get() + size * (numEntities - 1));
+                    deleter(x.get() + size * (numEntities - 1));
                 }
                 index++;
             }
@@ -167,6 +192,7 @@ namespace component {
             });
 
             entityComponentBitmaps[entityPos] = entityComponentBitmaps[numEntities - 1];
+            entityComponentBitmaps[numEntities - 1].clear();
 
             // Move necessary because cpp is dumb
             // TODO
@@ -218,7 +244,7 @@ namespace component {
         }
 
         ~ComponentManager() {
-            for (auto& [x, size, deleter] : components) {
+            for (auto& [x, size, deleter, mover] : components) {
                 for (int i = 0; i < numEntities; i++) {
                     deleter(x.get() + size * i);
                 }

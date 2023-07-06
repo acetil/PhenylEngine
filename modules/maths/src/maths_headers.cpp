@@ -66,3 +66,39 @@ util::DataValue glm::phenyl_to_data (const glm::vec2& v) {
     obj["y"] = v.y;
     return (util::DataValue)obj;
 }
+
+bool glm::phenyl_from_data (const util::DataValue& val, glm::mat2& m) {
+    if (!val.is<util::DataArray>()) {
+        return false;
+    }
+
+    const auto& arr = val.get<util::DataArray>();
+
+    if (arr.size() != 2) {
+        return false;
+    }
+
+    glm::vec2 vec1;
+    if (!phenyl_from_data(arr[0], vec1)) {
+        return false;
+    }
+
+    // For some reason if this is m[1] instead of vec2 the memory of m gets corrupted ????
+    glm::vec2 vec2;
+    if (!phenyl_from_data(arr[1], vec2)) {
+        return false;
+    }
+
+    m[0] = vec1;
+    m[1] = vec2;
+
+    return true;
+}
+
+util::DataValue glm::phenyl_to_data (const glm::mat2& m) {
+    util::DataArray arr;
+    arr.emplace_back(m[0]);
+    arr.emplace_back(m[1]);
+
+    return (util::DataValue)arr;
+}

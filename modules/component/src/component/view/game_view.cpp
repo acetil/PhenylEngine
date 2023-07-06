@@ -14,3 +14,7 @@ void GameView::destroyEntityInstance (component::EntityId entityId) {
 game::GameCamera& GameView::getCamera () {
     return gameObject->getCamera();
 }
+
+physics::IPhysics* GameView::getPhysics () {
+    return physics;
+}

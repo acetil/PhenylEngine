@@ -14,4 +14,7 @@ namespace glm {
 
     bool phenyl_from_data(const util::DataValue& val, vec4& v);
     util::DataValue phenyl_to_data (const vec4& v);
+
+    bool phenyl_from_data (const util::DataValue& val, glm::mat2& m);
+    util::DataValue phenyl_to_data (const glm::mat2& m);
 }

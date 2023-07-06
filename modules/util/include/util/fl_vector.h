@@ -2,6 +2,10 @@
 
 #include <memory>
 
+#include "logging/logging.h"
+#include "iterable.h"
+#include <string>
+#include <sstream>
 namespace util {
     namespace detail {
         template <typename T>
@@ -144,6 +148,8 @@ namespace util {
 
             iterator& operator++ () {
                 increment();
+
+                return *this;
             }
 
             iterator operator++ (int) {
@@ -159,6 +165,81 @@ namespace util {
 
             iterator& operator-- () {
                 decrement();
+                return *this;
+            }
+
+            iterator operator-- (int) {
+                iterator old = *this;
+                decrement();
+
+                return old;
+            }
+        };
+
+        template <class T>
+        class FLVectorPairIterator {
+        private:
+            FlVectorItem<T>* items;
+            std::size_t pos;
+            std::size_t size;
+            void increment () {
+                pos++;
+                while (pos < size && !items[pos].isPresent()) {
+                    pos++;
+                }
+            }
+
+            void findFirst () {
+                while (pos < size && !items[pos].isPresent()) {
+                    pos++;
+                }
+            }
+
+            void decrement () {
+                pos--;
+                while (pos >= 0 && !items[pos].isPresent()) {
+                    pos--;
+                }
+            }
+
+        public:
+            using iterator = FLVectorPairIterator<T>;
+            using value_type = std::pair<std::size_t, T&>;
+            using reference = void;
+            //using const_reference = const T&;
+            using difference_type = std::ptrdiff_t;
+            using iterator_category = std::bidirectional_iterator_tag;
+
+            FLVectorPairIterator () : items{nullptr}, size{0}, pos{0} {}
+            FLVectorPairIterator (FlVectorItem<T>* items, size_t size, size_t pos = 0) : items{items}, size{size}, pos{pos} {
+                findFirst();
+            }
+
+            value_type operator* () const {
+                return {pos, items[pos].getUnsafe()};
+            }
+
+            iterator& operator++ () {
+                increment();
+
+                return *this;
+            }
+
+            iterator operator++ (int) {
+                iterator old = *this;
+                increment();
+
+                return old;
+            }
+
+            bool operator== (const iterator& other) const {
+                return (items == nullptr && other.items == nullptr) || (items == other.items && pos == other.pos);
+            }
+
+            iterator& operator-- () {
+                decrement();
+
+                return *this;
             }
 
             iterator operator-- (int) {
@@ -190,7 +271,7 @@ namespace util {
 
                 return index;
             } else if (listSize == vecCapacity) {
-                reserve(listSize * 2);
+                reserve(listSize * RESIZE_RATIO);
             }
 
             return listSize++;
@@ -199,6 +280,7 @@ namespace util {
     public:
         using iterator = detail::FLVectorIterator<T>;
         using const_iterator = detail::FLVectorIterator<const T>;
+        using pair_iterator = detail::FLVectorPairIterator<T>;
         FLVector () : FLVector(DEFAULT_START) {}
 
         explicit FLVector (std::size_t capacity) : vecCapacity{capacity} {
@@ -386,6 +468,29 @@ namespace util {
 
         const_iterator cend () const noexcept {
             return iterator{data.get(), listSize, listSize};
+        }
+
+        util::Iterable<pair_iterator> iterate () {
+            return {pair_iterator{data.get(), listSize}, pair_iterator{data.get(), listSize, listSize}};
+        }
+
+        template <bool b = true>
+        std::string toString () {
+            std::stringstream sstream;
+            sstream << "[";
+            for (std::size_t i = 0; i < listSize; i++) {
+                if (i != 0) {
+                    sstream << ", ";
+                }
+                if (data[i].isPresent()) {
+                    sstream << data[i].getUnsafe();
+                } else {
+                    sstream << "NULL";
+                }
+            }
+            sstream << "]";
+
+            return sstream.str();
         }
     };
 }

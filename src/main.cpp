@@ -17,7 +17,6 @@
 
 int main (int argv, char* argc[]) {
     // TODO: move to exceptions
-
     //util::testData();
 
     logger::initLogger();

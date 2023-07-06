@@ -72,3 +72,7 @@ physics::CollisionShape2DBase::~CollisionShape2DBase () noexcept = default;
 physics::CollisionShape2D::CollisionShape2D (physics::ShapeId id, physics::ColliderId collider, physics::ShapeId parent, bool canRotate, bool canDistort)
         : CollisionShape2DBase(id, collider, parent, canRotate, canDistort) {}
 
+bool physics::Shape2D::shouldCollide (const Shape2D& other, glm::vec2 displacement) const {
+    float radiusSum = outerRadius + other.outerRadius;
+    return (layers & other.mask || other.layers & mask) && (radiusSum * radiusSum) < (displacement.x * displacement.x + displacement.y * displacement.y);
+}

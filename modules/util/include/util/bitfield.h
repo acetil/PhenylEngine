@@ -81,6 +81,10 @@ namespace util {
             data[bit / IntSize] &= (FullMask ^ (1 << (bit % IntSize)));
         }
 
+        void clear () {
+            std::memset(data, 0, sizeof(data));
+        }
+
         operator bool () {
             for (std::size_t i = 0; i < NumInts; i++) {
                 if (data[i]) {

@@ -62,4 +62,22 @@ namespace physics {
         virtual util::Optional<CollisionResponse2D> collisionDetectionVisit (BoxShape2D& other, glm::vec2 displacement) = 0;
         virtual util::Optional<CollisionResponse2D> collisionDetectionVisit (CircleShape2D& other, glm::vec2 displacement) = 0;
     };
+
+
+    struct Shape2D {
+        float outerRadius;
+
+        std::uint64_t layers;
+        std::uint64_t mask;
+
+        Shape2D (float outerRadius, std::uint64_t layers, std::uint64_t mask) : outerRadius{outerRadius}, layers{layers}, mask{mask} {}
+
+        bool shouldCollide (const Shape2D& other, glm::vec2 displacement) const;
+    };
+
+    struct BoxShape2D;
+
+    using ShapeVariant2D = std::variant<BoxShape2D>;
+
+    CollisionResponse2D collideShapes2D (const ShapeVariant2D& shape1, const ShapeVariant2D& shape2);
 }
