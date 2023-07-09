@@ -1,19 +1,27 @@
 #pragma once
 
-#include "graphics/maths_headers.h"
 #include "shape_2d.h"
+#include "util/optional.h"
 
 namespace physics {
-    struct BoxShape2D : public Shape2D {
-        glm::mat2 localTransform;
-        glm::mat2 transform;
+    class BoxShape2D : public Shape2D {
+    private:
+        glm::mat2 scaleMatrix;
+        glm::mat2 frameTransform;
+        glm::mat2 invFrameTransform;
+    public:
+        BoxShape2D (ColliderId collider, glm::vec2 scale, std::uint64_t layers, std::uint64_t mask);
+        BoxShape2D (ColliderId collider, glm::mat2 scaleMat, std::uint64_t layers, std::uint64_t mask);
 
-        explicit BoxShape2D (glm::mat2 localSizeTransform, std::uint64_t layers, std::uint64_t mask);
+        glm::vec2 getScale () const; // TODO: remove?
+        void setScale (glm::vec2 scale);
 
-        void applyWorldTransform (glm::mat2 worldTransform);
-        void setLocalTransform (glm::mat2 localTransform);
+        void applyTransform (glm::mat2 transform) override;
+
+        util::Optional<glm::vec2> collide (const BoxShape2D& other);
+
+        util::DataValue serialise() const override;
+
+        static util::Optional<BoxShape2D> deserialise (const util::DataObject& val, ColliderId collider, std::uint64_t layers, std::uint64_t mask);
     };
-
-    util::Optional<CollisionResponse2D> collideShape2D (const BoxShape2D& shape1, const ShapeVariant2D& shape2, glm::vec2 disp);
-    util::Optional<CollisionResponse2D> collideShape2D (const BoxShape2D& shape1, const BoxShape2D& shape2, glm::vec2 disp);
 }

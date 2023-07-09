@@ -32,16 +32,16 @@ namespace physics {
         void destroyCollider(physics::ColliderId id) override;
 
         ShapeId getColliderHitbox(physics::ColliderId id) override;
-        ShapeId getColliderEventbox(physics::ColliderId id) override;
-        bool colliderShapesMerged(physics::ColliderId id) override;
-        void setColliderShapesMerged(physics::ColliderId id, bool merged) override;
+        //ShapeId getColliderEventbox(physics::ColliderId id) override;
+        //bool colliderShapesMerged(physics::ColliderId id) override;
+        //void setColliderShapesMerged(physics::ColliderId id, bool merged) override;
 
 
         void setShapeType(physics::ShapeId id, physics::PrimitiveShape shape) override;
         ShapeDataNew getShapeData(physics::ShapeId id) const override;
 
         ShapeId makeNewHitbox(physics::ColliderId colliderId, std::size_t typeIndex, void *request) override;
-        ShapeId makeNewEventbox(physics::ColliderId collider, std::size_t typeIndex, void *request) override;
+        //ShapeId makeNewEventbox(physics::ColliderId collider, std::size_t typeIndex, void *request) override;
 
         void addEventHandlers (const event::EventBus::SharedPtr& eventBus) override;
     };

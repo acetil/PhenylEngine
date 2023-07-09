@@ -48,6 +48,7 @@ namespace util {
 
     constexpr detail::NullOpt_t NullOpt;
 
+    // TODO: improve copy/move constructor/assignment
     template <typename T>
     class Optional<T, std::enable_if_t<!std::is_reference_v<T>>> {
     private:
@@ -59,8 +60,42 @@ namespace util {
 
         Optional (const Optional<T>& other) : hasVal{other.hasVal}, memory{} {
             if (hasVal) {
+                memory = detail::Memory<T>{other.memory.get()};
+            }
+        }
+        Optional (Optional<T>&& other) noexcept : hasVal{other.hasVal}, memory{std::move(other.memory)} {
+            other.memory.clear();
+            other.hasVal = false;
+        }
+
+        Optional& operator= (const Optional<T>& other) {
+            if (hasVal && !other.hasVal) {
+                memory.clear();
+            } else if (!hasVal && other.hasVal) {
+                memory = detail::Memory<T>(other.memory.get());
+            } else {
                 memory.mget() = other.memory.get();
             }
+
+            hasVal = other.hasVal;
+
+            return *this;
+        }
+
+        Optional& operator= (Optional<T>&& other) noexcept {
+            if (hasVal && !other.hasVal) {
+                memory.clear();
+            } else if (!hasVal && other.hasVal) {
+                memory = detail::Memory<T>(std::move(other.memory.mget()));
+            } else {
+                memory.mget() = std::move(other.memory.mget());
+            }
+
+            hasVal = other.hasVal;
+            other.hasVal = false;
+            other.memory.clear();
+
+            return *this;
         }
 
         Optional (T& val) : memory{val}, hasVal(true) {}
@@ -269,4 +304,12 @@ namespace util {
         }
     };
 
+    template <typename T>
+    concept IsNotReference = !std::is_reference_v<T>;
+
+    template <IsNotReference T>
+    Optional (T&&) -> util::Optional<T>;
+
+    template <IsNotReference T>
+    Optional (const T&) -> util::Optional<T>;
 }

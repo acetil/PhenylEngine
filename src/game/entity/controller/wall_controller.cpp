@@ -14,7 +14,7 @@ void WallController::initEntity (component::EntityView& entityView, view::GameVi
     auto dataObj = data.get<util::DataObject>();
 
     if (dataObj.contains("no_coll") && dataObj.at("no_coll").is<bool>() && dataObj.at("no_coll").get<bool>()) {
-        //entityView.removeComponent<physics::CollisionComponent2DNew>();
+        //entityView.removeComponent<physics::CollisionComponent2D>();
         return;
     }
 
@@ -25,7 +25,7 @@ void WallController::initEntity (component::EntityView& entityView, view::GameVi
         comp.rotTransform = comp.transform;
     });
 
-    entityView.getComponent<physics::CollisionComponent2DNew>().ifPresent([&dataObj, &size, &gameView] (physics::CollisionComponent2DNew& comp) {
+    entityView.getComponent<physics::CollisionComponent2D>().ifPresent([&dataObj, &size, &gameView] (physics::CollisionComponent2D& comp) {
         if (dataObj.contains("hitbox_size")) {
             util::DataObject hitboxSize = dataObj.at("hitbox_size");
             //comp.bbMap = glm::mat2{{hitboxSize.at("x"), 0.0f}, {0.0f, hitboxSize.at("y")}} * comp.bbMap;

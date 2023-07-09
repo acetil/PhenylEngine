@@ -43,6 +43,7 @@ namespace util::detail {
         ~Movable() = default;
     };
 
+    // TODO: improve copy/move assignment
     template <typename T>
     class Memory : public Copyable<std::is_copy_assignable_v<T> || std::is_copy_constructible_v<T>> {
     private:
@@ -74,7 +75,7 @@ namespace util::detail {
         }
 
         Memory (Memory&& other)  noexcept {
-            ::new(&data) T(std::move(other.data));
+            ::new(&data) T(std::move(other.mget()));
             initialised = true;
             other.initialised = false;
         }

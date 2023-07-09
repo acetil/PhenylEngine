@@ -5,14 +5,14 @@
 #include "graphics/maths_headers.h"
 
 namespace physics {
-    class BoxShape2DNew;
+    class BoxShape2D;
 
     template <>
-    class ShapeView<BoxShape2DNew> {
+    class ShapeView<BoxShape2D> {
     private:
-        BoxShape2DNew& shape;
+        BoxShape2D& shape;
 
-        ShapeView (void* shapeData) : shape{*(static_cast<BoxShape2DNew*>(shapeData))} {}
+        ShapeView (void* shapeData) : shape{*(static_cast<BoxShape2D*>(shapeData))} {}
 
         friend class ShapeDataNew;
 
@@ -28,7 +28,7 @@ namespace physics {
     };
 
     template <>
-    class ShapeRequest<BoxShape2DNew> {
+    class ShapeRequest<BoxShape2D> {
     private:
         glm::vec2 scale;
         std::uint64_t layers;
@@ -39,6 +39,6 @@ namespace physics {
 
         ShapeRequest (glm::vec2 scale, std::uint64_t layers, std::uint64_t mask) : scale{scale}, layers{layers}, mask{mask} {}
 
-        BoxShape2DNew make (ColliderId collider);
+        BoxShape2D make (ColliderId collider);
     };
 }

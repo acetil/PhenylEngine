@@ -44,7 +44,7 @@ namespace physics {
 
         virtual ShapeDataNew getShapeData (ShapeId id) const = 0;
         virtual ShapeId makeNewHitbox (ColliderId collider, std::size_t typeIndex, void* request) = 0;
-        virtual ShapeId makeNewEventbox (ColliderId collider, std::size_t typeIndex, void* request) = 0;
+        //virtual ShapeId makeNewEventbox (ColliderId collider, std::size_t typeIndex, void* request) = 0;
 
     public:
         virtual ~IPhysics() = default;
@@ -56,9 +56,9 @@ namespace physics {
         virtual void destroyCollider (ColliderId id) = 0;
 
         virtual ShapeId getColliderHitbox (ColliderId id) = 0;
-        virtual ShapeId getColliderEventbox (ColliderId id) = 0;
-        virtual bool colliderShapesMerged (ColliderId id) = 0;
-        virtual void setColliderShapesMerged (ColliderId id, bool merged) = 0;
+        //virtual ShapeId getColliderEventbox (ColliderId id) = 0;
+        //virtual bool colliderShapesMerged (ColliderId id) = 0;
+        //virtual void setColliderShapesMerged (ColliderId id, bool merged) = 0;
 
         virtual void setShapeType (ShapeId id, PrimitiveShape shape) = 0;
         virtual void addEventHandlers (const event::EventBus::SharedPtr& eventBus) = 0;
@@ -74,10 +74,10 @@ namespace physics {
             return makeNewHitbox(id, ShapeRequest<T>::shapeType, static_cast<void*>(&request));
         }
 
-        template <typename T>
+        /*template <typename T>
         ShapeId makeEventbox (ColliderId id, ShapeRequest<T> request) {
             return makeNewEventbox(id, ShapeRequest<T>::shapeType, static_cast<void*>(&request));
-        }
+        }*/
     };
 
     std::unique_ptr<IPhysics> makeDefaultPhysics ();
