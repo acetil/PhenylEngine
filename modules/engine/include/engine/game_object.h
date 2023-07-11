@@ -53,7 +53,7 @@ namespace game::detail {
 
                 void registerEntityController (std::unique_ptr<EntityController> controller);
 
-                component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
+                util::Optional<component::EntityView> createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
 
                 void deleteEntityInstance (component::EntityId entityId);
                 void registerTile (Tile* tile);

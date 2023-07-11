@@ -3,6 +3,7 @@
 #include "graphics/textures/texture_atlas.h"
 #include "graphics/renderlayer/render_layer.h"
 #include "component/component.h"
+#include "component/component_new.h"
 #include "graphics/pipeline/pipeline.h"
 
 namespace graphics {

@@ -21,11 +21,11 @@ detail::GameObject::~GameObject () {
     }
 }
 
-component::EntityView detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
+util::Optional<component::EntityView> detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     // TODO: requires refactor
     if (!entityTypes.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
-        return {{0, 0}, nullptr};
+        return util::NullOpt;
     } else {
         auto entityView = entityComponentManager->createEntity();
         const auto& entityType = entityTypes.at(name);
@@ -38,7 +38,7 @@ component::EntityView detail::GameObject::createNewEntityInstance (const std::st
         });
 
         eventBus->raise(event::EntityCreationEvent(entityComponentManager, entityView, gameView));
-        return entityView;
+        return {entityView};
     }
 }
 

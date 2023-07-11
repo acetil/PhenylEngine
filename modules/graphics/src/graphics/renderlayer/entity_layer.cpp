@@ -117,7 +117,7 @@ void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
             absPos.transform *= rotComp.rotMatrix;
         });
     }*/
-    for (const auto& i : componentManager->getConstrainedView<Transform2D, component::Rotation2D>()) {
+    for (auto i : componentManager->getConstrainedView<Transform2D, component::Rotation2D>()) {
         i.get<Transform2D>().rotTransform = i.get<Transform2D>().transform * i.get<component::Rotation2D>().rotMatrix;
     }
 
@@ -214,7 +214,7 @@ EntityRenderLayer::~EntityRenderLayer () = default;
 
 }*/
 static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2>& buffer) {
-    for (const auto& i : manager->getConstrainedView<Model2D, Transform2D>()) {
+    for (auto i : manager->getConstrainedView<Model2D, Transform2D>()) {
         auto& model = i.get<Model2D>();
         buffer.pushData(model.positionData.begin(), model.positionData.end());
         i.get<Transform2D>().vertices = model.positionData.size();
@@ -228,7 +228,7 @@ static void bufferPosDataNew (const component::EntityComponentManager::SharedPtr
 }*/
 
 static void bufferUvDataNew (const component::EntityComponentManager::SharedPtr& manager, Buffer<glm::vec2> buffer) {
-    for (const auto& i : manager->getConstrainedView<Model2D>()) {
+    for (auto i : manager->getConstrainedView<Model2D>()) {
         buffer.pushData(i.get<Model2D>().uvData.begin(), i.get<Model2D>().uvData.end());
     }
 }

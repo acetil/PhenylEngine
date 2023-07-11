@@ -1,6 +1,7 @@
 #pragma once
 #include "util/data.h"
 #include "component/component.h"
+#include "component/component_new.h"
 
 namespace game {
     class GameCamera;

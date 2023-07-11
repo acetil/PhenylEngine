@@ -52,20 +52,6 @@ int main (int argv, char* argc[]) {
     compManager->addComponent<glm::vec2>(eId, glm::vec2{3, 3});
 
     auto view = compManager->getConstrainedView<int, glm::vec2>();
-
-    component::ConstrainedEntityView<64, int, glm::vec2> eView = view.getEntityView(eId).orThrow();
-    logger::log(LEVEL_DEBUG, "MAIN", util::format("Comp: {}", eView.get<int>()));
-
-    auto view2 = view.constrain<glm::vec2>();
-    auto eView2 = view2.getEntityView(eId).orThrow();
-
-    logger::log(LEVEL_DEBUG, "MAIN", util::format("Comp2: <{}, {}>", eView2.get<glm::vec2>()[0], eView.get<glm::vec2>()[1]));
-    //auto view3 = view.constrain<float>();
-
-    static_assert(std::forward_iterator<util::MapIterator<std::string, int>>);
-    static_assert(std::random_access_iterator<component::detail::EntityViewIterator<64>>);
-    static_assert(std::bidirectional_iterator<component::detail::ConstrainedViewIterator<64, int>>);
-
     //util::setTest();
 
     return EXIT_SUCCESS;

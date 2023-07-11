@@ -4,6 +4,7 @@
 
 #include "util/map.h"
 #include "component/forward.h"
+#include "component/component_new.h"
 #include "util/data.h"
 
 namespace game {

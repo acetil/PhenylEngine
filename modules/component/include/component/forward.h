@@ -20,14 +20,19 @@ namespace component {
     template <std::size_t MaxComponents, typename ...Args>
     class ConstrainedView;
 
-    template <size_t MaxComponents>
+    //template <size_t MaxComponents>
     class ObjectSerialiser;
-    template <size_t MaxComponents>
+    //template <size_t MaxComponents>
     class ObjectComponentFactory;
 
-    using EntityComponentManager = ComponentManager<PHENYL_MAX_COMPONENTS>;
-    using EntityView = ComponentView<PHENYL_MAX_COMPONENTS>;
+    class ComponentManagerNew;
 
-    using EntitySerialiser = ObjectSerialiser<PHENYL_MAX_COMPONENTS>;
-    using EntityComponentFactory = ObjectComponentFactory<PHENYL_MAX_COMPONENTS>;
+    class ConstEntityView;
+
+    //using EntityComponentManager = ComponentManager<PHENYL_MAX_COMPONENTS>;
+    using EntityComponentManager = ComponentManagerNew;
+    //using EntityView = ComponentView<PHENYL_MAX_COMPONENTS>;
+
+    using EntitySerialiser = ObjectSerialiser/*<PHENYL_MAX_COMPONENTS>*/;
+    using EntityComponentFactory = ObjectComponentFactory/*<PHENYL_MAX_COMPONENTS>*/;
 }

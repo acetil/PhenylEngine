@@ -41,6 +41,9 @@ namespace component {
             DeleterFunc deleter;
             MoverFunc mover;
         };
+
+        class ComponentSet;
+        class EntityIdList;
     }
 
     struct EntityId {
@@ -55,8 +58,16 @@ namespace component {
             return (static_cast<std::size_t>(generation) << 32) | id;
         }
 
+        explicit operator bool () const {
+            return id != 0;
+        }
+
         template <std::size_t N>
         friend class ComponentManager;
+
+        friend class ComponentManagerNew;
+        friend class detail::ComponentSet;
+        friend class detail::EntityIdList;
     };
 
     namespace detail {

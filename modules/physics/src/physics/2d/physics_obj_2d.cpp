@@ -110,11 +110,11 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
 }
 
 void PhysicsObject2D::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
-    for (const auto& i : componentManager->getConstrainedView<KinematicMotion2D, SimpleFriction>()) {
+    for (auto i : componentManager->getConstrainedView<KinematicMotion2D, SimpleFriction>()) {
         i.get<SimpleFriction>().updateFriction2D(i.get<KinematicMotion2D>());
     }
 
-    for (const auto& i : componentManager->getConstrainedView<KinematicMotion2D, component::Position2D>()) {
+    for (auto i : componentManager->getConstrainedView<KinematicMotion2D, component::Position2D>()) {
         //updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
         i.get<KinematicMotion2D>().doMotion(i.get<component::Position2D>());
     }
