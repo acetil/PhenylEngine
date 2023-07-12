@@ -70,7 +70,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
     flexBoxC.add(buttonC.detach());
     flexBoxC.add(buttonC2.detach());
     flexBoxC.add(label);
-    //flexBoxC.add(buttonC3.detach());
+    //flexBoxC.insert(buttonC3.detach());
 
     auto button4 = graphics::ui::UIButton("button");
     auto button5 = graphics::ui::UIButton("button");

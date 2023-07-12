@@ -14,18 +14,18 @@ void WallController::initEntity (component::EntityView& entityView, view::GameVi
     auto dataObj = data.get<util::DataObject>();
 
     if (dataObj.contains("no_coll") && dataObj.at("no_coll").is<bool>() && dataObj.at("no_coll").get<bool>()) {
-        //entityView.removeComponent<physics::CollisionComponent2D>();
+        //entityView.erase<physics::CollisionComponent2D>();
         return;
     }
 
     util::DataObject size = dataObj.at("size");
 
-    entityView.getComponent<graphics::Transform2D>().ifPresent([&size] (graphics::Transform2D& comp) {
+    entityView.get<graphics::Transform2D>().ifPresent([&size] (graphics::Transform2D& comp) {
         comp.transform = glm::mat2{{size.at("x").get<float>(), 0.0f}, {0.0f, size.at("y").get<float>()}} * comp.transform;
         comp.rotTransform = comp.transform;
     });
 
-    entityView.getComponent<physics::CollisionComponent2D>().ifPresent([&dataObj, &size, &gameView] (physics::CollisionComponent2D& comp) {
+    entityView.get<physics::CollisionComponent2D>().ifPresent([&dataObj, &size, &gameView] (physics::CollisionComponent2D& comp) {
         if (dataObj.contains("hitbox_size")) {
             util::DataObject hitboxSize = dataObj.at("hitbox_size");
             //comp.bbMap = glm::mat2{{hitboxSize.at("x"), 0.0f}, {0.0f, hitboxSize.at("y")}} * comp.bbMap;

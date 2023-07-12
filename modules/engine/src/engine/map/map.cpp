@@ -116,7 +116,7 @@ void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
     float* uvPtr = uvData;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
-            logging::logf(LEVEL_DEBUG, "Copying buffers, id = %d. Ptr: %d, %d", i, vertexPtr - vertexData, uvPtr - uvData);
+            logging::logf(LEVEL_DEBUG, "Copying buffers, entityId = %d. Ptr: %d, %d", i, vertexPtr - vertexData, uvPtr - uvData);
             memcpy(vertexPtr, tiles[i]->getVertexCoords(i % width * tiles[i]->xSize, i / width * tiles[i]->ySize), VERTICES_PER_TILE * VCOMP_PER_VERTEX * sizeof(float));
             memcpy(uvPtr, tiles[i]->getUvs(), VERTICES_PER_TILE * UV_PER_VERTEX * sizeof(float));
             vertexPtr += VERTICES_PER_TILE * VCOMP_PER_VERTEX;

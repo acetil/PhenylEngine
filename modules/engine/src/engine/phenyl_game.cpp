@@ -47,7 +47,7 @@ void PhenylGame::updateEntityPosition () {
     getShared()->updateEntityPosition();
 }
 
-void PhenylGame::setEntityComponentManager (component::EntityComponentManager::SharedPtr compManager) {
+void PhenylGame::setEntityComponentManager (component::EntityComponentManager* compManager) {
     getShared()->setEntityComponentManager(compManager);
 }
 

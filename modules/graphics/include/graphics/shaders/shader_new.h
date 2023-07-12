@@ -158,7 +158,7 @@ namespace graphics {
 
         ShaderProgramBuilder& addShader (ShaderType shaderType, const std::string& shaderPath) {
             if (shaderPaths.contains(shaderType)) {
-                logging::log(LEVEL_ERROR, "Attempted to add shader \"{}\" to program but there already was a shader of that type!", shaderPath);
+                logging::log(LEVEL_ERROR, "Attempted to insert shader \"{}\" to program but there already was a shader of that type!", shaderPath);
             } else {
                 shaderPaths[shaderType] = shaderPath;
             }

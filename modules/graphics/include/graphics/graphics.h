@@ -91,7 +91,7 @@ namespace graphics {
             //RenderLayer* getLayer (std::string name);
             //virtual RenderLayer* getLayer (int layer);
             [[maybe_unused]] Camera& getCamera ();
-            void addEntityLayer (component::EntityComponentManager::SharedPtr compManager);
+            void addEntityLayer (component::EntityComponentManager* compManager);
             void onEntityCreation (event::EntityCreationEvent& event);
             void onMousePosChange (event::CursorPosChangeEvent& event);
 

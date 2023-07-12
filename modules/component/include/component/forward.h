@@ -8,7 +8,7 @@ namespace util {
 
 namespace component {
     class EntityId;
-    class ComponentManagerNew;
+    class ComponentManager;
     //template <size_t MaxComponents>
     class ObjectSerialiser;
     //template <size_t MaxComponents>
@@ -21,7 +21,7 @@ namespace component {
     class ConstEntityComponentView;
 
     //using EntityComponentManager = ComponentManager<PHENYL_MAX_COMPONENTS>;
-    using EntityComponentManager = ComponentManagerNew;
+    using EntityComponentManager = ComponentManager;
     //using EntityView = ComponentView<PHENYL_MAX_COMPONENTS>;
 
     using EntitySerialiser = ObjectSerialiser/*<PHENYL_MAX_COMPONENTS>*/;

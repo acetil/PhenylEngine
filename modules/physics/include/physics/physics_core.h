@@ -8,19 +8,19 @@ namespace physics {
     /*template <typename T>
     struct PhysicsId {
     private:
-        std::uint64_t id;
-        explicit PhysicsId (std::uint64_t id) : id{id} {}
+        std::uint64_t entityId;
+        explicit PhysicsId (std::uint64_t entityId) : entityId{entityId} {}
     public:
         using Type = T;
 
         PhysicsId () : PhysicsId(0) {}
 
         [[nodiscard]] bool valid () const {
-            return id;
+            return entityId;
         }
 
         bool operator== (const PhysicsId<T>& other) const {
-            return id == other.id;
+            return entityId == other.entityId;
         }
 
         friend class IPhysics;

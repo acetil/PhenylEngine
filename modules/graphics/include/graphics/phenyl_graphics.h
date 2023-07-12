@@ -45,7 +45,7 @@ namespace graphics {
 
         Camera& getCamera ();
 
-        void addEntityLayer (component::EntityComponentManager::SharedPtr componentManager);
+        void addEntityLayer (component::EntityComponentManager* componentManager);
         void onEntityCreation (event::EntityCreationEvent& event);
 
         Renderer* getRenderer () const; // TODO: remove

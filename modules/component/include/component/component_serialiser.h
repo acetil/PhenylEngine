@@ -30,7 +30,7 @@ namespace component {
             ComponentSerialiserImpl (SerialiseF f1, DeserialiseF f2) : serialiseF{f1}, deserialiseF{f2} {}
 
             util::DataValue serialiseComp (/*component::ComponentView<MaxComponents>*/component::EntityView& objectView) override {
-                return objectView.getComponent<T>()
+                return objectView.get<T>()
                         .thenMap([this] (T& comp) -> util::DataValue {
                              return serialiseF(comp);
                          })
@@ -41,14 +41,14 @@ namespace component {
                 auto opt = deserialiseF(serialisedComp);
 
                 opt.ifPresent([&objectView] (T& val) {
-                    objectView.addComponent<T>(std::move(val));
+                    objectView.insert<T>(std::move(val));
                 });
 
                 return opt;
             }
 
             bool hasComp (/*component::ComponentView<MaxComponents>*/component::EntityView& objectView) const override {
-                return objectView.hasComponent<T>();
+                return objectView.has<T>();
             }
         };
     }

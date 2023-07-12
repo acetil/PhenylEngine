@@ -31,7 +31,7 @@ namespace engine {
 
         event::EventBus::SharedPtr getEventBus ();
 
-        component::EntityComponentManager::SharedPtr getComponentManager ();
+        component::EntityComponentManager& getComponentManager ();
 
         component::EntitySerialiser& getEntitySerialiser ();
 

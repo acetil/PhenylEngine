@@ -42,17 +42,5 @@ int main (int argv, char* argc[]) {
 
     game::gameloop(engine);
 
-    auto compManager = component::EntityComponentManager::NewSharedPtr(256);
-
-    compManager->addComponentType<int>();
-    compManager->addComponentType<glm::vec2>();
-
-    auto eId = compManager->createEntity().getId();
-    compManager->addComponent<int>(eId, 4);
-    compManager->addComponent<glm::vec2>(eId, glm::vec2{3, 3});
-
-    auto view = compManager->getConstrainedView<int, glm::vec2>();
-    //util::setTest();
-
     return EXIT_SUCCESS;
 }

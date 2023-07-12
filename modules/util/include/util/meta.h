@@ -411,7 +411,7 @@ namespace meta {
 
     template <typename T>
     std::size_t type_index () {
-        return type_index_impl<T>::val();
+        return type_index_impl<std::remove_cvref_t<T>>::val();
     }
 
     template <int ...>
@@ -487,4 +487,14 @@ namespace meta {
 
     template <typename T, typename ...Args>
     concept IsInPack = is_in_pack<T, Args...>;
+
+    template <typename ...Args>
+    inline std::tuple<Args...>&& maybe_wrap_tuple (std::tuple<Args...>&& tup) {
+        return std::forward<std::tuple<Args...>>(tup);
+    }
+
+    template <typename T>
+    inline std::tuple<T> maybe_wrap_tuple (T t) {
+        return std::tuple{t};
+    }
 }

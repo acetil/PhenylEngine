@@ -18,7 +18,7 @@ namespace event {
         //float x;
         //float y;
         //float size;
-        component::EntityComponentManager::SharedPtr compManager;
+        component::EntityComponentManager& compManager;
         //game::AbstractEntity* entity{};
         //component::EntityId entityId;
         component::EntityView entityView;
@@ -30,7 +30,7 @@ namespace event {
             compManager = nullptr;
             entityId = 0;
         };*/
-        EntityCreationEvent (component::EntityComponentManager::SharedPtr compManager, component::EntityView _entityView, view::GameView _gameView) :
-                entityView{std::move(_entityView)}, gameView{_gameView}, compManager{std::move(compManager)} {}
+        EntityCreationEvent (component::EntityComponentManager& compManager, component::EntityView _entityView, view::GameView _gameView) :
+                entityView{_entityView}, gameView{_gameView}, compManager{compManager} {}
     };
 }

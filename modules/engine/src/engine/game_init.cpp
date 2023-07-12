@@ -19,7 +19,7 @@
 
 using namespace game;
 void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics graphics, const event::EventBus::SharedPtr& eventBus);
-component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus);
+component::EntityComponentManager getEntityComponentManager ();
 void registerTiles (game::PhenylGame gameObject, const graphics::PhenylGraphics& graphics);
 
 void game::initGame (const graphics::PhenylGraphics& graphics, game::PhenylGame gameObject, const event::EventBus::SharedPtr& eventBus) {
@@ -60,12 +60,12 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
     graphics::addDebugEventHandlers(eventBus);
 }
 
-component::EntityComponentManager::SharedPtr getEntityComponentManager (event::EventBus::SharedPtr bus) {
-    auto manager = component::EntityComponentManager::NewSharedPtr(255);
+component::EntityComponentManager getEntityComponentManager () {
+    auto manager = component::EntityComponentManager{256};
     /*manager->addComponent<component::SimpleFrictionMotion2D>("main_component");
     manager->addComponent<graphics::Model2D>("model");
-    manager->addComponent<physics::CollisionComponent2D>("collision_component");
-    manager->addComponent<graphics::Transform2D>("model_pos");*/
+    manager->insert<physics::CollisionComponent2D>("collision_component");
+    manager->insert<graphics::Transform2D>("model_pos");*/
     return manager;
 }
 

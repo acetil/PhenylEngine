@@ -11,8 +11,8 @@ namespace view {
     public:
         explicit DebugGameView(game::detail::GameObject::SharedPtr _gameObject) : gameObject(std::move(_gameObject)) {}
 
-        component::EntityComponentManager::SharedPtr getComponentManager () {
-            return gameObject->entityComponentManager;
+        component::EntityComponentManager& getComponentManager () {
+            return *gameObject->entityComponentManager;
         }
 
     };

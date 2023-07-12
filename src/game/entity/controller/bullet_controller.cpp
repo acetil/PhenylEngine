@@ -6,7 +6,7 @@
 #include "util/string_help.h"
 
 void game::BulletController::onEntityCollision (component::EntityView& entityView, view::GameView& gameView, component::EntityView& otherEntity, unsigned int layers) {
-    gameView.destroyEntityInstance(entityView.getId());
+    gameView.destroyEntityInstance(entityView.id());
 }
 
 /*int game::BulletController::getTextureId (component::EntityView& entityView, view::GameView& gameView) const {
@@ -19,7 +19,7 @@ void game::BulletController::setTextureIds (graphics::TextureAtlas& atlas) {
 
 void game::BulletController::initEntity (component::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) {
     const auto& velocity = data.get<util::DataObject>().at("velocity").get<util::DataObject>();
-    entityView.getComponent<physics::KinematicMotion2D>().ifPresent([&velocity] (physics::KinematicMotion2D& comp) {
+    entityView.get<physics::KinematicMotion2D>().ifPresent([&velocity] (physics::KinematicMotion2D& comp) {
        comp.velocity = glm::vec2{velocity.at("x"), velocity.at("y")};
     });
     //entityView.velocity = glm::vec2{velocity.at("x"), velocity.at("y")};

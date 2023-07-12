@@ -5,11 +5,11 @@ using namespace physics;
 
 PhenylPhysics::PhenylPhysics (physics::IPhysics* physicsObj) : physicsObj{physicsObj} {}
 
-void PhenylPhysics::updatePhysics (const std::shared_ptr<component::EntityComponentManager>& componentManager) {
+void PhenylPhysics::updatePhysics (component::EntityComponentManager& componentManager) {
     physicsObj->updatePhysics(componentManager);
 }
 
-void PhenylPhysics::checkCollisions (const std::shared_ptr<component::EntityComponentManager>& componentManager,
+void PhenylPhysics::checkCollisions (component::EntityComponentManager& componentManager,
                                      const std::shared_ptr<event::EventBus>& eventBus, view::GameView& gameView) {
     physicsObj->checkCollisions(componentManager, eventBus, gameView);
 }

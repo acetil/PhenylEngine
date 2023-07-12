@@ -6,7 +6,7 @@ using namespace graphics::ui;
 
 void UIFlexbox::addUINode (std::shared_ptr<UIComponentNode> node, int index) {
     if (!node) {
-        graphics::logging::log(LEVEL_ERROR, "Attempted to add already attached component to flexbox!");
+        graphics::logging::log(LEVEL_ERROR, "Attempted to insert already attached component to flexbox!");
         return;
     }
 

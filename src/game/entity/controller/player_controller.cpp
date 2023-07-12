@@ -25,13 +25,13 @@ void game::PlayerController::controlEntityPrePhysics (component::EntityView& ent
 
    glm::vec2 cursorDisp = gameView.getCamera().getWorldPos(cursorScreenPos);
 
-   entityView.getComponent<physics::KinematicMotion2D>().ifPresent([this](physics::KinematicMotion2D& comp) {
+    entityView.get<physics::KinematicMotion2D>().ifPresent([this](physics::KinematicMotion2D& comp) {
        comp.acceleration += glm::vec2(deltaXForce, deltaYForce);
        deltaXForce = 0;
        deltaYForce = 0;
    });
 
-   entityView.getComponent<component::Position2D>().ifPresent([&cursorDisp] (auto& comp) {
+    entityView.get<component::Position2D>().ifPresent([&cursorDisp] (auto& comp) {
        cursorDisp -= comp.get();
    });
 
@@ -41,7 +41,7 @@ void game::PlayerController::controlEntityPrePhysics (component::EntityView& ent
    //auto cursorDisp = gameView.getCamera().getWorldPos(cursorScreenPos) - (glm::vec2)entityView.position;
    float rot = atan2(cursorDisp.y, cursorDisp.x);
 
-   entityView.getComponent<component::Rotation2D>().ifPresent([rot] (component::Rotation2D& comp) {
+    entityView.get<component::Rotation2D>().ifPresent([rot] (component::Rotation2D& comp) {
        comp = rot;
    });
 
@@ -76,9 +76,9 @@ void game::PlayerController::setTextureIds (graphics::TextureAtlas& atlas) {
 }*/
 
 void game::PlayerController::controlEntityPostPhysics (component::EntityView& entityView, view::GameView& gameView) {
-    auto pos = entityView.getComponent<component::Position2D>().getUnsafe().get();
+    auto pos = entityView.get<component::Position2D>().getUnsafe().get();
     if (!hasShot && doShoot) {
-        auto rot = entityView.getComponent<component::Rotation2D>().getUnsafe().rotation;
+        auto rot = entityView.get<component::Rotation2D>().getUnsafe().rotation;
         glm::vec2 rotVec = glm::vec2{cos(rot), sin(rot)};
         glm::vec2 relPos = rotVec * SHOOT_DIST;
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
@@ -93,10 +93,10 @@ void game::PlayerController::controlEntityPostPhysics (component::EntityView& en
         /*auto bulletView = gameView.createEntityInstance("bullet_entity", pos.x + relPos.x,
                                                       pos.y + relPos.y, rot, util::DataValue(bData));*/
         auto bulletView = gameView.createEntityInstance("bullet_entity", util::DataValue(bData));
-        bulletView.getComponent<component::Position2D>().ifPresent([&pos, relPos] (component::Position2D& comp) {
+        bulletView.get<component::Position2D>().ifPresent([&pos, relPos] (component::Position2D& comp) {
             comp = pos + relPos;
         });
-        bulletView.getComponent<component::Rotation2D>().ifPresent([&rot] (component::Rotation2D& comp) {
+        bulletView.get<component::Rotation2D>().ifPresent([&rot] (component::Rotation2D& comp) {
             comp = rot;
         });
 

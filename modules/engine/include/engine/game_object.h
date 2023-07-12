@@ -32,7 +32,7 @@ namespace game::detail {
                 std::map<std::string, int> tileMap;
                 std::vector<Tile*> tileRegistry;
                 event::EventBus::SharedPtr eventBus;
-                component::EntityComponentManager::SharedPtr entityComponentManager;
+                component::EntityComponentManager* entityComponentManager;
 
                 Map::SharedPtr gameMap;
 
@@ -62,7 +62,7 @@ namespace game::detail {
                 Tile* getTile (int tileId);
 
                 void updateEntityPosition ();
-                void setEntityComponentManager (component::EntityComponentManager::SharedPtr manager);
+                void setEntityComponentManager (component::EntityComponentManager* manager);
 
                 void updateEntitiesPrePhysics ();
                 void updateEntitiesPostPhysics ();

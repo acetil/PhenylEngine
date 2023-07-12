@@ -17,12 +17,12 @@ namespace event {
         component::EntityView secondEntity;
         unsigned int collisionLayers;
         inline static const std::string name = "entity_collision";
-        component::EntityComponentManager::SharedPtr componentManager;
+        component::EntityComponentManager& componentManager;
         EventBus::SharedPtr eventBus; // TODO: find better way
         view::GameView& gameView;
         //EntityCollisionEvent () : entityId(0), otherId(0), collisionLayers(0), componentManager(), eventBus{}, gameView(view::GameView(nullptr)) {}
         EntityCollisionEvent (component::EntityView firstEntity, component::EntityView secondEntity, unsigned int _collisionLayers,
-                              component::EntityComponentManager::SharedPtr compManager, EventBus::SharedPtr bus, view::GameView& _gameView) : firstEntity(std::move(firstEntity)),
-                                    secondEntity(std::move(secondEntity)), collisionLayers(_collisionLayers), componentManager(std::move(compManager)), eventBus(std::move(bus)), gameView(_gameView) {};
+                              component::EntityComponentManager& compManager, EventBus::SharedPtr bus, view::GameView& _gameView) : firstEntity(std::move(firstEntity)),
+                                    secondEntity(std::move(secondEntity)), collisionLayers(_collisionLayers), componentManager(compManager), eventBus(std::move(bus)), gameView(_gameView) {};
     };
 }
