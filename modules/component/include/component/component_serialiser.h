@@ -6,7 +6,6 @@
 #include "util/data.h"
 #include "util/optional.h"
 #include "component.h"
-#include "component_new.h"
 
 namespace component {
     namespace detail {
@@ -135,6 +134,7 @@ namespace component {
         }
     };
 
+    using EntitySerialiser = ObjectSerialiser;
     //extern template class ObjectSerialiser<PHENYL_MAX_COMPONENTS>;
     //extern template class ObjectComponentFactory<PHENYL_MAX_COMPONENTS>;
 }

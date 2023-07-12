@@ -5,7 +5,6 @@
 #include "component/forward.h"
 #include "physics/components/simple_friction.h"
 #include "common/events/entity_creation.h"
-#include "common/events/entity_rotation.h"
 #include "event/event_bus.h"
 
 #include "physics_core.h"

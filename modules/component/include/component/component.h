@@ -1,47 +1,19 @@
 #pragma once
 
-#ifndef PHENYL_MAX_COMPONENTS
-#define PHENYL_MAX_COMPONENTS 64
-#endif
-
-#include <utility>
+#include <cassert>
+#include <cstddef>
+#include <limits>
 #include <vector>
-#include <memory>
 
-#include "component/forward.h"
+#include "forward.h"
+
+#include "util/map.h"
 #include "util/meta.h"
 #include "util/smart_help.h"
-#include "util/bitfield.h"
-#include "util/fixed_stack.h"
 #include "util/optional.h"
-#include "util/map.h"
 
 namespace component {
     namespace detail {
-        template <typename T>
-        void deleterFunc (unsigned char* tPtr) {
-            ((T*)tPtr)->~T();
-        }
-
-        template <typename T>
-        void moverFunc (unsigned char* destPtr, unsigned char* srcPtr) {
-            T* dest = (T*)destPtr;
-            T* src = (T*)srcPtr;
-
-            new(dest) T(std::move(*src));
-        }
-
-        struct ComponentType {
-        private:
-            using DeleterFunc = void (*)(unsigned char*);
-            using MoverFunc = void (*) (unsigned char*, unsigned char*);
-        public:
-            std::unique_ptr<unsigned char[]> components;
-            std::size_t componentSize;
-            DeleterFunc deleter;
-            MoverFunc mover;
-        };
-
         class ComponentSet;
         class EntityIdList;
     }
@@ -71,772 +43,806 @@ namespace component {
     };
 
     namespace detail {
-        template <std::size_t MaxComponents>
-        class EntityViewIterator;
+        template <typename ...Args, std::size_t N = 0>
+        bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>*...>& tup) {
+            if constexpr (N == sizeof...(Args)) {
+                return true;
+            } else {
+                return tupleAllNonNull<Args..., N+1>(tup) && std::get<N>(tup);
+            }
+        }
+
+        template <typename ...Args>
+        class ComponentView;
+
+        class ComponentSet {
+        private:
+            static constexpr std::size_t EMPTY_INDEX = -1;
+            static constexpr std::size_t RESIZE_FACTOR = 2;
+
+            std::vector<EntityId> ids;
+            std::vector<std::size_t> indexSet;
+
+            std::unique_ptr<std::byte[]> data;
+            std::size_t compSize;
+            std::size_t dataSize;
+            std::size_t dataCapacity;
+
+            template <typename T>
+            inline void assertType () {
+                // TODO: add ifndef
+                assertTypeIndex(meta::type_index<T>());
+            }
+
+            std::byte* tryInsert (EntityId id);
+
+            void guaranteeCapacity (std::size_t capacity);
+
+            template <typename ...Args>
+            friend class detail::ComponentView;
+        protected:
+            virtual void assertTypeIndex (std::size_t typeIndex) const = 0;
+            virtual void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) = 0;
+            virtual void moveTypedComp (std::byte* dest, std::byte* src) = 0;
+            virtual void deleteTypedComp (std::byte* comp) = 0;
+
+        public:
+            ComponentSet (std::size_t startCapacity, std::size_t compSize);
+            virtual ~ComponentSet ();
+
+            void guaranteeEntityIndex (std::size_t index);
+
+            [[nodiscard]] std::byte* getComponentUntyped (EntityId id) const;
+
+            template <typename T>
+            T* getComponent (EntityId id) {
+                assertType<T>();
+
+                return (T*)getComponentUntyped(id);
+            }
+
+            template <typename T>
+            const T* getComponent (EntityId id) const {
+                assertType<T>();
+
+                return (const T*)getComponentUntyped(id);
+            }
+
+            template <typename T, typename ...Args>
+            T* insertComp (EntityId id, Args&&... args) {
+                auto* comp = tryInsert(id);
+
+                if (comp) {
+                    new ((T*)comp) T(std::forward<Args>(args)...);
+
+                    return (T*)comp;
+                } else {
+                    return nullptr;
+                }
+            }
+
+            bool hasComp (EntityId id) const;
+
+            void deleteComp (EntityId id);
+            void clear ();
+        };
+
+        template <typename T>
+        class ConcreteComponentSet : public ComponentSet {
+        protected:
+            void assertTypeIndex (std::size_t typeIndex) const override {
+                if (typeIndex != meta::type_index<T>()) {
+                    component::logging::log(LEVEL_FATAL, "Attempted to access component of type index {} with type of index {}!", meta::type_index<T>(), typeIndex);
+                    std::exit(1);
+                }
+            }
+
+            void moveTypedComp (std::byte* dest, std::byte* src) override {
+                *((T*) dest) = std::move(*((T*) src));
+
+                ((T*) src)->~T();
+            }
+
+            void deleteTypedComp (std::byte* comp) override {
+                ((T*) comp)->~T();
+            }
+
+            void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) override {
+                T* destPtr = (T*)dest;
+                T* srcPtr = (T*)src;
+
+                for (std::size_t i = 0; i < len; i++) {
+                    new (destPtr) T(std::move(*srcPtr));
+                    srcPtr->~T();
+
+                    destPtr++;
+                    srcPtr++;
+                }
+            }
+        public:
+            explicit ConcreteComponentSet (std::size_t startCapacity) : ComponentSet(startCapacity, sizeof(T)) {}
+
+            ~ConcreteComponentSet () override {
+                clear();
+            }
+        };
+
+        class EntityIdList {
+        private:
+            static constexpr std::size_t GEN_BITS = sizeof(unsigned int) * 8 - 1;
+            static constexpr std::size_t NUM_GENS = std::size_t{1} << GEN_BITS;
+            static constexpr std::size_t GEN_MASK = (std::size_t{1} << GEN_BITS) - 1;
+            static constexpr std::size_t FREE_LIST_BITS = sizeof(std::size_t) * 8 - GEN_BITS - 1;
+            static constexpr std::size_t FREE_LIST_MASK = ((std::size_t{1} << FREE_LIST_BITS) - 1) << GEN_BITS;
+            static constexpr std::size_t FREE_LIST_EMPTY = 0;
+            static constexpr std::size_t MAX_NUM_IDS = (std::size_t{1} << (sizeof(unsigned int) * 8)) - 1;
+            static constexpr std::size_t EMPTY_BIT = std::size_t{1} << (sizeof(std::size_t) * 8 - 1);
+
+            class IdIterator {
+            private:
+                const EntityIdList* idList;
+                std::size_t slotPos;
+                explicit IdIterator (const EntityIdList* idList, std::size_t slotPos);
+
+                void next ();
+                void prev ();
+            public:
+                using value_type = EntityId;
+                using reference = void;
+                using pointer = void;
+                using difference_type = std::ptrdiff_t;
+                IdIterator () : idList{nullptr}, slotPos{0} {}
+
+                value_type operator* () const;
+
+                IdIterator& operator++ ();
+                IdIterator operator++ (int);
+
+                IdIterator& operator-- ();
+                IdIterator operator-- (int);
+
+                bool operator== (const IdIterator& other) const;
+
+                friend class EntityIdList;
+            };
+
+            std::vector<std::size_t> idSlots;
+            std::size_t numEntities;
+            std::size_t freeListStart;
+        public:
+            using const_iterator = IdIterator;
+            using iterator = const_iterator;
+            static_assert(std::bidirectional_iterator<iterator>);
+            static_assert(std::bidirectional_iterator<const_iterator>);
+
+            explicit EntityIdList (std::size_t capacity);
+
+            EntityId newId ();
+            [[nodiscard]] bool check (EntityId id) const;
+
+            void removeId (EntityId id);
+            void clear ();
+
+            [[nodiscard]] std::size_t size () const;
+            [[nodiscard]] std::size_t maxIndex () const;
+
+            [[nodiscard]] iterator begin () const;
+            [[nodiscard]] const_iterator cbegin () const;
+
+            [[nodiscard]] iterator end () const;
+            [[nodiscard]] const_iterator cend () const;
+        };
     }
 
-    template <std::size_t MaxComponents>
-    class ComponentManager : public util::SmartHelper<ComponentManager<MaxComponents>, true> {
+    template <typename ...Args>
+    class EntityComponentView {
     private:
-        using DeleterFunc = void (*)(unsigned char*);
-        std::size_t numEntities{};
-        std::size_t maxNumEntities{};
-        util::Bitfield<MaxComponents> componentBitmap;
-        std::unique_ptr<util::Bitfield<MaxComponents>[]> entityComponentBitmaps;
-        std::vector<detail::ComponentType> components;
+        std::tuple<std::remove_reference_t<Args>&...> comps;
+        EntityId id;
+        explicit EntityComponentView (EntityId id, std::tuple<std::remove_cvref_t<Args>&...> comps) : id{id}, comps{comps} {}
 
-        util::Map<std::size_t, std::size_t> compMap;
-
-        std::unique_ptr<std::pair<unsigned int, std::size_t>[]> ids;
-
-        util::FixedStack<unsigned int> availableIds;
-
-
-        template <typename T>
-        bool hasComp () {
-            auto typeId = meta::type_index<T>();
-
-            return compMap.contains(typeId);
-        }
-
-        template <typename T,  typename ...Args>
-        auto hasAllComps () -> std::enable_if_t<sizeof...(Args) != 0, bool> {
-            return hasComp<T>() && hasAllComps<Args...>();
-        }
-
-        template <typename T>
-        bool hasAllComps () {
-            return hasComp<T>();
-        }
-
-        template <typename T>
-        bool entityHasComp (EntityId id) {
-            auto typeId = meta::type_index<T>();
-            return compMap.contains(typeId) && getEntityPos(id).thenMap([this, typeId](const std::size_t& pos) -> bool {
-                return entityComponentBitmaps[pos].hasBit(compMap.at(typeId));
-            }).orElse(false);
-        }
-
-        template <typename T,  typename ...Args>
-        auto entityHasAllComps (EntityId id) -> std::enable_if_t<sizeof...(Args) != 0, bool> {
-            return entityHasComp<T>(id) && entityHasAllComps<Args...>(id);
-        }
-
-        template <typename T>
-        bool entityHasAllComps (EntityId id) {
-            return entityHasComp<T>(id);
-        }
-
-        template <typename T>
-        void addComp () {
-            assert(components.size() < MaxComponents);
-            auto typeId = meta::type_index<T>();
-
-            auto pos = components.size();
-
-            components.emplace_back(detail::ComponentType{std::make_unique<unsigned char[]>(sizeof(T) * maxNumEntities), sizeof(T), detail::deleterFunc<T>, detail::moverFunc<T>});
-
-            compMap[typeId] = pos;
-            componentBitmap.putBit(pos);
-        }
-
-        template <typename T>
-        T* getOrCreate () {
-            auto typeId = meta::type_index<T>();
-            if (!compMap.contains(typeId)) {
-                addComp<T>();
+        template <typename T, std::size_t N, typename U, typename ...Args2>
+        static constexpr std::size_t getTypePos () {
+            if constexpr (std::is_same_v<std::remove_cvref_t<T>, std::remove_cvref_t<U>>) {
+                return N;
+            } else {
+                return getTypePos<T, N+1, Args2...>();
             }
-            return reinterpret_cast<T*>(components[compMap[typeId]].components.get());
+        }
+    public:
+        template <typename T>
+        auto& get () {
+            return std::get<getTypePos<T, 0, Args...>()>(comps);
         }
 
-        [[nodiscard]] util::Optional<std::size_t> getEntityPos (EntityId entityId) const {
-#ifndef NDEBUG
-            if (entityId.id >= maxNumEntities) {
-                logging::log(LEVEL_ERROR, "Bad entity id {}: maxEntities = {}, id num = {}", entityId.value(), maxNumEntities, entityId.id);
-                throw std::out_of_range("Bad entity id");
-            }
-#endif
-
-            if (entityId.generation != ids[entityId.id].first) {
-                // Gen 0 is reserved for non-existent
-                logging::log(LEVEL_WARNING, "Bad entity id {}: id gen = {}, curr gen = {}", entityId.value(), entityId.generation, ids[entityId.id].first);
-                return util::NullOpt;
-            }
-
-            return {ids[entityId.id].second};
+        template <typename T>
+        const auto& get () const {
+            return std::get<getTypePos<T, 0, Args...>()>(comps);
         }
 
-        void swapLastEntity (std::size_t entityPos, unsigned int entityId) {
-            // TODO: refactor and fix
-            if (entityPos == numEntities - 1) {
-                numEntities--;
+        [[nodiscard]] EntityId getId () const {
+            return id;
+        }
 
-                std::size_t index = 0;
-                for (auto& [x, size, deleter, mover] : components) {
-                    if (entityComponentBitmaps[entityPos].hasBit(index)) {
-                        deleter(x.get() + size * entityPos);
+        template <typename ...Args2>
+        EntityComponentView<Args2...> constrain () const {
+            static_assert(meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>,
+                          "All requested types must be accessible!");
+            return EntityComponentView<Args2...>{id, std::get<std::remove_cvref_t<Args2>&>(comps)...};
+        }
+
+        friend class ComponentManagerNew;
+        friend class detail::ComponentView<Args...>;
+    };
+
+    namespace detail {
+        template <typename ...Args>
+        class ComponentView {
+        private:
+            static constexpr std::size_t NUM_ARGS = sizeof...(Args);
+            class ViewIterator {
+            private:
+                const std::array<ComponentSet*, NUM_ARGS>* comps{nullptr};
+                ComponentSet* primarySet{nullptr};
+                std::size_t pos{0};
+
+                template <typename T>
+                T& getCurrComp (ComponentSet* comp, EntityId id) const {
+                    if (primarySet == comp) {
+                        return *(T*)(primarySet->data.get() + pos * primarySet->compSize);
+                    } else {
+                        return *comp->getComponent<T>(id);
+                    }
+                }
+
+                template <std::size_t... Indexes>
+                std::tuple<Args&...> getCurrComps (EntityId id, std::integer_sequence<std::size_t, Indexes...>) const {
+                    return {getCurrComp<Args>((*comps)[Indexes], id)...};
+                }
+
+                bool valid () const {
+                    for (auto i : *comps) {
+                        if (i == primarySet) {
+                            continue;
+                        } else if (!i->hasComp(currId())) {
+                            return false;
+                        }
                     }
 
-                    index++;
+                    return true;
                 }
 
-                entityComponentBitmaps[entityPos].clear();
-
-                return;
-            }
-            std::size_t index = 0;
-            for (auto& [x, size, deleter, mover] : components) {
-                if (entityComponentBitmaps[entityPos].hasBit(index)) {
-                    deleter(x.get() + size * entityPos);
+                EntityId currId () const {
+                    return primarySet->ids[pos];
                 }
 
-                if (entityComponentBitmaps[numEntities - 1].hasBit(index)) {
-                    // TODO
-                    //std::memcpy(x.get() + size * entityPos, x.get() + size * (numEntities - 1), size);
-                    mover(x.get() + size * entityPos, x.get() + size * (numEntities - 1));
-                    deleter(x.get() + size * (numEntities - 1));
+                void next () {
+                    while (++pos < primarySet->dataSize && !valid()) ;
                 }
-                index++;
+
+                void prev () {
+                    while (--pos >= 0 && !valid()) ;
+                }
+
+                ViewIterator (const std::array<ComponentSet*, NUM_ARGS>* comps, ComponentSet* primarySet, std::size_t pos) : comps{comps}, primarySet{primarySet}, pos{pos} {
+                    assert(comps);
+                    assert(primarySet);
+                    if (pos != primarySet->dataSize && !valid()) {
+                        next();
+                    }
+                }
+                friend class ComponentView<Args...>;
+            public:
+                using value_type = EntityComponentView<Args...>;
+                using reference = void;
+                using pointer = void;
+                using difference_type = std::ptrdiff_t;
+
+                ViewIterator () = default;
+
+                value_type operator* () const {
+                    return value_type{currId(), getCurrComps(currId(), std::make_index_sequence<NUM_ARGS>{})};
+                }
+
+                ViewIterator& operator++ () {
+                    next();
+                    return *this;
+                }
+                ViewIterator operator++ (int) {
+                    auto copy = *this;
+                    ++*this;
+                    return copy;
+                }
+
+                ViewIterator& operator-- () {
+                    prev();
+                    return *this;
+                }
+                ViewIterator operator-- (int) {
+                    auto copy = *this;
+                    ++*this;
+                    return copy;
+                }
+
+                bool operator== (const ViewIterator& other) const {
+                    return comps == other.comps && pos == other.pos;
+                }
+            };
+
+            std::array<ComponentSet*, NUM_ARGS> comps;
+            ComponentSet* primarySet{nullptr};
+
+            template <std::same_as<ComponentSet*> ...Args2>
+            ComponentView (Args2... args) : comps{args...}, primarySet{nullptr} {
+                static_assert(sizeof...(Args2) == NUM_ARGS, "Incorrect number of component sets passed!");
+
+                std::size_t minSize = std::numeric_limits<std::size_t>::max();
+                for (auto i : comps) {
+                    assert(i);
+                    if (i->indexSet.size() < minSize) {
+                        minSize = i->indexSet.size();
+                        primarySet = i;
+                    }
+                }
             }
-            getComponent<EntityId>().ifPresent([this, &entityPos](auto& ptr) {
-                ids[ptr[entityPos].id].second = entityPos;
-            });
+            friend class component::ComponentManagerNew;
+        public:
+            using iterator = ViewIterator;
 
-            entityComponentBitmaps[entityPos] = entityComponentBitmaps[numEntities - 1];
-            entityComponentBitmaps[numEntities - 1].clear();
-
-            // Move necessary because cpp is dumb
-            // TODO
-            availableIds.push(std::move(entityId));
-
-            numEntities--;
-        }
-
-        void intDestroyEntity (std::size_t pos) {
-            auto entityId = getComponent<EntityId>().orElse(nullptr)[pos];
-            swapLastEntity(pos, entityId.id);
-
-            ids[entityId.id].first++;
-            if (ids[entityId.id].first == 0) {
-                ids[entityId.id].first = 1;
+            iterator begin () const {
+                return iterator{&comps, primarySet, 0};
             }
-        }
 
-        template <typename T, typename ...Args>
-        std::enable_if_t<sizeof...(Args) != 0, util::Bitfield<MaxComponents>> makeMask () {
-            auto mask1 = makeMask<T>();
-            auto mask2 = makeMask<Args...>();
-            return mask1 | mask2;
+            iterator end () const {
+                return iterator{&comps, primarySet, primarySet->dataSize};
+            }
+        };
+
+        template <typename T>
+        class ComponentView<T> {
+        private:
+            class ViewIterator {
+            private:
+                ComponentSet* component{nullptr};
+                std::size_t pos{0};
+                ViewIterator (ComponentSet* component, std::size_t pos) : component{component}, pos{pos} {
+                    assert(component);
+                }
+
+                friend class ComponentView<T>;
+            public:
+                using value_type = EntityComponentView<T>;
+                using reference = void;
+                using pointer = void;
+                using difference_type = std::ptrdiff_t;
+
+                ViewIterator () = default;
+
+                value_type operator* () const {
+                    return value_type{component->ids[pos], {((T*)component->data.get())[pos]}};
+                }
+
+                ViewIterator& operator++ () {
+                    pos++;
+
+                    return *this;
+                }
+                ViewIterator operator++ (int) {
+                    auto copy = *this;
+                    ++*this;
+
+                    return copy;
+                }
+
+                ViewIterator& operator-- () {
+                    pos--;
+
+                    return *this;
+                }
+                ViewIterator operator-- (int) {
+                    auto copy = *this;
+                    --*this;
+
+                    return copy;
+                }
+
+                bool operator== (const ViewIterator& other) const {
+                    return component == other.component && pos == other.pos;
+                }
+            };
+            ComponentSet* component;
+            ComponentView (ComponentSet* component) : component{component} {}
+
+            friend class component::ComponentManagerNew;
+        public:
+            using iterator = ViewIterator;
+
+            iterator begin () {
+                return iterator{component, 0};
+            }
+
+            iterator end () {
+                return iterator{component, component->dataSize};
+            }
+        };
+
+        static_assert(std::bidirectional_iterator<ComponentView<int>::iterator>);
+    }
+
+    class ComponentManagerNew : public util::SmartHelper<ComponentManagerNew, true> {
+    private:
+        class EntityView {
+        private:
+            EntityId id;
+            ComponentManagerNew& compManager;
+            EntityView (EntityId id, ComponentManagerNew& compManager) : id{id}, compManager{compManager} {}
+        public:
+            [[nodiscard]] EntityId getId () const {
+                return id;
+            }
+
+            template <typename T>
+            util::Optional<T&> getComponent () {
+                return compManager.getObjectData<T>(id);
+            };
+
+            template <typename T, typename ...Args>
+            void addComponent (Args&&... args) {
+                compManager.addComponent<T>(id, std::forward<Args>(args)...);
+            }
+
+            template <typename T>
+            void removeComponent () {
+                compManager.removeComponent<T>(id);
+            }
+
+            template <typename T>
+            [[nodiscard]] bool hasComponent () const {
+                return compManager.hasComponent<T>(id);
+            }
+
+            void remove () {
+                compManager.removeEntity(id);
+            }
+
+            friend class ComponentManagerNew;
+        };
+
+        class ConstEntityView {
+        private:
+            EntityId id;
+            const ComponentManagerNew& compManager;
+            ConstEntityView (EntityId id, const ComponentManagerNew& compManager) : id{id}, compManager{compManager} {}
+        public:
+            [[nodiscard]] EntityId getId () const {
+                return id;
+            }
+
+            template <typename T>
+            util::Optional<const T&> getComponent () const {
+                return compManager.getComponent<T>(id);
+            };
+
+            template <typename T>
+            [[nodiscard]] bool hasComponent () const {
+                return compManager.hasComponent<T>(id);
+            }
+
+            friend class ComponentManagerNew;
+        };
+
+        class EntityViewIterator {
+        private:
+            detail::EntityIdList::const_iterator it;
+            ComponentManagerNew* compManager;
+            EntityViewIterator (ComponentManagerNew* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
+        public:
+            using value_type = ComponentManagerNew::EntityView;
+            using reference = void;
+            using pointer = void;
+            using difference_type = detail::EntityIdList::const_iterator::difference_type;
+
+            EntityViewIterator () = default;
+
+            value_type operator* () const {
+                return compManager->getEntityView(*it);
+            }
+
+            EntityViewIterator& operator++ () {
+                ++it;
+                return *this;
+            }
+            EntityViewIterator operator++ (int) {
+                auto copy = *this;
+                ++*this;
+
+                return copy;
+            }
+
+            EntityViewIterator& operator-- () {
+                --it;
+                return *this;
+            }
+            EntityViewIterator operator-- (int) {
+                auto copy = *this;
+                --*this;
+
+                return copy;
+            }
+
+            bool operator== (const EntityViewIterator& other) const {
+                return it == other.it;
+            }
+
+            friend class ComponentManagerNew;
+        };
+
+        class ConstEntityViewIterator {
+        private:
+            detail::EntityIdList::const_iterator it;
+            const ComponentManagerNew* compManager;
+            ConstEntityViewIterator (const ComponentManagerNew* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
+        public:
+            using value_type = ComponentManagerNew::ConstEntityView;
+            using reference = void;
+            using pointer = void;
+            using difference_type = detail::EntityIdList::const_iterator::difference_type;
+
+            ConstEntityViewIterator () = default;
+
+            value_type operator* () const {
+                return compManager->getEntityView(*it);
+            }
+
+            ConstEntityViewIterator& operator++ () {
+                ++it;
+                return *this;
+            }
+            ConstEntityViewIterator operator++ (int) {
+                auto copy = *this;
+                ++*this;
+
+                return copy;
+            }
+
+            ConstEntityViewIterator& operator-- () {
+                --it;
+                return *this;
+            }
+            ConstEntityViewIterator operator-- (int) {
+                auto copy = *this;
+                --*this;
+
+                return copy;
+            }
+
+            bool operator== (const ConstEntityViewIterator& other) const {
+                return it == other.it;
+            }
+
+            friend class ComponentManagerNew;
+        };
+
+        detail::EntityIdList idList;
+        util::Map<std::size_t, std::unique_ptr<detail::ComponentSet>> components;
+        std::size_t currStartCapacity;
+
+        template <typename T>
+        detail::ComponentSet* getComponent () const {
+            auto typeIndex = meta::type_index<T>();
+            if (!components.contains(typeIndex)) {
+                logging::log(LEVEL_ERROR, "Failed to get component for index {}!", typeIndex);
+                return nullptr;
+            }
+
+            return components.at(typeIndex).get();
         }
 
         template <typename T>
-        util::Bitfield<MaxComponents> makeMask () {
-            auto typeId = meta::type_index<T>();
-            if (!compMap.contains(typeId)) {
-                logging::log(LEVEL_DEBUG, "Not in comp map!");
-                return {};
+        detail::ComponentSet* getOrCreateComponent () {
+            auto typeIndex = meta::type_index<T>();
+            if (components.contains(typeIndex)) {
+                return components[typeIndex].get();
             }
-            util::Bitfield<MaxComponents> bitfield;
-            auto compId = compMap.at(typeId);
-            bitfield.putBit(compId);
-            return bitfield;
+
+            std::unique_ptr<detail::ComponentSet> component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
+            component->guaranteeEntityIndex(idList.maxIndex());
+
+            auto* compPtr = component.get();
+
+            components.emplace(typeIndex, std::move(component));
+
+            return compPtr;
         }
 
+        template <typename T>
+        T* getEntityComp (EntityId id) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to get component from invalid entity {}!", id.value());
+                return nullptr;
+            }
+            detail::ComponentSet* component = getComponent<T>();
+
+            return component ? component->getComponent<T>(id) : nullptr;
+        }
     public:
-        using iterator = detail::EntityViewIterator<MaxComponents>;
-        using const_iterator = detail::EntityViewIterator<MaxComponents>;
+        using iterator = EntityViewIterator;
+        using const_iterator = ConstEntityViewIterator;
+        using View = ComponentManagerNew::EntityView;
+        using ConstView = ComponentManagerNew::ConstEntityView;
+        static_assert(std::bidirectional_iterator<iterator>);
+        static_assert(std::bidirectional_iterator<const_iterator>);
 
-        explicit ComponentManager (std::size_t maxEntities) : maxNumEntities{maxEntities}, ids{std::make_unique<std::pair<unsigned int, std::size_t>[]>(maxEntities)},
-                                                              availableIds{maxEntities}, entityComponentBitmaps{std::make_unique<util::Bitfield<MaxComponents>[]>(maxEntities)} {
-            for (std::size_t i = 0; i < maxNumEntities; i++) {
-                ids[i] = {1, 0};
-                availableIds.push(maxNumEntities - i - 1);
-            }
-        }
-
-        ~ComponentManager() {
-            for (auto& [x, size, deleter, mover] : components) {
-                for (int i = 0; i < numEntities; i++) {
-                    deleter(x.get() + size * i);
-                }
-            }
-        }
+        explicit ComponentManagerNew (std::size_t startCapacity) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {}
 
         template <typename T>
         void addComponentType () {
-            addComp<T>();
-        }
-
-        template <typename T>
-        util::Optional<T*> getComponent () {
-            auto typeId = meta::type_index<T>();
-            if (compMap.contains(typeId)) {
-                return util::Optional<T*>(reinterpret_cast<T*>(components[compMap[typeId]].components.get()));
-            } else {
-                return util::NullOpt;
+            auto typeIndex = meta::type_index<T>();
+            if (components.contains(typeIndex)) {
+                logging::log(LEVEL_ERROR, "Attempted to add component type of index {} that already exists!", typeIndex);
+                return;
             }
+
+            std::unique_ptr<detail::ComponentSet> component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
+            component->guaranteeEntityIndex(idList.maxIndex());
+
+            components.emplace(typeIndex, std::move(component));
         }
 
         template <typename T>
-        util::Optional<T&> getObjectData (EntityId entityId) {
-            auto entityPos = getEntityPos(entityId);
+        util::Optional<T&> getObjectData (EntityId id) {
+            auto* comp = getEntityComp<T>(id);
 
-            return getComponent<T>()
-                    .then([&entityPos, this](T* ptr) {
-                        return entityPos.then([&ptr, this](const std::size_t& pos) -> util::Optional<T&> {
-                            auto typeId = meta::type_index<T>();
-                            auto compIndex = compMap.at(typeId);
-                            if (entityComponentBitmaps[pos].hasBit(compIndex)) {
-                                return util::Optional<T&>(*(ptr + pos));
-                            } else {
-                                return util::NullOpt;
-                            }
-                        });
-                    });
+            return comp ? util::Optional<T&>{*comp} : util::Optional<T&>{};
         }
 
         template <typename T>
-        util::Optional<T*> getObjectDataPtr (EntityId entityId) {
-            auto entityPos = getEntityPos(entityId);
+        util::Optional<const T&> getObjectData (EntityId id) const {
+            auto* comp = getEntityComp<T>(id);
 
-            return getComponent<T>().then([&entityPos, this](T* ptr) {
-                return entityPos.then([&ptr, this](const std::size_t& pos) -> util::Optional<T*> {
-                    auto typeId = meta::type_index<T>();
-                    auto compIndex = compMap.at(typeId);
-
-                    if (entityComponentBitmaps[pos].hasBit(compIndex)) {
-                        return util::Optional<T*>{ptr + pos};
-                    } else {
-                        return util::NullOpt;
-                    }
-                });
-            });
+            return comp ? util::Optional<T&>{*comp} : util::Optional<T&>{};
         }
 
         template <typename T, typename ...Args>
-        void addComponent (EntityId entityId, Args... args) {
-            getEntityPos(entityId)
-                    .ifPresent([&args..., this](auto& pos) {
-                        new(getOrCreate<T>() + pos) T(args...);
+        void addComponent (EntityId id, Args&&... args) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to add component to invalid entity {}!", id.value());
+                return;
+            }
+            detail::ComponentSet* comp = getOrCreateComponent<T>();
 
-                        auto typeId = meta::type_index<T>();
-                        auto compIndex = compMap.at(typeId);
-
-                        entityComponentBitmaps[pos].putBit(compIndex);
-                    });
+            comp->insertComp<T>(id, std::forward<Args>(args)...);
         }
 
-        component::ComponentView<MaxComponents> createEntity () {
-            auto idPos = availableIds.pop();
+        EntityView createEntity () {
+            auto id = idList.newId();
 
-            auto entityPos = numEntities++;
+            for (auto [i, comp] : components.kv()) {
+                comp->guaranteeEntityIndex(id.id);
+            }
 
-            auto gen = ids[idPos].first;
-            ids[idPos].second = entityPos;
-
-            EntityId id{gen, idPos};
-
-            addComponent<EntityId>(id, id);
-
-            return getEntityView(id);
+            return EntityView{id, *this};
         }
 
-        void removeEntity (EntityId entityId) {
-            getEntityPos(entityId).ifPresent([this, &entityId](auto& pos) {
-                swapLastEntity(pos, entityId.id);
+        void removeEntity (EntityId id) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to delete invalid entity {}!", id.value());
+                return;
+            }
 
-                ids[entityId.id].first++;
-                if (ids[entityId.id].first == 0) {
-                    ids[entityId.id].first = 1;
-                }
-            });
+            for (auto [i, comp] : components.kv()) {
+                comp->deleteComp(id);
+            }
+
+            idList.removeId(id);
         }
 
         template <typename T>
-        void removeComponent (EntityId entityId) {
-            getEntityPos(entityId).ifPresent([this](const std::size_t& pos) {
-                auto typeId = meta::type_index<T>();
-                if (compMap.contains(typeId)) {
-                    auto compIndex = compMap.at(typeId);
-                    if (entityComponentBitmaps[pos].hasBit(compIndex)) {
-                        auto& component = components[compIndex];
-                        auto ptr = (T*) component.components.get();
-                        ptr->~T();
+        void removeComponent (EntityId id) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to remove component from invalid entity {}!", id.value());
+                return;
+            }
+            detail::ComponentSet* comp = getComponent<T>();
+            assert(comp);
 
-                        entityComponentBitmaps[pos].maskBit(compIndex);
-                    }
-                }
-            });
+            comp->deleteComp(id);
         }
 
-        std::size_t getNumObjects () {
-            return numEntities;
+        template <typename T>
+        bool hasComponent (EntityId id) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to check component status for invalid entity {}!", id.value());
+                return false;
+            }
+            detail::ComponentSet* comp = getComponent<T>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Attempted to check component status of component with index {} that doesn't exist!", meta::type_index<T>());
+                return false;
+            }
+
+            return comp->hasComp(id);
+        }
+
+        std::size_t getNumObjects () const {
+            return idList.size();
         }
 
         void clear () {
             logging::log(LEVEL_DEBUG, "Clearing entities!");
-            while (numEntities > 0) {
-                intDestroyEntity(numEntities - 1);
+            for (auto [i, comp] : components.kv()) {
+                comp->clear();
             }
+
+            idList.clear();
         }
 
-        util::Optional<std::size_t> tempGetPos (EntityId entityId) const {
-            return getEntityPos(entityId);
+
+        // TODO: merge EntityView/ConstEntityView and EntityComponentView/ConstEntityComponentView
+        EntityView getEntityView (EntityId id) {
+            return EntityView{id, *this};
         }
 
-        iterator begin ();
-        iterator end ();
-
-        const_iterator cbegin ();
-        const_iterator cend ();
-
-        // TODO
-        inline ComponentView<MaxComponents> getEntityView (EntityId entityId);
-        // TODO
-        template <typename ...Args>
-        util::Optional<ConstrainedEntityView<MaxComponents, Args...>> getConstrainedEntityView (EntityId entityId);
+        [[nodiscard]] ConstEntityView getEntityView (EntityId id) const {
+            return ConstEntityView{id, *this};
+        }
 
         template <typename ...Args>
-        ConstrainedView<MaxComponents, Args...> getConstrainedView ();
+        util::Optional<EntityComponentView<std::remove_reference_t<Args>...>> getConstrainedEntityView (EntityId entityId) {
+            std::tuple<std::remove_reference_t<Args>*...> ptrs{getEntityComp<std::remove_cvref_t<Args>>(entityId)...};
 
-        friend detail::EntityViewIterator<MaxComponents>;
-        friend ComponentView<MaxComponents>;
-    };
-
-    extern template class ComponentManager<PHENYL_MAX_COMPONENTS>;
-
-
-    template <std::size_t MaxComponents>
-    class ComponentView {
-    private:
-        component::EntityId entityId;
-        typename component::ComponentManager<MaxComponents>::SharedPtr compManager;
-
-        template <typename T, typename ...Ts>
-        bool allValid () {
-            if constexpr (sizeof...(Ts) > 0) {
-                return allValid<Ts...>();
+            if (detail::tupleAllNonNull(ptrs)) {
+                return util::Optional{EntityComponentView<Args...>{entityId, std::make_tuple(*std::get<Args>(ptrs)...)}};
             } else {
-                return true;
-            }
-        }
-
-        template <typename T>
-        util::Optional<std::tuple<T&>> getAllComps () {
-            return getComponent<T>().thenMap([](auto& t) {
-                return std::tuple<T&>(t);
-            });
-        }
-
-        template <typename T, typename ...Ts>
-        auto getAllComps () -> std::enable_if_t<0 < sizeof...(Ts), util::Optional<std::tuple<T&, Ts&...>>> {
-            auto othersOpt = getAllComps<Ts...>();
-
-            auto compOpt = getAllComps<T>();
-
-            return othersOpt.then([&compOpt] (auto& t1) {
-                return compOpt.thenMap([&t1] (auto& t2) {
-                    return std::tuple_cat(t2, t1);
-                });
-            });
-        }
-        ComponentView() : entityId{0, 0}, compManager(nullptr) {}
-    public:
-        ComponentView( component::EntityId _entityId, typename component::ComponentManager<MaxComponents>::SharedPtr  _compManager) : entityId{_entityId}, compManager{std::move(_compManager)} {}
-
-        component::EntityId getId () {
-            return entityId;
-        }
-
-        template <typename T>
-        util::Optional<T&> getComponent () {
-            return compManager->template getObjectData<T>(entityId);
-        }
-
-        template <typename T, typename ...Args>
-        void addComponent (Args&&... args) {
-            compManager->template addComponent<T>(entityId, std::forward<Args>(args)...);
-        }
-
-        template <typename T>
-        void removeComponent () {
-            compManager->template removeComponent<T>(entityId);
-        }
-
-        /*ComponentView<MaxComponents> withId (component::EntityId newId) {
-            return {newId, compManager};
-        }*/
-
-        template <typename ...Ts, typename F>
-        void applyFunc (F f) {
-            if (allValid<Ts...>()) {
-                getAllComps<Ts...>().ifPresent([&f](std::tuple<Ts&...>& tup) {
-                    f(std::get<Ts&>(tup)...);
-                });
-            }
-        }
-
-        template<class T>
-        bool hasComponent () {
-            return compManager->template entityHasComp<T>(entityId);
-        }
-
-        friend detail::EntityViewIterator<MaxComponents>;
-    };
-
-    extern template class ComponentView<PHENYL_MAX_COMPONENTS>;
-
-    namespace detail {
-        template <std::size_t MaxComponents>
-        class EntityViewIterator {
-        private:
-            typename ComponentManager<MaxComponents>::SharedPtr compManager{};
-            std::size_t pos{};
-
-        public:
-            EntityViewIterator () {}
-            EntityViewIterator (typename ComponentManager<MaxComponents>::SharedPtr _compManager, std::size_t startPos) : compManager{std::move(_compManager)} , pos{startPos} {}
-            using iterator_category = std::random_access_iterator_tag;
-            using difference_type = std::ptrdiff_t;
-            using value_type = ComponentView<MaxComponents>;
-            using reference = ComponentView<MaxComponents>&;
-            value_type operator* () const {
-                return compManager->getEntityView(compManager->template getComponent<component::EntityId>().orThrow()[pos]);
-            }
-
-            value_type operator[] (std::ptrdiff_t shift) const {
-                return *(*this + shift);
-            }
-
-            EntityViewIterator<MaxComponents>& operator++ () {
-                pos++;
-                return *this;
-            }
-
-            EntityViewIterator<MaxComponents> operator++ (int) {
-                EntityViewIterator<MaxComponents> other = *this;
-
-                pos++;
-
-                return other;
-            }
-
-            bool operator== (const EntityViewIterator<MaxComponents>& other) const {
-                return pos == other.pos;
-            }
-
-            EntityViewIterator<MaxComponents>& operator-- () {
-                pos--;
-                return *this;
-            }
-
-            EntityViewIterator<MaxComponents> operator-- (int) {
-                EntityViewIterator<MaxComponents> other = *this;
-
-                pos--;
-
-                return other;
-            }
-
-            template <std::size_t N>
-            friend EntityViewIterator<N> operator+ (EntityViewIterator<N> lhs, const std::ptrdiff_t rhs);
-            template <std::size_t N>
-            friend EntityViewIterator<N> operator+ (const std::ptrdiff_t rhs, EntityViewIterator<N> lhs);
-            template <std::size_t N>
-            friend EntityViewIterator<N> operator- (EntityViewIterator<N> lhs, const std::ptrdiff_t rhs);
-
-            EntityViewIterator<MaxComponents>& operator+= (std::ptrdiff_t amount) {
-                pos += amount;
-                return *this;
-            }
-
-            EntityViewIterator<MaxComponents>& operator-= (std::ptrdiff_t amount) {
-                pos -= amount;
-                return *this;
-            }
-
-            bool operator< (const EntityViewIterator<MaxComponents>& other) const {
-                return pos < other.pos;
-            }
-
-            bool operator<= (const EntityViewIterator<MaxComponents>& other) const {
-                return !(*this > other);
-            }
-
-            bool operator> (const EntityViewIterator<MaxComponents>& other) const {
-                return other < *this;
-            }
-
-            bool operator>= (const EntityViewIterator<MaxComponents>& other) const {
-                return !(*this < other);
-            }
-
-            std::ptrdiff_t operator- (const EntityViewIterator<MaxComponents>& other) const {
-                return (std::ptrdiff_t)pos - (std::ptrdiff_t)other.pos;
-            }
-        };
-
-        template <std::size_t MaxComponents>
-        inline EntityViewIterator<MaxComponents> operator+ (EntityViewIterator<MaxComponents> lhs, const std::ptrdiff_t rhs) {
-            lhs += rhs;
-
-            return lhs;
-        }
-
-        template <std::size_t MaxComponents>
-        inline EntityViewIterator<MaxComponents> operator+ (const std::ptrdiff_t rhs, EntityViewIterator<MaxComponents> lhs) {
-            return std::move(lhs) + rhs;
-        }
-
-        template <std::size_t MaxComponents>
-        inline EntityViewIterator<MaxComponents> operator- (EntityViewIterator<MaxComponents> lhs, const std::ptrdiff_t rhs) {
-            lhs -= rhs;
-
-            return lhs;
-        }
-    }
-
-    namespace detail {
-        template<std::size_t MaxComponents, typename ...Args>
-        class ConstrainedViewIterator;
-    }
-
-    template<std::size_t MaxComponents, typename ...Args>
-    class ConstrainedView;
-
-    template<std::size_t MaxComponents, typename ...Args>
-    class ConstrainedEntityView {
-    private:
-        std::tuple<Args& ...> comps;
-        component::EntityId entityId;
-
-        explicit ConstrainedEntityView (component::EntityId _entityId, Args& ... args) : entityId{_entityId},
-                                                                                         comps{args...} {}
-
-    public:
-        ConstrainedEntityView (ConstrainedEntityView&) = default;
-
-        ConstrainedEntityView (ConstrainedEntityView&&) noexcept = default;
-
-        template<typename T>
-        T& get () const {
-            return std::get<T&>(comps);
-        }
-
-        [[nodiscard]] component::EntityId getId () const {
-            return entityId;
-        }
-
-        template<typename ...Args2>
-        ConstrainedEntityView<MaxComponents, Args2...> constrain () {
-            static_assert(meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>,
-                          "All requested types must be accessible!");
-            return {entityId, std::get<Args2...>(comps)};
-        }
-
-        friend ComponentManager<MaxComponents>;
-        friend ConstrainedView<MaxComponents, Args...>;
-        friend detail::ConstrainedViewIterator<MaxComponents, Args...>;
-    };
-
-    template<std::size_t MaxComponents, typename ...Args>
-    class ConstrainedView {
-    private:
-        std::tuple<util::Bitfield<MaxComponents>*, component::EntityId*, Args* ...> comps{};
-        typename component::ComponentManager<MaxComponents>::SharedPtr componentManager{nullptr};
-        util::Bitfield<MaxComponents> mask{};
-
-        ConstrainedView () = default;
-
-        std::size_t numObjects () {
-            return componentManager->getNumObjects();
-        }
-
-    public:
-        using iterator = detail::ConstrainedViewIterator<MaxComponents, Args...>;
-
-        ConstrainedView (typename component::ComponentManager<MaxComponents>::SharedPtr _compManager,
-                         util::Bitfield<MaxComponents>* bitfields, component::EntityId* ids, Args* ... compPtrs,
-                         util::Bitfield<MaxComponents> mask = {}) : componentManager{std::move(_compManager)},
-                                                                    comps{bitfields, ids, compPtrs...},
-                                                                    mask{mask} {}
-
-        util::Optional<ConstrainedEntityView<MaxComponents, Args...>>
-        getEntityView (component::EntityId entityId) const {
-            if (!componentManager) {
                 return util::NullOpt;
             }
-
-            return componentManager->tempGetPos(entityId).then(
-                    [this] (const size_t& pos) -> util::Optional<ConstrainedEntityView<MaxComponents, Args...>> {
-                        if ((std::get<util::Bitfield<MaxComponents>*>(comps)[pos] & mask) == mask) {
-                            return {ConstrainedEntityView<MaxComponents, Args...>{std::get<EntityId*>(comps)[pos],
-                                                                                  std::get<Args*>(comps)[pos]...}};
-                        } else {
-                            return util::NullOpt;
-                        }
-                    });
         }
 
-        template<typename ...Args2>
-        ConstrainedView<MaxComponents, Args2...> constrain () const {
-            static_assert(meta::is_all_in<meta::type_list_wrapper<Args...>, Args2...>,
-                          "All requested types must be accessible!");
+        template <typename ...Args>
+        util::Optional<EntityComponentView<const std::remove_cvref_t<Args>...>> getConstrainedEntityView (EntityId entityId) const {
+            std::tuple<const std::remove_cvref_t<Args>*...> ptrs{getEntityComp<std::remove_cvref_t<Args>>(entityId)...};
 
-            return ConstrainedView<MaxComponents, Args2...>(componentManager,
-                                                            std::get<util::Bitfield<MaxComponents>*>(comps),
-                                                            std::get<EntityId*>(comps), std::get<Args2*>(comps)...,
-                                                            mask);
+            if (detail::tupleAllNonNull(ptrs)) {
+                return util::Optional{ConstEntityComponentView<Args...>{entityId, std::make_tuple(*std::get<Args>(ptrs)...)}};
+            } else {
+                return util::NullOpt;
+            }
         }
 
-        inline iterator begin ();
+        template <typename ...Args>
+        detail::ComponentView<std::remove_reference_t<Args>...> getConstrainedView () {
+            return detail::ComponentView<std::remove_reference_t<Args>...>{getOrCreateComponent<std::remove_cvref_t<Args>>()...};
+        }
 
-        inline iterator end ();
+        template <typename ...Args>
+        detail::ComponentView<const std::remove_cvref_t<Args>...> getConstrainedView () const {
+            return detail::ComponentView<const std::remove_cvref_t<Args>...>{getComponent<std::remove_cvref_t<Args>>()...};
+        }
 
-        friend detail::ConstrainedViewIterator<MaxComponents, Args...>;
-        friend ComponentManager<MaxComponents>;
+        iterator begin () {
+            return iterator{this, idList.begin()};
+        }
+        iterator end () {
+            return iterator{this, idList.end()};
+        }
+
+        const_iterator begin () const {
+            return cbegin();
+        }
+        const_iterator cbegin () const {
+            return const_iterator{this, idList.begin()};
+        }
+
+        const_iterator end () const {
+            return cend();
+        }
+        const_iterator cend () const {
+            return const_iterator{this, idList.end()};
+        }
     };
 
-    namespace detail {
-        template<std::size_t MaxComponents, typename ...Args>
-        class ConstrainedViewIterator {
-        private:
-            ConstrainedView<MaxComponents, Args...> constrainedView;
-            std::size_t pos{};
+    using EntityView = ComponentManagerNew::View;
+    using ConstEntityView = ComponentManagerNew::ConstView;
 
-            bool isValidObject (std::size_t checkPos) {
-                auto val = std::get<util::Bitfield<MaxComponents>*>(constrainedView.comps)[checkPos];
-                return (val & constrainedView.mask) == constrainedView.mask;
-            }
-
-            void findFirst () {
-                while (pos < constrainedView.numObjects() && !isValidObject(pos)) {
-                    pos++;
-                }
-            }
-
-            void findNext () {
-                pos++;
-
-                while (pos < constrainedView.numObjects() && !isValidObject(pos)) {
-                    pos++;
-                }
-            }
-
-            void findPrev () {
-                pos--;
-                while (pos >= 0 && !isValidObject(pos)) {
-                    pos--;
-                }
-            }
-
-        public:
-            ConstrainedViewIterator () = default;
-
-            ConstrainedViewIterator (ConstrainedView<MaxComponents, Args...> _constrainedView, std::size_t startPos)
-                    : constrainedView{
-                    _constrainedView}, pos{startPos} {
-                findFirst();
-            }
-
-            using iterator_category = std::bidirectional_iterator_tag;
-            using value_type = ConstrainedEntityView<MaxComponents, Args...>;
-            using difference_type = std::ptrdiff_t;
-
-            value_type operator* () const {
-                return ConstrainedEntityView<MaxComponents, Args...>(
-                        std::get<component::EntityId*>(constrainedView.comps)[pos],
-                        std::get<Args*>(constrainedView.comps)[pos]...);
-            }
-
-            ConstrainedViewIterator<MaxComponents, Args...>& operator++ () {
-                findNext();
-                return *this;
-            }
-
-            ConstrainedViewIterator<MaxComponents, Args...> operator++ (int) {
-                ConstrainedViewIterator other = *this;
-                findNext();
-                return other;
-            }
-
-            ConstrainedViewIterator<MaxComponents, Args...>& operator-- () {
-                findPrev();
-                return *this;
-            }
-
-            ConstrainedViewIterator<MaxComponents, Args...> operator-- (int) {
-                ConstrainedViewIterator other = *this;
-                findPrev();
-                return other;
-            }
-
-            bool operator== (const ConstrainedViewIterator<MaxComponents, Args...>& other) const {
-                return pos == other.pos ||
-                       (!constrainedView.componentManager && !other.constrainedView.componentManager);
-            }
-        };
-    }
-
-    template<std::size_t N, typename ...Args>
-    inline typename ConstrainedView<N, Args...>::iterator ConstrainedView<N, Args...>::begin () {
-        return {*this, 0};
-    }
-
-    template<std::size_t N, typename ...Args>
-    inline typename ConstrainedView<N, Args...>::iterator ConstrainedView<N, Args...>::end () {
-        if (!componentManager) {
-            return begin();
-        }
-        return {*this, componentManager->getNumObjects()};
-    }
-}
-
-namespace component {
-    template <std::size_t N>
-    inline component::ComponentView<N> ComponentManager<N>::getEntityView (EntityId entityId) {
-        return {entityId, this->shared_from_this()};
-    }
-
-    template <std::size_t N>
-    template <typename ...Args>
-    util::Optional<ConstrainedEntityView<N, Args...>> ComponentManager<N>::getConstrainedEntityView (EntityId entityId) {
-        if (entityHasAllComps<Args...>(entityId)) {
-            return util::Optional<ConstrainedEntityView<N, Args...>>(ConstrainedEntityView<N, Args...>{entityId, getObjectData<Args>(entityId).getUnsafe()...});
-        } else {
-            return util::NullOpt;
-        }
-    }
-
-    template <std::size_t N>
-    template <typename ...Args>
-    ConstrainedView<N, Args...> ComponentManager<N>::getConstrainedView () {
-        if (hasAllComps<Args...>()) {
-            return {this->shared_from_this(), this->entityComponentBitmaps.get(), getComponent<EntityId>().getUnsafe(), getComponent<Args>().getUnsafe()...,
-                    makeMask<Args...>()};
-        } else {
-            logging::log(LEVEL_ERROR, "Failed to find all component types!");
-            return {};
-        }
-    }
-
-    template <std::size_t N>
-    inline typename ComponentManager<N>::iterator ComponentManager<N>::begin () {
-        return {this->shared_from_this(), 0};
-    }
-
-    template <std::size_t N>
-    inline typename ComponentManager<N>::iterator ComponentManager<N>::end () {
-        return {this->shared_from_this(), numEntities};
-    }
-
-    template <std::size_t N>
-    inline typename ComponentManager<N>::const_iterator ComponentManager<N>::cbegin () {
-        return {this->shared_from_this(), 0};
-    }
-
-    template <std::size_t N>
-    inline typename ComponentManager<N>::const_iterator ComponentManager<N>::cend () {
-        return {this->shared_from_this(), numEntities};
-    }
+    using EntityComponentManager = ComponentManagerNew;
 }

@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "component/component.h"
-#include "component/component_new.h"
 //#include "entity/controller/entity_controller.h"
 #include "util/data.h"
 #include "engine/input/game_input.h"
