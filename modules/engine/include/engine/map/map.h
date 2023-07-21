@@ -7,7 +7,7 @@
 #include "graphics/maths_headers.h"
 
 namespace common {
-    struct GlobalTransform2D;
+    struct Transform2D;
 }
 
 namespace graphics {
@@ -38,7 +38,7 @@ namespace game {
         virtual int getWidth ();
         virtual int getHeight ();
 
-        virtual std::vector<std::tuple<glm::vec2, common::GlobalTransform2D, graphics::Model2D>> getModels ();
+        virtual std::vector<std::tuple<glm::vec2, common::Transform2D, graphics::Model2D>> getModels ();
         virtual void setAtlas (graphics::TextureAtlas& atlas);
 
         virtual void setEntities (std::vector<MapEntity>& _entities) {

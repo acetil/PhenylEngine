@@ -1,5 +1,5 @@
 #include "graphics/renderlayer/map_layer.h"
-#include "common/components/2d/global_transform.h"
+#include "common/maths/2d/transform.h"
 
 #include <utility>
 
@@ -56,7 +56,7 @@ public:
 
             for (std::size_t i = 0; i < std::get<Model2D>(m).positionData.size(); i++) {
                 offsetBuffer.pushData(std::get<glm::vec2>(m));
-                transformBuffer.pushData(std::get<common::GlobalTransform2D>(m).transform2D.getMatrix());
+                transformBuffer.pushData(std::get<common::Transform2D>(m).getMatrix());
             }
         }
 
