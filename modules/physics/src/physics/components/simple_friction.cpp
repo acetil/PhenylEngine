@@ -1,7 +1,6 @@
 #include "physics/components/simple_friction.h"
 #include "physics/components/2D/kinematic_motion.h"
 #include "util/data.h"
-#include "component/components/2D/position.h"
 
 
 util::DataValue physics::phenyl_to_data (const physics::SimpleFriction& comp) {

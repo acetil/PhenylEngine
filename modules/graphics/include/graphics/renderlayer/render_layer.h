@@ -7,7 +7,7 @@
 
 namespace graphics {
     class RenderLayer {
-    // TODO: add initial setup function
+    // TODO: insert initial setup function
     public:
         virtual std::string getName () = 0;
 

@@ -5,7 +5,6 @@
 #include "component/forward.h"
 #include "physics/components/simple_friction.h"
 #include "common/events/entity_creation.h"
-#include "common/events/entity_rotation.h"
 #include "event/event_bus.h"
 
 #include "physics_core.h"
@@ -49,20 +48,20 @@ namespace physics {
     public:
         virtual ~IPhysics() = default;
         virtual void addComponentSerialisers (component::EntitySerialiser& serialiser) = 0;
-        virtual void updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) = 0;
-        virtual void checkCollisions (const component::EntityComponentManager::SharedPtr& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) = 0;
+        virtual void updatePhysics (component::EntityComponentManager& componentManager) = 0;
+        virtual void checkCollisions (component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) = 0;
 
         virtual ColliderId addCollider (component::EntityId entityId) = 0;
         virtual void destroyCollider (ColliderId id) = 0;
 
         virtual ShapeId getColliderHitbox (ColliderId id) = 0;
-        //virtual ShapeId getColliderEventbox (ColliderId id) = 0;
-        //virtual bool colliderShapesMerged (ColliderId id) = 0;
-        //virtual void setColliderShapesMerged (ColliderId id, bool merged) = 0;
+        //virtual ShapeId getColliderEventbox (ColliderId entityId) = 0;
+        //virtual bool colliderShapesMerged (ColliderId entityId) = 0;
+        //virtual void setColliderShapesMerged (ColliderId entityId, bool merged) = 0;
 
         virtual void setShapeType (ShapeId id, PrimitiveShape shape) = 0;
         virtual void addEventHandlers (const event::EventBus::SharedPtr& eventBus) = 0;
-       // virtual ShapeData getShapeData (ShapeId id) = 0;
+       // virtual ShapeData getShapeData (ShapeId entityId) = 0;
 
         template <typename T>
         ShapeView<T> getShape (ShapeId id) {
@@ -75,8 +74,8 @@ namespace physics {
         }
 
         /*template <typename T>
-        ShapeId makeEventbox (ColliderId id, ShapeRequest<T> request) {
-            return makeNewEventbox(id, ShapeRequest<T>::shapeType, static_cast<void*>(&request));
+        ShapeId makeEventbox (ColliderId entityId, ShapeRequest<T> request) {
+            return makeNewEventbox(entityId, ShapeRequest<T>::shapeType, static_cast<void*>(&request));
         }*/
     };
 

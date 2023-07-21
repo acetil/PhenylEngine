@@ -40,7 +40,7 @@ namespace game {
         void updateEntityPosition ();
 
 
-        void setEntityComponentManager (component::EntityComponentManager::SharedPtr compManager);
+        void setEntityComponentManager (component::EntityComponentManager* compManager);
 
         void updateEntitiesPrePhysics ();
         void updateEntitiesPostPhysics ();

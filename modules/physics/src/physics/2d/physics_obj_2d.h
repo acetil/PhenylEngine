@@ -18,23 +18,23 @@ namespace physics {
         bool colliderExists (ColliderId id) const;
         Collider2D& getCollider (ColliderId id);
         const Collider2D& getCollider (ColliderId id) const;
-        void resolveCollision (ColliderId id1, ColliderId id2, glm::vec2 disp, const component::EntityComponentManager::SharedPtr& compManager);
+        void resolveCollision (ColliderId id1, ColliderId id2, glm::vec2 disp, component::EntityComponentManager& compManager);
         ShapeId deserialiseShape (const util::DataValue& val, ColliderId collider, std::size_t layers, std::size_t mask);
     public:
         void addComponentSerialisers(component::EntitySerialiser &serialiser) override;
-        void updatePhysics(const component::EntityComponentManager::SharedPtr &componentManager) override;
-        void checkCollisions(const component::EntityComponentManager::SharedPtr &componentManager, const event::EventBus::SharedPtr &eventBus,
+        void updatePhysics(component::EntityComponentManager& componentManager) override;
+        void checkCollisions(component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr &eventBus,
                              view::GameView &gameView) override;
 
-        void checkCollisionsNew (const component::EntityComponentManager::SharedPtr& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView);
+        void checkCollisionsNew (const component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView);
 
         ColliderId addCollider(component::EntityId entityId) override;
         void destroyCollider(physics::ColliderId id) override;
 
         ShapeId getColliderHitbox(physics::ColliderId id) override;
-        //ShapeId getColliderEventbox(physics::ColliderId id) override;
-        //bool colliderShapesMerged(physics::ColliderId id) override;
-        //void setColliderShapesMerged(physics::ColliderId id, bool merged) override;
+        //ShapeId getColliderEventbox(physics::ColliderId entityId) override;
+        //bool colliderShapesMerged(physics::ColliderId entityId) override;
+        //void setColliderShapesMerged(physics::ColliderId entityId, bool merged) override;
 
 
         void setShapeType(physics::ShapeId id, physics::PrimitiveShape shape) override;

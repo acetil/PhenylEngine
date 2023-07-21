@@ -15,7 +15,7 @@ util::DataValue graphics::phenyl_to_data (const graphics::Model2D& comp) {
     return (util::DataValue)comp.modelName;
 }
 
-bool graphics::phenyl_from_data (const util::DataValue& dataVal, graphics::Transform2D& comp) {
+/*bool graphics::phenyl_from_data (const util::DataValue& dataVal, graphics::GlobalTransform2D& comp) {
     if (!dataVal.is<util::DataObject>()) {
         return false;
     }
@@ -30,9 +30,22 @@ bool graphics::phenyl_from_data (const util::DataValue& dataVal, graphics::Trans
     comp.rotTransform = comp.transform;
 
     return true;
-}
 
-util::DataValue graphics::phenyl_to_data (const graphics::Transform2D& comp) {
+   if (!dataVal.is<util::DataObject>()) {
+       return false;
+   }
+
+   const auto& obj = dataVal.get<util::DataObject>();
+   if (!obj.contains("transform")) {
+       return false;
+   }
+
+    const auto& transformVal = obj.at("transform");
+
+    return phenyl_from_data(transformVal, comp.transform2D);
+}*/
+
+/*util::DataValue graphics::phenyl_to_data (const graphics::GlobalTransform2D& comp) {
     util::DataObject obj;
     util::DataArray arr;
     for (int i = 0; i < 2; i++) {
@@ -40,4 +53,9 @@ util::DataValue graphics::phenyl_to_data (const graphics::Transform2D& comp) {
     }
     obj["transform"] = std::move(arr);
     return (util::DataValue)obj;
-}
+
+    util::DataObject obj;
+    obj["transform"] = comp.transform2D;
+
+    return obj;
+}*/

@@ -10,12 +10,12 @@ namespace graphics {
     class EntityRenderLayer : public RenderLayer {
     private:
         bool active = true;
-        component::EntityComponentManager::SharedPtr componentManager;
+        component::EntityComponentManager* componentManager;
         ShaderProgramNew shaderProgram;
 
         std::unique_ptr<EntityPipeline> entityPipeline;
     public:
-        EntityRenderLayer (Renderer* renderer, component::EntityComponentManager::SharedPtr componentManager);
+        EntityRenderLayer (Renderer* renderer, component::EntityComponentManager* componentManager);
         ~EntityRenderLayer() override;
 
         std::string getName () override;

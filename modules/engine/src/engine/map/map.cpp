@@ -8,6 +8,7 @@
 #include "logging/logging.h"
 #include "util/data.h"
 #include "graphics/textures/texture_atlas.h"
+#include "common/components/2d/global_transform.h"
 
 #define VERTICES_PER_TILE 6
 #define VCOMP_PER_VERTEX 2
@@ -39,13 +40,13 @@ int game::Map::getHeight () {
     return height;
 }
 
-std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> Map::getModels () {
-    std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> models;
+std::vector<std::tuple<glm::vec2, common::Transform2D, graphics::Model2D>> Map::getModels () {
+    std::vector<std::tuple<glm::vec2, common::Transform2D, graphics::Model2D>> models;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
             auto model = atlas->getModel(tiles[i]->getModelId());
-            auto transform = graphics::Transform2D{static_cast<int>(model.positionData.size()),
-                                                   glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
+            auto transform = common::Transform2D{}.scaleBy({tiles[i]->xSize / 2, tiles[i]->ySize / 2});
+
             models.emplace_back(glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize}, transform, model);
         }
     }
@@ -116,7 +117,7 @@ void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
     float* uvPtr = uvData;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
-            logging::logf(LEVEL_DEBUG, "Copying buffers, id = %d. Ptr: %d, %d", i, vertexPtr - vertexData, uvPtr - uvData);
+            logging::logf(LEVEL_DEBUG, "Copying buffers, entityId = %d. Ptr: %d, %d", i, vertexPtr - vertexData, uvPtr - uvData);
             memcpy(vertexPtr, tiles[i]->getVertexCoords(i % width * tiles[i]->xSize, i / width * tiles[i]->ySize), VERTICES_PER_TILE * VCOMP_PER_VERTEX * sizeof(float));
             memcpy(uvPtr, tiles[i]->getUvs(), VERTICES_PER_TILE * UV_PER_VERTEX * sizeof(float));
             vertexPtr += VERTICES_PER_TILE * VCOMP_PER_VERTEX;

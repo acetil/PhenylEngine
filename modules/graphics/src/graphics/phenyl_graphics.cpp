@@ -79,8 +79,8 @@ Camera& PhenylGraphics::getCamera () {
     return getGraphics()->getCamera();
 }
 
-void PhenylGraphics::addEntityLayer (component::EntityComponentManager::SharedPtr componentManager) {
-    getGraphics()->addEntityLayer(std::move(componentManager));
+void PhenylGraphics::addEntityLayer (component::EntityComponentManager* componentManager) {
+    getGraphics()->addEntityLayer(componentManager);
 }
 
 void PhenylGraphics::onEntityCreation (event::EntityCreationEvent& event) {

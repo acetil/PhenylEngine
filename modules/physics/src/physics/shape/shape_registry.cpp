@@ -20,7 +20,7 @@ void physics::test_fixed () {
     using Id = component::FixedComponentManager<4, int, float, Test>::IdType;
     Id id1 = manager.addComponent<int>(3);
     Id id2 = manager.addComponent<int>(4);
-    Id id3 = manager.addComponent<int>(5);
+    Id id3 = manager.insert<int>(5);
 
     logging::log(LEVEL_DEBUG, "Fixed ids: {}, {}, {}", id1.getValue(), id2.getValue(), id3.getValue());
 
@@ -30,15 +30,15 @@ void physics::test_fixed () {
         i.first *= 2;
     }
 
-    for (auto [i, id] : manager.iterate<int>()) {
-        physics::logging::log(LEVEL_DEBUG, "2nd: Id: {}, val: {}", id.getValue(), i);
+    for (auto [i, entityId] : manager.iterate<int>()) {
+        physics::logging::log(LEVEL_DEBUG, "2nd: Id: {}, val: {}", entityId.getValue(), i);
     }
 
     manager.remove(id1);
-    auto id4 = manager.addComponent<int>(12);
-    logging::log(LEVEL_DEBUG, "Fixed id 4: {}", id4.getValue());
+    auto id4 = manager.insert<int>(12);
+    logging::log(LEVEL_DEBUG, "Fixed entityId 4: {}", id4.getValue());
 
-    for (auto [i, id] : manager.iterate<int>()) {
-        physics::logging::log(LEVEL_DEBUG, "3rd: Id: {}, val: {}", id.getValue(), i);
+    for (auto [i, entityId] : manager.iterate<int>()) {
+        physics::logging::log(LEVEL_DEBUG, "3rd: Id: {}, val: {}", entityId.getValue(), i);
     }
 }*/

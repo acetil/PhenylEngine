@@ -102,7 +102,7 @@ namespace graphics::ui {
         }
 
         std::shared_ptr<UIComponentNode> transferNode () {
-            // TODO: handle moving of nodes between components
+            // TODO: handle moving of nodes between maths
             auto oldOwningNode = std::move(owningUINode);
             owningUINode = nullptr;
             return oldOwningNode;

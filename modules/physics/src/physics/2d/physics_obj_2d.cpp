@@ -2,12 +2,11 @@
 #include "component/component_serialiser.h"
 #include "physics/components/2D/collision_component.h"
 #include "physics/components/2D/kinematic_motion.h"
-#include "component/components/2D/position.h"
-#include "component/components/2D/rotation.h"
 #include "common/events/entity_collision.h"
 #include "common/events/entity_creation.h"
 
 #include "physics/shape/2d/box_shape_2d_interface.h"
+#include "common/components/2d/global_transform.h"
 
 using namespace physics;
 
@@ -109,18 +108,18 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
     serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
 }
 
-void PhysicsObject2D::updatePhysics (const component::EntityComponentManager::SharedPtr& componentManager) {
-    for (const auto& i : componentManager->getConstrainedView<KinematicMotion2D, SimpleFriction>()) {
-        i.get<SimpleFriction>().updateFriction2D(i.get<KinematicMotion2D>());
+void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager) {
+    for (auto [kinMotion, friction] : componentManager.iterate<KinematicMotion2D, SimpleFriction>()) {
+        friction.updateFriction2D(kinMotion);
     }
 
-    for (const auto& i : componentManager->getConstrainedView<KinematicMotion2D, component::Position2D>()) {
+    for (auto [kinMotion, transform] : componentManager.iterate<KinematicMotion2D, common::GlobalTransform2D>()) {
         //updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
-        i.get<KinematicMotion2D>().doMotion(i.get<component::Position2D>());
+        kinMotion.doMotion(transform);
     }
 }
 
-void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::ColliderId id2, glm::vec2 disp, const component::EntityComponentManager::SharedPtr& compManager) {
+void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::ColliderId id2, glm::vec2 disp, component::EntityComponentManager& compManager) {
     const auto& coll1 = getCollider(id1);
     const auto& coll2 = getCollider(id2);
 
@@ -128,34 +127,35 @@ void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::Collid
     if (totalMass > 0) {
         auto res1 = (-disp) * coll1.mass / totalMass;
         logging::log(LEVEL_DEBUG, "Collision resolution for {}: <{}, {}>", coll1.entityId.value(), res1.x, res1.y);
-        compManager->getObjectData<component::Position2D>(coll1.entityId).getUnsafe() += res1;
+        //compManager.get<component::Position2D>(coll1.entityId).getUnsafe() += res1;
+        compManager.get<common::GlobalTransform2D>(coll1.entityId).getUnsafe().transform2D.translate(res1);
         auto res2 = disp * coll2.mass / totalMass;
         logging::log(LEVEL_DEBUG, "Collision resolution for {}: <{}, {}>", coll2.entityId.value(), res2.x, res2.y);
-        compManager->getObjectData<component::Position2D>(coll2.entityId).getUnsafe() += res2;
+        compManager.get<common::GlobalTransform2D>(coll2.entityId).getUnsafe().transform2D.translate(res2);
 
         // TODO: evaluate if necessary
         /*compManager->getObjectData<KinematicMotion2D>(coll1.entityId).ifPresent([&disp, &coll1, &totalMass] (KinematicMotion2D& comp) {
             comp.velocity -= projectVec(disp * (coll1.mass / totalMass), comp.velocity);
         });
 
-        compManager->getObjectData<KinematicMotion2D>(coll2.entityId).ifPresent([&disp, &coll2, &totalMass] (KinematicMotion2D& comp) {
+        compManager->get<KinematicMotion2D>(coll2.entityId).ifPresent([&disp, &coll2, &totalMass] (KinematicMotion2D& comp) {
             comp.velocity -= projectVec(-disp * (coll2.mass / totalMass), comp.velocity);
         });*/
     }
 }
 
-void PhysicsObject2D::checkCollisions (const component::EntityComponentManager::SharedPtr& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) {
+void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) {
     std::vector<std::tuple<ColliderId, ColliderId, glm::vec2>> collisionResults;
     //logging::log(LEVEL_DEBUG, "===New collision check===");
-    for (const auto& i : compManager->getConstrainedView<CollisionComponent2D, component::Rotation2D, component::Position2D>()) {
-        //logging::log(LEVEL_DEBUG, "{}: collId={}", i.getId().value(), i.get<CollisionComponent2D>().collider.getValue());
-        auto& collider = getCollider(i.get<CollisionComponent2D>().collider);
-        //logging::log(LEVEL_DEBUG, "{}: shapeId={}", i.getId().value(), collider.hitbox.getValue());
+    for (const auto& [collComp, transform] : compManager.iterate<CollisionComponent2D, common::GlobalTransform2D>()) {
+        //logging::log(LEVEL_DEBUG, "{}: collId={}", i.id().value(), i.get<CollisionComponent2D>().collider.getValue());
+        auto& collider = getCollider(collComp.collider);
+        //logging::log(LEVEL_DEBUG, "{}: shapeId={}", i.id().value(), collider.hitbox.getValue());
         collider.updated = true;
 
         auto hitbox = ((Shape2D*)(shapeRegistry.getComponentErased(makePublicId(collider.hitbox))));
-        hitbox->applyTransform(i.get<component::Rotation2D>().rotMatrix * i.get<CollisionComponent2D>().transform); // TODO: dirty?
-        hitbox->setPosition(i.get<component::Position2D>().get());
+        hitbox->applyTransform(transform.transform2D.rotMatrix() * collComp.transform); // TODO: dirty?
+        hitbox->setPosition(transform.transform2D.position());
     }
 
     for (auto [id, coll] : colliders.iterate()) {
@@ -215,7 +215,7 @@ void PhysicsObject2D::checkCollisions (const component::EntityComponentManager::
     }
 
     for (const auto& [id1, id2, layers] : events) {
-        eventBus->raise(event::EntityCollisionEvent{compManager->getEntityView(id1), compManager->getEntityView(id2), layers, compManager, eventBus, gameView});
+        eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
     }
 }
 
@@ -256,28 +256,28 @@ ShapeId PhysicsObject2D::getColliderHitbox (physics::ColliderId id) {
     return getCollider(id).hitbox;
 }
 
-/*ShapeId PhysicsObject2D::getColliderEventbox (physics::ColliderId id) {
-    if (!colliderExists(id)) {
-        logging::log(LEVEL_WARNING, "Attempted to get eventbox of collider {} that does not exist!", getIdIndex(id));
+/*ShapeId PhysicsObject2D::getColliderEventbox (physics::ColliderId entityId) {
+    if (!colliderExists(entityId)) {
+        logging::log(LEVEL_WARNING, "Attempted to get eventbox of collider {} that does not exist!", getIdIndex(entityId));
         return {};
     }
-    return getCollider(id).hitbox;
+    return getCollider(entityId).hitbox;
 }*/
 
-/*bool PhysicsObject2D::colliderShapesMerged (physics::ColliderId id) {
-    if (!colliderExists(id)) {
-        logging::log(LEVEL_WARNING, "Attempted to get shapes merged of collider {} that does not exist!", getIdIndex(id));
+/*bool PhysicsObject2D::colliderShapesMerged (physics::ColliderId entityId) {
+    if (!colliderExists(entityId)) {
+        logging::log(LEVEL_WARNING, "Attempted to get shapes merged of collider {} that does not exist!", getIdIndex(entityId));
         return false;
     }
-    return getCollider(id).shapesMerged;
+    return getCollider(entityId).shapesMerged;
 }*/
 
-/*void PhysicsObject2D::setColliderShapesMerged (physics::ColliderId id, bool merged) {
-    if (!colliderExists(id)) {
-        logging::log(LEVEL_WARNING, "Attempted to set shapes merged of collider {} that does not exist!", getIdIndex(id));
+/*void PhysicsObject2D::setColliderShapesMerged (physics::ColliderId entityId, bool merged) {
+    if (!colliderExists(entityId)) {
+        logging::log(LEVEL_WARNING, "Attempted to set shapes merged of collider {} that does not exist!", getIdIndex(entityId));
     }
 
-    getCollider(id).shapesMerged = merged;
+    getCollider(entityId).shapesMerged = merged;
 }*/
 
 
@@ -325,11 +325,11 @@ ShapeId PhysicsObject2D::makeNewHitbox (physics::ColliderId colliderId, std::siz
         shapeRegistry.remove(makePublicId(collider.hitbox));
     }
 
-    auto id = makeShapeFromRequest(shapeRegistry, colliderId, typeIndex, request);
+    auto entityId = makeShapeFromRequest(shapeRegistry, colliderId, typeIndex, request);
 
-    collider.eventbox = id;
+    collider.eventbox = entityId;
 
-    return id;
+    return entityId;
     return {};
 }*/
 
@@ -337,13 +337,13 @@ void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventB
     // TODO: pass through deserialiser instead
     scope = eventBus->getScope();
     eventBus->subscribe<event::EntityCreationEvent>([this] (event::EntityCreationEvent& event) {
-         event.entityView.getComponent<CollisionComponent2D>().ifPresent([this, &event] (CollisionComponent2D& comp) {
+        event.entityView.get<CollisionComponent2D>().ifPresent([this, &event] (CollisionComponent2D& comp) {
              if (!comp.collider) {
                  return;
              }
 
              auto& coll = getCollider(comp.collider);
-             coll.entityId = event.entityView.getId();
+             coll.entityId = event.entityView.id();
          });
     }, scope);
 }

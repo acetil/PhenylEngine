@@ -35,8 +35,8 @@ namespace game {
 
         friend class detail::GameObject;
     };
-    void controlEntitiesPrePhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus);
-    void controlEntitiesPostPhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus);
+    void controlEntitiesPrePhysics (component::EntityComponentManager& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus);
+    void controlEntitiesPostPhysics (component::EntityComponentManager& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus);
 
     void controlOnCollision (event::EntityCollisionEvent& event);
     void addControlEventHandlers (const event::EventBus::SharedPtr& eventBus);

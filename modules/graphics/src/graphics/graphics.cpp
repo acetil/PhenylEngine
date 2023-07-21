@@ -17,8 +17,8 @@
 
 using namespace graphics;
 
-void detail::Graphics::addEntityLayer (component::EntityComponentManager::SharedPtr compManager) {
-    renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, std::move(compManager)));
+void detail::Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
+    renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, compManager));
 }
 
 void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
@@ -136,16 +136,16 @@ std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
 }
 
 void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
-    /*int texId = event.entityView.getComponent<std::shared_ptr<game::EntityController>>().getUnsafe()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
+    /*int texId = event.entityView.get<std::shared_ptr<game::EntityController>>().getUnsafe()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
     //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
     getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
 
-        event.compManager->addComponent<Model2D>(event.entityId, atlas.getModel(texId));
+        event.compManager->insert<Model2D>(event.entityId, atlas.getModel(texId));
 
         //event.entityView.model = atlas.getModel((texId));
     });*/
 
-    event.entityView.getComponent<Model2D>().ifPresent([this] (Model2D& comp) {
+    event.entityView.get<Model2D>().ifPresent([this] (Model2D& comp) {
         getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
             comp = atlas.getModel(comp.modelName);
         });
@@ -205,5 +205,5 @@ void detail::Graphics::updateUI () {
 
 void detail::Graphics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
     serialiser.addComponentSerialiser<graphics::Model2D>("Model2D");
-    serialiser.addComponentSerialiser<graphics::Transform2D>("Transform2D");
+    //serialiser.addComponentSerialiser<graphics::GlobalTransform2D>("GlobalTransform2D");
 }

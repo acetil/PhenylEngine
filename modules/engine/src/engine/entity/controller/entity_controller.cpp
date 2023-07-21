@@ -29,19 +29,23 @@ const std::string& EntityController::getEntityId () const {
 }
 
 
-void game::controlEntitiesPrePhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
-    for (auto i : *manager) {
-        i.getComponent<EntityControllerComponent>().ifPresent([&gameView, &i] (EntityControllerComponent& comp) {
+void game::controlEntitiesPrePhysics (component::EntityComponentManager& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
+    /*for (auto i : manager) {
+        i.get<EntityControllerComponent>().ifPresent([&gameView, &i] (EntityControllerComponent& comp) {
             comp.get().controlEntityPrePhysics(i, gameView);
         });
+    }*/
+
+    for (auto [id, controller] : manager.iterate<EntityControllerComponent>().withId()) {
+        auto view = manager.view(id);
+        controller.get().controlEntityPrePhysics(view, gameView);
     }
 }
 
-void game::controlEntitiesPostPhysics (const component::EntityComponentManager::SharedPtr& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
-    for (auto i : *manager) {
-        i.getComponent<EntityControllerComponent>().ifPresent([&i, &gameView] (EntityControllerComponent& comp) {
-           comp.get().controlEntityPostPhysics(i, gameView);
-        });
+void game::controlEntitiesPostPhysics (component::EntityComponentManager& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
+    for (auto [id, controller] : manager.iterate<EntityControllerComponent>().withId()) {
+        auto view = manager.view(id);
+        controller.get().controlEntityPostPhysics(view, gameView);
     }
 }
 
@@ -49,7 +53,7 @@ void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {
     auto& firstEntity = collisionEvent.firstEntity;
     auto& secondEntity = collisionEvent.secondEntity;
 
-    firstEntity.getComponent<EntityControllerComponent>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (EntityControllerComponent& comp) {
+    firstEntity.get<EntityControllerComponent>().ifPresent([&firstEntity, &secondEntity, &collisionEvent] (EntityControllerComponent& comp) {
         comp.get().onEntityCollision(firstEntity, collisionEvent.gameView, secondEntity, collisionEvent.collisionLayers);
     });
 }
