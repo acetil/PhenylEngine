@@ -30,6 +30,19 @@
     }
   },
   "Controller" : "bullet",
+  "GlobalTransform2D" : {
+    "transform" : {
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "scale" : {
+        "x" : 0.03,
+        "y" : 0.03
+      },
+      "rotation" : 0.0
+    }
+  },
   "KinematicMotion2D" : {
     "vel" : {
       "x" : 0.0,

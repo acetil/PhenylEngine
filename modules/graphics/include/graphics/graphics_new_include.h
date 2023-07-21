@@ -12,6 +12,7 @@
 #include "logging/logging.h"
 #include "camera.h"
 #include "util/span.h"
+#include "common/maths/2d/transform.h"
 
 //#include "buffer.h"
 //#include "renderer.h"
@@ -63,19 +64,18 @@ namespace graphics {
     util::DataValue phenyl_to_data (const Model2D& comp);
     bool phenyl_from_data (const util::DataValue& dataVal, Model2D& comp);
 
-    struct Transform2D {
+    /*struct GlobalTransform2D {
     private:
     public:
-        Transform2D() = default;
-        Transform2D (int _vertices, /*glm::vec2 _pos,*/ glm::mat2 _transform) : vertices{_vertices}, /*pos{_pos},*/ transform{_transform}, rotTransform{_transform} {}
-
-        int vertices;
+        GlobalTransform2D() = default;
+        GlobalTransform2D (glm::mat2 _transform) : transform{_transform}, rotTransform{_transform} {}
         //glm::vec2 pos;
         glm::mat2 transform{{1.0f, 0.0f}, {0.0f, 1.0f}};
         glm::mat2 rotTransform;
+        common::Transform2D transform2D;
     };
 
-    util::DataValue phenyl_to_data (const Transform2D& comp);
-    bool phenyl_from_data (const util::DataValue& dataVal, Transform2D& comp);
+    util::DataValue phenyl_to_data (const GlobalTransform2D& comp);
+    bool phenyl_from_data (const util::DataValue& dataVal, GlobalTransform2D& comp);*/
 
 }

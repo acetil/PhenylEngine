@@ -65,7 +65,7 @@ component::EntityComponentManager getEntityComponentManager () {
     /*manager->addComponent<component::SimpleFrictionMotion2D>("main_component");
     manager->addComponent<graphics::Model2D>("model");
     manager->insert<physics::CollisionComponent2D>("collision_component");
-    manager->insert<graphics::Transform2D>("model_pos");*/
+    manager->insert<graphics::GlobalTransform2D>("model_pos");*/
     return manager;
 }
 

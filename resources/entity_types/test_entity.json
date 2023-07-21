@@ -42,6 +42,19 @@
     }
   },
   "Controller": "test_entity",
+  "GlobalTransform2D" : {
+    "transform" : {
+      "position" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "scale" : {
+        "x" : 0.1,
+        "y" : 0.1
+      },
+      "rotation" : 0.0
+    }
+  },
   "Model2D" : "test8",
   "SimpleFriction" : {
     "const_friction" : 0.005,

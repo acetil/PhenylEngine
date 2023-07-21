@@ -1,12 +1,12 @@
 #include "physics/components/2D/kinematic_motion.h"
-#include "component/components/2D/position.h"
 #include "util/data.h"
+#include "common/components/2d/global_transform.h"
 
 using namespace physics;
 
-void KinematicMotion2D::doMotion (component::Position2D& pos2D) {
+void KinematicMotion2D::doMotion (common::GlobalTransform2D& transform2D) {
     velocity += acceleration;
-    pos2D += velocity;
+    transform2D.transform2D.translate(velocity);
 }
 
 util::DataValue physics::phenyl_to_data (const physics::KinematicMotion2D& motion2D) {

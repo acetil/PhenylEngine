@@ -8,6 +8,7 @@
 #include "logging/logging.h"
 #include "util/data.h"
 #include "graphics/textures/texture_atlas.h"
+#include "common/components/2d/global_transform.h"
 
 #define VERTICES_PER_TILE 6
 #define VCOMP_PER_VERTEX 2
@@ -39,13 +40,15 @@ int game::Map::getHeight () {
     return height;
 }
 
-std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> Map::getModels () {
-    std::vector<std::tuple<glm::vec2, graphics::Transform2D, graphics::Model2D>> models;
+std::vector<std::tuple<glm::vec2, common::GlobalTransform2D, graphics::Model2D>> Map::getModels () {
+    std::vector<std::tuple<glm::vec2, common::GlobalTransform2D, graphics::Model2D>> models;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
             auto model = atlas->getModel(tiles[i]->getModelId());
-            auto transform = graphics::Transform2D{static_cast<int>(model.positionData.size()),
-                                                   glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
+            //auto transform = graphics::GlobalTransform2D{glm::mat2{{tiles[i]->xSize / 2, 0}, {0, tiles[i]->ySize / 2}}};
+            auto transform = common::GlobalTransform2D{};
+            transform.transform2D.setScale({tiles[i]->xSize / 2, tiles[i]->ySize / 2});
+
             models.emplace_back(glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize}, transform, model);
         }
     }

@@ -1,4 +1,5 @@
 #include "graphics/renderlayer/map_layer.h"
+#include "common/components/2d/global_transform.h"
 
 #include <utility>
 
@@ -41,7 +42,7 @@ public:
         std::size_t numVertices = 0;
 
         for (const auto& m : models) {
-            numVertices += std::get<Transform2D>(m).vertices;
+            numVertices += std::get<Model2D>(m).positionData.size();
         }
 
         posBuffer.resizeBuffer(numVertices);
@@ -53,9 +54,9 @@ public:
             posBuffer.pushData(std::get<Model2D>(m).positionData.cbegin(), std::get<Model2D>(m).positionData.cend());
             uvBuffer.pushData(std::get<Model2D>(m).uvData.cbegin(), std::get<Model2D>(m).uvData.cend());
 
-            for (std::size_t i = 0; i < std::get<Transform2D>(m).vertices; i++) {
+            for (std::size_t i = 0; i < std::get<Model2D>(m).positionData.size(); i++) {
                 offsetBuffer.pushData(std::get<glm::vec2>(m));
-                transformBuffer.pushData(std::get<Transform2D>(m).transform);
+                transformBuffer.pushData(std::get<common::GlobalTransform2D>(m).transform2D.getMatrix());
             }
         }
 

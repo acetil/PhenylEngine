@@ -205,5 +205,5 @@ void detail::Graphics::updateUI () {
 
 void detail::Graphics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
     serialiser.addComponentSerialiser<graphics::Model2D>("Model2D");
-    serialiser.addComponentSerialiser<graphics::Transform2D>("Transform2D");
+    //serialiser.addComponentSerialiser<graphics::GlobalTransform2D>("GlobalTransform2D");
 }

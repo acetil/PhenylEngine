@@ -15,8 +15,7 @@
 
 #include "logging/logging.h"
 #include "component/component_serialiser.h"
-#include "component/components/2D/rotation.h"
-#include "component/components/2D/position.h"
+#include "common/components/2d/global_transform.h"
 #include "physics/physics.h"
 
 using namespace engine;
@@ -160,8 +159,8 @@ component::EntitySerialiser& detail::Engine::getEntitySerialiser () {
 }
 
 void detail::Engine::addDefaultSerialisers () {
-    entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
-    entitySerialiser->addComponentSerialiser<component::Rotation2D>("Rotation2D");
+    //entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
+    entitySerialiser->addComponentSerialiser<common::GlobalTransform2D>("GlobalTransform2D");
 }
 
 physics::PhenylPhysics detail::Engine::getPhysics () {

@@ -26,6 +26,21 @@
                     }
                 ]
             },
+
+            "GlobalTransform2D" : {
+                "transform" : {
+                    "position" : {
+                        "x" : -0.4,
+                        "y" : 0.0
+                    },
+                    "scale" : {
+                        "x" : 0.08,
+                        "y" : 0.5
+                    },
+                    "rotation" : 0.0
+                }
+            },
+
             "CollisionComponent2D": {
                 "coll_scale": [
                     {
@@ -77,6 +92,19 @@
                     }
                 ]
             },
+            "GlobalTransform2D" : {
+                "transform" : {
+                    "position" : {
+                        "x" : 0.4,
+                        "y" : 0.0
+                    },
+                    "scale" : {
+                        "x" : 0.08,
+                        "y" : 0.5
+                    },
+                    "rotation" : 0.0
+                }
+            },
             "CollisionComponent2D": {
                 "coll_scale": [
                     {
@@ -127,6 +155,19 @@
                         "y": 0.08000000566244125
                     }
                 ]
+            },
+            "GlobalTransform2D" : {
+                "transform" : {
+                    "position" : {
+                        "x" : 0.0,
+                        "y" :-0.5
+                    },
+                    "scale" : {
+                        "x" : 0.48,
+                        "y" : 0.08
+                    },
+                    "rotation" : 0.0
+                }
             },
             "CollisionComponent2D": {
                 "coll_scale": [

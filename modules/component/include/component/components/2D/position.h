@@ -3,7 +3,7 @@
 #include "graphics/maths_headers.h"
 
 namespace component {
-    class Position2D {
+    /*class Position2D {
     private:
         glm::vec2 vec;
     public:
@@ -32,8 +32,8 @@ namespace component {
         operator glm::vec2 () {
             return vec;
         }
-    };
+    };*/
 
-    util::DataValue phenyl_to_data (const Position2D& comp);
-    bool phenyl_from_data (const util::DataValue& dataVal, Position2D& comp);
+    //util::DataValue phenyl_to_data (const Position2D& comp);
+    //bool phenyl_from_data (const util::DataValue& dataVal, Position2D& comp);
 }

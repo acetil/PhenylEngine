@@ -2,12 +2,11 @@
 #include "component/component_serialiser.h"
 #include "physics/components/2D/collision_component.h"
 #include "physics/components/2D/kinematic_motion.h"
-#include "component/components/2D/position.h"
-#include "component/components/2D/rotation.h"
 #include "common/events/entity_collision.h"
 #include "common/events/entity_creation.h"
 
 #include "physics/shape/2d/box_shape_2d_interface.h"
+#include "common/components/2d/global_transform.h"
 
 using namespace physics;
 
@@ -114,9 +113,9 @@ void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componen
         friction.updateFriction2D(kinMotion);
     }
 
-    for (auto [kinMotion, position] : componentManager.iterate<KinematicMotion2D, component::Position2D>()) {
+    for (auto [kinMotion, transform] : componentManager.iterate<KinematicMotion2D, common::GlobalTransform2D>()) {
         //updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
-        kinMotion.doMotion(position);
+        kinMotion.doMotion(transform);
     }
 }
 
@@ -128,10 +127,11 @@ void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::Collid
     if (totalMass > 0) {
         auto res1 = (-disp) * coll1.mass / totalMass;
         logging::log(LEVEL_DEBUG, "Collision resolution for {}: <{}, {}>", coll1.entityId.value(), res1.x, res1.y);
-        compManager.get<component::Position2D>(coll1.entityId).getUnsafe() += res1;
+        //compManager.get<component::Position2D>(coll1.entityId).getUnsafe() += res1;
+        compManager.get<common::GlobalTransform2D>(coll1.entityId).getUnsafe().transform2D.translate(res1);
         auto res2 = disp * coll2.mass / totalMass;
         logging::log(LEVEL_DEBUG, "Collision resolution for {}: <{}, {}>", coll2.entityId.value(), res2.x, res2.y);
-        compManager.get<component::Position2D>(coll2.entityId).getUnsafe() += res2;
+        compManager.get<common::GlobalTransform2D>(coll2.entityId).getUnsafe().transform2D.translate(res2);
 
         // TODO: evaluate if necessary
         /*compManager->getObjectData<KinematicMotion2D>(coll1.entityId).ifPresent([&disp, &coll1, &totalMass] (KinematicMotion2D& comp) {
@@ -147,15 +147,15 @@ void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::Collid
 void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) {
     std::vector<std::tuple<ColliderId, ColliderId, glm::vec2>> collisionResults;
     //logging::log(LEVEL_DEBUG, "===New collision check===");
-    for (const auto& [collComp, rotComp, posComp] : compManager.iterate<CollisionComponent2D, component::Rotation2D, component::Position2D>()) {
+    for (const auto& [collComp, transform] : compManager.iterate<CollisionComponent2D, common::GlobalTransform2D>()) {
         //logging::log(LEVEL_DEBUG, "{}: collId={}", i.id().value(), i.get<CollisionComponent2D>().collider.getValue());
         auto& collider = getCollider(collComp.collider);
         //logging::log(LEVEL_DEBUG, "{}: shapeId={}", i.id().value(), collider.hitbox.getValue());
         collider.updated = true;
 
         auto hitbox = ((Shape2D*)(shapeRegistry.getComponentErased(makePublicId(collider.hitbox))));
-        hitbox->applyTransform(rotComp.rotMatrix * collComp.transform); // TODO: dirty?
-        hitbox->setPosition(posComp.get());
+        hitbox->applyTransform(transform.transform2D.rotMatrix() * collComp.transform); // TODO: dirty?
+        hitbox->setPosition(transform.transform2D.position());
     }
 
     for (auto [id, coll] : colliders.iterate()) {
