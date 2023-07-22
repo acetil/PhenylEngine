@@ -40,14 +40,16 @@ int game::Map::getHeight () {
     return height;
 }
 
-std::vector<std::tuple<glm::vec2, common::Transform2D, graphics::Model2D>> Map::getModels () {
-    std::vector<std::tuple<glm::vec2, common::Transform2D, graphics::Model2D>> models;
+std::vector<std::pair<common::Transform2D, graphics::Model2D>> Map::getModels () {
+    std::vector<std::pair<common::Transform2D, graphics::Model2D>> models;
     for (int i = 0; i < width * height; i++) {
         if (tiles[i]->shouldDraw()) {
             auto model = atlas->getModel(tiles[i]->getModelId());
-            auto transform = common::Transform2D{}.scaleBy({tiles[i]->xSize / 2, tiles[i]->ySize / 2});
+            auto transform = common::Transform2D{}
+                .scaleBy({tiles[i]->xSize / 2, tiles[i]->ySize / 2})
+                .translate(glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize});
 
-            models.emplace_back(glm::vec2{i % width * tiles[i]->xSize, i / width * tiles[i]->ySize}, transform, model);
+            models.emplace_back(transform, model);
         }
     }
     return models;

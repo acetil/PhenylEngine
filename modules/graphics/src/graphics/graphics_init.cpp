@@ -71,7 +71,7 @@ int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
         delete i;
     }
     logging::log(LEVEL_INFO, "Adding shaders");
-    graphics->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
+    graphics->addShader("default", loadShaderProgram("resources/shaders/vertex.vert", "resources/shaders/fragment.frag", "default"));
     graphics->setCurrentSpriteShader("default");
     //graphics->initBuffer(100);
     return GRAPHICS_INIT_SUCCESS;
@@ -94,15 +94,15 @@ int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& gra
     auto renderer = new GLRenderer(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
-    //renderer->addShader("default", loadShaderProgram("resources/shaders/vertex.vs", "resources/shaders/fragment.fs", "default"));
-    //renderer->addShader("text", loadShaderProgram("resources/shaders/text_vertex.vs", "resources/shaders/text_fragment.fs", "text"));
+    //renderer->addShader("default", loadShaderProgram("resources/shaders/vertex.vert", "resources/shaders/fragment.frag", "default"));
+    //renderer->addShader("text", loadShaderProgram("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag", "text"));
     //renderer->getProgram("text").value()->registerUniform("camera");
 
     //renderer->getProgram("default").value()->registerUniform("camera"); // TODO: update
 
-    renderer->addShader("default", ShaderProgramBuilder("resources/shaders/vertex.vs", "resources/shaders/fragment.fs").addUniform<glm::mat4>("camera"));
-    renderer->addShader("text", ShaderProgramBuilder("resources/shaders/text_vertex.vs", "resources/shaders/text_fragment.fs").addUniform<glm::mat4>("camera"));
-    renderer->addShader("box", ShaderProgramBuilder("resources/shaders/box_vertex.vs", "resources/shaders/box_fragment.fs").addUniform<glm::vec2>("screenSize"));
+    renderer->addShader("default", ShaderProgramBuilder("resources/shaders/vertex.vert", "resources/shaders/fragment.frag").addUniform<glm::mat4>("camera"));
+    renderer->addShader("text", ShaderProgramBuilder("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag").addUniform<glm::mat4>("camera"));
+    renderer->addShader("box", ShaderProgramBuilder("resources/shaders/box_vertex.vert", "resources/shaders/box_fragment.frag").addUniform<glm::vec2>("screenSize"));
 
     auto manager = initFonts();
 

@@ -38,7 +38,7 @@ namespace game {
         virtual int getWidth ();
         virtual int getHeight ();
 
-        virtual std::vector<std::tuple<glm::vec2, common::Transform2D, graphics::Model2D>> getModels ();
+        virtual std::vector<std::pair<common::Transform2D, graphics::Model2D>> getModels ();
         virtual void setAtlas (graphics::TextureAtlas& atlas);
 
         virtual void setEntities (std::vector<MapEntity>& _entities) {

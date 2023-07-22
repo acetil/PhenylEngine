@@ -11,32 +11,11 @@ static inline glm::vec2 rotationFromAngle (float rad) {
     return glm::vec2{glm::cos(rad), glm::sin(rad)};
 }
 
-glm::vec2 common::Transform2D::position () const {
-    return positionVec;
-}
-
-glm::vec2 Transform2D::scale () const {
-    return scaleVec;
-}
-
 float Transform2D::rotationAngle () const {
     return glm::atan(complexRotation.y, complexRotation.x);
 }
 
 Transform2D::Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec) : positionVec{posVec}, scaleVec{scaleVec}, complexRotation{rotVec} {}
-
-
-glm::mat2 Transform2D::scaleMatrix () const {
-    return {{scaleVec.x, 0}, {0, scaleVec.y}};
-}
-
-glm::mat2 Transform2D::rotMatrix () const {
-    return {{complexRotation.x, complexRotation.y}, {-complexRotation.y, complexRotation.x}};
-}
-
-glm::mat2 Transform2D::getMatrix () const {
-    return scaleMatrix() * rotMatrix();
-}
 
 Transform2D& Transform2D::translate (glm::vec2 deltaPos) {
     positionVec += deltaPos;
