@@ -132,6 +132,10 @@ util::Optional<BoxShape2D> BoxShape2D::deserialise (const util::DataObject& obj,
     return {BoxShape2D{collider, mat, layers, mask}};
 }
 
+glm::mat2 BoxShape2D::getTransform () const {
+    return frameTransform;
+}
+
 BoxShape2D ShapeRequest<BoxShape2D>::make (physics::ColliderId collider) {
     return BoxShape2D{collider, scale, layers, mask};
 }

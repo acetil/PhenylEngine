@@ -8,6 +8,8 @@ using namespace graphics;
 static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, GLenum type, GLsizei size, GLsizei stride=0, std::size_t offset=0);
 static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, ShaderDataType attribType);
 
+static GLenum getRenderMode (PipelineType type);
+
 GLPipelineStage::GLPipelineStage (PipelineStageSpec& spec) {
     glGenVertexArrays(1, &vaoId);
     glBindVertexArray(vaoId);
@@ -15,6 +17,8 @@ GLPipelineStage::GLPipelineStage (PipelineStageSpec& spec) {
     for (auto [k, v] : spec.vertexAttribs.kv()) {
         vertexAttribs[k] = {v, nullptr};
     }
+
+    renderMode = getRenderMode(spec.type);
 }
 
 void GLPipelineStage::bindBuffer (int location, ShaderDataType attribType, std::shared_ptr<RendererBufferHandle> handle) {
@@ -47,7 +51,7 @@ void GLPipelineStage::render () {
 
     //logging::log(LEVEL_DEBUG, "Drawing {} vertices!", numVertices);
     glBindVertexArray(vaoId);
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(numVertices));
+    glDrawArrays(renderMode, 0, static_cast<int>(numVertices));
 }
 
 GLPipelineStage::~GLPipelineStage () {
@@ -109,4 +113,15 @@ static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int locat
     buffer->bindBuffer();
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, (void*)offset);
+}
+
+static GLenum getRenderMode (PipelineType type) {
+    switch (type) {
+        case PipelineType::TRIANGLES:
+            return GL_TRIANGLES;
+        case PipelineType::LINES:
+            return GL_LINES;
+        default:
+            return 0;
+    }
 }

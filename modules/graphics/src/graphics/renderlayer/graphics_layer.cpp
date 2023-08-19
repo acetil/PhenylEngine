@@ -92,4 +92,7 @@ std::optional<std::shared_ptr<RenderLayer>> GraphicsRenderLayer::getRenderLayer 
 
 void GraphicsRenderLayer::addRenderLayer (std::shared_ptr<RenderLayer> layer) {
     renderLayers.push_back(std::move(layer));
+    std::sort(renderLayers.begin(), renderLayers.end(), [] (const std::shared_ptr<RenderLayer>& a, const std::shared_ptr<RenderLayer>& b) {
+        return a->getPriority() < b->getPriority();
+    });
 }

@@ -12,6 +12,7 @@ namespace graphics {
 class GLPipelineStage : public RendererPipelineStage, public util::SmartHelper<GLPipelineStage, true> {
     private:
         GLuint vaoId{};
+        GLenum renderMode;
         util::Map<int, std::pair<ShaderDataType, std::shared_ptr<GlBuffer>>> vertexAttribs{};
     public:
         explicit GLPipelineStage (PipelineStageSpec& spec);

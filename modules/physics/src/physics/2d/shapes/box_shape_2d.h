@@ -17,6 +17,7 @@ namespace physics {
         void setScale (glm::vec2 scale);
 
         void applyTransform (glm::mat2 transform) override;
+        glm::mat2 getTransform () const;
 
         util::Optional<glm::vec2> collide (const BoxShape2D& other);
 

@@ -9,6 +9,11 @@
 namespace graphics {
     class RendererPipelineStage;
 
+    enum class PipelineType {
+        TRIANGLES,
+        LINES
+    };
+
     class PipelineStage {
     private:
         std::unique_ptr<RendererPipelineStage> internal;
@@ -44,12 +49,14 @@ namespace graphics {
     public:
         ShaderProgramNew shader;
         util::Map<int, ShaderDataType> vertexAttribs;
+        PipelineType type;
     };
 
     class PipelineStageBuilder {
     private:
         ShaderProgramNew shader;
         util::Map<int, ShaderDataType> vertexAttribs{};
+        PipelineType type = PipelineType::TRIANGLES;
     public:
         explicit PipelineStageBuilder(const ShaderProgramNew& _shader) : shader{_shader} {}
 
@@ -59,8 +66,13 @@ namespace graphics {
             return *this;
         }
 
+        PipelineStageBuilder& withPipelineType (PipelineType type) {
+            this->type = type;
+            return *this;
+        }
+
         [[nodiscard]] PipelineStageSpec build () const {
-            return {shader, vertexAttribs};
+            return {shader, vertexAttribs, type};
         }
     };
 }

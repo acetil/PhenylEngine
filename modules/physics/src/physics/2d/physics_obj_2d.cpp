@@ -4,6 +4,7 @@
 #include "physics/components/2D/kinematic_motion.h"
 #include "common/events/entity_collision.h"
 #include "common/events/entity_creation.h"
+#include "common/debug.h"
 
 #include "physics/shape/2d/box_shape_2d_interface.h"
 #include "common/components/2d/global_transform.h"
@@ -216,6 +217,19 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
 
     for (const auto& [id1, id2, layers] : events) {
         eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
+    }
+
+    // Debug render
+    for (const auto& [collComp, transform] : compManager.iterate<CollisionComponent2D, common::GlobalTransform2D>()) {
+        auto collider = getCollider(collComp.collider);
+        shapeRegistry.getComponent<BoxShape2D>(makePublicId(collider.hitbox)).ifPresent([&transform] (const BoxShape2D& shape) {
+            auto pos1 = shape.getTransform() * glm::vec2{-1, -1} + transform.transform2D.position();
+            auto pos2 = shape.getTransform() * glm::vec2{1, -1} + transform.transform2D.position();
+            auto pos3 = shape.getTransform() * glm::vec2{1, 1} + transform.transform2D.position();
+            auto pos4 = shape.getTransform() * glm::vec2{-1, 1} + transform.transform2D.position();
+            //common::debugWorldRect(pos1, pos2, pos3, pos4, {1, 0, 0, 0.5}, {0, 0, 1, 1});
+            common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+        });
     }
 }
 

@@ -60,7 +60,7 @@ std::string EntityRenderLayer::getName () {
 }
 
 int EntityRenderLayer::getPriority () {
-    return 1;
+    return 2;
 }
 
 bool graphics::EntityRenderLayer::isActive () {

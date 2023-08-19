@@ -302,8 +302,8 @@ namespace component {
 
         template <meta::IsInPack<CompTypes...> T>
         util::Optional<T&> getComponent (IdType id) {
-            if (meta::pack_type_index<T, CompTypes...> != id.getIndex()) {
-                logging::log(LEVEL_ERROR, "Attempted to access fixed component with id with incorrect type! (id type index: {}, expected index: {})", id.getIndex(), meta::pack_type_index<T, CompTypes...>);
+            if (meta::pack_type_index<T, CompTypes...> != id.getType()) {
+                logging::log(LEVEL_ERROR, "Attempted to access fixed component with id with incorrect type! (id type index: {}, expected index: {})", id.getType(), meta::pack_type_index<T, CompTypes...>);
                 return util::NullOpt;
             }
 
@@ -312,8 +312,8 @@ namespace component {
 
         template <meta::IsInPack<CompTypes...> T>
         util::Optional<const T&> getComponent (IdType id) const {
-            if (meta::pack_type_index<T, CompTypes...> != id.getIndex()) {
-                logging::log(LEVEL_ERROR, "Attempted to access fixed component with id with incorrect type! (id type index: {}, expected index: {})", id.getIndex(), meta::pack_type_index<T, CompTypes...>);
+            if (meta::pack_type_index<T, CompTypes...> != id.getType()) {
+                logging::log(LEVEL_ERROR, "Attempted to access fixed component with id with incorrect type! (id type index: {}, expected index: {})", id.getType(), meta::pack_type_index<T, CompTypes...>);
                 return util::NullOpt;
             }
 

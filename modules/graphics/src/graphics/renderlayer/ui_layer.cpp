@@ -108,7 +108,7 @@ std::string graphics::UIRenderLayer::getName () {
 }
 
 int graphics::UIRenderLayer::getPriority () {
-    return 2;
+    return 3;
 }
 
 bool graphics::UIRenderLayer::isActive () {

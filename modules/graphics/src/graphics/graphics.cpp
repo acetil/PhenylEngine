@@ -14,6 +14,7 @@
 #include "graphics/phenyl_graphics.h"
 #include "common/input/proxy_source.h"
 #include "component/component_serialiser.h"
+#include "graphics/renderlayer/debug_layer.h"
 
 using namespace graphics;
 
@@ -47,6 +48,7 @@ detail::Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManage
     this->lastTime = renderer->getCurrentTime();
 
     this->renderLayer = std::make_shared<GraphicsRenderLayer>(renderer);
+    renderLayer->addRenderLayer(makeDebugLayer(renderer));
 
     auto rendererSources = renderer->getInputSources();
 
