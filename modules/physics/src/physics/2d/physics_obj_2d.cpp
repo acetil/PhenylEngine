@@ -1,7 +1,7 @@
 #include "physics_obj_2d.h"
 #include "component/component_serialiser.h"
 #include "physics/components/2D/collision_component.h"
-#include "physics/components/2D/kinematic_motion.h"
+#include "physics/components/2D/rigid_body.h"
 #include "common/events/entity_collision.h"
 #include "common/events/entity_creation.h"
 #include "common/debug.h"
@@ -106,16 +106,16 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
         comp.collider = collId;
         return {comp};
     });
-    serialiser.addComponentSerialiser<KinematicMotion2D>("KinematicMotion2D");
+    serialiser.addComponentSerialiser<RigidBody2D>("RigidBody2D");
     serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
 }
 
 void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager) {
-    for (auto [kinMotion, friction] : componentManager.iterate<KinematicMotion2D, SimpleFriction>()) {
+    for (auto [kinMotion, friction] : componentManager.iterate<RigidBody2D, SimpleFriction>()) {
         friction.updateFriction2D(kinMotion);
     }
 
-    for (auto [kinMotion, transform] : componentManager.iterate<KinematicMotion2D, common::GlobalTransform2D>()) {
+    for (auto [kinMotion, transform] : componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
         //updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
         kinMotion.doMotion(transform);
     }
@@ -136,12 +136,12 @@ void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::Collid
         compManager.get<common::GlobalTransform2D>(coll2.entityId).getUnsafe().transform2D.translate(res2);
 
         // TODO: evaluate if necessary
-        /*compManager->getObjectData<KinematicMotion2D>(coll1.entityId).ifPresent([&disp, &coll1, &totalMass] (KinematicMotion2D& comp) {
-            comp.velocity -= projectVec(disp * (coll1.mass / totalMass), comp.velocity);
+        /*compManager->getObjectData<RigidBody2D>(coll1.entityId).ifPresent([&disp, &coll1, &totalMass] (RigidBody2D& comp) {
+            comp.momentum -= projectVec(disp * (coll1.mass / totalMass), comp.momentum);
         });
 
-        compManager->get<KinematicMotion2D>(coll2.entityId).ifPresent([&disp, &coll2, &totalMass] (KinematicMotion2D& comp) {
-            comp.velocity -= projectVec(-disp * (coll2.mass / totalMass), comp.velocity);
+        compManager->get<RigidBody2D>(coll2.entityId).ifPresent([&disp, &coll2, &totalMass] (RigidBody2D& comp) {
+            comp.momentum -= projectVec(-disp * (coll2.mass / totalMass), comp.momentum);
         });*/
     }
 }

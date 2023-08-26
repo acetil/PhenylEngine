@@ -60,12 +60,16 @@
     "const_friction" : 0.005,
     "lin_friction" : 0.27
   },
-  "KinematicMotion2D" : {
-    "vel" : {
+  "RigidBody2D" : {
+    "momentum" : {
       "x" : 0.0,
       "y" : 0.0
     },
-    "acc" : {
+    "force" : {
+      "x" : 0.0,
+      "y" : 0.0
+    },
+    "gravity" : {
       "x" : 0.0,
       "y" : 0.0
     }

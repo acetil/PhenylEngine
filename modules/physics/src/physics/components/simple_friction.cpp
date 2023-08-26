@@ -1,5 +1,5 @@
 #include "physics/components/simple_friction.h"
-#include "physics/components/2D/kinematic_motion.h"
+#include "physics/components/2D/rigid_body.h"
 #include "util/data.h"
 
 
@@ -29,13 +29,14 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, SimpleFriction& 
     return true;
 }
 
-void physics::SimpleFriction::updateFriction2D (physics::KinematicMotion2D& motion2D) const {
-    int isPosXVel = motion2D.velocity.x > 0;
-    int isPosYVel = motion2D.velocity.y > 0;
+void physics::SimpleFriction::updateFriction2D (physics::RigidBody2D& motion2D) const {
+    /*int isPosXVel = motion2D.momentum.x > 0;
+    int isPosYVel = motion2D.momentum.y > 0;
 
-    motion2D.velocity.x -= ((float)motion2D.velocity.x * linFriction) + constFriction * (isPosXVel * 2 - 1);
-    motion2D.velocity.y -= ((float)motion2D.velocity.y * linFriction) + constFriction * (isPosYVel * 2 - 1);
+    motion2D.momentum.x -= ((float)motion2D.momentum.x * linFriction) + constFriction * (isPosXVel * 2 - 1);
+    motion2D.momentum.y -= ((float)motion2D.momentum.y * linFriction) + constFriction * (isPosYVel * 2 - 1);
 
-    motion2D.velocity.x *= (motion2D.velocity.x > 0 && isPosXVel) || (motion2D.velocity.x < 0 && !isPosXVel);
-    motion2D.velocity.y *= (motion2D.velocity.y > 0 && isPosYVel) || (motion2D.velocity.y < 0 && !isPosYVel);
+    motion2D.momentum.x *= (motion2D.momentum.x > 0 && isPosXVel) || (motion2D.momentum.x < 0 && !isPosXVel);
+    motion2D.momentum.y *= (motion2D.momentum.y > 0 && isPosYVel) || (motion2D.momentum.y < 0 && !isPosYVel);*/
+    motion2D.applyFriction(*this);
 }

@@ -43,12 +43,12 @@
       "rotation" : 0.0
     }
   },
-  "KinematicMotion2D" : {
-    "vel" : {
+  "RigidBody2D" : {
+    "momentum" : {
       "x" : 0.0,
       "y" : 0.0
     },
-    "acc" : {
+    "force" : {
       "x" : 0.0,
       "y" : 0.0
     }

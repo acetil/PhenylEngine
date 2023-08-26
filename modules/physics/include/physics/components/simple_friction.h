@@ -7,13 +7,13 @@ namespace component {
 }
 
 namespace physics {
-    struct KinematicMotion2D;
+    struct RigidBody2D;
 
     struct SimpleFriction {
         float constFriction = 0.0f;
         float linFriction = 0.0f;
 
-        void updateFriction2D (KinematicMotion2D& motion2D) const;
+        void updateFriction2D (RigidBody2D& motion2D) const;
     };
 
     util::DataValue phenyl_to_data (const SimpleFriction& comp);

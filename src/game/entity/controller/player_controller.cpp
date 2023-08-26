@@ -7,15 +7,14 @@
 #include "engine/game_camera.h"
 #include "graphics/textures/texture_atlas.h"
 #include "physics/components/simple_friction.h"
-#include "physics/components/2D/kinematic_motion.h"
+#include "physics/components/2D/rigid_body.h"
 #include "common/components/2d/global_transform.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 0.15f
 
 void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& event) {
-    deltaXForce += event.xForceComp;
-    deltaYForce += event.yForceComp;
+    currForce += glm::vec2{event.xForceComp, event.yForceComp};
     //logging::logf(LEVEL_DEBUG, "Updating movement: (%f, %f)", deltaXForce, deltaYForce);
 }
 
@@ -24,17 +23,15 @@ void game::PlayerController::controlEntityPrePhysics (component::EntityView& ent
 
    glm::vec2 cursorPos = gameView.getCamera().getWorldPos(cursorScreenPos);
 
-    entityView.get<physics::KinematicMotion2D>().ifPresent([this](physics::KinematicMotion2D& comp) {
-       comp.acceleration += glm::vec2(deltaXForce, deltaYForce);
-       deltaXForce = 0;
-       deltaYForce = 0;
+    entityView.get<physics::RigidBody2D>().ifPresent([this](physics::RigidBody2D& comp) {
+       comp.applyForce(comp.mass * currForce);
    });
 
     /*entityView.get<component::Position2D>().ifPresent([&cursorPos] (auto& comp) {
         cursorPos -= comp.get();
    });*/
 
-   //entityView.acceleration += glm::vec2(deltaXForce, deltaYForce);
+   //entityView.netForce += glm::vec2(deltaXForce, deltaYForce);
    //deltaXForce = 0;
    //deltaYForce = 0;
    //auto cursorPos = gameView.getCamera().getWorldPos(cursorScreenPos) - (glm::vec2)entityView.position;
@@ -82,7 +79,7 @@ void game::PlayerController::controlEntityPostPhysics (component::EntityView& en
         bVel["x"] = bulletVel.x;
         bVel["y"] = bulletVel.y;
 
-        bData["velocity"] = bVel;
+        bData["momentum"] = bVel;
 
         /*auto bulletView = gameView.createEntityInstance("bullet_entity", pos.x + relPos.x,
                                                       pos.y + relPos.y, rot, util::DataValue(bData));*/
@@ -100,9 +97,13 @@ void game::PlayerController::controlEntityPostPhysics (component::EntityView& en
            comp.transform2D.setRotation(rot);
         });
 
+        bulletView.get<physics::RigidBody2D>().ifPresent([bulletVel] (physics::RigidBody2D& comp) {
+            comp.applyImpulse(comp.mass * bulletVel);
+        });
+
         /*auto bulletView = entityView.withId(bulletId);
         //bulletView.rotation = rot(); // TODO: look into difference with ()
-        bulletView.velocity = rotVec * SHOOT_VEL;*/
+        bulletView.momentum = rotVec * SHOOT_VEL;*/
         hasShot = true;
     }
     gameView.getCamera().setPos(pos);
