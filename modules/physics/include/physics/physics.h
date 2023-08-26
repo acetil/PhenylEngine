@@ -48,7 +48,7 @@ namespace physics {
     public:
         virtual ~IPhysics() = default;
         virtual void addComponentSerialisers (component::EntitySerialiser& serialiser) = 0;
-        virtual void updatePhysics (component::EntityComponentManager& componentManager) = 0;
+        virtual void updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) = 0;
         virtual void checkCollisions (component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) = 0;
 
         virtual ColliderId addCollider (component::EntityId entityId) = 0;

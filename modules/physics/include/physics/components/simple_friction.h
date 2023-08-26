@@ -13,7 +13,7 @@ namespace physics {
         float constFriction = 0.0f;
         float linFriction = 0.0f;
 
-        void updateFriction2D (RigidBody2D& motion2D) const;
+        void updateFriction2D (RigidBody2D& motion2D, float deltaTime) const;
     };
 
     util::DataValue phenyl_to_data (const SimpleFriction& comp);

@@ -5,7 +5,7 @@
 
 #include "util/debug_console.h"
 
-#define FORCE_COMPONENT 0.01
+#define FORCE_COMPONENT 5
 
 void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::SharedPtr& eventBus) {
     auto upKey = gameInput.mapInput("move_up", "key_w");

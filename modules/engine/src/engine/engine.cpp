@@ -43,7 +43,7 @@ public:
     component::EntitySerialiser& getEntitySerialiser ();
     physics::PhenylPhysics getPhysics ();
 
-    void updateEntityPosition ();
+    void updateEntityPosition (float deltaTime);
     void debugRender ();
 };
 
@@ -81,8 +81,8 @@ physics::PhenylPhysics PhenylEngine::getPhysics () {
     return internal->getPhysics();
 }
 
-void PhenylEngine::updateEntityPosition () {
-    internal->updateEntityPosition();
+void PhenylEngine::updateEntityPosition (float deltaTime) {
+    internal->updateEntityPosition(deltaTime);
 }
 
 void PhenylEngine::debugRender () {
@@ -172,9 +172,9 @@ physics::PhenylPhysics detail::Engine::getPhysics () {
     return physics::PhenylPhysics(physicsObj.get());
 }
 
-void detail::Engine::updateEntityPosition () {
+void detail::Engine::updateEntityPosition (float deltaTime) {
     // TODO: remove function?
-    physicsObj->updatePhysics(getComponentManager());
+    physicsObj->updatePhysics(getComponentManager(), deltaTime);
     view::GameView gameView{gameObjHolder.tempGetGameObject().get()}; // TODO
     physicsObj->checkCollisions(getComponentManager(), getEventBus(), gameView);
 }

@@ -5,8 +5,8 @@ using namespace physics;
 
 PhenylPhysics::PhenylPhysics (physics::IPhysics* physicsObj) : physicsObj{physicsObj} {}
 
-void PhenylPhysics::updatePhysics (component::EntityComponentManager& componentManager) {
-    physicsObj->updatePhysics(componentManager);
+void PhenylPhysics::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
+    physicsObj->updatePhysics(componentManager, deltaTime);
 }
 
 void PhenylPhysics::checkCollisions (component::EntityComponentManager& componentManager,

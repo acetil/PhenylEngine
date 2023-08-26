@@ -110,14 +110,14 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
     serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
 }
 
-void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager) {
+void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
     for (auto [kinMotion, friction] : componentManager.iterate<RigidBody2D, SimpleFriction>()) {
-        friction.updateFriction2D(kinMotion);
+        friction.updateFriction2D(kinMotion, deltaTime);
     }
 
     for (auto [kinMotion, transform] : componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
         //updatePhysicsInternal(i.get<SimpleFrictionMotion2D>(), i.get<component::Position2D>());
-        kinMotion.doMotion(transform);
+        kinMotion.doMotion(transform, deltaTime);
     }
 }
 

@@ -3,12 +3,17 @@
 #include "common/components/2d/global_transform.h"
 #include "physics/components/simple_friction.h"
 
+#define LIN_FRICTION_MULT 20.0f
+
 using namespace physics;
 
-void RigidBody2D::doMotion (common::GlobalTransform2D& transform2D) {
+void RigidBody2D::doMotion (common::GlobalTransform2D& transform2D, float deltaTime) {
     netForce += gravity;
-    momentum += netForce;
-    transform2D.transform2D.translate(momentum / mass);
+
+    momentum += netForce * 0.5f * deltaTime;
+    transform2D.transform2D.translate(momentum / mass * deltaTime);
+    momentum += netForce * 0.5f * deltaTime;
+
     netForce = {0, 0};
 }
 
@@ -57,18 +62,30 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, physics::RigidBo
     return true;
 }
 
-void RigidBody2D::applyFriction (const SimpleFriction& friction) {
+void RigidBody2D::applyFriction (const SimpleFriction& friction, float deltaTime) {
+    /*glm::vec2 frictionForce{0, 0};
+
     bool isXPositive = momentum.x >= 0;
     bool isYPositive = momentum.y >= 0;
 
-    momentum.x -= (momentum.x * friction.linFriction) + (isXPositive ? friction.constFriction : -friction.constFriction);
-    momentum.y -= (momentum.y * friction.linFriction) + (isYPositive ? friction.constFriction : -friction.constFriction);
+    //momentum.x -= (momentum.x * friction.linFriction) + (isXPositive ? friction.constFriction : -friction.constFriction);
+    frictionForce.x = momentum.x * friction.linFriction + (isXPositive ? friction.constFriction : -friction.constFriction);
+    //momentum.y -= (momentum.y * friction.linFriction) + (isYPositive ? friction.constFriction : -friction.constFriction);
+    frictionForce.y = (momentum.y * friction.linFriction) + (isYPositive ? friction.constFriction : -friction.constFriction);
 
-    if ((momentum.x < 0 && isXPositive) || (momentum.x >= 0 && !isXPositive)) {
+    if (isXPositive && (frictionForce.x * deltaTime + momentum.x) < 0) {
         momentum.x = 0;
     }
 
     if ((momentum.y < 0 && isYPositive) || (momentum.y >= 0 && !isYPositive)) {
         momentum.y = 0;
-    }
+    }*/
+    auto vel = momentum / mass;
+    auto velDir = glm::vec2{vel.x >= 0 ? 1 : -1, vel.y >= 0 ? 1 : -1};
+    applyForce(-friction.linFriction * LIN_FRICTION_MULT * vel * vel * velDir);
+
+    // Friction required to go to 0 momentum = (-p / dt) - F
+    auto frictionForce = glm::clamp(-momentum / deltaTime - netForce, -glm::vec2{friction.constFriction, friction.constFriction}, glm::vec2{friction.constFriction, friction.constFriction});
+
+    applyForce(frictionForce);
 }

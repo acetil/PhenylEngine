@@ -37,7 +37,7 @@ namespace engine {
 
         physics::PhenylPhysics getPhysics ();
 
-        void updateEntityPosition ();
+        void updateEntityPosition (float deltaTime);
         void debugRender ();
     };
 }

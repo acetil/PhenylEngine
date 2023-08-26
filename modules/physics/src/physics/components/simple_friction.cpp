@@ -29,7 +29,7 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, SimpleFriction& 
     return true;
 }
 
-void physics::SimpleFriction::updateFriction2D (physics::RigidBody2D& motion2D) const {
+void physics::SimpleFriction::updateFriction2D (physics::RigidBody2D& motion2D, float deltaTime) const {
     /*int isPosXVel = motion2D.momentum.x > 0;
     int isPosYVel = motion2D.momentum.y > 0;
 
@@ -38,5 +38,5 @@ void physics::SimpleFriction::updateFriction2D (physics::RigidBody2D& motion2D) 
 
     motion2D.momentum.x *= (motion2D.momentum.x > 0 && isPosXVel) || (motion2D.momentum.x < 0 && !isPosXVel);
     motion2D.momentum.y *= (motion2D.momentum.y > 0 && isPosYVel) || (motion2D.momentum.y < 0 && !isPosYVel);*/
-    motion2D.applyFriction(*this);
+    motion2D.applyFriction(*this, deltaTime);
 }

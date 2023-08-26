@@ -20,11 +20,11 @@ namespace physics {
         float mass{1.0f};
         glm::vec2 gravity{0, 0};
 
-        void doMotion (common::GlobalTransform2D& transform2D);
+        void doMotion (common::GlobalTransform2D& transform2D, float deltaTime);
         void applyForce (glm::vec2 force);
         void applyImpulse (glm::vec2 impulse);
 
-        void applyFriction (const SimpleFriction& friction);
+        void applyFriction (const SimpleFriction& friction, float deltaTime);
     };
 
     util::DataValue phenyl_to_data (const RigidBody2D& motion2D);

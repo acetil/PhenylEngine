@@ -11,7 +11,7 @@
 #include "common/components/2d/global_transform.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
-#define SHOOT_VEL 0.15f
+#define SHOOT_VEL 7.5f
 
 void game::PlayerController::updateMovement (event::PlayerMovementChangeEvent& event) {
     currForce += glm::vec2{event.xForceComp, event.yForceComp};

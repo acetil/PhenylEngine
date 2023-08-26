@@ -16,7 +16,7 @@ namespace physics {
         IPhysics* physicsObj;
     public:
         explicit PhenylPhysics (IPhysics* physicsObj);
-        void updatePhysics (component::EntityComponentManager& componentManager);
+        void updatePhysics (component::EntityComponentManager& componentManager, float deltaTime);
         void checkCollisions (component::EntityComponentManager& componentManager, const std::shared_ptr<event::EventBus>& eventBus, view::GameView& gameView);
 
         void updateEntityPosition (const component::EntityComponentManager& componentManager, const std::shared_ptr<event::EventBus>& eventBus, view::GameView& gameView);

@@ -23,7 +23,7 @@ namespace physics {
         ShapeId deserialiseShape (const util::DataValue& val, ColliderId collider, std::size_t layers, std::size_t mask);
     public:
         void addComponentSerialisers(component::EntitySerialiser &serialiser) override;
-        void updatePhysics(component::EntityComponentManager& componentManager) override;
+        void updatePhysics(component::EntityComponentManager& componentManager, float deltaTime) override;
         void checkCollisions(component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr &eventBus,
                              view::GameView &gameView) override;
 
