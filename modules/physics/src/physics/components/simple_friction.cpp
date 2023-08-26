@@ -7,6 +7,7 @@ util::DataValue physics::phenyl_to_data (const physics::SimpleFriction& comp) {
     util::DataObject obj;
     obj["const_friction"] = comp.constFriction;
     obj["lin_friction"] = comp.linFriction;
+    obj["angular_damp"] = comp.angularDamp;
 
     return obj;
 }
@@ -24,6 +25,10 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, SimpleFriction& 
 
     if (dataObj.contains("lin_friction")) {
         comp.linFriction = dataObj.at("lin_friction").get<float>();
+    }
+
+    if (dataObj.contains("angular_damp")) {
+        comp.angularDamp = dataObj.at("angular_damp").get<float>();
     }
 
     return true;

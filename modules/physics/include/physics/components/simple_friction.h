@@ -13,6 +13,8 @@ namespace physics {
         float constFriction = 0.0f;
         float linFriction = 0.0f;
 
+        float angularDamp = 0.0f;
+
         void updateFriction2D (RigidBody2D& motion2D, float deltaTime) const;
     };
 

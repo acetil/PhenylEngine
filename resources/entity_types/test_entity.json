@@ -58,7 +58,8 @@
   "Model2D" : "test8",
   "SimpleFriction" : {
     "const_friction" : 0.8,
-    "lin_friction" : 0.37
+    "lin_friction" : 0.37,
+    "angular_damp" : 0.7
   },
   "RigidBody2D" : {
     "momentum" : {
@@ -72,6 +73,8 @@
     "gravity" : {
       "x" : 0.0,
       "y" : 0.0
-    }
+    },
+    "mass" : 1.0,
+    "inertial_moment" : 5.0
   }
 }
