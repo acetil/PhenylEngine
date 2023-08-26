@@ -12,10 +12,18 @@
 
 using namespace graphics;
 // TODO: update to use exceptions instead of return values
+// TODO: proper error handling
 int graphics::initWindow (GLFWwindow** windowPtr) {
     glewExperimental = true;
     if (!glfwInit()) {
         logging::log(LEVEL_FATAL, "Failed to initialise GLFW!");
+
+        const char* glfwError;
+        int code;
+        if ((code = glfwGetError(&glfwError))) {
+            logging::log(LEVEL_FATAL, "GLFW error code {}: {}", code, glfwError);
+        }
+
         return GRAPHICS_INIT_FAILURE;
     }
 
@@ -29,6 +37,13 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
     GLFWwindow* window = glfwCreateWindow(DEFAULT_WINDOW_X, DEFAULT_WINDOW_Y, DEFAULT_WINDOW_NAME, nullptr, nullptr);
     if (window == nullptr) {
         logging::log(LEVEL_FATAL, "Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
+
+        const char* glfwError;
+        int code;
+        if ((code = glfwGetError(&glfwError))) {
+            logging::log(LEVEL_FATAL, "GLFW error code {}: {}", code, glfwError);
+        }
+
         return GRAPHICS_INIT_FAILURE;
     }
     glfwMakeContextCurrent(window);

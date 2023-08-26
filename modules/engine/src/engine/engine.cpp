@@ -44,6 +44,7 @@ public:
     physics::PhenylPhysics getPhysics ();
 
     void updateEntityPosition ();
+    void debugRender ();
 };
 
 engine::PhenylEngine::PhenylEngine () {
@@ -82,6 +83,10 @@ physics::PhenylPhysics PhenylEngine::getPhysics () {
 
 void PhenylEngine::updateEntityPosition () {
     internal->updateEntityPosition();
+}
+
+void PhenylEngine::debugRender () {
+    internal->debugRender();
 }
 
 engine::detail::Engine::Engine () : componentManager{256}{
@@ -172,4 +177,8 @@ void detail::Engine::updateEntityPosition () {
     physicsObj->updatePhysics(getComponentManager());
     view::GameView gameView{gameObjHolder.tempGetGameObject().get()}; // TODO
     physicsObj->checkCollisions(getComponentManager(), getEventBus(), gameView);
+}
+
+void detail::Engine::debugRender () {
+    physicsObj->debugRender(getComponentManager());
 }

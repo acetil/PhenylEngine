@@ -11,6 +11,8 @@
 #include "common/events/debug/reload_theme.h"
 #include "common/events/theme_change.h"
 #include "util/string_help.h"
+#include "common/events/debug/debug_render.h"
+#include "common/events/debug/debug_pause.h"
 
 using namespace util;
 
@@ -81,7 +83,19 @@ static void doDebugConsole (event::EventBus::SharedPtr bus) {
         }
     } else if (command == "theme") {
         handleThemes(bus, args);
-    }else {
+    } else if (command == "debug_render") {
+        if (args.size() == 1) {
+            if (args[0] == "true") {
+                bus->raise(event::DebugRenderEvent{true});
+            } else if (args[0] == "false") {
+                bus->raise(event::DebugRenderEvent{false});
+            } else {
+                logging::log(LEVEL_WARNING, "Argument for debug_render command must be true or false");
+            }
+        } else {
+            logging::log(LEVEL_WARNING, "debug_render command requires one argument: true/false");
+        }
+    } else {
         logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
     }
 
@@ -92,6 +106,7 @@ void util::doDebugConsole (DebugConsoleEvent& event) {
     if (!(eventBus = event.eventBus.lock())) {
         logging::log(LEVEL_WARNING, "Debug console event bus pointer invalid!");
     } else {
+        eventBus->raise(event::DebugPauseEvent{true});
         ::doDebugConsole(eventBus);
     }
 }

@@ -63,6 +63,9 @@ namespace graphics {
             double lastTime;
             double deltaTime;
 
+            bool timeIsPaused;
+            double pauseStartTime;
+
             std::shared_ptr<GraphicsRenderLayer> renderLayer;
 
             std::unordered_map<std::string, TextureAtlas> atlases;

@@ -61,6 +61,7 @@ namespace physics {
 
         virtual void setShapeType (ShapeId id, PrimitiveShape shape) = 0;
         virtual void addEventHandlers (const event::EventBus::SharedPtr& eventBus) = 0;
+        virtual void debugRender (const component::EntityComponentManager& componentManager) = 0;
        // virtual ShapeData getShapeData (ShapeId entityId) = 0;
 
         template <typename T>

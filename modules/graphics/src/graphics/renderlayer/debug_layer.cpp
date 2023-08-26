@@ -123,6 +123,8 @@ namespace graphics {
 
             boxStage.bufferAllData();
             lineStage.bufferAllData();
+            boxes.clear();
+            lines.clear();
         }
 
         void render () override {

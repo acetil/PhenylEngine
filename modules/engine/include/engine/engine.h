@@ -38,5 +38,6 @@ namespace engine {
         physics::PhenylPhysics getPhysics ();
 
         void updateEntityPosition ();
+        void debugRender ();
     };
 }

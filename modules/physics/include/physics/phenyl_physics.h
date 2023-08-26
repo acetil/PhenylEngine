@@ -20,5 +20,6 @@ namespace physics {
         void checkCollisions (component::EntityComponentManager& componentManager, const std::shared_ptr<event::EventBus>& eventBus, view::GameView& gameView);
 
         void updateEntityPosition (const component::EntityComponentManager& componentManager, const std::shared_ptr<event::EventBus>& eventBus, view::GameView& gameView);
+        void debugRender (const component::EntityComponentManager& componentManager);
     };
 }

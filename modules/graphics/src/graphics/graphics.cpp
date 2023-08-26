@@ -15,6 +15,7 @@
 #include "common/input/proxy_source.h"
 #include "component/component_serialiser.h"
 #include "graphics/renderlayer/debug_layer.h"
+#include "common/events/debug/debug_pause.h"
 
 using namespace graphics;
 
@@ -172,6 +173,16 @@ void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& event
     eventBus->subscribe(&graphics::detail::Graphics::onMousePosChange, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeReload, this, eventScope);
+
+    eventBus->subscribe<event::DebugPauseEvent>([this] (event::DebugPauseEvent& event) {
+        if (event.doPause) {
+            this->timeIsPaused = true;
+            pauseStartTime = renderer->getCurrentTime();
+        } else if (this->timeIsPaused) {
+            this->timeIsPaused = false;
+            lastTime += renderer->getCurrentTime() - pauseStartTime;
+        }
+    }, eventScope);
 
     setupWindowCallbacks(eventBus);
 }

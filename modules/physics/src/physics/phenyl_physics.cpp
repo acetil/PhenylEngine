@@ -14,3 +14,7 @@ void PhenylPhysics::checkCollisions (component::EntityComponentManager& componen
     physicsObj->checkCollisions(componentManager, eventBus, gameView);
 }
 
+void PhenylPhysics::debugRender (const component::EntityComponentManager& componentManager) {
+    physicsObj->debugRender(componentManager);
+}
+

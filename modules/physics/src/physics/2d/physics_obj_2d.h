@@ -12,6 +12,7 @@ namespace physics {
         util::FLVector<Collider2D> colliders;
         ShapeRegistry2D shapeRegistry;
         event::EventScope scope;
+        bool debugColliderRender = false;
 
         ShapeId makeShapeFromRequest (ShapeRegistry2D& registry, ColliderId collider, std::size_t typeIndex, void* request);
 
@@ -44,5 +45,6 @@ namespace physics {
         //ShapeId makeNewEventbox(physics::ColliderId collider, std::size_t typeIndex, void *request) override;
 
         void addEventHandlers (const event::EventBus::SharedPtr& eventBus) override;
+        void debugRender (const component::EntityComponentManager& componentManager) override;
     };
 }
