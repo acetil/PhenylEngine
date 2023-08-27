@@ -194,8 +194,8 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
                 continue;
             }
             box1.collide(box2)
-                .ifPresent([&collisionResults, &box1, &box2] (glm::vec2 vec) {
-                    collisionResults.emplace_back(box1.getColliderId(), box2.getColliderId(), vec);
+                .ifPresent([&collisionResults, &box1, &box2] (SATResult2D result) {
+                    collisionResults.emplace_back(box1.getColliderId(), box2.getColliderId(), result.separationVec());
                 });
         }
     }

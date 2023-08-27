@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shape_2d.h"
+#include "collisions_2d.h"
 #include "util/optional.h"
 
 namespace physics {
@@ -19,7 +20,7 @@ namespace physics {
         void applyTransform (glm::mat2 transform) override;
         glm::mat2 getTransform () const;
 
-        util::Optional<glm::vec2> collide (const BoxShape2D& other);
+        util::Optional<SATResult2D> collide (const BoxShape2D& other);
 
         util::DataValue serialise() const override;
 

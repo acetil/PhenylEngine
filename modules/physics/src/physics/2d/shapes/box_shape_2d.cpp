@@ -37,7 +37,7 @@ void BoxShape2D::applyTransform (glm::mat2 transform) {
     setOuterRadius(calculateRadius(frameTransform));
 }
 
-util::Optional<glm::vec2> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
+util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
     assert(box1Axis >= 0);
 
     float minAxis = std::numeric_limits<float>::max();
@@ -61,18 +61,19 @@ util::Optional<glm::vec2> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box
         auto minDisp = box1Axis - minAxis;
         auto maxDisp = (-box1Axis) - maxAxis;
 
-        return minDisp <= -maxDisp ? util::Optional{minDisp * axis} : util::Optional{maxDisp * axis};
+        return minDisp <= -maxDisp ? util::Optional{minDisp} : util::Optional{maxDisp};
     }
 }
 
-util::Optional<glm::vec2> BoxShape2D::collide (const physics::BoxShape2D& other) {
+util::Optional<SATResult2D> BoxShape2D::collide (const physics::BoxShape2D& other) {
     auto disp = getDisplacement(other);
 
     glm::vec2 basisVecs[] = {
             {1, 0}, {0, 1}
     };
 
-    glm::vec2 minSep{0, 0};
+    float minSep = std::numeric_limits<float>::max();
+    glm::vec2 minAxis = {0, 0};
     float minSepSqSize = std::numeric_limits<float>::max();
 
     for (auto i : basisVecs) {
@@ -84,10 +85,11 @@ util::Optional<glm::vec2> BoxShape2D::collide (const physics::BoxShape2D& other)
             return util::NullOpt;
         }
 
-        glm::vec2 sep = axisOpt.getUnsafe();
-        auto sqSepSize = sqLength(sep);
+        float sep = axisOpt.getUnsafe();
+        auto sqSepSize = sep * sep;
         if (sqSepSize < minSepSqSize) {
             minSep = sep;
+            minAxis = normAxis;
             minSepSqSize = sqSepSize;
         }
     }
@@ -101,15 +103,17 @@ util::Optional<glm::vec2> BoxShape2D::collide (const physics::BoxShape2D& other)
             return util::NullOpt;
         }
 
-        glm::vec2 sep = axisOpt.getUnsafe();
-        auto sqSepSize = sqLength(sep);
+        float sep = axisOpt.getUnsafe();
+        auto sqSepSize = sep * sep;
         if (sqSepSize < minSepSqSize) {
-            minSep = -sep;
+            minSep = sep;
+            minAxis = -normAxis;
+
             minSepSqSize = sqSepSize;
         }
     }
 
-    return std::abs(minSepSqSize) > std::numeric_limits<float>::epsilon() ?  util::Optional{minSep} : util::NullOpt;
+    return std::abs(minSepSqSize) > std::numeric_limits<float>::epsilon() ? util::Optional{SATResult2D{.normal=minAxis, .depth=minSep}} : util::NullOpt;
 }
 
 util::DataValue BoxShape2D::serialise () const {
