@@ -17,6 +17,7 @@ namespace physics {
         glm::vec2 position{};
     protected:
         void setOuterRadius (float newOuterRadius);
+        glm::vec2 getPosition ();
     public:
         Shape2D (ColliderId collider, float outerRadius, std::uint64_t layers, std::uint64_t mask);
 

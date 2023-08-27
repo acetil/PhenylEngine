@@ -43,3 +43,7 @@ void Shape2D::setPosition (glm::vec2 _position) {
 glm::vec2 Shape2D::getDisplacement (const Shape2D& other) const {
     return other.position - position;
 }
+
+glm::vec2 Shape2D::getPosition () {
+    return position;
+}

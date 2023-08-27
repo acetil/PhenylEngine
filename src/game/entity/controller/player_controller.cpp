@@ -40,6 +40,7 @@ void game::PlayerController::controlEntityPrePhysics (component::EntityView& ent
    /*entityView.get<component::Rotation2D>().ifPresent([rot] (component::Rotation2D& comp) {
        comp = rot;
    });*/
+
    entityView.get<common::GlobalTransform2D>().ifPresent([cursorPos] (common::GlobalTransform2D& comp) {
        auto disp = cursorPos - comp.transform2D.position();
        auto rot = atan2(disp.y, disp.x);

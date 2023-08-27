@@ -22,6 +22,8 @@ namespace physics {
 
         util::Optional<SATResult2D> collide (const BoxShape2D& other);
 
+        Face2D getSignificantFace (glm::vec2 normal);
+
         util::DataValue serialise() const override;
 
         static util::Optional<BoxShape2D> deserialise (const util::DataObject& val, ColliderId collider, std::uint64_t layers, std::uint64_t mask);

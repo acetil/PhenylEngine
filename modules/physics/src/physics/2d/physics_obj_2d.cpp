@@ -147,7 +147,6 @@ void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::Collid
 }
 
 void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) {
-    std::vector<std::tuple<ColliderId, ColliderId, glm::vec2>> collisionResults;
     //logging::log(LEVEL_DEBUG, "===New collision check===");
     for (const auto& [collComp, transform] : compManager.iterate<CollisionComponent2D, common::GlobalTransform2D>()) {
         //logging::log(LEVEL_DEBUG, "{}: collId={}", i.id().value(), i.get<CollisionComponent2D>().collider.getValue());
@@ -183,6 +182,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
         }
     }*/
 
+    std::vector<std::tuple<ColliderId, ColliderId, Manifold2D>> collisionResults;
     auto iterable = shapeRegistry.iterate<BoxShape2D>();
     for (auto it1 = iterable.begin(); it1 != iterable.end(); ++it1) {
         auto [box1, id1] = *it1;
@@ -195,13 +195,21 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
             }
             box1.collide(box2)
                 .ifPresent([&collisionResults, &box1, &box2] (SATResult2D result) {
-                    collisionResults.emplace_back(box1.getColliderId(), box2.getColliderId(), result.separationVec());
+                    auto face1 = box1.getSignificantFace(result.normal);
+                    //logging::log(LEVEL_DEBUG, "Face 1: <{}, {}>-<{}, {}>, norm: <{}, {}>", face1.vertices[0].x, face1.vertices[0].y, face1.vertices[1].x, face1.vertices[1].y, face1.normal.x, face1.normal.y);
+                    auto face2 = box2.getSignificantFace(-result.normal);
+                    //logging::log(LEVEL_DEBUG, "Face 2: <{}, {}>-<{}, {}>, norm: <{}, {}>", face2.vertices[0].x, face2.vertices[0].y, face2.vertices[1].x, face2.vertices[1].y, face2.normal.x, face2.normal.y);
+
+                    auto manifold = buildManifold(face1, face2, result.normal, result.depth);
+                    logging::log(LEVEL_DEBUG, "Manifold: <{}, {}>-<{}, {}>, norm: <{}, {}>, type: {}", manifold.points[0].x, manifold.points[0].y, manifold.points[1].x, manifold.points[1].y, manifold.normal.x, manifold.normal.y, (int)manifold.type);
+                    collisionResults.emplace_back(box1.getColliderId(), box2.getColliderId(), manifold);
                 });
         }
     }
 
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
-    for (const auto& [id1, id2, disp] : collisionResults) {
+    for (const auto& [id1, id2, manifold] : collisionResults) {
+        auto disp = manifold.normal * manifold.depth;
         logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!",
                      getCollider(id1).entityId.value(), getCollider(id2).entityId.value(), disp.x, disp.y);
 
