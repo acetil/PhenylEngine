@@ -176,7 +176,7 @@ void detail::Engine::updateEntityPosition (float deltaTime) {
     // TODO: remove function?
     physicsObj->updatePhysics(getComponentManager(), deltaTime);
     view::GameView gameView{gameObjHolder.tempGetGameObject().get()}; // TODO
-    physicsObj->checkCollisions(getComponentManager(), getEventBus(), gameView);
+    physicsObj->checkCollisions(getComponentManager(), getEventBus(), gameView, deltaTime);
 }
 
 void detail::Engine::debugRender () {

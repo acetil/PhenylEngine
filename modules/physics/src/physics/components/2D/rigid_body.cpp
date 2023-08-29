@@ -14,20 +14,24 @@ inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
 }
 
 void RigidBody2D::doMotion (common::GlobalTransform2D& transform2D, float deltaTime) {
-    netForce += gravity;
+    if (mass != 0) {
+        netForce += gravity * mass;
 
-    momentum += netForce * 0.5f * deltaTime;
-    transform2D.transform2D.translate(momentum / mass * deltaTime);
-    momentum += netForce * 0.5f * deltaTime;
+        momentum += netForce * 0.5f * deltaTime;
+        transform2D.transform2D.translate(momentum / mass * deltaTime);
+        momentum += netForce * 0.5f * deltaTime;
+    }
 
     netForce = {0, 0};
 
-    angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
-    transform2D.transform2D.rotateBy(angularMomentum / inertialMoment);
-    angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
+    if (inertialMoment != 0) {
+        angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
+        transform2D.transform2D.rotateBy(angularMomentum / inertialMoment);
+        angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
 
-    if (glm::abs(angularMomentum / inertialMoment) < MIN_ANGULAR_VEL) {
-        angularMomentum = 0.0f;
+        if (glm::abs(angularMomentum / inertialMoment) < MIN_ANGULAR_VEL) {
+            angularMomentum = 0.0f;
+        }
     }
 
     torque = 0.0f;

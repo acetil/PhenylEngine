@@ -36,6 +36,14 @@ namespace physics {
         void applyTorque (float torque);
 
         void applyFriction (const SimpleFriction& friction, float deltaTime);
+
+        [[nodiscard]] const glm::vec2& getMomentum () const {
+            return momentum;
+        }
+
+        [[nodiscard]] float getAngularMomentum () const {
+            return angularMomentum;
+        }
     };
 
     util::DataValue phenyl_to_data (const RigidBody2D& motion2D);

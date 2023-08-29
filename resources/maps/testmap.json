@@ -208,6 +208,54 @@
             },
             "Rotation2D": 0.0,
             "EntityType": "wall_entity"
+        },
+        {
+            "GlobalTransform2D" : {
+                "transform" : {
+                    "position" : {
+                        "x" : -0.2,
+                        "y" : 0.0
+                    },
+                    "scale" : {
+                        "x" : 0.1,
+                        "y" : 0.1
+                    },
+                    "rotation" : 0.0
+                }
+            },
+            "EntityType" : "block_entity"
+        },
+        {
+            "GlobalTransform2D" : {
+                "transform" : {
+                    "position" : {
+                        "x" : -0.2,
+                        "y" : 0.5
+                    },
+                    "scale" : {
+                        "x" : 0.1,
+                        "y" : 0.1
+                    },
+                    "rotation" : 0.0
+                }
+            },
+            "EntityType" : "block_entity"
+        },
+        {
+            "GlobalTransform2D" : {
+                "transform" : {
+                    "position" : {
+                        "x" : -0.2,
+                        "y" : 1
+                    },
+                    "scale" : {
+                        "x" : 0.1,
+                        "y" : 0.1
+                    },
+                    "rotation" : 0.0
+                }
+            },
+            "EntityType" : "block_entity"
         }
     ],
     "tile_ids": [

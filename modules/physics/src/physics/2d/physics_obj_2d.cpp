@@ -1,3 +1,5 @@
+#include <random>
+
 #include "physics_obj_2d.h"
 #include "component/component_serialiser.h"
 #include "physics/components/2D/collision_component.h"
@@ -9,6 +11,8 @@
 #include "physics/shape/2d/box_shape_2d_interface.h"
 #include "common/components/2d/global_transform.h"
 #include "common/events/debug/debug_render.h"
+
+#define SOLVER_ITERATIONS 10
 
 using namespace physics;
 
@@ -146,9 +150,9 @@ void PhysicsObject2D::resolveCollision (physics::ColliderId id1, physics::Collid
     }
 }
 
-void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView) {
+void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView, float deltaTime) {
     //logging::log(LEVEL_DEBUG, "===New collision check===");
-    for (const auto& [collComp, transform] : compManager.iterate<CollisionComponent2D, common::GlobalTransform2D>()) {
+    for (const auto& [collComp, body, transform] : compManager.iterate<CollisionComponent2D, RigidBody2D, common::GlobalTransform2D>()) {
         //logging::log(LEVEL_DEBUG, "{}: collId={}", i.id().value(), i.get<CollisionComponent2D>().collider.getValue());
         auto& collider = getCollider(collComp.collider);
         //logging::log(LEVEL_DEBUG, "{}: shapeId={}", i.id().value(), collider.hitbox.getValue());
@@ -157,8 +161,17 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
         auto hitbox = ((Shape2D*)(shapeRegistry.getComponentErased(makePublicId(collider.hitbox))));
         hitbox->applyTransform(transform.transform2D.rotMatrix() * collComp.transform); // TODO: dirty?
         hitbox->setPosition(transform.transform2D.position());
+
+        collider.currentPos = transform.transform2D.position();
+        collider.mass = body.mass;
+        collider.inertialMoment = body.inertialMoment;
+        collider.momentum = body.getMomentum();
+        collider.angularMomentum = body.getAngularMomentum();
+        collider.appliedImpulse = {0.0f, 0.0f};
+        collider.appliedAngularImpulse = 0.0f;
     }
 
+    // TODO: better way
     for (auto [id, coll] : colliders.iterate()) {
         if (coll.updated) {
             coll.updated = false;
@@ -208,12 +221,14 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     }
 
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
+    std::vector<Constraint2D> constraints;
     for (const auto& [id1, id2, manifold] : collisionResults) {
         auto disp = manifold.normal * manifold.depth;
         logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!",
                      getCollider(id1).entityId.value(), getCollider(id2).entityId.value(), disp.x, disp.y);
 
-        resolveCollision(id1, id2, disp, compManager);
+        //resolveCollision(id1, id2, disp, compManager);
+        manifold.buildConstraints(constraints, &getCollider(id1), &getCollider(id2), deltaTime);
 
         if (getCollider(id1).hitboxLayers & getCollider(id2).eventboxMask) {
             events.emplace_back(getCollider(id2).entityId, getCollider(id1).entityId, getCollider(id1).hitboxLayers & getCollider(id2).eventboxMask);
@@ -224,10 +239,50 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
         }
     }
 
+    solveConstraints(constraints, compManager, deltaTime);
+
     for (const auto& [id1, id2, layers] : events) {
         eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
     }
 }
+
+void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager, float deltaTime) {
+    //std::shuffle(constraints.begin(), constraints.end(), std::random_device{});
+    for (auto i = 0; i < SOLVER_ITERATIONS; i++) {
+        //logging::log(LEVEL_DEBUG, "Solver iteration: {}", i);
+        bool shouldContinue = false;
+
+        for (auto& c : constraints) {
+            auto res = c.solve(deltaTime);
+            shouldContinue = shouldContinue || res;
+        }
+
+        if (!shouldContinue) {
+            break;
+        }
+    }
+
+    for (auto [id, collider] : colliders.iterate()) {
+        auto& [transform, body] = compManager.get<common::GlobalTransform2D, RigidBody2D>(collider.entityId).getUnsafe();
+
+        auto appliedImpulse = collider.appliedImpulse;
+        auto appliedAngularImpulse = collider.appliedAngularImpulse;
+
+
+        if (body.mass != 0) {
+            //logging::log(LEVEL_DEBUG, "Applying impulse <{}, {}> to entity {}!", appliedImpulse.x, appliedImpulse.y, collider.entityId.value());
+            body.applyImpulse(appliedImpulse);
+            transform.transform2D.translate(appliedImpulse / body.mass * deltaTime);
+        }
+
+        if (body.inertialMoment != 0) {
+            //logging::log(LEVEL_DEBUG, "Applying angular impulse {} to entity {}!", appliedAngularImpulse, collider.entityId.value());
+            body.applyAngularImpulse(appliedAngularImpulse);
+            transform.transform2D.rotateBy(appliedAngularImpulse / body.inertialMoment * deltaTime);
+        }
+    }
+}
+
 
 ColliderId PhysicsObject2D::addCollider (component::EntityId entityId) {
     auto index = colliders.emplace(entityId);
@@ -379,4 +434,3 @@ void PhysicsObject2D::debugRender (const component::EntityComponentManager& comp
         }
     }
 }
-

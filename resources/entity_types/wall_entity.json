@@ -1,4 +1,20 @@
 {
   "Controller" : "wall_entity",
-  "Model2D" : "test10"
+  "Model2D" : "test10",
+  "RigidBody2D" : {
+    "momentum" : {
+      "x" : 0.0,
+      "y" : 0.0
+    },
+    "force" : {
+      "x" : 0.0,
+      "y" : 0.0
+    },
+    "gravity" : {
+      "x" : 0.0,
+      "y" : 0.0
+    },
+    "mass" : 0.0,
+    "inertial_moment" : 0.0
+  }
 }

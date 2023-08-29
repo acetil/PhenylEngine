@@ -40,12 +40,12 @@ namespace component {
     };
 
     namespace detail {
-        template <typename ...Args, std::size_t N = 0>
+        template <std::size_t N, typename ...Args>
         bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>*...>& tup) {
             if constexpr (N == sizeof...(Args)) {
                 return true;
             } else {
-                return tupleAllNonNull<Args..., N+1>(tup) && std::get<N>(tup);
+                return tupleAllNonNull<N+1, Args...>(tup) && std::get<N>(tup);
             }
         }
 
@@ -984,8 +984,8 @@ namespace component {
         util::Optional<std::tuple<std::remove_reference_t<Args>&...>> get (EntityId entityId) {
             std::tuple<std::remove_cvref_t<Args>*...> ptrs{getEntityComp<std::remove_cvref_t<Args>>(entityId)...};
 
-            if (detail::tupleAllNonNull(ptrs)) {
-                return util::Optional{{*std::get<std::remove_cvref_t<Args>>(ptrs)...}};
+            if (detail::tupleAllNonNull<0, Args...>(ptrs)) {
+                return util::Optional<std::tuple<std::remove_reference_t<Args>&...>>{{*std::get<std::remove_cvref_t<Args>*>(ptrs)...}};
             } else {
                 return util::NullOpt;
             }
@@ -995,8 +995,8 @@ namespace component {
         util::Optional<std::tuple<const std::remove_cvref_t<Args>&...>> get (EntityId entityId) const {
             std::tuple<const std::remove_cvref_t<Args>*...> ptrs{getEntityComp<std::remove_cvref_t<Args>>(entityId)...};
 
-            if (detail::tupleAllNonNull(ptrs)) {
-                return util::Optional{{*std::get<const std::remove_cvref_t<Args>*>>(ptrs)...}};
+            if (detail::tupleAllNonNull<0, const Args...>(ptrs)) {
+                return util::Optional<std::tuple<const std::remove_cvref_t<Args>&...>>{{*std::get<const std::remove_cvref_t<Args>*>>(ptrs)...}};
             } else {
                 return util::NullOpt;
             }
