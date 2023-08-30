@@ -16,22 +16,47 @@ namespace physics {
         float angularMomentum{0.0f};
         float torque{0.0f};
 
+        float mass{1.0f};
+        float invMass{1.0f};
+        float inertialMoment{1.0f};
+        float invInertialMoment{1.0f};
+
         // TODO
         friend util::DataValue phenyl_to_data (const RigidBody2D& motion2D);
         friend bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& motion2D);
     public:
-        float mass{1.0f};
-        float inertialMoment{1.0f};
         glm::vec2 gravity{0, 0};
         float elasticity{0.0f};
+
+        [[nodiscard]] float getMass () const {
+            return mass;
+        }
+        [[nodiscard]] float getInvMass () const {
+            return invMass;
+        }
+        void setMass (float newMass) {
+            mass = newMass;
+            invMass = newMass != 0 ? 1 / newMass : 0.0f;
+        }
+
+        [[nodiscard]] float getInertia () const {
+            return inertialMoment;
+        }
+        [[nodiscard]] float getInvInertia () const {
+            return invInertialMoment;
+        }
+        void setInertia (float inertia) {
+            inertialMoment = inertia;
+            invInertialMoment = inertia != 0 ? 1 / inertia : 0.0f;
+        }
 
         void doMotion (common::GlobalTransform2D& transform2D, float deltaTime);
 
         void applyForce (glm::vec2 force);
-        void applyForce (glm::vec2 force, glm::vec2 localPosition);
+        void applyForce (glm::vec2 force, glm::vec2 worldDisplacement);
 
         void applyImpulse (glm::vec2 impulse);
-        void applyImpulse (glm::vec2 impulse, glm::vec2 localPosition);
+        void applyImpulse (glm::vec2 impulse, glm::vec2 worldDisplacement);
 
         void applyAngularImpulse (float angularImpulse);
         void applyTorque (float torque);

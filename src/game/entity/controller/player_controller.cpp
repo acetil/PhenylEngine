@@ -24,7 +24,7 @@ void game::PlayerController::controlEntityPrePhysics (component::EntityView& ent
    glm::vec2 cursorPos = gameView.getCamera().getWorldPos(cursorScreenPos);
 
     entityView.get<physics::RigidBody2D>().ifPresent([this](physics::RigidBody2D& comp) {
-       comp.applyForce(comp.mass * currForce);
+       comp.applyForce(comp.getMass() * currForce);
    });
 
     /*entityView.get<component::Position2D>().ifPresent([&cursorPos] (auto& comp) {
@@ -99,7 +99,7 @@ void game::PlayerController::controlEntityPostPhysics (component::EntityView& en
         });
 
         bulletView.get<physics::RigidBody2D>().ifPresent([bulletVel] (physics::RigidBody2D& comp) {
-            comp.applyImpulse(comp.mass * bulletVel);
+            comp.applyImpulse(comp.getMass() * bulletVel);
         });
 
         /*auto bulletView = entityView.withId(bulletId);

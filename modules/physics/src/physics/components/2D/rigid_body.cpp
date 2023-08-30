@@ -14,25 +14,22 @@ inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
 }
 
 void RigidBody2D::doMotion (common::GlobalTransform2D& transform2D, float deltaTime) {
-    if (mass != 0) {
-        netForce += gravity * mass;
+    netForce += gravity * mass;
 
-        momentum += netForce * 0.5f * deltaTime;
-        transform2D.transform2D.translate(momentum / mass * deltaTime);
-        momentum += netForce * 0.5f * deltaTime;
-    }
+    momentum += netForce * 0.5f * deltaTime;
+    transform2D.transform2D.translate(momentum * invMass * deltaTime);
+    momentum += netForce * 0.5f * deltaTime;
 
     netForce = {0, 0};
 
-    if (inertialMoment != 0) {
-        angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
-        transform2D.transform2D.rotateBy(angularMomentum / inertialMoment);
-        angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
+    angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * mass, MAX_ANGULAR_VEL * mass);
+    transform2D.transform2D.rotateBy(angularMomentum * invInertialMoment);
+    angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * mass, MAX_ANGULAR_VEL * mass);
 
-        if (glm::abs(angularMomentum / inertialMoment) < MIN_ANGULAR_VEL) {
-            angularMomentum = 0.0f;
-        }
+    if (glm::abs(angularMomentum * invInertialMoment) < MIN_ANGULAR_VEL) {
+        angularMomentum = 0.0f;
     }
+
 
     torque = 0.0f;
 }
@@ -41,33 +38,33 @@ void RigidBody2D::applyForce (glm::vec2 force) {
     netForce += force;
 }
 
-void RigidBody2D::applyForce (glm::vec2 force, glm::vec2 localPosition) {
+void RigidBody2D::applyForce (glm::vec2 force, glm::vec2 worldDisplacement) {
     netForce += force;
 
-    torque += vec2dCross(localPosition, force);
+    torque += vec2dCross(worldDisplacement, force);
 }
 
 void RigidBody2D::applyImpulse (glm::vec2 impulse) {
     momentum += impulse;
 }
 
-void RigidBody2D::applyImpulse (glm::vec2 impulse, glm::vec2 localPosition) {
+void RigidBody2D::applyImpulse (glm::vec2 impulse, glm::vec2 worldDisplacement) {
     momentum += impulse;
 
-    angularMomentum += vec2dCross(localPosition, impulse);
+    angularMomentum += vec2dCross(worldDisplacement, impulse);
 }
 
 
 util::DataValue physics::phenyl_to_data (const physics::RigidBody2D& motion2D) {
     util::DataObject dataObj;
     dataObj["momentum"] = motion2D.momentum;
-    dataObj["force"] = motion2D.netForce;
+    //dataObj["force"] = motion2D.netForce;
 
     dataObj["angular_momentum"] = motion2D.angularMomentum;
     dataObj["torque"] = motion2D.torque;
 
-    dataObj["mass"] = motion2D.mass;
-    dataObj["inertial_moment"] = motion2D.inertialMoment;
+    dataObj["mass"] = motion2D.getMass();
+    dataObj["inertial_moment"] = motion2D.getInertia();
 
     dataObj["gravity"] = motion2D.gravity;
     dataObj["elasticity"] = motion2D.elasticity;
@@ -86,9 +83,9 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, physics::RigidBo
         motion2D.momentum = dataObj.at("momentum").get<glm::vec2>();
     }
 
-    if (dataObj.contains("force")) {
+    /*if (dataObj.contains("force")) {
         motion2D.netForce = dataObj.at("force").get<glm::vec2>();
-    }
+    }*/
 
     if (dataObj.contains("angular_momentum")) {
         motion2D.angularMomentum = dataObj.at("angularMomentum").get<float>();
@@ -99,11 +96,11 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, physics::RigidBo
     }
 
     if (dataObj.contains("mass")) {
-        motion2D.mass = dataObj.at("mass").get<float>();
+        motion2D.setMass(dataObj.at("mass").get<float>());
     }
 
     if (dataObj.contains("inertial_moment")) {
-        motion2D.inertialMoment = dataObj.at("inertial_moment").get<float>();
+        motion2D.setInertia(dataObj.at("inertial_moment").get<float>());
     }
 
     if (dataObj.contains("gravity")) {
@@ -143,7 +140,6 @@ void RigidBody2D::applyFriction (const SimpleFriction& friction, float deltaTime
     auto frictionForce = glm::clamp(-momentum / deltaTime - netForce, -glm::vec2{friction.constFriction, friction.constFriction}, glm::vec2{friction.constFriction, friction.constFriction});
 
     applyForce(frictionForce);
-
     applyTorque(-angularMomentum * friction.angularDamp);
 }
 

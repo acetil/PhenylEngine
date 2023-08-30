@@ -15,12 +15,12 @@ static inline float sqLength (glm::vec2 vec) {
 }
 
 BoxShape2D::BoxShape2D (ColliderId collider, glm::vec2 scale, std::uint64_t layers, std::uint64_t mask) : Shape2D{collider, calculateRadius({{scale.x, 0}, {0, scale.y}}), layers, mask},
-                                                                                                          scaleMatrix{{scale.x, 0}, {0, scale.y}}, frameTransform{{scale.x, 0}, {0, scale.y}}, invFrameTransform{glm::inverse(glm::mat2{{scale.x, 0}, {0, scale.y}})} {
+                                                                                                          scaleMatrix{{scale.x, 0}, {0, scale.y}}, frameTransform{{scale.x, 0}, {0, scale.y}} {
     setOuterRadius(calculateRadius(scaleMatrix));
 }
 
 BoxShape2D::BoxShape2D (ColliderId collider, glm::mat2 scaleMat, std::uint64_t layers, std::uint64_t mask) : Shape2D{collider, calculateRadius(scaleMat), layers, mask},
-                                                                                                             scaleMatrix{scaleMat}, frameTransform{scaleMat}, invFrameTransform{glm::inverse(scaleMat)} {}
+                                                                                                             scaleMatrix{scaleMat}, frameTransform{scaleMat} {}
 
 glm::vec2 BoxShape2D::getScale () const {
     return {scaleMatrix[0].x, scaleMatrix[1].y};
@@ -32,7 +32,6 @@ void BoxShape2D::setScale (glm::vec2 scale) {
 
 void BoxShape2D::applyTransform (glm::mat2 transform) {
     frameTransform = transform * scaleMatrix;
-    invFrameTransform = glm::inverse(frameTransform);
 
     setOuterRadius(calculateRadius(frameTransform));
 }
@@ -159,10 +158,8 @@ Face2D BoxShape2D::getSignificantFace (glm::vec2 normal) {
     glm::vec2 furthestVertex = {0, 0};
     float furthestDistance = -std::numeric_limits<float>::max();
     unsigned int pointIndex = -1;
-    //logging::log(LEVEL_DEBUG, "Normal: <{}, {}>", normal.x, normal.y);
     for (auto i = 0; i < sizeof(boxPoints) / sizeof(glm::vec2); i++) {
         auto vertex = frameTransform * boxPoints[i];
-        //logging::log(LEVEL_DEBUG, "Point {}: <{}, {}>", i, vertex.x + getPosition().x, vertex.y + getPosition().y);
         auto dist = glm::dot(vertex, normal);
         if (dist > furthestDistance) {
             furthestDistance = dist;
@@ -171,14 +168,11 @@ Face2D BoxShape2D::getSignificantFace (glm::vec2 normal) {
         }
     }
 
-    //logging::log(LEVEL_DEBUG, "Furthest vertex is {}: <{}, {}>", pointIndex, furthestVertex.x + getPosition().x, furthestVertex.y + getPosition().y);
-
     auto vec1 = frameTransform * boxPoints[(pointIndex + 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
     auto vec2 = frameTransform * boxPoints[(pointIndex + (sizeof(boxPoints) / sizeof(glm::vec2)) - 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
 
     auto norm1 = -calcSegmentNormal(furthestVertex, vec1);
     auto norm2 = -calcSegmentNormal(vec2, furthestVertex);
-    //logging::log(LEVEL_DEBUG, "Face normals: <{}, {}>, <{}, {}>", norm1.x, norm1.y, norm2.x, norm2.y);
 
     auto dot1 = glm::dot(norm1, normal);
     auto dot2 = glm::dot(norm2, normal);

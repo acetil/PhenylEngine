@@ -39,7 +39,7 @@ namespace physics {
 
         Constraint2D (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias, std::array<float, 2> lambdaClamp);
 
-        bool solve (float deltaTime);
+        bool solve ();
     };
 
     enum class Manifold2DType : char {

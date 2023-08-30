@@ -9,7 +9,6 @@ namespace physics {
     private:
         glm::mat2 scaleMatrix;
         glm::mat2 frameTransform;
-        glm::mat2 invFrameTransform;
     public:
         BoxShape2D (ColliderId collider, glm::vec2 scale, std::uint64_t layers, std::uint64_t mask);
         BoxShape2D (ColliderId collider, glm::mat2 scaleMat, std::uint64_t layers, std::uint64_t mask);

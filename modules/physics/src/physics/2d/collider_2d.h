@@ -5,22 +5,18 @@
 namespace physics {
     struct Collider2D {
         ShapeId hitbox{};
-        //ShapeId eventbox{};
-
         glm::vec2 currentPos = {0, 0};
-
-        bool shapesMerged = true;
 
         std::uint64_t hitboxLayers = 0;
         std::uint64_t eventboxMask = 0;
 
-        float mass{100};
-        float inertialMoment{100};
+        float invMass{1/100.0f};
+        float invInertiaMoment{1/100.0f};
 
         float elasticity{0.0f};
 
-        glm::vec2 momentum;
-        float angularMomentum;
+        glm::vec2 momentum{0.0f};
+        float angularMomentum{0.0f};
 
         glm::vec2 appliedImpulse{0.0f, 0.0f};
         float appliedAngularImpulse{0.0f};
@@ -29,14 +25,14 @@ namespace physics {
         bool updated = false;
 
         Collider2D () = default;
-        Collider2D (component::EntityId entityId) {};
+        Collider2D (component::EntityId entityId): entityId{entityId} {};
 
         [[nodiscard]] glm::vec2 getCurrVelocity () const {
-            return mass != 0 ? (momentum + appliedImpulse) / mass : glm::vec2{0, 0};
+            return (momentum + appliedImpulse) * invMass;
         }
 
         [[nodiscard]] float getCurrAngularVelocity () const {
-            return inertialMoment != 0 ? (angularMomentum + appliedAngularImpulse) / inertialMoment : 0.0f;
+            return (angularMomentum + appliedAngularImpulse) * invInertiaMoment;
         }
 
         void applyImpulse (glm::vec2 impulse) {

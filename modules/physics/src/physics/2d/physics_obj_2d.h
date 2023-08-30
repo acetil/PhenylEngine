@@ -19,17 +19,14 @@ namespace physics {
         bool colliderExists (ColliderId id) const;
         Collider2D& getCollider (ColliderId id);
         const Collider2D& getCollider (ColliderId id) const;
-        void resolveCollision (ColliderId id1, ColliderId id2, glm::vec2 disp, component::EntityComponentManager& compManager);
         ShapeId deserialiseShape (const util::DataValue& val, ColliderId collider, std::size_t layers, std::size_t mask);
 
-        void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager, float deltaTime);
+        void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager);
     public:
         void addComponentSerialisers(component::EntitySerialiser &serialiser) override;
         void updatePhysics(component::EntityComponentManager& componentManager, float deltaTime) override;
         void checkCollisions(component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr &eventBus,
                              view::GameView &gameView, float deltaTime) override;
-
-        void checkCollisionsNew (const component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView);
 
         ColliderId addCollider(component::EntityId entityId) override;
         void destroyCollider(physics::ColliderId id) override;
