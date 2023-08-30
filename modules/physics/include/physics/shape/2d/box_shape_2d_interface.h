@@ -14,7 +14,7 @@ namespace physics {
 
         ShapeView (void* shapeData) : shape{*(static_cast<BoxShape2D*>(shapeData))} {}
 
-        friend class ShapeDataNew;
+        friend class ShapeData;
 
     public:
         glm::vec2 getScale ();

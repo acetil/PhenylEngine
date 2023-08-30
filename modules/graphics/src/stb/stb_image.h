@@ -5654,7 +5654,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
                   raw_data[j] = stbi__get8(s);
                }
             }
-            //   clearEntities the reading flag for the next pixel
+            //   clear the reading flag for the next pixel
             read_next_pixel = 0;
          } // end of reading a pixel
 
@@ -5682,7 +5682,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
             }
          }
       }
-      //   clearEntities my palette, if I had one
+      //   clear my palette, if I had one
       if ( tga_palette != NULL )
       {
          STBI_FREE( tga_palette );
@@ -6339,7 +6339,7 @@ static stbi_uc *stbi__process_gif_raster(stbi__context *s, stbi__gif *g)
       g->codes[init_code].suffix = (stbi_uc) init_code;
    }
 
-   // support no starting clearEntities code
+   // support no starting clear code
    avail = clear+2;
    oldcode = -1;
 
@@ -6358,8 +6358,8 @@ static stbi_uc *stbi__process_gif_raster(stbi__context *s, stbi__gif *g)
          stbi__int32 code = bits & codemask;
          bits >>= codesize;
          valid_bits -= codesize;
-         // @OPTIMIZE: is there some way we can accelerate the non-clearEntities path?
-         if (code == clear) {  // clearEntities code
+         // @OPTIMIZE: is there some way we can accelerate the non-clear path?
+         if (code == clear) {  // clear code
             codesize = lzw_cs + 1;
             codemask = (1 << codesize) - 1;
             avail = clear + 2;
@@ -6372,7 +6372,7 @@ static stbi_uc *stbi__process_gif_raster(stbi__context *s, stbi__gif *g)
             return g->out;
          } else if (code <= avail) {
             if (first) {
-               return stbi__errpuc("no clearEntities code", "Corrupt GIF");
+               return stbi__errpuc("no clear code", "Corrupt GIF");
             }
 
             if (oldcode >= 0) {
@@ -6465,7 +6465,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
       memcpy( g->background, g->out, 4 * g->w * g->h ); 
    }
 
-   // clearEntities my history;
+   // clear my history;
    memset( g->history, 0x00, g->w * g->h );        // pixels that were affected previous frame
 
    for (;;) {

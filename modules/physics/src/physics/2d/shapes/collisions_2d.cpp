@@ -24,14 +24,8 @@ static inline float lineIntersection (glm::vec2 p, glm::vec2 dv, glm::vec2 ip, g
 
 static inline Manifold2D buildManifoldInternal (const physics::Face2D& refFace, const physics::Face2D& incFace, glm::vec2 normal, float depth) {
     auto dv = incFace.vertices[1] - incFace.vertices[0];
-    //logging::log(LEVEL_DEBUG, "Intersect0 = {}", lineIntersection(incFace.vertices[0], dv, refFace.vertices[0], refFace.normal));
-    //logging::log(LEVEL_DEBUG, "Intersect1 = {}", lineIntersection(incFace.vertices[0], dv, refFace.vertices[1], refFace.normal));
     auto inc1 = glm::clamp(lineIntersection(incFace.vertices[0], dv, refFace.vertices[0], refFace.normal), 0.0f, 1.0f) * dv + incFace.vertices[0];
     auto inc2 = glm::clamp(lineIntersection(incFace.vertices[0], dv, refFace.vertices[1], refFace.normal), 0.0f, 1.0f) * dv + incFace.vertices[0];
-
-
-
-    //logging::log(LEVEL_DEBUG, "Clipped points: <{}, {}>, <{}, {}>", inc1.x, inc1.y, inc2.x, inc2.y);
 
     // At least one point should not be clipped
     assert(glm::dot(inc1 - refFace.vertices[0], refFace.normal) <= 0 || glm::dot(inc2 - refFace.vertices[0], refFace.normal) <= 0);
@@ -47,20 +41,13 @@ static inline Manifold2D buildManifoldInternal (const physics::Face2D& refFace, 
 
 Manifold2D physics::buildManifold (const physics::Face2D& face1, const physics::Face2D& face2, glm::vec2 normal, float depth) {
     if (glm::dot(face1.normal, normal) >= glm::dot(face2.normal, -normal)) {
-        //logging::log(LEVEL_DEBUG, "Ref face: face1, Inc face: face2");
         return buildManifoldInternal(face1, face2, normal, depth);
     } else {
-        //logging::log(LEVEL_DEBUG, "Ref face: face2, Inc face: face1");
         return buildManifoldInternal(face2, face1, normal, depth);
     }
 }
 
-void Manifold2D::buildConstraints (std::vector<Constraint2D>& constraints, Collider2D* obj1, Collider2D* obj2, float deltaTime) const {
-    /*for (int i = 0; i < (int)type; i++) {
-        float bias = -BAUMGARTE_TERM / deltaTime * depth;
-        constraints.emplace_back(obj1, obj2, points[i], normal, bias, std::array<float, 2>{0.0f, std::numeric_limits<float>::max()});
-    }*/
-
+Constraint2D Manifold2D::buildConstraint (Collider2D* obj1, Collider2D* obj2, float deltaTime) const {
     auto contactPoint = (points[0] + points[1]) / 2.0f;
     auto r1 = contactPoint - obj1->currentPos;
     auto r2 = contactPoint - obj2->currentPos;
@@ -69,21 +56,21 @@ void Manifold2D::buildConstraints (std::vector<Constraint2D>& constraints, Colli
     auto elasticityTerm = glm::dot(normal, obj1->momentum * obj1->invMass + r1 * obj1->angularMomentum * obj1->invInertiaMoment - obj2->momentum * obj2->invMass - r2 * obj2->angularMomentum * obj2->invInertiaMoment);
 
     float bias = -BAUMGARTE_TERM / deltaTime * (glm::max(depth + BAUMGARTE_SLOP, 0.0f)) - elasticity * elasticityTerm;
-    constraints.emplace_back(obj1, obj2, contactPoint, normal, bias, std::array<float, 2>{0.0f, std::numeric_limits<float>::max()});
+    return Constraint2D::ContactConstraint(obj1, obj2, contactPoint, normal, bias);
 }
 
-Constraint2D::Constraint2D (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias, std::array<float, 2> lambdaClamp) : obj1{obj1}, obj2{obj2}, bias{bias}, lambdaClamp{lambdaClamp}, jVelObj1{}, jVelObj2{}, lambdaSum{0.0f} {
+Constraint2D Constraint2D::ContactConstraint (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias) {
     // See https://kevinyu.net/2018/01/17/understanding-constraint-solver-in-physics-engine/ and
     // https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf
 
     auto r1 = contactPoint - obj1->currentPos;
     auto r2 = contactPoint - obj2->currentPos;
 
-    jVelObj1 = obj1->invMass != 0 ? -normal : glm::vec2{0, 0};
-    jWObj1 = obj1->invInertiaMoment != 0 ? vec2dCross(-r1, normal) : 0.0f;
+    auto jVelObj1 = obj1->invMass != 0 ? -normal : glm::vec2{0, 0};
+    auto jWObj1 = obj1->invInertiaMoment != 0 ? vec2dCross(-r1, normal) : 0.0f;
 
-    jVelObj2 = obj2->invMass != 0 ? normal : glm::vec2{0, 0};
-    jWObj2 = obj2->invInertiaMoment != 0 ? vec2dCross(r2, normal) : 0.0f;
+    auto jVelObj2 = obj2->invMass != 0 ? normal : glm::vec2{0, 0};
+    auto jWObj2 = obj2->invInertiaMoment != 0 ? vec2dCross(r2, normal) : 0.0f;
 
     float jacobMass = 0.0f;
     jacobMass += glm::dot(jVelObj1 * glm::vec2{1 * obj1->invMass, 1 * obj1->invMass}, jVelObj1);
@@ -91,7 +78,19 @@ Constraint2D::Constraint2D (Collider2D* obj1, Collider2D* obj2, glm::vec2 contac
     jacobMass += jWObj1 * obj1->invInertiaMoment * jWObj1;
     jacobMass += jWObj2 * obj2->invInertiaMoment * jWObj2;
 
-    invJacobMass = 1 / jacobMass;
+    auto invJacobMass = 1 / jacobMass;
+
+    return Constraint2D {
+        .obj1=obj1,
+        .obj2=obj2,
+        .jVelObj1=jVelObj1,
+        .jVelObj2=jVelObj2,
+        .jWObj1=jWObj1,
+        .jWObj2=jWObj2,
+        .invJacobMass=invJacobMass,
+        .bias=bias,
+        .lambdaClamp={0.0f, std::numeric_limits<float>::max()}
+    };
 }
 
 bool Constraint2D::solve () {

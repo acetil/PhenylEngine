@@ -118,7 +118,7 @@ void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
 }
 
 void detail::GameObject::loadMap (Map::SharedPtr map) {
-    entityComponentManager->clearEntities();
+    entityComponentManager->clear();
     this->gameMap = std::move(map);
 
     for (auto& i : gameMap->getEntities()) {

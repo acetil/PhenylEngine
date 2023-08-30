@@ -61,7 +61,6 @@ util::DataValue PhysicsObject2D::serialiseCollider (ColliderId id) const {
 
     obj["shape"] = ((Shape2D*)shapeRegistry.getComponentErased(makePublicId(collider.hitbox)))->serialise();
 
-
     return obj;
 }
 
@@ -102,16 +101,23 @@ ColliderId PhysicsObject2D::deserialiseCollider (const util::DataValue& val, com
     return collId;
 }
 
+void PhysicsObject2D::addComponents (component::EntityComponentManager& componentManager) {
+    componentManager.addComponent<RigidBody2D>();
+    componentManager.addEraseCallback<RigidBody2D>([this] (const RigidBody2D& comp) {
+        destroyCollider(comp.getCollider());
+    });
+}
+
 void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& serialiser) {
-    serialiser.addComponentSerialiser<RigidBody2D>("RigidBody2D", [this] (const RigidBody2D& comp) -> util::DataValue {
-        util::DataValue val = phenyl_to_data(comp);
+    serialiser.addComponentSerialiser<RigidBody2D>("RigidBody2D", [this] (const RigidBody2D& body) -> util::DataValue {
+        util::DataValue val = body.serialise();
 
         if (!val.is<util::DataObject>()) {
             logging::log(LEVEL_ERROR, "RigidBody2D serialise did not return DataObject!");
         }
 
         auto& obj = val.get<util::DataObject>();
-        obj["collider"] = serialiseCollider(comp.getCollider());
+        obj["collider"] = serialiseCollider(body.getCollider());
 
         return val;
     }, [this] (const util::DataValue& val, component::EntityId id) -> util::Optional<RigidBody2D> {
@@ -128,7 +134,7 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
 
         auto collId = deserialiseCollider(obj.at("collider"), id);
         RigidBody2D body{collId};
-        if (!phenyl_from_data(val, body)) {
+        if (!body.deserialise(val)) {
             logging::log(LEVEL_WARNING, "Failed to parse serialised RigidBody2D!");
             destroyCollider(collId);
             return util::NullOpt;
@@ -136,7 +142,6 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
 
         return {body};
     });
-    //serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
 }
 
 void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
@@ -159,21 +164,9 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
         collider.invInertiaMoment = body.getInvInertia();
         collider.momentum = body.getMomentum();
         collider.angularMomentum = body.getAngularMomentum();
-        //collider.elasticity = body.elasticity;
 
         collider.appliedImpulse = {0.0f, 0.0f};
         collider.appliedAngularImpulse = 0.0f;
-    }
-
-    // TODO: better way
-    for (auto [id, coll] : colliders.iterate()) {
-        if (coll.updated) {
-            coll.updated = false;
-        } else {
-            logging::log(LEVEL_DEBUG, "Removing coll={}, shape={}", id + 1, coll.hitbox.getValue());
-            shapeRegistry.remove(makePublicId(coll.hitbox));
-            colliders.remove(id); // Valid because FLVector, so removal doesnt change other elements
-        }
     }
 
     std::vector<std::tuple<ColliderId, ColliderId, Manifold2D>> collisionResults;
@@ -201,7 +194,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
     std::vector<Constraint2D> constraints;
     for (const auto& [id1, id2, manifold] : collisionResults) {
-        manifold.buildConstraints(constraints, &getCollider(id1), &getCollider(id2), deltaTime);
+        constraints.push_back(manifold.buildConstraint(&getCollider(id1), &getCollider(id2), deltaTime));
 
         if (getCollider(id1).hitboxLayers & getCollider(id2).eventboxMask) {
             events.emplace_back(getCollider(id2).entityId, getCollider(id1).entityId, getCollider(id1).hitboxLayers & getCollider(id2).eventboxMask);
@@ -238,10 +231,7 @@ void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, 
         auto& [transform, body] = compManager.get<common::GlobalTransform2D, RigidBody2D>(collider.entityId).getUnsafe();
 
         body.applyImpulse(collider.appliedImpulse);
-        //transform.transform2D.translate(appliedImpulse / body.mass * deltaTime);
-
         body.applyAngularImpulse(collider.appliedAngularImpulse);
-        //transform.transform2D.rotateBy(appliedAngularImpulse / body.inertialMoment * deltaTime);
     }
 }
 
@@ -270,6 +260,10 @@ void PhysicsObject2D::destroyCollider (physics::ColliderId id) {
     if (!colliderExists(id)) {
         logging::log(LEVEL_WARNING, "Attempted to destroy collider {} that does not exist!", index);
     } else {
+        auto& collider = getCollider(id);
+        if (collider.hitbox) {
+            shapeRegistry.remove(makePublicId(collider.hitbox));
+        }
         colliders.remove(index);
     }
 }
@@ -291,7 +285,7 @@ void PhysicsObject2D::setShapeType (physics::ShapeId id, physics::PrimitiveShape
     }
 }
 
-ShapeDataNew PhysicsObject2D::getShapeData (physics::ShapeId id) const {
+ShapeData PhysicsObject2D::getShapeData (physics::ShapeId id) const {
     auto pubId = makePublicId(id);
     auto shapeType = shapeRegistry.getTypeIndex(pubId);
     auto shapeData = shapeRegistry.getComponentErased(pubId);
@@ -319,17 +313,6 @@ ShapeId PhysicsObject2D::makeNewHitbox (physics::ColliderId colliderId, std::siz
 void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     // TODO: pass through deserialiser instead
     scope = eventBus->getScope();
-    /*eventBus->subscribe<event::EntityCreationEvent>([this] (event::EntityCreationEvent& event) {
-        event.entityView.get<CollisionComponent2D>().ifPresent([this, &event] (CollisionComponent2D& comp) {
-             if (!comp.collider) {
-                 return;
-             }
-
-             auto& coll = getCollider(comp.collider);
-             coll.entityId = event.entityView.id();
-         });
-    }, scope);*/
-
     eventBus->subscribe<event::DebugRenderEvent>([this] (const event::DebugRenderEvent& event) {
         debugColliderRender = event.doRender;
     }, scope);
@@ -346,7 +329,7 @@ void PhysicsObject2D::debugRender (const component::EntityComponentManager& comp
                         auto pos2 = shape.getTransform() * glm::vec2{1, -1} + transform.transform2D.position();
                         auto pos3 = shape.getTransform() * glm::vec2{1, 1} + transform.transform2D.position();
                         auto pos4 = shape.getTransform() * glm::vec2{-1, 1} + transform.transform2D.position();
-                        //common::debugWorldRect(pos1, pos2, pos3, pos4, {1, 0, 0, 0.5}, {0, 0, 1, 1});
+
                         common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
                     });
         }

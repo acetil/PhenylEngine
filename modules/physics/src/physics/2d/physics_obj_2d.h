@@ -25,25 +25,21 @@ namespace physics {
 
         void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager);
     public:
-        void addComponentSerialisers(component::EntitySerialiser &serialiser) override;
+        void addComponents(component::EntityComponentManager& componentManager) override;
+        void addComponentSerialisers(component::EntitySerialiser& serialiser) override;
         void updatePhysics(component::EntityComponentManager& componentManager, float deltaTime) override;
-        void checkCollisions(component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr &eventBus,
-                             view::GameView &gameView, float deltaTime) override;
+        void checkCollisions(component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr& eventBus,
+                             view::GameView& gameView, float deltaTime) override;
 
         ColliderId addCollider(component::EntityId entityId) override;
         void destroyCollider(physics::ColliderId id) override;
 
         ShapeId getColliderHitbox(physics::ColliderId id) override;
-        //ShapeId getColliderEventbox(physics::ColliderId entityId) override;
-        //bool colliderShapesMerged(physics::ColliderId entityId) override;
-        //void setColliderShapesMerged(physics::ColliderId entityId, bool merged) override;
-
 
         void setShapeType(physics::ShapeId id, physics::PrimitiveShape shape) override;
-        ShapeDataNew getShapeData(physics::ShapeId id) const override;
+        [[nodiscard]] ShapeData getShapeData(physics::ShapeId id) const override;
 
         ShapeId makeNewHitbox(physics::ColliderId colliderId, std::size_t typeIndex, void *request) override;
-        //ShapeId makeNewEventbox(physics::ColliderId collider, std::size_t typeIndex, void *request) override;
 
         void addEventHandlers (const event::EventBus::SharedPtr& eventBus) override;
         void debugRender (const component::EntityComponentManager& componentManager) override;

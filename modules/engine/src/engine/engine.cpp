@@ -93,6 +93,7 @@ engine::detail::Engine::Engine () : componentManager{256}{
     eventBus = event::EventBus::NewSharedPtr();
     entitySerialiser = std::make_unique<component::EntitySerialiser>();
     physicsObj = physics::makeDefaultPhysics();
+    physicsObj->addComponents(componentManager);
     addEventHandlers();
 
     auto gameObj = gameObjHolder.getGameObject();
@@ -120,6 +121,7 @@ engine::detail::Engine::Engine () : componentManager{256}{
 
 engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
+    componentManager.clear();
 }
 
 game::detail::GameObject::SharedPtr detail::Engine::getGameObjectTemp () const {

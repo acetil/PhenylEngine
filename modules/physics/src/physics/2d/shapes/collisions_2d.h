@@ -33,11 +33,11 @@ namespace physics {
         float invJacobMass;
         float bias;
 
-        float lambdaSum;
+        float lambdaSum{0.0f};
 
         std::array<float, 2> lambdaClamp;
 
-        Constraint2D (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias, std::array<float, 2> lambdaClamp);
+        static Constraint2D ContactConstraint (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias);
 
         bool solve ();
     };
@@ -53,7 +53,7 @@ namespace physics {
         float depth;
         Manifold2DType type;
 
-        void buildConstraints (std::vector<Constraint2D>& constraints, Collider2D* obj1, Collider2D* obj2, float deltaTime) const;
+        Constraint2D buildConstraint (Collider2D* obj1, Collider2D* obj2, float deltaTime) const;
     };
 
     Manifold2D buildManifold (const Face2D& face1, const Face2D& face2, glm::vec2 normal, float depth);

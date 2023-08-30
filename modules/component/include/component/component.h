@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <limits>
 #include <vector>
+#include <functional>
 
 #include "forward.h"
 
@@ -82,7 +83,7 @@ namespace component {
             virtual void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) = 0;
             virtual void moveTypedComp (std::byte* dest, std::byte* src) = 0;
             virtual void deleteTypedComp (std::byte* comp) = 0;
-
+            virtual void runDeletionCallbacks (std::byte* comp, EntityId id) = 0;
         public:
             ComponentSet (std::size_t startCapacity, std::size_t compSize);
             virtual ~ComponentSet ();
@@ -126,6 +127,8 @@ namespace component {
 
         template <typename T>
         class ConcreteComponentSet : public ComponentSet {
+        private:
+            std::vector<std::function<void(const T&, EntityId)>> deletionCallbacks{};
         protected:
             void assertTypeIndex (std::size_t typeIndex, const char* debugOtherName) const override {
                 if (typeIndex != meta::type_index<T>()) {
@@ -156,8 +159,21 @@ namespace component {
                     srcPtr++;
                 }
             }
+
+            void runDeletionCallbacks (std::byte* comp, EntityId id) override {
+                assert(comp);
+                const T& compRef = *((T*) comp);
+                for (auto& i : deletionCallbacks) {
+                    i(compRef, id);
+                }
+            }
         public:
             explicit ConcreteComponentSet (std::size_t startCapacity) : ComponentSet(startCapacity, sizeof(T)) {}
+
+            template <meta::callable<void, const T&, EntityId> F>
+            void addDeletionCallback (F fn) {
+                deletionCallbacks.emplace_back(std::move(fn));
+            }
 
             ~ConcreteComponentSet () override {
                 clear();
@@ -961,7 +977,23 @@ namespace component {
             return idList.size();
         }
 
-        void clearEntities () {
+        template <typename T, meta::callable<void, const T&, EntityId> F>
+        void addEraseCallback (F fn) {
+            auto* concreteComp = (detail::ConcreteComponentSet<T>*)getOrCreateComponent<T>();
+
+            concreteComp->addDeletionCallback(std::move(fn));
+        }
+
+        template <typename T, meta::callable<void, const T&> F>
+        void addEraseCallback (F fn) {
+            auto cb = [fn = std::move(fn)] (const T& comp, EntityId id) -> void {
+                fn(comp);
+            };
+
+            addEraseCallback<T>(cb);
+        }
+
+        void clear () {
             logging::log(LEVEL_DEBUG, "Clearing entities!");
             for (auto [i, comp] : components.kv()) {
                 comp->clear();

@@ -52,6 +52,7 @@ void detail::ComponentSet::deleteComp (EntityId id) {
 
     auto compIndex = indexSet[id.id - 1];
     auto* compPtr = data.get() + compSize * compIndex;
+    runDeletionCallbacks(compPtr, id);
     if (compIndex == dataSize - 1) {
         deleteTypedComp(compPtr);
     } else {
@@ -81,16 +82,21 @@ void detail::ComponentSet::guaranteeCapacity (std::size_t capacity) {
     moveAllComps(newData.get(), data.get(), dataSize);
 
     data = std::move(newData);
+    ids.reserve(dataCapacity);
+    indexSet.reserve(dataCapacity);
 }
 
 void detail::ComponentSet::clear () {
     for (std::size_t i = 0; i < dataSize; i++) {
+        runDeletionCallbacks(data.get() + (i * compSize), ids[i]);
         deleteTypedComp(data.get() + (i * compSize));
         auto index = ids[i].id - 1;
 
         indexSet[index] = EMPTY_INDEX;
         ids[i] = EntityId{};
     }
+
+    dataSize = 0;
 }
 
 bool detail::ComponentSet::hasComp (EntityId id) const {

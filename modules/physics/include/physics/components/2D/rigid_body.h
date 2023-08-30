@@ -21,15 +21,10 @@ namespace physics {
         float inertialMoment{1.0f};
         float invInertialMoment{1.0f};
 
-        // TODO
-        friend util::DataValue phenyl_to_data (const RigidBody2D& body);
-        friend bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& body);
-
         void applyFriction ();
     public:
         explicit RigidBody2D (ColliderId collider) : colliderId{collider} {}
         glm::vec2 gravity{0, 0};
-        //float elasticity{0.0f};
 
         float drag{0.0f};
         float angularDrag{0.0f};
@@ -78,8 +73,8 @@ namespace physics {
         ColliderId getCollider () const {
             return colliderId;
         };
-    };
 
-    util::DataValue phenyl_to_data (const RigidBody2D& body);
-    bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& body);
+        [[nodiscard]] util::DataValue serialise () const;
+        bool deserialise (const util::DataValue& dataVal);
+    };
 }

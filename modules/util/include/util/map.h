@@ -465,7 +465,7 @@ namespace util {
 
         void clear () {
             for (std::size_t i = 0; i < maxSize; i++) {
-                data[i].clearEntities();
+                data[i].clear();
             }
 
             currentSize = 0;

@@ -131,7 +131,6 @@ namespace component {
 
             explicit FixedComponentVector (std::size_t typeIndex) : typeIndex{typeIndex} {
                 auto str = indexes.toString();
-                logging::log(LEVEL_DEBUG, "Test: {}", str);
             };
 
             template <typename ...Args>
@@ -182,15 +181,10 @@ namespace component {
                     return;
                 }
 
-                component::logging::log(LEVEL_DEBUG, "Removing (id: {}, gen: {})", id.getIndex(), id.getGeneration());
-
                 auto compIndex = indexes.at(id.getIndex());
-                component::logging::log(LEVEL_DEBUG, "Removal index: {}", compIndex);
                 if (compIndex != comps.size() - 1) {
-                    component::logging::log(LEVEL_DEBUG, "Swapping indexes {} and {}!", compIndex, comps.size() - 1);
                     IdType lastId = std::get<0>(comps[comps.size() - 1]);
                     indexes.at(lastId.getIndex()) = compIndex;
-                    component::logging::log(LEVEL_DEBUG, "Id {} is now pointing at {}!", lastId.getIndex(), indexes.at(lastId.getIndex()));
                     comps[compIndex] = std::move(comps[comps.size() - 1]);
                 }
 

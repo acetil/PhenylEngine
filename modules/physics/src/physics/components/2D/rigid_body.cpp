@@ -51,60 +51,6 @@ void RigidBody2D::applyImpulse (glm::vec2 impulse, glm::vec2 worldDisplacement) 
     angularMomentum += vec2dCross(worldDisplacement, impulse);
 }
 
-
-util::DataValue physics::phenyl_to_data (const physics::RigidBody2D& body) {
-    util::DataObject dataObj;
-    dataObj["momentum"] = body.momentum;
-    dataObj["angular_momentum"] = body.angularMomentum;
-
-    dataObj["mass"] = body.getMass();
-    dataObj["inertial_moment"] = body.getInertia();
-
-    dataObj["gravity"] = body.gravity;
-    dataObj["drag"] = body.drag;
-    dataObj["angular_drag"] = body.angularDrag;
-
-    return dataObj;
-}
-
-bool physics::phenyl_from_data (const util::DataValue& dataVal, physics::RigidBody2D& body) {
-    if (!dataVal.is<util::DataObject>()) {
-        return false;
-    }
-
-    const auto& dataObj = dataVal.get<util::DataObject>();
-
-    if (dataObj.contains("momentum")) {
-        body.momentum = dataObj.at("momentum").get<glm::vec2>();
-    }
-
-    if (dataObj.contains<float>("angular_momentum")) {
-        body.angularMomentum = dataObj.at("angularMomentum").get<float>();
-    }
-
-    if (dataObj.contains<float>("mass")) {
-        body.setMass(dataObj.at("mass").get<float>());
-    }
-
-    if (dataObj.contains<float>("inertial_moment")) {
-        body.setInertia(dataObj.at("inertial_moment").get<float>());
-    }
-
-    if (dataObj.contains("gravity")) {
-        body.gravity = dataObj.at("gravity").get<glm::vec2>();
-    }
-
-    if (dataObj.contains<float>("drag")) {
-        body.drag = dataObj.at<float>("drag");
-    }
-
-    if (dataObj.contains<float>("angular_drag")) {
-        body.angularDrag = dataObj.at<float>("angular_drag");
-    }
-
-    return true;
-}
-
 void RigidBody2D::applyFriction () {
     applyForce(-drag * momentum);
     applyTorque(-angularMomentum * drag);
@@ -116,4 +62,57 @@ void RigidBody2D::applyAngularImpulse (float angularImpulse) {
 
 void RigidBody2D::applyTorque (float appliedTorque) {
     torque += appliedTorque;
+}
+
+util::DataValue RigidBody2D::serialise () const {
+    util::DataObject dataObj;
+    dataObj["momentum"] = momentum;
+    dataObj["angular_momentum"] = angularMomentum;
+
+    dataObj["mass"] = mass;
+    dataObj["inertial_moment"] = inertialMoment;
+
+    dataObj["gravity"] = gravity;
+    dataObj["drag"] = drag;
+    dataObj["angular_drag"] = angularDrag;
+
+    return dataObj;
+}
+
+bool RigidBody2D::deserialise (const util::DataValue& dataVal) {
+    if (!dataVal.is<util::DataObject>()) {
+        return false;
+    }
+
+    const auto& dataObj = dataVal.get<util::DataObject>();
+
+    if (dataObj.contains("momentum")) {
+        momentum = dataObj.at("momentum").get<glm::vec2>();
+    }
+
+    if (dataObj.contains<float>("angular_momentum")) {
+        angularMomentum = dataObj.at("angularMomentum").get<float>();
+    }
+
+    if (dataObj.contains<float>("mass")) {
+        setMass(dataObj.at("mass").get<float>());
+    }
+
+    if (dataObj.contains<float>("inertial_moment")) {
+        setInertia(dataObj.at("inertial_moment").get<float>());
+    }
+
+    if (dataObj.contains("gravity")) {
+        gravity = dataObj.at("gravity").get<glm::vec2>();
+    }
+
+    if (dataObj.contains<float>("drag")) {
+        drag = dataObj.at<float>("drag");
+    }
+
+    if (dataObj.contains<float>("angular_drag")) {
+        angularDrag = dataObj.at<float>("angular_drag");
+    }
+
+    return true;
 }

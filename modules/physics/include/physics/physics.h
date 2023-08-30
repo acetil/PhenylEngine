@@ -40,12 +40,13 @@ namespace physics {
             return id.convert();
         }
 
-        virtual ShapeDataNew getShapeData (ShapeId id) const = 0;
+        virtual ShapeData getShapeData (ShapeId id) const = 0;
         virtual ShapeId makeNewHitbox (ColliderId collider, std::size_t typeIndex, void* request) = 0;
         //virtual ShapeId makeNewEventbox (ColliderId collider, std::size_t typeIndex, void* request) = 0;
 
     public:
         virtual ~IPhysics() = default;
+        virtual void addComponents (component::EntityComponentManager& componentManager) = 0;
         virtual void addComponentSerialisers (component::EntitySerialiser& serialiser) = 0;
         virtual void updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) = 0;
         virtual void checkCollisions (component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView, float deltaTime) = 0;

@@ -20,34 +20,15 @@ namespace physics {
         T{std::declval<void*>()};
     };
 
-    // TODO: refcounting
-    class ShapeData {
-    private:
-        std::size_t shapeType;
-        void* data;
-        void errExit (const std::string& msg);
-    public:
-        ShapeData (std::size_t shapeType, void* data) {}
-
-        template <ShapeDataType T>
-        T as () {
-            if (T::Type != shapeType) {
-                errExit("Incorrect shape type!");
-            }
-
-            return T{data};
-        }
-    };
-
     template <typename T>
     class ShapeView;
 
-    class ShapeDataNew {
+    class ShapeData {
     private:
         std::size_t shapeTypeIndex;
         void* data;
     public:
-        ShapeDataNew (std::size_t shapeTypeIndex, void* data) : shapeTypeIndex{shapeTypeIndex}, data{data} {}
+        ShapeData (std::size_t shapeTypeIndex, void* data) : shapeTypeIndex{shapeTypeIndex}, data{data} {}
 
         template <typename T>
         ShapeView<T> as () {
