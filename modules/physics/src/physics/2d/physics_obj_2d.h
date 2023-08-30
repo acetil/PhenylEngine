@@ -20,6 +20,8 @@ namespace physics {
         Collider2D& getCollider (ColliderId id);
         const Collider2D& getCollider (ColliderId id) const;
         ShapeId deserialiseShape (const util::DataValue& val, ColliderId collider, std::size_t layers, std::size_t mask);
+        util::DataValue serialiseCollider (ColliderId collider) const;
+        ColliderId deserialiseCollider (const util::DataValue& val, component::EntityId entityId);
 
         void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager);
     public:

@@ -10,7 +10,6 @@
 #include "logging/logging.h"
 #include "graphics/graphics_handlers.h"
 #include "physics/physics.h"
-#include "physics/components/2D/collision_component.h"
 #include "engine/entity/controller/entity_controller.h"
 #include "graphics/phenyl_graphics.h"
 #include "engine/phenyl_game.h"

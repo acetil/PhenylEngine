@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/maths_headers.h"
+#include "physics/physics.h"
 
 namespace common {
     class GlobalTransform2D;
@@ -10,6 +11,7 @@ namespace physics {
 
     struct RigidBody2D {
     private:
+        ColliderId colliderId;
         glm::vec2 momentum{0, 0};
         glm::vec2 netForce{0, 0};
 
@@ -25,6 +27,7 @@ namespace physics {
         friend util::DataValue phenyl_to_data (const RigidBody2D& motion2D);
         friend bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& motion2D);
     public:
+        explicit RigidBody2D (ColliderId collider) : colliderId{collider} {}
         glm::vec2 gravity{0, 0};
         float elasticity{0.0f};
 
@@ -70,6 +73,10 @@ namespace physics {
         [[nodiscard]] float getAngularMomentum () const {
             return angularMomentum;
         }
+
+        ColliderId getCollider () const {
+            return colliderId;
+        };
     };
 
     util::DataValue phenyl_to_data (const RigidBody2D& motion2D);

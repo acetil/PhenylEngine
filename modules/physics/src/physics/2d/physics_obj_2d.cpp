@@ -2,7 +2,6 @@
 
 #include "physics_obj_2d.h"
 #include "component/component_serialiser.h"
-#include "physics/components/2D/collision_component.h"
 #include "physics/components/2D/rigid_body.h"
 #include "common/events/entity_collision.h"
 #include "common/events/entity_creation.h"
@@ -53,65 +52,85 @@ ShapeId PhysicsObject2D::deserialiseShape (const util::DataValue& val, ColliderI
     }
 }
 
+util::DataValue PhysicsObject2D::serialiseCollider (ColliderId id) const {
+    util::DataObject obj;
+    auto& collider = getCollider(id);
+    obj["layers"] = (unsigned int)collider.hitboxLayers;
+    obj["masks"] = (unsigned int)collider.eventboxMask;
+
+    obj["shape"] = ((Shape2D*)shapeRegistry.getComponentErased(makePublicId(collider.hitbox)))->serialise();
+
+
+    return obj;
+}
+
+ColliderId PhysicsObject2D::deserialiseCollider (const util::DataValue& val, component::EntityId entityId) {
+    if (!val.is<util::DataObject>()) {
+        return {};
+    }
+    const auto& obj = val.get<util::DataObject>();
+
+    Collider2D coll{entityId};
+
+    if (!obj.contains<int>("layers")) {
+        return {};
+    }
+    coll.hitboxLayers = obj.at<unsigned int>("layers");
+
+    if (!obj.contains<int>("masks")) {
+        return {};
+    }
+    coll.eventboxMask = obj.at<unsigned int>("masks");
+
+    if (!obj.contains("shape")) {
+        return {};
+    }
+
+    auto collId = makeId<ColliderId>(colliders.push(coll));
+    auto shapeId = deserialiseShape(obj.at("shape"), collId, coll.hitboxLayers, coll.eventboxMask);
+    if (!shapeId) {
+        destroyCollider(collId);
+        return {};
+    }
+    getCollider(collId).hitbox = shapeId;
+
+    return collId;
+}
+
 void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& serialiser) {
-    //serialiser.addComponentSerialiser<SimpleFrictionMotion2D>("SimpleFrictionMotion2D");
-    //serialiser.addComponentSerialiser<CollisionComponent2D>("CollisionComponent2D");
-    serialiser.addComponentSerialiser<CollisionComponent2D>("CollisionComponent2D", [this] (const CollisionComponent2D& comp) -> util::DataValue {
-        util::DataObject obj;
-        obj["coll_scale"] = comp.transform;
+    serialiser.addComponentSerialiser<RigidBody2D>("RigidBody2D", [this] (const RigidBody2D& comp) -> util::DataValue {
+        util::DataValue val = phenyl_to_data(comp);
 
-        const auto& coll = getCollider(comp.collider);
-        //obj["mass"] = coll.invMass != 0 ? 1 / coll.invMass : 0.0f;
-        obj["layers"] = static_cast<unsigned int>(coll.hitboxLayers); // TODO: remove static cast
-        obj["masks"] = static_cast<unsigned int>(coll.eventboxMask);
-        obj["resolve_layers"] = static_cast<unsigned int>(coll.eventboxMask);
-        obj["event_layers"] = static_cast<unsigned int>(coll.eventboxMask);
-        obj["shape"] = ((Shape2D*)shapeRegistry.getComponentErased(makePublicId(coll.hitbox)))->serialise();
-
-        return obj;
-    }, [this] (const util::DataValue& val) -> util::Optional<CollisionComponent2D> {
         if (!val.is<util::DataObject>()) {
+            logging::log(LEVEL_ERROR, "RigidBody2D serialise did not return DataObject!");
+        }
+
+        auto& obj = val.get<util::DataObject>();
+        obj["collider"] = serialiseCollider(comp.getCollider());
+
+        return val;
+    }, [this] (const util::DataValue& val, component::EntityId id) -> util::Optional<RigidBody2D> {
+        if (!val.is<util::DataObject>()) {
+            logging::log(LEVEL_WARNING, "Serialised RigidBody2D is not DataObject!");
             return util::NullOpt;
         }
+
         const auto& obj = val.get<util::DataObject>();
-
-
-        CollisionComponent2D comp;
-        if (!obj.contains("coll_scale") || !phenyl_from_data(obj.at("coll_scale"), comp.transform)) {
+        if (!obj.contains("collider")) {
+            logging::log(LEVEL_WARNING, "Missing required collider attribute in serialised RigidBody2D!");
             return util::NullOpt;
         }
 
-        Collider2D coll;
-        /*if (!obj.contains("mass") || !obj.at("mass").is<float>()) {
-            return util::NullOpt;
-        }*/
-        //float mass = obj.at("mass").get<float>()
-        //coll.mass = obj.at("mass").get<float>();
-
-        if (!obj.contains("layers") || !obj.at("layers").is<int>()) { // TODO
-            return util::NullOpt;
-        }
-        coll.hitboxLayers = (std::size_t)obj.at("layers").get<unsigned int>();
-
-        if (!obj.contains("masks") || !obj.at("masks").is<int>()) { // TODO
-            return util::NullOpt;
-        }
-        coll.eventboxMask = (std::size_t)obj.at("masks").get<unsigned int>();
-
-        if (!obj.contains("shape")) {
-            return util::NullOpt;
-        }
-        auto collId = makeId<ColliderId>(colliders.push(coll));
-        auto shapeId = deserialiseShape(obj.at("shape"), collId, coll.hitboxLayers, coll.eventboxMask);
-        if (!shapeId) {
+        auto collId = deserialiseCollider(obj.at("collider"), id);
+        RigidBody2D body{collId};
+        if (!phenyl_from_data(val, body)) {
+            logging::log(LEVEL_WARNING, "Failed to parse serialised RigidBody2D!");
             destroyCollider(collId);
             return util::NullOpt;
         }
-        getCollider(collId).hitbox = shapeId;
-        comp.collider = collId;
-        return {comp};
+
+        return {body};
     });
-    serialiser.addComponentSerialiser<RigidBody2D>("RigidBody2D");
     serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
 }
 
@@ -126,12 +145,12 @@ void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componen
 }
 
 void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView, float deltaTime) {
-    for (const auto& [collComp, body, transform] : compManager.iterate<CollisionComponent2D, RigidBody2D, common::GlobalTransform2D>()) {
-        auto& collider = getCollider(collComp.collider);
+    for (const auto& [body, transform] : compManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
+        auto& collider = getCollider(body.getCollider());
         collider.updated = true;
 
         auto hitbox = ((Shape2D*)(shapeRegistry.getComponentErased(makePublicId(collider.hitbox))));
-        hitbox->applyTransform(transform.transform2D.rotMatrix() * collComp.transform); // TODO: dirty?
+        hitbox->applyTransform(transform.transform2D.rotMatrix()); // TODO: dirty?
         hitbox->setPosition(transform.transform2D.position());
 
         collider.currentPos = transform.transform2D.position();
@@ -299,7 +318,7 @@ ShapeId PhysicsObject2D::makeNewHitbox (physics::ColliderId colliderId, std::siz
 void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     // TODO: pass through deserialiser instead
     scope = eventBus->getScope();
-    eventBus->subscribe<event::EntityCreationEvent>([this] (event::EntityCreationEvent& event) {
+    /*eventBus->subscribe<event::EntityCreationEvent>([this] (event::EntityCreationEvent& event) {
         event.entityView.get<CollisionComponent2D>().ifPresent([this, &event] (CollisionComponent2D& comp) {
              if (!comp.collider) {
                  return;
@@ -308,7 +327,7 @@ void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventB
              auto& coll = getCollider(comp.collider);
              coll.entityId = event.entityView.id();
          });
-    }, scope);
+    }, scope);*/
 
     eventBus->subscribe<event::DebugRenderEvent>([this] (const event::DebugRenderEvent& event) {
         debugColliderRender = event.doRender;
@@ -318,8 +337,8 @@ void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventB
 void PhysicsObject2D::debugRender (const component::EntityComponentManager& componentManager) {
     if (debugColliderRender) {
         // Debug render
-        for (const auto& [collComp, transform]: componentManager.iterate<CollisionComponent2D, common::GlobalTransform2D>()) {
-            auto collider = getCollider(collComp.collider);
+        for (const auto& [body, transform]: componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
+            auto collider = getCollider(body.getCollider());
             shapeRegistry.getComponent<BoxShape2D>(makePublicId(collider.hitbox)).ifPresent(
                     [&transform] (const BoxShape2D& shape) {
                         auto pos1 = shape.getTransform() * glm::vec2{-1, -1} + transform.transform2D.position();

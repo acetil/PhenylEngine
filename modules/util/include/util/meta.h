@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <functional>
 #include <tuple>
+#include <concepts>
 
 namespace meta {
     template <typename T>
@@ -497,4 +498,10 @@ namespace meta {
     inline std::tuple<T> maybe_wrap_tuple (T t) {
         return std::tuple{t};
     }
+
+    template <typename F, typename R, typename ...Args>
+    concept callable = requires (F fn, Args... args){
+        requires std::invocable<F, Args...>;
+        { fn(args...) } -> std::same_as<R>;
+    };
 }

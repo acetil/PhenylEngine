@@ -69,17 +69,25 @@ namespace util {
             return values.kv();
         }
 
-        template <typename T>
-        DataValue& operator[] (const T& key);
+        template <typename K>
+        DataValue& operator[] (const K& key);
 
-        template <typename T>
-        bool contains (const T& key) const;
+        template <typename K>
+        bool contains (const K& key) const;
 
-        template <typename T>
-        DataValue& at (const T& key);
+        template <typename T, typename K>
+        bool contains (const K& key) const;
 
-        template <typename T>
-        DataValue const& at (const T& key) const;
+        template <typename K>
+        DataValue& at (const K& key);
+        template <typename T, typename K>
+        auto at (const K& key);
+
+        template <typename K>
+        const DataValue& at (const K& key) const;
+
+        template <typename T, typename K>
+        auto at (const K& key) const;
 
         std::string convertToJson ();
         std::string convertToJsonPretty (int indent = 4);
@@ -402,25 +410,40 @@ namespace util {
         return DataValue(*this);
     }
 
-    template<typename T>
-    DataValue& DataObject::operator[] (const T& key) {
+    template<typename K>
+    DataValue& DataObject::operator[] (const K& key) {
         return values[key];
     }
 
 
-    template <typename T>
-    bool DataObject::contains (const T& key) const {
+    template <typename K>
+    bool DataObject::contains (const K& key) const {
         return values.contains(key);
     }
 
-    template <typename T>
-    DataValue& DataObject::at (const T& key) {
+    template <typename T, typename K>
+    bool DataObject::contains (const K& key) const {
+        return values.contains(key) && values.at(key).template is<T>();
+    }
+
+    template <typename K>
+    DataValue& DataObject::at (const K& key) {
         return values.at(key);
     }
 
-    template <typename T>
-    DataValue const& DataObject::at (const T& key) const {
+    template <typename T, typename K>
+    auto DataObject::at (const K& key) {
+        return values.at(key).template get<T>();
+    }
+
+    template <typename K>
+    const DataValue& DataObject::at (const K& key) const {
         return values.at(key);
+    }
+
+    template <typename T, typename K>
+    auto DataObject::at (const K& key) const {
+        return values.at(key).template get<T>();
     }
 
     inline std::string DataObject::toString () const {

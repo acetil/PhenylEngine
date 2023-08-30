@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
+#include <concepts>
 
 #include "util/map.h"
 #include "util/data.h"
 #include "util/optional.h"
 #include "component.h"
+#include "util/meta.h"
 
 namespace component {
     namespace detail {
@@ -21,7 +23,7 @@ namespace component {
             virtual bool hasComp (component::EntityView& entityView) const = 0;
         };
 
-        template</*size_t MaxComponents, */class T, typename SerialiseF, typename DeserialiseF>
+        template</*size_t MaxComponents, */class T, meta::callable<util::DataValue, const T&> SerialiseF, meta::callable<util::Optional<T>, const util::DataValue&, EntityId> DeserialiseF>
         class ComponentSerialiserImpl : public ComponentSerialiser/*<MaxComponents>*/ {
         private:
             SerialiseF serialiseF; // (const T&) -> util::DataValue
@@ -38,7 +40,7 @@ namespace component {
             }
 
             bool deserialiseComp (/*component::ComponentView<MaxComponents>*/component::EntityView& objectView, const util::DataValue& serialisedComp) override {
-                auto opt = deserialiseF(serialisedComp);
+                auto opt = deserialiseF(serialisedComp, objectView.id());
 
                 opt.ifPresent([&objectView] (T& val) {
                     objectView.insert<T>(std::move(val));
@@ -77,9 +79,16 @@ namespace component {
             serialiserMap[component] = std::move(serialiser);
         }
     public:
-        template <class T, typename F1, typename F2>
+        template <class T, meta::callable<util::DataValue, const T&> F1, meta::callable<util::Optional<T>, const util::DataValue&> F2>
         void addComponentSerialiser (const std::string& component, F1 serialiseFunc, F2 deserialiseFunc) {
-            addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl</*MaxComponents, */T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
+            addComponentSerialiser<T>(component, std::move(serialiseFunc), [f = std::move(deserialiseFunc)] (const util::DataValue& val, EntityId id) {
+                return f(val);
+            });
+        }
+
+        template <class T, meta::callable<util::DataValue, const T&> F1, meta::callable<util::Optional<T>, const util::DataValue&, EntityId> F2>
+        void addComponentSerialiser (const std::string& component, F1 serialiseFunc, F2 deserialiseFunc) {
+            addComponentSerialiserInt(component, std::make_unique<detail::ComponentSerialiserImpl<T, F1, F2>>(std::move(serialiseFunc), std::move(deserialiseFunc)));
         }
 
         template <class T>
