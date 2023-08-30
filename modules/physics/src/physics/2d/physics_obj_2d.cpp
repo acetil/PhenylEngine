@@ -167,6 +167,8 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
         collider.inertialMoment = body.inertialMoment;
         collider.momentum = body.getMomentum();
         collider.angularMomentum = body.getAngularMomentum();
+        collider.elasticity = body.elasticity;
+
         collider.appliedImpulse = {0.0f, 0.0f};
         collider.appliedAngularImpulse = 0.0f;
     }
@@ -214,7 +216,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
                     //logging::log(LEVEL_DEBUG, "Face 2: <{}, {}>-<{}, {}>, norm: <{}, {}>", face2.vertices[0].x, face2.vertices[0].y, face2.vertices[1].x, face2.vertices[1].y, face2.normal.x, face2.normal.y);
 
                     auto manifold = buildManifold(face1, face2, result.normal, result.depth);
-                    logging::log(LEVEL_DEBUG, "Manifold: <{}, {}>-<{}, {}>, norm: <{}, {}>, type: {}", manifold.points[0].x, manifold.points[0].y, manifold.points[1].x, manifold.points[1].y, manifold.normal.x, manifold.normal.y, (int)manifold.type);
+                    //logging::log(LEVEL_DEBUG, "Manifold: <{}, {}>-<{}, {}>, norm: <{}, {}>, type: {}", manifold.points[0].x, manifold.points[0].y, manifold.points[1].x, manifold.points[1].y, manifold.normal.x, manifold.normal.y, (int)manifold.type);
                     collisionResults.emplace_back(box1.getColliderId(), box2.getColliderId(), manifold);
                 });
         }
@@ -223,9 +225,9 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
     std::vector<Constraint2D> constraints;
     for (const auto& [id1, id2, manifold] : collisionResults) {
-        auto disp = manifold.normal * manifold.depth;
-        logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!",
-                     getCollider(id1).entityId.value(), getCollider(id2).entityId.value(), disp.x, disp.y);
+        //auto disp = manifold.normal * manifold.depth;
+        /*logging::log(LEVEL_DEBUG, "Detected collision between entities {} and {} with min translation vec <{}, {}>!",
+                     getCollider(id1).entityId.value(), getCollider(id2).entityId.value(), disp.x, disp.y);*/
 
         //resolveCollision(id1, id2, disp, compManager);
         manifold.buildConstraints(constraints, &getCollider(id1), &getCollider(id2), deltaTime);
@@ -249,7 +251,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
 void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager, float deltaTime) {
     //std::shuffle(constraints.begin(), constraints.end(), std::random_device{});
     for (auto i = 0; i < SOLVER_ITERATIONS; i++) {
-        //logging::log(LEVEL_DEBUG, "Solver iteration: {}", i);
+         //logging::log(LEVEL_DEBUG, "Solver iteration: {}", i);
         bool shouldContinue = false;
 
         for (auto& c : constraints) {
@@ -272,13 +274,13 @@ void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, 
         if (body.mass != 0) {
             //logging::log(LEVEL_DEBUG, "Applying impulse <{}, {}> to entity {}!", appliedImpulse.x, appliedImpulse.y, collider.entityId.value());
             body.applyImpulse(appliedImpulse);
-            transform.transform2D.translate(appliedImpulse / body.mass * deltaTime);
+            //transform.transform2D.translate(appliedImpulse / body.mass * deltaTime);
         }
 
         if (body.inertialMoment != 0) {
             //logging::log(LEVEL_DEBUG, "Applying angular impulse {} to entity {}!", appliedAngularImpulse, collider.entityId.value());
             body.applyAngularImpulse(appliedAngularImpulse);
-            transform.transform2D.rotateBy(appliedAngularImpulse / body.inertialMoment * deltaTime);
+            //transform.transform2D.rotateBy(appliedAngularImpulse / body.inertialMoment * deltaTime);
         }
     }
 }

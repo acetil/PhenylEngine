@@ -15,6 +15,7 @@
       "y" : 0.0
     },
     "mass" : 0.0,
-    "inertial_moment" : 0.0
+    "inertial_moment" : 0.0,
+    "elasticity" : 1.0
   }
 }

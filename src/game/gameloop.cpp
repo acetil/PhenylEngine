@@ -23,6 +23,8 @@
 #include "util/profiler.h"
 #include "default_input.h"
 
+#include "common/events/debug/debug_step.h"
+
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
 using namespace game; 
@@ -44,6 +46,26 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     game::GameInput& gameInput = gameObject.getGameInput();
     setupDefaultInput(gameInput, gameObject.getEventBus());
+
+    bool isStepping = false;
+    bool shouldStep = false;
+
+    auto scope = gameObject.getEventBus()->subscribe<event::DebugStepEvent>([&isStepping, &shouldStep] (event::DebugStepEvent& event) {
+        switch (event.status) {
+            case event::DebugStepStatus::ENABLE_STEPPING:
+                isStepping = true;
+                break;
+            case event::DebugStepStatus::DISABLE_STEPPING:
+                isStepping = false;
+                break;
+            case event::DebugStepStatus::DO_STEP:
+                if (isStepping) {
+                    shouldStep = true;
+                }
+                break;
+        }
+    });
+
     float deltaTime;
     float deltaPhysicsFrame = 0.0f;
     //float timeSinceFpsUpdate = 0.0f;
@@ -100,14 +122,18 @@ int game::gameloop (engine::PhenylEngine& engine) {
         gameInput.poll();
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
-            gameObject.updateEntitiesPrePhysics();
-            //gameObject.updateEntityPosition();
-            engine.updateEntityPosition(1.0f / PHYSICS_FPS);
-            gameObject.updateEntitiesPostPhysics();
+            if (!isStepping || shouldStep) {
+                gameObject.updateEntitiesPrePhysics();
+                //gameObject.updateEntityPosition();
+                engine.updateEntityPosition(1.0f / PHYSICS_FPS);
+                gameObject.updateEntitiesPostPhysics();
+                gameObject.updateCamera(graphics.getCamera());
+            }
+
+            shouldStep = false;
+
             deltaPhysicsFrame -= 1.0f / PHYSICS_FPS;
             util::endProfile();
-
-            gameObject.updateCamera(graphics.getCamera());
             //fpsFrames++;
         }
         /*if (timeSinceFpsUpdate >= 1.0f) {

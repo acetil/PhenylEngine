@@ -17,7 +17,7 @@ namespace physics {
         float mass{100};
         float inertialMoment{100};
 
-        float elasticity{1.0f};
+        float elasticity{0.0f};
 
         glm::vec2 momentum;
         float angularMomentum;

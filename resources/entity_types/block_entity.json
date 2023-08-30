@@ -59,9 +59,10 @@
     },
     "gravity" : {
       "x" : 0.0,
-      "y" : -1.0
+      "y" : -2.0
     },
     "mass" : 1.0,
-    "inertial_moment" : 5.0
+    "inertial_moment" : 3.0,
+    "elasticity" : 0.7
   }
 }

@@ -23,6 +23,7 @@ namespace physics {
         float mass{1.0f};
         float inertialMoment{1.0f};
         glm::vec2 gravity{0, 0};
+        float elasticity{0.0f};
 
         void doMotion (common::GlobalTransform2D& transform2D, float deltaTime);
 

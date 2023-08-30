@@ -2,8 +2,8 @@
 
 #include "logging/logging.h"
 
-#define BAUMGARTE_TERM 1.0f
-#define BAUMGARTE_SLOP (-0.0000f)
+#define BAUMGARTE_TERM 0.2f
+#define BAUMGARTE_SLOP (-0.001f)
 
 inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
     return vec1.x * vec2.y - vec1.y * vec2.x;
@@ -61,8 +61,21 @@ void Manifold2D::buildConstraints (std::vector<Constraint2D>& constraints, Colli
         constraints.emplace_back(obj1, obj2, points[i], normal, bias, std::array<float, 2>{0.0f, std::numeric_limits<float>::max()});
     }*/
 
-    float bias = -BAUMGARTE_TERM / deltaTime * (glm::max(depth + BAUMGARTE_SLOP, 0.0f));
-    constraints.emplace_back(obj1, obj2, (points[0] + points[1]) / 2.0f, normal, bias, std::array<float, 2>{0.0f, std::numeric_limits<float>::max()});
+    auto contactPoint = (points[0] + points[1]) / 2.0f;
+    auto r1 = contactPoint - obj1->currentPos;
+    auto r2 = contactPoint - obj2->currentPos;
+
+    auto invMass1 = obj1->mass != 0 ? 1 / obj1->mass : 0;
+    auto invMass2 = obj2->mass != 0 ? 1 / obj2->mass : 0;
+
+    auto invInertia1 = obj1->inertialMoment != 0 ? 1 / obj1->inertialMoment : 0;
+    auto invInertia2 = obj2->inertialMoment != 0 ? 1 / obj2->inertialMoment : 0;
+
+    auto elasticity = obj1->elasticity * obj2->elasticity; // TODO: different types of resolution?
+    auto elasticityTerm = glm::dot(normal, obj1->momentum * invMass1 + r1 * obj1->angularMomentum * invInertia1 - obj2->momentum * invMass2 - r2 * obj2->angularMomentum * invInertia2);
+
+    float bias = -BAUMGARTE_TERM / deltaTime * (glm::max(depth + BAUMGARTE_SLOP, 0.0f)) - elasticity * elasticityTerm;
+    constraints.emplace_back(obj1, obj2, contactPoint, normal, bias, std::array<float, 2>{0.0f, std::numeric_limits<float>::max()});
 }
 
 Constraint2D::Constraint2D (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias, std::array<float, 2> lambdaClamp) : obj1{obj1}, obj2{obj2}, bias{bias}, lambdaClamp{lambdaClamp}, jVelObj1{}, jVelObj2{}, lambdaSum{0.0f} {
@@ -79,32 +92,32 @@ Constraint2D::Constraint2D (Collider2D* obj1, Collider2D* obj2, glm::vec2 contac
     jWObj2 = obj2->inertialMoment != 0 ? vec2dCross(r2, normal) : 0.0f;
 
     float jacobMass = 0.0f;
-    //jacobMass += obj1->mass != 0 ? glm::dot(jVelObj1 * glm::vec2{1 / obj1->mass, 1 / obj1->mass}, jVelObj1) : 0.0f;
-    jacobMass += obj1->mass != 0 ? 1 / obj1->mass : 0;
-    //jacobMass += obj2->mass != 0 ? glm::dot(jVelObj2 * glm::vec2{1 / obj2->mass, 1 / obj2->mass}, jVelObj2) : 0.0f;
-    jacobMass += obj2->mass != 0 ? 1 / obj2->mass : 0;
+    jacobMass += obj1->mass != 0 ? glm::dot(jVelObj1 * glm::vec2{1 / obj1->mass, 1 / obj1->mass}, jVelObj1) : 0.0f;
+    //jacobMass += obj1->mass != 0 ? 1 / obj1->mass : 0;
+    jacobMass += obj2->mass != 0 ? glm::dot(jVelObj2 * glm::vec2{1 / obj2->mass, 1 / obj2->mass}, jVelObj2) : 0.0f;
+    //jacobMass += obj2->mass != 0 ? 1 / obj2->mass : 0;
 
-    //jacobMass += obj1->inertialMoment != 0 ? jWObj1 * (1 / obj1->inertialMoment) * jWObj1 : 0.0f;
-    jacobMass += obj1->inertialMoment != 0 ? (1 / obj1->inertialMoment) * vec2dCross(r1, normal) * vec2dCross(r1, normal) : 0.0f;
-    //jacobMass += obj2->inertialMoment != 0 ? jWObj2 * (1 / obj2->inertialMoment) * jWObj2 : 0.0f;
-    jacobMass += obj2->inertialMoment != 0 ? (1 / obj2->inertialMoment) * vec2dCross(r2, normal) * vec2dCross(r2, normal) : 0.0f;
+    jacobMass += obj1->inertialMoment != 0 ? jWObj1 * (1 / obj1->inertialMoment) * jWObj1 : 0.0f;
+    //jacobMass += obj1->inertialMoment != 0 ? (1 / obj1->inertialMoment) * vec2dCross(r1, normal) * vec2dCross(r1, normal) : 0.0f;
+    jacobMass += obj2->inertialMoment != 0 ? jWObj2 * (1 / obj2->inertialMoment) * jWObj2 : 0.0f;
+    //jacobMass += obj2->inertialMoment != 0 ? (1 / obj2->inertialMoment) * vec2dCross(r2, normal) * vec2dCross(r2, normal) : 0.0f;
     invJacobMass = 1 / jacobMass;
 }
 
 bool Constraint2D::solve (float deltaTime) {
-    float lambda = -(glm::dot(jVelObj1, obj1->getCurrVelocity()) + glm::dot(jVelObj2, obj2->getCurrVelocity()) + jWObj1 * obj1->getCurrAngularVelocity() + jWObj2 * obj2->getCurrAngularVelocity() + bias) / invJacobMass;
+    float lambda = -(glm::dot(jVelObj1, obj1->getCurrVelocity()) + glm::dot(jVelObj2, obj2->getCurrVelocity()) + jWObj1 * obj1->getCurrAngularVelocity() + jWObj2 * obj2->getCurrAngularVelocity() + bias) * invJacobMass;
     float newLambda = glm::clamp(lambdaSum + lambda, lambdaClamp[0], lambdaClamp[1]);
 
     float lambdaDiff = newLambda - lambdaSum;
     lambdaSum = newLambda;
-    if (lambdaDiff < std::numeric_limits<float>::epsilon()) {
+    if (glm::abs(lambdaDiff) < std::numeric_limits<float>::epsilon()) {
         return false;
     } else {
-        obj1->applyImpulse(jVelObj1 * lambdaDiff * deltaTime);
-        obj2->applyImpulse(jVelObj2 * lambdaDiff * deltaTime);
+        obj1->applyImpulse(jVelObj1 * lambdaDiff);
+        obj2->applyImpulse(jVelObj2 * lambdaDiff);
 
-        obj1->applyAngularImpulse(jWObj1 * lambdaDiff * deltaTime);
-        obj2->applyAngularImpulse(jWObj2 * lambdaDiff * deltaTime);
+        obj1->applyAngularImpulse(jWObj1 * lambdaDiff);
+        obj2->applyAngularImpulse(jWObj2 * lambdaDiff);
 
         return true;
     }

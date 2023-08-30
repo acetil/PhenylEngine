@@ -9,7 +9,7 @@
 #include <utility>
 
 namespace event {
-    class EntityCollisionEvent : public Event<EntityCollisionEvent> {
+    class EntityCollisionEvent : public Event<EntityCollisionEvent, false> {
     public:
         //component::EntityId entityId;
         component::EntityView firstEntity;

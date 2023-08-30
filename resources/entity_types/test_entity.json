@@ -45,7 +45,7 @@
   "GlobalTransform2D" : {
     "transform" : {
       "position" : {
-        "x" : 0.6,
+        "x" : 0.7,
         "y" : 0.0
       },
       "scale" : {
@@ -75,6 +75,7 @@
       "y" : 0.0
     },
     "mass" : 1.0,
-    "inertial_moment" : 5.0
+    "inertial_moment" : 5.0,
+    "elasticity" : 0.0
   }
 }

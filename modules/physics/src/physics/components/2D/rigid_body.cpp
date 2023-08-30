@@ -4,7 +4,7 @@
 #include "physics/components/simple_friction.h"
 
 #define LIN_FRICTION_MULT 20.0f
-#define MIN_ANGULAR_VEL 0.005f
+#define MIN_ANGULAR_VEL 0.01f
 #define MAX_ANGULAR_VEL (3.14f * 2.0f)
 
 using namespace physics;
@@ -70,6 +70,7 @@ util::DataValue physics::phenyl_to_data (const physics::RigidBody2D& motion2D) {
     dataObj["inertial_moment"] = motion2D.inertialMoment;
 
     dataObj["gravity"] = motion2D.gravity;
+    dataObj["elasticity"] = motion2D.elasticity;
 
     return dataObj;
 }
@@ -107,6 +108,10 @@ bool physics::phenyl_from_data (const util::DataValue& dataVal, physics::RigidBo
 
     if (dataObj.contains("gravity")) {
         motion2D.gravity = dataObj.at("gravity").get<glm::vec2>();
+    }
+
+    if (dataObj.contains("elasticity")) {
+        motion2D.elasticity = dataObj.at("elasticity").get<float>();
     }
 
     return true;

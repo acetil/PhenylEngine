@@ -13,6 +13,7 @@
 #include "util/string_help.h"
 #include "common/events/debug/debug_render.h"
 #include "common/events/debug/debug_pause.h"
+#include "common/events/debug/debug_step.h"
 
 using namespace util;
 
@@ -94,6 +95,18 @@ static void doDebugConsole (event::EventBus::SharedPtr bus) {
             }
         } else {
             logging::log(LEVEL_WARNING, "debug_render command requires one argument: true/false");
+        }
+    } else if (command == "debug_step") {
+        if (args.size() == 1) {
+            if (args[0] == "true") {
+                bus->raise(event::DebugStepEvent{.status=event::DebugStepStatus::ENABLE_STEPPING});
+            } else if (args[0] == "false") {
+                bus->raise(event::DebugStepEvent{.status=event::DebugStepStatus::DISABLE_STEPPING});
+            } else {
+                logging::log(LEVEL_WARNING, "Argument for debug_step command must be true or false");
+            }
+        } else {
+            logging::log(LEVEL_WARNING, "debug_step command requires one argument: true/false");
         }
     } else {
         logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);

@@ -15,7 +15,7 @@ void EntityController::controlEntityPostPhysics (component::EntityView& entityVi
 }
 
 void EntityController::onEntityCollision (component::EntityView& entityView, view::GameView& gameView, component::EntityView& otherView, unsigned int layers) {
-    logging::log(LEVEL_DEBUG, "On entity collision!");
+    //logging::log(LEVEL_DEBUG, "On entity collision!");
 }
 
 util::DataObject EntityController::getData (component::EntityView& entityView, view::GameView& gameView) {

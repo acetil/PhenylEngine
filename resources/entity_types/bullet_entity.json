@@ -51,7 +51,8 @@
     "force" : {
       "x" : 0.0,
       "y" : 0.0
-    }
+    },
+    "elasticity" : 1.0
   },
   "Model2D": "test9",
   "Position2D": {
