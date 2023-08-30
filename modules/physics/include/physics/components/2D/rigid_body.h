@@ -7,8 +7,6 @@ namespace common {
     class GlobalTransform2D;
 }
 namespace physics {
-    class SimpleFriction;
-
     struct RigidBody2D {
     private:
         ColliderId colliderId;
@@ -24,12 +22,17 @@ namespace physics {
         float invInertialMoment{1.0f};
 
         // TODO
-        friend util::DataValue phenyl_to_data (const RigidBody2D& motion2D);
-        friend bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& motion2D);
+        friend util::DataValue phenyl_to_data (const RigidBody2D& body);
+        friend bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& body);
+
+        void applyFriction ();
     public:
         explicit RigidBody2D (ColliderId collider) : colliderId{collider} {}
         glm::vec2 gravity{0, 0};
-        float elasticity{0.0f};
+        //float elasticity{0.0f};
+
+        float drag{0.0f};
+        float angularDrag{0.0f};
 
         [[nodiscard]] float getMass () const {
             return mass;
@@ -64,8 +67,6 @@ namespace physics {
         void applyAngularImpulse (float angularImpulse);
         void applyTorque (float torque);
 
-        void applyFriction (const SimpleFriction& friction, float deltaTime);
-
         [[nodiscard]] const glm::vec2& getMomentum () const {
             return momentum;
         }
@@ -79,6 +80,6 @@ namespace physics {
         };
     };
 
-    util::DataValue phenyl_to_data (const RigidBody2D& motion2D);
-    bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& motion2D);
+    util::DataValue phenyl_to_data (const RigidBody2D& body);
+    bool phenyl_from_data (const util::DataValue& dataVal, RigidBody2D& body);
 }

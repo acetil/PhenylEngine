@@ -1,23 +1,4 @@
 {
-  "CollisionComponent2D": {
-    "collider" : {
-      "layers": 1,
-      "masks": 3,
-      "shape": {
-        "type": "BoxShape2D",
-        "scale_matrix": [
-          {
-            "x": 0.1,
-            "y": 0
-          },
-          {
-            "x": 0,
-            "y": 0.1
-          }
-        ]
-      }
-    }
-  },
   "GlobalTransform2D" : {
     "transform" : {
       "position" : {
@@ -32,11 +13,6 @@
     }
   },
   "Model2D" : "test3",
-  "SimpleFriction" : {
-    "const_friction" : 0.2,
-    "lin_friction" : 0.14,
-    "angular_damp" : 0.2
-  },
   "RigidBody2D" : {
     "momentum" : {
       "x" : 0.0,
@@ -52,10 +28,12 @@
     },
     "mass" : 1.0,
     "inertial_moment" : 3.0,
-    "elasticity" : 0.7,
+    "drag" : 1.0,
+    "angular_drag" : 0.25,
     "collider" : {
       "layers": 1,
       "masks": 3,
+      "elasticity" : 0.7,
       "shape": {
         "type": "BoxShape2D",
         "scale_matrix": [

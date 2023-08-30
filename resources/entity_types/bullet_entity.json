@@ -1,23 +1,4 @@
 {
-  "CollisionComponent2D": {
-    "collider" : {
-      "layers": 1,
-      "masks": 3,
-      "shape": {
-        "type": "BoxShape2D",
-        "scale_matrix": [
-          {
-            "x": 0.03,
-            "y": 0.0
-          },
-          {
-            "x": 0.0,
-            "y": 0.03
-          }
-        ]
-      }
-    }
-  },
   "Controller" : "bullet",
   "GlobalTransform2D" : {
     "transform" : {
@@ -41,10 +22,10 @@
       "x" : 0.0,
       "y" : 0.0
     },
-    "elasticity" : 1.0,
     "collider" : {
       "layers": 1,
       "masks": 3,
+      "elasticity" : 1.0,
       "shape": {
         "type": "BoxShape2D",
         "scale_matrix": [
@@ -60,22 +41,5 @@
       }
     }
   },
-  "Model2D": "test9",
-  "Position2D": {
-    "x": 0.0,
-    "y": 0.0
-  },
-  "Rotation2D": 0.0,
-  "Transform2D": {
-    "transform": [
-      {
-        "x": 0.03,
-        "y": 0.0
-      },
-      {
-        "x": 0.0,
-        "y": 0.03
-      }
-    ]
-  }
+  "Model2D": "test9"
 }

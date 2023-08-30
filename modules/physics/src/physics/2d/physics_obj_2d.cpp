@@ -57,6 +57,7 @@ util::DataValue PhysicsObject2D::serialiseCollider (ColliderId id) const {
     auto& collider = getCollider(id);
     obj["layers"] = (unsigned int)collider.hitboxLayers;
     obj["masks"] = (unsigned int)collider.eventboxMask;
+    obj["elasticity"] = (unsigned int)collider.elasticity;
 
     obj["shape"] = ((Shape2D*)shapeRegistry.getComponentErased(makePublicId(collider.hitbox)))->serialise();
 
@@ -81,6 +82,10 @@ ColliderId PhysicsObject2D::deserialiseCollider (const util::DataValue& val, com
         return {};
     }
     coll.eventboxMask = obj.at<unsigned int>("masks");
+
+    if (obj.contains("elasticity")) {
+        coll.elasticity = obj.at<float>("elasticity");
+    }
 
     if (!obj.contains("shape")) {
         return {};
@@ -131,14 +136,10 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
 
         return {body};
     });
-    serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
+    //serialiser.addComponentSerialiser<SimpleFriction>("SimpleFriction");
 }
 
 void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
-    for (auto [body, friction] : componentManager.iterate<RigidBody2D, SimpleFriction>()) {
-        friction.updateFriction2D(body, deltaTime);
-    }
-
     for (auto [body, transform] : componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
         body.doMotion(transform, deltaTime);
     }
@@ -158,7 +159,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
         collider.invInertiaMoment = body.getInvInertia();
         collider.momentum = body.getMomentum();
         collider.angularMomentum = body.getAngularMomentum();
-        collider.elasticity = body.elasticity;
+        //collider.elasticity = body.elasticity;
 
         collider.appliedImpulse = {0.0f, 0.0f};
         collider.appliedAngularImpulse = 0.0f;

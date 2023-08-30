@@ -1,6 +1,7 @@
 #pragma once
 
 #include "physics/physics.h"
+#include "graphics/maths_headers.h"
 
 namespace physics {
     struct Collider2D {

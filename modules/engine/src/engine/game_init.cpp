@@ -6,7 +6,6 @@
 //#include "engine/entity/entity_test.h"
 #include "engine/entity/entities.h"
 #include "component/component.h"
-#include "physics/components/simple_friction.h"
 #include "logging/logging.h"
 #include "graphics/graphics_handlers.h"
 #include "physics/physics.h"

@@ -4,7 +4,6 @@
 //#include "engine/entity/entity_bullet.h"
 //#include "basic_entity.h"
 #include "engine/entity/controller/bullet_controller.h"
-#include "engine/entity/controller/wall_controller.h"
 #include "engine/game_object.h"
 using namespace game;
 
@@ -57,7 +56,7 @@ void game::addEntities(event::EntityRegisterEvent& event) {
     //event.gameObject.tempGetPtr()->registerEntityController<BulletController>("bullet");
     event.gameObject.tempGetPtr()->registerEntityController(std::make_unique<BulletController>());
     //event.gameObject.tempGetPtr()->registerEntityController<WallController>("wall_entity");
-    event.gameObject.tempGetPtr()->registerEntityController(std::make_unique<WallController>());
+    //event.gameObject.tempGetPtr()->registerEntityController(std::make_unique<WallController>());
 
     //event.gameObject.buildEntityTypes();
 

@@ -6,7 +6,6 @@
 #include "util/string_help.h"
 #include "engine/game_camera.h"
 #include "graphics/textures/texture_atlas.h"
-#include "physics/components/simple_friction.h"
 #include "physics/components/2D/rigid_body.h"
 #include "common/components/2d/global_transform.h"
 
