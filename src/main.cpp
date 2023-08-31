@@ -31,8 +31,28 @@ struct Baz : public Bar {
     char c;
 };
 
-struct Test {
+struct TestBase {
+    virtual int getVal () = 0;
+};
+
+struct Test : TestBase {
     int d;
+
+    int getVal() override {
+        return d * 10;
+    }
+
+    explicit Test (int d) : d{d} {}
+};
+
+struct Test1 : TestBase {
+    int e;
+
+    int getVal() override {
+        return e * 1000;
+    }
+
+    explicit Test1 (int e) : e{e} {}
 };
 
 static void testCompManager () {
@@ -44,10 +64,15 @@ static void testCompManager () {
     manager.addComponent<Bar2>();
     manager.addComponent<Baz>();
     manager.addComponent<Test>();
+    manager.addComponent<Test1>();
+    manager.addComponent<TestBase>();
 
     manager.addChild<Foo, Bar>();
     manager.addChild<Foo, Bar2>();
     manager.addChild<Bar, Baz>();
+
+    manager.addChild<TestBase, Test>();
+    manager.addChild<TestBase, Test1>();
 
     auto e1 = manager.create();
     auto e2 = manager.create();
@@ -70,6 +95,8 @@ static void testCompManager () {
     e2.insert<Test>(Test{6});
     e3.insert<Test>(Test{7});
     e5.insert<Test>(Test{8});
+
+    e4.insert<Test1>(Test1{9});
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo:");
     manager.each<Foo>([] (component::IterInfo& info, Foo& foo) {
@@ -94,6 +121,11 @@ static void testCompManager () {
     component::logging::log(LEVEL_DEBUG, "Looping through Test:");
     manager.each<Test>([] (component::IterInfo& info, Test& test) {
         component::logging::log(LEVEL_DEBUG, "{} Test: d={}", info.id().value(), test.d);
+    });
+
+    component::logging::log(LEVEL_DEBUG, "Looping through TestBase:");
+    manager.each<TestBase>([] (component::IterInfo& info, TestBase& test) {
+        component::logging::log(LEVEL_DEBUG, "{} TestBase: getVal()={}", info.id().value(), test.getVal());
     });
 
     e5.erase<Test>();

@@ -2,8 +2,8 @@
 
 using namespace component;
 
-detail::ComponentSet::ComponentSet (std::size_t startCapacity, std::size_t compSize) : ids{}, metadataSet{}, data{std::make_unique<std::byte[]>(startCapacity * compSize)},
-        compSize{compSize}, dataSize{0}, dataCapacity{startCapacity} {
+detail::ComponentSet::ComponentSet (std::size_t startCapacity, std::size_t compSize) : ids{}, metadataSet{}, data{compSize != 0 ? std::make_unique<std::byte[]>(startCapacity * compSize) : nullptr},
+        compSize{compSize}, dataSize{0}, dataCapacity{startCapacity}, hierachyDepth{0} {
     ids.reserve(startCapacity);
     metadataSet.reserve(startCapacity);
 }
@@ -35,7 +35,7 @@ bool detail::ComponentSet::canInsert (component::EntityId id) {
 std::byte* detail::ComponentSet::tryInsert (EntityId id) {
     assert(metadataSet.size() > id.id - 1);
 
-    if (!canInsert(id)) {
+    if (compSize == 0 || !canInsert(id)) {
         return nullptr;
     }
 
@@ -122,6 +122,7 @@ void detail::ComponentSet::onChildDelete (component::EntityId id) {
 }
 
 void detail::ComponentSet::guaranteeCapacity (std::size_t capacity) {
+    assert(compSize > 0);
     if (dataCapacity >= capacity) {
         return;
     }

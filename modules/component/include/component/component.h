@@ -160,7 +160,7 @@ namespace component {
         };
 
         template <typename T>
-        class ConcreteComponentSet : public ComponentSet {
+        class TypedComponentSet : public ComponentSet {
         private:
             std::vector<std::function<void(const T&, EntityId)>> deletionCallbacks{};
         protected:
@@ -171,6 +171,25 @@ namespace component {
                 }
             }
 
+            void runDeletionCallbacks (std::byte* comp, EntityId id) override {
+                assert(comp);
+                const T& compRef = *((T*) comp);
+                for (auto& i : deletionCallbacks) {
+                    i(compRef, id);
+                }
+            }
+        public:
+            explicit TypedComponentSet (std::size_t startCapacity, std::size_t compSize) : ComponentSet(startCapacity, compSize) {}
+
+            template <meta::callable<void, const T&, EntityId> F>
+            void addDeletionCallback (F fn) {
+                deletionCallbacks.emplace_back(std::move(fn));
+            }
+        };
+
+        template <typename T>
+        class ConcreteComponentSet : public TypedComponentSet<T> {
+        protected:
             void moveTypedComp (std::byte* dest, std::byte* src) override {
                 *((T*) dest) = std::move(*((T*) src));
 
@@ -193,25 +212,33 @@ namespace component {
                     srcPtr++;
                 }
             }
-
-            void runDeletionCallbacks (std::byte* comp, EntityId id) override {
-                assert(comp);
-                const T& compRef = *((T*) comp);
-                for (auto& i : deletionCallbacks) {
-                    i(compRef, id);
-                }
-            }
         public:
-            explicit ConcreteComponentSet (std::size_t startCapacity) : ComponentSet(startCapacity, sizeof(T)) {}
-
-            template <meta::callable<void, const T&, EntityId> F>
-            void addDeletionCallback (F fn) {
-                deletionCallbacks.emplace_back(std::move(fn));
-            }
+            explicit ConcreteComponentSet (std::size_t startCapacity) : TypedComponentSet<T>{startCapacity, sizeof(T)} {}
 
             ~ConcreteComponentSet () override {
-                clear();
+                ComponentSet::clear();
             }
+        };
+
+        template <typename T>
+        class AbstractComponentSet : public TypedComponentSet<T> {
+        protected:
+            void moveTypedComp(std::byte *dest, std::byte *src) override {
+                logging::log(LEVEL_FATAL, "Attempted to move comp of abstract component set!");
+                assert(false);
+            }
+
+            void deleteTypedComp(std::byte *comp) override {
+                logging::log(LEVEL_FATAL, "Attempted to delete comp of abstract component set!");
+                assert(false);
+            }
+
+            void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) override {
+                logging::log(LEVEL_FATAL, "Attempted to move all comps of abstract component set!");
+                assert(false);
+            }
+        public:
+            explicit AbstractComponentSet (std::size_t startCapacity) : TypedComponentSet<T>{startCapacity, 0} {}
         };
 
         class EntityIdList {
@@ -913,15 +940,29 @@ namespace component {
         }
 
         template <typename T>
+        std::unique_ptr<detail::ComponentSet> createComponent () requires (!std::is_abstract_v<T>) {
+            auto component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
+            component->guaranteeEntityIndex(idList.maxIndex());
+
+            return component;
+        }
+
+        template <typename T>
+        std::unique_ptr<detail::ComponentSet> createComponent () requires (std::is_abstract_v<T>) {
+            auto component = std::make_unique<detail::AbstractComponentSet<T>>(currStartCapacity);
+            component->guaranteeEntityIndex(idList.maxIndex());
+
+            return component;
+        }
+
+        template <typename T>
         detail::ComponentSet* getOrCreateComponent () {
             auto typeIndex = meta::type_index<T>();
             if (components.contains(typeIndex)) {
                 return components[typeIndex].get();
             }
 
-            std::unique_ptr<detail::ComponentSet> component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
-            component->guaranteeEntityIndex(idList.maxIndex());
-
+            auto component = createComponent<T>();
             auto* compPtr = component.get();
 
             components.emplace(typeIndex, std::move(component));
@@ -1171,6 +1212,16 @@ namespace component {
 
         explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {}
 
+        ComponentManager (const ComponentManager&) = delete;
+        ComponentManager (ComponentManager&&) = default;
+
+        ComponentManager& operator= (const ComponentManager&) = delete;
+        ComponentManager& operator= (ComponentManager&&) = default;
+
+        ~ComponentManager () {
+            clear();
+        }
+
         template <typename T>
         void addComponent () {
             auto typeIndex = meta::type_index<T>();
@@ -1179,8 +1230,9 @@ namespace component {
                 return;
             }
 
-            std::unique_ptr<detail::ComponentSet> component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
-            component->guaranteeEntityIndex(idList.maxIndex());
+            //std::unique_ptr<detail::ComponentSet> component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
+            //component->guaranteeEntityIndex(idList.maxIndex());
+            auto component = createComponent<T>();
 
             components.emplace(typeIndex, std::move(component));
         }
@@ -1200,7 +1252,7 @@ namespace component {
         }
 
         template <typename T, typename ...Args>
-        void insert (EntityId id, Args&&... args) {
+        void insert (EntityId id, Args&&... args) requires std::constructible_from<T, Args...> {
             if (!idList.check(id)) {
                 logging::log(LEVEL_ERROR, "Attempted to insert component to invalid entity {}!", id.value());
                 return;
@@ -1266,7 +1318,7 @@ namespace component {
 
         template <typename T, meta::callable<void, const T&, EntityId> F>
         void addEraseCallback (F fn) {
-            auto* concreteComp = (detail::ConcreteComponentSet<T>*)getOrCreateComponent<T>();
+            auto* concreteComp = (detail::TypedComponentSet<T>*)getOrCreateComponent<T>();
 
             concreteComp->addDeletionCallback(std::move(fn));
         }
