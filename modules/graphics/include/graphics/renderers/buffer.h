@@ -87,6 +87,7 @@ namespace graphics {
         };
     }
 
+    // TODO: disable/change copy behaviour
     template <typename T>
     class Buffer : public detail::BufferBase {
     private:

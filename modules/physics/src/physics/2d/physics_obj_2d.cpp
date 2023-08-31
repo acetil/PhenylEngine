@@ -145,13 +145,16 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
 }
 
 void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
-    for (auto [body, transform] : componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
+    /*for (auto [body, transform] : componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
         body.doMotion(transform, deltaTime);
-    }
+    }*/
+    componentManager.each<common::GlobalTransform2D, RigidBody2D>([deltaTime] (component::IterInfo& info, common::GlobalTransform2D& transform, RigidBody2D& body) {
+        body.doMotion(transform, deltaTime);
+    });
 }
 
 void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView, float deltaTime) {
-    for (const auto& [body, transform] : compManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
+    /*for (const auto& [body, transform] : compManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
         auto& collider = getCollider(body.getCollider());
         collider.updated = true;
 
@@ -167,7 +170,24 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
 
         collider.appliedImpulse = {0.0f, 0.0f};
         collider.appliedAngularImpulse = 0.0f;
-    }
+    }*/
+    compManager.each<common::GlobalTransform2D, RigidBody2D>([this] (auto& info, common::GlobalTransform2D& transform, RigidBody2D& body) {
+        auto& collider = getCollider(body.getCollider());
+        //collider.updated = true;
+
+        auto hitbox = ((Shape2D*)(shapeRegistry.getComponentErased(makePublicId(collider.hitbox))));
+        hitbox->applyTransform(transform.transform2D.rotMatrix()); // TODO: dirty?
+        hitbox->setPosition(transform.transform2D.position());
+
+        collider.currentPos = transform.transform2D.position();
+        collider.invMass = body.getInvMass();
+        collider.invInertiaMoment = body.getInvInertia();
+        collider.momentum = body.getMomentum();
+        collider.angularMomentum = body.getAngularMomentum();
+
+        collider.appliedImpulse = {0.0f, 0.0f};
+        collider.appliedAngularImpulse = 0.0f;
+    });
 
     std::vector<std::tuple<ColliderId, ColliderId, Manifold2D>> collisionResults;
     auto iterable = shapeRegistry.iterate<BoxShape2D>();
@@ -321,7 +341,7 @@ void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventB
 void PhysicsObject2D::debugRender (const component::EntityComponentManager& componentManager) {
     if (debugColliderRender) {
         // Debug render
-        for (const auto& [body, transform]: componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
+        /*for (const auto& [body, transform]: componentManager.iterate<RigidBody2D, common::GlobalTransform2D>()) {
             auto collider = getCollider(body.getCollider());
             shapeRegistry.getComponent<BoxShape2D>(makePublicId(collider.hitbox)).ifPresent(
                     [&transform] (const BoxShape2D& shape) {
@@ -332,6 +352,18 @@ void PhysicsObject2D::debugRender (const component::EntityComponentManager& comp
 
                         common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
                     });
-        }
+        }*/
+        componentManager.each<common::GlobalTransform2D, RigidBody2D>([this] (auto& info, const common::GlobalTransform2D& transform, const RigidBody2D& body) {
+            auto collider = getCollider(body.getCollider());
+            shapeRegistry.getComponent<BoxShape2D>(makePublicId(collider.hitbox)).ifPresent(
+                    [&transform] (const BoxShape2D& shape) {
+                        auto pos1 = shape.getTransform() * glm::vec2{-1, -1} + transform.transform2D.position();
+                        auto pos2 = shape.getTransform() * glm::vec2{1, -1} + transform.transform2D.position();
+                        auto pos3 = shape.getTransform() * glm::vec2{1, 1} + transform.transform2D.position();
+                        auto pos4 = shape.getTransform() * glm::vec2{-1, 1} + transform.transform2D.position();
+
+                        common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+                    });
+        });
     }
 }

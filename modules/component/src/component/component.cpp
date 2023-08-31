@@ -2,56 +2,90 @@
 
 using namespace component;
 
-detail::ComponentSet::ComponentSet (std::size_t startCapacity, std::size_t compSize) : ids{}, indexSet{}, data{std::make_unique<std::byte[]>(startCapacity * compSize)},
+detail::ComponentSet::ComponentSet (std::size_t startCapacity, std::size_t compSize) : ids{}, metadataSet{}, data{std::make_unique<std::byte[]>(startCapacity * compSize)},
         compSize{compSize}, dataSize{0}, dataCapacity{startCapacity} {
     ids.reserve(startCapacity);
-    indexSet.reserve(startCapacity);
+    metadataSet.reserve(startCapacity);
 }
 
 detail::ComponentSet::~ComponentSet () = default;
 
 void detail::ComponentSet::guaranteeEntityIndex (std::size_t index) {
-    while (indexSet.size() < index) {
-        indexSet.push_back(EMPTY_INDEX);
+    while (metadataSet.size() < index) {
+        metadataSet.push_back({EMPTY_INDEX, nullptr});
     }
 }
 
 std::byte* detail::ComponentSet::getComponentUntyped (EntityId id) const {
-    assert(indexSet.size() > id.id - 1);
+    assert(metadataSet.size() > id.id - 1);
 
-    auto compIndex = indexSet[id.id - 1];
+    /*auto compIndex = metadataSet[id.id - 1];
     if (compIndex == EMPTY_INDEX) {
         return nullptr;
     } else {
         return data.get() + (compSize * compIndex);
-    }
+    }*/
+    return metadataSet[id.id - 1].data;
+}
+
+bool detail::ComponentSet::canInsert (component::EntityId id) {
+    return !metadataSet[id.id - 1].data && (!parent || parent->canInsert(id));
 }
 
 std::byte* detail::ComponentSet::tryInsert (EntityId id) {
-    assert(indexSet.size() > id.id - 1);
+    assert(metadataSet.size() > id.id - 1);
 
-    if (indexSet[id.id - 1] != EMPTY_INDEX) {
+    if (!canInsert(id)) {
         return nullptr;
     }
 
     guaranteeCapacity(dataSize + 1);
 
     auto* ptr = data.get() + (compSize * dataSize);
-    indexSet[id.id - 1] = dataSize;
+    metadataSet[id.id - 1] = {dataSize, ptr};
     ids.push_back(id);
 
     dataSize++;
+
+    if (parent) {
+        parent->onChildInsert(id, ptr);
+    }
+
     return ptr;
 }
 
-void detail::ComponentSet::deleteComp (EntityId id) {
-    assert(indexSet.size() > id.id - 1);
-    if (indexSet[id.id - 1] == EMPTY_INDEX) {
-        return;
+void detail::ComponentSet::onChildInsert (component::EntityId id, std::byte* ptr) {
+    assert(!metadataSet[id.id - 1].data);
+    assert(metadataSet[id.id - 1].index == EMPTY_INDEX);
+
+    metadataSet[id.id - 1].data = ptr;
+    inheritedSize++;
+
+    if (parent) {
+        parent->onChildInsert(id, ptr);
+    }
+}
+
+bool detail::ComponentSet::deleteComp (EntityId id) {
+    assert(metadataSet.size() > id.id - 1);
+    if (!metadataSet[id.id - 1].data) {
+        return false;
     }
 
-    auto compIndex = indexSet[id.id - 1];
-    auto* compPtr = data.get() + compSize * compIndex;
+    if (metadataSet[id.id - 1].index == EMPTY_INDEX) {
+        for (auto* curr = children; curr; curr = curr->nextChild) {
+            if (curr->deleteComp(id)) {
+                return true;
+            }
+        }
+
+        logging::log(LEVEL_ERROR, "Failed to find component for id {} despite it supposedly existing!");
+        metadataSet[id.id - 1].data = nullptr;
+        return false;
+    }
+
+    auto compIndex = metadataSet[id.id - 1].index;
+    auto* compPtr = metadataSet[id.id - 1].data;
     runDeletionCallbacks(compPtr, id);
     if (compIndex == dataSize - 1) {
         deleteTypedComp(compPtr);
@@ -61,12 +95,30 @@ void detail::ComponentSet::deleteComp (EntityId id) {
 
         auto movedId = ids[dataSize - 1];
         ids[compIndex] = movedId;
-        indexSet[movedId.id - 1] = compIndex;
+        metadataSet[movedId.id - 1] = {compIndex, compPtr};
     }
 
-    indexSet[id.id - 1] = EMPTY_INDEX;
+    metadataSet[id.id - 1] = {EMPTY_INDEX, nullptr};
     ids.pop_back();
     dataSize--;
+
+    if (parent) {
+        parent->onChildDelete(id);
+    }
+
+    return true;
+}
+
+void detail::ComponentSet::onChildDelete (component::EntityId id) {
+    assert(metadataSet[id.id - 1].data);
+    assert(inheritedSize > 0);
+
+    metadataSet[id.id - 1].data = nullptr;
+    inheritedSize--;
+
+    if (parent) {
+        parent->onChildDelete(id);
+    }
 }
 
 void detail::ComponentSet::guaranteeCapacity (std::size_t capacity) {
@@ -83,7 +135,7 @@ void detail::ComponentSet::guaranteeCapacity (std::size_t capacity) {
 
     data = std::move(newData);
     ids.reserve(dataCapacity);
-    indexSet.reserve(dataCapacity);
+    metadataSet.reserve(dataCapacity);
 }
 
 void detail::ComponentSet::clear () {
@@ -92,7 +144,12 @@ void detail::ComponentSet::clear () {
         deleteTypedComp(data.get() + (i * compSize));
         auto index = ids[i].id - 1;
 
-        indexSet[index] = EMPTY_INDEX;
+        metadataSet[index] = {EMPTY_INDEX, nullptr};
+
+        if (parent) {
+            parent->onChildDelete(ids[i]);
+        }
+
         ids[i] = EntityId{};
     }
 
@@ -100,10 +157,82 @@ void detail::ComponentSet::clear () {
 }
 
 bool detail::ComponentSet::hasComp (EntityId id) const {
-    assert(indexSet.size() > id.id - 1);
-    return indexSet[id.id - 1] != EMPTY_INDEX;
+    assert(metadataSet.size() > id.id - 1);
+    return metadataSet[id.id - 1].data;
 }
 
+bool detail::ComponentSet::setParent (detail::ComponentSet* parentSet) {
+    if (parent && parentSet) {
+        logging::log(LEVEL_ERROR, "Attempted to set parent for component that already has parent!");
+        return false;
+    }
+
+    parent = parentSet;
+    updateDepth(parent ? parent->hierachyDepth + 1 : 0);
+
+    return true;
+}
+
+void detail::ComponentSet::updateDepth (std::size_t newDepth) {
+    hierachyDepth = newDepth;
+    auto* curr = children;
+    while (curr) {
+        curr->updateDepth(hierachyDepth + 1);
+        curr = curr->nextChild;
+    }
+}
+
+std::size_t detail::ComponentSet::getHierachyDepth () const {
+    return hierachyDepth;
+}
+
+detail::ComponentSet* detail::ComponentSet::getParent () const {
+    return parent;
+}
+
+void detail::ComponentSet::addChild (detail::ComponentSet* child) {
+    assert(child);
+
+    if (!children) {
+        children = child;
+        return;
+    }
+
+    auto* curr = children;
+    while (curr->nextChild) {
+        curr = curr->nextChild;
+    }
+
+    curr->nextChild = child;
+    child->nextChild = nullptr;
+}
+
+void detail::ComponentSet::removeChild (component::detail::ComponentSet* child) {
+    assert(child);
+
+    if (!children) {
+        logging::log(LEVEL_ERROR, "Attempted to remove child from component with no children!");
+        return;
+    } else if (children == child) {
+        children = children->nextChild;
+        child->nextChild = nullptr;
+        return;
+    }
+
+    while (children->nextChild) {
+        if (children->nextChild == child) {
+            children->nextChild = child->nextChild;
+            child->nextChild = nullptr;
+            return;
+        }
+    }
+
+    logging::log(LEVEL_ERROR, "Attempted to remove child from component that does not directly parent that child!");
+}
+
+std::size_t detail::ComponentSet::size () const {
+    return dataSize + inheritedSize;
+}
 
 detail::EntityIdList::EntityIdList (std::size_t capacity) : idSlots{}, freeListStart{FREE_LIST_EMPTY}, numEntities{0} {
     idSlots.reserve(capacity);

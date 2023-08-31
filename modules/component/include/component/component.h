@@ -51,20 +51,38 @@ namespace component {
         }
 
         template <typename ...Args>
+        bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>*...>& tup) {
+            return tupleAllNonNull<0, Args...>(tup);
+        }
+
+        template <typename ...Args>
         class ComponentView;
 
         class ComponentSet {
         private:
+            struct Metadata {
+                std::size_t index;
+                std::byte* data;
+            };
             static constexpr std::size_t EMPTY_INDEX = -1;
             static constexpr std::size_t RESIZE_FACTOR = 2;
 
             std::vector<EntityId> ids;
-            std::vector<std::size_t> indexSet;
+            //std::vector<std::size_t> indexSet;
+            std::vector<Metadata> metadataSet;
 
             std::unique_ptr<std::byte[]> data;
             std::size_t compSize;
             std::size_t dataSize;
             std::size_t dataCapacity;
+
+            std::size_t inheritedSize{0};
+
+            ComponentSet* parent{nullptr};
+            ComponentSet* children{nullptr};
+
+            ComponentSet* nextChild{nullptr};
+            std::size_t hierachyDepth;
 
             template <typename T>
             inline void assertType () {
@@ -78,6 +96,14 @@ namespace component {
 
             template <typename ...Args>
             friend class detail::ComponentView;
+
+            friend class component::ComponentManager;
+
+            void onChildDelete (EntityId id);
+            void onChildInsert (EntityId id, std::byte* ptr);
+            void updateDepth (std::size_t newDepth);
+
+            bool canInsert (EntityId id);
         protected:
             virtual void assertTypeIndex (std::size_t typeIndex, const char* debugOtherName) const = 0;
             virtual void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) = 0;
@@ -121,8 +147,16 @@ namespace component {
 
             bool hasComp (EntityId id) const;
 
-            void deleteComp (EntityId id);
+            bool deleteComp (EntityId id);
             void clear ();
+
+            bool setParent (ComponentSet* parentSet);
+            ComponentSet* getParent () const;
+            void addChild (ComponentSet* child);
+            void removeChild (ComponentSet* child);
+            std::size_t getHierachyDepth () const;
+
+            [[nodiscard]] std::size_t size () const;
         };
 
         template <typename T>
@@ -305,11 +339,12 @@ namespace component {
 
                 template <typename T>
                 T& getCurrComp (ComponentSet* comp, EntityId id) const {
-                    if (primarySet == comp) {
-                        return *(T*)(primarySet->data.get() + pos * primarySet->compSize);
+                    /*if (*primarySet == comp) {
+                        return *(T*)(comp->data.get() + pos * comp->compSize);
                     } else {
                         return *comp->getComponent<T>(id);
-                    }
+                    }*/
+                    return *comp->getComponent<T>(id);
                 }
 
                 template <std::size_t... Indexes>
@@ -399,8 +434,8 @@ namespace component {
                 std::size_t minSize = std::numeric_limits<std::size_t>::max();
                 for (auto i : comps) {
                     assert(i);
-                    if (i->indexSet.size() < minSize) {
-                        minSize = i->indexSet.size();
+                    if (i->dataSize < minSize) {
+                        minSize = i->dataSize;
                         primarySet = i;
                     }
                 }
@@ -678,6 +713,36 @@ namespace component {
         }
     }
 
+    class IterInfo {
+    private:
+        ComponentManager* compManager;
+        EntityId eId;
+
+        IterInfo (ComponentManager* manager, EntityId id) : compManager{manager}, eId{id} {}
+
+        IterInfo (const IterInfo&) = default;
+        IterInfo (IterInfo&&) = default;
+
+        IterInfo& operator= (const IterInfo&) = default;
+        IterInfo& operator= (IterInfo&&) = default;
+
+        friend component::ComponentManager;
+    public:
+        [[nodiscard]] EntityId id () const {
+            return eId;
+        }
+
+        ComponentManager& manager () {
+            return *compManager;
+        }
+
+        [[nodiscard]] const ComponentManager& manager () const {
+            return *compManager;
+        }
+
+        ~IterInfo() = default;
+    };
+
     class ComponentManager/* : public util::SmartHelper<ComponentManager, true>*/ {
     private:
         class EntityView {
@@ -874,15 +939,134 @@ namespace component {
 
             return component ? component->getComponent<T>(id) : nullptr;
         }
+
+        /*template <typename T, meta::callable<void, T&> F>
+        void eachInt (detail::ComponentSet* componentSet, F& fn) {
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = 0; i < componentSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                fn(comp);
+            }
+
+            auto* curr = componentSet->children;
+            while (curr) {
+                eachInt<T>(fn);
+                curr = curr->nextChild;
+            }
+        }*/
+
+        template <typename T, meta::callable<void, IterInfo&, T&> F>
+        void eachInt (detail::ComponentSet* componentSet, F& fn) {
+            assert(componentSet);
+
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = 0; i < componentSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = componentSet->ids[i];
+                auto info = IterInfo{this, id};
+                fn(info, comp);
+            }
+
+            auto* curr = componentSet->children;
+            while (curr) {
+                eachInt<T>(curr, fn);
+                curr = curr->nextChild;
+            }
+        }
+
+        /*template <typename T, meta::callable<void, const T&> F>
+        void eachInt (detail::ComponentSet* componentSet, F& fn) const {
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = 0; i < componentSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                fn(comp);
+            }
+
+            auto* curr = componentSet->children;
+            while (curr) {
+                eachInt<T>(fn);
+                curr = curr->nextChild;
+            }
+        }*/
+
+        template <typename T, meta::callable<void, const IterInfo&, const T&> F>
+        void eachInt (detail::ComponentSet* componentSet, F& fn) const {
+            assert(componentSet);
+
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = 0; i < componentSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = componentSet->ids[i];
+                const auto info = IterInfo{const_cast<ComponentManager*>(this), id};
+                fn(info, comp);
+            }
+
+            auto* curr = componentSet->children;
+            while (curr) {
+                eachInt<T>(curr, fn);
+                curr = curr->nextChild;
+            }
+        }
+
+        template <typename ...Args, std::size_t ...Indexes, meta::callable<void, IterInfo&, std::remove_reference_t<Args>&...> F>
+        void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, detail::ComponentSet* primarySet, F& fn, std::index_sequence<Indexes...> indexes) {
+            assert(primarySet);
+            assert((std::get<Indexes>(compSets) && ...));
+
+            for (std::size_t i = 0; i < primarySet->dataSize; i++) {
+                auto id = primarySet->ids[i];
+                auto tup = std::make_tuple((Args*)(std::get<Indexes>(compSets)->getComponentUntyped(id))...);
+
+                if (detail::tupleAllNonNull<Args...>(tup)) {
+                    IterInfo info{this, id};
+                    fn(info, *std::get<Indexes>(tup)...);
+                }
+            }
+
+            auto* curr = primarySet->children;
+            while (curr) {
+                eachInt<Args...>(compSets, curr, fn, indexes);
+                curr = curr->nextChild;
+            }
+        }
+
+        template <typename ...Args, std::size_t ...Indexes, meta::callable<void, const IterInfo&, std::remove_reference_t<Args>&...> F>
+        void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, detail::ComponentSet* primarySet, F& fn, std::index_sequence<Indexes...> indexes) const {
+            static_assert(sizeof...(Args) == sizeof...(Indexes));
+            assert(primarySet);
+            assert((compSets[Indexes] && ...));
+
+            for (std::size_t i = 0; i < primarySet->dataSize; i++) {
+                auto id = primarySet->ids[i];
+                auto tup = std::make_tuple((Args*)(compSets[Indexes]->getComponentUntyped(id))...);
+
+                if (detail::tupleAllNonNull<Args...>(tup)) {
+                    const IterInfo info{const_cast<ComponentManager*>(this), id};
+                    fn(info, *std::get<Indexes>(tup)...);
+                }
+            }
+
+            auto* curr = primarySet->children;
+            while (curr) {
+                eachInt<Args...>(compSets, curr, fn, indexes);
+                curr = curr->nextChild;
+            }
+        }
+
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
         using View = ComponentManager::EntityView;
         using ConstView = ComponentManager::ConstEntityView;
+        static constexpr std::size_t START_CAPACITY = 256;
         static_assert(std::bidirectional_iterator<iterator>);
         static_assert(std::bidirectional_iterator<const_iterator>);
 
-        explicit ComponentManager (std::size_t startCapacity) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {}
+        explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {}
 
         template <typename T>
         void addComponent () {
@@ -1002,6 +1186,16 @@ namespace component {
             idList.clear();
         }
 
+        template <typename Base, typename Derived>
+        void addChild () requires std::derived_from<Derived, Base> {
+            detail::ComponentSet* derived = getOrCreateComponent<Derived>();
+            detail::ComponentSet* base = getOrCreateComponent<Base>();
+
+            if (derived->setParent(base)) {
+                base->addChild(derived);
+            }
+        }
+
 
         // TODO: merge EntityView/ConstEntityView and EntityComponentView/ConstEntityComponentView
         EntityView view (EntityId id) {
@@ -1034,15 +1228,91 @@ namespace component {
             }
         }
 
-        template <typename ...Args>
+        /*template <typename ...Args>
         detail::ComponentView<std::remove_reference_t<Args>...> iterate () {
             return detail::ComponentView<std::remove_reference_t<Args>...>{getOrCreateComponent<std::remove_cvref_t<Args>>()...};
+        }*/
+
+        /*template <typename T, meta::callable<void, std::remove_reference_t<T>&> F>
+        void each (F fn) {
+            eachInt<T>(getOrCreateComponent<T>(), fn);
+        }*/
+
+        template <typename T, meta::callable<void, IterInfo&, std::remove_reference_t<T>&> F>
+        void each (F fn) {
+            eachInt<std::remove_reference_t<T>>(getOrCreateComponent<T>(), fn);
         }
 
-        template <typename ...Args>
+        /*template <typename T, meta::callable<void, const std::remove_cvref_t<T>&> F>
+        void each (F fn) const {
+            auto* comp = getComponent<T>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Attempted to iterate through component without it being added yet!");
+                return;
+            }
+
+            eachInt<T>(comp, fn);
+        }*/
+
+        template <typename T, meta::callable<void, const IterInfo&, const std::remove_cvref_t<T>&> F>
+        void each (F fn) const {
+            auto* comp = getComponent<T>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Attempted to iterate through component without it being added yet!");
+                return;
+            }
+
+            eachInt<std::remove_cvref_t<T>>(comp, fn);
+        }
+
+        /*template <typename ...Args, meta::callable<void, std::remove_reference_t<Args>&...> F>
+        void each (F fn) {
+
+        }*/
+
+        template <typename ...Args, meta::callable<void, IterInfo&, std::remove_reference_t<Args>&...> F>
+        void each (F fn) requires (sizeof...(Args) > 1) {
+            auto comps = std::array{getOrCreateComponent<Args>()...};
+            detail::ComponentSet* primarySet = nullptr;
+            std::size_t minSize = std::numeric_limits<std::size_t>::max();
+
+            for (detail::ComponentSet* i : comps) {
+                if (i->size() < minSize) {
+                    primarySet = i;
+                    minSize = i->size();
+                }
+            }
+
+            eachInt<std::remove_reference_t<Args>...>(comps, primarySet, fn, std::make_index_sequence<sizeof...(Args)>{});
+        }
+
+        template <typename ...Args, meta::callable<void, const IterInfo&, const std::remove_cvref_t<Args>&...> F>
+        void each (F fn) const requires (sizeof...(Args) > 1) {
+            auto comps = std::array{getComponent<Args>()...};
+            for (std::size_t i = 0; i < sizeof...(Args); i++) {
+                if (!comps[i]) {
+                    logging::log(LEVEL_ERROR, "Attempted to iterate through component without it being added yet!");
+                    return;
+                }
+            }
+
+            detail::ComponentSet* primarySet = nullptr;
+            std::size_t minSize = std::numeric_limits<std::size_t>::max();
+
+            for (detail::ComponentSet* i : comps) {
+                if (i->size() < minSize) {
+                    primarySet = i;
+                    minSize = i->size();
+                }
+            }
+
+            eachInt<std::remove_reference_t<Args>...>(comps, primarySet, fn, std::make_index_sequence<sizeof...(Args)>{});
+        }
+
+        /*template <typename ...Args>
         detail::ComponentView<const std::remove_cvref_t<Args>...> iterate () const {
             return detail::ComponentView<const std::remove_cvref_t<Args>...>{getComponent<std::remove_cvref_t<Args>>()...};
-        }
+        }*/
 
         iterator begin () {
             return iterator{this, idList.begin()};
