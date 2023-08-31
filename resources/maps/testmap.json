@@ -22,39 +22,22 @@
                     "rotation" : 0.0
                 }
             },
-            "RigidBody2D" : {
-                "momentum" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "force" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "gravity" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "mass" : 0.0,
-                "inertial_moment" : 0.0,
-                "collider" : {
+            "BoxCollider2D" : {
+                "Collider2D" : {
                     "layers": 2,
                     "masks": 0,
-                    "elasticity" : 1.0,
-                    "shape": {
-                        "type": "BoxShape2D",
-                        "scale_matrix": [
-                            {
-                                "x": 0.08000000566244125,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.0,
-                                "y": 0.5
-                            }
-                        ]
+                    "elasticity" : 1.0
+                },
+                "scale_matrix": [
+                    {
+                        "x": 0.08000000566244125,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.5
                     }
-                }
+                ]
             },
             "data": {},
             "EntityType": "wall_entity"
@@ -73,35 +56,22 @@
                     "rotation" : 0.0
                 }
             },
-            "RigidBody2D" : {
-                "momentum" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "gravity" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "mass" : 0.0,
-                "inertial_moment" : 0.0,
-                "collider" : {
+            "BoxCollider2D" : {
+                "Collider2D" : {
                     "layers": 2,
                     "masks": 0,
-                    "elasticity" : 1.0,
-                    "shape": {
-                        "type": "BoxShape2D",
-                        "scale_matrix": [
-                            {
-                                "x": 0.08000000566244125,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.0,
-                                "y": 0.5
-                            }
-                        ]
+                    "elasticity" : 1.0
+                },
+                "scale_matrix": [
+                    {
+                        "x": 0.08000000566244125,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.5
                     }
-                }
+                ]
             },
             "data": {},
             "EntityType": "wall_entity"
@@ -120,39 +90,22 @@
                     "rotation" : 0.0
                 }
             },
-            "RigidBody2D" : {
-                "momentum" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "force" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "gravity" : {
-                    "x" : 0.0,
-                    "y" : 0.0
-                },
-                "mass" : 0.0,
-                "inertial_moment" : 0.0,
-                "collider" : {
+            "BoxCollider2D" : {
+                "Collider2D" : {
                     "layers": 2,
                     "masks": 0,
-                    "elasticity" : 1.0,
-                    "shape": {
-                        "type": "BoxShape2D",
-                        "scale_matrix": [
-                            {
-                                "x": 0.48000001907348633,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.0,
-                                "y": 0.08000000566244125
-                            }
-                        ]
+                    "elasticity" : 1.0
+                },
+                "scale_matrix": [
+                    {
+                        "x": 0.48000001907348633,
+                        "y": 0.0
+                    },
+                    {
+                        "x": 0.0,
+                        "y": 0.08000000566244125
                     }
-                }
+                ]
             },
             "EntityType": "wall_entity"
         },

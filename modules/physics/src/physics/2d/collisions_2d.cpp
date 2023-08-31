@@ -47,10 +47,10 @@ Manifold2D physics::buildManifold (const physics::Face2D& face1, const physics::
     }
 }
 
-Constraint2D Manifold2D::buildConstraint (Collider2D* obj1, Collider2D* obj2, float deltaTime) const {
+Constraint2D Manifold2D::buildConstraint (ColliderComp2D* obj1, ColliderComp2D* obj2, float deltaTime) const {
     auto contactPoint = (points[0] + points[1]) / 2.0f;
-    auto r1 = contactPoint - obj1->currentPos;
-    auto r2 = contactPoint - obj2->currentPos;
+    auto r1 = contactPoint - obj1->getPosition();
+    auto r2 = contactPoint - obj2->getPosition();
 
     auto elasticity = obj1->elasticity * obj2->elasticity; // TODO: different types of resolution?
     auto elasticityTerm = glm::dot(normal, obj1->momentum * obj1->invMass + r1 * obj1->angularMomentum * obj1->invInertiaMoment - obj2->momentum * obj2->invMass - r2 * obj2->angularMomentum * obj2->invInertiaMoment);
@@ -59,7 +59,7 @@ Constraint2D Manifold2D::buildConstraint (Collider2D* obj1, Collider2D* obj2, fl
     return Constraint2D::ContactConstraint(obj1, obj2, contactPoint, normal, bias);
 }
 
-Constraint2D Constraint2D::ContactConstraint (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias) {
+Constraint2D Constraint2D::ContactConstraint (ColliderComp2D* obj1, ColliderComp2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias) {
     // See https://kevinyu.net/2018/01/17/understanding-constraint-solver-in-physics-engine/ and
     // https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf
 
@@ -81,17 +81,19 @@ Constraint2D Constraint2D::ContactConstraint (Collider2D* obj1, Collider2D* obj2
     auto invJacobMass = 1 / jacobMass;
 
     return Constraint2D {
-        .obj1=obj1,
-        .obj2=obj2,
-        .jVelObj1=jVelObj1,
-        .jVelObj2=jVelObj2,
-        .jWObj1=jWObj1,
-        .jWObj2=jWObj2,
-        .invJacobMass=invJacobMass,
-        .bias=bias,
-        .lambdaClamp={0.0f, std::numeric_limits<float>::max()}
+            .obj1=obj1,
+            .obj2=obj2,
+            .jVelObj1=jVelObj1,
+            .jVelObj2=jVelObj2,
+            .jWObj1=jWObj1,
+            .jWObj2=jWObj2,
+            .invJacobMass=invJacobMass,
+            .bias=bias,
+            .lambdaClamp={0.0f, std::numeric_limits<float>::max()}
     };
 }
+
+
 
 bool Constraint2D::solve () {
     float lambda = -(glm::dot(jVelObj1, obj1->getCurrVelocity()) + glm::dot(jVelObj2, obj2->getCurrVelocity()) + jWObj1 * obj1->getCurrAngularVelocity() + jWObj2 * obj2->getCurrAngularVelocity() + bias) * invJacobMass;
@@ -111,4 +113,3 @@ bool Constraint2D::solve () {
         return true;
     }
 }
-

@@ -310,7 +310,7 @@ void testJson () {
     assert(obj2.contains("meme"));
     assert(obj2.contains("testing"));
 
-    //logging::log(LEVEL_DEBUG, "meme = {}", (std::string)obj2["meme"]);
+    //logging::log(LEVEL_DEBUG, "meme = {}", (std::string)obj2Old["meme"]);
     std::string x = (std::string)obj2["meme"];
     assert(x == std::string("lol"));
     assert(obj2["testing"] == 1.1f);

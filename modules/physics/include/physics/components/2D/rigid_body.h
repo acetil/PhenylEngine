@@ -9,7 +9,6 @@ namespace common {
 namespace physics {
     struct RigidBody2D {
     private:
-        ColliderId colliderId;
         glm::vec2 momentum{0, 0};
         glm::vec2 netForce{0, 0};
 
@@ -23,7 +22,6 @@ namespace physics {
 
         void applyFriction ();
     public:
-        explicit RigidBody2D (ColliderId collider) : colliderId{collider} {}
         glm::vec2 gravity{0, 0};
 
         float drag{0.0f};
@@ -69,10 +67,6 @@ namespace physics {
         [[nodiscard]] float getAngularMomentum () const {
             return angularMomentum;
         }
-
-        ColliderId getCollider () const {
-            return colliderId;
-        };
 
         [[nodiscard]] util::DataValue serialise () const;
         bool deserialise (const util::DataValue& dataVal);

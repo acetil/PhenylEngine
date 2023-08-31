@@ -1,9 +1,7 @@
-#include "box_shape_2d.h"
-#include "physics/shape/2d/box_shape_2d_interface.h"
+#include "physics/components/2D/colliders/box_collider.h"
+#include "physics/2d/collisions_2d.h"
 
 using namespace physics;
-
-static_assert(good_shape_2d<BoxShape2D>);
 
 static float calculateRadius (glm::mat2 scaleMatrix) {
     auto vec = scaleMatrix * glm::vec2{1, 1};
@@ -14,29 +12,13 @@ static inline float sqLength (glm::vec2 vec) {
     return glm::dot(vec, vec);
 }
 
-BoxShape2D::BoxShape2D (ColliderId collider, glm::vec2 scale, std::uint64_t layers, std::uint64_t mask) : Shape2D{collider, calculateRadius({{scale.x, 0}, {0, scale.y}}), layers, mask},
-                                                                                                          scaleMatrix{{scale.x, 0}, {0, scale.y}}, frameTransform{{scale.x, 0}, {0, scale.y}} {
-    setOuterRadius(calculateRadius(scaleMatrix));
-}
-
-BoxShape2D::BoxShape2D (ColliderId collider, glm::mat2 scaleMat, std::uint64_t layers, std::uint64_t mask) : Shape2D{collider, calculateRadius(scaleMat), layers, mask},
-                                                                                                             scaleMatrix{scaleMat}, frameTransform{scaleMat} {}
-
-glm::vec2 BoxShape2D::getScale () const {
-    return {scaleMatrix[0].x, scaleMatrix[1].y};
-}
-
-void BoxShape2D::setScale (glm::vec2 scale) {
-    scaleMatrix = {{scale.x, 0}, {0, scale.y}};
-}
-
-void BoxShape2D::applyTransform (glm::mat2 transform) {
-    frameTransform = transform * scaleMatrix;
+void BoxCollider2D::applyFrameTransform (glm::mat2 transform) {
+    frameTransform = transform * glm::mat2{{scale.x, 0.0f}, {0.0f, scale.y}};
 
     setOuterRadius(calculateRadius(frameTransform));
 }
 
-util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
+static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
     assert(box1Axis >= 0);
 
     float minAxis = std::numeric_limits<float>::max();
@@ -64,7 +46,7 @@ util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axi
     }
 }
 
-util::Optional<SATResult2D> BoxShape2D::collide (const physics::BoxShape2D& other) {
+util::Optional<SATResult2D> BoxCollider2D::collide (const physics::BoxCollider2D& other) {
     auto disp = getDisplacement(other);
 
     glm::vec2 basisVecs[] = {
@@ -120,37 +102,13 @@ util::Optional<SATResult2D> BoxShape2D::collide (const physics::BoxShape2D& othe
     return std::abs(minSepSqSize) > std::numeric_limits<float>::epsilon() ? util::Optional{SATResult2D{.normal=minAxis, .depth=minSep}} : util::NullOpt;
 }
 
-util::DataValue BoxShape2D::serialise () const {
-    util::DataObject obj;
-    obj["type"] = util::DataValue{"BoxShape2D"};
-    obj["scale_matrix"] = scaleMatrix;
-    return util::DataValue{obj};
-}
-
-util::Optional<BoxShape2D> BoxShape2D::deserialise (const util::DataObject& obj, ColliderId collider, std::uint64_t layers, std::uint64_t mask) {
-    if (!obj.contains("scale_matrix")) {
-        return util::NullOpt;
-    }
-
-    glm::mat2 mat;
-    if (!phenyl_from_data(obj.at("scale_matrix"), mat)) {
-        return util::NullOpt;
-    }
-
-    return {BoxShape2D{collider, mat, layers, mask}};
-}
-
-glm::mat2 BoxShape2D::getTransform () const {
-    return frameTransform;
-}
-
 static inline glm::vec2 calcSegmentNormal (glm::vec2 start, glm::vec2 end) {
     auto dv = end - start;
 
     return glm::normalize(glm::vec2{-dv.y, dv.x});
 }
 
-Face2D BoxShape2D::getSignificantFace (glm::vec2 normal) {
+Face2D BoxCollider2D::getSignificantFace (glm::vec2 normal) {
     glm::vec2 boxPoints[] = {
             {1, 1}, {-1, 1}, {-1, -1}, {1, -1}
     };
@@ -191,8 +149,44 @@ Face2D BoxShape2D::getSignificantFace (glm::vec2 normal) {
     }
 
     return dot1 >= dot2 ? Face2D{.vertices={furthestVertex + getPosition(), vec1 + getPosition()}, .normal=norm1} : Face2D{.vertices={vec2 + getPosition(), furthestVertex + getPosition()}, .normal=norm2};
+
 }
 
-BoxShape2D ShapeRequest<BoxShape2D>::make (physics::ColliderId collider) {
-    return BoxShape2D{collider, scale, layers, mask};
+util::DataValue BoxCollider2D::serialise () const {
+    util::DataObject obj;
+    obj["Collider2D"] = ColliderComp2D::serialise();
+    obj["scale_matrix"] = glm::mat2{{scale.x, 0.0f}, {0.0f, scale.y}};
+
+    return obj;
+}
+
+bool BoxCollider2D::deserialise (const util::DataValue& val) {
+    if (!val.is<util::DataObject>()) {
+        return false;
+    }
+
+    const auto& obj = val.get<util::DataObject>();
+
+    if (!obj.contains("scale_matrix")) {
+        return false;
+    }
+
+    if (!obj.contains("Collider2D")) {
+        return false;
+    }
+
+    glm::mat2 scaleMatrix;
+    if (!phenyl_from_data(obj.at("scale_matrix"), scaleMatrix)) {
+        return false;
+    }
+
+
+
+    if (!ColliderComp2D::deserialise(obj.at("Collider2D"))) {
+        return false;
+    }
+
+    scale = {glm::length(scaleMatrix[0]), glm::length(scaleMatrix[1])};
+
+    return true;
 }

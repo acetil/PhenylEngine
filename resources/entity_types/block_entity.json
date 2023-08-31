@@ -18,10 +18,6 @@
       "x" : 0.0,
       "y" : 0.0
     },
-    "force" : {
-      "x" : 0.0,
-      "y" : 0.0
-    },
     "gravity" : {
       "x" : 0.0,
       "y" : -2.0
@@ -29,24 +25,23 @@
     "mass" : 1.0,
     "inertial_moment" : 3.0,
     "drag" : 1.0,
-    "angular_drag" : 0.25,
-    "collider" : {
+    "angular_drag" : 0.25
+  },
+  "BoxCollider2D" : {
+    "Collider2D" : {
       "layers": 1,
       "masks": 3,
-      "elasticity" : 0.7,
-      "shape": {
-        "type": "BoxShape2D",
-        "scale_matrix": [
-          {
-            "x": 0.1,
-            "y": 0
-          },
-          {
-            "x": 0,
-            "y": 0.1
-          }
-        ]
+      "elasticity" : 0.7
+    },
+    "scale_matrix": [
+      {
+        "x": 0.1,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0.1
       }
-    }
+    ]
   }
 }

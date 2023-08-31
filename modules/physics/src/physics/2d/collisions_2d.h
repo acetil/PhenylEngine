@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/maths_headers.h"
-#include "physics/2d/collider_2d.h"
+#include "physics/components/2D/collider.h"
 
 namespace physics {
     struct SATResult2D {
@@ -23,8 +23,8 @@ namespace physics {
     };
 
     struct Constraint2D {
-        Collider2D* obj1;
-        Collider2D* obj2;
+        ColliderComp2D* obj1;
+        ColliderComp2D* obj2;
         glm::vec2 jVelObj1;
         glm::vec2 jVelObj2;
         float jWObj1;
@@ -37,7 +37,7 @@ namespace physics {
 
         std::array<float, 2> lambdaClamp;
 
-        static Constraint2D ContactConstraint (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias);
+        static Constraint2D ContactConstraint (ColliderComp2D* obj1, ColliderComp2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias);
 
         bool solve ();
     };
@@ -53,7 +53,7 @@ namespace physics {
         float depth;
         Manifold2DType type;
 
-        Constraint2D buildConstraint (Collider2D* obj1, Collider2D* obj2, float deltaTime) const;
+        Constraint2D buildConstraint (ColliderComp2D* obj1, ColliderComp2D* obj2, float deltaTime) const;
     };
 
     Manifold2D buildManifold (const Face2D& face1, const Face2D& face2, glm::vec2 normal, float depth);
