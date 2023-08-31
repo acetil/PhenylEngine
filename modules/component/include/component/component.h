@@ -1057,11 +1057,114 @@ namespace component {
             }
         }
 
+        template <typename T, meta::callable<void, const std::tuple<IterInfo&, T&>&, const std::tuple<IterInfo&, T&>&> F>
+        void eachPairIt (detail::ComponentSet* componentSet, std::size_t start, const std::tuple<IterInfo&, T&>& firstTup, F& fn) {
+            assert(componentSet);
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = start; i < componentSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = componentSet->ids[i];
+                auto info = IterInfo{const_cast<ComponentManager*>(this), id};
+
+                std::tuple<IterInfo&, T&> tup{info, comp};
+
+                fn(firstTup, tup);
+            }
+
+            for (auto* curr = componentSet->children; curr; curr = curr->nextChild) {
+                eachPairIt<T>(curr, 0, firstTup, fn);
+            }
+        }
+
+        template <typename T, meta::callable<void, const std::tuple<IterInfo&, T&>&, const std::tuple<IterInfo&, T&>&> F>
+        void eachPairDoubleIt (detail::ComponentSet* firstSet, detail::ComponentSet* secondSet, F& fn) {
+            assert(firstSet);
+            assert(secondSet);
+            auto compSize = firstSet->compSize;
+            auto dataPtr = firstSet->data.get();
+            for (std::size_t i = 0; i < firstSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = firstSet->ids[i];
+                auto info = IterInfo{const_cast<ComponentManager*>(this), id};
+
+                std::tuple<IterInfo&, T&> tup{info, comp};
+                eachPairIt<T>(secondSet, 0, tup, fn);
+            }
+
+            for (auto* curr = firstSet->children; curr; curr = curr->nextChild) {
+                eachPairDoubleIt<T>(curr, secondSet, fn);
+            }
+        }
+
+        template <typename T, meta::callable<void, const std::tuple<IterInfo&, T&>&, const std::tuple<IterInfo&, T&>&> F>
+        void eachPairInt (detail::ComponentSet* componentSet, F& fn) {
+            assert(componentSet);
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = 0; i < componentSet->dataSize; i++) {
+                T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = componentSet->ids[i];
+                auto info = IterInfo{const_cast<ComponentManager*>(this), id};
+
+                std::tuple<IterInfo&, T&> tup{info, comp};
+                eachPairIt<T>(componentSet, i + 1, tup, fn);
+            }
+
+            for (auto* curr = componentSet->children; curr; curr = curr->nextChild) {
+                eachPairInt<T>(curr, fn);
+                for (auto* curr2 = curr->nextChild; curr2; curr2 = curr2->nextChild) {
+                    eachPairDoubleIt<T>(curr, curr2, fn);
+                }
+            }
+        }
+
+        template <typename T, meta::callable<void, const std::tuple<const IterInfo&, const T&>&, const std::tuple<const IterInfo&, const T&>&> F>
+        void eachPairIt (detail::ComponentSet* componentSet, std::size_t start, const std::tuple<const IterInfo&, const T&>& firstTup, F& fn) const {
+            assert(componentSet);
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = start; i < componentSet->dataSize; i++) {
+                const T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = componentSet->ids[i];
+                const auto info = IterInfo{const_cast<ComponentManager*>(this), id};
+
+                fn(firstTup, std::make_tuple((const IterInfo&)info, comp));
+            }
+
+            for (auto* curr = componentSet->children; curr; curr = curr->nextChild) {
+                eachPairIt<T>(curr, 0, firstTup, fn);
+            }
+        }
+
+        template <typename T, meta::callable<void, const std::tuple<const IterInfo&, const T&>&, const std::tuple<const IterInfo&, const T&>&> F>
+        void eachPairInt (detail::ComponentSet* componentSet, F& fn) const {
+            assert(componentSet);
+            auto compSize = componentSet->compSize;
+            auto dataPtr = componentSet->data.get();
+            for (std::size_t i = 0; i < componentSet->dataSize; i++) {
+                const T& comp = *(T*)(dataPtr + i * compSize);
+                auto id = componentSet->ids[i];
+                const auto info = IterInfo{const_cast<ComponentManager*>(this), id};
+                eachPairIt<T>(componentSet, i + 1, std::make_tuple((const IterInfo&)info, comp), fn);
+            }
+
+            for (auto* curr = componentSet->children; curr; curr = curr->nextChild) {
+                eachPairInt<T>(curr, fn);
+            }
+        }
+
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
         using View = ComponentManager::EntityView;
         using ConstView = ComponentManager::ConstEntityView;
+
+        template <typename ...Args>
+        using Bundle = const std::tuple<IterInfo&, std::remove_reference_t<Args>&...>&;
+        template <typename ...Args>
+        using ConstBundle = const std::tuple<const IterInfo&, const std::remove_cvref_t<Args>&...>&;
+
         static constexpr std::size_t START_CAPACITY = 256;
         static_assert(std::bidirectional_iterator<iterator>);
         static_assert(std::bidirectional_iterator<const_iterator>);
@@ -1308,6 +1411,19 @@ namespace component {
 
             eachInt<std::remove_reference_t<Args>...>(comps, primarySet, fn, std::make_index_sequence<sizeof...(Args)>{});
         }
+
+        template <typename T, meta::callable<void, Bundle<T>, Bundle<T>> F>
+        void eachPair (F fn) {
+            auto* comp = getOrCreateComponent<T>();
+            eachPairInt<std::remove_reference_t<T>>(comp, fn);
+        }
+
+        template <typename T, meta::callable<void, ConstBundle<T>, ConstBundle<T>> F>
+        void eachPair (F fn) const {
+            auto* comp = getOrCreateComponent<T>();
+            eachPairInt<std::remove_cvref_t<T>>(comp, fn);
+        }
+
 
         /*template <typename ...Args>
         detail::ComponentView<const std::remove_cvref_t<Args>...> iterate () const {

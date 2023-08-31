@@ -108,6 +108,24 @@ static void testCompManager () {
         component::logging::log(LEVEL_DEBUG, "{} Baz: a={}, b={}, Test: d={}", info.id().value(), baz.a, baz.b, test.d);
     });
 
+    e5.insert<Test>(Test{8});
+
+    component::logging::log(LEVEL_DEBUG, "Looping through Foo pairs:");
+    manager.eachPair<Foo>([] (component::ComponentManager::Bundle<Foo> e1, component::ComponentManager::Bundle<Foo> e2) {
+        auto& [info1, foo1] = e1;
+        auto& [info2, foo2] = e2;
+
+        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}; {} Foo: a={}", info1.id().value(), foo1.a, info2.id().value(), foo2.a);
+    });
+
+    component::logging::log(LEVEL_DEBUG, "Looping through Test pairs:");
+    manager.eachPair<Test>([] (component::ComponentManager::Bundle<Test> e1, component::ComponentManager::Bundle<Test> e2) {
+        auto& [info1, test1] = e1;
+        auto& [info2, test2] = e2;
+
+        component::logging::log(LEVEL_DEBUG, "{} Test: d={}; {} Test: d={}", info1.id().value(), test1.d, info2.id().value(), test2.d);
+    });
+
 
     component::logging::log(LEVEL_DEBUG, "Testing hierarchy insertion:", e1.id().value());
     e1.insert<Bar>(Bar{9, 9.9f});
