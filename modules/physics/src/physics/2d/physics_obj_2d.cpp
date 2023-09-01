@@ -20,6 +20,10 @@ void PhysicsObject2D::addComponents (component::EntityComponentManager& componen
     componentManager.addComponent<BoxCollider2D>();
 
     componentManager.addChild<ColliderComp2D, BoxCollider2D>();
+
+    componentManager.addRequirement<RigidBody2D, common::GlobalTransform2D>();
+    componentManager.addRequirement<BoxCollider2D, common::GlobalTransform2D>();
+    componentManager.addRequirement<BoxCollider2D, RigidBody2D>();
 }
 
 void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& serialiser) {

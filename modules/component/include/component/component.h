@@ -616,6 +616,14 @@ namespace component {
             }
         }
 
+        template <typename Dependent, typename Dependency>
+        void addRequirement () {
+            detail::ComponentSet* dependent = getOrCreateComponent<Dependent>();
+            detail::ComponentSet* dependency = getOrCreateComponent<Dependency>();
+
+            dependency->addDependent(dependent);
+        }
+
 
         // TODO: merge EntityView/ConstEntityView and EntityComponentView/ConstEntityComponentView
         EntityView view (EntityId id) {

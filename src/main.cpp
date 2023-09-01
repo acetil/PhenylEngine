@@ -55,6 +55,10 @@ struct Test1 : TestBase {
     explicit Test1 (int e) : e{e} {}
 };
 
+struct Test2 {
+    float f;
+};
+
 static void testCompManager () {
     component::logging::log(LEVEL_DEBUG, "Starting comp manager tests!");
     auto manager = component::ComponentManager{};
@@ -65,6 +69,7 @@ static void testCompManager () {
     manager.addComponent<Baz>();
     manager.addComponent<Test>();
     manager.addComponent<Test1>();
+    manager.addComponent<Test2>();
     manager.addComponent<TestBase>();
 
     manager.addChild<Foo, Bar>();
@@ -73,6 +78,8 @@ static void testCompManager () {
 
     manager.addChild<TestBase, Test>();
     manager.addChild<TestBase, Test1>();
+
+    manager.addRequirement<Test2, Test>();
 
     auto e1 = manager.create();
     auto e2 = manager.create();
@@ -91,10 +98,17 @@ static void testCompManager () {
     e3.insert<Baz>(Baz{3, 2.2f, 'f'});
     e4.insert<Bar2>(Bar2{4, "hello"});
 
+    e5.insert<Test2>(Test2{0.9f});
+
     e1.insert<Test>(Test{5});
     e2.insert<Test>(Test{6});
     e3.insert<Test>(Test{7});
     e5.insert<Test>(Test{8});
+
+    e1.insert<Test2>(Test2{1.9f});
+    e2.insert<Test2>(Test2{1.0f});
+
+    e4.insert<Test2>(Test2{1.7f});
 
     e4.insert<Test1>(Test1{9});
 
@@ -128,7 +142,17 @@ static void testCompManager () {
         component::logging::log(LEVEL_DEBUG, "{} TestBase: getVal()={}", info.id().value(), test.getVal());
     });
 
+    component::logging::log(LEVEL_DEBUG, "Looping through Test2:");
+    manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
+    });
+
     e5.erase<Test>();
+
+    component::logging::log(LEVEL_DEBUG, "Looping through Test2 after erase:");
+    manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
+    });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo, Test:");
     manager.each<Foo, Test>([] (component::IterInfo& info, Foo& foo, Test& test) {
@@ -141,6 +165,11 @@ static void testCompManager () {
     });
 
     e5.insert<Test>(Test{8});
+
+    component::logging::log(LEVEL_DEBUG, "Looping through Test2 after add back:");
+    manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
+    });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo pairs:");
     manager.eachPair<Foo>([] (component::ComponentManager::Bundle<Foo> e1, component::ComponentManager::Bundle<Foo> e2) {

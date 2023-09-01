@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -17,10 +18,77 @@ namespace component::detail {
     class ComponentSet {
     private:
         struct Metadata {
-            std::size_t index;
+            static constexpr std::uint32_t EMPTY_INDEX = -1;
+            static constexpr std::uint32_t DEPENDENCY_BITS = 8;
+            static constexpr std::uint32_t DEPENDENCY_MASK = (std::uint32_t{1} << DEPENDENCY_BITS) - 1;
+            static constexpr std::uint32_t MAX_DEPENDENCY_NUM = (std::uint32_t{1} << DEPENDENCY_BITS) - 1;
+            static constexpr std::uint32_t CHILD_BIT = std::uint32_t{1} << DEPENDENCY_BITS;
+            static constexpr std::uint32_t METADATA_MASK = 0xFFFFFFFF;
+
+            std::uint32_t index;
+            std::uint32_t metadata;
             std::byte* data;
+
+            [[nodiscard]] inline constexpr bool empty () const {
+                return !present() && !(metadata & CHILD_BIT);
+            }
+
+            [[nodiscard]] inline constexpr bool present () const {
+                return index != EMPTY_INDEX;
+            }
+
+            inline constexpr bool active () const {
+                return !(metadata & DEPENDENCY_MASK);
+            }
+
+            inline constexpr void clear () {
+                index = EMPTY_INDEX;
+                data = nullptr;
+                metadata &= (METADATA_MASK ^ CHILD_BIT);
+            }
+
+            static constexpr Metadata Empty (std::uint32_t dependencySize) {
+                assert(dependencySize < (1 << DEPENDENCY_BITS));
+                return {.index = EMPTY_INDEX, .metadata = dependencySize, .data = nullptr};
+            }
+
+            /*static constexpr Metadata Filled (std::uint32_t index, std::byte* data) {
+                assert(data);
+                return {.index = index, .data = data};
+            }*/
+            inline constexpr void fill (std::uint32_t index, std::byte* data) {
+                //assert(empty());
+                this->index = index;
+                this->data = data;
+            }
+
+            inline constexpr void fillChild (std::byte* data) {
+                //assert(index == EMPTY_INDEX);
+                this->data = data;
+                this->metadata |= CHILD_BIT;
+            }
+
+            inline constexpr void move (std::uint32_t newIndex, std::byte* newData) {
+                assert(!(metadata & CHILD_BIT));
+                index = newIndex;
+                data = newData;
+            }
+
+            inline constexpr void incrementDepenencies () {
+                assert((metadata & METADATA_MASK) < MAX_DEPENDENCY_NUM);
+                auto nonDependencies = metadata & (METADATA_MASK ^ DEPENDENCY_MASK);
+
+                metadata = nonDependencies | ((metadata & METADATA_MASK) + 1);
+            }
+
+            inline constexpr void decrementDependencies () {
+                assert((metadata & METADATA_MASK) > 0);
+                auto nonDependencies = metadata & (METADATA_MASK ^ DEPENDENCY_MASK);
+
+                metadata = nonDependencies | ((metadata & METADATA_MASK) - 1);
+            }
         };
-        static constexpr std::size_t EMPTY_INDEX = -1;
+        static constexpr std::uint32_t EMPTY_INDEX = -1;
         static constexpr std::size_t RESIZE_FACTOR = 2;
 
         std::vector<EntityId> ids;
@@ -30,6 +98,7 @@ namespace component::detail {
         std::unique_ptr<std::byte[]> data;
         std::size_t compSize;
         std::size_t dataSize;
+        std::size_t allSize;
         std::size_t dataCapacity;
 
         std::size_t inheritedSize{0};
@@ -39,6 +108,9 @@ namespace component::detail {
 
         ComponentSet* nextChild{nullptr};
         std::size_t hierachyDepth;
+
+        std::vector<ComponentSet*> dependents;
+        std::uint32_t dependencySize{0};
 
         template <typename T>
         inline void assertType () {
@@ -52,9 +124,17 @@ namespace component::detail {
 
         void onChildDelete (EntityId id);
         void onChildInsert (EntityId id, std::byte* ptr);
+        void onChildUpdate (EntityId id, std::byte* ptr);
+
         void updateDepth (std::size_t newDepth);
 
         bool canInsert (EntityId id);
+
+        void onInsert (EntityId id, std::byte* ptr);
+        void onRemove (EntityId id);
+
+        void activate (EntityId id);
+        void deactivate (EntityId id);
 
         friend class component::ComponentManager;
     protected:
@@ -62,6 +142,8 @@ namespace component::detail {
         virtual void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) = 0;
         virtual void moveTypedComp (std::byte* dest, std::byte* src) = 0;
         virtual void deleteTypedComp (std::byte* comp) = 0;
+        virtual void swapTypedComp (std::byte* ptr1, std::byte* ptr2) = 0;
+
         virtual void runDeletionCallbacks (std::byte* comp, EntityId id) = 0;
     public:
         ComponentSet (std::size_t startCapacity, std::size_t compSize);
@@ -108,6 +190,11 @@ namespace component::detail {
         void addChild (ComponentSet* child);
         void removeChild (ComponentSet* child);
         std::size_t getHierachyDepth () const;
+
+        void addDependency ();
+        void addDependent (ComponentSet* dependent);
+        void onDependencyInsert (EntityId id);
+        void onDependencyRemove (EntityId id);
 
         [[nodiscard]] std::size_t size () const;
     };
@@ -165,6 +252,12 @@ namespace component::detail {
                 srcPtr++;
             }
         }
+
+        void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
+            using std::swap;
+            swap(*((T*)ptr1), *((T*)ptr2));
+        }
+
     public:
         explicit ConcreteComponentSet (std::size_t startCapacity) : TypedComponentSet<T>{startCapacity, sizeof(T)} {}
 
@@ -188,6 +281,11 @@ namespace component::detail {
 
         void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) override {
             logging::log(LEVEL_FATAL, "Attempted to move all comps of abstract component set!");
+            assert(false);
+        }
+
+        void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
+            logging::log(LEVEL_FATAL, "Attempted to swap comps of abstract component set!");
             assert(false);
         }
     public:
