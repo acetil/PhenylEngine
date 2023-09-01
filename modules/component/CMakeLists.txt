@@ -2,7 +2,9 @@ add_library(component src/component/view/game_view.cpp include/component/compone
         include/component/entity_id.h
         include/component/detail/component_set.h
         include/component/detail/entity_id_list.h
-        src/component/detail/component_set.cpp)
+        src/component/detail/component_set.cpp
+        include/component/detail/signal_handler.h
+        include/component/detail/utils.h)
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)
 

@@ -9,28 +9,14 @@
 #include "entity_id.h"
 #include "detail/component_set.h"
 #include "detail/entity_id_list.h"
+#include "detail/signal_handler.h"
+#include "detail/utils.h"
 
 #include "util/map.h"
 #include "util/meta.h"
 #include "util/optional.h"
 
 namespace component {
-    namespace detail {
-        template<std::size_t N, typename ...Args>
-        bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>* ...>& tup) {
-            if constexpr (N == sizeof...(Args)) {
-                return true;
-            } else {
-                return tupleAllNonNull<N + 1, Args...>(tup) && std::get<N>(tup);
-            }
-        }
-
-        template<typename ...Args>
-        bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>* ...>& tup) {
-            return tupleAllNonNull<0, Args...>(tup);
-        }
-    }
-
     class IterInfo {
     private:
         ComponentManager* compManager;
@@ -46,7 +32,7 @@ namespace component {
 
         friend component::ComponentManager;
     public:
-        [[nodiscard]] EntityId id () const {
+        [[nodiscard]] constexpr EntityId id () const {
             return eId;
         }
 
@@ -60,6 +46,12 @@ namespace component {
 
         ~IterInfo() = default;
     };
+
+    namespace detail {
+        inline constexpr EntityId idFromInfo (const IterInfo& info) {
+            return info.id();
+        }
+    }
 
     class ComponentManager {
     private:
@@ -225,6 +217,7 @@ namespace component {
 
         detail::EntityIdList idList;
         util::Map<std::size_t, std::unique_ptr<detail::ComponentSet>> components;
+        util::Map<std::size_t, std::unique_ptr<detail::SignalHandlerListBase>> signalHandlers;
         std::size_t currStartCapacity;
 
         template <typename T>
@@ -462,6 +455,20 @@ namespace component {
             }
         }
 
+        template <typename T>
+        detail::SignalHandlerList<T>* getOrCreateHandlerList () {
+            auto typeIndex = meta::type_index<T>();
+            if (signalHandlers.contains(typeIndex)) {
+                return (detail::SignalHandlerList<T>*)signalHandlers[typeIndex].get();
+            }
+
+            auto handlerList = std::make_unique<detail::SignalHandlerList<T>>();
+            auto* ptr = handlerList.get();
+            signalHandlers[typeIndex] = std::move(handlerList);
+
+            return ptr;
+        }
+
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
@@ -622,6 +629,23 @@ namespace component {
             detail::ComponentSet* dependency = getOrCreateComponent<Dependency>();
 
             dependency->addDependent(dependent);
+        }
+
+        template <typename Signal, typename ...Args, meta::callable<void, const Signal&, IterInfo&, std::remove_reference_t<Args>&...> F>
+        void handleSignal (F fn) {
+            detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
+            auto comps = std::array{getOrCreateComponent<std::remove_reference_t<Args>>()...};
+
+            auto handler = std::make_unique<detail::TypedSignalHandler<Signal, F, std::remove_reference_t<Args>...>>(std::move(fn), std::move(comps));
+            handlerList->addHandler(std::move(handler));
+        }
+
+        template <typename Signal, typename ...Args>
+        void signal (EntityId id, Args&&... args) {
+            detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
+
+            IterInfo info{this, id};
+            handlerList->handle(info, std::forward<Args>(args)...);
         }
 
 

@@ -8,6 +8,11 @@
 
 #define FORCE_COMPONENT 6.5
 
+static common::InputAction KeyUp;
+static common::InputAction KeyDown;
+static common::InputAction KeyLeft;
+static common::InputAction KeyRight;
+
 void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::SharedPtr& eventBus) {
     auto upKey = gameInput.mapInput("move_up", "key_w");
     auto downKey = gameInput.mapInput("move_down", "key_s");
@@ -30,4 +35,8 @@ void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::Share
     gameInput.addInputEvent(stepKey, game::EmptyEventAction(), event::DebugStepEvent{.status=event::DebugStepStatus::DO_STEP});
 
     eventBus->subscribeUnscoped(util::doDebugConsole);
+}
+
+void frameInput (component::ComponentManager& manager) {
+
 }

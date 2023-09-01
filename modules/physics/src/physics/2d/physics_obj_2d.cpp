@@ -9,6 +9,7 @@
 #include "common/events/debug/debug_render.h"
 #include "physics/components/2D/rigid_body.h"
 #include "physics/components/2D/colliders/box_collider.h"
+#include "physics/signals/2D/collision.h"
 
 #define SOLVER_ITERATIONS 10
 
@@ -93,7 +94,8 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     solveConstraints(constraints, compManager);
 
     for (const auto& [id1, id2, layers] : events) {
-        eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
+        //eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
+        compManager.signal<OnCollision>(id1, id2, layers);
     }
 }
 

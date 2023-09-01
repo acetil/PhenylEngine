@@ -1,4 +1,5 @@
 #include "component/detail/component_set.h"
+#include "component/detail/signal_handler.h"
 
 using namespace component::detail;
 

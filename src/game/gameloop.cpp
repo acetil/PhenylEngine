@@ -24,6 +24,8 @@
 #include "default_input.h"
 
 #include "common/events/debug/debug_step.h"
+#include "entity/bullet.h"
+#include "entity/player.h"
 
 #define TARGET_FPS 60
 #define PHYSICS_FPS 60
@@ -37,6 +39,10 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     auto& uiManager = graphics.getUIManager();
 
+
+    addBulletSignals(engine.getComponentManager(), engine.getEntitySerialiser());
+    addPlayerComponents(engine.getComponentManager(), engine.getEntitySerialiser());
+
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     //logging::log(LEVEL_INFO, "Created player");
     gameObject.addEntityType("test_entity", "resources/entity_types/test_entity.json");
@@ -44,8 +50,10 @@ int game::gameloop (engine::PhenylEngine& engine) {
     gameObject.addEntityType("bullet_entity", "resources/entity_types/bullet_entity.json");
     gameObject.addEntityType("block_entity", "resources/entity_types/block_entity.json");
 
+
     game::GameInput& gameInput = gameObject.getGameInput();
     setupDefaultInput(gameInput, gameObject.getEventBus());
+    inputSetup(gameInput, gameObject.getEventBus());
 
     bool isStepping = false;
     bool shouldStep = false;
@@ -124,9 +132,12 @@ int game::gameloop (engine::PhenylEngine& engine) {
             util::startProfile("physics");
             if (!isStepping || shouldStep) {
                 gameObject.updateEntitiesPrePhysics();
+                playerUpdate(engine.getComponentManager(), gameObject.getGameInput(), gameObject);
+
                 //gameObject.updateEntityPosition();
                 engine.updateEntityPosition(1.0f / PHYSICS_FPS);
                 gameObject.updateEntitiesPostPhysics();
+                playerUpdatePost(engine.getComponentManager(), gameObject.getGameInput(), gameObject);
                 gameObject.updateCamera(graphics.getCamera());
             }
 

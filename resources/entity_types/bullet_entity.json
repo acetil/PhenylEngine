@@ -1,5 +1,5 @@
 {
-  "Controller" : "bullet",
+  "Bullet" : {},
   "GlobalTransform2D" : {
     "transform" : {
       "position" : {
