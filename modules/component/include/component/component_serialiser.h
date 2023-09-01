@@ -2,6 +2,7 @@
 
 #include <string>
 #include <concepts>
+#include <utility>
 
 #include "util/map.h"
 #include "util/data.h"
@@ -11,7 +12,6 @@
 
 namespace component {
     namespace detail {
-        //template <size_t MaxComponents>
         class ComponentSerialiser {
         public:
             virtual ~ComponentSerialiser () = default;
@@ -23,15 +23,15 @@ namespace component {
             virtual bool hasComp (component::EntityView& entityView) const = 0;
         };
 
-        template</*size_t MaxComponents, */class T, meta::callable<util::DataValue, const T&> SerialiseF, meta::callable<util::Optional<T>, const util::DataValue&, EntityId> DeserialiseF>
-        class ComponentSerialiserImpl : public ComponentSerialiser/*<MaxComponents>*/ {
+        template<class T, meta::callable<util::DataValue, const T&> SerialiseF, meta::callable<util::Optional<T>, const util::DataValue&, EntityId> DeserialiseF>
+        class ComponentSerialiserImpl : public ComponentSerialiser {
         private:
             SerialiseF serialiseF; // (const T&) -> util::DataValue
             DeserialiseF deserialiseF; // (const util::DataValue&) -> util::Optional<T>
         public:
             ComponentSerialiserImpl (SerialiseF f1, DeserialiseF f2) : serialiseF{f1}, deserialiseF{f2} {}
 
-            util::DataValue serialiseComp (/*component::ComponentView<MaxComponents>*/component::EntityView& objectView) override {
+            util::DataValue serialiseComp (component::EntityView& objectView) override {
                 return objectView.get<T>()
                         .thenMap([this] (T& comp) -> util::DataValue {
                              return serialiseF(comp);
@@ -39,7 +39,7 @@ namespace component {
                          .orElse({});
             }
 
-            bool deserialiseComp (/*component::ComponentView<MaxComponents>*/component::EntityView& objectView, const util::DataValue& serialisedComp) override {
+            bool deserialiseComp (component::EntityView& objectView, const util::DataValue& serialisedComp) override {
                 auto opt = deserialiseF(serialisedComp, objectView.id());
 
                 opt.ifPresent([&objectView] (T& val) {
@@ -49,33 +49,31 @@ namespace component {
                 return opt;
             }
 
-            bool hasComp (/*component::ComponentView<MaxComponents>*/component::EntityView& objectView) const override {
+            bool hasComp (component::EntityView& objectView) const override {
                 return objectView.has<T>();
             }
         };
     }
 
 
-    //template <size_t MaxComponents>
-    class ObjectComponentFactory {
+    class EntityComponentFactory {
     private:
-        detail::ComponentSerialiser/*<MaxComponents>*/* serialiser;
+        detail::ComponentSerialiser* serialiser;
         util::DataValue compData;
     public:
-        ObjectComponentFactory (detail::ComponentSerialiser/*<MaxComponents>*/* serialiser, util::DataValue compData) : serialiser{serialiser}, compData{std::move(compData)} {}
+        EntityComponentFactory (detail::ComponentSerialiser* serialiser, util::DataValue compData) : serialiser{serialiser}, compData{std::move(compData)} {}
 
-        void addDefault (/*component::ComponentView<MaxComponents>*/EntityView& objectView) const {
+        void addDefault (EntityView& objectView) const {
             if (!serialiser->hasComp(objectView)) {
                 serialiser->deserialiseComp(objectView, compData);
             }
         }
     };
 
-    //template <size_t MaxComponents>
-    class ObjectSerialiser {
+    class EntitySerialiser {
     private:
-        util::Map<std::string, std::unique_ptr<detail::ComponentSerialiser/*<MaxComponents>*/>> serialiserMap;
-        void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser/*<MaxComponents>*/> serialiser) {
+        util::Map<std::string, std::unique_ptr<detail::ComponentSerialiser>> serialiserMap;
+        void addComponentSerialiserInt (const std::string& component, std::unique_ptr<detail::ComponentSerialiser> serialiser) {
             serialiserMap[component] = std::move(serialiser);
         }
     public:
@@ -105,7 +103,7 @@ namespace component {
             });
         }
 
-        util::DataObject serialiseObject (component::EntityView/*<MaxComponents>*/& entityView) const {
+        util::DataObject serialiseObject (component::EntityView& entityView) const {
             util::DataObject dataObj;
 
             for (const auto& [compId, serialiser] : serialiserMap.kv()) {
@@ -127,23 +125,27 @@ namespace component {
 
             const auto& dataObj = dataVal.get<util::DataObject>();
 
-            for (const auto& [compId, serialiser] : serialiserMap.kv()) {
+            /*for (const auto& [compId, serialiser] : serialiserMap.kv()) {
                 if (dataObj.contains(compId)) {
                     serialiser->deserialiseComp(entityView, dataObj.at(compId));
+                }
+            }*/
+            for (const auto& [compId, compVal] : dataObj.kv()) {
+                if (serialiserMap.contains(compId)) {
+                    serialiserMap.at(compId)->deserialiseComp(entityView, compVal);
+                } else {
+                    logging::log(LEVEL_WARNING, "Component serialiser not available for component \"{}\"!", compId);
                 }
             }
         }
 
-        util::Optional<component::ObjectComponentFactory/*<MaxComponents>*/> makeFactory (const std::string& component, util::DataValue dataVal) const {
+        [[nodiscard]] util::Optional<component::EntityComponentFactory> makeFactory (const std::string& component, util::DataValue dataVal) const {
             if (serialiserMap.contains(component)) {
-                return {{serialiserMap.at(component).get(), dataVal}};
+                return {{serialiserMap.at(component).get(), std::move(dataVal)}};
             } else {
+                logging::log(LEVEL_WARNING, "Component serialiser not available for component \"{}\"!", component);
                 return util::NullOpt;
             }
         }
     };
-
-    using EntitySerialiser = ObjectSerialiser;
-    //extern template class ObjectSerialiser<PHENYL_MAX_COMPONENTS>;
-    //extern template class ObjectComponentFactory<PHENYL_MAX_COMPONENTS>;
 }

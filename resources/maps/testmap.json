@@ -5,7 +5,6 @@
     },
     "entities": [
         {
-            "data": {},
             "EntityType": "test_entity"
         },
         {
@@ -39,7 +38,6 @@
                     }
                 ]
             },
-            "data": {},
             "EntityType": "wall_entity"
         },
         {
@@ -73,7 +71,6 @@
                     }
                 ]
             },
-            "data": {},
             "EntityType": "wall_entity"
         },
         {

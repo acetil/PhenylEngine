@@ -1,4 +1,8 @@
-add_library(component src/component/view/game_view.cpp include/component/component_serialiser.h include/component/forward.h include/component/fixed_component.h include/component/component.h src/component/component.cpp src/component/component.cpp)
+add_library(component src/component/view/game_view.cpp include/component/component_serialiser.h include/component/forward.h include/component/fixed_component.h include/component/component.h src/component/detail/entity_id_list.cpp src/component/detail/entity_id_list.cpp
+        include/component/entity_id.h
+        include/component/detail/component_set.h
+        include/component/detail/entity_id_list.h
+        src/component/detail/component_set.cpp)
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)
 

@@ -9,10 +9,8 @@ namespace util {
 namespace component {
     class EntityId;
     class ComponentManager;
-    //template <size_t MaxComponents>
-    class ObjectSerialiser;
-    //template <size_t MaxComponents>
-    class ObjectComponentFactory;
+    class EntitySerialiser;
+    class EntityComponentFactory;
 
 
     template <typename ...Args>
@@ -20,10 +18,8 @@ namespace component {
     template <typename ...Args>
     class ConstEntityComponentView;
 
-    //using EntityComponentManager = ComponentManager<PHENYL_MAX_COMPONENTS>;
     using EntityComponentManager = ComponentManager;
-    //using EntityView = ComponentView<PHENYL_MAX_COMPONENTS>;
 
-    using EntitySerialiser = ObjectSerialiser/*<PHENYL_MAX_COMPONENTS>*/;
-    using EntityComponentFactory = ObjectComponentFactory/*<PHENYL_MAX_COMPONENTS>*/;
+    //using EntitySerialiser = EntitySerialiser;
+    //using EntityComponentFactory = EntityComponentFactory;
 }
