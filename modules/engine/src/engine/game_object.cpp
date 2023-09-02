@@ -58,9 +58,9 @@ component::EntityView detail::GameObject::makeDeserialisedEntity (const util::Da
 
     auto gameView = view::GameView(this);
 
-    entityView.get<EntityControllerComponent>().ifPresent([&entityView, &gameView, &serialisedObj] (EntityControllerComponent& comp) {
+    /*entityView.get<EntityControllerComponent>().ifPresent([&entityView, &gameView, &serialisedObj] (EntityControllerComponent& comp) {
         comp.get().initEntity(entityView, gameView, serialisedObj["data"]);
-    });
+    });*/
 
     eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
     return entityView;

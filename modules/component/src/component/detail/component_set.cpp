@@ -3,7 +3,7 @@
 
 using namespace component::detail;
 
-ComponentSet::ComponentSet (std::size_t startCapacity, std::size_t compSize) : ids{}, metadataSet{}, data{compSize != 0 ? std::make_unique<std::byte[]>(startCapacity * compSize) : nullptr},
+ComponentSet::ComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize) : manager{manager}, ids{}, metadataSet{}, data{compSize != 0 ? std::make_unique<std::byte[]>(startCapacity * compSize) : nullptr},
                                                                                compSize{compSize}, dataSize{0}, allSize{0}, dataCapacity{startCapacity}, hierachyDepth{0} {
     ids.reserve(startCapacity);
     metadataSet.reserve(startCapacity);
@@ -70,7 +70,7 @@ std::byte* ComponentSet::tryInsert (EntityId id) {
         allSize++;
         dataSize++;
 
-        onInsert(id, ptr);
+        onInsert(id, ptr, ptr);
 
         return ptr;
     } else {
@@ -79,15 +79,15 @@ std::byte* ComponentSet::tryInsert (EntityId id) {
         ids.push_back(id);
         allSize++;
 
-        onInsert(id, nullptr);
+        onInsert(id, ptr, nullptr);
 
         return ptr;
     }
 }
 
-void ComponentSet::onInsert (component::EntityId id, std::byte* ptr) {
+void ComponentSet::onInsert (component::EntityId id, std::byte* ptr, std::byte* childPtr) {
     if (parent) {
-        parent->onChildInsert(id, ptr);
+        parent->onChildInsert(id, childPtr);
     }
 
     for (auto* i : dependents) {
@@ -136,7 +136,10 @@ bool ComponentSet::deleteComp (EntityId id) {
 
     auto compIndex = metadataSet[id.id - 1].index;
     auto* compPtr = data.get() + compSize * compIndex;
-    runDeletionCallbacks(compPtr, id);
+    //runDeletionCallbacks(compPtr, id);
+    IterInfo info{manager, id};
+    removeHandler->handle(info, OnRemoveUntyped{compPtr});
+
     if (compIndex == allSize - 1) {
         deleteTypedComp(compPtr);
     } else if (compIndex < dataSize - 1) {
@@ -265,6 +268,16 @@ bool ComponentSet::setParent (detail::ComponentSet* parentSet) {
     parent = parentSet;
     updateDepth(parent ? parent->hierachyDepth + 1 : 0);
 
+    if (parent) {
+        insertHandler->setParent(parent->insertHandler.get());
+        statusChangedHandler->setParent(parent->statusChangedHandler.get());
+        removeHandler->setParent(parent->removeHandler.get());
+    } else {
+        insertHandler->setParent(nullptr);
+        statusChangedHandler->setParent(nullptr);
+        removeHandler->setParent(nullptr);
+    }
+
     return true;
 }
 
@@ -388,9 +401,15 @@ void ComponentSet::activate (component::EntityId id) {
     if (parent) {
         parent->onChildUpdate(id, metadataSet[id.id - 1].data);
     }
+
+    IterInfo info{manager, id};
+    statusChangedHandler->handle(info, OnStatusChangeUntyped{metadataSet[id.id - 1].data, true});
 }
 
 void ComponentSet::deactivate (component::EntityId id) {
+    IterInfo info{manager, id};
+    statusChangedHandler->handle(info, OnStatusChangeUntyped{metadataSet[id.id - 1].data, false});
+
     if (metadataSet[id.id - 1].index == dataSize - 1) {
         metadataSet[id.id - 1].move(dataSize - 1, nullptr);
     } else {

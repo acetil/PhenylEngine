@@ -205,7 +205,7 @@ namespace component {
 
         template <typename T>
         std::unique_ptr<detail::ComponentSet> createComponent () requires (!std::is_abstract_v<T>) {
-            auto component = std::make_unique<detail::ConcreteComponentSet<T>>(currStartCapacity);
+            auto component = std::make_unique<detail::ConcreteComponentSet<T>>(this, currStartCapacity);
             component->guaranteeEntityIndex(idList.maxIndex());
 
             return component;
@@ -213,7 +213,7 @@ namespace component {
 
         template <typename T>
         std::unique_ptr<detail::ComponentSet> createComponent () requires (std::is_abstract_v<T>) {
-            auto component = std::make_unique<detail::AbstractComponentSet<T>>(currStartCapacity);
+            auto component = std::make_unique<detail::AbstractComponentSet<T>>(this, currStartCapacity);
             component->guaranteeEntityIndex(idList.maxIndex());
 
             return component;
@@ -670,7 +670,7 @@ namespace component {
         }
 
         template <typename Signal, typename ...Args, meta::callable<void, const Signal&, IterInfo&, std::remove_reference_t<Args>&...> F>
-        void handleSignal (F fn) {
+        void handleSignal (F fn) requires (!ComponentSignal<Signal>) {
             detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
             auto comps = std::array{getOrCreateComponent<std::remove_reference_t<Args>>()...};
 
@@ -678,8 +678,14 @@ namespace component {
             handlerList->addHandler(std::move(handler));
         }
 
+        template <ComponentSignal Signal>
+        void handleSignal (std::function<void(IterInfo&, const Signal&)> handler) {
+            auto* comp = (detail::TypedComponentSet<typename Signal::Type>*)getOrCreateComponent<typename Signal::Type>();
+            comp->addHandler(handler);
+        }
+
         template <typename Signal, typename ...Args>
-        void signal (EntityId id, Args&&... args) {
+        void signal (EntityId id, Args&&... args) requires (!ComponentSignal<Signal>) {
             detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
 
             handlerList->handle(id, this, std::forward<Args>(args)...);

@@ -9,6 +9,7 @@
 
 #include "component/entity_id.h"
 #include "component/forward.h"
+#include "component_signal_handler.h"
 
 #include "logging/logging.h"
 
@@ -91,6 +92,7 @@ namespace component::detail {
         static constexpr std::uint32_t EMPTY_INDEX = -1;
         static constexpr std::size_t RESIZE_FACTOR = 2;
 
+        ComponentManager* manager;
         std::vector<EntityId> ids;
         //std::vector<std::size_t> indexSet;
         std::vector<Metadata> metadataSet;
@@ -134,7 +136,7 @@ namespace component::detail {
 
         bool canInsert (EntityId id);
 
-        void onInsert (EntityId id, std::byte* ptr);
+        void onInsert (EntityId id, std::byte* ptr, std::byte* childPtr);
         void onRemove (EntityId id);
 
         void activate (EntityId id);
@@ -142,6 +144,10 @@ namespace component::detail {
 
         friend class component::ComponentManager;
     protected:
+        std::unique_ptr<ComponentSignalHandler<OnInsertUntyped>> insertHandler{};
+        std::unique_ptr<ComponentSignalHandler<OnStatusChangeUntyped>> statusChangedHandler{};
+        std::unique_ptr<ComponentSignalHandler<OnRemoveUntyped>> removeHandler{};
+
         virtual void assertTypeIndex (std::size_t typeIndex, const char* debugOtherName) const = 0;
         virtual void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) = 0;
         virtual void moveTypedComp (std::byte* dest, std::byte* src) = 0;
@@ -152,7 +158,7 @@ namespace component::detail {
 
         virtual void runDeletionCallbacks (std::byte* comp, EntityId id) = 0;
     public:
-        ComponentSet (std::size_t startCapacity, std::size_t compSize);
+        ComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize);
         virtual ~ComponentSet ();
 
         void guaranteeEntityIndex (std::size_t index);
@@ -186,6 +192,9 @@ namespace component::detail {
 
             if (comp) {
                 new ((T*)comp) T(std::forward<Args>(args)...);
+
+                IterInfo info{manager, id};
+                insertHandler->handle(info, OnInsertUntyped{comp});
             }
         }
 
@@ -230,12 +239,40 @@ namespace component::detail {
                 i(compRef, id);
             }
         }
+
+        TypedComponentSignalHandler<T, OnInsertUntyped>& getInsertHandler () {
+            return (TypedComponentSignalHandler<T, OnInsertUntyped>&)*insertHandler;
+        }
+
+        TypedComponentSignalHandler<T, OnStatusChangeUntyped>& getStatusHandler () {
+            return (TypedComponentSignalHandler<T, OnStatusChangeUntyped>&)*statusChangedHandler;
+        }
+
+        TypedComponentSignalHandler<T, OnRemoveUntyped>& getRemoveHandler () {
+            return (TypedComponentSignalHandler<T, OnRemoveUntyped>&)*removeHandler;
+        }
     public:
-        explicit TypedComponentSet (std::size_t startCapacity, std::size_t compSize) : ComponentSet(startCapacity, compSize) {}
+        explicit TypedComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize) : ComponentSet(manager, startCapacity, compSize) {
+            insertHandler = std::make_unique<TypedComponentSignalHandler<T, OnInsertUntyped>>();
+            statusChangedHandler = std::make_unique<TypedComponentSignalHandler<T, OnStatusChangeUntyped>>();
+            removeHandler = std::make_unique<TypedComponentSignalHandler<T, OnRemoveUntyped>>();
+        }
 
         template <meta::callable<void, const T&, EntityId> F>
         void addDeletionCallback (F fn) {
             deletionCallbacks.emplace_back(std::move(fn));
+        }
+
+        void addHandler (std::function<void(IterInfo&, const OnInsert<T>&)> handler) {
+            getInsertHandler().addHandler(handler);
+        }
+
+        void addHandler (std::function<void(IterInfo&, const OnStatusChange<T>&)> handler) {
+            getStatusHandler().addHandler(handler);
+        }
+
+        void addHandler (std::function<void(IterInfo&, const OnRemove<T>&)> handler) {
+            getRemoveHandler().addHandler(handler);
         }
     };
 
@@ -287,7 +324,9 @@ namespace component::detail {
         }
 
     public:
-        explicit ConcreteComponentSet (std::size_t startCapacity) : TypedComponentSet<T>{startCapacity, sizeof(T)} {}
+        explicit ConcreteComponentSet (ComponentManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, sizeof(T)} {
+
+        }
 
         ~ConcreteComponentSet () override {
             ComponentSet::clear();
@@ -326,6 +365,6 @@ namespace component::detail {
 
         }
     public:
-        explicit AbstractComponentSet (std::size_t startCapacity) : TypedComponentSet<T>{startCapacity, 0} {}
+        explicit AbstractComponentSet (ComponentManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, 0} {}
     };
 }

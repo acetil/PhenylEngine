@@ -21,6 +21,13 @@ using namespace graphics;
 
 void detail::Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
     renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, compManager));
+
+    // TODO
+    compManager->handleSignal<component::OnInsert<Model2D>>([this] (component::IterInfo& info, const component::OnInsert<Model2D>& signal) {
+        getTextureAtlas("sprite").ifPresent([&signal] (TextureAtlas& atlas) {
+            signal.get() = atlas.getModel(signal.get().modelName);
+        });
+    });
 }
 
 void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
@@ -153,11 +160,11 @@ void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
             comp = atlas.getModel(comp.modelName);
         });
     });*/
-    event.entityView.apply<Model2D>([this] (auto& info, Model2D& comp) {
+    /*event.entityView.apply<Model2D>([this] (auto& info, Model2D& comp) {
         getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
             comp = atlas.getModel(comp.modelName);
         });
-    });
+    });*/
 
     //Texture* tex = atlas.getTexture(texId);
     //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
