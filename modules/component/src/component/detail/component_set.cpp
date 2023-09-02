@@ -213,8 +213,23 @@ void ComponentSet::guaranteeCapacity (std::size_t capacity) {
     moveAllComps(newData.get(), data.get(), allSize);
 
     data = std::move(newData);
+    for (std::size_t i = 0; i < dataSize; i++) {
+        metadataSet[ids[i].id - 1].data = data.get() + compSize * i;
+
+        if (parent) {
+            parent->onChildRelocate(ids[i], data.get() + compSize * i);
+        }
+    }
     ids.reserve(dataCapacity);
     metadataSet.reserve(dataCapacity);
+}
+
+void ComponentSet::onChildRelocate (EntityId id, std::byte* ptr) {
+    if (parent) {
+        parent->onChildRelocate(id, ptr);
+    }
+
+    metadataSet[id.id - 1].fillChild(ptr);
 }
 
 void ComponentSet::clear () {

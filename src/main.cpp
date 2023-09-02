@@ -61,7 +61,7 @@ struct Test2 {
 
 static void testCompManager () {
     component::logging::log(LEVEL_DEBUG, "Starting comp manager tests!");
-    auto manager = component::ComponentManager{};
+    auto manager = component::ComponentManager{2};
 
     manager.addComponent<Foo>();
     manager.addComponent<Bar>();

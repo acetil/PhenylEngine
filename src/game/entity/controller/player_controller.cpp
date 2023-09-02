@@ -204,6 +204,10 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
 
                 body.applyImpulse(bulletVel * body.getMass());
             });
+
+            player.hasShot = true;
+        } else if (!doShoot && player.hasShot) {
+            player.hasShot = false;
         }
     });
 }

@@ -75,14 +75,14 @@ namespace component::detail {
             }
 
             inline constexpr void incrementDepenencies () {
-                assert((metadata & METADATA_MASK) < MAX_DEPENDENCY_NUM);
+                assert((metadata & DEPENDENCY_MASK) < MAX_DEPENDENCY_NUM);
                 auto nonDependencies = metadata & (METADATA_MASK ^ DEPENDENCY_MASK);
 
                 metadata = nonDependencies | ((metadata & METADATA_MASK) + 1);
             }
 
             inline constexpr void decrementDependencies () {
-                assert((metadata & METADATA_MASK) > 0);
+                assert((metadata & DEPENDENCY_MASK) > 0);
                 auto nonDependencies = metadata & (METADATA_MASK ^ DEPENDENCY_MASK);
 
                 metadata = nonDependencies | ((metadata & METADATA_MASK) - 1);
@@ -128,6 +128,7 @@ namespace component::detail {
         void onChildDelete (EntityId id);
         void onChildInsert (EntityId id, std::byte* ptr);
         void onChildUpdate (EntityId id, std::byte* ptr);
+        void onChildRelocate (EntityId id, std::byte* ptr);
 
         void updateDepth (std::size_t newDepth);
 

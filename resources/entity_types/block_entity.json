@@ -29,8 +29,8 @@
   },
   "BoxCollider2D" : {
     "Collider2D" : {
-      "layers": 0,
-      "masks": 0,
+      "layers": 1,
+      "masks": 3,
       "elasticity" : 0.7
     },
     "scale_matrix": [

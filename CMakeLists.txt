@@ -6,7 +6,7 @@ enable_language(CXX)
 add_compile_options("-D C_LOGGING")
 set(DEBUG_COMPILE_FLAGS "-Werror=return-type")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address -O1 ${DEBUG_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address ${DEBUG_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 #set(CMAKE_CXX_FLAGS "${DEBUG_COMPILE_FLAGS}")
 #set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -Wreturn-type")
