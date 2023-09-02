@@ -178,12 +178,12 @@ namespace component::detail {
         }
 
         template <typename T, typename ...Args>
-        void insertComp (EntityId id, Args&&... args) {
+        bool insertComp (EntityId id, Args&&... args) {
             assertType<T>();
             if (deferring) {
                 T comp{std::forward<Args>(args)...};
                 deferInsertion((std::byte*)(&comp), id);
-                return;
+                return true;
             }
 
             auto* comp = tryInsert(id);
@@ -193,6 +193,24 @@ namespace component::detail {
 
                 IterInfo info{manager, id};
                 insertHandler->handle(info, OnInsertUntyped{comp});
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        template <typename T>
+        bool setComp (EntityId id, T comp) {
+            assertType<T>();
+            assert(id);
+
+            if (metadataSet[id.id - 1].empty()) {
+                return insertComp<T>(id, std::move(comp));
+            } else if (metadataSet[id.id - 1].present()) {
+                *getComponent<T>(id) = std::move(comp);
+                return true;
+            } else {
+                return false;
             }
         }
 

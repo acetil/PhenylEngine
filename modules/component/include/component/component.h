@@ -66,6 +66,11 @@ namespace component {
             }
 
             template <typename T>
+            bool set (T comp) {
+                return compManager.set(entityId, std::move(comp));
+            }
+
+            template <typename T>
             void erase () {
                 compManager.erase<T>(entityId);
             }
@@ -806,6 +811,17 @@ namespace component {
             comp->insertComp<T>(id, std::forward<Args>(args)...);
         }
 
+        template <typename T>
+        bool set (EntityId id, T comp) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to set component of invalid entity {}!", id.value());
+                return false;
+            }
+            detail::ComponentSet* compSet = getOrCreateComponent<T>();
+
+            return compSet->setComp(id, std::move(comp));
+        }
+
         EntityView create (EntityId parent=EntityId{}) {
             auto id = idList.newId();
 
@@ -908,8 +924,8 @@ namespace component {
             idList.clear();
         }
 
-        template <typename Base, typename Derived>
-        void addChild () requires std::derived_from<Derived, Base> {
+        template <typename Derived, typename Base>
+        void inherits () requires std::derived_from<Derived, Base> {
             detail::ComponentSet* derived = getOrCreateComponent<Derived>();
             detail::ComponentSet* base = getOrCreateComponent<Base>();
 

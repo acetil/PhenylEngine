@@ -72,12 +72,12 @@ static void testCompManager () {
     manager.addComponent<Test2>();
     manager.addComponent<TestBase>();
 
-    manager.addChild<Foo, Bar>();
-    manager.addChild<Foo, Bar2>();
-    manager.addChild<Bar, Baz>();
+    manager.inherits<Bar, Foo>();
+    manager.inherits<Bar2, Foo>();
+    manager.inherits<Baz, Bar>();
 
-    manager.addChild<TestBase, Test>();
-    manager.addChild<TestBase, Test1>();
+    manager.inherits<Test, TestBase>();
+    manager.inherits<Test1, TestBase>();
 
     manager.addRequirement<Test2, Test>();
 
@@ -154,6 +154,8 @@ static void testCompManager () {
         component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
     });
 
+    e1.set(Foo{19});
+
     component::logging::log(LEVEL_DEBUG, "Looping through Foo, Test:");
     manager.each<Foo, Test>([] (component::IterInfo& info, Foo& foo, Test& test) {
         component::logging::log(LEVEL_DEBUG, "{} Foo: a={}, Test: d={}", info.id().value(), foo.a, test.d);
@@ -164,7 +166,7 @@ static void testCompManager () {
         component::logging::log(LEVEL_DEBUG, "{} Baz: a={}, b={}, Test: d={}", info.id().value(), baz.a, baz.b, test.d);
     });
 
-    e5.insert<Test>(Test{8});
+    e5.set(Test{8});
 
     component::logging::log(LEVEL_DEBUG, "Looping through Test2 after add back:");
     manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
