@@ -112,6 +112,11 @@ void ComponentSet::onChildInsert (component::EntityId id, std::byte* ptr) {
 }
 
 bool ComponentSet::deleteComp (EntityId id) {
+    if (deferring) {
+        deferredDeletions.push_back(id);
+        return true;
+    }
+
     assert(metadataSet.size() > id.id - 1);
     if (metadataSet[id.id - 1].empty()) {
         return false;
@@ -401,4 +406,18 @@ void ComponentSet::onChildUpdate (component::EntityId id, std::byte* ptr) {
     }
 
     metadataSet[id.id - 1].fillChild(ptr);
+}
+
+void ComponentSet::defer () {
+    deferring = true;
+}
+
+void ComponentSet::deferEnd () {
+    deferring = false;
+    for (auto i : deferredDeletions) {
+        deleteComp(i);
+    }
+
+    deferredDeletions.clear();
+    popDeferredInsertions();
 }

@@ -68,7 +68,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     compManager.eachPair<BoxCollider2D>([&constraints, &events, deltaTime] (component::ComponentManager::Bundle<BoxCollider2D> boxBundle1, component::ComponentManager::Bundle<BoxCollider2D> boxBundle2) {
         auto [info1, box1] = boxBundle1;
         auto [info2, box2] = boxBundle2;
-
+        auto& manager = info1.manager();
         if (!box1.shouldCollide(box2)) {
             return;
         }
@@ -82,21 +82,23 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
                 constraints.push_back(manifold.buildConstraint(&box1, &box2, deltaTime));
 
                 if (box1.layers & box2.mask) {
-                    events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
+                    manager.signal<OnCollision>(info2.id(), info1.id(), (std::uint32_t)(box1.layers & box2.mask));
+                    //events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
                 }
 
                 if (box2.layers & box1.mask) {
-                    events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
+                    manager.signal<OnCollision>(info1.id(), info2.id(), (std::uint32_t)(box2.layers & box1.mask));
+                    //events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
                 }
             });
     });
 
     solveConstraints(constraints, compManager);
 
-    for (const auto& [id1, id2, layers] : events) {
+    /*for (const auto& [id1, id2, layers] : events) {
         //eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
         compManager.signal<OnCollision>(id1, id2, layers);
-    }
+    }*/
 }
 
 void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager) {

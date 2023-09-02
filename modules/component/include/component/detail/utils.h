@@ -6,7 +6,40 @@
 #include "component/entity_id.h"
 
 namespace component {
-    class IterInfo;
+    namespace detail {
+        template <typename Signal>
+        class SignalHandlerList;
+    }
+    class IterInfo {
+    private:
+        ComponentManager* compManager;
+        EntityId eId;
+
+        IterInfo (const IterInfo&) = default;
+        IterInfo (IterInfo&&) = default;
+
+        IterInfo& operator= (const IterInfo&) = default;
+        IterInfo& operator= (IterInfo&&) = default;
+
+        friend component::ComponentManager;
+        template <typename T>
+        friend class detail::SignalHandlerList;
+        IterInfo (ComponentManager* manager, EntityId id) : compManager{manager}, eId{id} {}
+    public:
+        [[nodiscard]] constexpr EntityId id () const {
+            return eId;
+        }
+
+        ComponentManager& manager () {
+            return *compManager;
+        }
+
+        [[nodiscard]] const ComponentManager& manager () const {
+            return *compManager;
+        }
+
+        ~IterInfo() = default;
+    };
 }
 
 namespace component::detail {
@@ -23,6 +56,4 @@ namespace component::detail {
     bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>* ...>& tup) {
         return tupleAllNonNull<0, Args...>(tup);
     }
-
-    inline constexpr EntityId idFromInfo (const IterInfo& info);
 }

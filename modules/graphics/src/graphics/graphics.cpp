@@ -148,7 +148,12 @@ void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
         //event.entityView.model = atlas.getModel((texId));
     });*/
 
-    event.entityView.get<Model2D>().ifPresent([this] (Model2D& comp) {
+    /*event.entityView.get<Model2D>().ifPresent([this] (Model2D& comp) {
+        getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
+            comp = atlas.getModel(comp.modelName);
+        });
+    });*/
+    event.entityView.apply<Model2D>([this] (auto& info, Model2D& comp) {
         getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
             comp = atlas.getModel(comp.modelName);
         });

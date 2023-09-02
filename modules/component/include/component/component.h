@@ -17,42 +17,6 @@
 #include "util/optional.h"
 
 namespace component {
-    class IterInfo {
-    private:
-        ComponentManager* compManager;
-        EntityId eId;
-
-        IterInfo (ComponentManager* manager, EntityId id) : compManager{manager}, eId{id} {}
-
-        IterInfo (const IterInfo&) = default;
-        IterInfo (IterInfo&&) = default;
-
-        IterInfo& operator= (const IterInfo&) = default;
-        IterInfo& operator= (IterInfo&&) = default;
-
-        friend component::ComponentManager;
-    public:
-        [[nodiscard]] constexpr EntityId id () const {
-            return eId;
-        }
-
-        ComponentManager& manager () {
-            return *compManager;
-        }
-
-        [[nodiscard]] const ComponentManager& manager () const {
-            return *compManager;
-        }
-
-        ~IterInfo() = default;
-    };
-
-    namespace detail {
-        inline constexpr EntityId idFromInfo (const IterInfo& info) {
-            return info.id();
-        }
-    }
-
     class ComponentManager {
     private:
         class EntityView {
@@ -91,6 +55,11 @@ namespace component {
             template <typename T>
             [[nodiscard]] bool has () const {
                 return compManager.has<T>(entityId);
+            }
+
+            template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
+            void apply (F fn) {
+                compManager.apply<Args...>(fn, entityId);
             }
 
             void remove () {
@@ -219,6 +188,9 @@ namespace component {
         util::Map<std::size_t, std::unique_ptr<detail::ComponentSet>> components;
         util::Map<std::size_t, std::unique_ptr<detail::SignalHandlerListBase>> signalHandlers;
         std::size_t currStartCapacity;
+        std::size_t deferCount{0};
+        std::vector<EntityId> deferredDeletions{};
+        std::vector<std::pair<std::function<void(ComponentManager*, EntityId)>, EntityId>> deferredApplys;
 
         template <typename T>
         detail::ComponentSet* getComponent () const {
@@ -469,6 +441,45 @@ namespace component {
             return ptr;
         }
 
+        void onDeferBegin () {
+            for (auto [k, v] : signalHandlers.kv()) {
+                v->defer();
+            }
+
+            for (auto [k, v] : components.kv()) {
+                v->defer();
+            }
+        }
+
+        void onDeferEnd () {
+            for (auto [k, v] : signalHandlers.kv()) {
+                v->deferEnd(this);
+            }
+
+            for (auto [k, v] : components.kv()) {
+                v->deferEnd();
+            }
+
+            for (auto& [f, id] : deferredApplys) {
+                f(this, id);
+            }
+
+            for (auto i : deferredDeletions) {
+                remove(i);
+            }
+
+            deferredApplys.clear();
+            deferredDeletions.clear();
+        }
+
+        template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
+        inline void applyNow (F& fn, EntityId id) {
+            std::tuple<Args*...> compTup{getEntityComp<Args>(id)...};
+            if (detail::tupleAllNonNull<Args...>(compTup)) {
+                IterInfo info{this, id};
+                fn(info, (*std::get<Args*>(compTup))...);
+            }
+        }
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
@@ -544,9 +555,18 @@ namespace component {
             return EntityView{id, *this};
         }
 
+        [[nodiscard]] bool exists (EntityId id) const {
+            return idList.check(id);
+        }
+
         void remove (EntityId id) {
             if (!idList.check(id)) {
                 logging::log(LEVEL_ERROR, "Attempted to delete invalid entity {}!", id.value());
+                return;
+            }
+
+            if (deferCount > 0) {
+                deferredDeletions.push_back(id);
                 return;
             }
 
@@ -582,6 +602,24 @@ namespace component {
             }
 
             return comp->hasComp(id);
+        }
+
+        template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
+        void apply (F fn, EntityId id) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to apply on invalid entity {}!", id.value());
+                return;
+            }
+
+            if (!deferCount) {
+                applyNow<Args...>(fn, id);
+                return;
+            }
+
+            auto applyFn = [fn=std::move(fn)] (ComponentManager* manager, EntityId id) {
+                manager->applyNow<Args...>(fn, id);
+            };
+            deferredApplys.emplace_back(std::move(applyFn), id);
         }
 
         std::size_t size () const {
@@ -644,8 +682,19 @@ namespace component {
         void signal (EntityId id, Args&&... args) {
             detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
 
-            IterInfo info{this, id};
-            handlerList->handle(info, std::forward<Args>(args)...);
+            handlerList->handle(id, this, std::forward<Args>(args)...);
+        }
+
+        void defer () {
+            if (deferCount++ == 0) {
+                onDeferBegin();
+            }
+        }
+
+        void deferEnd () {
+            if (--deferCount == 0) {
+                onDeferEnd();
+            }
         }
 
 
@@ -682,7 +731,9 @@ namespace component {
 
         template <typename T, meta::callable<void, IterInfo&, std::remove_reference_t<T>&> F>
         void each (F fn) {
+            defer();
             eachInt<std::remove_reference_t<T>>(getOrCreateComponent<T>(), fn);
+            deferEnd();
         }
 
         template <typename T, meta::callable<void, const IterInfo&, const std::remove_cvref_t<T>&> F>
@@ -709,7 +760,9 @@ namespace component {
                 }
             }
 
+            defer();
             eachInt<std::remove_reference_t<Args>...>(comps, primarySet, fn, std::make_index_sequence<sizeof...(Args)>{});
+            deferEnd();
         }
 
         template <typename ...Args, meta::callable<void, const IterInfo&, const std::remove_cvref_t<Args>&...> F>
@@ -738,7 +791,10 @@ namespace component {
         template <typename T, meta::callable<void, Bundle<T>, Bundle<T>> F>
         void eachPair (F fn) {
             auto* comp = getOrCreateComponent<T>();
+
+            defer();
             eachPairInt<std::remove_reference_t<T>>(comp, fn);
+            deferEnd();
         }
 
         template <typename T, meta::callable<void, ConstBundle<T>, ConstBundle<T>> F>

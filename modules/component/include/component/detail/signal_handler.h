@@ -30,7 +30,7 @@ namespace component::detail {
         TypedSignalHandler (F fn, std::array<ComponentSet*, sizeof...(Args)> components) : fn{fn}, components{components} {}
 
         void handle (const Signal& signal, IterInfo& info) override {
-            auto comps = getComponents(idFromInfo(info), std::make_index_sequence<sizeof...(Args)>{});
+            auto comps = getComponents(info.id(), std::make_index_sequence<sizeof...(Args)>{});
 
             if (tupleAllNonNull<Args...>(comps)) {
                 fn(signal, info, *(std::get<Args*>(comps))...);
@@ -43,19 +43,49 @@ namespace component::detail {
     class SignalHandlerList;
 
     class SignalHandlerListBase {
+    protected:
+        bool deferring{false};
+        virtual void signalDeferred (ComponentManager* manager) = 0;
     public:
         virtual ~SignalHandlerListBase() = default;
+
+        void defer () {
+            deferring = true;
+        }
+
+        void deferEnd (ComponentManager* manager) {
+            deferring = false;
+            signalDeferred(manager);
+        }
     };
 
     template <typename Signal>
     class SignalHandlerList : public SignalHandlerListBase {
     private:
         std::vector<std::unique_ptr<SignalHandler<Signal>>> handlers;
+        std::vector<std::pair<Signal, EntityId>> deferredSignals;
+    protected:
+        void signalDeferred (ComponentManager* manager) override {
+            for (auto& [signal, id] : deferredSignals) {
+                IterInfo info{manager, id};
 
+                for (auto& j : handlers) {
+                    j->handle(signal, info);
+                }
+            }
+
+            deferredSignals.clear();
+        }
     public:
         template <typename ...Args>
-        void handle (IterInfo& info, Args&&... args) requires std::constructible_from<Signal, Args...> {
+        void handle (EntityId id, ComponentManager* manager, Args&&... args) requires std::constructible_from<Signal, Args...> {
+            if (deferring) {
+                deferredSignals.emplace_back(std::pair{Signal{std::forward<Args>(args)...}, id});
+                return;
+            }
+
             Signal signal{std::forward<Args>(args)...};
+            IterInfo info{manager, id};
 
             for (auto& i : handlers) {
                 i->handle(signal, info);

@@ -37,7 +37,7 @@ namespace component::detail {
                 return index != EMPTY_INDEX;
             }
 
-            inline constexpr bool active () const {
+            [[nodiscard]] inline constexpr bool active () const {
                 return !(metadata & DEPENDENCY_MASK);
             }
 
@@ -112,6 +112,9 @@ namespace component::detail {
         std::vector<ComponentSet*> dependents;
         std::uint32_t dependencySize{0};
 
+        bool deferring = false;
+        std::vector<EntityId> deferredDeletions;
+
         template <typename T>
         inline void assertType () {
             // TODO: insert ifndef
@@ -143,6 +146,8 @@ namespace component::detail {
         virtual void moveTypedComp (std::byte* dest, std::byte* src) = 0;
         virtual void deleteTypedComp (std::byte* comp) = 0;
         virtual void swapTypedComp (std::byte* ptr1, std::byte* ptr2) = 0;
+        virtual void deferInsertion (std::byte* comp, EntityId id) = 0;
+        virtual void popDeferredInsertions () = 0;
 
         virtual void runDeletionCallbacks (std::byte* comp, EntityId id) = 0;
     public:
@@ -168,15 +173,18 @@ namespace component::detail {
         }
 
         template <typename T, typename ...Args>
-        T* insertComp (EntityId id, Args&&... args) {
+        void insertComp (EntityId id, Args&&... args) {
+            assertType<T>();
+            if (deferring) {
+                T comp{std::forward<Args>(args)...};
+                deferInsertion((std::byte*)(&comp), id);
+                return;
+            }
+
             auto* comp = tryInsert(id);
 
             if (comp) {
                 new ((T*)comp) T(std::forward<Args>(args)...);
-
-                return (T*)comp;
-            } else {
-                return nullptr;
             }
         }
 
@@ -195,6 +203,9 @@ namespace component::detail {
         void addDependent (ComponentSet* dependent);
         void onDependencyInsert (EntityId id);
         void onDependencyRemove (EntityId id);
+
+        void defer ();
+        void deferEnd ();
 
         [[nodiscard]] std::size_t size () const;
     };
@@ -229,6 +240,8 @@ namespace component::detail {
 
     template <typename T>
     class ConcreteComponentSet : public TypedComponentSet<T> {
+    private:
+        std::vector<std::pair<T, EntityId>> deferredInsertions{};
     protected:
         void moveTypedComp (std::byte* dest, std::byte* src) override {
             *((T*) dest) = std::move(*((T*) src));
@@ -256,6 +269,20 @@ namespace component::detail {
         void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
             using std::swap;
             swap(*((T*)ptr1), *((T*)ptr2));
+        }
+
+        void deferInsertion (std::byte* comp, EntityId id) override {
+            T* compPtr = (T*)comp;
+
+            deferredInsertions.emplace_back(std::move(*compPtr), id);
+        }
+
+        void popDeferredInsertions () override {
+            for (auto& i : deferredInsertions) {
+                ComponentSet::insertComp<T>(i.second, std::move(i.first));
+            }
+
+            deferredInsertions.clear();
         }
 
     public:
@@ -287,6 +314,15 @@ namespace component::detail {
         void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
             logging::log(LEVEL_FATAL, "Attempted to swap comps of abstract component set!");
             assert(false);
+        }
+
+        void deferInsertion (std::byte* comp, EntityId id) override {
+            logging::log(LEVEL_FATAL, "Attempted to defer insertion of abstract comp!");
+            assert(false);
+        }
+
+        void popDeferredInsertions () override {
+
         }
     public:
         explicit AbstractComponentSet (std::size_t startCapacity) : TypedComponentSet<T>{startCapacity, 0} {}

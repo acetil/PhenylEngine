@@ -197,13 +197,11 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
 
             auto bulletView = game.createNewEntityInstance("bullet_entity");
 
-            bulletView.get<common::GlobalTransform2D>().ifPresent([pos, rot] (common::GlobalTransform2D& transform) {
+            bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (component::IterInfo& info, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
                 transform.transform2D
                     .setPosition(pos)
                     .setRotation(rot);
-            });
 
-            bulletView.get<physics::RigidBody2D>().ifPresent([bulletVel] (physics::RigidBody2D& body) {
                 body.applyImpulse(bulletVel * body.getMass());
             });
         }
