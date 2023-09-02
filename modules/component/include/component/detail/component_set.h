@@ -155,8 +155,6 @@ namespace component::detail {
         virtual void swapTypedComp (std::byte* ptr1, std::byte* ptr2) = 0;
         virtual void deferInsertion (std::byte* comp, EntityId id) = 0;
         virtual void popDeferredInsertions () = 0;
-
-        virtual void runDeletionCallbacks (std::byte* comp, EntityId id) = 0;
     public:
         ComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize);
         virtual ~ComponentSet ();
@@ -222,21 +220,11 @@ namespace component::detail {
 
     template <typename T>
     class TypedComponentSet : public ComponentSet {
-    private:
-        std::vector<std::function<void(const T&, EntityId)>> deletionCallbacks{};
     protected:
         void assertTypeIndex (std::size_t typeIndex, const char* debugOtherName) const override {
             if (typeIndex != meta::type_index<T>()) {
                 logging::log(LEVEL_FATAL, "Attempted to access component of type index {} ({}) with type of index {} ()!", meta::type_index<T>(), typeid(T).name(), typeIndex, debugOtherName);
                 std::exit(1);
-            }
-        }
-
-        void runDeletionCallbacks (std::byte* comp, EntityId id) override {
-            assert(comp);
-            const T& compRef = *((T*) comp);
-            for (auto& i : deletionCallbacks) {
-                i(compRef, id);
             }
         }
 
@@ -256,11 +244,6 @@ namespace component::detail {
             insertHandler = std::make_unique<TypedComponentSignalHandler<T, OnInsertUntyped>>();
             statusChangedHandler = std::make_unique<TypedComponentSignalHandler<T, OnStatusChangeUntyped>>();
             removeHandler = std::make_unique<TypedComponentSignalHandler<T, OnRemoveUntyped>>();
-        }
-
-        template <meta::callable<void, const T&, EntityId> F>
-        void addDeletionCallback (F fn) {
-            deletionCallbacks.emplace_back(std::move(fn));
         }
 
         void addHandler (std::function<void(IterInfo&, const OnInsert<T>&)> handler) {

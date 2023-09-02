@@ -8,8 +8,8 @@ using namespace graphics::ui;
 ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObject& classData, const std::string& classPrefix) : classId{std::move(_classId)},
     theme{_theme}, parent{nullptr} {
 
-    if (classData.contains("parent")) {
-        parentId = theme->getAbsoluteId(classData.at("parent").toString(), classPrefix);
+    if (classData.contains("parentId")) {
+        parentId = theme->getAbsoluteId(classData.at("parentId").toString(), classPrefix);
     } else {
         parentId = "default";
     }
@@ -30,7 +30,7 @@ ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObj
     }
 
     for (auto [propId, propData] : classData.kv()) {
-        if (propId == "parent" || propId == "subclasses") {
+        if (propId == "parentId" || propId == "subclasses") {
             continue;
         }
 
@@ -66,12 +66,12 @@ void ThemeClass::setParent () {
     /*auto parentClassOpt = theme->getThemeClass(parentId);
 
     parentClassOpt.ifPresent([this] (ThemeClass* parentClass) {
-       this->parent = parentClass;
+       this->parentId = parentClass;
     });
 
     parentClassOpt.ifNotPresent([this] () {
-        logging::log(LEVEL_ERROR, "Could not find parent class {} for theme class {}!", parentId, classId);
-        this->parent = theme->getThemeClass("default").orElse(nullptr);
+        logging::log(LEVEL_ERROR, "Could not find parentId class {} for theme class {}!", parentId, classId);
+        this->parentId = theme->getThemeClass("default").orElse(nullptr);
     });*/
 
     if (classId == parentId) {
@@ -83,7 +83,7 @@ void ThemeClass::setParent () {
             this->parent = parentClass;
         })
         .ifNotPresent([this] () {
-            logging::log(LEVEL_ERROR, "Could not find parent class {} for theme class {}!", parentId, classId);
+            logging::log(LEVEL_ERROR, "Could not find parentId class {} for theme class {}!", parentId, classId);
             this->parent = theme->getThemeClass("default").orElse(nullptr);
         });
 }

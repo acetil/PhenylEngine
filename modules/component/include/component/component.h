@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <limits>
 #include <functional>
+#include <iterator>
 
 #include "forward.h"
 #include "entity_id.h"
@@ -17,8 +18,25 @@
 #include "util/optional.h"
 
 namespace component {
+    namespace detail {
+        struct Relationship {
+            EntityId parent{};
+            EntityId children{};
+            EntityId next{};
+            EntityId prev{};
+
+            void clear () {
+                parent = {};
+                children = {};
+                next = {};
+                prev = {};
+            }
+        };
+    }
+
     class ComponentManager {
     private:
+        class ChildrenView;
         class EntityView {
         private:
             EntityId entityId;
@@ -64,6 +82,18 @@ namespace component {
 
             void remove () {
                 compManager.remove(entityId);
+            }
+
+            EntityView createChild () {
+                return compManager.create(entityId);
+            }
+
+            ChildrenView children () {
+                return compManager.children(entityId);
+            }
+
+            void reparent (EntityId parent) {
+                return compManager.reparent(entityId, parent);
             }
 
             friend class ComponentManager;
@@ -184,6 +214,170 @@ namespace component {
             friend class ComponentManager;
         };
 
+        class ChildrenView {
+        private:
+            class Iterator {
+            private:
+                EntityId curr;
+                ComponentManager* manager;
+
+                Iterator (ComponentManager* manager, EntityId curr) : manager{manager}, curr{curr} {}
+                friend ChildrenView;
+            public:
+                using value_type = EntityView;
+                using difference_type = std::ptrdiff_t;
+                Iterator () : curr{}, manager{nullptr} {}
+
+                value_type operator* () const {
+                    return manager->view(curr);
+                }
+
+                Iterator& operator++ () {
+                    curr = manager->getRelationship(curr).next;
+                    return *this;
+                }
+
+                Iterator operator++ (int) {
+                    Iterator it = *this;
+                    ++*this;
+                    return it;
+                }
+
+                bool operator== (const Iterator& other) const {
+                    return manager == other.manager && curr == other.curr;
+                }
+            };
+
+            class ConstIterator {
+            private:
+                EntityId curr;
+                const ComponentManager* manager;
+
+                ConstIterator (const ComponentManager* manager, EntityId curr) : manager{manager}, curr{curr} {}
+
+                friend ChildrenView;
+            public:
+                using value_type = ConstEntityView;
+                using difference_type = std::ptrdiff_t;
+                ConstIterator () : curr{}, manager{nullptr} {}
+
+                value_type operator* () const {
+                    return manager->view(curr);
+                }
+
+                ConstIterator& operator++ () {
+                    curr = manager->getRelationship(curr).next;
+                    return *this;
+                }
+
+                ConstIterator operator++ (int) {
+                    ConstIterator it = *this;
+                    ++*this;
+                    return it;
+                }
+
+                bool operator== (const ConstIterator& other) const {
+                    return manager == other.manager && curr == other.curr;
+                }
+            };
+
+            EntityId parentId;
+            ComponentManager* manager;
+
+            template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F, std::size_t ...Indexes>
+            void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, F& fn, std::index_sequence<Indexes...>) {
+                auto curr = manager->getRelationship(parentId).children;
+
+                while (curr) {
+                    auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(curr)...);
+                    if (detail::tupleAllNonNull<Args...>(tup)) {
+                        IterInfo info{manager, curr};
+                        fn(info, *std::get<Indexes>(tup)...);
+                    }
+
+                    curr = manager->getRelationship(curr).next;
+                }
+            }
+
+            template <typename ...Args, meta::callable<void, const IterInfo&, const Args&...> F, std::size_t ...Indexes>
+            void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, F& fn, std::index_sequence<Indexes...>) const {
+                auto curr = manager->getRelationship(parentId).children;
+
+                while (curr) {
+                    auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(curr)...);
+                    if (detail::tupleAllNonNull<Args...>(tup)) {
+                        IterInfo info{manager, curr};
+                        fn(info, *std::get<Indexes>(tup)...);
+                    }
+
+                    curr = manager->getRelationship(curr).next;
+                }
+            }
+
+            ChildrenView (ComponentManager* manager, EntityId parent) : manager{manager}, parentId{parent} {}
+            friend ComponentManager;
+        public:
+            using iterator = Iterator;
+            using const_iterator = ConstIterator;
+            static_assert(std::forward_iterator<iterator>);
+            static_assert(std::forward_iterator<const_iterator>);
+
+            iterator begin () {
+                return iterator{manager, manager->getRelationship(parentId).children};
+            }
+            iterator end () {
+                return iterator {manager, {}};
+            }
+
+            [[nodiscard]] const_iterator begin () const {
+                return cbegin();
+            }
+            [[nodiscard]] const_iterator cbegin () const {
+                return const_iterator{manager, manager->getRelationship(parentId).children};
+            }
+
+            [[nodiscard]] const_iterator end () const {
+                return cend();
+            }
+            [[nodiscard]] const_iterator cend () const {
+                return const_iterator{manager, {}};
+            }
+
+            template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
+            void each (F fn) {
+                auto compSets = std::array{manager->getComponent<Args>()...};
+                for (auto i = 0; i < sizeof...(Args); i++) {
+                    if (!compSets[i]) {
+                        logging::log(LEVEL_ERROR, "Attempted to call each() with component that hasn't been added yet!");
+                        return;
+                    }
+                }
+
+                eachInt<Args...>(compSets, fn, std::make_index_sequence<sizeof...(Args)>{});
+            }
+
+            template <typename ...Args, meta::callable<void, const IterInfo&, const Args&...> F>
+            void each (F fn) const {
+                auto compSets = std::array{manager->getComponent<Args>()...};
+                for (auto i = 0; i < sizeof...(Args); i++) {
+                    if (!compSets[i]) {
+                        logging::log(LEVEL_ERROR, "Attempted to call each() with component that hasn't been added yet!");
+                        return;
+                    }
+                }
+
+                eachInt<Args...>(compSets, fn, std::make_index_sequence<sizeof...(Args)>{});
+            }
+
+            EntityView parent () {
+                return manager->view(parentId);
+            }
+
+            [[nodiscard]] ConstEntityView parent () const {
+                return ((const ComponentManager*)manager)->view(parentId);
+            }
+        };
+
         detail::EntityIdList idList;
         util::Map<std::size_t, std::unique_ptr<detail::ComponentSet>> components;
         util::Map<std::size_t, std::unique_ptr<detail::SignalHandlerListBase>> signalHandlers;
@@ -191,6 +385,7 @@ namespace component {
         std::size_t deferCount{0};
         std::vector<EntityId> deferredDeletions{};
         std::vector<std::pair<std::function<void(ComponentManager*, EntityId)>, EntityId>> deferredApplys;
+        std::vector<detail::Relationship> relationships{};
 
         template <typename T>
         detail::ComponentSet* getComponent () const {
@@ -480,11 +675,74 @@ namespace component {
                 fn(info, (*std::get<Args*>(compTup))...);
             }
         }
+
+        detail::Relationship& getRelationship (EntityId id) {
+            assert(id.id < relationships.size());
+
+            return relationships[id.id];
+        }
+
+        [[nodiscard]] const detail::Relationship& getRelationship (EntityId id) const {
+            assert(id.id < relationships.size());
+
+            return relationships[id.id];
+        }
+
+        void setParent (EntityId id, EntityId parent) {
+            getRelationship(id).parent = parent;
+            auto oldStart = getRelationship(parent).children;
+
+            getRelationship(id).next = oldStart;
+            getRelationship(oldStart).prev = id;
+            getRelationship(parent).children = id;
+        }
+
+        void removeFromParent (EntityId id) {
+            auto& rel = getRelationship(id);
+
+            if (rel.prev) {
+                getRelationship(rel.prev).next = rel.next;
+            } else {
+                getRelationship(rel.parent).children = rel.next;
+            }
+
+            if (rel.next) {
+                getRelationship(rel.next).prev = rel.prev;
+            }
+        }
+
+        void removeRelationships (EntityId id, bool updateParent) {
+            auto& rel = getRelationship(id);
+
+            auto curr = rel.children;
+            while (curr) {
+                auto next = getRelationship(curr).next;
+                removeInt(curr, false);
+                curr = next;
+            }
+
+            if (updateParent) {
+                removeFromParent(id);
+            }
+
+            rel.clear();
+        }
+
+        void removeInt (EntityId id, bool updateParent) {
+            removeRelationships(id, updateParent);
+
+            for (auto [i, comp] : components.kv()) {
+                comp->deleteComp(id);
+            }
+
+            idList.removeId(id);
+        }
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
         using View = ComponentManager::EntityView;
         using ConstView = ComponentManager::ConstEntityView;
+        using ChildrenView = ComponentManager::ChildrenView;
 
         template <typename ...Args>
         using Bundle = const std::tuple<IterInfo&, std::remove_reference_t<Args>&...>&;
@@ -495,7 +753,10 @@ namespace component {
         static_assert(std::bidirectional_iterator<iterator>);
         static_assert(std::bidirectional_iterator<const_iterator>);
 
-        explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {}
+        explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {
+            relationships.reserve(startCapacity);
+            relationships.push_back(detail::Relationship{});
+        }
 
         ComponentManager (const ComponentManager&) = delete;
         ComponentManager (ComponentManager&&) = default;
@@ -545,12 +806,19 @@ namespace component {
             comp->insertComp<T>(id, std::forward<Args>(args)...);
         }
 
-        EntityView create () {
+        EntityView create (EntityId parent=EntityId{}) {
             auto id = idList.newId();
 
             for (auto [i, comp] : components.kv()) {
                 comp->guaranteeEntityIndex(id.id);
             }
+
+            assert(relationships.size() >= id.id);
+            if (relationships.size() <= id.id) {
+                relationships.push_back(detail::Relationship{});
+            }
+
+            setParent(id, parent);
 
             return EntityView{id, *this};
         }
@@ -570,11 +838,7 @@ namespace component {
                 return;
             }
 
-            for (auto [i, comp] : components.kv()) {
-                comp->deleteComp(id);
-            }
-
-            idList.removeId(id);
+            removeInt(id, true);
         }
 
         template <typename T>
@@ -622,24 +886,17 @@ namespace component {
             deferredApplys.emplace_back(std::move(applyFn), id);
         }
 
+        ChildrenView children (EntityId id) {
+            return ChildrenView{this, id};
+        }
+
+        void reparent (EntityId id, EntityId parent) {
+            removeFromParent(id);
+            setParent(id, parent);
+        }
+
         std::size_t size () const {
             return idList.size();
-        }
-
-        template <typename T, meta::callable<void, const T&, EntityId> F>
-        void addEraseCallback (F fn) {
-            auto* concreteComp = (detail::TypedComponentSet<T>*)getOrCreateComponent<T>();
-
-            concreteComp->addDeletionCallback(std::move(fn));
-        }
-
-        template <typename T, meta::callable<void, const T&> F>
-        void addEraseCallback (F fn) {
-            auto cb = [fn = std::move(fn)] (const T& comp, EntityId id) -> void {
-                fn(comp);
-            };
-
-            addEraseCallback<T>(cb);
         }
 
         void clear () {

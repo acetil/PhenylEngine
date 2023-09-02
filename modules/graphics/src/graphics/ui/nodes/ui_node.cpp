@@ -4,7 +4,7 @@
 using namespace graphics::ui;
 
 void UIComponentNode::queueDestroy () {
-    // TODO: queue destroy from parent
+    // TODO: queue destroy from parentId
     onDestroyRequest();
 
     if (parent != nullptr) {

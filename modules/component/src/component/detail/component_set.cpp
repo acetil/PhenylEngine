@@ -237,7 +237,6 @@ void ComponentSet::onChildRelocate (EntityId id, std::byte* ptr) {
 
 void ComponentSet::clear () {
     for (std::size_t i = 0; i < allSize; i++) {
-        runDeletionCallbacks(data.get() + (i * compSize), ids[i]);
         deleteTypedComp(data.get() + (i * compSize));
         auto index = ids[i].id - 1;
 
@@ -261,7 +260,7 @@ bool ComponentSet::hasComp (EntityId id) const {
 
 bool ComponentSet::setParent (detail::ComponentSet* parentSet) {
     if (parent && parentSet) {
-        logging::log(LEVEL_ERROR, "Attempted to set parent for component that already has parent!");
+        logging::log(LEVEL_ERROR, "Attempted to set parentId for component that already has parentId!");
         return false;
     }
 
@@ -335,7 +334,7 @@ void ComponentSet::removeChild (ComponentSet* child) {
         }
     }
 
-    logging::log(LEVEL_ERROR, "Attempted to remove child from component that does not directly parent that child!");
+    logging::log(LEVEL_ERROR, "Attempted to remove child from component that does not directly parentId that child!");
 }
 
 std::size_t ComponentSet::size () const {

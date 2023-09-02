@@ -24,6 +24,10 @@ namespace component {
             return id != 0;
         }
 
+        bool operator== (const EntityId& other) const {
+            return generation == other.generation && id == other.id;
+        }
+
         friend class ComponentManager;
         friend class detail::ComponentSet;
         friend class detail::EntityIdList;

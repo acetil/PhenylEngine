@@ -83,9 +83,9 @@ static void testCompManager () {
 
     auto e1 = manager.create();
     auto e2 = manager.create();
-    auto e3 = manager.create();
-    auto e4 = manager.create();
-    auto e5 = manager.create();
+    auto e3 = manager.create(e2.id());
+    auto e4 = manager.create(e2.id());
+    auto e5 = manager.create(e2.id());
 
     component::logging::log(LEVEL_DEBUG, "E1: {}", e1.id().value());
     component::logging::log(LEVEL_DEBUG, "E2: {}", e2.id().value());
@@ -187,6 +187,34 @@ static void testCompManager () {
         component::logging::log(LEVEL_DEBUG, "{} Test: d={}; {} Test: d={}", info1.id().value(), test1.d, info2.id().value(), test2.d);
     });
 
+    component::logging::log(LEVEL_DEBUG, "Looping through root entities:");
+    for (auto i : manager.children(component::EntityId{})) {
+        component::logging::log(LEVEL_DEBUG, "{}", i.id().value());
+    }
+
+    component::logging::log(LEVEL_DEBUG, "Looping through children of entities:");
+    for (auto i : manager) {
+        component::logging::log(LEVEL_DEBUG, "Children of {}:", i.id().value());
+        for (auto j : i.children()) {
+            component::logging::log(LEVEL_DEBUG, "{}", j.id().value());
+        }
+    }
+
+    e4.reparent(e5.id());
+
+    component::logging::log(LEVEL_DEBUG, "Looping through root entities after reparent:");
+    for (auto i : manager.children(component::EntityId{})) {
+        component::logging::log(LEVEL_DEBUG, "{}", i.id().value());
+    }
+
+    component::logging::log(LEVEL_DEBUG, "Looping through children of entities after reparent:");
+    for (auto i : manager) {
+        component::logging::log(LEVEL_DEBUG, "Children of {}:", i.id().value());
+        for (auto j : i.children()) {
+            component::logging::log(LEVEL_DEBUG, "{}", j.id().value());
+        }
+    }
+
 
     component::logging::log(LEVEL_DEBUG, "Testing hierarchy insertion:", e1.id().value());
     e1.insert<Bar>(Bar{9, 9.9f});
@@ -201,6 +229,21 @@ static void testCompManager () {
     manager.each<Bar>([] (component::IterInfo& info, Bar& bar) {
         component::logging::log(LEVEL_DEBUG, "{} Bar: a={}, b={}", info.id().value(), bar.a, bar.b);
     });
+
+    e2.remove();
+
+    component::logging::log(LEVEL_DEBUG, "Looping through root entities after remove:");
+    for (auto i : manager.children(component::EntityId{})) {
+        component::logging::log(LEVEL_DEBUG, "{}", i.id().value());
+    }
+
+    component::logging::log(LEVEL_DEBUG, "Looping through children of entities after remove:");
+    for (auto i : manager) {
+        component::logging::log(LEVEL_DEBUG, "Children of {}:", i.id().value());
+        for (auto j : i.children()) {
+            component::logging::log(LEVEL_DEBUG, "{}", j.id().value());
+        }
+    }
 };
 
 int main (int argv, char* argc[]) {
