@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "component/signals/component_update.h"
-#include "utils.h"
+#include "component_utils.h"
 #include "component/forward.h"
 
 namespace component::detail {

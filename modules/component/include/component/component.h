@@ -12,138 +12,29 @@
 #include "detail/entity_id_list.h"
 #include "detail/prefab_list.h"
 #include "detail/signal_handler.h"
-#include "detail/utils.h"
+#include "detail/component_utils.h"
+#include "detail/basic_manager.h"
+#include "detail/children_view.h"
+
+#include "component/entity_view.h"
 
 #include "util/map.h"
 #include "util/meta.h"
 #include "util/optional.h"
 
 namespace component {
-    namespace detail {
-        struct Relationship {
-            EntityId parent{};
-            EntityId children{};
-            EntityId next{};
-            EntityId prev{};
-
-            void clear () {
-                parent = {};
-                children = {};
-                next = {};
-                prev = {};
-            }
-        };
-    }
-
     class Prefab;
     class PrefabBuilder;
 
-    class ComponentManager {
+    class ComponentManager : private detail::BasicComponentManager {
     private:
-        class ChildrenView;
-        class EntityView {
-        private:
-            EntityId entityId;
-            ComponentManager& compManager;
-            EntityView (EntityId id, ComponentManager& compManager) : entityId{id}, compManager{compManager} {}
-        public:
-            EntityView () : entityId{}, compManager{compManager} {}
-
-            [[nodiscard]] EntityId id () const {
-                return entityId;
-            }
-
-            ComponentManager& manager () {
-                return compManager;
-            }
-
-            const ComponentManager& manager () const {
-                return compManager;
-            }
-
-            template <typename T>
-            util::Optional<T&> get () {
-                return compManager.get<T>(entityId);
-            };
-
-            template <typename T, typename ...Args>
-            void insert (Args&&... args) {
-                compManager.insert<T>(entityId, std::forward<Args>(args)...);
-            }
-
-            template <typename T>
-            bool set (T comp) {
-                return compManager.set(entityId, std::move(comp));
-            }
-
-            template <typename T>
-            void erase () {
-                compManager.erase<T>(entityId);
-            }
-
-            template <typename T>
-            [[nodiscard]] bool has () const {
-                return compManager.has<T>(entityId);
-            }
-
-            template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
-            void apply (F fn) {
-                compManager.apply<Args...>(fn, entityId);
-            }
-
-            void remove () {
-                compManager.remove(entityId);
-            }
-
-            EntityView createChild () {
-                return compManager.create(entityId);
-            }
-
-            ChildrenView children () {
-                return compManager.children(entityId);
-            }
-
-            void reparent (EntityId parent) {
-                return compManager.reparent(entityId, parent);
-            }
-
-            explicit operator bool () const {
-                return (bool)entityId;
-            }
-
-            friend class ComponentManager;
-        };
-
-        class ConstEntityView {
-        private:
-            EntityId entityId;
-            const ComponentManager& compManager;
-            ConstEntityView (EntityId id, const ComponentManager& compManager) : entityId{id}, compManager{compManager} {}
-        public:
-            [[nodiscard]] EntityId id () const {
-                return entityId;
-            }
-
-            template <typename T>
-            util::Optional<const T&> get () const {
-                return compManager.getComponent<T>(entityId);
-            };
-
-            template <typename T>
-            [[nodiscard]] bool has () const {
-                return compManager.has<T>(entityId);
-            }
-
-            friend class ComponentManager;
-        };
-
         class EntityViewIterator {
         private:
             detail::EntityIdList::const_iterator it;
             ComponentManager* compManager;
             EntityViewIterator (ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
         public:
-            using value_type = ComponentManager::EntityView;
+            using value_type = EntityView;
             using reference = void;
             using pointer = void;
             using difference_type = detail::EntityIdList::const_iterator::difference_type;
@@ -189,7 +80,7 @@ namespace component {
             const ComponentManager* compManager;
             ConstEntityViewIterator (const ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
         public:
-            using value_type = ComponentManager::ConstEntityView;
+            using value_type = ConstEntityView;
             using reference = void;
             using pointer = void;
             using difference_type = detail::EntityIdList::const_iterator::difference_type;
@@ -229,190 +120,9 @@ namespace component {
             friend class ComponentManager;
         };
 
-        class ChildrenView {
-        private:
-            class Iterator {
-            private:
-                EntityId curr;
-                ComponentManager* manager;
-
-                Iterator (ComponentManager* manager, EntityId curr) : manager{manager}, curr{curr} {}
-                friend ChildrenView;
-            public:
-                using value_type = EntityView;
-                using difference_type = std::ptrdiff_t;
-                Iterator () : curr{}, manager{nullptr} {}
-
-                value_type operator* () const {
-                    return manager->view(curr);
-                }
-
-                Iterator& operator++ () {
-                    curr = manager->getRelationship(curr).next;
-                    return *this;
-                }
-
-                Iterator operator++ (int) {
-                    Iterator it = *this;
-                    ++*this;
-                    return it;
-                }
-
-                bool operator== (const Iterator& other) const {
-                    return manager == other.manager && curr == other.curr;
-                }
-            };
-
-            class ConstIterator {
-            private:
-                EntityId curr;
-                const ComponentManager* manager;
-
-                ConstIterator (const ComponentManager* manager, EntityId curr) : manager{manager}, curr{curr} {}
-
-                friend ChildrenView;
-            public:
-                using value_type = ConstEntityView;
-                using difference_type = std::ptrdiff_t;
-                ConstIterator () : curr{}, manager{nullptr} {}
-
-                value_type operator* () const {
-                    return manager->view(curr);
-                }
-
-                ConstIterator& operator++ () {
-                    curr = manager->getRelationship(curr).next;
-                    return *this;
-                }
-
-                ConstIterator operator++ (int) {
-                    ConstIterator it = *this;
-                    ++*this;
-                    return it;
-                }
-
-                bool operator== (const ConstIterator& other) const {
-                    return manager == other.manager && curr == other.curr;
-                }
-            };
-
-            EntityId parentId;
-            ComponentManager* manager;
-
-            template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F, std::size_t ...Indexes>
-            void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, F& fn, std::index_sequence<Indexes...>) {
-                auto curr = manager->getRelationship(parentId).children;
-
-                while (curr) {
-                    auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(curr)...);
-                    if (detail::tupleAllNonNull<Args...>(tup)) {
-                        IterInfo info{manager, curr};
-                        fn(info, *std::get<Indexes>(tup)...);
-                    }
-
-                    curr = manager->getRelationship(curr).next;
-                }
-            }
-
-            template <typename ...Args, meta::callable<void, const IterInfo&, const Args&...> F, std::size_t ...Indexes>
-            void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, F& fn, std::index_sequence<Indexes...>) const {
-                auto curr = manager->getRelationship(parentId).children;
-
-                while (curr) {
-                    auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(curr)...);
-                    if (detail::tupleAllNonNull<Args...>(tup)) {
-                        IterInfo info{manager, curr};
-                        fn(info, *std::get<Indexes>(tup)...);
-                    }
-
-                    curr = manager->getRelationship(curr).next;
-                }
-            }
-
-            ChildrenView (ComponentManager* manager, EntityId parent) : manager{manager}, parentId{parent} {}
-            friend ComponentManager;
-        public:
-            using iterator = Iterator;
-            using const_iterator = ConstIterator;
-            static_assert(std::forward_iterator<iterator>);
-            static_assert(std::forward_iterator<const_iterator>);
-
-            iterator begin () {
-                return iterator{manager, manager->getRelationship(parentId).children};
-            }
-            iterator end () {
-                return iterator {manager, {}};
-            }
-
-            [[nodiscard]] const_iterator begin () const {
-                return cbegin();
-            }
-            [[nodiscard]] const_iterator cbegin () const {
-                return const_iterator{manager, manager->getRelationship(parentId).children};
-            }
-
-            [[nodiscard]] const_iterator end () const {
-                return cend();
-            }
-            [[nodiscard]] const_iterator cend () const {
-                return const_iterator{manager, {}};
-            }
-
-            template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
-            void each (F fn) {
-                auto compSets = std::array{manager->getComponent<Args>()...};
-                for (auto i = 0; i < sizeof...(Args); i++) {
-                    if (!compSets[i]) {
-                        logging::log(LEVEL_ERROR, "Attempted to call each() with component that hasn't been added yet!");
-                        return;
-                    }
-                }
-
-                eachInt<Args...>(compSets, fn, std::make_index_sequence<sizeof...(Args)>{});
-            }
-
-            template <typename ...Args, meta::callable<void, const IterInfo&, const Args&...> F>
-            void each (F fn) const {
-                auto compSets = std::array{manager->getComponent<Args>()...};
-                for (auto i = 0; i < sizeof...(Args); i++) {
-                    if (!compSets[i]) {
-                        logging::log(LEVEL_ERROR, "Attempted to call each() with component that hasn't been added yet!");
-                        return;
-                    }
-                }
-
-                eachInt<Args...>(compSets, fn, std::make_index_sequence<sizeof...(Args)>{});
-            }
-
-            EntityView parent () {
-                return manager->view(parentId);
-            }
-
-            [[nodiscard]] ConstEntityView parent () const {
-                return ((const ComponentManager*)manager)->view(parentId);
-            }
-        };
-
-        detail::EntityIdList idList;
-        util::Map<std::size_t, std::unique_ptr<detail::ComponentSet>> components;
         util::Map<std::size_t, std::unique_ptr<detail::SignalHandlerListBase>> signalHandlers;
         std::size_t currStartCapacity;
-        std::size_t deferCount{0};
-        std::vector<EntityId> deferredDeletions{};
-        std::vector<std::pair<std::function<void(ComponentManager*, EntityId)>, EntityId>> deferredApplys;
-        std::vector<detail::Relationship> relationships{};
         detail::PrefabList prefabs;
-
-        template <typename T>
-        detail::ComponentSet* getComponent () const {
-            auto typeIndex = meta::type_index<T>();
-            if (!components.contains(typeIndex)) {
-                logging::log(LEVEL_ERROR, "Failed to get component for index {}!", typeIndex);
-                return nullptr;
-            }
-
-            return components.at(typeIndex).get();
-        }
 
         template <typename T>
         std::unique_ptr<detail::ComponentSet> createComponent () requires (!std::is_abstract_v<T>) {
@@ -428,32 +138,6 @@ namespace component {
             component->guaranteeEntityIndex(idList.maxIndex());
 
             return component;
-        }
-
-        /*template <typename T>
-        detail::ComponentSet* getOrCreateComponent () {
-            auto typeIndex = meta::type_index<T>();
-            if (components.contains(typeIndex)) {
-                return components[typeIndex].get();
-            }
-
-            auto component = createComponent<T>();
-            auto* compPtr = component.get();
-
-            components.emplace(typeIndex, std::move(component));
-
-            return compPtr;
-        }*/
-
-        template <typename T>
-        T* getEntityComp (EntityId id) const {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to get component from invalid entity {}!", id.value());
-                return nullptr;
-            }
-            detail::ComponentSet* component = getComponent<T>();
-
-            return component ? component->getComponent<T>(id) : nullptr;
         }
 
         template <typename T, meta::callable<void, IterInfo&, T&> F>
@@ -683,85 +367,12 @@ namespace component {
             deferredDeletions.clear();
         }
 
-        template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
-        inline void applyNow (F& fn, EntityId id) {
-            std::tuple<Args*...> compTup{getEntityComp<Args>(id)...};
-            if (detail::tupleAllNonNull<Args...>(compTup)) {
-                IterInfo info{this, id};
-                fn(info, (*std::get<Args*>(compTup))...);
-            }
-        }
-
-        detail::Relationship& getRelationship (EntityId id) {
-            assert(id.id < relationships.size());
-
-            return relationships[id.id];
-        }
-
-        [[nodiscard]] const detail::Relationship& getRelationship (EntityId id) const {
-            assert(id.id < relationships.size());
-
-            return relationships[id.id];
-        }
-
-        void setParent (EntityId id, EntityId parent) {
-            getRelationship(id).parent = parent;
-            auto oldStart = getRelationship(parent).children;
-
-            getRelationship(id).next = oldStart;
-            getRelationship(oldStart).prev = id;
-            getRelationship(parent).children = id;
-        }
-
-        void removeFromParent (EntityId id) {
-            auto& rel = getRelationship(id);
-
-            if (rel.prev) {
-                getRelationship(rel.prev).next = rel.next;
-            } else {
-                getRelationship(rel.parent).children = rel.next;
-            }
-
-            if (rel.next) {
-                getRelationship(rel.next).prev = rel.prev;
-            }
-        }
-
-        void removeRelationships (EntityId id, bool updateParent) {
-            auto& rel = getRelationship(id);
-
-            auto curr = rel.children;
-            while (curr) {
-                auto next = getRelationship(curr).next;
-                removeInt(curr, false);
-                curr = next;
-            }
-
-            if (updateParent) {
-                removeFromParent(id);
-            }
-
-            rel.clear();
-        }
-
-        void removeInt (EntityId id, bool updateParent) {
-            removeRelationships(id, updateParent);
-
-            for (auto [i, comp] : components.kv()) {
-                comp->deleteComp(id);
-            }
-
-            idList.removeId(id);
-        }
-
         friend class PrefabBuilder;
         friend class Prefab;
+        friend class ChildrenView;
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
-        using View = ComponentManager::EntityView;
-        using ConstView = ComponentManager::ConstEntityView;
-        using ChildrenView = ComponentManager::ChildrenView;
 
         template <typename ...Args>
         using Bundle = const std::tuple<IterInfo&, std::remove_reference_t<Args>&...>&;
@@ -772,10 +383,7 @@ namespace component {
         static_assert(std::bidirectional_iterator<iterator>);
         static_assert(std::bidirectional_iterator<const_iterator>);
 
-        explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : idList{startCapacity}, components{}, currStartCapacity{startCapacity} {
-            relationships.reserve(startCapacity);
-            relationships.push_back(detail::Relationship{});
-        }
+        explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : detail::BasicComponentManager{startCapacity},  currStartCapacity{startCapacity} {}
 
         ComponentManager (const ComponentManager&) = delete;
         ComponentManager (ComponentManager&&) = default;
@@ -802,139 +410,60 @@ namespace component {
 
         template <typename T>
         util::Optional<T&> get (EntityId id) {
-            auto* comp = getEntityComp<T>(id);
-
-            return comp ? util::Optional<T&>{*comp} : util::Optional<T&>{};
+            return _get<T>(id);
         }
 
         template <typename T>
         util::Optional<const T&> get (EntityId id) const {
-            auto* comp = getEntityComp<T>(id);
-
-            return comp ? util::Optional<const T&>{*comp} : util::Optional<const T&>{};
+            return _get<T>(id);
         }
 
         template <typename T, typename ...Args>
         void insert (EntityId id, Args&&... args) requires std::constructible_from<T, Args...> {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to insert component to invalid entity {}!", id.value());
-                return;
-            }
-            //detail::ComponentSet* comp = getOrCreateComponent<T>();
-            detail::ComponentSet* comp = getComponent<T>();
-            if (!comp) {
-                return;
-            }
-
-            comp->insertComp<T>(id, std::forward<Args>(args)...);
+            return _insert<T>(id, std::forward<Args>(args)...);
         }
 
         template <typename T>
         bool set (EntityId id, T comp) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to set component of invalid entity {}!", id.value());
-                return false;
-            }
-            detail::ComponentSet* compSet = getComponent<T>();
-            if (!compSet) {
-                return false;
-            }
-
-            return compSet->setComp(id, std::move(comp));
+            return _set<T>(id, std::move(comp));
         }
 
         EntityView create (EntityId parent=EntityId{}) {
-            auto id = idList.newId();
-
-            for (auto [i, comp] : components.kv()) {
-                comp->guaranteeEntityIndex(id.id);
-            }
-
-            assert(relationships.size() >= id.id);
-            if (relationships.size() <= id.id) {
-                relationships.push_back(detail::Relationship{});
-            }
-
-            setParent(id, parent);
-
-            return EntityView{id, *this};
+            return view(_create(parent));
         }
 
         [[nodiscard]] bool exists (EntityId id) const {
-            return idList.check(id);
+            return _exists(id);
         }
 
         void remove (EntityId id) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to delete invalid entity {}!", id.value());
-                return;
-            }
-
-            if (deferCount > 0) {
-                deferredDeletions.push_back(id);
-                return;
-            }
-
-            removeInt(id, true);
+            _remove(id);
         }
 
         template <typename T>
         void erase (EntityId id) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to remove component from invalid entity {}!", id.value());
-                return;
-            }
-            detail::ComponentSet* comp = getComponent<T>();
-            if (!comp) {
-                return;
-            }
-
-            comp->deleteComp(id);
+            _erase<T>(id);
         }
 
         template <typename T>
         bool has (EntityId id) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to check component status for invalid entity {}!", id.value());
-                return false;
-            }
-            detail::ComponentSet* comp = getComponent<T>();
-            if (!comp) {
-                logging::log(LEVEL_ERROR, "Attempted to check component status of component with index {} that doesn't exist!", meta::type_index<T>());
-                return false;
-            }
-
-            return comp->hasComp(id);
+            return _has<T>(id);
         }
 
-        template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
+        template <typename ...Args, meta::callable<void, Args&...> F>
         void apply (F fn, EntityId id) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to apply on invalid entity {}!", id.value());
-                return;
-            }
-
-            if (!deferCount) {
-                applyNow<Args...>(fn, id);
-                return;
-            }
-
-            auto applyFn = [fn=std::move(fn)] (ComponentManager* manager, EntityId id) {
-                manager->applyNow<Args...>(fn, id);
-            };
-            deferredApplys.emplace_back(std::move(applyFn), id);
+            _apply<Args...>(std::move(fn), id);
         }
 
         ChildrenView children (EntityId id) {
-            return ChildrenView{this, id};
+            return _children(id);
         }
 
         void reparent (EntityId id, EntityId parent) {
-            removeFromParent(id);
-            setParent(id, parent);
+            _reparent(id, parent);
         }
 
-        std::size_t size () const {
+        [[nodiscard]] std::size_t size () const {
             return idList.size();
         }
 
@@ -1038,11 +567,11 @@ namespace component {
 
         // TODO: merge EntityView/ConstEntityView and EntityComponentView/ConstEntityComponentView
         EntityView view (EntityId id) {
-            return EntityView{id, *this};
+            return _view(id);
         }
 
         [[nodiscard]] ConstEntityView view (EntityId id) const {
-            return ConstEntityView{id, *this};
+            return _view(id);
         }
 
         template <typename ...Args, typename = std::enable_if_t<1 < sizeof...(Args)>>
@@ -1185,9 +714,6 @@ namespace component {
             return const_iterator{this, idList.end()};
         }
     };
-
-    using EntityView = ComponentManager::View;
-    using ConstEntityView = ComponentManager::ConstView;
 
     using EntityComponentManager = ComponentManager;
 }

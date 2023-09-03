@@ -20,6 +20,10 @@ namespace component {
 
     using EntityComponentManager = ComponentManager;
 
+    class EntityView;
+    class ConstEntityView;
+    class ChildrenView;
+
     //using EntitySerialiser = EntitySerialiser;
     //using EntityComponentFactory = EntityComponentFactory;
 }

@@ -25,6 +25,7 @@ namespace component {
         template <typename T>
         friend class detail::SignalHandlerList;
         friend class detail::ComponentSet;
+        friend class ChildrenView;
         IterInfo (ComponentManager* manager, EntityId id) : compManager{manager}, eId{id} {}
     public:
         [[nodiscard]] constexpr EntityId id () const {

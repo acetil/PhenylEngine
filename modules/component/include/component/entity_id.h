@@ -6,12 +6,14 @@ namespace component {
     namespace detail {
         class ComponentSet;
         class EntityIdList;
+        class BasicComponentManager;
+        class RelationshipManager;
     }
 
     struct EntityId {
     private:
-        unsigned int generation;
-        unsigned int id;
+        unsigned int generation{0};
+        unsigned int id{0};
     public:
         EntityId () = default;
         EntityId (unsigned int _generation, unsigned int _id) : generation(_generation), id(_id) {}
@@ -31,5 +33,7 @@ namespace component {
         friend class ComponentManager;
         friend class detail::ComponentSet;
         friend class detail::EntityIdList;
+        friend class detail::BasicComponentManager;
+        friend class detail::RelationshipManager;
     };
 }
