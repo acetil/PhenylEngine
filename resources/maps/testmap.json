@@ -5,154 +5,188 @@
     },
     "entities": [
         {
-            "EntityType": "test_entity"
-        },
-        {
-            "GlobalTransform2D" : {
-                "transform" : {
-                    "position" : {
-                        "x" : -0.4,
-                        "y" : 0.0
-                    },
-                    "scale" : {
-                        "x" : 0.08,
-                        "y" : 0.5
-                    },
-                    "rotation" : 0.0
-                }
-            },
-            "BoxCollider2D" : {
-                "Collider2D" : {
-                    "layers": 2,
-                    "masks": 0,
-                    "elasticity" : 1.0
-                },
-                "scale_matrix": [
-                    {
-                        "x": 0.08000000566244125,
-                        "y": 0.0
-                    },
-                    {
-                        "x": 0.0,
-                        "y": 0.5
+            "components" : {
+                "EntityType": "test_entity",
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": -0.7,
+                            "y": 0.0
+                        },
+                        "scale": {
+                            "x": 0.1,
+                            "y": 0.1
+                        },
+                        "rotation": 0.0
                     }
-                ]
-            },
-            "EntityType": "wall_entity"
-        },
-        {
-            "GlobalTransform2D" : {
-                "transform" : {
-                    "position" : {
-                        "x" : 0.4,
-                        "y" : 0.0
-                    },
-                    "scale" : {
-                        "x" : 0.08,
-                        "y" : 0.5
-                    },
-                    "rotation" : 0.0
                 }
             },
-            "BoxCollider2D" : {
-                "Collider2D" : {
-                    "layers": 2,
-                    "masks": 0,
-                    "elasticity" : 1.0
-                },
-                "scale_matrix": [
-                    {
-                        "x": 0.08000000566244125,
-                        "y": 0.0
-                    },
-                    {
-                        "x": 0.0,
-                        "y": 0.5
+            "prefab" : "test_entity"
+        },
+        {
+            "components" : {
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": -0.4,
+                            "y": 0.0
+                        },
+                        "scale": {
+                            "x": 0.08,
+                            "y": 0.5
+                        },
+                        "rotation": 0.0
                     }
-                ]
-            },
-            "EntityType": "wall_entity"
-        },
-        {
-            "GlobalTransform2D" : {
-                "transform" : {
-                    "position" : {
-                        "x" : 0.0,
-                        "y" :-0.5
-                    },
-                    "scale" : {
-                        "x" : 0.48,
-                        "y" : 0.08
-                    },
-                    "rotation" : 0.0
-                }
-            },
-            "BoxCollider2D" : {
-                "Collider2D" : {
-                    "layers": 2,
-                    "masks": 0,
-                    "elasticity" : 1.0
                 },
-                "scale_matrix": [
-                    {
-                        "x": 0.48000001907348633,
-                        "y": 0.0
+                "BoxCollider2D": {
+                    "Collider2D": {
+                        "layers": 2,
+                        "masks": 0,
+                        "elasticity": 1.0
                     },
-                    {
-                        "x": 0.0,
-                        "y": 0.08000000566244125
+                    "scale_matrix": [
+                        {
+                            "x": 0.08000000566244125,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.0,
+                            "y": 0.5
+                        }
+                    ]
+                },
+                "EntityType": "wall_entity"
+            },
+            "prefab" : "wall_entity"
+        },
+        {
+            "components" : {
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": 0.4,
+                            "y": 0.0
+                        },
+                        "scale": {
+                            "x": 0.08,
+                            "y": 0.5
+                        },
+                        "rotation": 0.0
                     }
-                ]
+                },
+                "BoxCollider2D": {
+                    "Collider2D": {
+                        "layers": 2,
+                        "masks": 0,
+                        "elasticity": 1.0
+                    },
+                    "scale_matrix": [
+                        {
+                            "x": 0.08000000566244125,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.0,
+                            "y": 0.5
+                        }
+                    ]
+                },
+                "EntityType": "wall_entity"
             },
-            "EntityType": "wall_entity"
+            "prefab" : "wall_entity"
         },
         {
-            "GlobalTransform2D" : {
-                "transform" : {
-                    "position" : {
-                        "x" : -0.2,
-                        "y" : 0.0
+            "components" : {
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": 0.0,
+                            "y": -0.5
+                        },
+                        "scale": {
+                            "x": 0.48,
+                            "y": 0.08
+                        },
+                        "rotation": 0.0
+                    }
+                },
+                "BoxCollider2D": {
+                    "Collider2D": {
+                        "layers": 2,
+                        "masks": 0,
+                        "elasticity": 1.0
                     },
-                    "scale" : {
-                        "x" : 0.1,
-                        "y" : 0.1
-                    },
-                    "rotation" : 0.0
-                }
+                    "scale_matrix": [
+                        {
+                            "x": 0.48000001907348633,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.0,
+                            "y": 0.08000000566244125
+                        }
+                    ]
+                },
+                "EntityType": "wall_entity"
             },
-            "EntityType" : "block_entity"
+            "prefab" : "wall_entity"
         },
         {
-            "GlobalTransform2D" : {
-                "transform" : {
-                    "position" : {
-                        "x" : -0.2,
-                        "y" : 0.5
-                    },
-                    "scale" : {
-                        "x" : 0.1,
-                        "y" : 0.1
-                    },
-                    "rotation" : 0.0
-                }
+            "components" : {
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": -0.2,
+                            "y": 0.0
+                        },
+                        "scale": {
+                            "x": 0.1,
+                            "y": 0.1
+                        },
+                        "rotation": 0.0
+                    }
+                },
+                "EntityType": "block_entity"
             },
-            "EntityType" : "block_entity"
+            "prefab" : "block_entity"
         },
         {
-            "GlobalTransform2D" : {
-                "transform" : {
-                    "position" : {
-                        "x" : -0.2,
-                        "y" : 1
-                    },
-                    "scale" : {
-                        "x" : 0.1,
-                        "y" : 0.1
-                    },
-                    "rotation" : 0.0
-                }
+            "components" : {
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": -0.2,
+                            "y": 0.5
+                        },
+                        "scale": {
+                            "x": 0.1,
+                            "y": 0.1
+                        },
+                        "rotation": 0.0
+                    }
+                },
+                "EntityType": "block_entity"
             },
-            "EntityType" : "block_entity"
+            "prefab" : "block_entity"
+        },
+        {
+            "components" : {
+                "GlobalTransform2D": {
+                    "transform": {
+                        "position": {
+                            "x": -0.2,
+                            "y": 1
+                        },
+                        "scale": {
+                            "x": 0.1,
+                            "y": 0.1
+                        },
+                        "rotation": 0.0
+                    }
+                },
+                "EntityType": "block_entity"
+            },
+            "prefab" : "block_entity"
         }
     ],
     "tile_ids": [

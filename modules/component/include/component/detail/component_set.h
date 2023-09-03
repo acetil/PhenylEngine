@@ -13,6 +13,7 @@
 
 #include "logging/logging.h"
 
+#include "util/fl_vector.h"
 #include "util/meta.h"
 
 namespace component::detail {
@@ -155,6 +156,8 @@ namespace component::detail {
         virtual void swapTypedComp (std::byte* ptr1, std::byte* ptr2) = 0;
         virtual void deferInsertion (std::byte* comp, EntityId id) = 0;
         virtual void popDeferredInsertions () = 0;
+
+        virtual void initPrefab (EntityId id, std::size_t prefabId) = 0;
     public:
         ComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize);
         virtual ~ComponentSet ();
@@ -213,6 +216,12 @@ namespace component::detail {
                 return false;
             }
         }
+
+        void insertPrefab (EntityId id, std::size_t prefabId) {
+            initPrefab(id, prefabId);
+        }
+
+        virtual void deletePrefab (std::size_t prefabId) = 0;
 
         bool hasComp (EntityId id) const;
 
@@ -275,12 +284,15 @@ namespace component::detail {
         void addHandler (std::function<void(IterInfo&, const OnRemove<T>&)> handler) {
             getRemoveHandler().addHandler(handler);
         }
+
+        virtual std::size_t addPrefab (T&& comp) = 0;
     };
 
     template <typename T>
     class ConcreteComponentSet : public TypedComponentSet<T> {
     private:
         std::vector<std::pair<T, EntityId>> deferredInsertions{};
+        util::FLVector<T> prefabs;
     protected:
         void moveTypedComp (std::byte* dest, std::byte* src) override {
             *((T*) dest) = std::move(*((T*) src));
@@ -324,6 +336,11 @@ namespace component::detail {
             deferredInsertions.clear();
         }
 
+        void initPrefab (EntityId id, std::size_t prefabId) override {
+            assert(prefabs.present(prefabId));
+            ComponentSet::insertComp<T>(id, prefabs[prefabId]);
+        }
+
     public:
         explicit ConcreteComponentSet (ComponentManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, sizeof(T)} {
 
@@ -331,6 +348,15 @@ namespace component::detail {
 
         ~ConcreteComponentSet () override {
             ComponentSet::clear();
+        }
+
+        std::size_t addPrefab (T&& comp) override {
+            return prefabs.push(std::move(comp));
+        }
+
+        void deletePrefab (std::size_t prefabId) override {
+            assert(prefabs.present(prefabId));
+            prefabs.remove(prefabId);
         }
     };
 
@@ -364,6 +390,23 @@ namespace component::detail {
 
         void popDeferredInsertions () override {
 
+        }
+
+        void initPrefab (EntityId id, std::size_t prefabId) override {
+            logging::log(LEVEL_FATAL, "Attempted to init prefab of abstract comp!");
+            assert(false);
+        }
+
+        std::size_t addPrefab (T&& comp) override {
+            logging::log(LEVEL_FATAL, "Attempted to add prefab of abstract comp!");
+            assert(false);
+
+            return -1;
+        }
+
+        void deletePrefab (std::size_t prefabId) override {
+            logging::log(LEVEL_FATAL, "Attempted to remove prefab of abstract comp!");
+            assert(false);
         }
     public:
         explicit AbstractComponentSet (ComponentManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, 0} {}

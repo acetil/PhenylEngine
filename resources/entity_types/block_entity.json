@@ -1,47 +1,49 @@
 {
-  "GlobalTransform2D" : {
-    "transform" : {
-      "position" : {
-        "x" : 0.0,
-        "y" : 0.0
-      },
-      "scale" : {
-        "x" : 0.1,
-        "y" : 0.1
-      },
-      "rotation" : 0.0
-    }
-  },
-  "Model2D" : "test3",
-  "RigidBody2D" : {
-    "momentum" : {
-      "x" : 0.0,
-      "y" : 0.0
-    },
-    "gravity" : {
-      "x" : 0.0,
-      "y" : -2.0
-    },
-    "mass" : 1.0,
-    "inertial_moment" : 3.0,
-    "drag" : 1.0,
-    "angular_drag" : 0.25
-  },
-  "BoxCollider2D" : {
-    "Collider2D" : {
-      "layers": 1,
-      "masks": 3,
-      "elasticity" : 0.7
-    },
-    "scale_matrix": [
-      {
-        "x": 0.1,
-        "y": 0
-      },
-      {
-        "x": 0,
-        "y": 0.1
+  "components" : {
+    "GlobalTransform2D": {
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "scale": {
+          "x": 0.1,
+          "y": 0.1
+        },
+        "rotation": 0.0
       }
-    ]
+    },
+    "Model2D": "test3",
+    "RigidBody2D": {
+      "momentum": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "gravity": {
+        "x": 0.0,
+        "y": -2.0
+      },
+      "mass": 1.0,
+      "inertial_moment": 3.0,
+      "drag": 1.0,
+      "angular_drag": 0.25
+    },
+    "BoxCollider2D": {
+      "Collider2D": {
+        "layers": 1,
+        "masks": 3,
+        "elasticity": 0.7
+      },
+      "scale_matrix": [
+        {
+          "x": 0.1,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 0.1
+        }
+      ]
+    }
   }
 }

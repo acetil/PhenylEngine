@@ -1,40 +1,42 @@
 {
-  "Bullet" : {},
-  "GlobalTransform2D" : {
-    "transform" : {
-      "position" : {
-        "x" : 0.0,
-        "y" : 0.0
-      },
-      "scale" : {
-        "x" : 0.03,
-        "y" : 0.03
-      },
-      "rotation" : 0.0
-    }
-  },
-  "RigidBody2D" : {
-    "momentum" : {
-      "x" : 0.0,
-      "y" : 0.0
-    }
-  },
-  "BoxCollider2D" : {
-    "Collider2D" : {
-      "layers": 1,
-      "masks": 3,
-      "elasticity" : 1.0
-    },
-    "scale_matrix": [
-      {
-        "x": 0.03,
-        "y": 0.0
-      },
-      {
-        "x": 0.0,
-        "y": 0.03
+  "components" : {
+    "Bullet": {},
+    "GlobalTransform2D": {
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "scale": {
+          "x": 0.03,
+          "y": 0.03
+        },
+        "rotation": 0.0
       }
-    ]
-  },
-  "Model2D": "test9"
+    },
+    "RigidBody2D": {
+      "momentum": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    "BoxCollider2D": {
+      "Collider2D": {
+        "layers": 1,
+        "masks": 3,
+        "elasticity": 1.0
+      },
+      "scale_matrix": [
+        {
+          "x": 0.03,
+          "y": 0.0
+        },
+        {
+          "x": 0.0,
+          "y": 0.03
+        }
+      ]
+    },
+    "Model2D": "test9"
+  }
 }

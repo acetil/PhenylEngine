@@ -7,6 +7,10 @@ add_library(component src/component/view/game_view.cpp include/component/compone
         include/component/detail/utils.h
         include/component/signals/component_update.h
         include/component/detail/component_signal_handler.h
+        include/component/prefab.h
+        include/component/detail/prefab_list.h
+        src/component/detail/prefab_list.cpp
+        src/component/component.cpp
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

@@ -23,7 +23,7 @@ detail::GameObject::~GameObject () {
 
 util::Optional<component::EntityView> detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     // TODO: requires refactor
-    if (!entityTypes.contains(name)) {
+    /*if (!entityTypes.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
         return util::NullOpt;
     } else {
@@ -39,14 +39,22 @@ util::Optional<component::EntityView> detail::GameObject::createNewEntityInstanc
 
         eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
         return {entityView};
+    }*/
+    if (!prefabs.contains(name)) {
+        logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
+        return util::NullOpt;
+    } else {
+        return prefabs.at(name)
+            .instantiate()
+            .complete();
     }
 }
 
 component::EntityView detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
-    auto entityView = entityComponentManager->create();
-    auto serialisedObj = serialised.get<util::DataObject>();
+    //auto entityView = entityComponentManager->create();
+    const auto& serialisedObj = serialised.get<util::DataObject>();
 
-    serialiser->deserialiseObject(entityView, serialisedObj);
+    /*serialiser->deserialiseObject(entityView, serialisedObj);
 
     entityView.get<EntityTypeComponent>().ifPresent([this, &entityView] (EntityTypeComponent& entityType) {
         if (entityTypes.contains(entityType.typeId)) {
@@ -56,14 +64,31 @@ component::EntityView detail::GameObject::makeDeserialisedEntity (const util::Da
         }
     });
 
-    auto gameView = view::GameView(this);
+    auto gameView = view::GameView(this);*/
 
     /*entityView.get<EntityControllerComponent>().ifPresent([&entityView, &gameView, &serialisedObj] (EntityControllerComponent& comp) {
         comp.get().initEntity(entityView, gameView, serialisedObj["data"]);
     });*/
 
-    eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
-    return entityView;
+    //eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
+
+    // TODO: refactor
+    if (!serialisedObj.contains<util::DataObject>("components")) {
+        logging::log(LEVEL_ERROR, "Serialised entity did not contain components field!");
+        return {};
+    }
+
+    if (serialisedObj.contains<std::string>("prefab")) {
+        auto& prefab = prefabs.at(serialisedObj.at<std::string>("prefab"));
+        auto instantiator = prefab.instantiate({});
+        serialiser->deserialiseObject(instantiator, serialisedObj.at("components"));
+
+        return instantiator.complete();
+    } else {
+        auto instantiator = component::Prefab::NullPrefab(entityComponentManager).instantiate({});
+        serialiser->deserialiseObject(instantiator, serialisedObj.at("components"));
+        return instantiator.complete();
+    }
 }
 
 void detail::GameObject::registerTile (Tile* tile) {
@@ -195,7 +220,11 @@ void detail::GameObject::addEntityType (const std::string& typeId, const std::st
 
     auto data = util::parseFromFile(filepath);
     if (!data.empty()) {
-        entityTypes[typeId] = std::move(makeEntityType(data, *serialiser));
+        //entityTypes[typeId] = std::move(makeEntityType(data, *serialiser));
+        //entityTypes[typeId] =
+        makePrefab(data).ifPresent([this, &typeId] (component::Prefab& prefab) {
+           prefabs[typeId] = std::move(prefab);
+        });
     }
 }
 
@@ -246,4 +275,27 @@ util::Optional<EntityController*> detail::GameObject::getController (const std::
     } else {
         return util::NullOpt;
     }
+}
+
+util::Optional<component::Prefab> detail::GameObject::makePrefab (const util::DataValue& val) {
+    if (!val.is<util::DataObject>()) {
+        return util::NullOpt;
+    }
+
+    const auto& obj = val.get<util::DataObject>();
+
+    if (!obj.contains<util::DataObject>("components")) {
+        logging::log(LEVEL_ERROR, "Prefab does not contain components field!");
+        return util::NullOpt;
+    }
+
+    auto builder = entityComponentManager->buildPrefab();
+
+    serialiser->deserialisePrefab(builder, obj.at("components"));
+
+    return {builder.build()};
+}
+
+void detail::GameObject::clearPrefabs () {
+    prefabs.clear();
 }

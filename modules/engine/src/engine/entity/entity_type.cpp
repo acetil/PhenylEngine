@@ -8,9 +8,9 @@ using namespace game;
 EntityType::EntityType (std::vector<component::EntityComponentFactory> factories) : factories{std::move(factories)} {}
 
 void EntityType::addDefaultComponents (component::EntityView& entityView) const {
-    for (const auto& i : factories) {
+    /*for (const auto& i : factories) {
         i.addDefault(entityView);
-    }
+    }*/
 }
 
 EntityType::EntityType (EntityType&&) noexcept = default;
@@ -28,12 +28,13 @@ EntityType game::makeEntityType (const util::DataValue& entityTypeData, componen
     }
 
     const auto& obj = entityTypeData.get<util::DataObject>();
-    std::vector<component::EntityComponentFactory> factories;
+    /*std::vector<component::EntityComponentFactory> factories;
     for (const auto& [k, v] : obj.kv()) {
         serialiser.makeFactory(k, v).ifPresent([&factories](component::EntityComponentFactory& factory) {
             factories.emplace_back(std::move(factory));
         });
-    }
+    }*/
 
-    return EntityType{std::move(factories)};
+    //return EntityType{std::move(factories)};
+    return EntityType{std::vector<component::EntityComponentFactory>{}};
 }

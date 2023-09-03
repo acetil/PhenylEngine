@@ -347,11 +347,11 @@ namespace util {
 
 
         T& operator[] (std::size_t index) {
-            data[index].getUnsafe();
+            return data[index].getUnsafe();
         }
 
         const T& operator[] (std::size_t index) const {
-            data[index].getUnsafe();
+            return data[index].getUnsafe();
         }
 
         T& at (std::size_t index) {

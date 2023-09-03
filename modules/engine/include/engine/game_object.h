@@ -18,6 +18,7 @@
 #include "game_camera.h"
 #include "engine/entity/entity_type.h"
 #include "engine/entity/controller/entity_controller.h"
+#include "component/prefab.h"
 
 namespace view {
     class DebugGameView;
@@ -42,11 +43,14 @@ namespace game::detail {
                 event::EventScope eventScope;
 
                 util::Map<std::string, EntityType> entityTypes;
+                util::Map<std::string, component::Prefab> prefabs;
                 component::EntitySerialiser* serialiser;
 
                 component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
 
                 util::DataObject serialiseEntity (component::EntityView& entityView);
+                util::Optional<component::Prefab> makePrefab (const util::DataValue& val);
+
 
                 public:
                 ~GameObject();
@@ -88,6 +92,8 @@ namespace game::detail {
                 void addDefaultSerialisers ();
 
                 void addEntityType (const std::string& typeId, const std::string& filepath);
+
+                void clearPrefabs ();
 
                 GameCamera& getCamera ();
                 GameInput& getInput ();

@@ -10,6 +10,7 @@
 #include "entity_id.h"
 #include "detail/component_set.h"
 #include "detail/entity_id_list.h"
+#include "detail/prefab_list.h"
 #include "detail/signal_handler.h"
 #include "detail/utils.h"
 
@@ -34,6 +35,9 @@ namespace component {
         };
     }
 
+    class Prefab;
+    class PrefabBuilder;
+
     class ComponentManager {
     private:
         class ChildrenView;
@@ -43,6 +47,8 @@ namespace component {
             ComponentManager& compManager;
             EntityView (EntityId id, ComponentManager& compManager) : entityId{id}, compManager{compManager} {}
         public:
+            EntityView () : entityId{}, compManager{compManager} {}
+
             [[nodiscard]] EntityId id () const {
                 return entityId;
             }
@@ -99,6 +105,10 @@ namespace component {
 
             void reparent (EntityId parent) {
                 return compManager.reparent(entityId, parent);
+            }
+
+            explicit operator bool () const {
+                return (bool)entityId;
             }
 
             friend class ComponentManager;
@@ -391,6 +401,7 @@ namespace component {
         std::vector<EntityId> deferredDeletions{};
         std::vector<std::pair<std::function<void(ComponentManager*, EntityId)>, EntityId>> deferredApplys;
         std::vector<detail::Relationship> relationships{};
+        detail::PrefabList prefabs;
 
         template <typename T>
         detail::ComponentSet* getComponent () const {
@@ -652,12 +663,12 @@ namespace component {
         }
 
         void onDeferEnd () {
-            for (auto [k, v] : signalHandlers.kv()) {
-                v->deferEnd(this);
-            }
-
             for (auto [k, v] : components.kv()) {
                 v->deferEnd();
+            }
+
+            for (auto [k, v] : signalHandlers.kv()) {
+                v->deferEnd(this);
             }
 
             for (auto& [f, id] : deferredApplys) {
@@ -742,6 +753,9 @@ namespace component {
 
             idList.removeId(id);
         }
+
+        friend class PrefabBuilder;
+        friend class Prefab;
     public:
         using iterator = EntityViewIterator;
         using const_iterator = ConstEntityViewIterator;
@@ -1082,6 +1096,7 @@ namespace component {
             eachPairInt<std::remove_cvref_t<T>>(comp, fn);
         }
 
+        PrefabBuilder buildPrefab ();
 
         iterator begin () {
             return iterator{this, idList.begin()};
