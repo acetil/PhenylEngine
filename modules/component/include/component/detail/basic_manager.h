@@ -73,7 +73,7 @@ namespace component::detail {
             return component ? component->getComponent<T>(id) : nullptr;
         }
 
-        template <typename T>
+        /*template <typename T>
         util::Optional<T&> _get (EntityId id) {
             auto* comp = getEntityComp<T>(id);
 
@@ -114,7 +114,7 @@ namespace component::detail {
             }
 
             return compSet->setComp(id, std::move(comp));
-        }
+        }*/
 
         EntityId _create (EntityId parent) {
             auto id = idList.newId();
@@ -146,7 +146,7 @@ namespace component::detail {
             removeInt(id, true);
         }
 
-        template <typename T>
+        /*template <typename T>
         void _erase (EntityId id) {
             if (!idList.check(id)) {
                 logging::log(LEVEL_ERROR, "Attempted to remove component from invalid entity {}!", id.value());
@@ -173,7 +173,7 @@ namespace component::detail {
             }
 
             return comp->hasComp(id);
-        }
+        }*/
 
         template <typename ...Args, meta::callable<void, Args&...> F>
         void _apply (F fn, EntityId id) {
@@ -200,6 +200,10 @@ namespace component::detail {
             relationships.setParent(id, parent);
         }
 
+        [[nodiscard]] EntityId _parent (EntityId id) const {
+            return relationships.parent(id);
+        }
+
         ComponentManager* asManager () {
             return (ComponentManager*)this;
         }
@@ -208,8 +212,8 @@ namespace component::detail {
             return (ComponentManager*)this;
         }
 
-        EntityView _view (EntityId id);
-        [[nodiscard]] ConstEntityView _view (EntityId id) const;
+        Entity _view (EntityId id);
+        [[nodiscard]] ConstEntity _view (EntityId id) const;
 
         RelationshipManager& getRelationshipManager () {
             return relationships;

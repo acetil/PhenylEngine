@@ -16,12 +16,12 @@ namespace game {
         std::string entityId;
     public:
         explicit EntityController (std::string entityId);
-        virtual void controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView);
-        virtual void controlEntityPostPhysics (component::EntityView& entityView, view::GameView& gameView);
-        virtual void onEntityCollision (component::EntityView& entityView, view::GameView& gameView, component::EntityView& otherEntity, unsigned int layers); // TODO: hit/hurtbox
-        virtual void initEntity (component::EntityView& entityView, view::GameView&) {};
-        virtual void initEntity (component::EntityView& entityView, view::GameView&, const util::DataValue& data) {}; // TODO: convert to binary format
-        virtual util::DataObject getData (component::EntityView& entityView, view::GameView& gameView);
+        virtual void controlEntityPrePhysics (component::Entity& entityView, view::GameView& gameView);
+        virtual void controlEntityPostPhysics (component::Entity& entityView, view::GameView& gameView);
+        virtual void onEntityCollision (component::Entity& entityView, view::GameView& gameView, component::Entity& otherEntity, unsigned int layers); // TODO: hit/hurtbox
+        virtual void initEntity (component::Entity& entityView, view::GameView&) {};
+        virtual void initEntity (component::Entity& entityView, view::GameView&, const util::DataValue& data) {}; // TODO: convert to binary format
+        virtual util::DataObject getData (component::Entity& entityView, view::GameView& gameView);
         [[nodiscard]] const std::string& getEntityId () const;
     };
 

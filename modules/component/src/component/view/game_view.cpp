@@ -3,7 +3,7 @@
 
 using namespace view;
 
-component::EntityView GameView::createEntityInstance (const std::string& name, const util::DataValue& data) {
+component::Entity GameView::createEntityInstance (const std::string& name, const util::DataValue& data) {
     return gameObject->createNewEntityInstance(name, data).getUnsafe(); // TODO
 }
 

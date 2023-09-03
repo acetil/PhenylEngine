@@ -7,10 +7,10 @@ component::ChildrenView BasicComponentManager::_children (EntityId id) {
     return {this, id};
 }
 
-component::EntityView BasicComponentManager::_view (component::EntityId id) {
-    return EntityView{id, this};
+component::Entity BasicComponentManager::_view (component::EntityId id) {
+    return Entity{id, this};
 }
 
-component::ConstEntityView BasicComponentManager::_view (component::EntityId id) const {
-    return ConstEntityView{id, this};
+component::ConstEntity BasicComponentManager::_view (component::EntityId id) const {
+    return ConstEntity{id, this};
 }

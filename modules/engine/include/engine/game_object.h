@@ -46,9 +46,9 @@ namespace game::detail {
                 util::Map<std::string, component::Prefab> prefabs;
                 component::EntitySerialiser* serialiser;
 
-                component::EntityView makeDeserialisedEntity (const util::DataValue& serialised);
+                component::Entity makeDeserialisedEntity (const util::DataValue& serialised);
 
-                util::DataObject serialiseEntity (component::EntityView& entityView);
+                util::DataObject serialiseEntity (component::Entity& entityView);
                 util::Optional<component::Prefab> makePrefab (const util::DataValue& val);
 
 
@@ -57,7 +57,7 @@ namespace game::detail {
 
                 void registerEntityController (std::unique_ptr<EntityController> controller);
 
-                util::Optional<component::EntityView> createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
+                util::Optional<component::Entity> createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
 
                 void deleteEntityInstance (component::EntityId entityId);
                 void registerTile (Tile* tile);

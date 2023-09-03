@@ -19,7 +19,7 @@ std::shared_ptr<game::detail::GameObject> PhenylGame::getShared () const {
     return ptr;
 }
 
-component::EntityView PhenylGame::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
+component::Entity PhenylGame::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     return getShared()->createNewEntityInstance(name, data).getUnsafe(); // TODO
 }
 

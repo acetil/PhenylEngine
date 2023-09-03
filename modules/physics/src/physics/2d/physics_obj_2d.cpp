@@ -96,7 +96,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     solveConstraints(constraints, compManager);
 
     /*for (const auto& [id1, id2, layers] : events) {
-        //eventBus->raise(event::EntityCollisionEvent{compManager.view(id1), compManager.view(id2), layers, compManager, eventBus, gameView});
+        //eventBus->raise(event::EntityCollisionEvent{compManager.entity(id1), compManager.entity(id2), layers, compManager, eventBus, gameView});
         compManager.signal<OnCollision>(id1, id2, layers);
     }*/
 }

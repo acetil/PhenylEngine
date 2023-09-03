@@ -20,9 +20,9 @@ namespace component {
             virtual bool deserialiseComp (component::Prefab::Instantiator& instantiator, const util::DataValue& serialisedComp) = 0;
             virtual bool deserialiseComp (component::PrefabBuilder& builder, const util::DataValue& serialisedComp) = 0;
 
-            virtual util::DataValue serialiseComp (component::EntityView& entityView) = 0;
+            virtual util::DataValue serialiseComp (component::Entity& entityView) = 0;
 
-            virtual bool hasComp (component::EntityView& entityView) const = 0;
+            virtual bool hasComp (component::Entity& entityView) const = 0;
         };
 
         template<class T, meta::callable<util::DataValue, const T&> SerialiseF, meta::callable<util::Optional<T>, const util::DataValue&> DeserialiseF>
@@ -33,7 +33,7 @@ namespace component {
         public:
             ComponentSerialiserImpl (SerialiseF f1, DeserialiseF f2) : serialiseF{f1}, deserialiseF{f2} {}
 
-            util::DataValue serialiseComp (component::EntityView& objectView) override {
+            util::DataValue serialiseComp (component::Entity& objectView) override {
                 return objectView.get<T>()
                         .thenMap([this] (T& comp) -> util::DataValue {
                              return serialiseF(comp);
@@ -61,7 +61,7 @@ namespace component {
                 return opt;
             }
 
-            bool hasComp (component::EntityView& objectView) const override {
+            bool hasComp (component::Entity& objectView) const override {
                 return objectView.has<T>();
             }
         };
@@ -75,7 +75,7 @@ namespace component {
     public:
         //EntityComponentFactory (detail::ComponentSerialiser* serialiser, util::DataValue compData) : serialiser{serialiser}, compData{std::move(compData)} {}
 
-        /*void addDefault (EntityView& objectView) const {
+        /*void addDefault (Entity& objectView) const {
             if (!serialiser->hasComp(objectView)) {
                 serialiser->deserialiseComp(objectView, compData);
             }
@@ -113,7 +113,7 @@ namespace component {
             });
         }
 
-        util::DataObject serialiseObject (component::EntityView& entityView) const {
+        util::DataObject serialiseObject (component::Entity& entityView) const {
             util::DataObject dataObj;
 
             for (const auto& [compId, serialiser] : serialiserMap.kv()) {

@@ -21,7 +21,7 @@ namespace event {
         component::EntityComponentManager& compManager;
         //game::AbstractEntity* entity{};
         //component::EntityId entityId;
-        component::EntityView entityView;
+        component::Entity entityView;
         view::GameView gameView;
         /*EntityCreationEvent () : gameView(nullptr) {
             x = 0;
@@ -30,7 +30,7 @@ namespace event {
             compManager = nullptr;
             entityId = 0;
         };*/
-        EntityCreationEvent (component::EntityComponentManager& compManager, component::EntityView _entityView, view::GameView _gameView) :
+        EntityCreationEvent (component::EntityComponentManager& compManager, component::Entity _entityView, view::GameView _gameView) :
                 entityView{_entityView}, gameView{_gameView}, compManager{compManager} {}
     };
 }

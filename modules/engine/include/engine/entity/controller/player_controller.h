@@ -19,8 +19,8 @@ namespace game {
     public:
         PlayerController () : EntityController("test_entity") {}
         void updateMovement (event::PlayerMovementChangeEvent& event);
-        void controlEntityPrePhysics (component::EntityView& entityView, view::GameView& gameView) override;
-        void controlEntityPostPhysics(component::EntityView &entityView, view::GameView &gameView) override;
+        void controlEntityPrePhysics (component::Entity& entityView, view::GameView& gameView) override;
+        void controlEntityPostPhysics(component::Entity &entityView, view::GameView &gameView) override;
         void updateCursorPos (event::CursorPosChangeEvent& event);
         void updateDoShoot (event::PlayerShootChangeEvent& event);
 

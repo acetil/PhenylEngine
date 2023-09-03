@@ -83,9 +83,9 @@ static void testCompManager () {
 
     auto e1 = manager.create();
     auto e2 = manager.create();
-    auto e3 = manager.create(e2.id());
-    auto e4 = manager.create(e2.id());
-    auto e5 = manager.create(e2.id());
+    auto e3 = e2.createChild();
+    auto e4 = e2.createChild();
+    auto e5 = e2.createChild();
 
     component::logging::log(LEVEL_DEBUG, "E1: {}", e1.id().value());
     component::logging::log(LEVEL_DEBUG, "E2: {}", e2.id().value());
@@ -190,7 +190,7 @@ static void testCompManager () {
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through root entities:");
-    for (auto i : manager.children(component::EntityId{})) {
+    for (auto i : manager.root()) {
         component::logging::log(LEVEL_DEBUG, "{}", i.id().value());
     }
 
@@ -202,10 +202,11 @@ static void testCompManager () {
         }
     }
 
-    e4.reparent(e5.id());
+    //e4.reparent(e5.id());
+    e5.addChild(e4);
 
     component::logging::log(LEVEL_DEBUG, "Looping through root entities after reparent:");
-    for (auto i : manager.children(component::EntityId{})) {
+    for (auto i : manager.root()) {
         component::logging::log(LEVEL_DEBUG, "{}", i.id().value());
     }
 
@@ -235,7 +236,7 @@ static void testCompManager () {
     e2.remove();
 
     component::logging::log(LEVEL_DEBUG, "Looping through root entities after remove:");
-    for (auto i : manager.children(component::EntityId{})) {
+    for (auto i : manager.root()) {
         component::logging::log(LEVEL_DEBUG, "{}", i.id().value());
     }
 

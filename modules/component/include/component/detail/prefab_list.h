@@ -84,6 +84,6 @@ namespace component::detail {
             return id && entries.present(id - 1);
         }
 
-        void instantiate (ComponentManager* manager, EntityId id, std::size_t prefabId);
+        void instantiate (Entity entity, std::size_t prefabId);
     };
 }

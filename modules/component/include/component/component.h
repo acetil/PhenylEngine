@@ -16,7 +16,7 @@
 #include "detail/basic_manager.h"
 #include "detail/children_view.h"
 
-#include "component/entity_view.h"
+#include "component/entity.h"
 
 #include "util/map.h"
 #include "util/meta.h"
@@ -34,7 +34,7 @@ namespace component {
             ComponentManager* compManager;
             EntityViewIterator (ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
         public:
-            using value_type = EntityView;
+            using value_type = Entity;
             using reference = void;
             using pointer = void;
             using difference_type = detail::EntityIdList::const_iterator::difference_type;
@@ -42,7 +42,7 @@ namespace component {
             EntityViewIterator () : compManager{nullptr}, it{} {};
 
             value_type operator* () const {
-                return compManager->view(*it);
+                return compManager->entity(*it);
             }
 
             EntityViewIterator& operator++ () {
@@ -80,7 +80,7 @@ namespace component {
             const ComponentManager* compManager;
             ConstEntityViewIterator (const ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
         public:
-            using value_type = ConstEntityView;
+            using value_type = ConstEntity;
             using reference = void;
             using pointer = void;
             using difference_type = detail::EntityIdList::const_iterator::difference_type;
@@ -88,7 +88,7 @@ namespace component {
             ConstEntityViewIterator () : compManager{nullptr}, it{} {};
 
             value_type operator* () const {
-                return compManager->view(*it);
+                return compManager->entity(*it);
             }
 
             ConstEntityViewIterator& operator++ () {
@@ -360,7 +360,7 @@ namespace component {
             }
 
             for (auto i : deferredDeletions) {
-                remove(i);
+                _remove(i);
             }
 
             deferredApplys.clear();
@@ -408,7 +408,7 @@ namespace component {
             components.emplace(typeIndex, std::move(component));
         }
 
-        template <typename T>
+        /*template <typename T>
         util::Optional<T&> get (EntityId id) {
             return _get<T>(id);
         }
@@ -426,13 +426,13 @@ namespace component {
         template <typename T>
         bool set (EntityId id, T comp) {
             return _set<T>(id, std::move(comp));
+        }*/
+
+        Entity create () {
+            return entity(_create(EntityId{}));
         }
 
-        EntityView create (EntityId parent=EntityId{}) {
-            return view(_create(parent));
-        }
-
-        [[nodiscard]] bool exists (EntityId id) const {
+        /*[[nodiscard]] bool exists (EntityId id) const {
             return _exists(id);
         }
 
@@ -461,6 +461,10 @@ namespace component {
 
         void reparent (EntityId id, EntityId parent) {
             _reparent(id, parent);
+        }*/
+
+        ChildrenView root () {
+            return _children(EntityId{});
         }
 
         [[nodiscard]] std::size_t size () const {
@@ -565,16 +569,16 @@ namespace component {
         }
 
 
-        // TODO: merge EntityView/ConstEntityView and EntityComponentView/ConstEntityComponentView
-        EntityView view (EntityId id) {
+        // TODO: merge Entity/ConstEntity and EntityComponentView/ConstEntityComponentView
+        Entity entity (EntityId id) {
             return _view(id);
         }
 
-        [[nodiscard]] ConstEntityView view (EntityId id) const {
+        [[nodiscard]] ConstEntity entity (EntityId id) const {
             return _view(id);
         }
 
-        template <typename ...Args, typename = std::enable_if_t<1 < sizeof...(Args)>>
+        /*template <typename ...Args, typename = std::enable_if_t<1 < sizeof...(Args)>>
         util::Optional<std::tuple<std::remove_reference_t<Args>&...>> get (EntityId entityId) {
             std::tuple<std::remove_cvref_t<Args>*...> ptrs{getEntityComp<std::remove_cvref_t<Args>>(entityId)...};
 
@@ -594,7 +598,7 @@ namespace component {
             } else {
                 return util::NullOpt;
             }
-        }
+        }*/
 
         template <typename T, meta::callable<void, IterInfo&, std::remove_reference_t<T>&> F>
         void each (F fn) {

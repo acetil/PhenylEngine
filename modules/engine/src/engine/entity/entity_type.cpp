@@ -7,7 +7,7 @@ using namespace game;
 
 EntityType::EntityType (std::vector<component::EntityComponentFactory> factories) : factories{std::move(factories)} {}
 
-void EntityType::addDefaultComponents (component::EntityView& entityView) const {
+void EntityType::addDefaultComponents (component::Entity& entityView) const {
     /*for (const auto& i : factories) {
         i.addDefault(entityView);
     }*/

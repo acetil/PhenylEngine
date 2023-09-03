@@ -6,7 +6,7 @@ namespace game {
     class BulletController : public EntityController {
     public:
         BulletController();
-        void onEntityCollision(component::EntityView &entityView, view::GameView& gameView, component::EntityView& otherEntity, unsigned int layers) override;
-        void initEntity (component::EntityView& entityView, view::GameView& gameView, const util::DataValue& data) override;
+        void onEntityCollision(component::Entity &entityView, view::GameView& gameView, component::Entity& otherEntity, unsigned int layers) override;
+        void initEntity (component::Entity& entityView, view::GameView& gameView, const util::DataValue& data) override;
     };
 }

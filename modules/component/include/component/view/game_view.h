@@ -22,7 +22,7 @@ namespace view {
     public:
         explicit GameView (game::detail::GameObject* _gameObject/*, physics::IPhysics* _physics*/) :
             gameObject(_gameObject), physics{nullptr} {}
-        component::EntityView createEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
+        component::Entity createEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
         void destroyEntityInstance (component::EntityId entityId);
         game::GameCamera& getCamera ();
         physics::IPhysics* getPhysics ();

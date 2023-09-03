@@ -2,7 +2,7 @@
 
 #include "component/forward.h"
 #include "basic_manager.h"
-#include "component/entity_view.h"
+#include "component/entity.h"
 
 namespace component {
     class ChildrenView {
@@ -15,7 +15,7 @@ namespace component {
             Iterator (detail::BasicComponentManager* manager, detail::RelationshipManager::ChildIterator it) : manager{manager}, it{it} {}
             friend ChildrenView;
         public:
-            using value_type = EntityView;
+            using value_type = Entity;
             using difference_type = std::ptrdiff_t;
             Iterator () : it{}, manager{nullptr} {}
 
@@ -48,7 +48,7 @@ namespace component {
 
             friend ChildrenView;
         public:
-            using value_type = ConstEntityView;
+            using value_type = ConstEntity;
             using difference_type = std::ptrdiff_t;
             ConstIterator () : it{}, manager{nullptr} {}
 
@@ -123,7 +123,7 @@ namespace component {
         ChildrenView (detail::BasicComponentManager* manager, EntityId parent) : manager{manager}, parentId{parent} {}
         friend ComponentManager;
         friend detail::BasicComponentManager;
-        friend EntityView;
+        friend Entity;
     public:
         using iterator = Iterator;
         using const_iterator = ConstIterator;
@@ -177,11 +177,11 @@ namespace component {
             eachInt<Args...>(compSets, fn, std::make_index_sequence<sizeof...(Args)>{});
         }
 
-        EntityView parent () {
+        Entity parent () {
             return manager->_view(parentId);
         }
 
-        [[nodiscard]] ConstEntityView parent () const {
+        [[nodiscard]] ConstEntity parent () const {
             return manager->_view(parentId);
         }
     };

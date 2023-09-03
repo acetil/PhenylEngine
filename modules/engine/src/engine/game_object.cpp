@@ -21,7 +21,7 @@ detail::GameObject::~GameObject () {
     }
 }
 
-util::Optional<component::EntityView> detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
+util::Optional<component::Entity> detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
     // TODO: requires refactor
     /*if (!entityTypes.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
@@ -50,7 +50,7 @@ util::Optional<component::EntityView> detail::GameObject::createNewEntityInstanc
     }
 }
 
-component::EntityView detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
+component::Entity detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
     //auto entityView = entityComponentManager->create();
     const auto& serialisedObj = serialised.get<util::DataObject>();
 
@@ -80,7 +80,7 @@ component::EntityView detail::GameObject::makeDeserialisedEntity (const util::Da
 
     if (serialisedObj.contains<std::string>("prefab")) {
         auto& prefab = prefabs.at(serialisedObj.at<std::string>("prefab"));
-        auto instantiator = prefab.instantiate({});
+        auto instantiator = prefab.instantiate();
         serialiser->deserialiseObject(instantiator, serialisedObj.at("components"));
 
         return instantiator.complete();
@@ -139,7 +139,8 @@ void detail::GameObject::updateEntitiesPostPhysics () {
 }
 
 void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
-    entityComponentManager->remove(entityId); // TODO: implement queue
+    //entityComponentManager->remove(entityId); // TODO: implement queue
+    entityComponentManager->entity(entityId).remove();
 }
 
 void detail::GameObject::loadMap (Map::SharedPtr map) {
@@ -208,7 +209,7 @@ GameInput& detail::GameObject::getInput () {
     return gameInput;
 }
 
-util::DataObject detail::GameObject::serialiseEntity (component::EntityView& entityView) {
+util::DataObject detail::GameObject::serialiseEntity (component::Entity& entityView) {
     return serialiser->serialiseObject(entityView);
 }
 

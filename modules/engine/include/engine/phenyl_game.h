@@ -29,7 +29,7 @@ namespace game {
     public:
         explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {}
 
-        component::EntityView createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
+        component::Entity createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
 
         void deleteEntityInstance (component::EntityId entityId);
         void registerTile (Tile* tile);

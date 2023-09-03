@@ -12,7 +12,7 @@ add_library(component src/component/view/game_view.cpp include/component/compone
         src/component/detail/prefab_list.cpp
         src/component/component.cpp
         include/component/detail/basic_manager.h
-        include/component/entity_view.h
+        include/component/entity.h
         include/component/detail/children_view.h
         src/component/entity_view.cpp
         src/component/detail/basic_manager.cpp

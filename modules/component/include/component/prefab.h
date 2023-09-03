@@ -20,44 +20,46 @@ namespace component {
     public:
         class Instantiator {
         private:
-            ComponentManager* manager;
-            EntityId id;
+            Entity entity;
             std::size_t prefabId;
 
-            Instantiator (ComponentManager* manager, EntityId parent, std::size_t prefabId) : manager{manager}, id{manager->create(parent).id()}, prefabId{prefabId} {
+            Instantiator (Entity entity, std::size_t prefabId) : entity{entity}, prefabId{prefabId} {
 
             }
             friend class Prefab;
         public:
             // TODO
             EntityId getId () const {
-                return id;
+                return entity.id();
             }
             template <typename T>
             Instantiator& with (T comp) {
-                manager->insert<T>(id, std::move(comp));
+                entity.insert(std::move(comp));
 
                 return *this;
             }
 
-            Instantiator& withChild (EntityId childId) {
-                manager->reparent(childId, id);
+            /*Instantiator& withChild (EntityId childId) {
+                //manager->reparent(childId, id);
+                entity.addChild(childId);
+
+                return *this;
+            }*/
+
+            Instantiator& withChild (Entity view) {
+                //manager->reparent(entity.id(), id);
+                entity.addChild(view);
 
                 return *this;
             }
 
-            Instantiator& withChild (EntityView view) {
-                manager->reparent(view.id(), id);
-
-                return *this;
-            }
-
-            EntityView complete () {
+            Entity complete () {
                 if (prefabId) {
-                    manager->prefabs.instantiate(manager, id, prefabId);
+                    //manager->prefabs.instantiate(manager, id, prefabId);
+                    entity.manager().prefabs.instantiate(entity, prefabId);
                 }
 
-                return manager->view(id);
+                return entity;
             }
         };
 
@@ -103,8 +105,15 @@ namespace component {
             return manager && id;
         }
 
-        [[nodiscard]] Instantiator instantiate (EntityId parent=EntityId{}) const {
-            return Instantiator{manager, parent, id};
+        [[nodiscard]] Instantiator instantiate (Entity parent) const {
+            //return Instantiator{manager, parent, id};
+            assert(parent);
+            return Instantiator{parent.createChild(), id};
+        }
+
+        [[nodiscard]] Instantiator instantiate () const {
+            //return Instantiator{manager, parent, id};
+            return Instantiator{manager->create(), id};
         }
 
         static Prefab NullPrefab (ComponentManager* manager) {
