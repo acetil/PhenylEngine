@@ -430,7 +430,7 @@ namespace component {
             return component;
         }
 
-        template <typename T>
+        /*template <typename T>
         detail::ComponentSet* getOrCreateComponent () {
             auto typeIndex = meta::type_index<T>();
             if (components.contains(typeIndex)) {
@@ -443,7 +443,7 @@ namespace component {
             components.emplace(typeIndex, std::move(component));
 
             return compPtr;
-        }
+        }*/
 
         template <typename T>
         T* getEntityComp (EntityId id) const {
@@ -820,7 +820,11 @@ namespace component {
                 logging::log(LEVEL_ERROR, "Attempted to insert component to invalid entity {}!", id.value());
                 return;
             }
-            detail::ComponentSet* comp = getOrCreateComponent<T>();
+            //detail::ComponentSet* comp = getOrCreateComponent<T>();
+            detail::ComponentSet* comp = getComponent<T>();
+            if (!comp) {
+                return;
+            }
 
             comp->insertComp<T>(id, std::forward<Args>(args)...);
         }
@@ -831,7 +835,10 @@ namespace component {
                 logging::log(LEVEL_ERROR, "Attempted to set component of invalid entity {}!", id.value());
                 return false;
             }
-            detail::ComponentSet* compSet = getOrCreateComponent<T>();
+            detail::ComponentSet* compSet = getComponent<T>();
+            if (!compSet) {
+                return false;
+            }
 
             return compSet->setComp(id, std::move(comp));
         }
@@ -878,7 +885,9 @@ namespace component {
                 return;
             }
             detail::ComponentSet* comp = getComponent<T>();
-            assert(comp);
+            if (!comp) {
+                return;
+            }
 
             comp->deleteComp(id);
         }
@@ -940,8 +949,20 @@ namespace component {
 
         template <typename Derived, typename Base>
         void inherits () requires std::derived_from<Derived, Base> {
-            detail::ComponentSet* derived = getOrCreateComponent<Derived>();
-            detail::ComponentSet* base = getOrCreateComponent<Base>();
+            detail::ComponentSet* derived = getComponent<Derived>();
+            detail::ComponentSet* base = getComponent<Base>();
+
+            if (!derived) {
+                logging::log(LEVEL_ERROR, "Failed to get derived component!");
+            }
+
+            if (!base) {
+                logging::log(LEVEL_ERROR, "Failed to get base component!");
+            }
+
+            if (!derived || !base) {
+                return;
+            }
 
             if (derived->setParent(base)) {
                 base->addChild(derived);
@@ -950,16 +971,35 @@ namespace component {
 
         template <typename Dependent, typename Dependency>
         void addRequirement () {
-            detail::ComponentSet* dependent = getOrCreateComponent<Dependent>();
-            detail::ComponentSet* dependency = getOrCreateComponent<Dependency>();
+            detail::ComponentSet* dependent = getComponent<Dependent>();
+            detail::ComponentSet* dependency = getComponent<Dependency>();
+
+            if (!dependent) {
+                logging::log(LEVEL_ERROR, "Failed to get dependent component!");
+            }
+
+            if (!dependency) {
+                logging::log(LEVEL_ERROR, "Failed to get dependency component!");
+            }
+
+            if (!dependent || !dependency) {
+                return;
+            }
 
             dependency->addDependent(dependent);
         }
 
         template <typename Signal, typename ...Args, meta::callable<void, const Signal&, IterInfo&, std::remove_reference_t<Args>&...> F>
         void handleSignal (F fn) requires (!ComponentSignal<Signal>) {
+            auto comps = std::array{getComponent<std::remove_reference_t<Args>>()...};
+            for (auto i : comps) {
+                if (!i) {
+                    logging::log(LEVEL_ERROR, "Failed to get all components for signal handler!");
+                    return;
+                }
+            }
+
             detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
-            auto comps = std::array{getOrCreateComponent<std::remove_reference_t<Args>>()...};
 
             auto handler = std::make_unique<detail::TypedSignalHandler<Signal, F, std::remove_reference_t<Args>...>>(std::move(fn), std::move(comps));
             handlerList->addHandler(std::move(handler));
@@ -967,7 +1007,12 @@ namespace component {
 
         template <ComponentSignal Signal>
         void handleSignal (std::function<void(IterInfo&, const Signal&)> handler) {
-            auto* comp = (detail::TypedComponentSet<typename Signal::Type>*)getOrCreateComponent<typename Signal::Type>();
+            auto* comp = (detail::TypedComponentSet<typename Signal::Type>*)getComponent<typename Signal::Type>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Failed to get component for component signal handler!");
+                return;
+            }
+
             comp->addHandler(handler);
         }
 
@@ -1025,7 +1070,12 @@ namespace component {
         template <typename T, meta::callable<void, IterInfo&, std::remove_reference_t<T>&> F>
         void each (F fn) {
             defer();
-            eachInt<std::remove_reference_t<T>>(getOrCreateComponent<T>(), fn);
+            auto* comp = getComponent<T>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Attempted to iterate through component without it being added yet!");
+                return;
+            }
+            eachInt<std::remove_reference_t<T>>(comp, fn);
             deferEnd();
         }
 
@@ -1042,7 +1092,14 @@ namespace component {
 
         template <typename ...Args, meta::callable<void, IterInfo&, std::remove_reference_t<Args>&...> F>
         void each (F fn) requires (sizeof...(Args) > 1) {
-            auto comps = std::array{getOrCreateComponent<Args>()...};
+            auto comps = std::array{getComponent<Args>()...};
+            for (auto i : comps) {
+                if (!i) {
+                    logging::log(LEVEL_ERROR, "Failed to get all components for each!");
+                    return;
+                }
+            }
+
             detail::ComponentSet* primarySet = nullptr;
             std::size_t minSize = std::numeric_limits<std::size_t>::max();
 
@@ -1083,7 +1140,11 @@ namespace component {
 
         template <typename T, meta::callable<void, Bundle<T>, Bundle<T>> F>
         void eachPair (F fn) {
-            auto* comp = getOrCreateComponent<T>();
+            auto* comp = getComponent<T>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Failed to get component for each pair!");
+                return;
+            }
 
             defer();
             eachPairInt<std::remove_reference_t<T>>(comp, fn);
@@ -1092,7 +1153,12 @@ namespace component {
 
         template <typename T, meta::callable<void, ConstBundle<T>, ConstBundle<T>> F>
         void eachPair (F fn) const {
-            auto* comp = getOrCreateComponent<T>();
+            auto* comp = getComponent<T>();
+            if (!comp) {
+                logging::log(LEVEL_ERROR, "Failed to get component for each pair!");
+                return;
+            }
+
             eachPairInt<std::remove_cvref_t<T>>(comp, fn);
         }
 

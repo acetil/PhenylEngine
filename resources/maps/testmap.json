@@ -6,7 +6,6 @@
     "entities": [
         {
             "components" : {
-                "EntityType": "test_entity",
                 "GlobalTransform2D": {
                     "transform": {
                         "position": {
@@ -54,8 +53,7 @@
                             "y": 0.5
                         }
                     ]
-                },
-                "EntityType": "wall_entity"
+                }
             },
             "prefab" : "wall_entity"
         },
@@ -90,8 +88,7 @@
                             "y": 0.5
                         }
                     ]
-                },
-                "EntityType": "wall_entity"
+                }
             },
             "prefab" : "wall_entity"
         },
@@ -126,8 +123,7 @@
                             "y": 0.08000000566244125
                         }
                     ]
-                },
-                "EntityType": "wall_entity"
+                }
             },
             "prefab" : "wall_entity"
         },
@@ -145,8 +141,7 @@
                         },
                         "rotation": 0.0
                     }
-                },
-                "EntityType": "block_entity"
+                }
             },
             "prefab" : "block_entity"
         },
@@ -164,8 +159,7 @@
                         },
                         "rotation": 0.0
                     }
-                },
-                "EntityType": "block_entity"
+                }
             },
             "prefab" : "block_entity"
         },
@@ -183,8 +177,7 @@
                         },
                         "rotation": 0.0
                     }
-                },
-                "EntityType": "block_entity"
+                }
             },
             "prefab" : "block_entity"
         }

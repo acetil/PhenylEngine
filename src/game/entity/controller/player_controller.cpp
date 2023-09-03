@@ -209,5 +209,7 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
         } else if (!doShoot && player.hasShot) {
             player.hasShot = false;
         }
+
+        game.getCamera().setPos(transform.transform2D.position());
     });
 }

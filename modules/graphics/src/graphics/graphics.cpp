@@ -232,3 +232,7 @@ void detail::Graphics::addComponentSerialisers (component::EntitySerialiser& ser
     serialiser.addComponentSerialiser<graphics::Model2D>("Model2D");
     //serialiser.addComponentSerialiser<graphics::GlobalTransform2D>("GlobalTransform2D");
 }
+
+void detail::Graphics::addComponents (component::ComponentManager& manager) {
+    manager.addComponent<graphics::Model2D>();
+}

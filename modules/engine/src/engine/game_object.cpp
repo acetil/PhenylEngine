@@ -233,7 +233,7 @@ void detail::GameObject::setSerialiser (component::EntitySerialiser* serialiser)
 }
 
 void detail::GameObject::addDefaultSerialisers () {
-    serialiser->addComponentSerialiser<EntityTypeComponent>("EntityType", [](const EntityTypeComponent& comp) -> util::DataValue {
+   /* serialiser->addComponentSerialiser<EntityTypeComponent>("EntityType", [](const EntityTypeComponent& comp) -> util::DataValue {
         return (util::DataValue)comp.typeId;
     }, [](const util::DataValue& val) -> util::Optional<EntityTypeComponent> {
         if (val.is<std::string>()) {
@@ -257,7 +257,7 @@ void detail::GameObject::addDefaultSerialisers () {
         return controller.thenMap([](EntityController* controller) {
             return EntityControllerComponent{controller};
         });
-    });
+    });*/
 }
 
 void detail::GameObject::registerEntityController (std::unique_ptr<EntityController> controller) {

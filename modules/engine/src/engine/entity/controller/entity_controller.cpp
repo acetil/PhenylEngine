@@ -40,10 +40,10 @@ void game::controlEntitiesPrePhysics (component::EntityComponentManager& manager
         auto view = manager.view(id);
         controller.get().controlEntityPrePhysics(view, gameView);
     }*/
-    manager.each<EntityControllerComponent>([&gameView] (component::IterInfo& info, EntityControllerComponent& controller) {
+    /*manager.each<EntityControllerComponent>([&gameView] (component::IterInfo& info, EntityControllerComponent& controller) {
         auto view = info.manager().view(info.id());
         controller.get().controlEntityPrePhysics(view, gameView);
-    });
+    });*/
 }
 
 void game::controlEntitiesPostPhysics (component::EntityComponentManager& manager, view::GameView& gameView, const event::EventBus::SharedPtr& bus) {
@@ -51,10 +51,10 @@ void game::controlEntitiesPostPhysics (component::EntityComponentManager& manage
         auto view = manager.view(id);
         controller.get().controlEntityPostPhysics(view, gameView);
     }*/
-    manager.each<EntityControllerComponent>([&gameView] (component::IterInfo& info, EntityControllerComponent& controller) {
+    /*manager.each<EntityControllerComponent>([&gameView] (component::IterInfo& info, EntityControllerComponent& controller) {
         auto view = info.manager().view(info.id());
         controller.get().controlEntityPostPhysics(view, gameView);
-    });
+    });*/
 }
 
 void game::controlOnCollision (event::EntityCollisionEvent& collisionEvent) {

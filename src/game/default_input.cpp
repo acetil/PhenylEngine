@@ -24,12 +24,12 @@ void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::Share
     auto debugKey = gameInput.mapInput("debug_console", "key_f12");
     auto stepKey = gameInput.mapInput("debug_step", "key_f7");
 
-    gameInput.addInputEvent(upKey, event::PlayerMovementChangeEvent(0, FORCE_COMPONENT), event::PlayerMovementChangeEvent(0, -FORCE_COMPONENT));
-    gameInput.addInputEvent(downKey, event::PlayerMovementChangeEvent(0, -FORCE_COMPONENT), event::PlayerMovementChangeEvent(0, FORCE_COMPONENT));
-    gameInput.addInputEvent(leftKey, event::PlayerMovementChangeEvent(-FORCE_COMPONENT, 0), event::PlayerMovementChangeEvent(FORCE_COMPONENT, 0));
-    gameInput.addInputEvent(rightKey, event::PlayerMovementChangeEvent(FORCE_COMPONENT, 0), event::PlayerMovementChangeEvent(-FORCE_COMPONENT, 0));
+    //gameInput.addInputEvent(upKey, event::PlayerMovementChangeEvent(0, FORCE_COMPONENT), event::PlayerMovementChangeEvent(0, -FORCE_COMPONENT));
+    //gameInput.addInputEvent(downKey, event::PlayerMovementChangeEvent(0, -FORCE_COMPONENT), event::PlayerMovementChangeEvent(0, FORCE_COMPONENT));
+    //gameInput.addInputEvent(leftKey, event::PlayerMovementChangeEvent(-FORCE_COMPONENT, 0), event::PlayerMovementChangeEvent(FORCE_COMPONENT, 0));
+    //gameInput.addInputEvent(rightKey, event::PlayerMovementChangeEvent(FORCE_COMPONENT, 0), event::PlayerMovementChangeEvent(-FORCE_COMPONENT, 0));
 
-    gameInput.addInputEvent(shootKey, event::PlayerShootChangeEvent(true), event::PlayerShootChangeEvent(false));
+    //gameInput.addInputEvent(shootKey, event::PlayerShootChangeEvent(true), event::PlayerShootChangeEvent(false));
 
     gameInput.addInputEvent(debugKey, game::EmptyEventAction(), util::DebugConsoleEvent{eventBus});
     gameInput.addInputEvent(stepKey, game::EmptyEventAction(), event::DebugStepEvent{.status=event::DebugStepStatus::DO_STEP});

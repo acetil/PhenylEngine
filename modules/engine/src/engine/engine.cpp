@@ -30,6 +30,7 @@ private:
     std::unique_ptr<physics::IPhysics> physicsObj;
     void addEventHandlers ();
     void addDefaultSerialisers ();
+    void addComponents ();
 public:
     Engine ();
     ~Engine();
@@ -93,7 +94,6 @@ engine::detail::Engine::Engine () : componentManager{256}{
     eventBus = event::EventBus::NewSharedPtr();
     entitySerialiser = std::make_unique<component::EntitySerialiser>();
     physicsObj = physics::makeDefaultPhysics();
-    physicsObj->addComponents(componentManager);
     addEventHandlers();
 
     auto gameObj = gameObjHolder.getGameObject();
@@ -101,6 +101,8 @@ engine::detail::Engine::Engine () : componentManager{256}{
 
     gameObj.setEntityComponentManager(&componentManager);
     gameObj.setSerialiser(entitySerialiser.get());
+
+    addComponents();
 
     addDefaultSerialisers();
     gameObj.addDefaultSerialisers();
@@ -184,4 +186,10 @@ void detail::Engine::updateEntityPosition (float deltaTime) {
 
 void detail::Engine::debugRender () {
     physicsObj->debugRender(getComponentManager());
+}
+
+void detail::Engine::addComponents () {
+    componentManager.addComponent<common::GlobalTransform2D>();
+    physicsObj->addComponents(componentManager);
+    graphicsHolder.tempGetGraphics()->addComponents(componentManager);
 }
