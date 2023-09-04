@@ -121,7 +121,9 @@ namespace component::detail {
         template <typename T>
         inline void assertType () {
             // TODO: insert ifndef
+#ifndef NDEBUG
             assertTypeIndex(meta::type_index<T>(), typeid(T).name());
+#endif
         }
 
         std::byte* tryInsert (EntityId id);
@@ -144,6 +146,8 @@ namespace component::detail {
         void deactivate (EntityId id);
 
         friend class component::ComponentManager;
+        template <typename ...Args>
+        friend class QueryCursor;
     protected:
         std::unique_ptr<ComponentSignalHandler<OnInsertUntyped>> insertHandler{};
         std::unique_ptr<ComponentSignalHandler<OnStatusChangeUntyped>> statusChangedHandler{};
@@ -229,7 +233,16 @@ namespace component::detail {
         void clear ();
 
         bool setParent (ComponentSet* parentSet);
-        ComponentSet* getParent () const;
+        ComponentSet* getParent () const {
+            return parent;
+        }
+        ComponentSet* getChildren () const {
+            return children;
+        }
+        ComponentSet* getNextChild () const {
+            return nextChild;
+        }
+
         void addChild (ComponentSet* child);
         void removeChild (ComponentSet* child);
         std::size_t getHierachyDepth () const;
@@ -242,7 +255,23 @@ namespace component::detail {
         void defer ();
         void deferEnd ();
 
-        [[nodiscard]] std::size_t size () const;
+        [[nodiscard]] std::size_t totalSize () const {
+            return dataSize + inheritedSize;
+        }
+
+        std::size_t size () const {
+            return dataSize;
+        }
+
+        std::byte* getAtIndex (std::size_t index) const {
+            assert(index < size());
+            return data.get() + compSize * index;
+        }
+
+        EntityId idAtIndex (std::size_t index) const {
+            assert(index < ids.size());
+            return ids[index];
+        }
     };
 
     template <typename T>

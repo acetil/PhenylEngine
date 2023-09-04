@@ -6,7 +6,7 @@ namespace component {
     namespace detail {
         class ComponentSet;
         class EntityIdList;
-        class BasicComponentManager;
+        class BasicManager;
         class RelationshipManager;
     }
 
@@ -33,7 +33,7 @@ namespace component {
         friend class ComponentManager;
         friend class detail::ComponentSet;
         friend class detail::EntityIdList;
-        friend class detail::BasicComponentManager;
+        friend class detail::BasicManager;
         friend class detail::RelationshipManager;
     };
 }

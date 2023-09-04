@@ -174,7 +174,14 @@ void playerUpdate (component::ComponentManager& manager, game::GameInput& input,
 
     glm::vec2 worldCursorPos = object.getCamera().getWorldPos(cursorPos);
 
-    manager.each<Player, common::GlobalTransform2D, physics::RigidBody2D>([forceVec, worldCursorPos] (component::IterInfo& info, Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
+    /*manager.each<Player, common::GlobalTransform2D, physics::RigidBody2D>([forceVec, worldCursorPos] (component::IterInfo& info, Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
+        body.applyForce(forceVec * body.getMass());
+
+        auto disp = worldCursorPos - transform.transform2D.position();
+        auto rot = atan2(disp.y, disp.x);
+        transform.transform2D.setRotation(rot);
+    });*/
+    manager.query<Player, common::GlobalTransform2D, physics::RigidBody2D>().each([forceVec, worldCursorPos] (component::Entity entity, Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
         body.applyForce(forceVec * body.getMass());
 
         auto disp = worldCursorPos - transform.transform2D.position();
@@ -187,7 +194,7 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
     glm::vec2 worldCursorPos = game.getCamera().getWorldPos(cursorPos);
     bool doShoot = input.isDown(KeyShoot);
 
-    manager.each<Player, common::GlobalTransform2D>([doShoot, &game] (component::IterInfo& info, Player& player, common::GlobalTransform2D& transform) {
+    manager.query<Player, common::GlobalTransform2D>().each([doShoot, &game] (component::Entity entity, Player& player, common::GlobalTransform2D& transform) {
         if (doShoot && !player.hasShot) {
             auto rot = transform.transform2D.rotationAngle();
 
@@ -197,13 +204,6 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
 
             auto bulletView = game.createNewEntityInstance("bullet_entity");
 
-            /*bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (component::IterInfo& info, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
-                transform.transform2D
-                    .setPosition(pos)
-                    .setRotation(rot);
-
-                body.applyImpulse(bulletVel * body.getMass());
-            });*/
             bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
                 transform.transform2D
                          .setPosition(pos)

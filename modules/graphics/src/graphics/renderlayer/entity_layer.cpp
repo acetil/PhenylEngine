@@ -105,7 +105,7 @@ static void bufferPosData (const component::EntityComponentManager& manager, Buf
             buffer.pushData(transform.transform2D.apply(i));
         }
     }*/
-    manager.each<common::GlobalTransform2D, Model2D>([&buffer] (auto& info, const common::GlobalTransform2D& transform, const Model2D& model) {
+    manager.query<common::GlobalTransform2D, Model2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const Model2D& model) {
         for (auto i : model.positionData) {
             buffer.pushData(transform.transform2D.apply(i));
         }
@@ -116,7 +116,7 @@ static void bufferUvData (const component::EntityComponentManager& manager, Buff
     /*for (const auto& model : manager.iterate<Model2D>()) {
         buffer.pushData(model.uvData.begin(), model.uvData.end());
     }*/
-    manager.each<Model2D>([&buffer] (auto& info, const Model2D& model) {
+    manager.query<Model2D>().each([&buffer] (auto info, const Model2D& model) {
         buffer.pushData(model.uvData.begin(), model.uvData.end());
     });
 }

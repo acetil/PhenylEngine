@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entity_id.h"
-#include "detail/basic_manager.h"
+#include "component/detail/managers/basic_manager.h"
 
 namespace component {
     class Entity;
@@ -13,11 +13,11 @@ namespace component {
     class ConstEntity {
     private:
         EntityId entityId;
-        const detail::BasicComponentManager* compManager;
-        ConstEntity (EntityId id, const detail::BasicComponentManager* compManager) : entityId{id}, compManager{compManager} {}
-        //ConstEntity (EntityId id, const ComponentManager* compManager) : entityId{id}, compManager{(const detail::BasicComponentManager*)compManager} {}
+        const detail::BasicManager* compManager;
+        ConstEntity (EntityId id, const detail::BasicManager* compManager) : entityId{id}, compManager{compManager} {}
+        //ConstEntity (EntityId id, const ComponentManager* compManager) : entityId{id}, compManager{(const detail::BasicManager*)compManager} {}
         friend class ComponentManager;
-        friend class detail::BasicComponentManager;
+        friend class detail::BasicManager;
         friend class Entity;
     public:
         [[nodiscard]] EntityId id () const {
@@ -29,7 +29,7 @@ namespace component {
         }
 
         [[nodiscard]] ConstEntity parent () const {
-            return compManager->_view(compManager->_parent(entityId));
+            return compManager->_entity(compManager->_parent(entityId));
         }
 
         template <typename T>
@@ -72,11 +72,11 @@ namespace component {
     class Entity {
     private:
         EntityId entityId;
-        detail::BasicComponentManager* compManager;
-        Entity (EntityId id, detail::BasicComponentManager* compManager) : entityId{id}, compManager{compManager} {}
-        //Entity (EntityId id, ComponentManager* compManager) : entityId{id}, compManager{(detail::BasicComponentManager*)compManager} {}
+        detail::BasicManager* compManager;
+        Entity (EntityId id, detail::BasicManager* compManager) : entityId{id}, compManager{compManager} {}
+        //Entity (EntityId id, ComponentManager* compManager) : entityId{id}, compManager{(detail::BasicManager*)compManager} {}
         friend class ComponentManager;
-        friend class detail::BasicComponentManager;
+        friend class detail::BasicManager;
     public:
         Entity () : entityId{}, compManager{nullptr} {}
 
@@ -93,11 +93,11 @@ namespace component {
         }
 
         Entity parent () {
-            return compManager->_view(compManager->_parent(entityId));
+            return compManager->_entity(compManager->_parent(entityId));
         }
 
         [[nodiscard]] ConstEntity parent () const {
-            return compManager->_view(compManager->_parent(entityId));
+            return compManager->_entity(compManager->_parent(entityId));
         }
 
         template <typename T>

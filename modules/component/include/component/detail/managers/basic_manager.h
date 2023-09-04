@@ -3,27 +3,28 @@
 #include "component/forward.h"
 #include "component/entity_id.h"
 
-#include "component_utils.h"
-#include "component_set.h"
-#include "entity_id_list.h"
-#include "signal_handler.h"
-#include "relationships.h"
+#include "component/detail/component_utils.h"
+#include "component/detail/component_set.h"
+#include "component/detail/entity_id_list.h"
+#include "component/detail/signal_handler.h"
+#include "component/detail/relationships.h"
 
 #include "util/map.h"
 #include "util/meta.h"
 #include "util/optional.h"
 
 namespace component::detail {
-    class BasicComponentManager {
+    class BasicManager {
     protected:
         EntityIdList idList;
         util::Map<std::size_t, std::unique_ptr<ComponentSet>> components;
+        util::Map<std::size_t, std::unique_ptr<detail::SignalHandlerListBase>> signalHandlers;
         std::size_t deferCount{0};
         std::vector<EntityId> deferredDeletions{};
-        std::vector<std::pair<std::function<void(BasicComponentManager*, EntityId)>, EntityId>> deferredApplys;
+        std::vector<std::pair<std::function<void(BasicManager*, EntityId)>, EntityId>> deferredApplys;
         RelationshipManager relationships;
 
-        explicit BasicComponentManager (std::size_t startCapacity) : idList{startCapacity}, components{}, relationships{startCapacity} {}
+        explicit BasicManager (std::size_t startCapacity) : idList{startCapacity}, components{}, relationships{startCapacity} {}
 
         void removeInt (EntityId id, bool updateParent) {
             auto curr = relationships.entityChildren(id);
@@ -48,6 +49,37 @@ namespace component::detail {
             if (tupleAllNonNull<Args...>(compTup)) {
                 fn((*std::get<Args*>(compTup))...);
             }
+        }
+
+        void onDeferBegin () {
+            for (auto [k, v] : signalHandlers.kv()) {
+                v->defer();
+            }
+
+            for (auto [k, v] : components.kv()) {
+                v->defer();
+            }
+        }
+
+        void onDeferEnd () {
+            for (auto [k, v] : components.kv()) {
+                v->deferEnd();
+            }
+
+            for (auto [k, v] : signalHandlers.kv()) {
+                v->deferEnd(asManager());
+            }
+
+            for (auto& [f, id] : deferredApplys) {
+                f(this, id);
+            }
+
+            for (auto i : deferredDeletions) {
+                _remove(i);
+            }
+
+            deferredApplys.clear();
+            deferredDeletions.clear();
         }
 
     public:
@@ -187,7 +219,7 @@ namespace component::detail {
                 return;
             }
 
-            auto applyFn = [fn=std::move(fn)] (BasicComponentManager* manager, EntityId id) {
+            auto applyFn = [fn=std::move(fn)] (BasicManager* manager, EntityId id) {
                 manager->applyNow<Args...>(fn, id);
             };
             deferredApplys.emplace_back(std::move(applyFn), id);
@@ -204,6 +236,19 @@ namespace component::detail {
             return relationships.parent(id);
         }
 
+        void _defer () {
+            if (deferCount++ == 0) {
+                onDeferBegin();
+            }
+        }
+
+        void _deferEnd () {
+            if (--deferCount == 0) {
+                onDeferEnd();
+            }
+        }
+
+
         ComponentManager* asManager () {
             return (ComponentManager*)this;
         }
@@ -212,8 +257,8 @@ namespace component::detail {
             return (ComponentManager*)this;
         }
 
-        Entity _view (EntityId id);
-        [[nodiscard]] ConstEntity _view (EntityId id) const;
+        Entity _entity (EntityId id);
+        [[nodiscard]] ConstEntity _entity (EntityId id) const;
 
         RelationshipManager& getRelationshipManager () {
             return relationships;

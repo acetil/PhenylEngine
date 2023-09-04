@@ -113,80 +113,81 @@ static void testCompManager () {
     e4.insert<Test1>(Test1{9});
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo:");
-    manager.each<Foo>([] (component::IterInfo& info, Foo& foo) {
-        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}", info.id().value(), foo.a);
+    manager.query<Foo>().each([] (component::Entity entity, Foo& foo) {
+        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}", entity.id().value(), foo.a);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Bar:");
-    manager.each<Bar>([] (component::IterInfo& info, Bar& bar) {
-        component::logging::log(LEVEL_DEBUG, "{} Bar: a={}, b={}", info.id().value(), bar.a, bar.b);
+    manager.query<Bar>().each([] (component::Entity entity, Bar& bar) {
+        component::logging::log(LEVEL_DEBUG, "{} Bar: a={}, b={}", entity.id().value(), bar.a, bar.b);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Bar2:");
-    manager.each<Bar2>([] (component::IterInfo& info, Bar2& bar2) {
-        component::logging::log(LEVEL_DEBUG, "{} Bar2: a={}, s=\"{}\"", info.id().value(), bar2.a, bar2.s);
+    manager.query<Bar2>().each([] (component::Entity entity, Bar2& bar2) {
+        component::logging::log(LEVEL_DEBUG, "{} Bar2: a={}, s=\"{}\"", entity.id().value(), bar2.a, bar2.s);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Baz:");
-    manager.each<Baz>([] (component::IterInfo& info, Baz& baz) {
-        component::logging::log(LEVEL_DEBUG, "{} Baz: a={}, b={}, c=\'{}\'", info.id().value(), baz.a, baz.b, baz.c);
+    manager.query<Baz>().each([] (component::Entity entity, Baz& baz) {
+        component::logging::log(LEVEL_DEBUG, "{} Baz: a={}, b={}, c=\'{}\'", entity.id().value(), baz.a, baz.b, baz.c);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Test:");
-    manager.each<Test>([] (component::IterInfo& info, Test& test) {
-        component::logging::log(LEVEL_DEBUG, "{} Test: d={}", info.id().value(), test.d);
+    manager.query<Test>().each([] (component::Entity entity, Test& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test: d={}", entity.id().value(), test.d);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through TestBase:");
-    manager.each<TestBase>([] (component::IterInfo& info, TestBase& test) {
-        component::logging::log(LEVEL_DEBUG, "{} TestBase: getVal()={}", info.id().value(), test.getVal());
+    manager.query<TestBase>().each([] (component::Entity entity, TestBase& test) {
+        component::logging::log(LEVEL_DEBUG, "{} TestBase: getVal()={}", entity.id().value(), test.getVal());
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Test2:");
-    manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
-        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
+    manager.query<Test2>().each([] (component::Entity entity, Test2& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", entity.id().value(), test.f);
     });
 
     e5.erase<Test>();
 
     component::logging::log(LEVEL_DEBUG, "Looping through Test2 after erase:");
-    manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
-        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
+    manager.query<Test2>().each([] (component::Entity entity, Test2& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", entity.id().value(), test.f);
     });
 
     e1.set(Foo{19});
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo, Test:");
-    manager.each<Foo, Test>([] (component::IterInfo& info, Foo& foo, Test& test) {
-        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}, Test: d={}", info.id().value(), foo.a, test.d);
+    manager.query<Foo, Test>().each([] (component::Entity entity, Foo& foo, Test& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}, Test: d={}", entity.id().value(), foo.a, test.d);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Bar, Test:");
-    manager.each<Baz, Test>([] (component::IterInfo& info, Bar& baz, Test& test) {
-        component::logging::log(LEVEL_DEBUG, "{} Baz: a={}, b={}, Test: d={}", info.id().value(), baz.a, baz.b, test.d);
+    manager.query<Baz, Test>().each([] (component::Entity entity, Bar& baz, Test& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Baz: a={}, b={}, Test: d={}", entity.id().value(), baz.a, baz.b, test.d);
     });
 
     e5.set(Test{8});
 
     component::logging::log(LEVEL_DEBUG, "Looping through Test2 after add back:");
-    manager.each<Test2>([] (component::IterInfo& info, Test2& test) {
-        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", info.id().value(), test.f);
+    manager.query<Test2>().each([] (component::Entity entity, Test2& test) {
+        component::logging::log(LEVEL_DEBUG, "{} Test2: f={}", entity.id().value(), test.f);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo pairs:");
-    manager.eachPair<Foo>([] (component::ComponentManager::Bundle<Foo> e1, component::ComponentManager::Bundle<Foo> e2) {
-        auto& [info1, foo1] = e1;
-        auto& [info2, foo2] = e2;
+    manager.query<Foo>().pairs([] (component::QueryBundle<Foo> e1, component::QueryBundle<Foo> e2) {
+        //auto& [info1, foo1] = e1;
 
-        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}; {} Foo: a={}", info1.id().value(), foo1.a, info2.id().value(), foo2.a);
+        //auto& [info2, foo2] = e2;
+
+        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}; {} Foo: a={}", e1.entity().id().value(), e1.get<Foo>().a, e2.entity().id().value(), e2.get<Foo>().a);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Test pairs:");
-    manager.eachPair<Test>([] (component::ComponentManager::Bundle<Test> e1, component::ComponentManager::Bundle<Test> e2) {
-        auto& [info1, test1] = e1;
-        auto& [info2, test2] = e2;
+    manager.query<Test>().pairs([] (component::QueryBundle<Test> e1, component::QueryBundle<Test> e2) {
+        //auto& [info1, test1] = e1;
+        //auto& [info2, test2] = e2;
 
-        component::logging::log(LEVEL_DEBUG, "{} Test: d={}; {} Test: d={}", info1.id().value(), test1.d, info2.id().value(), test2.d);
+        component::logging::log(LEVEL_DEBUG, "{} Test: d={}; {} Test: d={}", e1.entity().id().value(), e1.get<Test>().d, e2.entity().id().value(), e2.get<Test>().d);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through root entities:");
@@ -224,13 +225,13 @@ static void testCompManager () {
     e4.insert<Foo>(Foo{10});
 
     component::logging::log(LEVEL_DEBUG, "Looping through Foo:");
-    manager.each<Foo>([] (component::IterInfo& info, Foo& foo) {
-        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}", info.id().value(), foo.a);
+    manager.query<Foo>().each([] (component::Entity entity, Foo& foo) {
+        component::logging::log(LEVEL_DEBUG, "{} Foo: a={}", entity.id().value(), foo.a);
     });
 
     component::logging::log(LEVEL_DEBUG, "Looping through Bar:");
-    manager.each<Bar>([] (component::IterInfo& info, Bar& bar) {
-        component::logging::log(LEVEL_DEBUG, "{} Bar: a={}, b={}", info.id().value(), bar.a, bar.b);
+    manager.query<Bar>().each([] (component::Entity entity, Bar& bar) {
+        component::logging::log(LEVEL_DEBUG, "{} Bar: a={}, b={}", entity.id().value(), bar.a, bar.b);
     });
 
     e2.remove();

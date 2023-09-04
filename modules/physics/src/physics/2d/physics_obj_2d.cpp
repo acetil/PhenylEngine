@@ -49,26 +49,30 @@ void PhysicsObject2D::addComponentSerialisers (component::EntitySerialiser& seri
 }
 
 void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
-    componentManager.each<common::GlobalTransform2D, RigidBody2D>([deltaTime] (component::IterInfo& info, common::GlobalTransform2D& transform, RigidBody2D& body) {
+    componentManager.query<common::GlobalTransform2D, RigidBody2D>().each([deltaTime] (component::Entity entity, common::GlobalTransform2D& transform, RigidBody2D& body) {
         body.doMotion(transform, deltaTime);
     });
 }
 
 void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView, float deltaTime) {
-    compManager.each<common::GlobalTransform2D, RigidBody2D, ColliderComp2D>([] (auto& info, const common::GlobalTransform2D& transform, const RigidBody2D& body, ColliderComp2D& collider) {
+    compManager.query<common::GlobalTransform2D, RigidBody2D, ColliderComp2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, ColliderComp2D& collider) {
         collider.syncUpdates(body, transform.transform2D.position());
     });
 
-    compManager.each<common::GlobalTransform2D, BoxCollider2D>([] (auto& info, const common::GlobalTransform2D& transform, BoxCollider2D& collider) {
+    compManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (auto info, const common::GlobalTransform2D& transform, BoxCollider2D& collider) {
         collider.applyFrameTransform(transform.transform2D.rotMatrix());
     });
 
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
     std::vector<Constraint2D> constraints;
-    compManager.eachPair<BoxCollider2D>([&constraints, &events, deltaTime] (component::ComponentManager::Bundle<BoxCollider2D> boxBundle1, component::ComponentManager::Bundle<BoxCollider2D> boxBundle2) {
-        auto [info1, box1] = boxBundle1;
-        auto [info2, box2] = boxBundle2;
-        auto& manager = info1.manager();
+    compManager.query<BoxCollider2D>().pairs([&constraints, &events, deltaTime] (component::QueryBundle<BoxCollider2D> boxBundle1, component::QueryBundle<BoxCollider2D> boxBundle2) {
+        //auto [info1, box1] = boxBundle1;
+        //auto [info2, box2] = boxBundle2;
+        auto entity1 = boxBundle1.entity();
+        auto entity2 = boxBundle2.entity();
+        auto& box1 = boxBundle1.get<BoxCollider2D>();
+        auto& box2 = boxBundle2.get<BoxCollider2D>();
+        auto& manager = entity1.manager();
         if (!box1.shouldCollide(box2)) {
             return;
         }
@@ -82,12 +86,12 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
                 constraints.push_back(manifold.buildConstraint(&box1, &box2, deltaTime));
 
                 if (box1.layers & box2.mask) {
-                    manager.signal<OnCollision>(info2.id(), info1.id(), (std::uint32_t)(box1.layers & box2.mask));
+                    manager.signal<OnCollision>(entity2.id(), entity1.id(), (std::uint32_t)(box1.layers & box2.mask));
                     //events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
                 }
 
                 if (box2.layers & box1.mask) {
-                    manager.signal<OnCollision>(info1.id(), info2.id(), (std::uint32_t)(box2.layers & box1.mask));
+                    manager.signal<OnCollision>(entity1.id(), entity2.id(), (std::uint32_t)(box2.layers & box1.mask));
                     //events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
                 }
             });
@@ -116,7 +120,7 @@ void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, 
         }
     }
 
-    compManager.each<RigidBody2D, ColliderComp2D>([] (auto& info, RigidBody2D& body, const ColliderComp2D& collider) {
+    compManager.query<RigidBody2D, ColliderComp2D>().each([] (auto info, RigidBody2D& body, const ColliderComp2D& collider) {
         collider.updateBody(body);
     });
 }
@@ -132,7 +136,7 @@ void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventB
 void PhysicsObject2D::debugRender (const component::EntityComponentManager& componentManager) {
     if (debugColliderRender) {
         // Debug render
-        componentManager.each<common::GlobalTransform2D, BoxCollider2D>([] (auto& info, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
+        componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (auto info, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
             auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
             auto pos2 = box.frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
             auto pos3 = box.frameTransform * glm::vec2{1, 1} + transform.transform2D.position();

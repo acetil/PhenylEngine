@@ -1,7 +1,7 @@
 #pragma once
 
 #include "component/forward.h"
-#include "basic_manager.h"
+#include "component/detail/managers/basic_manager.h"
 #include "component/entity.h"
 
 namespace component {
@@ -10,9 +10,9 @@ namespace component {
         class Iterator {
         private:
             detail::RelationshipManager::ChildIterator it;
-            detail::BasicComponentManager* manager;
+            detail::BasicManager* manager;
 
-            Iterator (detail::BasicComponentManager* manager, detail::RelationshipManager::ChildIterator it) : manager{manager}, it{it} {}
+            Iterator (detail::BasicManager* manager, detail::RelationshipManager::ChildIterator it) : manager{manager}, it{it} {}
             friend ChildrenView;
         public:
             using value_type = Entity;
@@ -20,7 +20,7 @@ namespace component {
             Iterator () : it{}, manager{nullptr} {}
 
             value_type operator* () const {
-                return manager->_view(*it);
+                return manager->_entity(*it);
             }
 
             Iterator& operator++ () {
@@ -42,9 +42,9 @@ namespace component {
         class ConstIterator {
         private:
             detail::RelationshipManager::ChildIterator it;
-            const detail::BasicComponentManager* manager;
+            const detail::BasicManager* manager;
 
-            ConstIterator (const detail::BasicComponentManager* manager, detail::RelationshipManager::ChildIterator it) : manager{manager}, it{it} {}
+            ConstIterator (const detail::BasicManager* manager, detail::RelationshipManager::ChildIterator it) : manager{manager}, it{it} {}
 
             friend ChildrenView;
         public:
@@ -53,7 +53,7 @@ namespace component {
             ConstIterator () : it{}, manager{nullptr} {}
 
             value_type operator* () const {
-                return manager->_view(*it);
+                return manager->_entity(*it);
             }
 
             ConstIterator& operator++ () {
@@ -73,7 +73,7 @@ namespace component {
         };
 
         EntityId parentId;
-        detail::BasicComponentManager* manager;
+        detail::BasicManager* manager;
 
 
         template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F, std::size_t ...Indexes>
@@ -120,9 +120,9 @@ namespace component {
             }
         }
 
-        ChildrenView (detail::BasicComponentManager* manager, EntityId parent) : manager{manager}, parentId{parent} {}
+        ChildrenView (detail::BasicManager* manager, EntityId parent) : manager{manager}, parentId{parent} {}
         friend ComponentManager;
-        friend detail::BasicComponentManager;
+        friend detail::BasicManager;
         friend Entity;
     public:
         using iterator = Iterator;
@@ -178,11 +178,11 @@ namespace component {
         }
 
         Entity parent () {
-            return manager->_view(parentId);
+            return manager->_entity(parentId);
         }
 
         [[nodiscard]] ConstEntity parent () const {
-            return manager->_view(parentId);
+            return manager->_entity(parentId);
         }
     };
 }

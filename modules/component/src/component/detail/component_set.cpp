@@ -18,6 +18,7 @@ void ComponentSet::guaranteeEntityIndex (std::size_t index) {
 }
 
 std::byte* ComponentSet::getComponentUntyped (EntityId id) const {
+    assert(id.id > 0);
     assert(metadataSet.size() > id.id - 1);
 
     return metadataSet[id.id - 1].data;
@@ -293,10 +294,6 @@ std::size_t ComponentSet::getHierachyDepth () const {
     return hierachyDepth;
 }
 
-ComponentSet* ComponentSet::getParent () const {
-    return parent;
-}
-
 void ComponentSet::addChild (ComponentSet* child) {
     assert(child);
 
@@ -335,10 +332,6 @@ void ComponentSet::removeChild (ComponentSet* child) {
     }
 
     logging::log(LEVEL_ERROR, "Attempted to remove child from component that does not directly parentId that child!");
-}
-
-std::size_t ComponentSet::size () const {
-    return dataSize + inheritedSize;
 }
 
 void ComponentSet::addDependency () {
