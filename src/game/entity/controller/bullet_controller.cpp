@@ -23,8 +23,9 @@ void game::addBulletSignals (component::ComponentManager& manager, component::En
         return val.is<util::DataObject>() ? util::Optional<Bullet>{Bullet{}} : util::Optional<Bullet>{};
     });
 
-    manager.handleSignal<physics::OnCollision, Bullet>([] (const physics::OnCollision& signal, component::IterInfo& info, Bullet& bullet) {
+    manager.handleSignal<physics::OnCollision, Bullet>([] (const physics::OnCollision& signal, component::Entity entity, Bullet& bullet) {
         //info.manager().remove(info.id()); // TODO: queue
-        info.manager().entity(info.id()).remove();
+        //info.manager().entity(info.id()).remove();
+        entity.remove();
     });
 }

@@ -39,26 +39,17 @@ namespace component {
                 return *this;
             }
 
-            /*Instantiator& withChild (EntityId childId) {
-                //manager->reparent(childId, id);
-                entity.addChild(childId);
-
-                return *this;
-            }*/
-
-            Instantiator& withChild (Entity view) {
-                //manager->reparent(entity.id(), id);
-                entity.addChild(view);
+            Instantiator& withChild (Entity child) {
+                entity.addChild(child);
 
                 return *this;
             }
 
             Entity complete () {
                 if (prefabId) {
-                    //manager->prefabs.instantiate(manager, id, prefabId);
                     entity.manager().prefabs.instantiate(entity, prefabId);
                 }
-
+                entity.manager().deferSignalsEnd();
                 return entity;
             }
         };
@@ -106,13 +97,12 @@ namespace component {
         }
 
         [[nodiscard]] Instantiator instantiate (Entity parent) const {
-            //return Instantiator{manager, parent, id};
-            assert(parent);
+            manager->deferSignals();
             return Instantiator{parent.createChild(), id};
         }
 
         [[nodiscard]] Instantiator instantiate () const {
-            //return Instantiator{manager, parent, id};
+            manager->deferSignals();
             return Instantiator{manager->create(), id};
         }
 

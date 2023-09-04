@@ -3,10 +3,10 @@ add_library(component src/component/view/game_view.cpp include/component/compone
         include/component/detail/component_set.h
         include/component/detail/entity_id_list.h
         src/component/detail/component_set.cpp
-        include/component/detail/signal_handler.h
+        include/component/detail/signals/signal_handler.h
         include/component/detail/component_utils.h
         include/component/signals/component_update.h
-        include/component/detail/component_signal_handler.h
+        include/component/detail/signals/component_handler.h
         include/component/prefab.h
         include/component/detail/prefab_list.h
         src/component/detail/prefab_list.cpp
@@ -19,6 +19,10 @@ add_library(component src/component/view/game_view.cpp include/component/compone
         include/component/detail/relationships.h
         include/component/query.h
         include/component/detail/managers/query_manager.h
+        include/component/detail/signals/handler_list.h
+        include/component/detail/typed_set.h
+        include/component/detail/signals/component_handler_base.h
+        include/component/signals/children_update.h
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

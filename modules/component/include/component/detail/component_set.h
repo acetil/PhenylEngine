@@ -9,7 +9,7 @@
 
 #include "component/entity_id.h"
 #include "component/forward.h"
-#include "component_signal_handler.h"
+#include "component/detail/signals/component_handler_base.h"
 
 #include "logging/logging.h"
 
@@ -54,18 +54,12 @@ namespace component::detail {
                 return {.index = EMPTY_INDEX, .metadata = dependencySize, .data = nullptr};
             }
 
-            /*static constexpr Metadata Filled (std::uint32_t index, std::byte* data) {
-                assert(data);
-                return {.index = index, .data = data};
-            }*/
             inline constexpr void fill (std::uint32_t index, std::byte* data) {
-                //assert(empty());
                 this->index = index;
                 this->data = data;
             }
 
             inline constexpr void fillChild (std::byte* data) {
-                //assert(index == EMPTY_INDEX);
                 this->data = data;
                 this->metadata |= CHILD_BIT;
             }
@@ -90,12 +84,10 @@ namespace component::detail {
                 metadata = nonDependencies | ((metadata & METADATA_MASK) - 1);
             }
         };
-        static constexpr std::uint32_t EMPTY_INDEX = -1;
         static constexpr std::size_t RESIZE_FACTOR = 2;
 
-        ComponentManager* manager;
+        detail::BasicManager* manager;
         std::vector<EntityId> ids;
-        //std::vector<std::size_t> indexSet;
         std::vector<Metadata> metadataSet;
 
         std::unique_ptr<std::byte[]> data;
@@ -120,7 +112,6 @@ namespace component::detail {
 
         template <typename T>
         inline void assertType () {
-            // TODO: insert ifndef
 #ifndef NDEBUG
             assertTypeIndex(meta::type_index<T>(), typeid(T).name());
 #endif
@@ -144,10 +135,6 @@ namespace component::detail {
 
         void activate (EntityId id);
         void deactivate (EntityId id);
-
-        friend class component::ComponentManager;
-        template <typename ...Args>
-        friend class QueryCursor;
     protected:
         std::unique_ptr<ComponentSignalHandler<OnInsertUntyped>> insertHandler{};
         std::unique_ptr<ComponentSignalHandler<OnStatusChangeUntyped>> statusChangedHandler{};
@@ -163,7 +150,7 @@ namespace component::detail {
 
         virtual void initPrefab (EntityId id, std::size_t prefabId) = 0;
     public:
-        ComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize);
+        ComponentSet (detail::BasicManager* manager, std::size_t startCapacity, std::size_t compSize);
         virtual ~ComponentSet ();
 
         void guaranteeEntityIndex (std::size_t index);
@@ -198,8 +185,7 @@ namespace component::detail {
             if (comp) {
                 new ((T*)comp) T(std::forward<Args>(args)...);
 
-                IterInfo info{manager, id};
-                insertHandler->handle(info, OnInsertUntyped{comp});
+                insertHandler->handle(manager, id, OnInsertUntyped{comp});
                 return true;
             } else {
                 return false;
@@ -272,172 +258,5 @@ namespace component::detail {
             assert(index < ids.size());
             return ids[index];
         }
-    };
-
-    template <typename T>
-    class TypedComponentSet : public ComponentSet {
-    protected:
-        void assertTypeIndex (std::size_t typeIndex, const char* debugOtherName) const override {
-            if (typeIndex != meta::type_index<T>()) {
-                logging::log(LEVEL_FATAL, "Attempted to access component of type index {} ({}) with type of index {} ()!", meta::type_index<T>(), typeid(T).name(), typeIndex, debugOtherName);
-                std::exit(1);
-            }
-        }
-
-        TypedComponentSignalHandler<T, OnInsertUntyped>& getInsertHandler () {
-            return (TypedComponentSignalHandler<T, OnInsertUntyped>&)*insertHandler;
-        }
-
-        TypedComponentSignalHandler<T, OnStatusChangeUntyped>& getStatusHandler () {
-            return (TypedComponentSignalHandler<T, OnStatusChangeUntyped>&)*statusChangedHandler;
-        }
-
-        TypedComponentSignalHandler<T, OnRemoveUntyped>& getRemoveHandler () {
-            return (TypedComponentSignalHandler<T, OnRemoveUntyped>&)*removeHandler;
-        }
-    public:
-        explicit TypedComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize) : ComponentSet(manager, startCapacity, compSize) {
-            insertHandler = std::make_unique<TypedComponentSignalHandler<T, OnInsertUntyped>>();
-            statusChangedHandler = std::make_unique<TypedComponentSignalHandler<T, OnStatusChangeUntyped>>();
-            removeHandler = std::make_unique<TypedComponentSignalHandler<T, OnRemoveUntyped>>();
-        }
-
-        void addHandler (std::function<void(IterInfo&, const OnInsert<T>&)> handler) {
-            getInsertHandler().addHandler(handler);
-        }
-
-        void addHandler (std::function<void(IterInfo&, const OnStatusChange<T>&)> handler) {
-            getStatusHandler().addHandler(handler);
-        }
-
-        void addHandler (std::function<void(IterInfo&, const OnRemove<T>&)> handler) {
-            getRemoveHandler().addHandler(handler);
-        }
-
-        virtual std::size_t addPrefab (T&& comp) = 0;
-    };
-
-    template <typename T>
-    class ConcreteComponentSet : public TypedComponentSet<T> {
-    private:
-        std::vector<std::pair<T, EntityId>> deferredInsertions{};
-        util::FLVector<T> prefabs;
-    protected:
-        void moveTypedComp (std::byte* dest, std::byte* src) override {
-            *((T*) dest) = std::move(*((T*) src));
-
-            ((T*) src)->~T();
-        }
-
-        void deleteTypedComp (std::byte* comp) override {
-            ((T*) comp)->~T();
-        }
-
-        void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) override {
-            T* destPtr = (T*)dest;
-            T* srcPtr = (T*)src;
-
-            for (std::size_t i = 0; i < len; i++) {
-                new (destPtr) T(std::move(*srcPtr));
-                srcPtr->~T();
-
-                destPtr++;
-                srcPtr++;
-            }
-        }
-
-        void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
-            using std::swap;
-            swap(*((T*)ptr1), *((T*)ptr2));
-        }
-
-        void deferInsertion (std::byte* comp, EntityId id) override {
-            T* compPtr = (T*)comp;
-
-            deferredInsertions.emplace_back(std::move(*compPtr), id);
-        }
-
-        void popDeferredInsertions () override {
-            for (auto& i : deferredInsertions) {
-                ComponentSet::insertComp<T>(i.second, std::move(i.first));
-            }
-
-            deferredInsertions.clear();
-        }
-
-        void initPrefab (EntityId id, std::size_t prefabId) override {
-            assert(prefabs.present(prefabId));
-            ComponentSet::insertComp<T>(id, prefabs[prefabId]);
-        }
-
-    public:
-        explicit ConcreteComponentSet (ComponentManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, sizeof(T)} {
-
-        }
-
-        ~ConcreteComponentSet () override {
-            ComponentSet::clear();
-        }
-
-        std::size_t addPrefab (T&& comp) override {
-            return prefabs.push(std::move(comp));
-        }
-
-        void deletePrefab (std::size_t prefabId) override {
-            assert(prefabs.present(prefabId));
-            prefabs.remove(prefabId);
-        }
-    };
-
-    template <typename T>
-    class AbstractComponentSet : public TypedComponentSet<T> {
-    protected:
-        void moveTypedComp(std::byte *dest, std::byte *src) override {
-            logging::log(LEVEL_FATAL, "Attempted to move comp of abstract component set!");
-            assert(false);
-        }
-
-        void deleteTypedComp(std::byte *comp) override {
-            logging::log(LEVEL_FATAL, "Attempted to delete comp of abstract component set!");
-            assert(false);
-        }
-
-        void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) override {
-            logging::log(LEVEL_FATAL, "Attempted to move all comps of abstract component set!");
-            assert(false);
-        }
-
-        void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
-            logging::log(LEVEL_FATAL, "Attempted to swap comps of abstract component set!");
-            assert(false);
-        }
-
-        void deferInsertion (std::byte* comp, EntityId id) override {
-            logging::log(LEVEL_FATAL, "Attempted to defer insertion of abstract comp!");
-            assert(false);
-        }
-
-        void popDeferredInsertions () override {
-
-        }
-
-        void initPrefab (EntityId id, std::size_t prefabId) override {
-            logging::log(LEVEL_FATAL, "Attempted to init prefab of abstract comp!");
-            assert(false);
-        }
-
-        std::size_t addPrefab (T&& comp) override {
-            logging::log(LEVEL_FATAL, "Attempted to add prefab of abstract comp!");
-            assert(false);
-
-            return -1;
-        }
-
-        void deletePrefab (std::size_t prefabId) override {
-            logging::log(LEVEL_FATAL, "Attempted to remove prefab of abstract comp!");
-            assert(false);
-        }
-    public:
-        explicit AbstractComponentSet (ComponentManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, 0} {}
     };
 }

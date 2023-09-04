@@ -15,8 +15,6 @@ namespace component {
         EntityId entityId;
         const detail::BasicManager* compManager;
         ConstEntity (EntityId id, const detail::BasicManager* compManager) : entityId{id}, compManager{compManager} {}
-        //ConstEntity (EntityId id, const ComponentManager* compManager) : entityId{id}, compManager{(const detail::BasicManager*)compManager} {}
-        friend class ComponentManager;
         friend class detail::BasicManager;
         friend class Entity;
     public:
@@ -74,8 +72,6 @@ namespace component {
         EntityId entityId;
         detail::BasicManager* compManager;
         Entity (EntityId id, detail::BasicManager* compManager) : entityId{id}, compManager{compManager} {}
-        //Entity (EntityId id, ComponentManager* compManager) : entityId{id}, compManager{(detail::BasicManager*)compManager} {}
-        friend class ComponentManager;
         friend class detail::BasicManager;
     public:
         Entity () : entityId{}, compManager{nullptr} {}
@@ -102,7 +98,6 @@ namespace component {
 
         template <typename T>
         util::Optional<T&> get () {
-            //return compManager->_get<T>(entityId);
             if (!exists()) {
                 logging::log(LEVEL_ERROR, "Attempted to get component of invalid entity {}!", entityId.value());
                 return util::NullOpt;
@@ -120,7 +115,6 @@ namespace component {
 
         template <typename T>
         util::Optional<const T&> get () const {
-            //return compManager->_get<T>(entityId);
             if (!exists()) {
                 logging::log(LEVEL_ERROR, "Attempted to get component of invalid entity {}!", entityId.value());
                 return util::NullOpt;
@@ -218,6 +212,16 @@ namespace component {
             compManager->_apply<Args...>(fn, entityId);
         }
 
+        template <typename Signal>
+        void signal (Signal signal) requires (!ComponentSignal<Signal>) {
+            compManager->_signal(entityId, std::move(signal));
+        }
+
+        template <typename Signal, typename ...Args>
+        void signal (Args&&... args) requires (!ComponentSignal<Signal>) {
+            compManager->_signal(entityId, Signal{std::forward<Args>(args)...});
+        }
+
         void remove () {
             if (!exists()) {
                 logging::log(LEVEL_ERROR, "Attempted to remove invalid entity {}!", entityId.value());
@@ -235,10 +239,6 @@ namespace component {
 
             return Entity{compManager->_create(entityId), compManager};
         }
-
-        /*void addChild (EntityId childId) {
-            compManager->_reparent(childId, entityId);
-        }*/
 
         void addChild (Entity child) {
             if (!exists()) {
@@ -279,10 +279,6 @@ namespace component {
 
         ChildrenView children ();
 
-        /*void reparent (EntityId parent) {
-            return compManager->_reparent(entityId, parent);
-        }*/
-
         [[nodiscard]] bool exists () const {
             return compManager->_exists(entityId);
         }
@@ -297,6 +293,8 @@ namespace component {
 
         friend class ComponentManager;
     };
+
+    static Entity Null = Entity{};
 
     inline bool operator== (const Entity& entity1, const Entity& entity2) {
         return &entity1.manager() == &entity2.manager() && entity1.id() == entity2.id();

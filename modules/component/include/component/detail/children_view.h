@@ -3,6 +3,7 @@
 #include "component/forward.h"
 #include "component/detail/managers/basic_manager.h"
 #include "component/entity.h"
+#include "component/query.h"
 
 namespace component {
     class ChildrenView {
@@ -76,46 +77,22 @@ namespace component {
         detail::BasicManager* manager;
 
 
-        template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F, std::size_t ...Indexes>
+        template <typename ...Args, QueryCallback<Args...> F, std::size_t ...Indexes>
         void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, F& fn, std::index_sequence<Indexes...>) {
-            /*auto curr = manager->getRelationship(parentId).children;
-
-            while (curr) {
-                auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(curr)...);
-                if (detail::tupleAllNonNull<Args...>(tup)) {
-                    IterInfo info{manager, curr};
-                    fn(info, *std::get<Indexes>(tup)...);
-                }
-
-                curr = manager->getRelationship(curr).next;
-            }*/
             for (auto i : manager->getRelationshipManager().children(parentId)) {
                 auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(i)...);
                 if (detail::tupleAllNonNull<Args...>(tup)) {
-                    IterInfo info{manager->asManager(), i};
-                    fn(info, *std::get<Indexes>(tup)...);
+                    fn(manager->_entity(i), *std::get<Indexes>(tup)...);
                 }
             }
         }
 
-        template <typename ...Args, meta::callable<void, const IterInfo&, const Args&...> F, std::size_t ...Indexes>
+        template <typename ...Args, ConstQueryCallback<Args...> F, std::size_t ...Indexes>
         void eachInt (std::array<detail::ComponentSet*, sizeof...(Args)>& compSets, F& fn, std::index_sequence<Indexes...>) const {
-            /*auto curr = manager->getRelationship(parentId).children;
-
-            while (curr) {
-                auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(curr)...);
-                if (detail::tupleAllNonNull<Args...>(tup)) {
-                    IterInfo info{manager, curr};
-                    fn(info, *std::get<Indexes>(tup)...);
-                }
-
-                curr = manager->getRelationship(curr).next;
-            }*/
             for (auto i : manager->getRelationshipManager().children(parentId)) {
                 auto tup = std::make_tuple((Args*)compSets[Indexes]->getComponentUntyped(i)...);
                 if (detail::tupleAllNonNull<Args...>(tup)) {
-                    IterInfo info{manager->asManager(), i};
-                    fn(info, *std::get<Indexes>(tup)...);
+                    fn(manager->_entity(i), *std::get<Indexes>(tup)...);
                 }
             }
         }
@@ -151,7 +128,7 @@ namespace component {
             return const_iterator{manager, manager->getRelationshipManager().childrenEnd(parentId)};
         }
 
-        template <typename ...Args, meta::callable<void, IterInfo&, Args&...> F>
+        template <typename ...Args, QueryCallback<Args...> F>
         void each (F fn) {
             auto compSets = std::array{manager->getComponent<Args>()...};
             for (auto i = 0; i < sizeof...(Args); i++) {
@@ -164,7 +141,7 @@ namespace component {
             eachInt<Args...>(compSets, fn, std::make_index_sequence<sizeof...(Args)>{});
         }
 
-        template <typename ...Args, meta::callable<void, const IterInfo&, const Args&...> F>
+        template <typename ...Args, ConstQueryCallback<Args...> F>
         void each (F fn) const {
             auto compSets = std::array{manager->getComponent<Args>()...};
             for (auto i = 0; i < sizeof...(Args); i++) {

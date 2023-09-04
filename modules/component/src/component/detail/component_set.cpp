@@ -1,9 +1,9 @@
 #include "component/detail/component_set.h"
-#include "component/detail/signal_handler.h"
+#include "component/detail/signals/signal_handler.h"
 
 using namespace component::detail;
 
-ComponentSet::ComponentSet (ComponentManager* manager, std::size_t startCapacity, std::size_t compSize) : manager{manager}, ids{}, metadataSet{}, data{compSize != 0 ? std::make_unique<std::byte[]>(startCapacity * compSize) : nullptr},
+ComponentSet::ComponentSet (detail::BasicManager* manager, std::size_t startCapacity, std::size_t compSize) : manager{manager}, ids{}, metadataSet{}, data{compSize != 0 ? std::make_unique<std::byte[]>(startCapacity * compSize) : nullptr},
                                                                                compSize{compSize}, dataSize{0}, allSize{0}, dataCapacity{startCapacity}, hierachyDepth{0} {
     ids.reserve(startCapacity);
     metadataSet.reserve(startCapacity);
@@ -138,8 +138,7 @@ bool ComponentSet::deleteComp (EntityId id) {
     auto compIndex = metadataSet[id.id - 1].index;
     auto* compPtr = data.get() + compSize * compIndex;
     //runDeletionCallbacks(compPtr, id);
-    IterInfo info{manager, id};
-    removeHandler->handle(info, OnRemoveUntyped{compPtr});
+    removeHandler->handle(manager, id, OnRemoveUntyped{compPtr});
 
     if (compIndex == allSize - 1) {
         deleteTypedComp(compPtr);
@@ -394,13 +393,11 @@ void ComponentSet::activate (component::EntityId id) {
         parent->onChildUpdate(id, metadataSet[id.id - 1].data);
     }
 
-    IterInfo info{manager, id};
-    statusChangedHandler->handle(info, OnStatusChangeUntyped{metadataSet[id.id - 1].data, true});
+    statusChangedHandler->handle(manager, id, OnStatusChangeUntyped{metadataSet[id.id - 1].data, true});
 }
 
 void ComponentSet::deactivate (component::EntityId id) {
-    IterInfo info{manager, id};
-    statusChangedHandler->handle(info, OnStatusChangeUntyped{metadataSet[id.id - 1].data, false});
+    statusChangedHandler->handle(manager, id, OnStatusChangeUntyped{metadataSet[id.id - 1].data, false});
 
     if (metadataSet[id.id - 1].index == dataSize - 1) {
         metadataSet[id.id - 1].move(dataSize - 1, nullptr);

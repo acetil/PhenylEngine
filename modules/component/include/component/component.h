@@ -9,9 +9,10 @@
 #include "forward.h"
 #include "entity_id.h"
 #include "detail/component_set.h"
+#include "detail/typed_set.h"
 #include "detail/entity_id_list.h"
 #include "detail/prefab_list.h"
-#include "detail/signal_handler.h"
+#include "component/detail/signals/signal_handler.h"
 #include "detail/component_utils.h"
 #include "component/detail/managers/basic_manager.h"
 #include "component/detail/managers/query_manager.h"
@@ -28,94 +29,94 @@ namespace component {
     class Prefab;
     class PrefabBuilder;
 
-    class ComponentManager : private detail::QueryableManager {
+    class ComponentManager : protected detail::QueryableManager {
     private:
-        class EntityViewIterator {
+        class EntityIterator {
         private:
             detail::EntityIdList::const_iterator it;
             ComponentManager* compManager;
-            EntityViewIterator (ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
+            EntityIterator (ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
         public:
             using value_type = Entity;
             using reference = void;
             using pointer = void;
             using difference_type = detail::EntityIdList::const_iterator::difference_type;
 
-            EntityViewIterator () : compManager{nullptr}, it{} {};
+            EntityIterator () : compManager{nullptr}, it{} {};
 
             value_type operator* () const {
                 return compManager->entity(*it);
             }
 
-            EntityViewIterator& operator++ () {
+            EntityIterator& operator++ () {
                 ++it;
                 return *this;
             }
-            EntityViewIterator operator++ (int) {
+            EntityIterator operator++ (int) {
                 auto copy = *this;
                 ++*this;
 
                 return copy;
             }
 
-            EntityViewIterator& operator-- () {
+            EntityIterator& operator-- () {
                 --it;
                 return *this;
             }
-            EntityViewIterator operator-- (int) {
+            EntityIterator operator-- (int) {
                 auto copy = *this;
                 --*this;
 
                 return copy;
             }
 
-            bool operator== (const EntityViewIterator& other) const {
+            bool operator== (const EntityIterator& other) const {
                 return it == other.it;
             }
 
             friend class ComponentManager;
         };
 
-        class ConstEntityViewIterator {
+        class ConstEntityView {
         private:
             detail::EntityIdList::const_iterator it;
             const ComponentManager* compManager;
-            ConstEntityViewIterator (const ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
+            ConstEntityView (const ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
         public:
             using value_type = ConstEntity;
             using reference = void;
             using pointer = void;
             using difference_type = detail::EntityIdList::const_iterator::difference_type;
 
-            ConstEntityViewIterator () : compManager{nullptr}, it{} {};
+            ConstEntityView () : compManager{nullptr}, it{} {};
 
             value_type operator* () const {
                 return compManager->entity(*it);
             }
 
-            ConstEntityViewIterator& operator++ () {
+            ConstEntityView& operator++ () {
                 ++it;
                 return *this;
             }
-            ConstEntityViewIterator operator++ (int) {
+            ConstEntityView operator++ (int) {
                 auto copy = *this;
                 ++*this;
 
                 return copy;
             }
 
-            ConstEntityViewIterator& operator-- () {
+            ConstEntityView& operator-- () {
                 --it;
                 return *this;
             }
-            ConstEntityViewIterator operator-- (int) {
+            ConstEntityView operator-- (int) {
                 auto copy = *this;
                 --*this;
 
                 return copy;
             }
 
-            bool operator== (const ConstEntityViewIterator& other) const {
+            bool operator== (const ConstEntityView& other) const {
                 return it == other.it;
             }
 
@@ -127,16 +128,24 @@ namespace component {
 
         template <typename T>
         std::unique_ptr<detail::ComponentSet> createComponent () requires (!std::is_abstract_v<T>) {
-            auto component = std::make_unique<detail::ConcreteComponentSet<T>>(this, currStartCapacity);
+            auto component = std::make_unique<detail::ConcreteComponentSet<T>>(static_cast<detail::BasicManager*>(this), currStartCapacity);
             component->guaranteeEntityIndex(idList.maxIndex());
+
+            if (deferCount) {
+                component->defer();
+            }
 
             return component;
         }
 
         template <typename T>
         std::unique_ptr<detail::ComponentSet> createComponent () requires (std::is_abstract_v<T>) {
-            auto component = std::make_unique<detail::AbstractComponentSet<T>>(this, currStartCapacity);
+            auto component = std::make_unique<detail::AbstractComponentSet<T>>(static_cast<detail::BasicManager*>(this), currStartCapacity);
             component->guaranteeEntityIndex(idList.maxIndex());
+
+            if (deferCount) {
+                component->defer();
+            }
 
             return component;
         }
@@ -149,8 +158,12 @@ namespace component {
             }
 
             auto handlerList = std::make_unique<detail::SignalHandlerList<T>>();
-            auto* ptr = handlerList.get();
+            detail::SignalHandlerList<T>* ptr = handlerList.get();
             signalHandlers[typeIndex] = std::move(handlerList);
+
+            if (deferCount || signalDeferCount) {
+                ptr->defer();
+            }
 
             return ptr;
         }
@@ -159,8 +172,8 @@ namespace component {
         friend class Prefab;
         friend class ChildrenView;
     public:
-        using iterator = EntityViewIterator;
-        using const_iterator = ConstEntityViewIterator;
+        using iterator = EntityIterator;
+        using const_iterator = ConstEntityView;
 
         static constexpr std::size_t START_CAPACITY = 256;
         static_assert(std::bidirectional_iterator<iterator>);
@@ -254,7 +267,7 @@ namespace component {
             dependency->addDependent(dependent);
         }
 
-        template <typename Signal, typename ...Args, meta::callable<void, const Signal&, IterInfo&, std::remove_reference_t<Args>&...> F>
+        template <typename Signal, typename ...Args, meta::callable<void, const Signal&, Entity, std::remove_reference_t<Args>&...> F>
         void handleSignal (F fn) requires (!ComponentSignal<Signal>) {
             auto comps = std::array{getComponent<std::remove_reference_t<Args>>()...};
             for (auto i : comps) {
@@ -271,7 +284,7 @@ namespace component {
         }
 
         template <ComponentSignal Signal>
-        void handleSignal (std::function<void(IterInfo&, const Signal&)> handler) {
+        void handleSignal (std::function<void(Entity, const Signal&)> handler) {
             auto* comp = (detail::TypedComponentSet<typename Signal::Type>*)getComponent<typename Signal::Type>();
             if (!comp) {
                 logging::log(LEVEL_ERROR, "Failed to get component for component signal handler!");
@@ -281,19 +294,20 @@ namespace component {
             comp->addHandler(handler);
         }
 
-        template <typename Signal, typename ...Args>
-        void signal (EntityId id, Args&&... args) requires (!ComponentSignal<Signal>) {
-            detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
-
-            handlerList->handle(id, this, std::forward<Args>(args)...);
-        }
-
         void defer () {
             _defer();
         }
 
+        void deferSignals () {
+            _deferSignals();
+        }
+
         void deferEnd () {
             _deferEnd();
+        }
+
+        void deferSignalsEnd () {
+            _deferSignalsEnd();
         }
 
 

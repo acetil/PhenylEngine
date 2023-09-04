@@ -6,7 +6,7 @@
 #include "component/detail/component_utils.h"
 #include "component/detail/component_set.h"
 #include "component/detail/entity_id_list.h"
-#include "component/detail/signal_handler.h"
+#include "component/detail/signals/handler_list.h"
 #include "component/detail/relationships.h"
 
 #include "util/map.h"
@@ -20,6 +20,7 @@ namespace component::detail {
         util::Map<std::size_t, std::unique_ptr<ComponentSet>> components;
         util::Map<std::size_t, std::unique_ptr<detail::SignalHandlerListBase>> signalHandlers;
         std::size_t deferCount{0};
+        std::size_t signalDeferCount{0};
         std::vector<EntityId> deferredDeletions{};
         std::vector<std::pair<std::function<void(BasicManager*, EntityId)>, EntityId>> deferredApplys;
         RelationshipManager relationships;
@@ -27,6 +28,10 @@ namespace component::detail {
         explicit BasicManager (std::size_t startCapacity) : idList{startCapacity}, components{}, relationships{startCapacity} {}
 
         void removeInt (EntityId id, bool updateParent) {
+            if (updateParent) {
+                signalRemoveChild(relationships.parent(id), id);
+            }
+
             auto curr = relationships.entityChildren(id);
             while (curr) {
                 auto next = relationships.next(curr);
@@ -51,13 +56,25 @@ namespace component::detail {
             }
         }
 
-        void onDeferBegin () {
+        void onSignalDeferBegin () {
             for (auto [k, v] : signalHandlers.kv()) {
                 v->defer();
+            }
+        }
+
+        void onDeferBegin () {
+            if (!signalDeferCount) {
+                onSignalDeferBegin();
             }
 
             for (auto [k, v] : components.kv()) {
                 v->defer();
+            }
+        }
+
+        void onSignalDeferEnd () {
+            for (auto [k, v] : signalHandlers.kv()) {
+                v->deferEnd(this);
             }
         }
 
@@ -66,8 +83,8 @@ namespace component::detail {
                 v->deferEnd();
             }
 
-            for (auto [k, v] : signalHandlers.kv()) {
-                v->deferEnd(asManager());
+            if (!signalDeferCount) {
+                onSignalDeferEnd();
             }
 
             for (auto& [f, id] : deferredApplys) {
@@ -82,6 +99,18 @@ namespace component::detail {
             deferredDeletions.clear();
         }
 
+        template <typename Signal>
+        SignalHandlerList<Signal>* getHandlerList () {
+            auto typeIndex = meta::type_index<Signal>();
+            if (signalHandlers.contains(typeIndex)) {
+                return (SignalHandlerList<Signal>*)signalHandlers[typeIndex].get();
+            } else {
+                return nullptr;
+            }
+        }
+
+        void signalAddChild (EntityId id, EntityId child);
+        void signalRemoveChild (EntityId id, EntityId oldChild);
     public:
         template <typename T>
         ComponentSet* getComponent () const {
@@ -105,49 +134,6 @@ namespace component::detail {
             return component ? component->getComponent<T>(id) : nullptr;
         }
 
-        /*template <typename T>
-        util::Optional<T&> _get (EntityId id) {
-            auto* comp = getEntityComp<T>(id);
-
-            return comp ? util::Optional<T&>{*comp} : util::Optional<T&>{};
-        }
-
-        template <typename T>
-        util::Optional<const T&> _get (EntityId id) const {
-            auto* comp = getEntityComp<T>(id);
-
-            return comp ? util::Optional<const T&>{*comp} : util::Optional<const T&>{};
-        }
-
-        template <typename T, typename ...Args>
-        void _insert (EntityId id, Args&&... args) requires std::constructible_from<T, Args...> {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to insert component to invalid entity {}!", id.value());
-                return;
-            }
-
-            ComponentSet* comp = getComponent<T>();
-            if (!comp) {
-                return;
-            }
-
-            comp->insertComp<T>(id, std::forward<Args>(args)...);
-        }
-
-        template <typename T>
-        bool _set (EntityId id, T comp) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to set component of invalid entity {}!", id.value());
-                return false;
-            }
-            ComponentSet* compSet = getComponent<T>();
-            if (!compSet) {
-                return false;
-            }
-
-            return compSet->setComp(id, std::move(comp));
-        }*/
-
         EntityId _create (EntityId parent) {
             auto id = idList.newId();
 
@@ -156,6 +142,7 @@ namespace component::detail {
             }
 
             relationships.add(id, parent);
+            signalAddChild(parent, id);
 
             return id;
         }
@@ -178,35 +165,6 @@ namespace component::detail {
             removeInt(id, true);
         }
 
-        /*template <typename T>
-        void _erase (EntityId id) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to remove component from invalid entity {}!", id.value());
-                return;
-            }
-            ComponentSet* comp = getComponent<T>();
-            if (!comp) {
-                return;
-            }
-
-            comp->deleteComp(id);
-        }
-
-        template <typename T>
-        bool _has (EntityId id) {
-            if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to check component status for invalid entity {}!", id.value());
-                return false;
-            }
-            ComponentSet* comp = getComponent<T>();
-            if (!comp) {
-                logging::log(LEVEL_ERROR, "Attempted to check component status of component with index {} that doesn't exist!", meta::type_index<T>());
-                return false;
-            }
-
-            return comp->hasComp(id);
-        }*/
-
         template <typename ...Args, meta::callable<void, Args&...> F>
         void _apply (F fn, EntityId id) {
             if (!idList.check(id)) {
@@ -228,8 +186,10 @@ namespace component::detail {
         ChildrenView _children (EntityId id);
 
         void _reparent (EntityId id, EntityId parent) {
+            signalRemoveChild(relationships.parent(id), id);
             relationships.removeFromParent(id);
             relationships.setParent(id, parent);
+            signalAddChild(parent, id);
         }
 
         [[nodiscard]] EntityId _parent (EntityId id) const {
@@ -248,6 +208,32 @@ namespace component::detail {
             }
         }
 
+        void _deferSignals () {
+            if (signalDeferCount++ == 0 && !deferCount) {
+                onSignalDeferBegin();
+            }
+        }
+
+        void _deferSignalsEnd () {
+            if (--signalDeferCount == 0 && !deferCount) {
+                onSignalDeferEnd();
+            }
+        }
+
+        template <typename Signal>
+        void _signal (EntityId id, Signal signal) requires (!ComponentSignal<Signal>) {
+            if (!idList.check(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to signal invalid entity {}!", id.value());
+                return;
+            }
+
+            SignalHandlerList<Signal>* handlerList = getHandlerList<Signal>();
+
+            if (handlerList) {
+                handlerList->handle(id, this, std::move(signal));
+            }
+        }
+
 
         ComponentManager* asManager () {
             return (ComponentManager*)this;
@@ -259,6 +245,7 @@ namespace component::detail {
 
         Entity _entity (EntityId id);
         [[nodiscard]] ConstEntity _entity (EntityId id) const;
+        [[nodiscard]] ConstEntity _constEntity (EntityId id) const;
 
         RelationshipManager& getRelationshipManager () {
             return relationships;

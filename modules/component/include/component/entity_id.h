@@ -36,4 +36,6 @@ namespace component {
         friend class detail::BasicManager;
         friend class detail::RelationshipManager;
     };
+
+    static EntityId NullId = EntityId{};
 }

@@ -426,27 +426,37 @@ namespace component {
 
         void entity (QueryCallback<const Args...> auto fn, Entity entity) const {
             assert(*this);
+            manager->_defer();
             querySets.single(fn, entity);
+            manager->_deferEnd();
         }
 
         void each (QueryCallback<Args...> auto fn) {
             assert(*this);
+            manager->_defer();
             eachInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
+            manager->_deferEnd();
         }
 
         void each (QueryCallback<const Args...> auto fn) const {
             assert(*this);
+            manager->_defer();
             eachInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
+            manager->_deferEnd();
         }
 
         void pairs (QueryPairCallback<Args...> auto fn) {
             assert(*this);
+            manager->_defer();
             pairsInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
+            manager->_deferEnd();
         }
 
         void pairs (QueryPairCallback<const Args...> auto fn) const {
             assert(*this);
+            manager->_defer();
             pairsInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
+            manager->_deferEnd();
         }
     };
 
@@ -533,12 +543,16 @@ namespace component {
 
         void each (ConstQueryCallback<Args...> auto fn) const {
             assert(*this);
+            manager->_defer();
             eachInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
+            manager->_deferEnd();
         }
 
         void pairs (ConstQueryPairCallback<Args...> auto fn) const {
             assert(*this);
+            manager->_defer();
             pairsInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
+            manager->_deferEnd();
         }
     };
 }

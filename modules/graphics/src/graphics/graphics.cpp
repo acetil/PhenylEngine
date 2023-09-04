@@ -23,7 +23,7 @@ void detail::Graphics::addEntityLayer (component::EntityComponentManager* compMa
     renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, compManager));
 
     // TODO
-    compManager->handleSignal<component::OnInsert<Model2D>>([this] (component::IterInfo& info, const component::OnInsert<Model2D>& signal) {
+    compManager->handleSignal<component::OnInsert<Model2D>>([this] (component::Entity entity, const component::OnInsert<Model2D>& signal) {
         getTextureAtlas("sprite").ifPresent([&signal] (TextureAtlas& atlas) {
             signal.get() = atlas.getModel(signal.get().modelName);
         });
