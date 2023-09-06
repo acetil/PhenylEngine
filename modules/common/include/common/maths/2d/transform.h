@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/maths_headers.h"
+#include "common/serializer_intrusive.h"
 
 namespace common {
     class Transform2D {
@@ -13,6 +14,8 @@ namespace common {
 
         friend bool phenyl_from_data (const util::DataValue& val, Transform2D& transform);
         friend util::DataValue phenyl_to_data (const Transform2D& transform);
+
+        PHENYL_SERIALIZE_INTRUSIVE(Transform2D);
     public:
         Transform2D () = default;
 

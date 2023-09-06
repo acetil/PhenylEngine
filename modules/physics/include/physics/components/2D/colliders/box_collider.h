@@ -1,5 +1,6 @@
 #include "physics/components/2D/collider.h"
 #include "util/optional.h"
+#include "common/serializer_intrusive.h"
 
 #pragma once
 
@@ -17,6 +18,8 @@ namespace physics {
         Face2D getSignificantFace (glm::vec2 normal);
 
         friend class PhysicsObject2D;
+
+        PHENYL_SERIALIZE_INTRUSIVE(BoxCollider2D)
     public:
         [[nodiscard]] glm::vec2 getScale () const {
             return scale;

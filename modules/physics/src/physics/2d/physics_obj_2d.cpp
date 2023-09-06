@@ -11,6 +11,10 @@
 #include "physics/components/2D/colliders/box_collider.h"
 #include "physics/signals/2D/collision.h"
 
+#include "common/components/2d/global_transform_serialize.h"
+#include "physics/components/2D/colliders/box_collider_serialize.h"
+#include "common/string_serializer.h"
+
 #define SOLVER_ITERATIONS 10
 
 using namespace physics;
@@ -138,13 +142,20 @@ void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventB
 void PhysicsObject2D::debugRender (const component::EntityComponentManager& componentManager) {
     if (debugColliderRender) {
         // Debug render
-        componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (auto info, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
+        common::StringSerializer serializer{"  "};
+        componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([&serializer] (component::ConstEntity entity, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
             auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
             auto pos2 = box.frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
             auto pos3 = box.frameTransform * glm::vec2{1, 1} + transform.transform2D.position();
             auto pos4 = box.frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
 
             common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+
+            auto serialized = serializer.serialize(transform);
+            logging::log(LEVEL_DEBUG, "Serialized {} GlobalTransform2D: \n{}", entity.id().value(), serialized);
+
+            auto serialized2 = serializer.serialize(box);
+            logging::log(LEVEL_DEBUG, "Serialized {} BoxCollider2D: \n{}", entity.id().value(), serialized2);
         });
     }
 }
