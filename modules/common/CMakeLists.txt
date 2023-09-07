@@ -9,7 +9,11 @@ add_library(common include/common include/common/input/input_source.h include/co
         src/common/string_serializer.cpp
         include/common/maths/2d/transform_serializer.h
         include/common/components/2d/global_transform_serialize.h
-        include/common/serializer_intrusive.h)
+        include/common/serializer_intrusive.h
+        include/common/json_serializer.h
+        src/common/json_serializer.cpp)
+
+find_package(nlohmann_json REQUIRED)
 
 set_property(TARGET common PROPERTY CXX_STANDARD 20)
 
@@ -20,4 +24,4 @@ target_include_directories(common PRIVATE src)
 #target_link_libraries(common PRIVATE logger maths eventbus)
 #target_link_libraries(common PUBLIC util)
 target_link_libraries(common PUBLIC maths eventbus util)
-target_link_libraries(common PRIVATE logger graphics)
+target_link_libraries(common PRIVATE logger graphics nlohmann_json::nlohmann_json)
