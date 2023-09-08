@@ -16,5 +16,5 @@ namespace glm {
         PHENYL_MEMBER(a);
     })
 
-    PHENYL_SERIALIZE_ARRAY_FUNC(mat2, [] (const mat2& mat) {return &mat[0];}, 2)
+    PHENYL_SERIALIZE_ARRAY_FUNC(mat2, [] (auto& mat) {return &mat[0];}, 2)
 }

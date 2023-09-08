@@ -103,8 +103,8 @@ void PhenylGame::addEntityType (const std::string& typeId, const std::string& fi
     getShared()->addEntityType(typeId, filepath);
 }
 
-void PhenylGame::setSerialiser (component::EntitySerialiser* serialiser) {
-    getShared()->setSerialiser(serialiser);
+void PhenylGame::setSerializer (component::EntitySerializer* serialiser) {
+    getShared()->setSerializer(serialiser);
 }
 
 PhenylGameHolder::~PhenylGameHolder () = default;

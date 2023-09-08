@@ -65,7 +65,7 @@ namespace game {
 
         GameInput& getGameInput ();
 
-        void setSerialiser (component::EntitySerialiser* serialiser);
+        void setSerializer (component::EntitySerializer* serialiser);
 
         void addDefaultSerialisers ();
 

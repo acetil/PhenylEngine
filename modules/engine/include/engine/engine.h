@@ -33,7 +33,7 @@ namespace engine {
 
         component::EntityComponentManager& getComponentManager ();
 
-        component::EntitySerialiser& getEntitySerialiser ();
+        component::EntitySerializer& getEntitySerializer ();
 
         physics::PhenylPhysics getPhysics ();
 

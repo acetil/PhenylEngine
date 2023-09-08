@@ -9,7 +9,7 @@ namespace util {
 namespace component {
     class EntityId;
     class ComponentManager;
-    class EntitySerialiser;
+    class EntitySerializer;
     class EntityComponentFactory;
 
     using EntityComponentManager = ComponentManager;

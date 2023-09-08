@@ -119,7 +119,7 @@ namespace graphics {
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
 
             void addComponents (component::ComponentManager& manager);
-            void addComponentSerialisers (component::EntitySerialiser& serialiser);
+            void addComponentSerializers (component::EntitySerializer& serialiser);
         };
     }
 

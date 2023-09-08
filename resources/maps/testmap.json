@@ -40,7 +40,7 @@
                 "BoxCollider2D": {
                     "Collider2D": {
                         "layers": 2,
-                        "masks": 0,
+                        "mask": 0,
                         "elasticity": 1.0
                     },
                     "scale_matrix": [
@@ -52,7 +52,11 @@
                             "x": 0.0,
                             "y": 0.5
                         }
-                    ]
+                    ],
+                    "scale" : {
+                        "x" : 0.08,
+                        "y" : 0.5
+                    }
                 }
             },
             "prefab" : "wall_entity"
@@ -75,7 +79,7 @@
                 "BoxCollider2D": {
                     "Collider2D": {
                         "layers": 2,
-                        "masks": 0,
+                        "mask": 0,
                         "elasticity": 1.0
                     },
                     "scale_matrix": [
@@ -87,7 +91,11 @@
                             "x": 0.0,
                             "y": 0.5
                         }
-                    ]
+                    ],
+                    "scale" : {
+                        "x" : 0.08,
+                        "y" : 0.5
+                    }
                 }
             },
             "prefab" : "wall_entity"
@@ -110,7 +118,7 @@
                 "BoxCollider2D": {
                     "Collider2D": {
                         "layers": 2,
-                        "masks": 0,
+                        "mask": 0,
                         "elasticity": 1.0
                     },
                     "scale_matrix": [
@@ -122,7 +130,11 @@
                             "x": 0.0,
                             "y": 0.08000000566244125
                         }
-                    ]
+                    ],
+                    "scale" : {
+                        "x" : 0.48,
+                        "y" : 0.08
+                    }
                 }
             },
             "prefab" : "wall_entity"

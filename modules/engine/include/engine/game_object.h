@@ -19,6 +19,7 @@
 #include "engine/entity/entity_type.h"
 #include "engine/entity/controller/entity_controller.h"
 #include "component/prefab.h"
+#include "component/component_serializer.h"
 
 namespace view {
     class DebugGameView;
@@ -44,12 +45,12 @@ namespace game::detail {
 
                 util::Map<std::string, EntityType> entityTypes;
                 util::Map<std::string, component::Prefab> prefabs;
-                component::EntitySerialiser* serialiser;
+                component::EntitySerializer* serializer;
 
-                component::Entity makeDeserialisedEntity (const util::DataValue& serialised);
+                component::Entity makeDeserializedEntity (const nlohmann::json& serialized);
 
-                util::DataObject serialiseEntity (component::Entity& entityView);
-                util::Optional<component::Prefab> makePrefab (const util::DataValue& val);
+                nlohmann::json serializeEntity (component::Entity& entityView);
+                util::Optional<component::Prefab> makePrefab (const nlohmann::json& val);
 
 
                 public:
@@ -87,7 +88,7 @@ namespace game::detail {
 
                 void addEventHandlers (event::EventBus::SharedPtr eventBus);
 
-                void setSerialiser (component::EntitySerialiser* serialiser);
+                void setSerializer (component::EntitySerializer* serializer);
 
                 void addDefaultSerialisers ();
 

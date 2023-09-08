@@ -7,5 +7,5 @@ namespace game {
 
     };
 
-    void addBulletSignals (component::ComponentManager& manager, component::EntitySerialiser& serialiser);
+    void addBulletSignals (component::ComponentManager& manager, component::EntitySerializer& serialiser);
 }

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <nlohmann/json.hpp>
+
 #include "engine/tile/tile.h"
 #include "util/smart_help.h"
 #include "util/data.h"
@@ -16,11 +18,9 @@ namespace graphics {
 
 namespace game {
     struct MapEntity {
-        util::DataValue data;
+        nlohmann::json data;
         MapEntity () = default;
-        MapEntity(util::DataValue _data) : data(std::move(_data)) {};
-
-
+        MapEntity(nlohmann::json _data) : data(std::move(_data)) {};
     };
     class Map : public util::SmartHelper<Map> {
         protected:
@@ -48,6 +48,6 @@ namespace game {
         virtual const std::vector<MapEntity>& getEntities () {
             return entities;
         }
-        virtual void writeMapJson (const std::string& path, util::DataValue entities = util::DataValue());
+        virtual void writeMapJson (const std::string& path, nlohmann::json entitiesVal);
     };
 }

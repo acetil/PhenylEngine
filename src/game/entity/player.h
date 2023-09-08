@@ -4,11 +4,13 @@
 #include "engine/input/game_input.h"
 #include "engine/phenyl_game.h"
 
-struct Player {
-    bool hasShot{false};
-};
+namespace game {
+    struct Player {
+        bool hasShot{false};
+    };
+}
 
-void addPlayerComponents (component::ComponentManager& manager, component::EntitySerialiser& serialiser);
+void addPlayerComponents (component::ComponentManager& manager, component::EntitySerializer& serialiser);
 void inputSetup (game::GameInput& input, const event::EventBus::SharedPtr& eventBus);
 void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::PhenylGame& object);
 

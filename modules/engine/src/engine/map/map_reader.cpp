@@ -303,36 +303,41 @@ Map::SharedPtr readMapJson (const std::string& path, PhenylGame gameObject) {
 }
 
 Map::SharedPtr game::readMapNew (const std::string& path, PhenylGame gameObject) {
-    util::DataValue mapVal = util::parseFromFile(path);
+    //util::DataValue mapVal = util::parseFromFile(path);
+    nlohmann::json mapVal;
+    std::ifstream file{path};
+    file >> mapVal;
+
+
     if (mapVal.empty()) {
         logging::log(LEVEL_ERROR, "Failed to read map file {}", path);
         return nullptr;
     }
 
-    util::DataObject mapData = std::move(mapVal);
+    nlohmann::json mapData = std::move(mapVal);
 
-    util::DataArray tileIdArray = mapData.at("tile_ids");
+    nlohmann::json::array_t tileIdArray = mapData.at("tile_ids").get<nlohmann::json::array_t>();
     std::unordered_map<int, Tile*> tileIds;
     auto emptyTile = gameObject.getTile("empty_tile");
     for (auto& i : tileIdArray) {
-        auto& tileObj = i.get<util::DataObject>();
+        auto& tileObj = i;
         auto t = gameObject.getTile(tileObj.at("tile").get<std::string>());
         tileIds[tileObj.at("id").get<int>()] = t ? t : emptyTile;
     }
 
-    util::DataObject dims = mapData.at("dimensions");
+    nlohmann::json dims = mapData.at("dimensions");
 
     int width = dims.at("width").get<float>();
     int height = dims.at("height").get<float>();
     Tile** tiles = new Tile*[width * height]{emptyTile};
-    util::DataArray tileArray = mapData.at("tiles");
+    nlohmann::json::array_t tileArray = mapData.at("tiles");
     for (int i = 0; i < tileArray.size(); i++) {
         tiles[i] = tileIds[tileArray[i].get<int>()];
     }
 
     std::vector<MapEntity> entities;
 
-    for (auto& i : mapData.at("entities").get<util::DataArray>()) {
+    for (auto& i : mapData.at("entities").get<nlohmann::json::array_t>()) {
         //auto entityObj = i.get<util::DataObject>();
         //auto pos = entityObj.at("pos_2D").get<glm::vec2>();
 

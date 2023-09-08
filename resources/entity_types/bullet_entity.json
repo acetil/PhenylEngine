@@ -18,12 +18,21 @@
       "momentum": {
         "x": 0.0,
         "y": 0.0
+      },
+      "angular_momentum" : 0,
+      "inertial_moment": 0,
+      "drag": 0,
+      "mass" : 1,
+      "angular_drag": 0,
+      "gravity": {
+        "x": 0.0,
+        "y": 0.0
       }
     },
     "BoxCollider2D": {
       "Collider2D": {
         "layers": 1,
-        "masks": 3,
+        "mask": 3,
         "elasticity": 1.0
       },
       "scale_matrix": [
@@ -35,8 +44,14 @@
           "x": 0.0,
           "y": 0.03
         }
-      ]
+      ],
+      "scale" : {
+        "x" : 0.03,
+        "y" : 0.03
+      }
     },
-    "Model2D": "test9"
+    "Model2D": {
+      "model_name" :"test9"
+    }
   }
 }

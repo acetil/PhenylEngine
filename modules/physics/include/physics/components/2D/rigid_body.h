@@ -2,6 +2,7 @@
 
 #include "graphics/maths_headers.h"
 #include "physics/physics.h"
+#include "common/serializer_intrusive.h"
 
 namespace common {
     class GlobalTransform2D;
@@ -21,6 +22,8 @@ namespace physics {
         float invInertialMoment{1.0f};
 
         void applyFriction ();
+
+        PHENYL_SERIALIZE_INTRUSIVE(RigidBody2D);
     public:
         glm::vec2 gravity{0, 0};
 

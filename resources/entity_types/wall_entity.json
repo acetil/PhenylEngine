@@ -1,17 +1,22 @@
 {
   "components" : {
-    "Model2D": "test10",
+    "Model2D": {
+      "model_name" : "test10"
+    },
     "RigidBody2D": {
       "momentum": {
         "x": 0.0,
         "y": 0.0
       },
+      "angular_momentum" : 0,
       "gravity": {
         "x": 0.0,
         "y": 0.0
       },
       "mass": 0.0,
-      "inertial_moment": 0.0
+      "inertial_moment": 0.0,
+      "drag": 0,
+      "angular_drag": 0
     }
   }
 }

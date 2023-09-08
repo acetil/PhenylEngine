@@ -59,49 +59,34 @@ void Map::setAtlas (graphics::TextureAtlas& _atlas) {
     this->atlas = &_atlas;
 }
 
-void Map::writeMapJson (const std::string& path, util::DataValue entitiesVal) {
-    util::DataObject mapData;
-    util::DataObject dims;
+void Map::writeMapJson (const std::string& path, nlohmann::json entities) {
+    nlohmann::json mapData;
+    nlohmann::json dims;
     dims["width"] = width;
     dims["height"] = height;
     mapData["dimensions"] = std::move(dims);
     int tileIndex = 0;
     std::unordered_map<Tile*, int> tileIdMap;
-    util::DataArray tileIds;
-    util::DataArray tileArray;
+    nlohmann::json::array_t tileIds;
+    nlohmann::json::array_t tileArray;
     for (auto i = 0; i < width * height; i++) {
         if (!tileIdMap.contains(tiles[i])) {
-            util::DataObject tileObj;
+            nlohmann::json tileObj;
             tileObj["id"] = tileIndex;
             tileObj["tile"] = tiles[i]->getName();
-            tileIds.push_back(util::DataObject(tileObj));
+            tileIds.push_back(tileObj);
             tileIdMap[tiles[i]] = tileIndex++;
         }
-        tileArray.push_back((int)tileIdMap[tiles[i]]);
+        tileArray.emplace_back(tileIdMap[tiles[i]]);
     }
-    util::DataArray entityArray;
-    if (entitiesVal.empty()) {
-        for (auto& entity : entities) {
-            util::DataObject entityObj;
-            //entityObj["type"] = entity.entityType;
-            //util::DataObject pos;
-            //pos["x"] = entity.x;
-            //pos["y"] = entity.y;
-            //entityObj["pos"] = std::move(pos);
-            //entityObj["rotation"] = entity.rotation;
-            //entityObj["data"] = entity.data;
-            entityArray.push_back(entity.data);
-        }
-    } else {
-        entityArray = entitiesVal.get<util::DataArray>();
-    }
+
     mapData["tile_ids"] = std::move(tileIds);
     mapData["tiles"] = std::move(tileArray);
-    mapData["entities"] = std::move(entityArray);
+    mapData["entities"] = std::move(entities);
 
     std::ofstream file(path);
     if (file) {
-        file << util::DataValue(std::move(mapData)).convertToJsonPretty();
+        file << mapData.dump(4);
     }
 }
 

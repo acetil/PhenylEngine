@@ -29,5 +29,5 @@ namespace game {
         std::string typeId;
     };
 
-    EntityType makeEntityType (const util::DataValue& entityTypeData, component::EntitySerialiser& serialiser);
+    //EntityType makeEntityType (const util::DataValue& entityTypeData, component::EntitySerialiser& serialiser);
 }

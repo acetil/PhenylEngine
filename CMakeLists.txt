@@ -14,7 +14,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_executable(${PROJECT_NAME} src/main.cpp src/game/entity/controller/bullet_controller.cpp src/game/entity/controller/player_controller.cpp src/game/gameloop.cpp src/util/debug_console.cpp src/game/default_input.h src/game/default_input.cpp
         src/game/entity/bullet.h
-        src/game/entity/player.h)
+        src/game/entity/player.h
+        src/game/entity/serializers.h)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/lib)
 

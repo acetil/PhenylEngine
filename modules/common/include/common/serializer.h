@@ -5,46 +5,60 @@
 #include <type_traits>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 #include "graphics/maths_headers.h"
 #include "serializer_intrusive.h"
+#include "util/optional.h"
 
 namespace common {
-    class SerializeVisitor;
-    class DeserializeVisitor;
+    class JsonSerializer;
+    class JsonDeserializer;
 
     template <typename C, typename T>
-    concept CustomSerializerType = requires (T& t, SerializeVisitor& sv, DeserializeVisitor& dv) {
+    concept CustomSerializerType = requires (T& t, JsonSerializer& sv, const JsonDeserializer& dv) {
         { C::Name } -> std::convertible_to<const std::string&>;
         { C::Factory() } -> std::same_as<T>;
         { C::Accept(sv, (const T&)t) } -> std::same_as<bool>;
         { C::Accept(dv, t) } -> std::same_as<bool>;
     };
 
+    namespace detail {
+        template <typename T>
+        concept SerializableFloat = std::same_as<std::remove_cvref_t<T>, float> || std::same_as<std::remove_cvref_t<T>, double>;
+
+        template <typename T>
+        concept SerializableInt = std::same_as<std::remove_cvref_t<T>, std::int8_t> || std::same_as<std::remove_cvref_t<T>, std::int16_t> || std::same_as<std::remove_cvref_t<T>, std::int32_t> || std::same_as<std::remove_cvref_t<T>, std::int64_t>;
+
+        template <typename T>
+        concept SerializableUInt = std::same_as<std::remove_cvref_t<T>, std::uint8_t> || std::same_as<std::remove_cvref_t<T>, std::uint16_t> || std::same_as<std::remove_cvref_t<T>, std::uint32_t> || std::same_as<std::remove_cvref_t<T>, std::uint64_t>;
+    }
+
     template <typename T>
-    concept CustomSerializable = requires (T t) {
-        { phenyl_serialization_obj(&t) } -> CustomSerializerType<T>;
+    concept DefaultSerializable = std::same_as<std::remove_cvref_t<T>, bool> || std::same_as<std::remove_cvref_t<T>, std::string> || detail::SerializableInt<std::remove_cvref_t<T>> || detail::SerializableUInt<std::remove_cvref_t<T>> || detail::SerializableFloat<std::remove_cvref_t<T>>;
+
+
+    template <typename T>
+    concept CustomSerializable = requires (std::remove_cvref_t<T> t) {
+        { phenyl_serialization_obj(&t) } -> CustomSerializerType<std::remove_cvref_t<T>>;
     };
 
     namespace detail {
         template <typename T>
-        struct IsVector {
+        struct ContainerSerializable {
+        public:
             static constexpr bool val = false;
         };
 
         template <typename T>
-        struct IsVector<std::vector<T>> {
-            static constexpr bool val = true;
+        struct ContainerSerializable<std::vector<T>> {
+        public:
+            static constexpr bool val = DefaultSerializable<T> || CustomSerializable<T> || ContainerSerializable<T>::val;
         };
-    }
+    };
 
     template <typename T>
-    concept DefaultSerializable = std::same_as<T, bool> || std::same_as<T, std::string> || detail::IsVector<T>::val
-            || std::same_as<T, std::int8_t> || std::same_as<T, std::int16_t> || std::same_as<T, std::int32_t> || std::same_as<T, std::int64_t>
-            || std::same_as<T, std::uint8_t> || std::same_as<T, std::uint16_t> || std::same_as<T, std::uint32_t> || std::same_as<T, std::uint64_t>
-            || std::same_as<T, float> || std::same_as<T, double>;
-
-    template <typename T>
-    concept Serializable = DefaultSerializable<T> || CustomSerializable<T>;
+    concept Serializable = DefaultSerializable<T> || CustomSerializable<T> || detail::ContainerSerializable<T>::val;
 
     template <CustomSerializable T>
     using CustomSerializer = decltype(phenyl_serialization_obj((T*) nullptr));
@@ -59,228 +73,268 @@ namespace common {
         T SerializerFactory () {
             return T{};
         }
-    }
-
-    class SerializeVisitor {
-    protected:
-        virtual bool pushMember (const std::string& memberName) = 0;
-        virtual void popMember () = 0;
-
-        virtual bool pushList () = 0;
-        virtual bool listNext () = 0;
-        virtual void popList () = 0;
-
-        virtual bool pushArray (std::size_t size) = 0;
-        virtual bool arrayNext () = 0;
-        virtual void popArray () = 0;
-    public:
-        static constexpr bool IsSerializer = true;
-        static constexpr bool IsDeserializer = false;
-
-        virtual ~SerializeVisitor() = default;
-
-        virtual bool pushObject () = 0;
-        virtual void popObject () = 0;
 
         template <Serializable T>
-        bool visitMember (const T& member, const std::string& memberName) {
-            if (!pushMember(memberName)) {
-                return false;
-            }
-            auto res = visit(member);
-            popMember();
-            return res;
+        std::vector<T> SerializerFactory () {
+            return std::vector<T>{};
+        }
+    }
+
+    class JsonSerializer {
+    private:
+        nlohmann::json json;
+    public:
+        JsonSerializer () : json{} {}
+
+        bool asObject () {
+            json = nlohmann::json::object();
+            return true;
         }
 
         template <CustomSerializable T>
         bool visit (const T& val) {
-            bool res = CustomSerializer<T>::Accept(*this, val);
+            return CustomSerializer<T>::Accept(*this, val);
+        }
 
-            return res;
+        template <DefaultSerializable T>
+        bool visit (const T& val) {
+            json = val;
+            return true;
         }
 
         template <Serializable T>
-        bool visit (const std::vector<T>& vec) {
-            if (!pushList()) {
-                return false;
-            }
-            for (auto& i : vec) {
-                if (!visit(i)) {
-                    popList();
+        bool visit (const std::vector<T>& val) {
+            auto arr = nlohmann::json::array_t{};
+            for (auto& i : val) {
+                JsonSerializer serializer{};
+                if (!serializer.visit(serializer, i)) {
                     return false;
                 }
-                if (!listNext()) {
-                    return false;
-                }
+
+                arr.push_back(std::move(serializer.get()));
             }
-            popList();
+
+            json = std::move(arr);
 
             return true;
         }
 
         template <std::size_t N, Serializable T>
         bool visitArray (const T* vals) {
-            if (!pushArray(N)) {
-                return false;
-            }
-
+            auto arr = nlohmann::json::array_t{};
             for (std::size_t i = 0; i < N; i++) {
-                if (!visit(vals[i])) {
-                    popArray();
+                JsonSerializer serializer{};
+                if (!serializer.visit(vals[i])) {
                     return false;
                 }
 
-                if (i < N - 1 && !arrayNext()) {
-                    return false;
-                }
+                arr.push_back(std::move(serializer.get()));
             }
-            popArray();
+
+            json = std::move(arr);
 
             return true;
         }
 
-        virtual bool visit (bool val) = 0;
-        virtual bool visit (std::string val) = 0;
+        template <Serializable T>
+        bool visitMember (T& member, const std::string& memberName) {
+            if (!json.is_object()) {
+                return false;
+            }
 
-        virtual bool visit (std::int8_t val) = 0;
-        virtual bool visit (std::uint8_t val) {
-            return visit(static_cast<std::int8_t>(val));
+            JsonSerializer serializer;
+            if (!serializer.visit(member)) {
+                return false;
+            }
+
+            json[memberName] = std::move(serializer.get());
+
+            return true;
         }
 
-        virtual bool visit (std::int16_t val) = 0;
-        virtual bool visit (std::uint16_t val) {
-            return visit(static_cast<std::int16_t>(val));
+        nlohmann::json& get () {
+            return json;
         }
 
-        virtual bool visit (std::int32_t val) = 0;
-        virtual bool visit (std::uint32_t val) {
-            return visit(static_cast<std::int32_t>(val));
-        }
+        template <Serializable T>
+        static nlohmann::json Serialize (const T& val) {
+            JsonSerializer serializer{};
+            if (!serializer.visit(val)) {
+                return nlohmann::json{};
+            }
 
-        virtual bool visit (std::int64_t val) = 0;
-        virtual bool visit (std::uint64_t val) {
-            return visit(static_cast<std::int64_t>(val));
-        }
-
-        virtual bool visit (float val) = 0;
-        virtual bool visit (double val) {
-            return visit(static_cast<float>(val));
+            return std::move(serializer.get());
         }
     };
 
-    class DeserializeVisitor {
-    protected:
-        virtual bool pushMember (const std::string& memberName) = 0;
-        virtual void popMember () = 0;
-
-        virtual bool pushList () = 0;
-        virtual bool listNext () = 0;
-        virtual void popList () = 0;
-
-        virtual bool pushArray (std::size_t size) = 0;
-        virtual bool arrayNext () = 0;
-        virtual void popArray () = 0;
+    class JsonDeserializer {
+    private:
+        const nlohmann::json& json;
     public:
-        static constexpr bool IsSerializer = false;
-        static constexpr bool IsDeserializer = true;
-        virtual ~DeserializeVisitor() = default;
+        JsonDeserializer (const nlohmann::json& json) : json{json} {}
 
-        virtual bool pushObject () = 0;
-        virtual void popObject () = 0;
-
-        template <Serializable T>
-        bool visitMember (T& member, const std::string& memberName) {
-            if (!pushMember(memberName)) {
+        [[nodiscard]] bool asObject () const {
+            if (json.is_object()) {
+                return true;
+            } else {
+                logging::log(LEVEL_WARNING, "Expected object, got \"{}\"", json.type_name());
                 return false;
             }
-            auto res = visit(member);
-            popMember();
-            return res;
         }
 
         template <CustomSerializable T>
-        bool visit (T& val) {
-            bool res = CustomSerializer<T>::Accept(*this, val);
-
-            return res;
+        bool visit (T& val) const {
+            if (CustomSerializer<T>::Accept(*this, val)) {
+                return true;
+            } else {
+                logging::log(LEVEL_WARNING, "Failed to parse {}", CustomSerializer<T>::Name);
+                return false;
+            }
         }
 
         template <Serializable T>
-        bool visit (std::vector<T>& vec) {
-            if (!pushList()) {
+        bool visit (std::vector<T>& val) const {
+            if (!json.is_array()) {
+                logging::log(LEVEL_WARNING, "Expected list, got \"{}\"", json.type_name());
                 return false;
             }
 
-            while (listNext()) {
-                T t = detail::SerializerFactory<T>();
-                if (!visit(t)) {
-                    popList();
+            const auto& arr = json.get<nlohmann::json::array_t>();
+            std::vector<T> vec{};
+            for (const auto& i : arr) {
+                vec.emplace_back(detail::SerializerFactory<T>());
+                if (!JsonDeserializer{i}.visit(vec.back())) {
                     return false;
                 }
             }
 
-            popList();
+            val = std::move(vec);
 
             return true;
         }
 
         template <std::size_t N, Serializable T>
-        bool visitArray (T* vals) {
-            if (!pushArray(N)) {
+        bool visitArray (T* vals) const {
+            if (!json.is_array()) {
+                logging::log(LEVEL_WARNING, "Expected array, got \"{}\"", json.type_name());
                 return false;
             }
 
-            for (std::size_t i = 0; i < N; i++) {
-                if (!visit(vals[i])) {
-                    popArray();
-                    return false;
-                }
+            const auto& arr = json.get<nlohmann::json::array_t>();
+            if (arr.size() != N) {
+                logging::log(LEVEL_WARNING, "Array size is incorrect, expected {} got {}", N, arr.size());
+                return false;
+            }
 
-                if (i < N - 1 && !arrayNext()) {
+            std::array<T, N> newVals{};
+            for (std::size_t i = 0; i < N; i++) {
+                if (!JsonDeserializer{arr.at(i)}.visit(newVals[i])) {
                     return false;
                 }
             }
-            popArray();
+
+            for (std::size_t i = 0; i < N; i++) {
+                vals[i] = std::move(newVals[i]);
+            }
 
             return true;
         }
 
-        virtual bool visit (bool& val) = 0;
-        virtual bool visit (std::string& val) = 0;
+        template <Serializable T>
+        bool visitMember (T& member, const std::string& memberName) const {
+            if (!json.is_object()) {
+                logging::log(LEVEL_WARNING, "Expected object, got \"{}\"", json.type_name());
+                return false;
+            }
 
-        virtual bool visit (std::int8_t& val) = 0;
-        virtual bool visit (std::uint8_t& val) {
-            return visit(reinterpret_cast<std::int8_t&>(val));
+            const auto& obj = json.get<nlohmann::json::object_t>();
+            if (!obj.contains(memberName)) {
+                logging::log(LEVEL_WARNING, "Failed to find member \"{}\"", memberName);
+                return false;
+            }
+
+            if (JsonDeserializer{obj.at(memberName)}.visit(member)) {
+                return true;
+            } else {
+                logging::log(LEVEL_WARNING, "Failed to parse member \"{}\"", memberName);
+                return false;
+            }
         }
 
-        virtual bool visit (std::int16_t& val) = 0;
-        virtual bool visit (std::uint16_t& val) {
-            return visit(reinterpret_cast<std::int16_t&>(val));
+        [[nodiscard]] const nlohmann::json& get () const {
+            return json;
         }
 
-        virtual bool visit (std::int32_t& val) = 0;
-        virtual bool visit (std::uint32_t& val) {
-            return visit(reinterpret_cast<std::int32_t&>(val));
+        bool visit (bool& val) const {
+            if (!json.is_boolean()) {
+                logging::log(LEVEL_WARNING, "Expected bool, got \"{}\"", json.type_name());
+                return false;
+            }
+
+            val = json.get<bool>();
+            return true;
         }
 
-        virtual bool visit (std::int64_t& val) = 0;
-        virtual bool visit (std::uint64_t& val) {
-            return visit(reinterpret_cast<std::int64_t&>(val));
+        bool visit (std::string& val) const {
+            if (!json.is_string()) {
+                logging::log(LEVEL_WARNING, "Expected string, got \"{}\"", json.type_name());
+                return false;
+            }
+
+            val = json.get<std::string>();
+            return true;
         }
 
-        virtual bool visit (float& val) = 0;
-        virtual bool visit (double& val) {
-            return visit(reinterpret_cast<float&>(val));
+        template <detail::SerializableFloat T>
+        bool visit (T& val) const {
+            if (!json.is_number()) {
+                logging::log(LEVEL_WARNING, "Expected float, got \"{}\"", json.type_name());
+                return false;
+            }
+
+            val = json.get<T>();
+            return true;
+        }
+
+        template <detail::SerializableInt T>
+        bool visit (T& val) const {
+            if (!json.is_number_integer()) {
+                logging::log(LEVEL_WARNING, "Expected int, got \"{}\"", json.type_name());
+                return false;
+            }
+
+            val = json.get<T>();
+            return true;
+        }
+
+        template <detail::SerializableUInt T>
+        bool visit (T& val) const {
+            if (!json.is_number_unsigned()) {
+                logging::log(LEVEL_WARNING, "Expected uint, got \"{}\"", json.type_name());
+                return false;
+            }
+
+            val = json.get<T>();
+            return true;
+        }
+
+        template <typename T>
+        util::Optional<T> deserialize () const {
+            T val{detail::SerializerFactory<T>()};
+
+            if (visit(val)) {
+                return util::Optional<T>{std::move(val)};
+            } else {
+                logging::log(LEVEL_WARNING, "Failed to deserialize {}!", CustomSerializer<T>::Name);
+                return util::NullOpt;
+            }
+        }
+
+        template <typename T>
+        static util::Optional<T> Deserialize (const nlohmann::json& json) {
+            return JsonDeserializer{json}.deserialize<T>();
         }
     };
-
-    namespace detail {
-        template <typename T>
-        concept IsSerializeVisitor = std::derived_from<T, SerializeVisitor>;
-
-        template <typename T>
-        concept IsDeserializeVisitor = std::derived_from<T, DeserializeVisitor>;
-    }
 }
 
 #define PHENYL_SERIALIZE_NAMED_INT(T, name, details, preVisit, postVisit)                         \
@@ -289,24 +343,24 @@ namespace common {
                                                                          \
         static T Factory () {                                    \
             return T{};                                                  \
-        }                                                                \
-        template <common::detail::IsSerializeVisitor V>                                                                 \
-        static bool Accept (V& visitor, const T& val) {   \
-            constexpr bool IN_SERIALIZE = V::IsSerializer;                          \
-            constexpr bool IN_DESERIALIZE = V::IsDeserializer;                       \
+        }                                                                                         \
+        \
+        static bool Accept (common::JsonSerializer& visitor, const T& val) {   \
+            constexpr bool IN_SERIALIZE = std::is_same_v<std::void_t<T>, void>;                          \
+            constexpr bool IN_DESERIALIZE = !std::is_same_v<std::void_t<T>, void>;                       \
             using Type = T;                                              \
                                                                          \
             preVisit                                                                          \
                                         \
-            details                                                                           \
+            details                                                                          \
             \
             postVisit\
             return true;                                                 \
-        }                                                                \
-        template <common::detail::IsDeserializeVisitor V>                                                           \
-        static bool Accept (V& visitor, T& val) { \
-            constexpr bool IN_SERIALIZE = V::IsSerializer;                         \
-            constexpr bool IN_DESERIALIZE = V::IsDeserializer;                        \
+        }                                                                                         \
+        \
+        static bool Accept (const common::JsonDeserializer& visitor, T& val) { \
+            constexpr bool IN_SERIALIZE = !std::is_same_v<std::void_t<T>, void>;                         \
+            constexpr bool IN_DESERIALIZE = std::is_same_v<std::void_t<T>, void>;                        \
             using Type = T;                                              \
                                                                                                   \
             preVisit                                                                                      \
@@ -324,15 +378,11 @@ namespace common {
 
 #define PHENYL_SERIALIZE_NAMED(T, name, details) PHENYL_SERIALIZE_NAMED_INT(T, name, details, { \
         if constexpr (IN_SERIALIZE || IN_DESERIALIZE) {                                                                                        \
-            if (!visitor.pushObject()) {                                                            \
+            if (!visitor.asObject()) {                                                            \
                 return false;                                                                                     \
             }                                                                                       \
         }                                                                                               \
-    }, {                                                                                        \
-        if constexpr (IN_SERIALIZE || IN_DESERIALIZE) {                                                                                        \
-            visitor.popObject();                                                                                       \
-        }                                                                                             \
-    })
+    }, {})
 
 #define PHENYL_SERIALIZE(T, details) PHENYL_SERIALIZE_NAMED(T, #T, details)
 
@@ -358,13 +408,14 @@ namespace common {
 
 #define PHENYL_MEMBER_METHOD(name, getMethod, setMethod)  \
     do {                                                  \
-        if constexpr (V::IsSerializer) {                     \
-            if (!visitor.visitMember(val.getMethod(), name)) { \
+        if constexpr (IN_SERIALIZE) {                     \
+            auto v = val.getMethod();\
+            if (!visitor.visitMember(v, name)) { \
                 return false;                                              \
             }   \
         }                                                 \
                                                           \
-        if constexpr (V::IsDeserializer) {                \
+        if constexpr (IN_DESERIALIZE) {                \
             using ValType = std::remove_cvref_t<decltype(val.getMethod())>; \
             ValType newVal = ::common::detail::SerializerFactory<ValType>();   \
             if (!visitor.visitMember(newVal, name)) {     \

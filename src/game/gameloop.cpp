@@ -40,8 +40,8 @@ int game::gameloop (engine::PhenylEngine& engine) {
     auto& uiManager = graphics.getUIManager();
 
 
-    addBulletSignals(engine.getComponentManager(), engine.getEntitySerialiser());
-    addPlayerComponents(engine.getComponentManager(), engine.getEntitySerialiser());
+    addBulletSignals(engine.getComponentManager(), engine.getEntitySerializer());
+    addPlayerComponents(engine.getComponentManager(), engine.getEntitySerializer());
 
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     //logging::log(LEVEL_INFO, "Created player");

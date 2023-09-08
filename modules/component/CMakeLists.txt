@@ -23,6 +23,7 @@ add_library(component src/component/view/game_view.cpp include/component/compone
         include/component/detail/typed_set.h
         include/component/detail/signals/component_handler_base.h
         include/component/signals/children_update.h
+        include/component/component_serializer.h
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

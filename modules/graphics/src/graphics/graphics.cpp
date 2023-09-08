@@ -16,6 +16,8 @@
 #include "component/component_serialiser.h"
 #include "graphics/renderlayer/debug_layer.h"
 #include "common/events/debug/debug_pause.h"
+#include "component/component_serializer.h"
+#include "graphics/graphics_serialize.h"
 
 using namespace graphics;
 
@@ -228,8 +230,8 @@ void detail::Graphics::updateUI () {
     uiManager.updateUI();
 }
 
-void detail::Graphics::addComponentSerialisers (component::EntitySerialiser& serialiser) {
-    serialiser.addComponentSerialiser<graphics::Model2D>("Model2D");
+void detail::Graphics::addComponentSerializers (component::EntitySerializer& serialiser) {
+    serialiser.addSerializer<graphics::Model2D>();
     //serialiser.addComponentSerialiser<graphics::GlobalTransform2D>("GlobalTransform2D");
 }
 

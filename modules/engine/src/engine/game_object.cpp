@@ -1,6 +1,7 @@
 #include <string>
 #include <utility>
 #include <math.h>
+#include <fstream>
 
 #include "engine/game_object.h"
 #include "logging/logging.h"
@@ -50,9 +51,13 @@ util::Optional<component::Entity> detail::GameObject::createNewEntityInstance (c
     }
 }
 
-component::Entity detail::GameObject::makeDeserialisedEntity (const util::DataValue& serialised) {
+component::Entity detail::GameObject::makeDeserializedEntity (const nlohmann::json& serialized) {
     //auto entityView = entityComponentManager->create();
-    const auto& serialisedObj = serialised.get<util::DataObject>();
+    if (!serialized.is_object()) {
+        logging::log(LEVEL_ERROR, "Expected object for serialized entity!");
+        return component::Null;
+    }
+    //const auto& serialisedObj = serialized.get<nlohmann::json::object_t>();
 
     /*serialiser->deserialiseObject(entityView, serialisedObj);
 
@@ -73,20 +78,20 @@ component::Entity detail::GameObject::makeDeserialisedEntity (const util::DataVa
     //eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
 
     // TODO: refactor
-    if (!serialisedObj.contains<util::DataObject>("components")) {
+    if (!serialized.contains("components")) {
         logging::log(LEVEL_ERROR, "Serialised entity did not contain components field!");
         return {};
     }
 
-    if (serialisedObj.contains<std::string>("prefab")) {
-        auto& prefab = prefabs.at(serialisedObj.at<std::string>("prefab"));
+    if (serialized.contains("prefab") && serialized.at("prefab").is_string()) {
+        auto& prefab = prefabs.at(serialized.at("prefab").get<std::string>());
         auto instantiator = prefab.instantiate();
-        serialiser->deserialiseObject(instantiator, serialisedObj.at("components"));
+        serializer->deserializeEntity(instantiator, serialized.at("components"));
 
         return instantiator.complete();
     } else {
         auto instantiator = component::Prefab::NullPrefab(entityComponentManager).instantiate({});
-        serialiser->deserialiseObject(instantiator, serialisedObj.at("components"));
+        serializer->deserializeEntity(instantiator, serialized.at("components"));
         return instantiator.complete();
     }
 }
@@ -148,7 +153,7 @@ void detail::GameObject::loadMap (Map::SharedPtr map) {
     this->gameMap = std::move(map);
 
     for (auto& i : gameMap->getEntities()) {
-        makeDeserialisedEntity(i.data);
+        makeDeserializedEntity(i.data);
     }
 
     eventBus->raise(event::MapLoadEvent(gameMap));
@@ -171,21 +176,19 @@ GameCamera& detail::GameObject::getCamera () {
 }
 
 void detail::GameObject::dumpMap (const std::string& filepath) {
-    util::DataArray entities;
+    //util::DataArray entities;
+    auto entities = nlohmann::json::array_t{};
     auto gameView = view::GameView(this);
 
     for (auto i : *entityComponentManager) {
-        auto compDataObj = serialiseEntity(i);
+        auto compDataObj = serializeEntity(i);
 
-        i.get<EntityControllerComponent>().ifPresent([&compDataObj, &i, &gameView] (EntityControllerComponent& comp) {
-            compDataObj["data"] = comp.get().getData(i, gameView);
-        });
 
-        entities.push_back(std::move(compDataObj));
+        entities.emplace_back(std::move(compDataObj));
     }
 
     logging::log(LEVEL_DEBUG, "Num in array: {}", entities.size());
-    gameMap->writeMapJson(filepath, (util::DataValue)entities);
+    gameMap->writeMapJson(filepath, std::move(entities));
 }
 
 void detail::GameObject::mapDumpRequest (event::DumpMapEvent& event) {
@@ -209,8 +212,8 @@ GameInput& detail::GameObject::getInput () {
     return gameInput;
 }
 
-util::DataObject detail::GameObject::serialiseEntity (component::Entity& entityView) {
-    return serialiser->serialiseObject(entityView);
+nlohmann::json detail::GameObject::serializeEntity (component::Entity& entity) {
+    return serializer->serializeEntity(entity);
 }
 
 void detail::GameObject::addEntityType (const std::string& typeId, const std::string& filepath) {
@@ -219,7 +222,10 @@ void detail::GameObject::addEntityType (const std::string& typeId, const std::st
         return;
     }
 
-    auto data = util::parseFromFile(filepath);
+    //auto data = util::parseFromFile(filepath);
+    nlohmann::json data;
+    std::ifstream file{filepath};
+    file >> data;
     if (!data.empty()) {
         //entityTypes[typeId] = std::move(makeEntityType(data, *serialiser));
         //entityTypes[typeId] =
@@ -229,8 +235,8 @@ void detail::GameObject::addEntityType (const std::string& typeId, const std::st
     }
 }
 
-void detail::GameObject::setSerialiser (component::EntitySerialiser* serialiser) {
-    this->serialiser = serialiser;
+void detail::GameObject::setSerializer (component::EntitySerializer* serializer) {
+    this->serializer = serializer;
 }
 
 void detail::GameObject::addDefaultSerialisers () {
@@ -278,21 +284,19 @@ util::Optional<EntityController*> detail::GameObject::getController (const std::
     }
 }
 
-util::Optional<component::Prefab> detail::GameObject::makePrefab (const util::DataValue& val) {
-    if (!val.is<util::DataObject>()) {
+util::Optional<component::Prefab> detail::GameObject::makePrefab (const nlohmann::json& val) {
+    if (!val.is_object()) {
         return util::NullOpt;
     }
 
-    const auto& obj = val.get<util::DataObject>();
-
-    if (!obj.contains<util::DataObject>("components")) {
+    if (!val.contains("components")) {
         logging::log(LEVEL_ERROR, "Prefab does not contain components field!");
         return util::NullOpt;
     }
 
     auto builder = entityComponentManager->buildPrefab();
-
-    serialiser->deserialisePrefab(builder, obj.at("components"));
+    const auto& components = val.at("components");
+    serializer->deserializePrefab(builder, components);
 
     return {builder.build()};
 }

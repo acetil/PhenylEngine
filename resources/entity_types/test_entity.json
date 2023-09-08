@@ -14,7 +14,9 @@
         "rotation": 0.0
       }
     },
-    "Model2D": "test8",
+    "Model2D": {
+      "model_name" : "test8"
+    },
     "RigidBody2D": {
       "momentum": {
         "x": 0.0,
@@ -27,12 +29,13 @@
       "mass": 1.0,
       "inertial_moment": 5.0,
       "drag": 8.3,
-      "angular_drag": 0.7
+      "angular_drag": 0.7,
+      "angular_momentum" : 0
     },
     "BoxCollider2D": {
       "Collider2D": {
         "layers": 1,
-        "masks": 3,
+        "mask": 3,
         "elasticity": 0.0
       },
       "scale_matrix": [
@@ -44,7 +47,11 @@
           "x": 0,
           "y": 0.1
         }
-      ]
+      ],
+      "scale" : {
+        "x" : 0.1,
+        "y" : 0.1
+      }
     }
   }
 }

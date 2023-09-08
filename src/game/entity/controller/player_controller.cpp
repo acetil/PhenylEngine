@@ -10,7 +10,8 @@
 #include "common/components/2d/global_transform.h"
 
 #include "game/entity/player.h"
-#include "component/component_serialiser.h"
+#include "game/entity/serializers.h"
+#include "component/component_serializer.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 7.5f
@@ -127,18 +128,10 @@ static void onCursorChange (event::CursorPosChangeEvent& event) {
     cursorPos = event.screenPos;
 }
 
-void addPlayerComponents (component::ComponentManager& manager, component::EntitySerialiser& serialiser) {
-    manager.addComponent<Player>();
+void addPlayerComponents (component::ComponentManager& manager, component::EntitySerializer& serialiser) {
+    manager.addComponent<game::Player>();
 
-    serialiser.addComponentSerialiser<Player>("Player", [] (const Player& player) -> util::DataValue {
-        return util::DataObject{};
-    }, [] (const util::DataValue& val) -> util::Optional<Player> {
-        if (val.is<util::DataObject>()) {
-            return {Player{}};
-        } else {
-            return util::NullOpt;
-        }
-    });
+    serialiser.addSerializer<game::Player>();
 
 }
 
@@ -181,7 +174,7 @@ void playerUpdate (component::ComponentManager& manager, game::GameInput& input,
         auto rot = atan2(disp.y, disp.x);
         transform.transform2D.setRotation(rot);
     });*/
-    manager.query<Player, common::GlobalTransform2D, physics::RigidBody2D>().each([forceVec, worldCursorPos] (component::Entity entity, Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
+    manager.query<game::Player, common::GlobalTransform2D, physics::RigidBody2D>().each([forceVec, worldCursorPos] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
         body.applyForce(forceVec * body.getMass());
 
         auto disp = worldCursorPos - transform.transform2D.position();
@@ -194,7 +187,7 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
     glm::vec2 worldCursorPos = game.getCamera().getWorldPos(cursorPos);
     bool doShoot = input.isDown(KeyShoot);
 
-    manager.query<Player, common::GlobalTransform2D>().each([doShoot, &game] (component::Entity entity, Player& player, common::GlobalTransform2D& transform) {
+    manager.query<game::Player, common::GlobalTransform2D>().each([doShoot, &game] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform) {
         if (doShoot && !player.hasShot) {
             auto rot = transform.transform2D.rotationAngle();
 

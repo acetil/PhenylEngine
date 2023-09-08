@@ -14,7 +14,7 @@ namespace physics {
         void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager);
     public:
         void addComponents(component::EntityComponentManager& componentManager) override;
-        void addComponentSerialisers(component::EntitySerialiser& serialiser) override;
+        void addComponentSerializers(component::EntitySerializer& serializer) override;
         void updatePhysics(component::EntityComponentManager& componentManager, float deltaTime) override;
         void checkCollisions(component::EntityComponentManager& componentManager, const event::EventBus::SharedPtr& eventBus,
                              view::GameView& gameView, float deltaTime) override;
