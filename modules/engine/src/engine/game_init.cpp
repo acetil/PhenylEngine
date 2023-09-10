@@ -3,13 +3,10 @@
 #include <utility>
 #include "engine/game_object.h"
 
-//#include "engine/entity/entity_test.h"
-#include "engine/entity/entities.h"
 #include "component/component.h"
 #include "logging/logging.h"
 #include "graphics/graphics_handlers.h"
 #include "physics/physics.h"
-#include "engine/entity/controller/entity_controller.h"
 #include "graphics/phenyl_graphics.h"
 #include "engine/phenyl_game.h"
 
@@ -27,7 +24,7 @@ void game::initGame (const graphics::PhenylGraphics& graphics, game::PhenylGame 
     //auto manager = getEntityComponentManager(eventBus);
     //gameObject.setEntityComponentManager(manager);
     logging::log(LEVEL_INFO, "Starting init of entities!");
-    eventBus->raise(event::EntityRegisterEvent(gameObject));
+    //eventBus->raise(event::EntityRegisterEvent(gameObject));
     logging::log(LEVEL_DEBUG, "Finished entity init!");
 
     /*graphics.getTextureAtlas("sprite").ifPresent([&gameObject](auto& atlas){gameObject.setTextureIds(atlas);});
@@ -48,7 +45,7 @@ void addEventHandlers (game::PhenylGame gameObject, graphics::PhenylGraphics gra
     graphics.addEventHandlers(eventBus);
     gameObject.addEventHandlers(eventBus);
 
-    eventBus->subscribeUnscoped(game::addEntities);
+    //eventBus->subscribeUnscoped(game::addEntities);
     //gameObject->getEventBus()->subscribeHandler(graphics::onEntityCreation);
     //eventBus->subscribeUnscoped(physics::onEntityCreation);
     //gameObject.getEventBus()->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, graphics.tempGetGraphics());

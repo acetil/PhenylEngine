@@ -3,8 +3,8 @@
 
 using namespace view;
 
-component::Entity GameView::createEntityInstance (const std::string& name, const util::DataValue& data) {
-    return gameObject->createNewEntityInstance(name, data).getUnsafe(); // TODO
+component::Entity GameView::createEntityInstance (const std::string& name) {
+    return gameObject->createNewEntityInstance(name); // TODO
 }
 
 void GameView::destroyEntityInstance (component::EntityId entityId) {

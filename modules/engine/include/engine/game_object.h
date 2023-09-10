@@ -16,8 +16,6 @@
 #include "common/events/map_load_request.h"
 #include "input/game_input.h"
 #include "game_camera.h"
-#include "engine/entity/entity_type.h"
-#include "engine/entity/controller/entity_controller.h"
 #include "component/prefab.h"
 #include "component/component_serializer.h"
 
@@ -30,7 +28,6 @@ namespace game::detail {
     class ComponentSerialiser;
         class GameObject : public util::SmartHelper<GameObject, true>{
                 private:
-                util::Map<std::string, std::unique_ptr<game::EntityController>> controllers;
                 std::map<std::string, int> tileMap;
                 std::vector<Tile*> tileRegistry;
                 event::EventBus::SharedPtr eventBus;
@@ -43,7 +40,7 @@ namespace game::detail {
 
                 event::EventScope eventScope;
 
-                util::Map<std::string, EntityType> entityTypes;
+                //util::Map<std::string, EntityType> entityTypes;
                 util::Map<std::string, component::Prefab> prefabs;
                 component::EntitySerializer* serializer;
 
@@ -56,9 +53,7 @@ namespace game::detail {
                 public:
                 ~GameObject();
 
-                void registerEntityController (std::unique_ptr<EntityController> controller);
-
-                util::Optional<component::Entity> createNewEntityInstance (const std::string& name, const util::DataValue& data = util::DataValue());
+                component::Entity createNewEntityInstance (const std::string& name);
 
                 void deleteEntityInstance (component::EntityId entityId);
                 void registerTile (Tile* tile);
@@ -66,14 +61,8 @@ namespace game::detail {
                 Tile* getTile (const std::string& name);
                 Tile* getTile (int tileId);
 
-                void updateEntityPosition ();
                 void setEntityComponentManager (component::EntityComponentManager* manager);
-
-                void updateEntitiesPrePhysics ();
-                void updateEntitiesPostPhysics ();
                 event::EventBus::SharedPtr getEventBus();
-
-                util::Optional<EntityController*> getController (const std::string& name);
 
                 void reloadMap ();
                 void loadMap (Map::SharedPtr map);

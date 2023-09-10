@@ -19,8 +19,8 @@ std::shared_ptr<game::detail::GameObject> PhenylGame::getShared () const {
     return ptr;
 }
 
-component::Entity PhenylGame::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
-    return getShared()->createNewEntityInstance(name, data).getUnsafe(); // TODO
+component::Entity PhenylGame::createNewEntityInstance (const std::string& name) {
+    return getShared()->createNewEntityInstance(name); // TODO
 }
 
 void PhenylGame::deleteEntityInstance (component::EntityId entityId) {
@@ -43,28 +43,12 @@ Tile* PhenylGame::getTile (int tileId) {
     return getShared()->getTile(tileId);
 }
 
-void PhenylGame::updateEntityPosition () {
-    getShared()->updateEntityPosition();
-}
-
 void PhenylGame::setEntityComponentManager (component::EntityComponentManager* compManager) {
     getShared()->setEntityComponentManager(compManager);
 }
 
-void PhenylGame::updateEntitiesPrePhysics () {
-    getShared()->updateEntitiesPrePhysics();
-}
-
-void PhenylGame::updateEntitiesPostPhysics () {
-    getShared()->updateEntitiesPostPhysics();
-}
-
 event::EventBus::SharedPtr PhenylGame::getEventBus () {
     return getShared()->getEventBus();
-}
-
-util::Optional<EntityController*> PhenylGame::getController (const std::string& name) {
-    return getShared()->getController(name);
 }
 
 void PhenylGame::reloadMap () {

@@ -7,12 +7,9 @@
 #include "logging/logging.h"
 #include "physics/physics.h"
 #include "common/events/entity_creation.h"
-#include "engine/entity/controller/entity_controller.h"
 #include "common/events/map_load.h"
 #include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
-#include "component/component_serialiser.h"
-#include "engine/entity/entity_type.h"
 
 using namespace game;
 
@@ -22,28 +19,10 @@ detail::GameObject::~GameObject () {
     }
 }
 
-util::Optional<component::Entity> detail::GameObject::createNewEntityInstance (const std::string& name, const util::DataValue& data) {
-    // TODO: requires refactor
-    /*if (!entityTypes.contains(name)) {
-        logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
-        return util::NullOpt;
-    } else {
-        auto entityView = entityComponentManager->create();
-        const auto& entityType = entityTypes.at(name);
-        entityType.addDefaultComponents(entityView);
-
-        auto gameView = view::GameView(this);
-
-        entityView.get<EntityControllerComponent>().ifPresent([&entityView, &gameView, &data] (EntityControllerComponent& comp) {
-            comp.get().initEntity(entityView, gameView, data);
-        });
-
-        eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
-        return {entityView};
-    }*/
+component::Entity detail::GameObject::createNewEntityInstance (const std::string& name) {
     if (!prefabs.contains(name)) {
         logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
-        return util::NullOpt;
+        return component::Null;
     } else {
         return prefabs.at(name)
             .instantiate()
@@ -57,25 +36,6 @@ component::Entity detail::GameObject::makeDeserializedEntity (const nlohmann::js
         logging::log(LEVEL_ERROR, "Expected object for serialized entity!");
         return component::Null;
     }
-    //const auto& serialisedObj = serialized.get<nlohmann::json::object_t>();
-
-    /*serialiser->deserialiseObject(entityView, serialisedObj);
-
-    entityView.get<EntityTypeComponent>().ifPresent([this, &entityView] (EntityTypeComponent& entityType) {
-        if (entityTypes.contains(entityType.typeId)) {
-            entityTypes.at(entityType.typeId).addDefaultComponents(entityView);
-        } else {
-            logging::log(LEVEL_WARNING, "Unknown entity type: {}!", entityType.typeId);
-        }
-    });
-
-    auto gameView = view::GameView(this);*/
-
-    /*entityView.get<EntityControllerComponent>().ifPresent([&entityView, &gameView, &serialisedObj] (EntityControllerComponent& comp) {
-        comp.get().initEntity(entityView, gameView, serialisedObj["data"]);
-    });*/
-
-    //eventBus->raise(event::EntityCreationEvent(*entityComponentManager, entityView, gameView));
 
     // TODO: refactor
     if (!serialized.contains("components")) {
@@ -124,23 +84,6 @@ event::EventBus::SharedPtr detail::GameObject::getEventBus () {
 }
 void detail::GameObject::setEntityComponentManager (component::EntityComponentManager* manager) {
     this->entityComponentManager = manager;
-}
-void detail::GameObject::updateEntityPosition () {
-    logging::log(LEVEL_ERROR, "Do not call this function!");
-    //physics::updatePhysics(entityComponentManager);
-    //physics::checkCollisions(entityComponentManager, eventBus, view::GameView(this));
-}
-
-void detail::GameObject::updateEntitiesPrePhysics () {
-    // TODO: make better way
-    auto gameView = view::GameView(this);
-    controlEntitiesPrePhysics(*entityComponentManager, gameView, eventBus);
-}
-
-void detail::GameObject::updateEntitiesPostPhysics () {
-    // TODO: make better way
-    auto gameView = view::GameView(this);
-    controlEntitiesPostPhysics(*entityComponentManager, gameView, eventBus);
 }
 
 void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
@@ -217,18 +160,16 @@ nlohmann::json detail::GameObject::serializeEntity (component::Entity& entity) {
 }
 
 void detail::GameObject::addEntityType (const std::string& typeId, const std::string& filepath) {
-    if (entityTypes.contains(typeId)) {
+    if (prefabs.contains(typeId)) {
         logging::log(LEVEL_WARNING, "Attempted to insert duplicate entity type \"{}\"!", typeId);
         return;
     }
 
-    //auto data = util::parseFromFile(filepath);
+
     nlohmann::json data;
     std::ifstream file{filepath};
     file >> data;
     if (!data.empty()) {
-        //entityTypes[typeId] = std::move(makeEntityType(data, *serialiser));
-        //entityTypes[typeId] =
         makePrefab(data).ifPresent([this, &typeId] (component::Prefab& prefab) {
            prefabs[typeId] = std::move(prefab);
         });
@@ -239,50 +180,7 @@ void detail::GameObject::setSerializer (component::EntitySerializer* serializer)
     this->serializer = serializer;
 }
 
-void detail::GameObject::addDefaultSerialisers () {
-   /* serialiser->addComponentSerialiser<EntityTypeComponent>("EntityType", [](const EntityTypeComponent& comp) -> util::DataValue {
-        return (util::DataValue)comp.typeId;
-    }, [](const util::DataValue& val) -> util::Optional<EntityTypeComponent> {
-        if (val.is<std::string>()) {
-            return {EntityTypeComponent{val.get<std::string>()}};
-        } else {
-            return util::NullOpt;
-        }
-    });
-
-    serialiser->addComponentSerialiser<EntityControllerComponent>("Controller", [] (const EntityControllerComponent& comp) -> util::DataValue {
-        return (util::DataValue)comp.get().getEntityId();
-    }, [this] (const util::DataValue& val) -> util::Optional<EntityControllerComponent> {
-        if (!val.is<std::string>()) {
-            logging::log(LEVEL_ERROR, "Controller id must be a string!");
-            return util::NullOpt;
-        }
-
-        auto& controllerId = val.get<std::string>();
-
-        auto controller = getController(controllerId);
-        return controller.thenMap([](EntityController* controller) {
-            return EntityControllerComponent{controller};
-        });
-    });*/
-}
-
-void detail::GameObject::registerEntityController (std::unique_ptr<EntityController> controller) {
-    if (controllers.contains(controller->getEntityId())) {
-        logging::log(LEVEL_WARNING, "Attempted to register entity controller with duplicate id \"{}\"!", controller->getEntityId());
-        return;
-    }
-
-    controllers[controller->getEntityId()] = std::move(controller);
-}
-
-util::Optional<EntityController*> detail::GameObject::getController (const std::string& name) {
-    if (controllers.contains(name)) {
-        return util::Optional<EntityController*>{controllers[name].get()};
-    } else {
-        return util::NullOpt;
-    }
-}
+void detail::GameObject::addDefaultSerialisers () {}
 
 util::Optional<component::Prefab> detail::GameObject::makePrefab (const nlohmann::json& val) {
     if (!val.is_object()) {

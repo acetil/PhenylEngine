@@ -4,8 +4,6 @@
 
 #include "engine/engine.h"
 #include "engine/game_init.h"
-#include "engine/entity/entities.h"
-#include "engine/entity/controller/entity_controller.h"
 #include "component/component_serializer.h"
 
 #include "graphics/graphics_init.h"
@@ -15,7 +13,6 @@
 #include "physics/physics.h"
 
 #include "logging/logging.h"
-#include "component/component_serialiser.h"
 #include "common/components/2d/global_transform.h"
 #include "common/components/2d/global_transform_serialize.h"
 #include "physics/physics.h"
@@ -149,12 +146,11 @@ void detail::Engine::addEventHandlers () {
     graphicsHolder.getGraphics().addEventHandlers(eventBus);
     gameObjHolder.getGameObject().addEventHandlers(eventBus);
 
-    eventBus->subscribeUnscoped(game::addEntities);
+    //eventBus->subscribeUnscoped(game::addEntities);
     //eventBus->subscribeUnscoped(physics::onEntityCreation);
 
     graphics::addDebugEventHandlers(eventBus);
 
-    game::addControlEventHandlers(eventBus);
     physicsObj->addEventHandlers(eventBus);
 }
 

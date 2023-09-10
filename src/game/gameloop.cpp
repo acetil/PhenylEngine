@@ -131,13 +131,10 @@ int game::gameloop (engine::PhenylEngine& engine) {
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
             if (!isStepping || shouldStep) {
-                gameObject.updateEntitiesPrePhysics();
                 playerUpdate(engine.getComponentManager(), gameObject.getGameInput(), gameObject);
-
-                //gameObject.updateEntityPosition();
                 engine.updateEntityPosition(1.0f / PHYSICS_FPS);
-                gameObject.updateEntitiesPostPhysics();
                 playerUpdatePost(engine.getComponentManager(), gameObject.getGameInput(), gameObject);
+
                 gameObject.updateCamera(graphics.getCamera());
             }
 

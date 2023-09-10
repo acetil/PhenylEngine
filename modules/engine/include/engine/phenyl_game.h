@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "component/component.h"
-//#include "entity/controller/entity_controller.h"
 #include "util/data.h"
 #include "engine/input/game_input.h"
 #include "engine/map/map.h"
@@ -29,7 +28,7 @@ namespace game {
     public:
         explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {}
 
-        component::Entity createNewEntityInstance (const std::string& name, const util::DataValue& data=util::DataValue());
+        component::Entity createNewEntityInstance (const std::string& name);
 
         void deleteEntityInstance (component::EntityId entityId);
         void registerTile (Tile* tile);
@@ -37,17 +36,9 @@ namespace game {
         Tile* getTile (const std::string& name);
         Tile* getTile (int tileId);
 
-        void updateEntityPosition ();
-
-
         void setEntityComponentManager (component::EntityComponentManager* compManager);
 
-        void updateEntitiesPrePhysics ();
-        void updateEntitiesPostPhysics ();
-
         event::EventBus::SharedPtr getEventBus ();
-
-        util::Optional<EntityController*> getController (const std::string& name);
 
         void reloadMap ();
         void loadMap (Map::SharedPtr map);
