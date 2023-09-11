@@ -221,7 +221,7 @@ namespace component {
             for (auto [i, comp] : components.kv()) {
                 comp->clear();
             }
-
+            prefabs.clear();
             idList.clear();
         }
 

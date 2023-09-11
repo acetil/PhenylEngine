@@ -88,7 +88,7 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
             glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
             glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
-            auto bulletView = common::Assets::Load<component::Prefab>("resources/prefabs/bullet_entity")->instantiate()
+            auto bulletView = player.bulletPrefab->instantiate()
                     .complete();
 
             bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (common::GlobalTransform2D& transform, physics::RigidBody2D& body) {

@@ -49,7 +49,12 @@ namespace component::detail {
         }
 
         void decRefCount (std::size_t id) {
-            assert(valid(id));
+            //assert(valid(id));
+            if (!valid(id)) {
+                logging::log(LEVEL_ERROR, "Attempted to decrement ref count of invalid prefab {}!", id);
+                return;
+            }
+
             if (--getPrefabEntry(id).refCount) {
                 deleteEntry(id);
             }
@@ -85,5 +90,14 @@ namespace component::detail {
         }
 
         void instantiate (Entity entity, std::size_t prefabId);
+        void clear () {
+            for (auto& i : entries) {
+                for (auto& [set, compId] : i.comps) {
+                    set->deletePrefab(compId);
+                }
+            }
+
+            entries.clear();
+        }
     };
 }

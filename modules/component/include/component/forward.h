@@ -17,4 +17,5 @@ namespace component {
     class Entity;
     class ConstEntity;
     class ChildrenView;
+    class Prefab;
 }

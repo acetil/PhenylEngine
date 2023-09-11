@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <string>
 
 #include "util/meta.h"
 #include "forward.h"
@@ -15,6 +16,8 @@ namespace common {
         private:
             static void IncRefCount (std::size_t typeIndex, std::size_t id);
             static void DecRefCount (std::size_t typeIndex, std::size_t id);
+
+            static std::string_view GetPath (std::size_t typeIndex, std::size_t id);
 
             template <typename T>
             friend class common::Asset;
@@ -104,6 +107,10 @@ namespace common {
 
         [[nodiscard]] std::size_t id () const {
             return rId;
+        }
+
+        [[nodiscard]] std::string_view path () const {
+            return detail::AssetBase::GetPath(meta::type_index<T>(), rId);
         }
     };
 }

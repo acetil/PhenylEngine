@@ -1,6 +1,7 @@
 #include "common/assets/asset.h"
 #include "common/assets/assets.h"
 #include "common/assets/asset_manager.h"
+#include "common/assets/asset_serializer.h"
 
 using namespace common;
 
@@ -16,4 +17,8 @@ void detail::AssetBase::IncRefCount (std::size_t typeIndex, std::size_t id) {
 
 void detail::AssetBase::DecRefCount (std::size_t typeIndex, std::size_t id) {
     Assets::DecrementRefCount(typeIndex, id);
+}
+
+std::string_view detail::AssetBase::GetPath (std::size_t typeIndex, std::size_t id) {
+    return Assets::GetPath(typeIndex, id);
 }

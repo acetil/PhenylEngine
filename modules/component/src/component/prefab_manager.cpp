@@ -48,3 +48,7 @@ component::PrefabManager::~PrefabManager () {
 const char* component::PrefabManager::getFileType () const {
     return ".json";
 }
+
+void component::PrefabManager::clear () {
+    prefabs.clear();
+}

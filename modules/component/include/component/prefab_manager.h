@@ -19,5 +19,6 @@ namespace component {
         [[nodiscard]] const char* getFileType () const override;
 
         void selfRegister ();
+        void clear ();
     };
 }

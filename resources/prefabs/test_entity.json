@@ -1,6 +1,8 @@
 {
   "components" : {
-    "Player": {},
+    "Player": {
+      "bullet_prefab" : "resources/prefabs/bullet_entity"
+    },
     "GlobalTransform2D": {
       "transform": {
         "position": {

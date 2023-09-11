@@ -30,6 +30,7 @@ namespace common {
             virtual void incRefCount (std::size_t id) = 0;
             virtual bool decRefCount (std::size_t id) = 0;
             virtual bool removeEntry (std::size_t id) = 0;
+            virtual std::string_view getPath (std::size_t id) = 0;
 
             [[nodiscard]] AssetManagerBase* getManagerBase () const {
                 return manager;
@@ -39,6 +40,8 @@ namespace common {
         template <typename T>
         class AssetCache : public AssetCacheBase {
         private:
+            static constexpr std::string_view UnknownPath = "";
+
             util::Map<std::string, std::size_t> pathMap;
             util::FLVector<AssetEntry<T>> cache;
         public:
@@ -98,13 +101,21 @@ namespace common {
                 pathMap.remove(cache.at(id - 1).path);
                 cache.remove(id - 1);
             }
+
+            std::string_view getPath (std::size_t id) override {
+                if (id && cache.present(id - 1)) {
+                    return cache.at(id - 1).path;
+                } else {
+                    return UnknownPath;
+                }
+            }
         };
     }
     class Assets {
     private:
         static Assets* INSTANCE;
 
-        static Assets* getInstance () {
+        static Assets* GetInstance () {
             if (!INSTANCE) {
                 [[unlikely]]
                 INSTANCE = new Assets();
@@ -121,7 +132,10 @@ namespace common {
         }
 
         void decrementRefCount (std::size_t typeIndex, std::size_t id) {
-            assert(caches.contains(typeIndex));
+            if (!caches.contains(typeIndex)) {
+                logging::log(LEVEL_WARNING, "Attempted to decrement ref count of manager with type {} that no longer exists!", typeIndex);
+                return;
+            }
             auto& entry = caches.at(typeIndex);
             if (!entry->decRefCount(id)) {
                 entry->getManagerBase()->queueUnload(id);
@@ -186,16 +200,26 @@ namespace common {
             caches.remove(meta::type_index<T>());
         }
 
+        std::string_view getPath (std::size_t typeIndex, std::size_t id) {
+            assert(caches.contains(typeIndex));
+            auto& cache = caches.at(typeIndex);
+            return cache->getPath(id);
+        }
+
         static void IncrementRefCount (std::size_t typeIndex, std::size_t id) {
-            getInstance()->incrementRefCount(typeIndex, id);
+            GetInstance()->incrementRefCount(typeIndex, id);
         }
 
         static void DecrementRefCount (std::size_t typeIndex, std::size_t id) {
-            getInstance()->decrementRefCount(typeIndex, id);
+            GetInstance()->decrementRefCount(typeIndex, id);
         }
 
         static bool UnloadAsset (std::size_t typeIndex, std::size_t id) {
-            return getInstance()->unloadAsset(typeIndex, id);
+            return GetInstance()->unloadAsset(typeIndex, id);
+        }
+
+        static std::string_view GetPath (std::size_t typeIndex, std::size_t id) {
+            return GetInstance()->getPath(typeIndex, id);
         }
 
         friend detail::AssetManagerBase;
@@ -203,17 +227,17 @@ namespace common {
     public:
         template <typename T>
         static Asset<T> Load (const std::string& path) {
-            return getInstance()->load<T>(path);
+            return GetInstance()->load<T>(path);
         }
 
         template <typename T>
         static void AddManager (AssetManager<T>* manager) {
-            getInstance()->addManager(manager);
+            GetInstance()->addManager(manager);
         }
 
         template <typename T>
         static void RemoveManager (AssetManager<T>* manager) {
-            getInstance()->removeManager(manager);
+            GetInstance()->removeManager(manager);
         }
     };
 }

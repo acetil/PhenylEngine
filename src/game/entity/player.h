@@ -3,9 +3,11 @@
 #include "component/forward.h"
 #include "engine/input/game_input.h"
 #include "engine/phenyl_game.h"
+#include "common/assets/asset.h"
 
 namespace game {
     struct Player {
+        common::Asset<component::Prefab> bulletPrefab;
         bool hasShot{false};
     };
 }

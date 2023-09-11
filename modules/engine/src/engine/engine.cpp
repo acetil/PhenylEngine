@@ -126,6 +126,7 @@ engine::detail::Engine::Engine () : componentManager{256}{
 
 engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
+    prefabManager->clear();
     componentManager.clear();
 }
 
