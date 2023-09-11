@@ -8,6 +8,11 @@ add_library(common include/common include/common/input/input_source.h include/co
         include/common/maths/2d/transform_serializer.h
         include/common/components/2d/global_transform_serialize.h
         include/common/serializer_intrusive.h
+        include/common/assets/assets.h
+        include/common/assets/asset_manager.h
+        include/common/assets/asset.h
+        include/common/assets/forward.h
+        src/common/assets/assets.cpp
 )
 
 find_package(nlohmann_json REQUIRED)
