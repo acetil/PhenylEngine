@@ -41,21 +41,21 @@ namespace game::detail {
                 event::EventScope eventScope;
 
                 //util::Map<std::string, EntityType> entityTypes;
-                util::Map<std::string, component::Prefab> prefabs;
+                //util::Map<std::string, component::Prefab> prefabs;
                 component::EntitySerializer* serializer;
 
                 component::Entity makeDeserializedEntity (const nlohmann::json& serialized);
 
                 nlohmann::json serializeEntity (component::Entity& entityView);
-                util::Optional<component::Prefab> makePrefab (const nlohmann::json& val);
+                //util::Optional<component::Prefab> makePrefab (const nlohmann::json& val);
 
 
                 public:
                 ~GameObject();
 
-                component::Entity createNewEntityInstance (const std::string& name);
+                //component::Entity createNewEntityInstance (const std::string& name);
 
-                void deleteEntityInstance (component::EntityId entityId);
+                //void deleteEntityInstance (component::EntityId entityId);
                 void registerTile (Tile* tile);
                 int getTileId (const std::string& name);
                 Tile* getTile (const std::string& name);
@@ -80,10 +80,6 @@ namespace game::detail {
                 void setSerializer (component::EntitySerializer* serializer);
 
                 void addDefaultSerialisers ();
-
-                void addEntityType (const std::string& typeId, const std::string& filepath);
-
-                void clearPrefabs ();
 
                 GameCamera& getCamera ();
                 GameInput& getInput ();

@@ -148,7 +148,7 @@ namespace common {
                 }
                 return std::move(asset);
             }
-            std::ifstream file{path};
+            std::ifstream file{path + cache->getManager()->getFileType()};
             if (!file) {
                 logging::log(LEVEL_ERROR, "Failed to open file at \"{}\"!", path);
                 return Asset<T>{};

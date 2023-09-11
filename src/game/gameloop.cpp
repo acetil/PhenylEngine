@@ -45,10 +45,6 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
     //gameObject->createNewEntityInstance("bullet", 0.3, 0.3);
     //logging::log(LEVEL_INFO, "Created player");
-    gameObject.addEntityType("test_entity", "resources/entity_types/test_entity.json");
-    gameObject.addEntityType("wall_entity", "resources/entity_types/wall_entity.json");
-    gameObject.addEntityType("bullet_entity", "resources/entity_types/bullet_entity.json");
-    gameObject.addEntityType("block_entity", "resources/entity_types/block_entity.json");
 
 
     game::GameInput& gameInput = gameObject.getGameInput();

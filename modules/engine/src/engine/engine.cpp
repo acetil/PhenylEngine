@@ -16,6 +16,7 @@
 #include "common/components/2d/global_transform.h"
 #include "common/components/2d/global_transform_serialize.h"
 #include "physics/physics.h"
+#include "component/prefab_manager.h"
 
 using namespace engine;
 
@@ -27,6 +28,7 @@ private:
     component::EntityComponentManager componentManager;
     std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<physics::IPhysics> physicsObj;
+    std::unique_ptr<component::PrefabManager> prefabManager;
     void addEventHandlers ();
     void addDefaultSerialisers ();
     void addComponents ();
@@ -93,6 +95,8 @@ engine::detail::Engine::Engine () : componentManager{256}{
     eventBus = event::EventBus::NewSharedPtr();
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
+    prefabManager = std::make_unique<component::PrefabManager>(&componentManager, entitySerializer.get());
+    prefabManager->selfRegister();
     addEventHandlers();
 
     auto gameObj = gameObjHolder.getGameObject();
@@ -122,7 +126,6 @@ engine::detail::Engine::Engine () : componentManager{256}{
 
 engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
-    gameObjHolder.tempGetGameObject()->clearPrefabs();
     componentManager.clear();
 }
 

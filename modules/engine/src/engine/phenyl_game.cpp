@@ -19,13 +19,6 @@ std::shared_ptr<game::detail::GameObject> PhenylGame::getShared () const {
     return ptr;
 }
 
-component::Entity PhenylGame::createNewEntityInstance (const std::string& name) {
-    return getShared()->createNewEntityInstance(name); // TODO
-}
-
-void PhenylGame::deleteEntityInstance (component::EntityId entityId) {
-    getShared()->deleteEntityInstance(entityId);
-}
 
 void PhenylGame::registerTile (Tile* tile) {
     getShared()->registerTile(tile);
@@ -81,10 +74,6 @@ GameInput& PhenylGame::getGameInput () {
 
 void PhenylGame::addDefaultSerialisers () {
     getShared()->addDefaultSerialisers();
-}
-
-void PhenylGame::addEntityType (const std::string& typeId, const std::string& filepath) {
-    getShared()->addEntityType(typeId, filepath);
 }
 
 void PhenylGame::setSerializer (component::EntitySerializer* serialiser) {

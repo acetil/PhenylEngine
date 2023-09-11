@@ -24,6 +24,8 @@ add_library(component src/component/view/game_view.cpp include/component/forward
         include/component/detail/signals/component_handler_base.h
         include/component/signals/children_update.h
         include/component/component_serializer.h
+        include/component/prefab_manager.h
+        src/component/prefab_manager.cpp
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

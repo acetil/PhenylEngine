@@ -20,7 +20,7 @@
                     }
                 }
             },
-            "prefab" : "test_entity"
+            "prefab" : "resources/prefabs/test_entity"
         },
         {
             "components" : {
@@ -59,7 +59,7 @@
                     }
                 }
             },
-            "prefab" : "wall_entity"
+            "prefab" : "resources/prefabs/wall_entity"
         },
         {
             "components" : {
@@ -98,7 +98,7 @@
                     }
                 }
             },
-            "prefab" : "wall_entity"
+            "prefab" : "resources/prefabs/wall_entity"
         },
         {
             "components" : {
@@ -137,7 +137,7 @@
                     }
                 }
             },
-            "prefab" : "wall_entity"
+            "prefab" : "resources/prefabs/wall_entity"
         },
         {
             "components" : {
@@ -155,7 +155,7 @@
                     }
                 }
             },
-            "prefab" : "block_entity"
+            "prefab" : "resources/prefabs/block_entity"
         },
         {
             "components" : {
@@ -173,7 +173,7 @@
                     }
                 }
             },
-            "prefab" : "block_entity"
+            "prefab" : "resources/prefabs/block_entity"
         },
         {
             "components" : {
@@ -191,7 +191,7 @@
                     }
                 }
             },
-            "prefab" : "block_entity"
+            "prefab" : "resources/prefabs/block_entity"
         }
     ],
     "tile_ids": [

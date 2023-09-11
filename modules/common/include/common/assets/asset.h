@@ -86,12 +86,12 @@ namespace common {
             return *ptr;
         }
 
-        T& operator-> () {
-            return *this;
+        T* operator-> () {
+            return ptr;
         }
 
-        const T& operator-> () const {
-            return *this;
+        const T* operator-> () const {
+            return ptr;
         }
 
         T* get () {

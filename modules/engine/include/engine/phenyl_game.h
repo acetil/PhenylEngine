@@ -28,9 +28,6 @@ namespace game {
     public:
         explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {}
 
-        component::Entity createNewEntityInstance (const std::string& name);
-
-        void deleteEntityInstance (component::EntityId entityId);
         void registerTile (Tile* tile);
         int getTileId (const std::string& name);
         Tile* getTile (const std::string& name);
@@ -59,8 +56,6 @@ namespace game {
         void setSerializer (component::EntitySerializer* serialiser);
 
         void addDefaultSerialisers ();
-
-        void addEntityType (const std::string& typeId, const std::string& filepath);
     };
 
     class PhenylGameHolder {

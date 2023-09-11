@@ -8,6 +8,7 @@
 #include "game/entity/serializers.h"
 #include "component/component_serializer.h"
 #include "common/events/cursor_position_change.h"
+#include "common/assets/assets.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 7.5f
@@ -87,7 +88,8 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
             glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
             glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
-            auto bulletView = game.createNewEntityInstance("bullet_entity");
+            auto bulletView = common::Assets::Load<component::Prefab>("resources/prefabs/bullet_entity")->instantiate()
+                    .complete();
 
             bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
                 transform.transform2D

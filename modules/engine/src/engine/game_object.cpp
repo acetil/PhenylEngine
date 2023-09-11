@@ -10,23 +10,13 @@
 #include "common/events/map_load.h"
 #include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
+#include "common/assets/assets.h"
 
 using namespace game;
 
 detail::GameObject::~GameObject () {
     for (auto& i : tileRegistry) {
         delete i;
-    }
-}
-
-component::Entity detail::GameObject::createNewEntityInstance (const std::string& name) {
-    if (!prefabs.contains(name)) {
-        logging::log(LEVEL_WARNING, "Attempted creation of entity with entity type \"{}\" which doesn't exist!", name);
-        return component::Null;
-    } else {
-        return prefabs.at(name)
-            .instantiate()
-            .complete();
     }
 }
 
@@ -44,8 +34,13 @@ component::Entity detail::GameObject::makeDeserializedEntity (const nlohmann::js
     }
 
     if (serialized.contains("prefab") && serialized.at("prefab").is_string()) {
-        auto& prefab = prefabs.at(serialized.at("prefab").get<std::string>());
-        auto instantiator = prefab.instantiate();
+        auto prefab = common::Assets::Load<component::Prefab>(serialized.at("prefab"));
+        if (!prefab) {
+            logging::log(LEVEL_ERROR, "Failed to load prefab \"{}\"!", serialized.at("prefab").get<std::string>());
+            return component::Null;
+        }
+
+        auto instantiator = prefab->instantiate();
         serializer->deserializeEntity(instantiator, serialized.at("components"));
 
         return instantiator.complete();
@@ -84,11 +79,6 @@ event::EventBus::SharedPtr detail::GameObject::getEventBus () {
 }
 void detail::GameObject::setEntityComponentManager (component::EntityComponentManager* manager) {
     this->entityComponentManager = manager;
-}
-
-void detail::GameObject::deleteEntityInstance (component::EntityId entityId) {
-    //entityComponentManager->remove(entityId); // TODO: implement queue
-    entityComponentManager->entity(entityId).remove();
 }
 
 void detail::GameObject::loadMap (Map::SharedPtr map) {
@@ -159,46 +149,8 @@ nlohmann::json detail::GameObject::serializeEntity (component::Entity& entity) {
     return serializer->serializeEntity(entity);
 }
 
-void detail::GameObject::addEntityType (const std::string& typeId, const std::string& filepath) {
-    if (prefabs.contains(typeId)) {
-        logging::log(LEVEL_WARNING, "Attempted to insert duplicate entity type \"{}\"!", typeId);
-        return;
-    }
-
-
-    nlohmann::json data;
-    std::ifstream file{filepath};
-    file >> data;
-    if (!data.empty()) {
-        makePrefab(data).ifPresent([this, &typeId] (component::Prefab& prefab) {
-           prefabs[typeId] = std::move(prefab);
-        });
-    }
-}
-
 void detail::GameObject::setSerializer (component::EntitySerializer* serializer) {
     this->serializer = serializer;
 }
 
 void detail::GameObject::addDefaultSerialisers () {}
-
-util::Optional<component::Prefab> detail::GameObject::makePrefab (const nlohmann::json& val) {
-    if (!val.is_object()) {
-        return util::NullOpt;
-    }
-
-    if (!val.contains("components")) {
-        logging::log(LEVEL_ERROR, "Prefab does not contain components field!");
-        return util::NullOpt;
-    }
-
-    auto builder = entityComponentManager->buildPrefab();
-    const auto& components = val.at("components");
-    serializer->deserializePrefab(builder, components);
-
-    return {builder.build()};
-}
-
-void detail::GameObject::clearPrefabs () {
-    prefabs.clear();
-}
