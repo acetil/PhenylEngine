@@ -1,4 +1,5 @@
 #include <exception>
+#include <fstream>
 
 #include "component/component.h"
 
@@ -17,6 +18,7 @@
 #include "common/components/2d/global_transform_serialize.h"
 #include "physics/physics.h"
 #include "component/prefab_manager.h"
+#include "engine/level/level_manager.h"
 
 using namespace engine;
 
@@ -29,6 +31,7 @@ private:
     std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<physics::IPhysics> physicsObj;
     std::unique_ptr<component::PrefabManager> prefabManager;
+    std::unique_ptr<game::LevelManager> levelManager;
     void addEventHandlers ();
     void addDefaultSerialisers ();
     void addComponents ();
@@ -44,6 +47,7 @@ public:
     event::EventBus::SharedPtr getEventBus ();
     component::EntitySerializer& getEntitySerializer ();
     physics::PhenylPhysics getPhysics ();
+    void dumpLevel (std::ostream& file);
 
     void updateEntityPosition (float deltaTime);
     void debugRender ();
@@ -91,12 +95,19 @@ void PhenylEngine::debugRender () {
     internal->debugRender();
 }
 
+void PhenylEngine::dumpLevel (std::ostream& file) {
+    internal->dumpLevel(file);
+}
+
 engine::detail::Engine::Engine () : componentManager{256}{
     eventBus = event::EventBus::NewSharedPtr();
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
+
     prefabManager = std::make_unique<component::PrefabManager>(&componentManager, entitySerializer.get());
+    levelManager = std::make_unique<game::LevelManager>(&componentManager, entitySerializer.get());
     prefabManager->selfRegister();
+    levelManager->selfRegister();
     addEventHandlers();
 
     auto gameObj = gameObjHolder.getGameObject();
@@ -115,7 +126,6 @@ engine::detail::Engine::Engine () : componentManager{256}{
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
-    graphics::addMapRenderLayer(graphics, eventBus);
     graphics.addEntityLayer(&componentManager); // TODO: unhackify
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
 
@@ -127,7 +137,7 @@ engine::detail::Engine::Engine () : componentManager{256}{
 engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
     prefabManager->clear();
-    componentManager.clear();
+    componentManager.clearAll();
 }
 
 game::detail::GameObject::SharedPtr detail::Engine::getGameObjectTemp () const {
@@ -156,6 +166,11 @@ void detail::Engine::addEventHandlers () {
     graphics::addDebugEventHandlers(eventBus);
 
     physicsObj->addEventHandlers(eventBus);
+
+    eventBus->subscribeUnscoped<event::DumpMapEvent>([this] (const event::DumpMapEvent& event) {
+        std::ofstream file{event.filepath};
+       levelManager->dump(file);
+    });
 }
 
 component::EntityComponentManager& detail::Engine::getComponentManager () {
@@ -194,4 +209,8 @@ void detail::Engine::addComponents () {
     componentManager.addComponent<common::GlobalTransform2D>();
     physicsObj->addComponents(componentManager);
     graphicsHolder.tempGetGraphics()->addComponents(componentManager);
+}
+
+void detail::Engine::dumpLevel (std::ostream& file) {
+    levelManager->dump(file);
 }

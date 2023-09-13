@@ -37,6 +37,8 @@ namespace engine {
 
         physics::PhenylPhysics getPhysics ();
 
+        void dumpLevel (std::ostream& path);
+
         void updateEntityPosition (float deltaTime);
         void debugRender ();
     };

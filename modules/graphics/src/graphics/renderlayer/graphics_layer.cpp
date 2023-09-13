@@ -1,5 +1,4 @@
 #include "graphics/renderlayer/graphics_layer.h"
-#include "graphics/renderlayer/map_layer.h"
 #include "entity_layer.h"
 
 #include "graphics/font/font_manager.h"

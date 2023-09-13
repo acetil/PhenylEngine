@@ -4,10 +4,10 @@
 #include "graphics/graphics_headers.h"
 #include "logging/logging.h"
 #include "graphics/shaders/shaders.h"
-#include "engine/map/map_reader.h"
+#include "common/assets/assets.h"
+#include "engine/level/level.h"
 
 #include "graphics/graphics.h"
-#include "graphics/renderlayer/map_layer.h"
 #include "graphics/ui/nodes/ui_button.h"
 #include "graphics/ui/nodes/ui_flexbox.h"
 #include "graphics/ui/nodes/ui_label.h"
@@ -77,9 +77,11 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //int fpsFrames = 0;
     //Map::SharedPtr map = readMap("resources/maps/testmap.acmp", gameObject);
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
-    Map::SharedPtr map = readMap("resources/maps/testmap.json", gameObject);
+    //Map::SharedPtr map = readMap("resources/maps/testmap.json", gameObject);
     //map->setAtlas(graphics->getTextureAtlas("sprite").value());
-    gameObject.loadMap(map);
+    //gameObject.loadMap(map);
+    common::Assets::Load<Level>("resources/maps/testmap")->load();
+
     //gameObject->createNewEntityInstance("test_entity", 0.5, 0.5);
     //map->initGraphicsData(graphics, "default");
     //std::dynamic_pointer_cast<graphics::MapRenderLayer>(graphics->getRenderLayer()->getRenderLayer("map_layer").value())->attachMap(map); // TODO: make easier (event?)

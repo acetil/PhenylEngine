@@ -122,6 +122,4 @@ namespace graphics {
             void addComponentSerializers (component::EntitySerializer& serialiser);
         };
     }
-
-    void addMapRenderLayer (PhenylGraphics graphics, event::EventBus::SharedPtr bus);
 }

@@ -44,18 +44,6 @@ event::EventBus::SharedPtr PhenylGame::getEventBus () {
     return getShared()->getEventBus();
 }
 
-void PhenylGame::reloadMap () {
-    getShared()->reloadMap();
-}
-
-void PhenylGame::loadMap (Map::SharedPtr map) {
-    getShared()->loadMap(map);
-}
-
-void PhenylGame::dumpMap (const std::string& filepath) {
-    getShared()->dumpMap(filepath);
-}
-
 void PhenylGame::updateCamera (graphics::Camera& camera) {
     getShared()->updateCamera(camera);
 }

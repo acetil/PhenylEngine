@@ -3,7 +3,6 @@
 #include "graphics/graphics.h"
 #include "graphics/renderlayer/ui_layer.h"
 #include "graphics/font/rendered_text.h"
-#include "common/events/map_load.h"
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/themes/theme.h"
 #include "graphics/ui/themes/theme_class.h"

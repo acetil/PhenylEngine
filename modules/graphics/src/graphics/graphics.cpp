@@ -9,7 +9,6 @@
 #include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/renderers/window_callbacks.h"
 #include "graphics/font/font_manager.h"
-#include "graphics/renderlayer/map_layer.h"
 #include "graphics/phenyl_graphics.h"
 #include "common/input/proxy_source.h"
 #include "graphics/renderlayer/debug_layer.h"
@@ -38,15 +37,6 @@ void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& b
     //renderer->setupWindowCallbacks(std::move(ctx));
     renderer->setupCallbacks(bus);
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
-}
-
-// TODO: move
-void graphics::addMapRenderLayer (PhenylGraphics graphics, event::EventBus::SharedPtr bus) {
-    graphics.getTextureAtlas("sprite").ifPresent([&graphics, &bus](auto& atlas) {
-        auto layer = std::make_shared<MapRenderLayer>(graphics.getRenderer(), atlas);
-        graphics.getRenderLayer()->addRenderLayer(layer);
-        layer->getEventScope() = bus->subscribe(&MapRenderLayer::onMapLoad, layer.get());
-    });
 }
 
 detail::Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManager(renderer, manager) {

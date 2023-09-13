@@ -7,8 +7,6 @@
 #include "logging/logging.h"
 #include "physics/physics.h"
 #include "common/events/entity_creation.h"
-#include "common/events/map_load.h"
-#include "engine/map/map_reader.h"
 #include "engine/phenyl_game.h"
 #include "common/assets/assets.h"
 
@@ -17,37 +15,6 @@ using namespace game;
 detail::GameObject::~GameObject () {
     for (auto& i : tileRegistry) {
         delete i;
-    }
-}
-
-component::Entity detail::GameObject::makeDeserializedEntity (const nlohmann::json& serialized) {
-    //auto entityView = entityComponentManager->create();
-    if (!serialized.is_object()) {
-        logging::log(LEVEL_ERROR, "Expected object for serialized entity!");
-        return component::Null;
-    }
-
-    // TODO: refactor
-    if (!serialized.contains("components")) {
-        logging::log(LEVEL_ERROR, "Serialised entity did not contain components field!");
-        return {};
-    }
-
-    if (serialized.contains("prefab") && serialized.at("prefab").is_string()) {
-        auto prefab = common::Assets::Load<component::Prefab>(serialized.at("prefab"));
-        if (!prefab) {
-            logging::log(LEVEL_ERROR, "Failed to load prefab \"{}\"!", serialized.at("prefab").get<std::string>());
-            return component::Null;
-        }
-
-        auto instantiator = prefab->instantiate();
-        serializer->deserializeEntity(instantiator, serialized.at("components"));
-
-        return instantiator.complete();
-    } else {
-        auto instantiator = component::Prefab::NullPrefab(entityComponentManager).instantiate({});
-        serializer->deserializeEntity(instantiator, serialized.at("components"));
-        return instantiator.complete();
     }
 }
 
@@ -81,25 +48,6 @@ void detail::GameObject::setEntityComponentManager (component::EntityComponentMa
     this->entityComponentManager = manager;
 }
 
-void detail::GameObject::loadMap (Map::SharedPtr map) {
-    entityComponentManager->clear();
-    this->gameMap = std::move(map);
-
-    for (auto& i : gameMap->getEntities()) {
-        makeDeserializedEntity(i.data);
-    }
-
-    eventBus->raise(event::MapLoadEvent(gameMap));
-}
-
-void detail::GameObject::reloadMap () {
-    loadMap(gameMap);
-}
-
-void detail::GameObject::mapReloadRequest (event::ReloadMapEvent& event) {
-    reloadMap();
-}
-
 void detail::GameObject::updateCamera (graphics::Camera& _camera) {
     this->camera.updateCamera(_camera);
 }
@@ -108,45 +56,17 @@ GameCamera& detail::GameObject::getCamera () {
     return camera;
 }
 
-void detail::GameObject::dumpMap (const std::string& filepath) {
-    //util::DataArray entities;
-    auto entities = nlohmann::json::array_t{};
-    auto gameView = view::GameView(this);
-
-    for (auto i : *entityComponentManager) {
-        auto compDataObj = serializeEntity(i);
-
-
-        entities.emplace_back(std::move(compDataObj));
-    }
-
-    logging::log(LEVEL_DEBUG, "Num in array: {}", entities.size());
-    gameMap->writeMapJson(filepath, std::move(entities));
-}
-
-void detail::GameObject::mapDumpRequest (event::DumpMapEvent& event) {
-    dumpMap(event.filepath);
-}
-
-void detail::GameObject::mapLoadRequest (event::MapLoadRequestEvent& event) {
-    loadMap(readMap(event.filepath, PhenylGame(shared_from_this())));
-}
-
 void detail::GameObject::addEventHandlers (event::EventBus::SharedPtr _eventBus) {
     eventBus = std::move(_eventBus);
     gameInput.setEventBus(eventBus);
     eventScope = eventBus->getScope();
-    eventBus->subscribe(&detail::GameObject::mapReloadRequest, this, eventScope);
-    eventBus->subscribe(&detail::GameObject::mapDumpRequest, this, eventScope);
-    eventBus->subscribe(&detail::GameObject::mapLoadRequest, this, eventScope);
+    //eventBus->subscribe(&detail::GameObject::mapReloadRequest, this, eventScope);
+    //eventBus->subscribe(&detail::GameObject::mapDumpRequest, this, eventScope);
+    //eventBus->subscribe(&detail::GameObject::mapLoadRequest, this, eventScope);
 }
 
 GameInput& detail::GameObject::getInput () {
     return gameInput;
-}
-
-nlohmann::json detail::GameObject::serializeEntity (component::Entity& entity) {
-    return serializer->serializeEntity(entity);
 }
 
 void detail::GameObject::setSerializer (component::EntitySerializer* serializer) {

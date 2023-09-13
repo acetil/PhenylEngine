@@ -119,11 +119,11 @@ namespace component::detail {
         }
 
         void remove (EntityId id, bool updateParent) {
-            getRelationship(id).clear();
-
             if (updateParent) {
                 removeFromParent(id);
             }
+
+            getRelationship(id).clear();
         }
 
         [[nodiscard]] EntityId parent (EntityId id) const {
@@ -148,6 +148,11 @@ namespace component::detail {
 
         [[nodiscard]] ChildIterator childrenEnd (EntityId parent) const {
             return ChildIterator{this, EntityId{}};
+        }
+
+        void reset () {
+            relationships.clear();
+            relationships.push_back(Relationship{});
         }
     };
 }

@@ -188,7 +188,7 @@ namespace component {
         ComponentManager& operator= (ComponentManager&&) = default;
 
         ~ComponentManager () {
-            clear();
+            clearAll();
         }
 
         template <typename T>
@@ -221,8 +221,14 @@ namespace component {
             for (auto [i, comp] : components.kv()) {
                 comp->clear();
             }
-            prefabs.clear();
             idList.clear();
+            relationships.reset();
+        }
+
+        void clearAll () {
+            logging::log(LEVEL_DEBUG, "Clearing all!");
+            clear();
+            prefabs.clear();
         }
 
         template <typename Derived, typename Base>

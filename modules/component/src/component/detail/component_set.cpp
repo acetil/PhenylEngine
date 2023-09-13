@@ -240,14 +240,14 @@ void ComponentSet::clear () {
         deleteTypedComp(data.get() + (i * compSize));
         auto index = ids[i].id - 1;
 
-        metadataSet[index].clear();
+        metadataSet[index] = Metadata::Empty(dependencySize);
 
         if (parent) {
             parent->onChildDelete(ids[i]);
         }
-
-        ids[i] = EntityId{};
     }
+
+    ids.clear();
 
     dataSize = 0;
     allSize = 0;

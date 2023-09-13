@@ -59,13 +59,28 @@ void EntityIdList::removeId (EntityId id) {
 }
 
 void EntityIdList::clear () {
-    for (std::size_t i = 0; i < idSlots.size(); i++) {
-        if ((idSlots[i] & EMPTY_BIT) == 0) {
-            idSlots[i] |= EMPTY_BIT | (freeListStart << GEN_BITS);
-            freeListStart = i + 1;
-        }
+    if (!idSlots.size()) {
+        return;
     }
 
+    for (std::size_t i = 0; i < idSlots.size() - 1; i++) {
+        auto gen = idSlots[i] & GEN_MASK;
+        gen++;
+        if (gen == 0) {
+            gen = 1;
+        }
+
+        idSlots[i] = EMPTY_BIT | ((i + 2) << GEN_BITS) | gen;
+    }
+
+    auto gen = idSlots[idSlots.size() - 1] & GEN_MASK;
+    gen++;
+    if (gen == 0) {
+        gen = 1;
+    }
+
+    idSlots[idSlots.size() - 1] = EMPTY_BIT | (FREE_LIST_EMPTY << GEN_BITS) | gen;
+    freeListStart = 1;
     numEntities = 0;
 }
 

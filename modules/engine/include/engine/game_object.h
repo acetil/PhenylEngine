@@ -10,10 +10,8 @@
 #include "component/component.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
-#include "engine/map/map.h"
 #include "common/events/debug/reload_map.h"
 #include "common/events/debug/dump_map.h"
-#include "common/events/map_load_request.h"
 #include "input/game_input.h"
 #include "game_camera.h"
 #include "component/prefab.h"
@@ -33,7 +31,7 @@ namespace game::detail {
                 event::EventBus::SharedPtr eventBus;
                 component::EntityComponentManager* entityComponentManager;
 
-                Map::SharedPtr gameMap;
+                //Map::SharedPtr gameMap;
 
                 GameCamera camera;
                 GameInput gameInput;
@@ -43,10 +41,6 @@ namespace game::detail {
                 //util::Map<std::string, EntityType> entityTypes;
                 //util::Map<std::string, component::Prefab> prefabs;
                 component::EntitySerializer* serializer;
-
-                component::Entity makeDeserializedEntity (const nlohmann::json& serialized);
-
-                nlohmann::json serializeEntity (component::Entity& entityView);
                 //util::Optional<component::Prefab> makePrefab (const nlohmann::json& val);
 
 
@@ -63,15 +57,6 @@ namespace game::detail {
 
                 void setEntityComponentManager (component::EntityComponentManager* manager);
                 event::EventBus::SharedPtr getEventBus();
-
-                void reloadMap ();
-                void loadMap (Map::SharedPtr map);
-
-                void dumpMap (const std::string& filepath);
-
-                void mapReloadRequest (event::ReloadMapEvent& event);
-                void mapDumpRequest (event::DumpMapEvent& event);
-                void mapLoadRequest (event::MapLoadRequestEvent& event);
 
                 void updateCamera (graphics::Camera& camera);
 

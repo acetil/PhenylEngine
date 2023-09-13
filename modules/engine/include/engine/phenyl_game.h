@@ -7,7 +7,6 @@
 #include "component/component.h"
 #include "util/data.h"
 #include "engine/input/game_input.h"
-#include "engine/map/map.h"
 
 namespace graphics {
     class PhenylGraphics;
@@ -36,10 +35,6 @@ namespace game {
         void setEntityComponentManager (component::EntityComponentManager* compManager);
 
         event::EventBus::SharedPtr getEventBus ();
-
-        void reloadMap ();
-        void loadMap (Map::SharedPtr map);
-        void dumpMap (const std::string& filepath);
 
         void updateCamera (graphics::Camera& camera);
 

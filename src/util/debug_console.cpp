@@ -7,12 +7,14 @@
 #include "common/events/debug/profiler_change.h"
 #include "common/events/debug/reload_map.h"
 #include "common/events/debug/dump_map.h"
-#include "common/events/map_load_request.h"
 #include "common/events/debug/reload_theme.h"
 #include "common/events/theme_change.h"
 #include "util/string_help.h"
 #include "common/events/debug/debug_render.h"
 #include "common/events/debug/debug_pause.h"
+
+#include "common/assets/assets.h"
+#include "engine/level/level.h"
 #include "common/events/debug/debug_step.h"
 
 using namespace util;
@@ -72,15 +74,19 @@ static void doDebugConsole (event::EventBus::SharedPtr bus) {
 
     if (command == "profiler") {
         handleProfiler(bus, args);
-    } else if (command == "map"){
-        if (args.size() == 1 && args[0] == "reload") {
+    } else if (command == "level"){
+        /*if (args.size() == 1 && args[0] == "reload") {
             bus->raise(event::ReloadMapEvent());
-        } else if (args.size() == 2 && args[0] == "dump") {
+        } else*/ if (args.size() == 2 && args[0] == "dump") {
             bus->raise(event::DumpMapEvent(args[1]));
         } else if (args.size() == 2 && args[0] == "load") {
-            bus->raise(event::MapLoadRequestEvent(args[1]));
+            //bus->raise(event::MapLoadRequestEvent(args[1]));
+            auto level = common::Assets::Load<game::Level>(args[1]);
+            if (level) {
+                level->load();
+            }
         } else {
-            logging::log(LEVEL_WARNING, "Unknown arguments for map command: \"{}\"", util::joinStrings(" ", args));
+            logging::log(LEVEL_WARNING, "Unknown arguments for level command: \"{}\"", util::joinStrings(" ", args));
         }
     } else if (command == "theme") {
         handleThemes(bus, args);
