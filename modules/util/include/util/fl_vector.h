@@ -266,8 +266,8 @@ namespace util {
 
         std::size_t getNextIndex () {
             if (flHead != VectorItem::FREE_LIST_END) {
-                auto index = flHead;
-                flHead = data[flHead].next;
+                auto index = flHead - 1;
+                flHead = data[index].next;
 
                 return index;
             } else if (listSize == vecCapacity) {
@@ -439,7 +439,8 @@ namespace util {
             }
 
             data[index].destroy(flHead);
-            flHead = index;
+            flHead = index + 1;
+            presentNum--;
         }
 
         bool present (std::size_t index) const {

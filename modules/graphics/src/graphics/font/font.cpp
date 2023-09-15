@@ -47,6 +47,7 @@ void Font::bindAtlasTexture () {
 }
 
 GraphicsTexture& Font::getAtlasTexture () {
+    // TODO: it now moves, fix lifetime issues
     return atlas.getTex();
 }
 

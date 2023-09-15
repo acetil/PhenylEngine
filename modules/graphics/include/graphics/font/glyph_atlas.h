@@ -36,7 +36,7 @@ namespace graphics {
             offsetY = atlas.offsetY;
             width = atlas.width;
             height = atlas.height;
-            texture = atlas.texture;
+            texture = std::move(atlas.texture);
             data = std::exchange(atlas.data, nullptr);
             uvs = std::exchange(atlas.uvs, nullptr);
             charUvs = std::move(atlas.charUvs);

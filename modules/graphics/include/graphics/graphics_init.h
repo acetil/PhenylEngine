@@ -1,7 +1,6 @@
 #pragma once
 
 #include "graphics/graphics_headers.h"
-#include "graphics/graphics_new_include.h"
 #include "graphics/graphics.h"
 #include "graphics.h"
 

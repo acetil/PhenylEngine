@@ -44,8 +44,10 @@ namespace graphics {
 
         virtual GraphicsTexture loadTexture (int width, int height, unsigned char* data) = 0;
         virtual GraphicsTexture loadTextureGrey (int width, int height, unsigned char* data) = 0;
+        virtual void reloadTexture (unsigned int textureId, int width, int height, unsigned char* data) = 0;
 
         virtual void bindTexture (unsigned int textureId) = 0;
+        virtual void destroyTexture (unsigned int textureId) = 0;
 
         virtual void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) = 0;
         virtual void setupCallbacks (const std::shared_ptr<event::EventBus>& eventBus) = 0;
@@ -71,10 +73,38 @@ namespace graphics {
         Renderer* renderer;
         unsigned int textureId;
     public:
-        GraphicsTexture () : renderer(nullptr), textureId (-1) {};
+        GraphicsTexture () : renderer(nullptr), textureId (0) {};
         GraphicsTexture (Renderer* render, unsigned int id) : renderer(render), textureId(id) {};
+
+        GraphicsTexture (const GraphicsTexture&) = delete;
+        GraphicsTexture (GraphicsTexture&& other) noexcept : renderer{other.renderer}, textureId{other.textureId} {
+            other.renderer = nullptr;
+            other.textureId = 0;
+        }
+
+        GraphicsTexture& operator= (const GraphicsTexture&) = delete;
+        GraphicsTexture& operator= (GraphicsTexture&& other) noexcept {
+            if (renderer && textureId) {
+                renderer->destroyTexture(textureId);
+            }
+
+            renderer = other.renderer;
+            textureId = other.textureId;
+            other.renderer = nullptr;
+            other.textureId = 0;
+            return *this;
+        }
+
+        ~GraphicsTexture () {
+            if (renderer && textureId) {
+                renderer->destroyTexture(textureId);
+            }
+        }
         void bindTexture () {
             renderer->bindTexture(textureId);
+        }
+        void reload (int width, int height, unsigned char* data) {
+            renderer->reloadTexture(textureId, width, height, data);
         }
     };
 

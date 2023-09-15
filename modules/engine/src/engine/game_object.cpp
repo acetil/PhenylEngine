@@ -13,32 +13,6 @@
 using namespace game;
 
 detail::GameObject::~GameObject () {
-    for (auto& i : tileRegistry) {
-        delete i;
-    }
-}
-
-void detail::GameObject::registerTile (Tile* tile) {
-    if (tileMap.count(tile->getName()) > 0) {
-        logging::log(LEVEL_WARNING, "Duplicate registry of tile with name '{}'!", tile->getName());
-        return;
-    }
-    int pos = tileRegistry.size();
-    tileRegistry.push_back(tile);
-    tileMap[tile->getName()] = pos;
-}
-int detail::GameObject::getTileId (const std::string& name) {
-    return tileMap[name];
-}
-Tile* detail::GameObject::getTile (int tileId) {
-    if (tileRegistry.size() < tileId || tileId < 0) {
-        return nullptr;
-    }
-    return tileRegistry[tileId];
-}
-Tile* detail::GameObject::getTile (const std::string& name) {
-    // convenience function
-    return getTile(getTileId(name));
 }
 
 event::EventBus::SharedPtr detail::GameObject::getEventBus () {

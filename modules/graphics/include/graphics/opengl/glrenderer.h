@@ -1,7 +1,6 @@
 #pragma once
 
-#include "graphics/graphics_new_include.h"
-
+#include "graphics/shaders/shader_new.h"
 #include "graphics/graphics_headers.h"
 
 #include <unordered_map>
@@ -28,7 +27,6 @@ namespace graphics {
     private:
         GLFWwindow* window;
         std::shared_ptr<GLFrameBuffer> windowBuf;
-        std::unordered_map<std::string, ShaderProgram*> shaderPrograms;
         util::Map<std::string, ShaderProgramNew> shaderProgramsNew;
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
@@ -66,8 +64,6 @@ namespace graphics {
 
         void addShader(const std::string &shaderName, const ShaderProgramBuilder& shaderBuilder) override;
 
-        void addShader (const std::string& name, ShaderProgram* program);
-
         GLFWwindow* getWindow () {
             return window; // TODO: remove
         }
@@ -77,6 +73,9 @@ namespace graphics {
         GraphicsTexture loadTextureGrey (int width, int height, unsigned char* data) override;
 
         void bindTexture (unsigned int textureId) override;
+        void reloadTexture(unsigned int textureId, int width, int height, unsigned char *data) override;
+
+        void destroyTexture(unsigned int textureId) override;
 
         void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
         void setupCallbacks(const std::shared_ptr<event::EventBus> &eventBus) override;

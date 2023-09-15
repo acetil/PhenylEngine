@@ -62,10 +62,6 @@ void GLRenderer::finishRender () {
     glfwSwapBuffers(window);
 }
 
-void GLRenderer::addShader (const std::string& name, ShaderProgram* program) {
-    shaderPrograms[name] = program;
-}
-
 void GLRenderer::setupErrorHandling () {
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback([] (GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message,
@@ -155,8 +151,24 @@ GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* d
     return GraphicsTexture(this, id);
 }
 
+void GLRenderer::reloadTexture (unsigned int textureId, int width, int height, unsigned char* data) {
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    // mipmapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+
 void GLRenderer::bindTexture (unsigned int textureId) {
     glBindTexture(GL_TEXTURE_2D, textureId);
+}
+
+void GLRenderer::destroyTexture (unsigned int textureId) {
+    glDeleteTextures(1, &textureId);
 }
 
 void GLRenderer::setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) {
@@ -187,9 +199,6 @@ void GLRenderer::invalidateWindowCallbacks () {
 }
 
 GLRenderer::~GLRenderer () {
-    for (const auto& pair : shaderPrograms) {
-        delete pair.second;
-    }
     glfwDestroyWindow(window);
     glfwTerminate();
 }

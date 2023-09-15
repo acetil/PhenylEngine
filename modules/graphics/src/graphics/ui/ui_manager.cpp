@@ -32,7 +32,7 @@ void UIManager::renderText (const std::string& font, const std::string& text, in
 }
 
 void UIManager::addRenderLayer (const detail::Graphics::SharedPtr& graphics, Renderer* renderer) {
-    uiLayer = std::make_shared<UIRenderLayer>(fonts.at("noto-serif").getAtlasTexture(), renderer);
+    uiLayer = std::make_shared<UIRenderLayer>(std::move(fonts.at("noto-serif").getAtlasTexture()), renderer);
     graphics->getRenderLayer()->addRenderLayer(uiLayer);
 }
 

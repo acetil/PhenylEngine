@@ -20,22 +20,6 @@ std::shared_ptr<game::detail::GameObject> PhenylGame::getShared () const {
 }
 
 
-void PhenylGame::registerTile (Tile* tile) {
-    getShared()->registerTile(tile);
-}
-
-int PhenylGame::getTileId (const std::string& name) {
-    return getShared()->getTileId(name);
-}
-
-Tile* PhenylGame::getTile (const std::string& name) {
-    return getShared()->getTile(name);
-}
-
-Tile* PhenylGame::getTile (int tileId) {
-    return getShared()->getTile(tileId);
-}
-
 void PhenylGame::setEntityComponentManager (component::EntityComponentManager* compManager) {
     getShared()->setEntityComponentManager(compManager);
 }

@@ -1,5 +1,4 @@
 **/build
-resources/images
 **/cmake-build-debug
 **/cmake-build-release
 **/.idea

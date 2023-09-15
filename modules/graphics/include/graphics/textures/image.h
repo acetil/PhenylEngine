@@ -1,22 +1,38 @@
 #pragma once
 
 #include <string>
+#include <memory>
+
 #include "util/smart_help.h"
 
 namespace graphics {
     class Image : public util::SmartHelper<Image>{
         private:
-            unsigned char* data;
+            struct DataDeleter {
+                bool isSTB;
+                void operator() (std::byte* data) const noexcept;
+            };
+
+            //unsigned char* data;
+            std::unique_ptr<std::byte[], DataDeleter> imageData{};
             int width{};
             int height{};
             int n{};
-            std::string name;
-            bool isSTB;
+            std::string name{};
         public:
             Image (const char* filename, std::string name);
-            Image (unsigned char* data, int width, int height, bool monochrome, const std::string& name);
+            Image (std::string name, int width, int height, int n);
+            explicit Image (std::istream& file);
+            Image (const Image& other) = delete;
+            Image (Image&& image) noexcept;
+
+            Image& operator= (const Image& other) = delete;
+            Image& operator= (Image&& other) noexcept;
             ~Image ();
-            unsigned char* getData ();
+
+            explicit operator bool () const;
+
+            std::byte* getData () const;
             int getArea () const;
             int getWidth () const;
             int getHeight () const;

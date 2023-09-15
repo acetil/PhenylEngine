@@ -162,7 +162,15 @@ namespace common {
                 }
                 return std::move(asset);
             }
-            std::ifstream file{path + cache->getManager()->getFileType()};
+
+            std::ifstream file;
+
+            if (cache->getManagerBase()->isBinary()) {
+                file = std::ifstream{path + cache->getManager()->getFileType(), std::ios::binary};
+            } else {
+                file = std::ifstream{path + cache->getManager()->getFileType()};
+            }
+
             if (!file) {
                 logging::log(LEVEL_ERROR, "Failed to open file at \"{}\"!", path);
                 return Asset<T>{};

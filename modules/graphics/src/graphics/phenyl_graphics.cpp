@@ -55,14 +55,6 @@ void PhenylGraphics::render () {
     getGraphics()->render();
 }
 
-void PhenylGraphics::initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images) {
-    getGraphics()->initTextureAtlas(atlasName, images);
-}
-
-util::Optional<graphics::TextureAtlas&> PhenylGraphics::getTextureAtlas (const std::string& atlas) const {
-    return getGraphics()->getTextureAtlas(atlas);
-}
-
 void PhenylGraphics::sync (int fps) {
     getGraphics()->sync(fps);
 }

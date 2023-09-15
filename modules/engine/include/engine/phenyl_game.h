@@ -14,8 +14,6 @@ namespace graphics {
 }
 
 namespace game {
-    class Tile;
-    class EntityController;
     class GameCamera;
     namespace detail {
         class GameObject;
@@ -26,11 +24,6 @@ namespace game {
         [[nodiscard]] std::shared_ptr<game::detail::GameObject> getShared () const;
     public:
         explicit PhenylGame (std::weak_ptr<detail::GameObject> _gameObject) : gameObject{std::move(_gameObject)} {}
-
-        void registerTile (Tile* tile);
-        int getTileId (const std::string& name);
-        Tile* getTile (const std::string& name);
-        Tile* getTile (int tileId);
 
         void setEntityComponentManager (component::EntityComponentManager* compManager);
 

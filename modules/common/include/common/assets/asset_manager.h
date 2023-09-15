@@ -13,6 +13,10 @@ namespace common {
         private:
             virtual void queueUnload (std::size_t id) = 0;
             [[nodiscard]] virtual const char* getFileType () const = 0;
+            virtual bool isBinary () const {
+                return false;
+            }
+
             static bool OnUnloadUntyped (std::size_t typeIndex, std::size_t id);
 
             friend class common::Assets;

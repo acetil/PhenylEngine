@@ -30,7 +30,7 @@ private:
 
     glm::vec2 screenSize = {800, 600};
 public:
-    UIPipelineInt (const ShaderProgramNew& _textShader, const ShaderProgramNew& _boxShader, GraphicsTexture _fontTexture) : textShader{_textShader}, boxShader{_boxShader}, fontTexture{_fontTexture} {}
+    UIPipelineInt (const ShaderProgramNew& _textShader, const ShaderProgramNew& _boxShader, GraphicsTexture _fontTexture) : textShader{_textShader}, boxShader{_boxShader}, fontTexture{std::move(_fontTexture)} {}
     void init (Renderer* renderer) override {
         textStage = renderer->buildPipelineStage(PipelineStageBuilder(textShader)
                 .addVertexAttrib<glm::vec2>(0)
@@ -152,10 +152,8 @@ void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string
     //font.renderText(text, size, x, y, colour, textBuffer);
 }
 
-UIRenderLayer::UIRenderLayer (GraphicsTexture _fontTexture, Renderer* renderer) : fontTexture(_fontTexture),
-                                                                                  textProgram(renderer->getProgramNew(
-                                                                                          "text").orThrow()) {
-    pipeline = std::make_unique<UIPipelineInt>(textProgram, renderer->getProgramNew("box").orThrow(), fontTexture);
+UIRenderLayer::UIRenderLayer (GraphicsTexture fontTexture, Renderer* renderer) : textProgram(renderer->getProgramNew("text").orThrow()) {
+    pipeline = std::make_unique<UIPipelineInt>(textProgram, renderer->getProgramNew("box").orThrow(), std::move(fontTexture));
     pipeline->init(renderer);
     /*textIds = renderer->getBufferIds(3, 200 * 12 * sizeof(float), {2, 2, 3});
     textBuffer[0] = Buffer(200 * 12, sizeof(float), false);

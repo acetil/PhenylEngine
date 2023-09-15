@@ -3,8 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "graphics_new_include.h"
-#include "textures/texture_atlas.h"
 #include "renderlayer/graphics_layer.h"
 #include "ui/ui_manager.h"
 
@@ -33,9 +31,6 @@ namespace graphics {
         void pollEvents ();
 
         void render ();
-
-        void initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images);
-        util::Optional<graphics::TextureAtlas&> getTextureAtlas (const std::string& atlas) const;
 
         void sync (int fps);
 

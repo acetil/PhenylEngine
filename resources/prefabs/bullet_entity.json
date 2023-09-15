@@ -50,8 +50,8 @@
         "y" : 0.03
       }
     },
-    "Model2D": {
-      "model_name" :"test9"
+    "Sprite2D": {
+      "texture" : "resources/images/test/bullet2.png"
     }
   }
 }

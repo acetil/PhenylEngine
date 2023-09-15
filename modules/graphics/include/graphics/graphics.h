@@ -11,14 +11,13 @@
 #include "logging/logging.h"
 #include "component/component.h"
 #include "common/events/entity_creation.h"
-#include "graphics/textures/texture_atlas.h"
 #include "graphics/renderlayer/render_layer.h"
-#include "graphics/graphics_new_include.h"
 #include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/renderers/renderer.h"
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/ui_manager.h"
 #include "graphics/phenyl_graphics.h"
+#include "graphics/textures/sprite_atlas.h"
 #include "common/events/cursor_position_change.h"
 #include "common/events/player_shoot_change.h"
 #include "common/events/theme_change.h"
@@ -58,7 +57,7 @@ namespace graphics {
         class Graphics : public util::SmartHelper<Graphics, true> {
         private:
             event::EventScope eventScope;
-            Renderer* renderer;
+            std::unique_ptr<Renderer> renderer;
 
             double lastTime;
             double deltaTime;
@@ -68,7 +67,7 @@ namespace graphics {
 
             std::shared_ptr<GraphicsRenderLayer> renderLayer;
 
-            std::unordered_map<std::string, TextureAtlas> atlases;
+            //std::unordered_map<std::string, TextureAtlas> atlases;
 
             std::vector<std::shared_ptr<common::ProxySource>> inputSources;
 
@@ -79,14 +78,12 @@ namespace graphics {
             UIManager uiManager;
 
         public:
-            explicit Graphics (Renderer* renderer, FontManager& manager);
+            explicit Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager);
             ~Graphics ();
             bool shouldClose ();
             void pollEvents ();
             void render ();
             //void addShader (std::string name, ShaderProgram* program);
-            void initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images);
-            util::Optional<TextureAtlas&> getTextureAtlas (const std::string& atlas);
             void sync (int fps);
             double getDeltaTime () const;
             std::shared_ptr<GraphicsRenderLayer> getRenderLayer ();
@@ -102,7 +99,7 @@ namespace graphics {
             void onThemeChange (event::ChangeThemeEvent& event);
 
             Renderer* getRenderer () {
-                return renderer; // TODO: remove
+                return renderer.get(); // TODO: remove
             }
             /*void addGlyphAtlas (GlyphAtlas& atlas) {
                 glyphAtlas = std::move(atlas);

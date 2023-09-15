@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include "engine/tile/tile.h"
 #include "event/event_bus.h"
 #include "component/component.h"
 #include "util/smart_help.h"
@@ -26,8 +25,6 @@ namespace game::detail {
     class ComponentSerialiser;
         class GameObject : public util::SmartHelper<GameObject, true>{
                 private:
-                std::map<std::string, int> tileMap;
-                std::vector<Tile*> tileRegistry;
                 event::EventBus::SharedPtr eventBus;
                 component::EntityComponentManager* entityComponentManager;
 
@@ -50,10 +47,6 @@ namespace game::detail {
                 //component::Entity createNewEntityInstance (const std::string& name);
 
                 //void deleteEntityInstance (component::EntityId entityId);
-                void registerTile (Tile* tile);
-                int getTileId (const std::string& name);
-                Tile* getTile (const std::string& name);
-                Tile* getTile (int tileId);
 
                 void setEntityComponentManager (component::EntityComponentManager* manager);
                 event::EventBus::SharedPtr getEventBus();

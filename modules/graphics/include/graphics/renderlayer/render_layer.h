@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "graphics/graphics_new_include.h"
 #include "graphics/renderers/renderer.h"
+#include "graphics/camera.h"
 
 namespace graphics {
     class RenderLayer {

@@ -5,7 +5,6 @@
 #include "logging/logging.h"
 #include "graphics/shaders/shaders.h"
 #include "graphics/textures/image.h"
-#include "graphics/graphics_handlers.h"
 #include "graphics/graphics.h"
 #include "graphics/opengl/glrenderer.h"
 #include "graphics/font/font_manager.h"
@@ -61,20 +60,6 @@ int graphics::initWindow (GLFWwindow** windowPtr) {
     logging::log(LEVEL_INFO, "Window initialised successfully!");
     return GRAPHICS_INIT_SUCCESS;
 }
-std::vector<Image::SharedPtr> getSpriteImages () {
-    // temp code
-    std::vector<Image::SharedPtr> images;
-    images.push_back(Image::NewSharedPtr("resources/images/test/grass_temp.png", "test1"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/test_texture.png", "test3"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/tier2_ingot-temp.png", "test5"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/temp_ecrys1.png", "test2"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/stone.png", "test6"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/prismarine_bricks.png", "test7"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/manBlue_gun.png", "test8"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/bullet2.png", "test9"));
-    images.push_back(Image::NewSharedPtr("resources/images/test/test_wall.png", "test10"));
-    return images;
-}
 /*
 int graphics::initGraphics (GLFWwindow* window, Graphics** graphicsPtr) {
     Graphics* graphics = new Graphics(window);
@@ -106,7 +91,7 @@ FontManager initFonts () {
 }
 
 int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew) {
-    auto renderer = new GLRenderer(window);
+    auto renderer = std::make_unique<GLRenderer>(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
     //renderer->addShader("default", loadShaderProgram("resources/shaders/vertex.vert", "resources/shaders/fragment.frag", "default"));
@@ -121,18 +106,9 @@ int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& gra
 
     auto manager = initFonts();
 
-    auto graphics = std::make_shared<detail::Graphics>(renderer, manager);
+    auto graphics = std::make_shared<detail::Graphics>(std::move(renderer), manager);
 
     graphicsNew = graphics;
-    logging::log(LEVEL_INFO, "Adding images!");
-    std::vector<Image::SharedPtr> images = getSpriteImages(); // TODO: update to match new model system
-    std::vector<Model> models;
-    models.reserve(images.size());
-    for (Image::SharedPtr i : images) {
-        models.emplace_back(i->getName(), std::move(i));
-    }
-    graphics->initTextureAtlas("sprite", models);
-    images.erase(images.begin(), images.end());
 
 
     return GRAPHICS_INIT_SUCCESS;

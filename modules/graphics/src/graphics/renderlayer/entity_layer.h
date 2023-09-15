@@ -1,9 +1,9 @@
 #pragma once
 
-#include "graphics/textures/texture_atlas.h"
 #include "graphics/renderlayer/render_layer.h"
 #include "component/component.h"
 #include "graphics/pipeline/pipeline.h"
+#include "graphics/textures/sprite_atlas.h"
 
 namespace graphics {
     class EntityPipeline;
@@ -14,6 +14,7 @@ namespace graphics {
         ShaderProgramNew shaderProgram;
 
         std::unique_ptr<EntityPipeline> entityPipeline;
+        SpriteAtlas atlas;
     public:
         EntityRenderLayer (Renderer* renderer, component::EntityComponentManager* componentManager);
         ~EntityRenderLayer() override;

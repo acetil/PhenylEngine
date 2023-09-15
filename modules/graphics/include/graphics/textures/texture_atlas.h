@@ -1,40 +1,30 @@
 #pragma once
 
-#include "image.h"
-#include "graphics/graphics_headers.h"
-#include "graphics/renderers/renderer.h"
-
 #include <vector>
-#include <unordered_map>
-#include <string>
-#include "graphics/graphics_new_include.h"
+
+#include "graphics/maths_headers.h"
+#include "graphics/renderers/renderer.h"
+#include "image.h"
+
+#include "util/optional.h"
 
 namespace graphics {
+    struct AtlasOffset {
+        glm::vec2 topLeft;
+        glm::vec2 bottomRight;
+    };
     class TextureAtlas {
-        private:
-            //unsigned char* data;
-            std::shared_ptr<unsigned char[]> data;
-            GraphicsTexture graphicsTexture;
-            int sideLength;
-            //float* positionData;
-            std::shared_ptr<glm::vec2[]> positionData;
-            std::shared_ptr<glm::vec2[]> uvData;
-            //float* uvData;
-            std::vector<Model2D> models;
-            std::unordered_map<std::string, int> modelIdMap;
-        public:
-            void createAtlas (const std::vector<Model>& modelsIn);
-            //int getTextureId (std::string name);
-            void loadTextureAtlas (Renderer* renderer);
-            //Texture* getTexture (int textureId);
-            //Texture* getTexture (std::string name);
-            Model2D getModel (int modelId);
+    private:
+        GraphicsTexture texture;
+        std::vector<AtlasOffset> items;
+    public:
+        explicit TextureAtlas (Renderer* renderer);
 
-            [[maybe_unused]]
-            Model2D getModel (const std::string& name);
-            int getModelId (const std::string& name);
-            void bindTextureAtlas ();
-            //TextureAtlas(TextureAtlas&) = delete;
-            //TextureAtlas& operator=(TextureAtlas&) = delete;
+        void build (const std::vector<Image*>& images);
+
+        [[nodiscard]] std::size_t size () const;
+        const AtlasOffset& operator[] (std::size_t index) const;
+        [[nodiscard]] util::Optional<const AtlasOffset&> at (std::size_t index) const;
+        void bind ();
     };
 }

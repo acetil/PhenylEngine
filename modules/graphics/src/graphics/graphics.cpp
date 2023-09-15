@@ -14,19 +14,13 @@
 #include "graphics/renderlayer/debug_layer.h"
 #include "common/events/debug/debug_pause.h"
 #include "component/component_serializer.h"
-#include "graphics/graphics_serialize.h"
+#include "graphics/components/2d/sprite.h"
+#include "graphics/components/2d/sprite_serialization.h"
 
 using namespace graphics;
 
 void detail::Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
-    renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer, compManager));
-
-    // TODO
-    compManager->handleSignal<component::OnInsert<Model2D>>([this] (component::Entity entity, const component::OnInsert<Model2D>& signal) {
-        getTextureAtlas("sprite").ifPresent([&signal] (TextureAtlas& atlas) {
-            signal.get() = atlas.getModel(signal.get().modelName);
-        });
-    });
+    renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer.get(), compManager));
 }
 
 void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
@@ -39,14 +33,12 @@ void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& b
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
 }
 
-detail::Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManager(renderer, manager) {
-    this->renderer = renderer;
-
+detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager) : uiManager(renderer.get(), manager) {
     this->deltaTime = 0;
     this->lastTime = renderer->getCurrentTime();
 
-    this->renderLayer = std::make_shared<GraphicsRenderLayer>(renderer);
-    renderLayer->addRenderLayer(makeDebugLayer(renderer));
+    this->renderLayer = std::make_shared<GraphicsRenderLayer>(renderer.get());
+    renderLayer->addRenderLayer(makeDebugLayer(renderer.get()));
 
     auto rendererSources = renderer->getInputSources();
 
@@ -56,6 +48,7 @@ detail::Graphics::Graphics (Renderer* renderer, FontManager& manager) : uiManage
 
     uiManager.addProxyInputSources(inputSources);
     uiManager.setupInputActions();
+    this->renderer = std::move(renderer);
 }
 
 double detail::Graphics::getDeltaTime() const {
@@ -75,47 +68,19 @@ void detail::Graphics::render () {
     if (!renderLayer->isActive()) {
         return;
     }
-    atlases["sprite"].bindTextureAtlas(); // TODO: get layers to specify
     FrameBuffer* buf = renderer->getWindowBuffer();
 
 
     renderLayer->gatherData();
 
-    renderLayer->preRender(renderer);
+    renderLayer->preRender(renderer.get());
 
     renderLayer->applyCamera(camera);
 
-    renderLayer->render(renderer, buf);
+    renderLayer->render(renderer.get(), buf);
 
     renderer->finishRender();
 
-}
-
-util::Optional<TextureAtlas&> detail::Graphics::getTextureAtlas (const std::string& atlas) {
-    if (atlases.find(atlas) == atlases.end()) {
-        logging::log(LEVEL_ERROR, "Attempted to get nonexistent atlas \"{}\"", atlas);
-        return util::NullOpt;
-    }
-    return util::Optional<TextureAtlas&>(atlases[atlas]);
-}
-
-void detail::Graphics::initTextureAtlas (const std::string& atlasName, const std::vector<Model>& images) {
-    // TODO: build baked models
-    if (atlases.find(atlasName) != atlases.end()) {
-        logging::log(LEVEL_ERROR, "Attempted to create duplicate atlas \"{}\"!", atlasName);
-        return;
-    }
-    std::unordered_set<Image*> imageSet;
-    for (const auto& m : images) {
-        for (const auto& p : m.textures) {
-            imageSet.insert(p.second.get());
-        }
-    }
-    TextureAtlas atlas;
-    atlas.createAtlas(images);
-    atlas.loadTextureAtlas(renderer);
-    logging::log(LEVEL_DEBUG, "Created atlas \"{}\"!", atlasName);
-    atlases[atlasName] = atlas;
 }
 
 void detail::Graphics::sync (int fps) {
@@ -211,7 +176,7 @@ void detail::Graphics::onThemeChange (event::ChangeThemeEvent& event) {
 }
 
 detail::Graphics::~Graphics () {
-    delete renderer;
+
 }
 
 void detail::Graphics::updateUI () {
@@ -219,10 +184,12 @@ void detail::Graphics::updateUI () {
 }
 
 void detail::Graphics::addComponentSerializers (component::EntitySerializer& serialiser) {
-    serialiser.addSerializer<graphics::Model2D>();
+    //serialiser.addSerializer<graphics::Model2D>();
+    serialiser.addSerializer<graphics::Sprite2D>();
     //serialiser.addComponentSerialiser<graphics::GlobalTransform2D>("GlobalTransform2D");
 }
 
 void detail::Graphics::addComponents (component::ComponentManager& manager) {
-    manager.addComponent<graphics::Model2D>();
+    //manager.addComponent<graphics::Model2D>();
+    manager.addComponent<graphics::Sprite2D>();
 }
