@@ -10,7 +10,6 @@
 #include <optional>
 #include "logging/logging.h"
 #include "component/component.h"
-#include "common/events/entity_creation.h"
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/renderers/renderer.h"
@@ -91,7 +90,6 @@ namespace graphics {
             //virtual RenderLayer* getLayer (int layer);
             [[maybe_unused]] Camera& getCamera ();
             void addEntityLayer (component::EntityComponentManager* compManager);
-            void onEntityCreation (event::EntityCreationEvent& event);
             void onMousePosChange (event::CursorPosChangeEvent& event);
 
             void onThemeChange (event::ChangeThemeEvent& event);

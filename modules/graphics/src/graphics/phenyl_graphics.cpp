@@ -75,10 +75,6 @@ void PhenylGraphics::addEntityLayer (component::EntityComponentManager* componen
     getGraphics()->addEntityLayer(componentManager);
 }
 
-void PhenylGraphics::onEntityCreation (event::EntityCreationEvent& event) {
-    getGraphics()->onEntityCreation(event);
-}
-
 Renderer* PhenylGraphics::getRenderer () const {
     return getGraphics()->getRenderer();
 }

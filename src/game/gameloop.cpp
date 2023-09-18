@@ -1,6 +1,4 @@
 #include "gameloop.h"
-#include "engine/game_init.h"
-#include "engine/game_object.h"
 #include "graphics/graphics_headers.h"
 #include "logging/logging.h"
 #include "common/assets/assets.h"
@@ -34,7 +32,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //GameObject::SharedPtr gameObject = initGame(graphics);
     std::vector<graphics::ui::UILabel> extraLabels;
     auto graphics = engine.getGraphics();
-    auto gameObject = engine.getGame();
+    //auto gameObject = engine.getGame();
 
     auto& uiManager = graphics.getUIManager();
 
@@ -46,14 +44,14 @@ int game::gameloop (engine::PhenylEngine& engine) {
     //logging::log(LEVEL_INFO, "Created player");
 
 
-    game::GameInput& gameInput = gameObject.getGameInput();
-    setupDefaultInput(gameInput, gameObject.getEventBus());
-    inputSetup(gameInput, gameObject.getEventBus());
+    game::GameInput& gameInput = engine.getInput();
+    setupDefaultInput(gameInput, engine.getEventBus());
+    inputSetup(gameInput, engine.getEventBus());
 
     bool isStepping = false;
     bool shouldStep = false;
 
-    auto scope = gameObject.getEventBus()->subscribe<event::DebugStepEvent>([&isStepping, &shouldStep] (event::DebugStepEvent& event) {
+    auto scope = engine.getEventBus()->subscribe<event::DebugStepEvent>([&isStepping, &shouldStep] (event::DebugStepEvent& event) {
         switch (event.status) {
             case event::DebugStepStatus::ENABLE_STEPPING:
                 isStepping = true;
@@ -128,11 +126,11 @@ int game::gameloop (engine::PhenylEngine& engine) {
         while (deltaPhysicsFrame >= 1.0f / PHYSICS_FPS) {
             util::startProfile("physics");
             if (!isStepping || shouldStep) {
-                playerUpdate(engine.getComponentManager(), gameObject.getGameInput(), gameObject);
+                playerUpdate(engine.getComponentManager(), gameInput, engine.getCamera());
                 engine.updateEntityPosition(1.0f / PHYSICS_FPS);
-                playerUpdatePost(engine.getComponentManager(), gameObject.getGameInput(), gameObject);
+                playerUpdatePost(engine.getComponentManager(), gameInput, engine.getCamera());
 
-                gameObject.updateCamera(graphics.getCamera());
+                engine.getCamera().updateCamera(graphics.getCamera());
             }
 
             shouldStep = false;
@@ -151,7 +149,7 @@ int game::gameloop (engine::PhenylEngine& engine) {
 
         util::startProfile("graphics");
 
-        graphics::renderDebugUi(gameObject, uiManager, deltaTime);
+        graphics::renderDebugUi(uiManager, deltaTime);
         engine.debugRender();
 
         //uiManager.renderRect({100, 200}, {50, 200}, {0.0f, 0.0f, 1.0f, 1.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}, 8, 2);

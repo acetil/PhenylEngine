@@ -4,7 +4,6 @@
 #include "component/component.h"
 
 #include "engine/engine.h"
-#include "engine/game_init.h"
 #include "component/component_serializer.h"
 
 #include "graphics/graphics_init.h"
@@ -19,19 +18,23 @@
 #include "physics/physics.h"
 #include "component/prefab_manager.h"
 #include "engine/level/level_manager.h"
+#include "common/events/debug/dump_map.h"
 
 using namespace engine;
 
 class engine::detail::Engine {
 private:
     event::EventBus::SharedPtr eventBus;
-    game::PhenylGameHolder gameObjHolder;
+    //game::PhenylGameHolder gameObjHolder;
     graphics::PhenylGraphicsHolder graphicsHolder;
     component::EntityComponentManager componentManager;
     std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<physics::IPhysics> physicsObj;
     std::unique_ptr<component::PrefabManager> prefabManager;
     std::unique_ptr<game::LevelManager> levelManager;
+    game::GameCamera gameCamera;
+    game::GameInput gameInput;
+
     void addEventHandlers ();
     void addDefaultSerialisers ();
     void addComponents ();
@@ -39,14 +42,18 @@ public:
     Engine ();
     ~Engine();
 
-    [[nodiscard]] game::detail::GameObject::SharedPtr getGameObjectTemp () const;
-    [[nodiscard]] game::PhenylGame getGameObject () const;
+    //[[nodiscard]] game::detail::GameObject::SharedPtr getGameObjectTemp () const;
+    //[[nodiscard]] game::PhenylGame getGameObject () const;
     [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
     component::EntityComponentManager& getComponentManager ();
     [[nodiscard]] const component::EntityComponentManager& getComponentManager () const;
     event::EventBus::SharedPtr getEventBus ();
     component::EntitySerializer& getEntitySerializer ();
     physics::PhenylPhysics getPhysics ();
+
+    game::GameCamera& getCamera ();
+    game::GameInput& getInput ();
+
     void dumpLevel (std::ostream& file);
 
     void updateEntityPosition (float deltaTime);
@@ -59,16 +66,8 @@ engine::PhenylEngine::PhenylEngine () {
 
 engine::PhenylEngine::~PhenylEngine () = default;
 
-game::detail::GameObject::SharedPtr engine::PhenylEngine::getGameTemp () {
-    return internal->getGameObjectTemp();
-}
-
 graphics::PhenylGraphics PhenylEngine::getGraphics () {
     return internal->getGraphics();
-}
-
-game::PhenylGame PhenylEngine::getGame () {
-    return internal->getGameObject();
 }
 
 event::EventBus::SharedPtr PhenylEngine::getEventBus () {
@@ -99,6 +98,14 @@ void PhenylEngine::dumpLevel (std::ostream& file) {
     internal->dumpLevel(file);
 }
 
+game::GameCamera& PhenylEngine::getCamera () {
+    return internal->getCamera();
+}
+
+game::GameInput& PhenylEngine::getInput () {
+    return internal->getInput();
+}
+
 engine::detail::Engine::Engine () : componentManager{256}{
     eventBus = event::EventBus::NewSharedPtr();
     entitySerializer = std::make_unique<component::EntitySerializer>();
@@ -110,16 +117,16 @@ engine::detail::Engine::Engine () : componentManager{256}{
     levelManager->selfRegister();
     addEventHandlers();
 
-    auto gameObj = gameObjHolder.getGameObject();
+    //auto gameObj = gameObjHolder.getGameObject();
     auto graphics = graphicsHolder.getGraphics();
 
-    gameObj.setEntityComponentManager(&componentManager);
-    gameObj.setSerializer(entitySerializer.get());
+    //gameObj.setEntityComponentManager(&componentManager);
+    //gameObj.setSerializer(entitySerializer.get());
 
     addComponents();
 
     addDefaultSerialisers();
-    gameObj.addDefaultSerialisers();
+    //gameObj.addDefaultSerialisers();
     graphics.addComponentSerializers(getEntitySerializer());
     physicsObj->addComponentSerializers(getEntitySerializer());
     //physics::addComponentSerialisers(getEntitySerialiser());
@@ -129,9 +136,10 @@ engine::detail::Engine::Engine () : componentManager{256}{
     graphics.addEntityLayer(&componentManager); // TODO: unhackify
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
 
-    gameObjHolder.initGame(graphics, eventBus);
+    //gameObjHolder.initGame(graphics, eventBus);
 
-    gameObjHolder.getGameObject().getGameInput().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
+    //gameObjHolder.getGameObject().getGameInput().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
+    gameInput.addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
 }
 
 engine::detail::Engine::~Engine () {
@@ -140,16 +148,8 @@ engine::detail::Engine::~Engine () {
     componentManager.clearAll();
 }
 
-game::detail::GameObject::SharedPtr detail::Engine::getGameObjectTemp () const {
-    return gameObjHolder.tempGetGameObject();
-}
-
 graphics::PhenylGraphics detail::Engine::getGraphics () const {
     return graphicsHolder.getGraphics();
-}
-
-game::PhenylGame detail::Engine::getGameObject () const {
-    return gameObjHolder.getGameObject();
 }
 
 event::EventBus::SharedPtr detail::Engine::getEventBus () {
@@ -158,7 +158,6 @@ event::EventBus::SharedPtr detail::Engine::getEventBus () {
 
 void detail::Engine::addEventHandlers () {
     graphicsHolder.getGraphics().addEventHandlers(eventBus);
-    gameObjHolder.getGameObject().addEventHandlers(eventBus);
 
     //eventBus->subscribeUnscoped(game::addEntities);
     //eventBus->subscribeUnscoped(physics::onEntityCreation);
@@ -194,11 +193,18 @@ physics::PhenylPhysics detail::Engine::getPhysics () {
     return physics::PhenylPhysics(physicsObj.get());
 }
 
+game::GameCamera& detail::Engine::getCamera () {
+    return gameCamera;
+}
+
+game::GameInput& detail::Engine::getInput () {
+    return gameInput;
+}
+
 void detail::Engine::updateEntityPosition (float deltaTime) {
     // TODO: remove function?
     physicsObj->updatePhysics(getComponentManager(), deltaTime);
-    view::GameView gameView{gameObjHolder.tempGetGameObject().get()}; // TODO
-    physicsObj->checkCollisions(getComponentManager(), getEventBus(), gameView, deltaTime);
+    physicsObj->checkCollisions(getComponentManager(), getEventBus(), deltaTime);
 }
 
 void detail::Engine::debugRender () {

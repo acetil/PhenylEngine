@@ -8,7 +8,6 @@
 
 #include "component/component.h"
 #include "component/forward.h"
-#include "common/events/entity_creation.h"
 #include "util/optional.h"
 #include "event/event_bus.h"
 
@@ -41,7 +40,6 @@ namespace graphics {
         Camera& getCamera ();
 
         void addEntityLayer (component::EntityComponentManager* componentManager);
-        void onEntityCreation (event::EntityCreationEvent& event);
 
         Renderer* getRenderer () const; // TODO: remove
 

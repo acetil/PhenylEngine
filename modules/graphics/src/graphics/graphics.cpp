@@ -100,31 +100,6 @@ std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
     return renderLayer;
 }
 
-void detail::Graphics::onEntityCreation (event::EntityCreationEvent& event) {
-    /*int texId = event.entityView.get<std::shared_ptr<game::EntityController>>().getUnsafe()->getTextureId(event.entityView, event.gameView); // TODO: update for models and decoupling
-    //TextureAtlas atlas = this->getTextureAtlas("sprite").value();
-    getTextureAtlas("sprite").ifPresent([&event, &texId](auto& atlas) {
-
-        event.compManager->insert<Model2D>(event.entityId, atlas.getModel(texId));
-
-        //event.entityView.model = atlas.getModel((texId));
-    });*/
-
-    /*event.entityView.get<Model2D>().ifPresent([this] (Model2D& comp) {
-        getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
-            comp = atlas.getModel(comp.modelName);
-        });
-    });*/
-    /*event.entityView.apply<Model2D>([this] (auto& info, Model2D& comp) {
-        getTextureAtlas("sprite").ifPresent([&comp] (TextureAtlas& atlas) {
-            comp = atlas.getModel(comp.modelName);
-        });
-    });*/
-
-    //Texture* tex = atlas.getTexture(texId);
-    //memcpy(pointer, tex->getTexUvs(), 12 * sizeof(float));
-}
-
 UIManager& detail::Graphics::getUIManager () {
     return uiManager;
 }
@@ -136,7 +111,6 @@ void detail::Graphics::deleteWindowCallbacks () {
 void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
     //eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, );
     eventScope = eventBus->getScope();
-    eventBus->subscribe(&graphics::detail::Graphics::onEntityCreation, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onMousePosChange, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
 

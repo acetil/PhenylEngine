@@ -2,12 +2,12 @@
 
 #include <utility>
 #include <queue>
-#include "component/view/debug_game_view.h"
 
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
 
 #include "common/events/debug/profiler_change.h"
+#include "event/event_bus.h"
 
 using namespace graphics;
 
@@ -18,7 +18,7 @@ static util::SmoothQueue<double, 30> physicsQueue;
 static util::SmoothQueue<double, 30> frameQueue;
 static util::SmoothQueue<float, 30> deltaTimeQueue;
 
-void graphics::renderDebugUi (game::PhenylGame gameObject, UIManager& uiManager, float deltaTime) {
+void graphics::renderDebugUi (UIManager& uiManager, float deltaTime) {
 
     deltaTimeQueue.pushPop(deltaTime);
     frameQueue.pushPop(util::getProfileFrameTime());

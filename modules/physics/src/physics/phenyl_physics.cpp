@@ -10,8 +10,8 @@ void PhenylPhysics::updatePhysics (component::EntityComponentManager& componentM
 }
 
 void PhenylPhysics::checkCollisions (component::EntityComponentManager& componentManager,
-                                     const std::shared_ptr<event::EventBus>& eventBus, view::GameView& gameView, float deltaTime) {
-    physicsObj->checkCollisions(componentManager, eventBus, gameView, deltaTime);
+                                     const std::shared_ptr<event::EventBus>& eventBus, float deltaTime) {
+    physicsObj->checkCollisions(componentManager, eventBus, deltaTime);
 }
 
 void PhenylPhysics::debugRender (const component::EntityComponentManager& componentManager) {

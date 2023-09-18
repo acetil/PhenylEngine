@@ -46,7 +46,7 @@ void inputSetup (game::GameInput& input, const event::EventBus::SharedPtr& event
     KeyShoot = input.getInput("player_shoot");
 }
 
-void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::PhenylGame& object) {
+void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera) {
     glm::vec2 forceVec{0.0f, 0.0f};
 
     if (input.isDown(KeyLeft)) {
@@ -65,7 +65,7 @@ void playerUpdate (component::ComponentManager& manager, game::GameInput& input,
         forceVec += glm::vec2{0, -FORCE_COMPONENT};
     }
 
-    glm::vec2 worldCursorPos = object.getCamera().getWorldPos(cursorPos);
+    glm::vec2 worldCursorPos = camera.getWorldPos(cursorPos);
 
     manager.query<game::Player, common::GlobalTransform2D, physics::RigidBody2D>().each([forceVec, worldCursorPos] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
         body.applyForce(forceVec * body.getMass());
@@ -76,11 +76,11 @@ void playerUpdate (component::ComponentManager& manager, game::GameInput& input,
     });
 }
 
-void playerUpdatePost (component::ComponentManager& manager, game::GameInput& input, game::PhenylGame& game) {
-    glm::vec2 worldCursorPos = game.getCamera().getWorldPos(cursorPos);
+void playerUpdatePost (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera) {
+    glm::vec2 worldCursorPos = camera.getWorldPos(cursorPos);
     bool doShoot = input.isDown(KeyShoot);
 
-    manager.query<game::Player, common::GlobalTransform2D>().each([doShoot, &game] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform) {
+    manager.query<game::Player, common::GlobalTransform2D>().each([doShoot, &camera] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform) {
         if (doShoot && !player.hasShot) {
             auto rot = transform.transform2D.rotationAngle();
 
@@ -104,6 +104,6 @@ void playerUpdatePost (component::ComponentManager& manager, game::GameInput& in
             player.hasShot = false;
         }
 
-        game.getCamera().setPos(transform.transform2D.position());
+        camera.setPos(transform.transform2D.position());
     });
 }

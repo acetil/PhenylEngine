@@ -1,7 +1,6 @@
 #include "physics_obj_2d.h"
 #include "physics/components/2D/rigid_body.h"
 #include "common/events/entity_collision.h"
-#include "common/events/entity_creation.h"
 #include "common/debug.h"
 
 #include "common/components/2d/global_transform.h"
@@ -61,7 +60,7 @@ void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componen
     });
 }
 
-void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, view::GameView& gameView, float deltaTime) {
+void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, float deltaTime) {
     compManager.query<common::GlobalTransform2D, RigidBody2D, ColliderComp2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, ColliderComp2D& collider) {
         collider.syncUpdates(body, transform.transform2D.position());
     });

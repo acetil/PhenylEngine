@@ -4,11 +4,11 @@
 
 #include "component/component.h"
 #include "component/forward.h"
-#include "game_object.h"
 #include "graphics/graphics.h"
 #include "graphics/phenyl_graphics.h"
-#include "engine/phenyl_game.h"
 #include "physics/phenyl_physics.h"
+#include "game_camera.h"
+#include "input/game_input.h"
 
 namespace engine {
 
@@ -22,10 +22,7 @@ namespace engine {
     public:
         PhenylEngine ();
         ~PhenylEngine();
-
-        game::detail::GameObject::SharedPtr getGameTemp ();
-
-        game::PhenylGame getGame ();
+        //game::PhenylGame getGame ();
 
         graphics::PhenylGraphics getGraphics ();
 
@@ -36,6 +33,9 @@ namespace engine {
         component::EntitySerializer& getEntitySerializer ();
 
         physics::PhenylPhysics getPhysics ();
+
+        game::GameCamera& getCamera ();
+        game::GameInput& getInput ();
 
         void dumpLevel (std::ostream& path);
 
