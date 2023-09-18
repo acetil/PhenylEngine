@@ -144,6 +144,16 @@ DataValue util::parseFromFile (const std::string& filepath) {
     return DataValue();
 }
 
+DataValue util::parseFromStream (std::istream& stream) {
+    try {
+        auto json = nlohmann::json::parse(stream);
+        return internalParseJson(json);
+    } catch (std::exception&) {
+        logging::log(LEVEL_WARNING, "Failed to parse json from stream!");
+        return util::DataValue{};
+    }
+}
+
 DataValue internalParseJson (nlohmann::json& json) {
     if (json.is_boolean()) {
         return DataValue(json.get<bool>());

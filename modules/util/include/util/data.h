@@ -636,6 +636,7 @@ namespace util {
 
     DataValue parseJson (const std::string& json);
     DataValue parseFromFile (const std::string& filepath);
+    DataValue parseFromStream (std::istream& stream);
 
     namespace internal {
         template <class T, std::enable_if_t<is_any_convertible<T>, bool>>

@@ -28,5 +28,5 @@ namespace graphics::ui {
         ThemeClass* addThemeClass (const std::string& classId, std::unique_ptr<ThemeClass> themeClass);
     };
 
-    std::unique_ptr<Theme> loadTheme (const std::string& themePath);
+    std::unique_ptr<Theme> loadTheme (std::istream& stream);
 }

@@ -5,9 +5,7 @@
 
 #include "logging/logging.h"
 #include "common/events/debug/profiler_change.h"
-#include "common/events/debug/reload_map.h"
 #include "common/events/debug/dump_map.h"
-#include "common/events/debug/reload_theme.h"
 #include "common/events/theme_change.h"
 #include "util/string_help.h"
 #include "common/events/debug/debug_render.h"
@@ -51,8 +49,6 @@ static void handleProfiler (const event::EventBus::SharedPtr& bus, const std::ve
 static void handleThemes (const event::EventBus::SharedPtr& bus, std::vector<std::string>& args) {
     if (args.empty()) {
         logging::log(LEVEL_WARNING, "Missing argument after \"theme\"!");
-    } else if (args[0] == "reload") {
-        bus->raise(event::ReloadThemeEvent{});
     } else if (args[0] == "load") {
         if (args.size() != 2) {
             logging::log(LEVEL_WARNING, R"(Unknown argument after "theme".)");

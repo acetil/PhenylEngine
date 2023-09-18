@@ -232,7 +232,9 @@ const char* GLShaderManager::getFileType () const {
 }
 
 void GLShaderManager::queueUnload (std::size_t id) {
-    shaders.remove(id);
+    if (onUnload(id)) {
+        shaders.remove(id);
+    }
 }
 
 void GLShaderManager::selfRegister () {

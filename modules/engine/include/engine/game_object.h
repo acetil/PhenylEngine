@@ -9,7 +9,6 @@
 #include "component/component.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
-#include "common/events/debug/reload_map.h"
 #include "common/events/debug/dump_map.h"
 #include "input/game_input.h"
 #include "game_camera.h"

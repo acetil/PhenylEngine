@@ -139,7 +139,6 @@ void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& event
     eventBus->subscribe(&graphics::detail::Graphics::onEntityCreation, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onMousePosChange, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
-    eventBus->subscribe(&graphics::detail::Graphics::onThemeReload, this, eventScope);
 
     eventBus->subscribe<event::DebugPauseEvent>([this] (event::DebugPauseEvent& event) {
         if (event.doPause) {
@@ -167,12 +166,8 @@ std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSour
     return proxies;
 }
 
-void detail::Graphics::onThemeReload (event::ReloadThemeEvent& event) {
-    uiManager.reloadCurrentTheme();
-}
-
 void detail::Graphics::onThemeChange (event::ChangeThemeEvent& event) {
-    uiManager.setCurrentTheme(event.themeName);
+    uiManager.setCurrentTheme(common::Assets::Load<graphics::ui::Theme>(event.themeName));
 }
 
 detail::Graphics::~Graphics () {

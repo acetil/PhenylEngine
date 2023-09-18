@@ -6,6 +6,7 @@
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/themes/theme.h"
 #include "graphics/ui/themes/theme_class.h"
+#include "common/assets/assets.h"
 
 #include "logging/logging.h"
 
@@ -25,6 +26,7 @@ graphics::UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) :
     offsetStack.emplace_back(0,0);
 
     uiRoot = std::make_shared<ui::UIRootNode>();
+    themeManager.selfRegister();
 }
 
 void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y) {
@@ -129,7 +131,7 @@ void UIManager::renderText (RenderedText& text, int x, int y) {
     textBuf2.emplace_back(offVec, text);
 }
 
-void UIManager::addTheme (const std::string& themePath) {
+/*void UIManager::addTheme (const std::string& themePath) {
     auto theme = ui::loadTheme(themePath);
 
     themeLocations[theme->getThemeName()] = themePath;
@@ -152,6 +154,10 @@ void UIManager::reloadCurrentTheme () {
         addTheme(themeLocations[currentTheme]);
         setCurrentTheme(currentTheme);
     }
+}*/
+void UIManager::setCurrentTheme (common::Asset<ui::Theme> theme) {
+    currentTheme = std::move(theme);
+    uiRoot->applyTheme(currentTheme.get());
 }
 
 void UIManager::addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources) {
@@ -180,3 +186,26 @@ void UIManager::updateUI () {
 
 UIManager::~UIManager () = default;
 
+ui::Theme* UIThemeManager::load (std::istream& data, std::size_t id) {
+    auto theme = ui::loadTheme(data);
+    if (!theme) {
+        return nullptr;
+    }
+
+    themes[id] = std::move(theme);
+    return themes[id].get();
+}
+
+const char* UIThemeManager::getFileType () const {
+    return ".json";
+}
+
+void UIThemeManager::queueUnload (std::size_t id) {
+    if (onUnload(id)) {
+        themes.remove(id);
+    }
+}
+
+void UIThemeManager::selfRegister () {
+    common::Assets::AddManager(this);
+}

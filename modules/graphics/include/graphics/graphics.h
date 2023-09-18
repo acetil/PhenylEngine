@@ -21,7 +21,6 @@
 #include "common/events/cursor_position_change.h"
 #include "common/events/player_shoot_change.h"
 #include "common/events/theme_change.h"
-#include "common/events/debug/reload_theme.h"
 #include "event/event.h"
 #include "common/input/forward.h"
 #include "util/smart_help.h"
@@ -95,7 +94,6 @@ namespace graphics {
             void onEntityCreation (event::EntityCreationEvent& event);
             void onMousePosChange (event::CursorPosChangeEvent& event);
 
-            void onThemeReload (event::ReloadThemeEvent& event);
             void onThemeChange (event::ChangeThemeEvent& event);
 
             Renderer* getRenderer () {

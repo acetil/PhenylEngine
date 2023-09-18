@@ -53,8 +53,12 @@ ThemeClass* Theme::addThemeClass (const std::string& classId, std::unique_ptr<Th
     return themeClassMap[classId].get();
 }
 
-std::unique_ptr<Theme> graphics::ui::loadTheme (const std::string& themePath) {
-    util::DataValue data = util::parseFromFile(themePath);
+std::unique_ptr<Theme> graphics::ui::loadTheme (std::istream& stream) {
+    auto data = util::parseFromStream(stream);
+    if (data.empty()) {
+        logging::log(LEVEL_ERROR, "Failed to load theme!");
+        return nullptr;
+    }
 
     return std::make_unique<Theme>(data);
 }

@@ -13,6 +13,7 @@
 #include "graphics/ui/themes/forward.h"
 #include "common/input/forward.h"
 #include "common/input/remappable_proxy_input.h"
+#include "common/assets/asset_manager.h"
 
 namespace graphics {
 //#ifndef FONT_H
@@ -37,6 +38,17 @@ class Font;
         class UIRootNode;
     }
 
+    class UIThemeManager : common::AssetManager<ui::Theme> {
+    private:
+        util::Map<std::size_t, std::unique_ptr<ui::Theme>> themes;
+    public:
+        ui::Theme* load(std::istream &data, std::size_t id) override;
+        [[nodiscard]] const char* getFileType() const override;
+        void queueUnload (std::size_t id) override;
+
+        void selfRegister ();
+    };
+
     class UIManager {
     private:
         FontManager fontManager;
@@ -49,9 +61,9 @@ class Font;
         bool mouseDown = false;
         std::vector<glm::vec2> offsetStack;
         std::shared_ptr<ui::UIRootNode> uiRoot;
-        util::Map<std::string, std::unique_ptr<ui::Theme>> themes;
-        util::Map<std::string, std::string> themeLocations;
-        std::string currentTheme;
+
+        UIThemeManager themeManager;
+        common::Asset<ui::Theme> currentTheme;
 
         //std::vector<std::shared_ptr<common::ProxySource>> inputSources;
         common::RemappableProxyInput uiInput;
@@ -75,9 +87,10 @@ class Font;
         void addUIComp (ui::UIComponent<T>& component, glm::vec2 pos) {
             addUINode(component.transferNode(), pos);
         }
-        void addTheme (const std::string& themePath);
-        void setCurrentTheme (const std::string& themeName);
-        void reloadCurrentTheme ();
+        //void addTheme (const std::string& themePath);
+        //void setCurrentTheme (const std::string& themeName);
+        //void reloadCurrentTheme ();
+        void setCurrentTheme (common::Asset<ui::Theme> theme);
 
         void pushOffset (glm::vec2 relOffset);
         void popOffset ();

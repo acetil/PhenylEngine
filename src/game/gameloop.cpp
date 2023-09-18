@@ -110,9 +110,9 @@ int game::gameloop (engine::PhenylEngine& engine) {
     uiManager.addUIComp(flexBoxC.detach(), {0, 100});
     uiManager.addUIComp(button4, {500, 300});
     uiManager.addUIComp(button5, {500, 385});
-    uiManager.addTheme("resources/themes/default_theme.json");
-    uiManager.addTheme("resources/themes/alt_theme.json");
-    uiManager.setCurrentTheme("default_theme");
+    //uiManager.addTheme("resources/themes/default_theme.json");
+    //uiManager.addTheme("resources/themes/alt_theme.json");
+    uiManager.setCurrentTheme(common::Assets::Load<graphics::ui::Theme>("resources/themes/default_theme"));
     //uiManager.addUINode(labelNode, {500, 300});
 
 
