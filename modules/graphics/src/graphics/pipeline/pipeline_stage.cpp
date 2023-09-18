@@ -1,9 +1,11 @@
 #include "graphics/pipeline/pipeline_stage.h"
+
+#include <utility>
 #include "graphics/renderers/renderer_pipelinestage.h"
 
 using namespace graphics;
 
-PipelineStage::PipelineStage (const ShaderProgramNew& _shader, std::unique_ptr<RendererPipelineStage> _internal) : shader{_shader}, internal{std::move(_internal)} {
+PipelineStage::PipelineStage (common::Asset<Shader> _shader, std::unique_ptr<RendererPipelineStage> _internal) : shader{std::move(_shader)}, internal{std::move(_internal)} {
 
 }
 
@@ -13,7 +15,7 @@ void PipelineStage::bindBuffer (int location, ShaderDataType attribType, const s
 }
 
 void PipelineStage::render () {
-    shader.bind();
+    shader->bind();
     internal->render();
 }
 

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "graphics/shaders/shader_new.h"
-#include "graphics/graphics_headers.h"
-
 #include <unordered_map>
 #include <memory>
 
 #include "graphics/renderers/renderer.h"
+#include "graphics/shaders/shaders.h"
+#include "graphics/graphics_headers.h"
+
+#include "glshader.h"
 
 
 namespace graphics {
@@ -27,7 +28,7 @@ namespace graphics {
     private:
         GLFWwindow* window;
         std::shared_ptr<GLFrameBuffer> windowBuf;
-        util::Map<std::string, ShaderProgramNew> shaderProgramsNew;
+        util::Map<std::string, Shader> shaderProgramsNew;
 
         std::unique_ptr<WindowCallbackContext> callbackCtx;
 
@@ -35,6 +36,7 @@ namespace graphics {
         std::shared_ptr<GLFWInput> mouseInput;
 
         std::unique_ptr<GLWindowCallbackCtx> windowCallbackCtx;
+        GLShaderManager shaderManager;
 
         glm::vec2 screenSize;
 
@@ -58,11 +60,11 @@ namespace graphics {
 
        //std::optional<ShaderProgram*> getProgram (std::string program) override;
 
-        util::Optional<ShaderProgramNew> getProgramNew (const std::string& program) override;
+        //util::Optional<Shader> getProgramNew (const std::string& program) override;
 
         void finishRender () override;
 
-        void addShader(const std::string &shaderName, const ShaderProgramBuilder& shaderBuilder) override;
+        //void addShader(const std::string &shaderName, const ShaderBuilder& shaderBuilder) override;
 
         GLFWwindow* getWindow () {
             return window; // TODO: remove
@@ -85,7 +87,7 @@ namespace graphics {
 
         void invalidateWindowCallbacks () override;
 
-        PipelineStage buildPipelineStage(const PipelineStageBuilder &stageBuilder) override;
+        PipelineStage buildPipelineStage (PipelineStageBuilder& builder) override;
 
         std::shared_ptr<common::InputSource> getMouseInput() override;
 

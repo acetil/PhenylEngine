@@ -1,6 +1,7 @@
 #include "entity_layer.h"
 #include "common/components/2d/global_transform.h"
 #include "graphics/components/2d/sprite.h"
+#include "common/assets/assets.h"
 
 
 #define BUFFER_SIZE (100 * 2 * 6)
@@ -14,17 +15,14 @@ namespace graphics {
     class EntityPipeline : public Pipeline<component::EntityComponentManager> {
     private:
         PipelineStage renderStage;
-        ShaderProgramNew shader;
         Buffer<glm::vec2> posBuffer;
         Buffer<glm::vec2> uvBuffer;
 
     public:
         EntityPipeline () = default;
 
-        explicit EntityPipeline (const ShaderProgramNew& _shader) : shader{_shader} {};
-
         void init (Renderer* renderer) override {
-            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(shader)
+            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(common::Assets::Load<Shader>("resources/shaders/sprite"))
                                                                .addVertexAttrib<glm::vec2>(0)
                                                                .addVertexAttrib<glm::vec2>(1));
                                                                //.addVertexAttrib<glm::vec2>(2)
@@ -102,8 +100,8 @@ void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuf
 }
 
 EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
-                                                component::EntityComponentManager*componentManager) : shaderProgram{renderer->getProgramNew("default").orThrow()}, componentManager{componentManager}, atlas{renderer} {
-    this->entityPipeline = std::make_unique<EntityPipeline>(shaderProgram);
+                                                component::EntityComponentManager*componentManager) : componentManager{componentManager}, atlas{renderer} {
+    this->entityPipeline = std::make_unique<EntityPipeline>();
     this->entityPipeline->init(renderer);
 }
 

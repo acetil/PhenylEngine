@@ -10,7 +10,7 @@
 #include "util/profiler.h"
 #include <vector>
 using namespace graphics;
-GLRenderer::GLRenderer (GLFWwindow* window) {
+GLRenderer::GLRenderer (GLFWwindow* window) : shaderManager{this} {
     // TODO: move graphics init code here
     this->window = window;
     windowBuf = std::make_shared<GLFrameBuffer>();
@@ -27,6 +27,7 @@ GLRenderer::GLRenderer (GLFWwindow* window) {
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     screenSize = {width, height};
+    shaderManager.selfRegister();
 }
 
 double GLRenderer::getCurrentTime () {
@@ -203,19 +204,19 @@ GLRenderer::~GLRenderer () {
     glfwTerminate();
 }
 
-void GLRenderer::addShader (const std::string& shaderName, const ShaderProgramBuilder& shaderBuilder) {
-    shaderProgramsNew[shaderName] = ShaderProgramNew{GLShaderProgram::NewSharedPtr(shaderBuilder)};
+/*void GLRenderer::addShader (const std::string& shaderName, const ShaderBuilder& shaderBuilder) {
+    shaderProgramsNew[shaderName] = Shader{GLShaderProgram::NewSharedPtr(shaderBuilder)};
 }
 
-util::Optional<ShaderProgramNew> GLRenderer::getProgramNew (const std::string& program) {
+util::Optional<Shader> GLRenderer::getProgramNew (const std::string& program) {
     if (shaderProgramsNew.contains(program)) {
         return {shaderProgramsNew.at(program)};
     } else {
         return util::NullOpt;
     }
-}
+}*/
 
-PipelineStage GLRenderer::buildPipelineStage (const PipelineStageBuilder& stageBuilder) {
+PipelineStage GLRenderer::buildPipelineStage (PipelineStageBuilder& stageBuilder) {
     auto spec = stageBuilder.build();
     return PipelineStage{spec.shader, std::make_unique<GLPipelineStage>(spec)};
 }

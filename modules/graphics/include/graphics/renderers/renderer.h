@@ -4,7 +4,7 @@
 #include <optional>
 #include <memory>
 
-#include "graphics/shaders/shader_new.h"
+#include "graphics/shaders/shaders.h"
 #include "graphics/pipeline/pipeline_stage.h"
 #include "common/input/input_source.h"
 #include "event/forward.h"
@@ -38,7 +38,7 @@ namespace graphics {
 
         virtual FrameBuffer* getWindowBuffer () = 0;
         //virtual std::optional<ShaderProgram*> getProgram (std::string program) = 0;
-        virtual util::Optional<ShaderProgramNew> getProgramNew (const std::string& program) = 0;
+        //virtual util::Optional<Shader> getProgramNew (const std::string& program) = 0;
 
         virtual void finishRender () = 0;
 
@@ -56,9 +56,9 @@ namespace graphics {
 
         virtual void invalidateWindowCallbacks () = 0;
 
-        virtual void addShader (const std::string& shaderName, const ShaderProgramBuilder& shaderBuilder) = 0;
+        //virtual void addShader (const std::string& shaderName, const ShaderBuilder& shaderBuilder) = 0;
 
-        virtual PipelineStage buildPipelineStage (const PipelineStageBuilder& stageBuilder) = 0;
+        virtual PipelineStage buildPipelineStage (PipelineStageBuilder& stageBuilder) = 0;
 
         virtual std::shared_ptr<common::InputSource> getMouseInput () = 0;
 

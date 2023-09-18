@@ -1,6 +1,7 @@
 #include "debug_layer.h"
 #include "graphics/debug_graphics.h"
 #include "graphics/pipeline/pipeline.h"
+#include "common/assets/assets.h"
 
 #define STARTING_BUFFER_SIZE 256
 
@@ -53,8 +54,6 @@ static std::vector<DebugLine> lines;
 namespace graphics {
     class DebugPipeline : public Pipeline<> {
     private:
-        ShaderProgramNew shader;
-
         PipelineStage boxStage;
         Buffer<glm::vec3> boxPos;
         Buffer<glm::vec4> boxColour;
@@ -88,9 +87,10 @@ namespace graphics {
             lineColour.pushData(line.colour);
         }
     public:
-        explicit DebugPipeline (const ShaderProgramNew& shader) : shader{shader} {}
+        explicit DebugPipeline () {}
 
         void init (graphics::Renderer* renderer) override {
+            auto shader = common::Assets::Load<Shader>("resources/shaders/debug");
             boxPos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
             boxColour = renderer->makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
             linePos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
@@ -102,7 +102,7 @@ namespace graphics {
             boxStage.bindBuffer(0, boxPos);
             boxStage.bindBuffer(1, boxColour);
 
-            lineStage = renderer->buildPipelineStage(PipelineStageBuilder{shader}
+            lineStage = renderer->buildPipelineStage(PipelineStageBuilder{std::move(shader)}
                                                             .withPipelineType(PipelineType::LINES)
                                                             .addVertexAttrib<glm::vec3>(0)
                                                             .addVertexAttrib<glm::vec4>(1));
@@ -145,13 +145,8 @@ namespace graphics {
     };
 }
 
-DebugLayer::DebugLayer (Renderer* renderer) : shaderProgram{}, pipeline{}, screenSize{renderer->getScreenSize()} {
-    renderer->addShader("debug", ShaderProgramBuilder{"resources/shaders/debug_vertex.vert", "resources/shaders/debug_fragment.frag"}
-        .addUniform<glm::mat4>("camera")
-        .addUniform<glm::mat4>("screenTransform"));
-
-    shaderProgram = renderer->getProgramNew("debug").getUnsafe();
-    pipeline = std::make_unique<graphics::DebugPipeline>(shaderProgram);
+DebugLayer::DebugLayer (Renderer* renderer) : pipeline{}, screenSize{renderer->getScreenSize()} {
+    pipeline = std::make_unique<graphics::DebugPipeline>();
     pipeline->init(renderer);
 }
 

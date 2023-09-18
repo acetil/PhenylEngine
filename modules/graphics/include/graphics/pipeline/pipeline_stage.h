@@ -1,8 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
-#include "graphics/shaders/shader_new.h"
+#include "common/assets/asset.h"
+#include "graphics/shaders/shaders.h"
 #include "graphics/renderers/buffer.h"
 #include "util/meta.h"
 
@@ -17,10 +19,10 @@ namespace graphics {
     class PipelineStage {
     private:
         std::unique_ptr<RendererPipelineStage> internal;
-        ShaderProgramNew shader;
+        common::Asset<Shader> shader;
     public:
         PipelineStage();
-        explicit PipelineStage (const ShaderProgramNew& _shader, std::unique_ptr<RendererPipelineStage> _internal);
+        explicit PipelineStage (common::Asset<Shader> _shader, std::unique_ptr<RendererPipelineStage> _internal);
 
         PipelineStage& operator= (PipelineStage&& other)  noexcept;
         ~PipelineStage();
@@ -35,7 +37,7 @@ namespace graphics {
 
         template <typename T>
         void applyUniform (const std::string& uniformName, const T& val) {
-            shader.applyUniform(uniformName, val);
+            shader->applyUniform(uniformName, val);
         }
 
         void render ();
@@ -47,18 +49,18 @@ namespace graphics {
 
     class PipelineStageSpec {
     public:
-        ShaderProgramNew shader;
+        common::Asset<Shader> shader;
         util::Map<int, ShaderDataType> vertexAttribs;
         PipelineType type;
     };
 
     class PipelineStageBuilder {
     private:
-        ShaderProgramNew shader;
+        common::Asset<Shader> shader;
         util::Map<int, ShaderDataType> vertexAttribs{};
         PipelineType type = PipelineType::TRIANGLES;
     public:
-        explicit PipelineStageBuilder(const ShaderProgramNew& _shader) : shader{_shader} {}
+        explicit PipelineStageBuilder(common::Asset<Shader> _shader) : shader{std::move(_shader)} {}
 
         template <typename T>
         PipelineStageBuilder& addVertexAttrib (int location) {
@@ -71,8 +73,8 @@ namespace graphics {
             return *this;
         }
 
-        [[nodiscard]] PipelineStageSpec build () const {
-            return {shader, vertexAttribs, type};
+        [[nodiscard]] PipelineStageSpec build () {
+            return {std::move(shader), std::move(vertexAttribs), type};
         }
     };
 }

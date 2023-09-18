@@ -3,7 +3,6 @@
 #include "engine/game_object.h"
 #include "graphics/graphics_headers.h"
 #include "logging/logging.h"
-#include "graphics/shaders/shaders.h"
 #include "common/assets/assets.h"
 #include "engine/level/level.h"
 

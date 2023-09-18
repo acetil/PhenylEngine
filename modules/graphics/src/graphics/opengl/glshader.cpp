@@ -1,7 +1,9 @@
 #include <fstream>
 #include <sstream>
+#include <nlohmann/json.hpp>
 
 #include "glshader.h"
+#include "common/assets/assets.h"
 #include "logging/logging.h"
 
 using namespace graphics;
@@ -9,7 +11,7 @@ using namespace graphics;
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath);
 static GLuint loadShader (GLuint shaderType, const std::string& shaderPath);
 
-GLShaderProgram::GLShaderProgram (ShaderProgramBuilder& builder) {
+GLShaderProgram::GLShaderProgram (ShaderBuilder& builder) {
 
     auto spec = builder.build();
 
@@ -139,4 +141,100 @@ static GLuint loadShader (GLuint shaderType, const std::string& shaderPath) {
         delete[] errorMessage;
     }
     return shader;
+}
+
+GLShaderManager::GLShaderManager (GLRenderer* renderer) : renderer{renderer} {}
+
+Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
+    nlohmann::json json;
+    data >> json;
+    if (!json.is_object()) {
+        logging::log(LEVEL_ERROR, "Expected object for shader, got {}!", json.type_name());
+        return nullptr;
+    }
+
+    if (!json.contains("shaders")) {
+        logging::log(LEVEL_ERROR, "Failed to find member \"shaders\" of shader!");
+        return nullptr;
+    }
+    const auto& shaderObj = json.at("shaders");
+    if (!shaderObj.is_object()) {
+        logging::log(LEVEL_ERROR, "Expected object for shaders member, got {}!", shaderObj.type_name());
+        return nullptr;
+    }
+
+    const auto& obj = shaderObj.get<nlohmann::json::object_t>();
+
+    std::string fragmentPath{};
+    std::string vertexPath{};
+
+    for (const auto& i : obj) {
+        if (i.first == "fragment") {
+            if (!i.second.is_string()) {
+                logging::log(LEVEL_ERROR, "Expected string for fragment path, got {}!", i.second.type_name());
+                return nullptr;
+            }
+            fragmentPath = i.second.get<std::string>();
+        } else if (i.first == "vertex") {
+            if (!i.second.is_string()) {
+                logging::log(LEVEL_ERROR, "Expected string for vertex path, got {}!", i.second.type_name());
+                return nullptr;
+            }
+            vertexPath = i.second.get<std::string>();
+        }
+    }
+
+    ShaderBuilder builder{vertexPath, fragmentPath};
+    if (json.contains("uniforms")) {
+        if (!json["uniforms"].is_object()) {
+            logging::log(LEVEL_ERROR, "Expected object for uniforms member, got {}!", json["uniforms"].type_name());
+            return nullptr;
+        }
+
+        const auto& uniforms = json["uniforms"].get<nlohmann::json::object_t>();
+        for (const auto& [key, val] : uniforms) {
+            if (!val.is_string()) {
+                logging::log(LEVEL_ERROR, "Expected string for uniform type, got {}!", val.type_name());
+                return nullptr;
+            }
+            const auto& type = val.get<std::string>();
+            if (type == "float") {
+                builder.addUniform<float>(key);
+            } else if (type == "int") {
+                builder.addUniform<int>(key);
+            } else if (type == "vec2f") {
+                builder.addUniform<glm::vec2>(key);
+            } else if (type == "vec3f") {
+                builder.addUniform<glm::vec3>(key);
+            } else if (type == "vec4f") {
+                builder.addUniform<glm::vec4>(key);
+            } else if (type == "mat2f") {
+                builder.addUniform<glm::mat2>(key);
+            } else if (type == "mat3f") {
+                builder.addUniform<glm::mat3>(key);
+            } else if (type == "mat4f") {
+                builder.addUniform<glm::mat4>(key);
+            } else {
+                logging::log(LEVEL_ERROR, "Unknown uniform type: \"{}\"", type);
+                return nullptr;
+            }
+        }
+    }
+
+    auto glshader = std::make_shared<GLShaderProgram>(builder);
+    shaders[id] = std::make_unique<Shader>(std::move(glshader));
+
+    return shaders[id].get();
+}
+
+const char* GLShaderManager::getFileType () const {
+    return ".json";
+}
+
+void GLShaderManager::queueUnload (std::size_t id) {
+    shaders.remove(id);
+}
+
+void GLShaderManager::selfRegister () {
+    common::Assets::AddManager(this);
 }

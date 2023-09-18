@@ -1,0 +1,11 @@
+{
+  "shaders" :
+    {
+      "fragment" : "resources/shaders/sources/sprite_fragment.frag",
+      "vertex" : "resources/shaders/sources/sprite_vertex.vert"
+    },
+  "uniforms" :
+    {
+      "camera" : "mat4f"
+    }
+}

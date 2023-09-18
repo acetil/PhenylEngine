@@ -172,7 +172,7 @@ namespace common {
             }
 
             if (!file) {
-                logging::log(LEVEL_ERROR, "Failed to open file at \"{}\"!", path);
+                logging::log(LEVEL_ERROR, "Failed to open file at \"{}\"!", path + cache->getManager()->getFileType());
                 return Asset<T>{};
             }
 

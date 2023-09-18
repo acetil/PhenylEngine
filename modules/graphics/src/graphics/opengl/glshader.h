@@ -1,19 +1,22 @@
 #pragma once
 
-#include "graphics/shaders/shader_new.h"
+#include "graphics/shaders/shaders.h"
 #include "graphics/shaders/renderer_shader.h"
 #include "graphics/graphics_headers.h"
+#include "common/assets/asset_manager.h"
 
+#include "util/map.h"
 #include "util/smart_help.h"
 
 namespace graphics {
+    class GLRenderer;
 
     struct GLUniform {
         GLint uniformId;
         ShaderDataType uniformType;
     };
 
-    class GLShaderProgram : public RendererShaderProgram, public util::SmartHelper<GLShaderProgram> {
+    class GLShaderProgram : public RendererShader, public util::SmartHelper<GLShaderProgram> {
     private:
         GLuint programId;
         util::Map<std::string, GLUniform> uniformMap;
@@ -22,10 +25,23 @@ namespace graphics {
         void applyUniform (GLUniform uniform, const unsigned char* uniformPtr);
 
     public:
-        explicit GLShaderProgram (ShaderProgramBuilder& builder);
+        explicit GLShaderProgram (ShaderBuilder& builder);
         ~GLShaderProgram() override;
 
         void applyUniform(const std::string &uniformName, ShaderDataType uniformType, const unsigned char *uniformPtr) override;
         void bind() override;
+    };
+
+    class GLShaderManager : public common::AssetManager<Shader> {
+    private:
+        util::Map<std::size_t,  std::unique_ptr<Shader>> shaders;
+        GLRenderer* renderer;
+    protected:
+        Shader* load (std::istream &data, std::size_t id) override;
+        [[nodiscard]] const char* getFileType () const override;
+        void queueUnload (std::size_t id) override;
+    public:
+        explicit GLShaderManager (GLRenderer* renderer);
+        void selfRegister ();
     };
 }

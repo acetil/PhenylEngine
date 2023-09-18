@@ -13,7 +13,7 @@ namespace graphics {
     class GraphicsRenderLayer : public RenderLayer {
     private:
         bool active = true;
-        ShaderProgramNew program;
+        //Shader program;
         std::vector<std::shared_ptr<RenderLayer>> renderLayers;
     public:
         explicit GraphicsRenderLayer(Renderer* renderer);

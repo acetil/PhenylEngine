@@ -7,7 +7,6 @@ namespace graphics {
     class DebugLayer : public RenderLayer {
     private:
         bool active = true;
-        ShaderProgramNew shaderProgram;
         std::unique_ptr<DebugPipeline> pipeline;
         glm::vec2 screenSize;
     public:

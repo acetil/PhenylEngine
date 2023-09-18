@@ -2,6 +2,7 @@
 
 #include "graphics/font/font.h"
 #include "graphics/font/rendered_text.h"
+#include "common/assets/assets.h"
 
 #include "logging/logging.h"
 
@@ -12,7 +13,6 @@ using namespace graphics;
 class UIPipelineInt : public UIPipeline {
 private:
     PipelineStage textStage;
-    ShaderProgramNew textShader;
     GraphicsTexture fontTexture;
 
     Buffer<glm::vec2> textPosBuffer;
@@ -20,7 +20,6 @@ private:
     Buffer<glm::vec3> textColourBuffer;
 
     PipelineStage boxStage;
-    ShaderProgramNew boxShader;
 
     Buffer<glm::vec2> boxPosBuffer;
     Buffer<glm::vec2> boxRectPosBuffer;
@@ -30,9 +29,9 @@ private:
 
     glm::vec2 screenSize = {800, 600};
 public:
-    UIPipelineInt (const ShaderProgramNew& _textShader, const ShaderProgramNew& _boxShader, GraphicsTexture _fontTexture) : textShader{_textShader}, boxShader{_boxShader}, fontTexture{std::move(_fontTexture)} {}
+    UIPipelineInt (GraphicsTexture _fontTexture) : fontTexture{std::move(_fontTexture)} {}
     void init (Renderer* renderer) override {
-        textStage = renderer->buildPipelineStage(PipelineStageBuilder(textShader)
+        textStage = renderer->buildPipelineStage(PipelineStageBuilder(common::Assets::Load<Shader>("resources/shaders/text"))
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec3>(2));
@@ -45,7 +44,7 @@ public:
         textStage.bindBuffer(1, textUvBuffer);
         textStage.bindBuffer(2, textColourBuffer);
 
-        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(boxShader)
+        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(common::Assets::Load<Shader>("resources/shaders/box"))
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec4>(2)
@@ -75,7 +74,8 @@ public:
         textStage.render();
         textStage.clearBuffers();
 
-        boxShader.applyUniform<glm::vec2>("screenSize", screenSize);
+        //boxShader.applyUniform<glm::vec2>("screenSize", screenSize);
+        boxStage.applyUniform("screenSize", screenSize);
         boxStage.render();
         boxStage.clearBuffers();
     }
@@ -152,8 +152,8 @@ void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string
     //font.renderText(text, size, x, y, colour, textBuffer);
 }
 
-UIRenderLayer::UIRenderLayer (GraphicsTexture fontTexture, Renderer* renderer) : textProgram(renderer->getProgramNew("text").orThrow()) {
-    pipeline = std::make_unique<UIPipelineInt>(textProgram, renderer->getProgramNew("box").orThrow(), std::move(fontTexture));
+UIRenderLayer::UIRenderLayer (GraphicsTexture fontTexture, Renderer* renderer) {
+    pipeline = std::make_unique<UIPipelineInt>(std::move(fontTexture));
     pipeline->init(renderer);
     /*textIds = renderer->getBufferIds(3, 200 * 12 * sizeof(float), {2, 2, 3});
     textBuffer[0] = Buffer(200 * 12, sizeof(float), false);

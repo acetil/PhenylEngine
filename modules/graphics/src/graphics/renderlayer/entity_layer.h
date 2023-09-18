@@ -11,7 +11,6 @@ namespace graphics {
     private:
         bool active = true;
         component::EntityComponentManager* componentManager;
-        ShaderProgramNew shaderProgram;
 
         std::unique_ptr<EntityPipeline> entityPipeline;
         SpriteAtlas atlas;

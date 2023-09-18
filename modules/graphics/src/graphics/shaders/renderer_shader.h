@@ -2,12 +2,12 @@
 
 #include <string>
 
-#include "graphics/shaders/shader_new.h"
+#include "graphics/shaders/shaders.h"
 
 namespace graphics {
-    class RendererShaderProgram {
+    class RendererShader {
     public:
-        virtual ~RendererShaderProgram() = default;
+        virtual ~RendererShader() = default;
         virtual void applyUniform (const std::string& uniformName, ShaderDataType uniformType, const unsigned char* uniformPtr) = 0;
 
         virtual void bind () = 0;
