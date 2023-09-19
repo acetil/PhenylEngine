@@ -12,7 +12,6 @@
 #include "graphics/phenyl_graphics.h"
 #include "common/input/proxy_source.h"
 #include "graphics/renderlayer/debug_layer.h"
-#include "common/events/debug/debug_pause.h"
 #include "component/component_serializer.h"
 #include "graphics/components/2d/sprite.h"
 #include "graphics/components/2d/sprite_serialization.h"
@@ -109,26 +108,10 @@ void detail::Graphics::deleteWindowCallbacks () {
 }
 
 void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
-    //eventBus->subscribeHandler(&graphics::detail::Graphics::onEntityCreation, );
     eventScope = eventBus->getScope();
-    eventBus->subscribe(&graphics::detail::Graphics::onMousePosChange, this, eventScope);
     eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
 
-    eventBus->subscribe<event::DebugPauseEvent>([this] (event::DebugPauseEvent& event) {
-        if (event.doPause) {
-            this->timeIsPaused = true;
-            pauseStartTime = renderer->getCurrentTime();
-        } else if (this->timeIsPaused) {
-            this->timeIsPaused = false;
-            lastTime += renderer->getCurrentTime() - pauseStartTime;
-        }
-    }, eventScope);
-
     setupWindowCallbacks(eventBus);
-}
-
-void detail::Graphics::onMousePosChange (event::CursorPosChangeEvent& event) {
-    uiManager.setMousePos(event.windowPos);
 }
 
 std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSources () {

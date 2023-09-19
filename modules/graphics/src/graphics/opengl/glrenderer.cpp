@@ -238,7 +238,7 @@ void GLRenderer::setupCallbacks (const std::shared_ptr<event::EventBus>& eventBu
     setupGLWindowCallbacks(window, windowCallbackCtx.get());
 }
 
-glm::vec2 GLRenderer::getScreenSize () {
+glm::vec2 GLRenderer::getScreenSize () const {
     return screenSize;
 }
 
@@ -252,6 +252,14 @@ void GLRenderer::onKeyChange (int key, int scancode, int action, int mods) {
 
 void GLRenderer::onMouseButtonChange (int button, int action, int mods) {
     mouseInput->onButtonChange(button, action, mods);
+}
+
+void GLRenderer::onMousePosChange (glm::vec2 newPos) {
+    mousePos = newPos;
+}
+
+glm::vec2 GLRenderer::getMousePos () const {
+    return mousePos;
 }
 
 

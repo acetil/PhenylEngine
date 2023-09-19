@@ -17,8 +17,6 @@
 #include "graphics/ui/ui_manager.h"
 #include "graphics/phenyl_graphics.h"
 #include "graphics/textures/sprite_atlas.h"
-#include "common/events/cursor_position_change.h"
-#include "common/events/player_shoot_change.h"
 #include "common/events/theme_change.h"
 #include "event/event.h"
 #include "common/input/forward.h"
@@ -60,9 +58,6 @@ namespace graphics {
             double lastTime;
             double deltaTime;
 
-            bool timeIsPaused;
-            double pauseStartTime;
-
             std::shared_ptr<GraphicsRenderLayer> renderLayer;
 
             //std::unordered_map<std::string, TextureAtlas> atlases;
@@ -90,7 +85,6 @@ namespace graphics {
             //virtual RenderLayer* getLayer (int layer);
             [[maybe_unused]] Camera& getCamera ();
             void addEntityLayer (component::EntityComponentManager* compManager);
-            void onMousePosChange (event::CursorPosChangeEvent& event);
 
             void onThemeChange (event::ChangeThemeEvent& event);
 

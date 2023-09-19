@@ -5,7 +5,7 @@
 #include "entity/bullet.h"
 #include "entity/player.h"
 #include "default_input.h"
-#include "common/events/debug/debug_step.h"
+#include "util/debug_step.h"
 
 game::TestApp::TestApp () = default;
 
@@ -14,7 +14,7 @@ void game::TestApp::init () {
     addPlayerComponents(componentManager(), serializer());
 
     setupDefaultInput(input(), eventBus(), this);
-    inputSetup(input(), eventBus());
+    inputSetup(input());
 
     common::Assets::Load<Level>("resources/maps/testmap")->load();
 
@@ -54,9 +54,7 @@ void game::TestApp::init () {
 }
 
 void game::TestApp::fixedUpdate (float deltaTime) {
-    logging::log(LEVEL_DEBUG, "Fixed update!");
     playerUpdate(componentManager(), input(), camera());
-    playerUpdatePost(componentManager(), input(), camera());
 
     if (isStepping) {
         pause();
@@ -64,7 +62,6 @@ void game::TestApp::fixedUpdate (float deltaTime) {
 }
 
 void game::TestApp::update (double deltaTime) {
-    logging::log(LEVEL_DEBUG, "Update!");
     if (button4 && !isButtonDown) {
         isButtonDown = true;
         numPresses++;

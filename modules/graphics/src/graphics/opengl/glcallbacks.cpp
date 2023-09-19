@@ -2,7 +2,6 @@
 #include "graphics/renderers/window_callbacks.h"
 #include "graphics/opengl/glrenderer.h"
 #include "event/event_bus.h"
-#include "common/events/cursor_position_change.h"
 
 using namespace graphics;
 
@@ -44,13 +43,14 @@ static void cursorPosCallback (GLFWwindow* window, double xPos, double yPos) {
         return;
     }
 
-    auto windowSize = ptr->renderer->getScreenSize();
+    /*auto windowSize = ptr->renderer->getScreenSize();
 
     glm::vec2 screenPos = {(float)(xPos / windowSize.x * 2 - 1), -1.0f * (float)(yPos / windowSize.y * 2 - 1)};
 
     if (!ptr->eventBus.expired()) {
         ptr->eventBus.lock()->raise(event::CursorPosChangeEvent{{xPos, yPos}, screenPos});
-    }
+    }*/
+    ptr->renderer->onMousePosChange(glm::vec2{xPos, yPos});
 }
 
 static void windowSizeCallback (GLFWwindow* window, int width, int height) {

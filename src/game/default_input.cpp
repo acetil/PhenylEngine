@@ -1,17 +1,9 @@
 #include "default_input.h"
 
-#include "common/events/player_movement_change.h"
-#include "common/events/player_shoot_change.h"
-#include "common/events/debug/debug_step.h"
+#include "util/debug_step.h"
 
 #include "util/debug_console.h"
 
-#define FORCE_COMPONENT 6.5
-
-static common::InputAction KeyUp;
-static common::InputAction KeyDown;
-static common::InputAction KeyLeft;
-static common::InputAction KeyRight;
 
 void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::SharedPtr& eventBus, game::TestApp* app) {
     auto upKey = gameInput.mapInput("move_up", "key_w");

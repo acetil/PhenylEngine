@@ -1,4 +1,5 @@
 #include "engine/input/game_input.h"
+#include "graphics/renderers/renderer.h"
 
 #include <utility>
 
@@ -22,7 +23,7 @@ void GameInput::poll () {
     }
 }
 
-GameInput::GameInput () {
+GameInput::GameInput ()  {
     inputSource = std::make_unique<common::RemappableInput>();
 }
 
@@ -34,4 +35,16 @@ void GameInput::addInputSources (const std::vector<std::shared_ptr<common::Input
 
 void GameInput::setEventBus (event::EventBus::SharedPtr _eventBus) {
     eventBus = std::move(_eventBus);
+}
+
+glm::vec2 GameInput::cursorPos () const {
+    return renderer->getMousePos();
+}
+
+glm::vec2 GameInput::screenSize () const {
+    return renderer->getScreenSize();
+}
+
+void GameInput::setRenderer (graphics::Renderer* renderer) {
+    this->renderer = renderer;
 }

@@ -12,7 +12,7 @@
 
 #include "common/assets/assets.h"
 #include "engine/level/level.h"
-#include "common/events/debug/debug_step.h"
+#include "debug_step.h"
 
 using namespace util;
 

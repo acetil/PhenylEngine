@@ -7,15 +7,12 @@
 #include "game/entity/player.h"
 #include "game/entity/serializers.h"
 #include "component/component_serializer.h"
-#include "common/events/cursor_position_change.h"
 #include "common/assets/assets.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 7.5f
 
 #define FORCE_COMPONENT 6.5
-
-static glm::vec2 cursorPos{0.0f, 0.0f};
 
 static common::InputAction KeyLeft;
 static common::InputAction KeyRight;
@@ -24,9 +21,8 @@ static common::InputAction KeyDown;
 
 static common::InputAction KeyShoot;
 
-static void onCursorChange (event::CursorPosChangeEvent& event) {
-    cursorPos = event.screenPos;
-}
+static void updatePlayer (game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body, game::GameInput& input,
+                          game::GameCamera& camera);
 
 void addPlayerComponents (component::ComponentManager& manager, component::EntitySerializer& serialiser) {
     manager.addComponent<game::Player>();
@@ -35,9 +31,7 @@ void addPlayerComponents (component::ComponentManager& manager, component::Entit
 
 }
 
-void inputSetup (game::GameInput& input, const event::EventBus::SharedPtr& eventBus) {
-    eventBus->subscribeUnscoped(onCursorChange);
-
+void inputSetup (game::GameInput& input) {
     KeyLeft = input.getInput("move_left");
     KeyRight = input.getInput("move_right");
     KeyUp = input.getInput("move_up");
@@ -47,6 +41,13 @@ void inputSetup (game::GameInput& input, const event::EventBus::SharedPtr& event
 }
 
 void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera) {
+    manager.query<game::Player, common::GlobalTransform2D, physics::RigidBody2D>().each([&camera, &input] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
+        updatePlayer(player, transform, body, input, camera);
+    });
+}
+
+
+static glm::vec2 getMovementForce (game::GameInput& input) {
     glm::vec2 forceVec{0.0f, 0.0f};
 
     if (input.isDown(KeyLeft)) {
@@ -65,45 +66,48 @@ void playerUpdate (component::ComponentManager& manager, game::GameInput& input,
         forceVec += glm::vec2{0, -FORCE_COMPONENT};
     }
 
-    glm::vec2 worldCursorPos = camera.getWorldPos(cursorPos);
-
-    manager.query<game::Player, common::GlobalTransform2D, physics::RigidBody2D>().each([forceVec, worldCursorPos] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
-        body.applyForce(forceVec * body.getMass());
-
-        auto disp = worldCursorPos - transform.transform2D.position();
-        auto rot = std::atan2(disp.y, disp.x);
-        transform.transform2D.setRotation(rot);
-    });
+    return forceVec;
 }
 
-void playerUpdatePost (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera) {
+static glm::vec2 getCursorDisp (game::GameInput& input, game::GameCamera& camera, glm::vec2 pos) {
+    glm::vec2 pixelPos = input.cursorPos();
+    glm::vec2 cursorPos = pixelPos / input.screenSize() * 2.0f - glm::vec2{1.0f, 1.0f};
+    cursorPos.y *= -1;
     glm::vec2 worldCursorPos = camera.getWorldPos(cursorPos);
+
+    return worldCursorPos - pos;
+}
+
+static void updatePlayer (game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body, game::GameInput& input,
+                          game::GameCamera& camera) {
+    auto forceVec = getMovementForce(input);
+    auto disp = getCursorDisp(input, camera, transform.transform2D.position());
     bool doShoot = input.isDown(KeyShoot);
 
-    manager.query<game::Player, common::GlobalTransform2D>().each([doShoot, &camera] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform) {
-        if (doShoot && !player.hasShot) {
-            auto rot = transform.transform2D.rotationAngle();
+    body.applyForce(forceVec * body.getMass());
+    auto rot = std::atan2(disp.y, disp.x);
+    transform.transform2D.setRotation(rot);
 
-            glm::vec2 rotVec = glm::vec2{std::cos(rot), std::sin(rot)};
-            glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
-            glm::vec2 bulletVel = rotVec * SHOOT_VEL;
+    if (doShoot && !player.hasShot) {
+        glm::vec2 rotVec = glm::vec2{std::cos(rot), std::sin(rot)};
+        glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
+        glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
-            auto bulletView = player.bulletPrefab->instantiate()
-                    .complete();
+        auto bulletView = player.bulletPrefab->instantiate()
+                                .complete();
 
-            bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
-                transform.transform2D
-                         .setPosition(pos)
-                         .setRotation(rot);
+        bulletView.apply<common::GlobalTransform2D, physics::RigidBody2D>([pos, bulletVel, rot] (common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
+            transform.transform2D
+                     .setPosition(pos)
+                     .setRotation(rot);
 
-                body.applyImpulse(bulletVel * body.getMass());
-            });
+            body.applyImpulse(bulletVel * body.getMass());
+        });
 
-            player.hasShot = true;
-        } else if (!doShoot && player.hasShot) {
-            player.hasShot = false;
-        }
+        player.hasShot = true;
+    } else if (!doShoot && player.hasShot) {
+        player.hasShot = false;
+    }
 
-        camera.setPos(transform.transform2D.position());
-    });
+    camera.setPos(transform.transform2D.position());
 }

@@ -39,7 +39,7 @@ namespace graphics {
         GLShaderManager shaderManager;
 
         glm::vec2 screenSize;
-
+        glm::vec2 mousePos;
     protected:
         std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
 
@@ -82,7 +82,8 @@ namespace graphics {
         void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
         void setupCallbacks(const std::shared_ptr<event::EventBus> &eventBus) override;
 
-        glm::vec2 getScreenSize() override;
+        [[nodiscard]] glm::vec2 getScreenSize() const override;
+        [[nodiscard]] glm::vec2 getMousePos() const override;
         void setScreenSize (glm::vec2 screenSize);
 
         void invalidateWindowCallbacks () override;
@@ -95,5 +96,6 @@ namespace graphics {
 
         void onKeyChange (int key, int scancode, int action, int mods);
         void onMouseButtonChange (int button, int action, int mods);
+        void onMousePosChange (glm::vec2 newPos);
     };
 }

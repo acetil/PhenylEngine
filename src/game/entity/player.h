@@ -13,7 +13,5 @@ namespace game {
 }
 
 void addPlayerComponents (component::ComponentManager& manager, component::EntitySerializer& serialiser);
-void inputSetup (game::GameInput& input, const event::EventBus::SharedPtr& eventBus);
+void inputSetup (game::GameInput& input);
 void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera);
-
-void playerUpdatePost (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera);

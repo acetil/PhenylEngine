@@ -52,7 +52,8 @@ namespace graphics {
         virtual void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) = 0;
         virtual void setupCallbacks (const std::shared_ptr<event::EventBus>& eventBus) = 0;
 
-        virtual glm::vec2 getScreenSize () = 0;
+        [[nodiscard]] virtual glm::vec2 getMousePos () const = 0;
+        [[nodiscard]] virtual glm::vec2 getScreenSize () const = 0;
 
         virtual void invalidateWindowCallbacks () = 0;
 

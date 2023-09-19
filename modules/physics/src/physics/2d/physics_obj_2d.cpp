@@ -1,6 +1,5 @@
 #include "physics_obj_2d.h"
 #include "physics/components/2D/rigid_body.h"
-#include "common/events/entity_collision.h"
 #include "common/debug.h"
 
 #include "common/components/2d/global_transform.h"

@@ -122,7 +122,7 @@ void PhenylEngine::exec (Application* app) {
     internal = nullptr;
 }
 
-engine::detail::Engine::Engine () : componentManager{256}{
+engine::detail::Engine::Engine () : componentManager{256} {
     eventBus = event::EventBus::NewSharedPtr();
     gameInput.setEventBus(eventBus);
     entitySerializer = std::make_unique<component::EntitySerializer>();
@@ -136,6 +136,7 @@ engine::detail::Engine::Engine () : componentManager{256}{
 
     //auto gameObj = gameObjHolder.getGameObject();
     auto graphics = graphicsHolder.getGraphics();
+    gameInput.setRenderer(graphics.getRenderer());
 
     //gameObj.setEntityComponentManager(&componentManager);
     //gameObj.setSerializer(entitySerializer.get());
