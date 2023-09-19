@@ -9,7 +9,6 @@
 #include "common/events/theme_change.h"
 #include "util/string_help.h"
 #include "common/events/debug/debug_render.h"
-#include "common/events/debug/debug_pause.h"
 
 #include "common/assets/assets.h"
 #include "engine/level/level.h"
@@ -17,20 +16,6 @@
 
 using namespace util;
 
-
-/*std::vector<std::string> stringSplit (std::string& str) {
-    std::vector<std::string> substrings;
-
-    std::size_t start = 0;
-    auto end = std::string::npos;
-
-    while ((end = str.find(' ', start)) != std::string::npos) {
-        substrings.emplace_back(str.substr(start, end - start));
-        start = end + 1;
-    }
-    substrings.emplace_back(str.substr(start));
-    return substrings;
-}*/
 
 static void handleProfiler (const event::EventBus::SharedPtr& bus, const std::vector<std::string>& args) {
     if (args.empty()) {
@@ -58,7 +43,7 @@ static void handleThemes (const event::EventBus::SharedPtr& bus, std::vector<std
     }
 }
 
-static void doDebugConsole (event::EventBus::SharedPtr bus) {
+static void doDebugConsole (const event::EventBus::SharedPtr& bus) {
     std::cout << ">";
     std::string debugInput;
     std::getline(std::cin, debugInput);
@@ -121,7 +106,9 @@ void util::doDebugConsole (DebugConsoleEvent& event) {
     if (!(eventBus = event.eventBus.lock())) {
         logging::log(LEVEL_WARNING, "Debug console event bus pointer invalid!");
     } else {
-        eventBus->raise(event::DebugPauseEvent{true});
+        //eventBus->raise(event::DebugPauseEvent{true});
+        event.app->pause();
         ::doDebugConsole(eventBus);
+        event.app->queueResume();
     }
 }

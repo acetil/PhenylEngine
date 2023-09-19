@@ -4,7 +4,8 @@ add_library(graphics src/graphics/graphics.cpp src/graphics/font/font.cpp src/gr
         include/graphics/textures/sprite_atlas.h
         include/graphics/components/2d/sprite.h
         include/graphics/components/2d/sprite_serialization.h
-        src/graphics/textures/sprite_atlas.cpp)
+        src/graphics/textures/sprite_atlas.cpp
+        include/graphics/ui/forward.h)
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
 

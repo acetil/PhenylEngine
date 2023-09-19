@@ -19,6 +19,9 @@
 #include "component/prefab_manager.h"
 #include "engine/level/level_manager.h"
 #include "common/events/debug/dump_map.h"
+#include "util/profiler.h"
+
+#define FIXED_FPS 60.0
 
 using namespace engine;
 
@@ -58,10 +61,15 @@ public:
 
     void updateEntityPosition (float deltaTime);
     void debugRender ();
+
+    void gameloop (Application* app);
+    void update (Application* app, double deltaTime);
+    void fixedUpdate (Application* app);
+    void render (Application* app, double deltaTime);
 };
 
 engine::PhenylEngine::PhenylEngine () {
-    internal = std::make_unique<engine::detail::Engine>();
+    //internal = std::make_unique<engine::detail::Engine>();
 }
 
 engine::PhenylEngine::~PhenylEngine () = default;
@@ -106,8 +114,17 @@ game::GameInput& PhenylEngine::getInput () {
     return internal->getInput();
 }
 
+void PhenylEngine::exec (Application* app) {
+    internal = std::make_unique<engine::detail::Engine>();
+    app->init();
+    internal->gameloop(app);
+    app->shutdown();
+    internal = nullptr;
+}
+
 engine::detail::Engine::Engine () : componentManager{256}{
     eventBus = event::EventBus::NewSharedPtr();
+    gameInput.setEventBus(eventBus);
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 
@@ -219,4 +236,54 @@ void detail::Engine::addComponents () {
 
 void detail::Engine::dumpLevel (std::ostream& file) {
     levelManager->dump(file);
+}
+
+void detail::Engine::gameloop (Application* app) {
+    double deltaPhysicsFrame = 0.0f;
+    auto graphics = graphicsHolder.getGraphics();
+    logger::log(LEVEL_DEBUG, "ENGINE", "Starting loop!");
+    while (!graphics.shouldClose()) {
+        util::startProfileFrame();
+
+        graphics.updateUI();
+        gameInput.poll();
+
+        double deltaTime = graphics.getDeltaTime();
+        deltaPhysicsFrame += deltaTime * app->fixedTimeScale;
+
+        util::startProfile("physics");
+        while (deltaPhysicsFrame >= 1.0 / FIXED_FPS) {
+            fixedUpdate(app);
+            deltaPhysicsFrame -= 1.0 / FIXED_FPS;
+        }
+        util::endProfile();
+
+        util::startProfile("graphics");
+        update(app, deltaTime);
+        render(app, deltaTime);
+        util::endProfile();
+
+        util::endProfileFrame();
+
+        graphics.sync((int)app->targetFps); // TODO
+        graphics.pollEvents();
+    }
+}
+
+void detail::Engine::update (Application* app, double deltaTime) {
+    app->update(deltaTime);
+}
+
+void detail::Engine::fixedUpdate (Application* app) {
+    app->fixedUpdate(1.0 / FIXED_FPS);
+    updateEntityPosition(1.0f / FIXED_FPS);
+    getCamera().updateCamera(getGraphics().getCamera());
+}
+
+void detail::Engine::render (Application* app, double deltaTime) {
+    graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float)deltaTime);
+    debugRender();
+    getGraphics().getUIManager().renderUI();
+
+    getGraphics().render();
 }

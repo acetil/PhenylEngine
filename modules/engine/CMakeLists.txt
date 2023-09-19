@@ -1,7 +1,10 @@
 add_library(engine include src src/engine/game_camera.cpp include/engine/engine.h src/engine/engine.cpp include/engine/input/game_input.h src/engine/input/game_input.cpp
         include/engine/level/level.h
         src/engine/level/level.cpp
-        src/engine/level/level_manager.h)
+        src/engine/level/level_manager.h
+        include/engine/application.h
+        include/engine/forward.h
+        src/engine/application.cpp)
 
 find_package(nlohmann_json REQUIRED)
 

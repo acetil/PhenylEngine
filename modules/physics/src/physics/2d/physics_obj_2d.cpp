@@ -152,21 +152,6 @@ void PhysicsObject2D::debugRender (const component::EntityComponentManager& comp
             auto pos4 = box.frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
 
             common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
-
-            auto serialized = common::JsonSerializer::Serialize(transform);
-            logging::log(LEVEL_DEBUG, "Serialized {} GlobalTransform2D: \n{}", entity.id().value(), serialized);
-            //serializer::JSONDeserializer transformDeserializer{std::move(serialized)};
-            common::JsonDeserializer::Deserialize<common::GlobalTransform2D>(serialized).ifPresent([] (const common::GlobalTransform2D& transform) {
-                auto serialized = common::JsonSerializer::Serialize(transform);
-                logging::log(LEVEL_DEBUG, "Deserialized serialized GlobalTransform2D: \n{}", serialized);
-            });
-
-            auto serialized2 = common::JsonSerializer::Serialize(box);
-            logging::log(LEVEL_DEBUG, "Serialized {} BoxCollider2D: \n{}", entity.id().value(), serialized2);
-            common::JsonDeserializer::Deserialize<BoxCollider2D>(serialized2).ifPresent([] (const BoxCollider2D& transform) {
-                auto serialized = common::JsonSerializer::Serialize(transform);
-                logging::log(LEVEL_DEBUG, "Deserialized serialized BoxCollider2D: \n{}", serialized);
-            });
         });
     }
 }

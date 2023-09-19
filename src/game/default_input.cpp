@@ -13,7 +13,7 @@ static common::InputAction KeyDown;
 static common::InputAction KeyLeft;
 static common::InputAction KeyRight;
 
-void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::SharedPtr& eventBus) {
+void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::SharedPtr& eventBus, game::TestApp* app) {
     auto upKey = gameInput.mapInput("move_up", "key_w");
     auto downKey = gameInput.mapInput("move_down", "key_s");
     auto leftKey = gameInput.mapInput("move_left", "key_a");
@@ -31,7 +31,7 @@ void setupDefaultInput (game::GameInput& gameInput, const event::EventBus::Share
 
     //gameInput.addInputEvent(shootKey, event::PlayerShootChangeEvent(true), event::PlayerShootChangeEvent(false));
 
-    gameInput.addInputEvent(debugKey, game::EmptyEventAction(), util::DebugConsoleEvent{eventBus});
+    gameInput.addInputEvent(debugKey, game::EmptyEventAction(), util::DebugConsoleEvent{eventBus, app});
     gameInput.addInputEvent(stepKey, game::EmptyEventAction(), event::DebugStepEvent{.status=event::DebugStepStatus::DO_STEP});
 
     eventBus->subscribeUnscoped(util::doDebugConsole);
