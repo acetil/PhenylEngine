@@ -14,4 +14,5 @@ namespace util {
     };
 
     void doDebugConsole (DebugConsoleEvent& event);
+    void doDebugConsole (const event::EventBus::SharedPtr& eventBus, game::TestApp* app);
 }

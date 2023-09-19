@@ -12,8 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 #set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -Wreturn-type")
 #set(CMAKE_CXX_STANDARD 20)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/util/debug_console.cpp src/game/default_input.h src/game/default_input.cpp
-        src/util/debug_step.h
+add_executable(${PROJECT_NAME} src/main.cpp src/util/debug_console.cpp
         src/game/entity/bullet.h
         src/game/entity/player.h
         src/game/entity/serializers.h

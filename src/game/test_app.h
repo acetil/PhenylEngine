@@ -5,6 +5,7 @@
 #include "graphics/ui/components/ui_flexbox.h"
 #include "graphics/ui/components/ui_label.h"
 #include "event/event_scope.h"
+#include "engine/input/game_input.h"
 
 namespace game {
     class TestApp : public engine::Application {
@@ -17,12 +18,15 @@ namespace game {
         graphics::ui::UIButton button5{"button"};
 
         event::EventScope scope;
+        common::InputAction stepAction;
+        common::InputAction consoleAction;
 
         int numPresses = 0;
         bool isButtonDown = false;
         bool isButtonDown2 = false;
         int resumeFrames = 0;
         bool isStepping = false;
+        bool stepDown = false;
     public:
         TestApp ();
 
@@ -31,5 +35,8 @@ namespace game {
         void fixedUpdate (float deltaTime) override;
 
         void queueResume ();
+        void startStepping ();
+        void stopStepping ();
+        void step ();
     };
 }

@@ -4,8 +4,8 @@
 #include "test_app.h"
 #include "entity/bullet.h"
 #include "entity/player.h"
-#include "default_input.h"
-#include "util/debug_step.h"
+#include "util/debug_console.h"
+#include "graphics/ui/ui_manager.h"
 
 game::TestApp::TestApp () = default;
 
@@ -13,7 +13,6 @@ void game::TestApp::init () {
     addBulletSignals(componentManager(), serializer());
     addPlayerComponents(componentManager(), serializer());
 
-    setupDefaultInput(input(), eventBus(), this);
     inputSetup(input());
 
     common::Assets::Load<Level>("resources/maps/testmap")->load();
@@ -31,26 +30,8 @@ void game::TestApp::init () {
     uiManager().addUIComp(button5, {500, 385});
     uiManager().setCurrentTheme(common::Assets::Load<graphics::ui::Theme>("resources/themes/default_theme"));
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnusedValue"
-    scope = eventBus()->subscribe<event::DebugStepEvent>([this] (event::DebugStepEvent& event) {
-        switch (event.status) {
-            case event::DebugStepStatus::ENABLE_STEPPING:
-                isStepping = true;
-                pause();
-                break;
-            case event::DebugStepStatus::DISABLE_STEPPING:
-                isStepping = false;
-                resume();
-                break;
-            case event::DebugStepStatus::DO_STEP:
-                if (isStepping) {
-                    resume();
-                }
-                break;
-        }
-    });
-#pragma clang diagnostic pop
+    stepAction = input().mapInput("debug_step", "key_f7");
+    consoleAction = input().mapInput("debug_console", "key_f12");
 }
 
 void game::TestApp::fixedUpdate (float deltaTime) {
@@ -90,8 +71,35 @@ void game::TestApp::update (double deltaTime) {
             resume();
         }
     }
+
+    if (input().isDown(stepAction) && !stepDown) {
+        stepDown = true;
+        step();
+    } else if (!input().isDown(stepAction)) {
+        stepDown = false;
+    }
+
+    if (input().isDown(consoleAction)) {
+        util::doDebugConsole(eventBus(), this);
+    }
 }
 
 void game::TestApp::queueResume () {
     resumeFrames = 2;
+}
+
+void game::TestApp::startStepping () {
+    isStepping = true;
+    pause();
+}
+
+void game::TestApp::stopStepping () {
+    isStepping = false;
+    resume();
+}
+
+void game::TestApp::step () {
+    if (isStepping) {
+        resume();
+    }
 }

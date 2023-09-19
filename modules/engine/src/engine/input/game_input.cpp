@@ -18,9 +18,6 @@ bool GameInput::isDown (const common::InputAction& action) {
 }
 
 void GameInput::poll () {
-    for (auto& eAct : eventActions) {
-        eAct->poll(inputSource, eventBus);
-    }
 }
 
 GameInput::GameInput ()  {
@@ -31,10 +28,6 @@ void GameInput::addInputSources (const std::vector<std::shared_ptr<common::Input
     for (const auto& i : sources) {
         inputSource->addInputSource(i);
     }
-}
-
-void GameInput::setEventBus (event::EventBus::SharedPtr _eventBus) {
-    eventBus = std::move(_eventBus);
 }
 
 glm::vec2 GameInput::cursorPos () const {

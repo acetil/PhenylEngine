@@ -124,7 +124,6 @@ void PhenylEngine::exec (Application* app) {
 
 engine::detail::Engine::Engine () : componentManager{256} {
     eventBus = event::EventBus::NewSharedPtr();
-    gameInput.setEventBus(eventBus);
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 

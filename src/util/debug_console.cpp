@@ -12,7 +12,6 @@
 
 #include "common/assets/assets.h"
 #include "engine/level/level.h"
-#include "debug_step.h"
 
 using namespace util;
 
@@ -43,7 +42,7 @@ static void handleThemes (const event::EventBus::SharedPtr& bus, std::vector<std
     }
 }
 
-static void doDebugConsole (const event::EventBus::SharedPtr& bus) {
+static void doDebugConsole (const event::EventBus::SharedPtr& bus, game::TestApp* app) {
     std::cout << ">";
     std::string debugInput;
     std::getline(std::cin, debugInput);
@@ -86,9 +85,9 @@ static void doDebugConsole (const event::EventBus::SharedPtr& bus) {
     } else if (command == "debug_step") {
         if (args.size() == 1) {
             if (args[0] == "true") {
-                bus->raise(event::DebugStepEvent{.status=event::DebugStepStatus::ENABLE_STEPPING});
+                app->startStepping();
             } else if (args[0] == "false") {
-                bus->raise(event::DebugStepEvent{.status=event::DebugStepStatus::DISABLE_STEPPING});
+                app->stopStepping();
             } else {
                 logging::log(LEVEL_WARNING, "Argument for debug_step command must be true or false");
             }
@@ -108,7 +107,13 @@ void util::doDebugConsole (DebugConsoleEvent& event) {
     } else {
         //eventBus->raise(event::DebugPauseEvent{true});
         event.app->pause();
-        ::doDebugConsole(eventBus);
+        ::doDebugConsole(eventBus, event.app);
         event.app->queueResume();
     }
+}
+
+void util::doDebugConsole (const event::EventBus::SharedPtr& eventBus, game::TestApp* app) {
+    app->pause();
+    ::doDebugConsole(eventBus, app);
+    app->queueResume();
 }

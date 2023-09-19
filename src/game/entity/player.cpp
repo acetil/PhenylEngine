@@ -32,12 +32,12 @@ void addPlayerComponents (component::ComponentManager& manager, component::Entit
 }
 
 void inputSetup (game::GameInput& input) {
-    KeyLeft = input.getInput("move_left");
-    KeyRight = input.getInput("move_right");
-    KeyUp = input.getInput("move_up");
-    KeyDown = input.getInput("move_down");
+    KeyLeft = input.mapInput("move_left", "key_a");
+    KeyRight = input.mapInput("move_right", "key_d");
+    KeyUp = input.mapInput("move_up", "key_w");
+    KeyDown = input.mapInput("move_down", "key_s");
 
-    KeyShoot = input.getInput("player_shoot");
+    KeyShoot = input.mapInput("player_shoot", "mouse_left");
 }
 
 void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera) {
