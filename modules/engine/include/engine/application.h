@@ -3,7 +3,6 @@
 #include "component/forward.h"
 #include "forward.h"
 #include "graphics/ui/forward.h"
-#include "event/forward.h"
 
 namespace engine {
     namespace detail {
@@ -23,10 +22,12 @@ namespace engine {
         component::EntitySerializer& serializer ();
         game::GameCamera& camera ();
         game::GameInput& input ();
-        std::shared_ptr<event::EventBus> eventBus ();
         graphics::UIManager& uiManager ();
         void setTargetFPS (double fps);
         void setFixedTimeScale (double newTimeScale);
+        void setDebugRender (bool doRender); // TODO: remove?
+        void setProfileRender (bool doRender); // TODO: remove?
+        void dumpLevel (std::ostream& file);
     public:
         virtual ~Application() = default;
 

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "common/input/remappable_input.h"
-#include "event/event_bus.h"
 #include "graphics/maths_headers.h"
 
 namespace graphics {

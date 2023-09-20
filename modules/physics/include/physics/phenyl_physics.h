@@ -3,11 +3,6 @@
 #include <memory>
 
 #include "component/forward.h"
-#include "event/forward.h"
-
-namespace view {
-    class GameView;
-}
 
 namespace physics {
     class IPhysics;
@@ -17,7 +12,7 @@ namespace physics {
     public:
         explicit PhenylPhysics (IPhysics* physicsObj);
         void updatePhysics (component::EntityComponentManager& componentManager, float deltaTime);
-        void checkCollisions (component::EntityComponentManager& componentManager, const std::shared_ptr<event::EventBus>& eventBus, float deltaTime);
+        void checkCollisions (component::EntityComponentManager& componentManager, float deltaTime);
         void debugRender (const component::EntityComponentManager& componentManager);
     };
 }

@@ -4,8 +4,8 @@
 #include "graphics/ui/components/ui_button.h"
 #include "graphics/ui/components/ui_flexbox.h"
 #include "graphics/ui/components/ui_label.h"
-#include "event/event_scope.h"
 #include "engine/input/game_input.h"
+#include "common/assets/asset.h"
 
 namespace game {
     class TestApp : public engine::Application {
@@ -17,7 +17,6 @@ namespace game {
         graphics::ui::UIButton button4{"button"};
         graphics::ui::UIButton button5{"button"};
 
-        event::EventScope scope;
         common::InputAction stepAction;
         common::InputAction consoleAction;
 
@@ -38,5 +37,10 @@ namespace game {
         void startStepping ();
         void stopStepping ();
         void step ();
+
+        void changeTheme (common::Asset<graphics::ui::Theme> theme);
+        void updateDebugRender (bool doRender);
+        void updateProfileRender (bool doRender);
+        void dumpLevel (const std::string& path);
     };
 }

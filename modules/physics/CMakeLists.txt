@@ -16,6 +16,6 @@ set_property(TARGET physics PROPERTY CXX_STANDARD 20)
 target_include_directories(physics PUBLIC include)
 target_include_directories(physics PRIVATE src)
 
-target_link_libraries(physics PRIVATE logger util eventbus maths graphics engine common component)
+target_link_libraries(physics PRIVATE logger util maths graphics engine common component)
 target_link_libraries(physics PUBLIC component)
 

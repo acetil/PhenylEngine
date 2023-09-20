@@ -1,7 +1,6 @@
 #include "graphics/opengl/glrenderer.h"
 #include "graphics/opengl/glshader.h"
 #include "graphics/opengl/glpipelinestage.h"
-#include "graphics/renderers/window_callbacks.h"
 
 #include "graphics/opengl/input/glfw_key_input.h"
 #include "graphics/opengl/input/glfw_mouse_input.h"
@@ -172,12 +171,6 @@ void GLRenderer::destroyTexture (unsigned int textureId) {
     glDeleteTextures(1, &textureId);
 }
 
-void GLRenderer::setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) {
-    callbackCtx = std::move(ctx);
-    glfwSetWindowUserPointer(window, callbackCtx.get());
-    setupGLWindowCallbacks(window);
-}
-
 // TODO: make profiles for different magfilter/minfilter/mipmapping
 GraphicsTexture GLRenderer::loadTextureGrey (int width, int height, unsigned char* data) {
     unsigned int id;
@@ -196,7 +189,7 @@ GraphicsTexture GLRenderer::loadTextureGrey (int width, int height, unsigned cha
 void GLRenderer::invalidateWindowCallbacks () {
     glfwSetWindowUserPointer(window, nullptr);
     removeGLWindowCallbacks(window);
-    callbackCtx = nullptr;
+    windowCallbackCtx = nullptr;
 }
 
 GLRenderer::~GLRenderer () {
@@ -233,8 +226,8 @@ std::vector<std::shared_ptr<common::InputSource>> GLRenderer::getInputSources ()
     return {mouseInput, keyInput};
 }
 
-void GLRenderer::setupCallbacks (const std::shared_ptr<event::EventBus>& eventBus) {
-    windowCallbackCtx = std::make_unique<GLWindowCallbackCtx>(eventBus, this);
+void GLRenderer::setupCallbacks () {
+    windowCallbackCtx = std::make_unique<GLWindowCallbackCtx>(this);
     setupGLWindowCallbacks(window, windowCallbackCtx.get());
 }
 

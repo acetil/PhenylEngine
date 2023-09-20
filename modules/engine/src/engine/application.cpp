@@ -20,12 +20,6 @@ game::GameInput& Application::input () {
     return engine->getInput();
 }
 
-
-std::shared_ptr<event::EventBus> Application::eventBus () {
-    assert(engine);
-    return engine->getEventBus();
-}
-
 graphics::UIManager& Application::uiManager () {
     assert(engine);
     return engine->getGraphics().getUIManager();
@@ -53,4 +47,16 @@ void Application::pause () {
 
 void Application::resume () {
     setFixedTimeScale(1.0);
+}
+
+void Application::setDebugRender (bool doRender) {
+    engine->setDebugRender(doRender);
+}
+
+void Application::setProfileRender (bool doRender) {
+    engine->setProfileRender(doRender);
+}
+
+void Application::dumpLevel (std::ostream& file) {
+    engine->dumpLevel(file);
 }

@@ -17,8 +17,6 @@
 #include "graphics/ui/ui_manager.h"
 #include "graphics/phenyl_graphics.h"
 #include "graphics/textures/sprite_atlas.h"
-#include "common/events/theme_change.h"
-#include "event/event.h"
 #include "common/input/forward.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
@@ -52,7 +50,6 @@ namespace graphics {
 
         class Graphics : public util::SmartHelper<Graphics, true> {
         private:
-            event::EventScope eventScope;
             std::unique_ptr<Renderer> renderer;
 
             double lastTime;
@@ -86,8 +83,6 @@ namespace graphics {
             [[maybe_unused]] Camera& getCamera ();
             void addEntityLayer (component::EntityComponentManager* compManager);
 
-            void onThemeChange (event::ChangeThemeEvent& event);
-
             Renderer* getRenderer () {
                 return renderer.get(); // TODO: remove
             }
@@ -95,14 +90,12 @@ namespace graphics {
                 glyphAtlas = std::move(atlas);
                 renderLayer->addTex(glyphAtlas.getTex());
             }*/
-            void setupWindowCallbacks (const event::EventBus::SharedPtr& bus);
-
+            void setupWindowCallbacks ();
             void deleteWindowCallbacks ();
 
             UIManager& getUIManager ();
             void updateUI ();
 
-            void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
 
             void addComponents (component::ComponentManager& manager);

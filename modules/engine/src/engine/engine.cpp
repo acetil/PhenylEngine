@@ -18,7 +18,6 @@
 #include "physics/physics.h"
 #include "component/prefab_manager.h"
 #include "engine/level/level_manager.h"
-#include "common/events/debug/dump_map.h"
 #include "util/profiler.h"
 
 #define FIXED_FPS 60.0
@@ -27,7 +26,6 @@ using namespace engine;
 
 class engine::detail::Engine {
 private:
-    event::EventBus::SharedPtr eventBus;
     //game::PhenylGameHolder gameObjHolder;
     graphics::PhenylGraphicsHolder graphicsHolder;
     component::EntityComponentManager componentManager;
@@ -38,7 +36,10 @@ private:
     game::GameCamera gameCamera;
     game::GameInput gameInput;
 
-    void addEventHandlers ();
+    bool doDebugRender = false;
+    bool doProfileRender = true;
+
+    void setupCallbacks ();
     void addDefaultSerialisers ();
     void addComponents ();
 public:
@@ -50,7 +51,6 @@ public:
     [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
     component::EntityComponentManager& getComponentManager ();
     [[nodiscard]] const component::EntityComponentManager& getComponentManager () const;
-    event::EventBus::SharedPtr getEventBus ();
     component::EntitySerializer& getEntitySerializer ();
     physics::PhenylPhysics getPhysics ();
 
@@ -66,6 +66,9 @@ public:
     void update (Application* app, double deltaTime);
     void fixedUpdate (Application* app);
     void render (Application* app, double deltaTime);
+
+    void setDebugRender (bool doRender);
+    void setProfileRender (bool doRender);
 };
 
 engine::PhenylEngine::PhenylEngine () {
@@ -76,10 +79,6 @@ engine::PhenylEngine::~PhenylEngine () = default;
 
 graphics::PhenylGraphics PhenylEngine::getGraphics () {
     return internal->getGraphics();
-}
-
-event::EventBus::SharedPtr PhenylEngine::getEventBus () {
-    return internal->getEventBus();
 }
 
 component::EntityComponentManager& PhenylEngine::getComponentManager () {
@@ -122,8 +121,15 @@ void PhenylEngine::exec (Application* app) {
     internal = nullptr;
 }
 
+void PhenylEngine::setDebugRender (bool doRender) {
+    internal->setDebugRender(doRender);
+}
+
+void PhenylEngine::setProfileRender (bool doRender) {
+    internal->setProfileRender(doRender);
+}
+
 engine::detail::Engine::Engine () : componentManager{256} {
-    eventBus = event::EventBus::NewSharedPtr();
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 
@@ -131,7 +137,7 @@ engine::detail::Engine::Engine () : componentManager{256} {
     levelManager = std::make_unique<game::LevelManager>(&componentManager, entitySerializer.get());
     prefabManager->selfRegister();
     levelManager->selfRegister();
-    addEventHandlers();
+    setupCallbacks();
 
     //auto gameObj = gameObjHolder.getGameObject();
     auto graphics = graphicsHolder.getGraphics();
@@ -169,24 +175,8 @@ graphics::PhenylGraphics detail::Engine::getGraphics () const {
     return graphicsHolder.getGraphics();
 }
 
-event::EventBus::SharedPtr detail::Engine::getEventBus () {
-    return eventBus;
-}
-
-void detail::Engine::addEventHandlers () {
-    graphicsHolder.getGraphics().addEventHandlers(eventBus);
-
-    //eventBus->subscribeUnscoped(game::addEntities);
-    //eventBus->subscribeUnscoped(physics::onEntityCreation);
-
-    graphics::addDebugEventHandlers(eventBus);
-
-    physicsObj->addEventHandlers(eventBus);
-
-    eventBus->subscribeUnscoped<event::DumpMapEvent>([this] (const event::DumpMapEvent& event) {
-        std::ofstream file{event.filepath};
-       levelManager->dump(file);
-    });
+void detail::Engine::setupCallbacks () {
+    graphicsHolder.tempGetGraphics()->setupWindowCallbacks();
 }
 
 component::EntityComponentManager& detail::Engine::getComponentManager () {
@@ -221,10 +211,13 @@ game::GameInput& detail::Engine::getInput () {
 void detail::Engine::updateEntityPosition (float deltaTime) {
     // TODO: remove function?
     physicsObj->updatePhysics(getComponentManager(), deltaTime);
-    physicsObj->checkCollisions(getComponentManager(), getEventBus(), deltaTime);
+    physicsObj->checkCollisions(getComponentManager(), deltaTime);
 }
 
 void detail::Engine::debugRender () {
+    if (!doDebugRender) {
+        return;
+    }
     physicsObj->debugRender(getComponentManager());
 }
 
@@ -281,9 +274,19 @@ void detail::Engine::fixedUpdate (Application* app) {
 }
 
 void detail::Engine::render (Application* app, double deltaTime) {
-    graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float)deltaTime);
+    if (doProfileRender) {
+        graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float) deltaTime);
+    }
     debugRender();
     getGraphics().getUIManager().renderUI();
 
     getGraphics().render();
+}
+
+void detail::Engine::setDebugRender (bool doRender) {
+    doDebugRender = doRender;
+}
+
+void detail::Engine::setProfileRender (bool doRender) {
+    doProfileRender = doRender;
 }

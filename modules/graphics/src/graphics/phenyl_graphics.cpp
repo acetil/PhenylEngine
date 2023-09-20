@@ -91,10 +91,6 @@ UIManager& PhenylGraphics::getUIManager () {
     return getGraphics()->getUIManager();
 }
 
-void PhenylGraphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
-    getGraphics()->addEventHandlers(eventBus);
-}
-
 void PhenylGraphics::updateUI () {
     getGraphics()->updateUI();
 }

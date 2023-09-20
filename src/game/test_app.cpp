@@ -80,7 +80,7 @@ void game::TestApp::update (double deltaTime) {
     }
 
     if (input().isDown(consoleAction)) {
-        util::doDebugConsole(eventBus(), this);
+        util::doDebugConsole(this);
     }
 }
 
@@ -101,5 +101,26 @@ void game::TestApp::stopStepping () {
 void game::TestApp::step () {
     if (isStepping) {
         resume();
+    }
+}
+
+void game::TestApp::changeTheme (common::Asset<graphics::ui::Theme> theme) {
+    uiManager().setCurrentTheme(std::move(theme));
+}
+
+void game::TestApp::updateDebugRender (bool doRender) {
+    setDebugRender(doRender);
+}
+
+void game::TestApp::updateProfileRender (bool doRender) {
+    setProfileRender(doRender);
+}
+
+void game::TestApp::dumpLevel (const std::string& path) {
+    std::ofstream file{path};
+    if (file) {
+        engine::Application::dumpLevel(file);
+    } else {
+        logging::log(LEVEL_ERROR, "Failed to open path \"{}\"!", path);
     }
 }

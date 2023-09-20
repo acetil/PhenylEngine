@@ -9,7 +9,6 @@
 #include "component/component.h"
 #include "component/forward.h"
 #include "util/optional.h"
-#include "event/event_bus.h"
 
 namespace graphics {
     namespace detail {
@@ -52,8 +51,6 @@ namespace graphics {
         std::shared_ptr<detail::Graphics> tempGetGraphics () {
             return getGraphics();
         }
-
-        void addEventHandlers (const event::EventBus::SharedPtr& eventBus);
         void updateUI ();
 
         void addComponentSerializers (component::EntitySerializer& serialiser);

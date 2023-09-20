@@ -34,8 +34,6 @@ namespace engine {
 
         graphics::PhenylGraphics getGraphics ();
 
-        event::EventBus::SharedPtr getEventBus ();
-
         component::EntityComponentManager& getComponentManager ();
 
         component::EntitySerializer& getEntitySerializer ();
@@ -49,6 +47,8 @@ namespace engine {
 
         void updateEntityPosition (float deltaTime);
         void debugRender ();
+        void setDebugRender (bool doRender);
+        void setProfileRender (bool doRender);
 
         template <std::derived_from<Application> T, typename ...Args>
         void run (Args&&... args) {

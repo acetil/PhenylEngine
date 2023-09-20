@@ -6,9 +6,6 @@
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
 
-#include "common/events/debug/profiler_change.h"
-#include "event/event_bus.h"
-
 using namespace graphics;
 
 static bool doDisplayProfiler = true;
@@ -25,8 +22,6 @@ void graphics::renderDebugUi (UIManager& uiManager, float deltaTime) {
     graphicsQueue.pushPop(util::getProfileTime("graphics"));
     physicsQueue.pushPop(util::getProfileTime("physics"));
 
-    //view::DebugGameView debugView(std::move(gameObject));
-
     if (doDisplayProfiler) {
         uiManager.renderText("noto-serif", "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5, 15);
         uiManager.renderText("noto-serif", "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", 14, 5, 30);
@@ -35,12 +30,4 @@ void graphics::renderDebugUi (UIManager& uiManager, float deltaTime) {
         uiManager.renderText("noto-serif", std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps",
                              14, 700, 15, {0.0f, 1.0f, 0.0f});
     }
-}
-
-void handleProfilerChange(const event::ProfilerChangeEvent& event) {
-    doDisplayProfiler = event.doDisplay.value_or(doDisplayProfiler);
-}
-
-void graphics::addDebugEventHandlers (const event::EventBus::SharedPtr& bus) {
-    bus->subscribeUnscoped(handleProfilerChange);
 }

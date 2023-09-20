@@ -3,7 +3,6 @@
 #include "common/debug.h"
 
 #include "common/components/2d/global_transform.h"
-#include "common/events/debug/debug_render.h"
 #include "physics/components/2D/rigid_body.h"
 #include "physics/components/2D/colliders/box_collider.h"
 #include "physics/signals/collision.h"
@@ -59,7 +58,7 @@ void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componen
     });
 }
 
-void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, const event::EventBus::SharedPtr& eventBus, float deltaTime) {
+void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, float deltaTime) {
     compManager.query<common::GlobalTransform2D, RigidBody2D, ColliderComp2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, ColliderComp2D& collider) {
         collider.syncUpdates(body, transform.transform2D.position());
     });
@@ -132,25 +131,14 @@ void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, 
     });
 }
 
-void PhysicsObject2D::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
-    // TODO: pass through deserialiser instead
-    scope = eventBus->getScope();
-    eventBus->subscribe<event::DebugRenderEvent>([this] (const event::DebugRenderEvent& event) {
-        debugColliderRender = event.doRender;
-    }, scope);
-}
-
 void PhysicsObject2D::debugRender (const component::EntityComponentManager& componentManager) {
-    if (debugColliderRender) {
-        // Debug render
-        //common::StringSerializer serializer{"  "};
-        componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (component::ConstEntity entity, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
-            auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
-            auto pos2 = box.frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
-            auto pos3 = box.frameTransform * glm::vec2{1, 1} + transform.transform2D.position();
-            auto pos4 = box.frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
+    // Debug render
+    componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (component::ConstEntity entity, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
+        auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
+        auto pos2 = box.frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
+        auto pos3 = box.frameTransform * glm::vec2{1, 1} + transform.transform2D.position();
+        auto pos4 = box.frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
 
-            common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
-        });
-    }
+        common::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+    });
 }

@@ -30,8 +30,6 @@ namespace graphics {
         std::shared_ptr<GLFrameBuffer> windowBuf;
         util::Map<std::string, Shader> shaderProgramsNew;
 
-        std::unique_ptr<WindowCallbackContext> callbackCtx;
-
         std::shared_ptr<GLFWInput> keyInput;
         std::shared_ptr<GLFWInput> mouseInput;
 
@@ -79,8 +77,7 @@ namespace graphics {
 
         void destroyTexture(unsigned int textureId) override;
 
-        void setupWindowCallbacks (std::unique_ptr<WindowCallbackContext> ctx) override;
-        void setupCallbacks(const std::shared_ptr<event::EventBus> &eventBus) override;
+        void setupCallbacks () override;
 
         [[nodiscard]] glm::vec2 getScreenSize() const override;
         [[nodiscard]] glm::vec2 getMousePos() const override;

@@ -7,7 +7,6 @@
 #include "graphics/renderlayer/entity_layer.h"
 #include "logging/logging.h"
 #include "graphics/renderlayer/graphics_layer.h"
-#include "graphics/renderers/window_callbacks.h"
 #include "graphics/font/font_manager.h"
 #include "graphics/phenyl_graphics.h"
 #include "common/input/proxy_source.h"
@@ -22,13 +21,8 @@ void detail::Graphics::addEntityLayer (component::EntityComponentManager* compMa
     renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer.get(), compManager));
 }
 
-void detail::Graphics::setupWindowCallbacks (const event::EventBus::SharedPtr& bus) {
-    //auto ctx = std::make_unique<WindowCallbackContext>();
-    //ctx->graphics = this;
-    //ctx->eventBus = std::move(bus);
-    //ctx->renderer = renderer;
-    //renderer->setupWindowCallbacks(std::move(ctx));
-    renderer->setupCallbacks(bus);
+void detail::Graphics::setupWindowCallbacks () {
+    renderer->setupCallbacks();
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
 }
 
@@ -107,13 +101,6 @@ void detail::Graphics::deleteWindowCallbacks () {
     renderer->invalidateWindowCallbacks();
 }
 
-void detail::Graphics::addEventHandlers (const event::EventBus::SharedPtr& eventBus) {
-    eventScope = eventBus->getScope();
-    eventBus->subscribe(&graphics::detail::Graphics::onThemeChange, this, eventScope);
-
-    setupWindowCallbacks(eventBus);
-}
-
 std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSources () {
     std::vector<std::shared_ptr<common::InputSource>> proxies;
     for (auto& i : inputSources) {
@@ -121,10 +108,6 @@ std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSour
     }
 
     return proxies;
-}
-
-void detail::Graphics::onThemeChange (event::ChangeThemeEvent& event) {
-    uiManager.setCurrentTheme(common::Assets::Load<graphics::ui::Theme>(event.themeName));
 }
 
 detail::Graphics::~Graphics () {
@@ -136,12 +119,9 @@ void detail::Graphics::updateUI () {
 }
 
 void detail::Graphics::addComponentSerializers (component::EntitySerializer& serialiser) {
-    //serialiser.addSerializer<graphics::Model2D>();
     serialiser.addSerializer<graphics::Sprite2D>();
-    //serialiser.addComponentSerialiser<graphics::GlobalTransform2D>("GlobalTransform2D");
 }
 
 void detail::Graphics::addComponents (component::ComponentManager& manager) {
-    //manager.addComponent<graphics::Model2D>();
     manager.addComponent<graphics::Sprite2D>();
 }
