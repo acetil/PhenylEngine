@@ -3,10 +3,10 @@
 #include "graphics/maths_headers.h"
 #include "util/data.h"
 
-namespace physics {
+namespace phenyl::physics {
     class RigidBody2D;
 
-    class ColliderComp2D {
+    class Collider2D {
     private:
         glm::vec2 currentPos = {0, 0};
 
@@ -51,19 +51,16 @@ namespace physics {
             return currentPos;
         }
 
-        [[nodiscard]] glm::vec2 getDisplacement (const ColliderComp2D& other) const {
+        [[nodiscard]] glm::vec2 getDisplacement (const Collider2D& other) const {
             return other.currentPos - currentPos;
         }
 
-        [[nodiscard]] bool shouldCollide (const ColliderComp2D& other) const;
+        [[nodiscard]] bool shouldCollide (const Collider2D& other) const;
     public:
         std::uint64_t layers = 0;
         std::uint64_t mask = 0;
         float elasticity{0.0f};
 
-        ColliderComp2D () = default;
-
-        [[nodiscard]] virtual util::DataValue serialise () const;
-        virtual bool deserialise (const util::DataValue& val);
+        Collider2D () = default;
     };
 }

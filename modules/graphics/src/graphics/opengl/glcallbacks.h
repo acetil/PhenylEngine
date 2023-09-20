@@ -5,7 +5,7 @@
 
 #include "graphics/graphics_headers.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class GLRenderer;
     struct GLWindowCallbackCtx {
         GLRenderer* renderer;

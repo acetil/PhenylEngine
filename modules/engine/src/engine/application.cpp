@@ -3,29 +3,29 @@
 #include "engine/engine.h"
 #include "engine/application.h"
 
-using namespace engine;
+using namespace phenyl;
 
-component::ComponentManager& Application::componentManager () {
+component::ComponentManager& engine::Application::componentManager () {
     assert(engine);
     return engine->getComponentManager();
 }
 
-game::GameCamera& Application::camera () {
+game::GameCamera& engine::Application::camera () {
     assert(engine);
     return engine->getCamera();
 }
 
-game::GameInput& Application::input () {
+game::GameInput& engine::Application::input () {
     assert(engine);
     return engine->getInput();
 }
 
-graphics::UIManager& Application::uiManager () {
+graphics::UIManager& engine::Application::uiManager () {
     assert(engine);
     return engine->getGraphics().getUIManager();
 }
 
-void Application::setTargetFPS (double fps) {
+void engine::Application::setTargetFPS (double fps) {
     if (fps <= 0) {
         targetFrameTime = 0;
     } else {
@@ -33,30 +33,30 @@ void Application::setTargetFPS (double fps) {
     }
 }
 
-component::EntitySerializer& Application::serializer () {
+component::EntitySerializer& engine::Application::serializer () {
     return engine->getEntitySerializer();
 }
 
-void Application::setFixedTimeScale (double newTimeScale) {
+void engine::Application::setFixedTimeScale (double newTimeScale) {
     fixedTimeScale = newTimeScale;
 }
 
-void Application::pause () {
+void engine::Application::pause () {
     setFixedTimeScale(0.0);
 }
 
-void Application::resume () {
+void engine::Application::resume () {
     setFixedTimeScale(1.0);
 }
 
-void Application::setDebugRender (bool doRender) {
+void engine::Application::setDebugRender (bool doRender) {
     engine->setDebugRender(doRender);
 }
 
-void Application::setProfileRender (bool doRender) {
+void engine::Application::setProfileRender (bool doRender) {
     engine->setProfileRender(doRender);
 }
 
-void Application::dumpLevel (std::ostream& file) {
+void engine::Application::dumpLevel (std::ostream& file) {
     engine->dumpLevel(file);
 }

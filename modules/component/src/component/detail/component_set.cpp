@@ -1,7 +1,7 @@
 #include "component/detail/component_set.h"
 #include "component/detail/signals/signal_handler.h"
 
-using namespace component::detail;
+using namespace phenyl::component::detail;
 
 ComponentSet::ComponentSet (detail::BasicManager* manager, std::size_t startCapacity, std::size_t compSize) : manager{manager}, ids{}, metadataSet{}, data{compSize != 0 ? std::make_unique<std::byte[]>(startCapacity * compSize) : nullptr},
                                                                                compSize{compSize}, dataSize{0}, allSize{0}, dataCapacity{startCapacity}, hierachyDepth{0} {

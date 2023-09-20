@@ -6,15 +6,15 @@
 #include "common/input/remappable_input.h"
 #include "graphics/maths_headers.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class Renderer;
 }
 
-namespace engine::detail {
+namespace phenyl::engine::detail {
     class Engine;
 }
 
-namespace game {
+namespace phenyl::game {
     class GameInput {
     private:
         graphics::Renderer* renderer; // TODO: window class

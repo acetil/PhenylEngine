@@ -7,11 +7,11 @@
 #include "ui_anchor.h"
 #include "graphics/ui/themes/theme_properties.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class UIManager;
 }
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UIContainerNode;
     class UIComponentNode {
     private:

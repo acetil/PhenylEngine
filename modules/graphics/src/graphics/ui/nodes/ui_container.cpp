@@ -1,6 +1,6 @@
 #include "graphics/ui/nodes/ui_container.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 void UIContainerNode::queueChildDestroy (UIComponentNode* childNode) {
     if (lockNum > 0) {

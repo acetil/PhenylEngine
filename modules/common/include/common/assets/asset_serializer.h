@@ -4,7 +4,7 @@
 #include "assets.h"
 #include "common/serializer.h"
 
-namespace common {
+namespace phenyl::common {
     template <typename T>
     struct phenyl_AssetSerializer {
         static constexpr const char* Name = "Asset";

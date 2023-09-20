@@ -9,7 +9,7 @@
 #include "graphics/renderlayer/render_layer.h"
 #include "graphics/renderers/renderer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class GraphicsRenderLayer : public RenderLayer {
     private:
         bool active = true;

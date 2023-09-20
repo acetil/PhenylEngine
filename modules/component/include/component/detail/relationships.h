@@ -8,7 +8,7 @@
 
 #include "util/iterable.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     class RelationshipManager {
     private:
         struct Relationship {

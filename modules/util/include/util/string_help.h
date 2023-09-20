@@ -7,7 +7,7 @@
 #include <cstring>
 #include <cstdint>
 
-namespace util {
+namespace phenyl::util {
     std::vector<std::string> stringSplit (const std::string& str, const std::string& delim = " ", int maxSplits = INT32_MAX);
     std::vector<std::string> readLines (std::ifstream& file, int maxLines = INT32_MAX);
 

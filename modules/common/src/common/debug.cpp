@@ -1,6 +1,8 @@
 #include "common/debug.h"
 #include "graphics/debug_graphics.h"
 
+using namespace phenyl;
+
 void common::debugWorldRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour, glm::vec4 outlineColour) {
     debugWorldRect(topLeft, glm::vec2{bottomRight.x, topLeft.y}, glm::vec2{topLeft.x, bottomRight.y}, bottomRight, colour, outlineColour);
 }

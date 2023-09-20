@@ -5,7 +5,7 @@
 #include <vector>
 #include <utility>
 
-namespace graphics {
+namespace phenyl::graphics {
     template<class T>
     struct AtlasObject {
         int xOff;

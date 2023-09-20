@@ -5,7 +5,7 @@
 #include "nodes/ui_anchor.h"
 #include "nodes/ui_flexbox.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     bool phenyl_from_data (const util::DataValue& dataVal, Axis& val);
     util::DataValue phenyl_to_data (const Axis& val);
 

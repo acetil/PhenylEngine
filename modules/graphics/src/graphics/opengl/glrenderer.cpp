@@ -8,7 +8,7 @@
 #include "glcallbacks.h"
 #include "util/profiler.h"
 #include <vector>
-using namespace graphics;
+using namespace phenyl::graphics;
 GLRenderer::GLRenderer (GLFWwindow* window) : shaderManager{this} {
     // TODO: move graphics init code here
     this->window = window;
@@ -218,11 +218,11 @@ std::shared_ptr<RendererBufferHandle> GLRenderer::makeBufferHandle () {
     return std::make_shared<GlBuffer>();
 }
 
-std::shared_ptr<common::InputSource> GLRenderer::getMouseInput () {
+std::shared_ptr<phenyl::common::InputSource> GLRenderer::getMouseInput () {
     return mouseInput;
 }
 
-std::vector<std::shared_ptr<common::InputSource>> GLRenderer::getInputSources () {
+std::vector<std::shared_ptr<phenyl::common::InputSource>> GLRenderer::getInputSources () {
     return {mouseInput, keyInput};
 }
 

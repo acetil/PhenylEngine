@@ -4,7 +4,7 @@
 
 #include "logging/logging.h"
 
-using namespace util;
+using namespace phenyl::util;
 
 struct DestructorTest {
     std::shared_ptr<int> ptr{};
@@ -36,7 +36,7 @@ struct DestructorTest {
 };
 
 void testDeletion (std::shared_ptr<int> ptr) {
-    util::Map<int, DestructorTest> map;
+    Map<int, DestructorTest> map;
     assert(*ptr == 0);
 
     map[-1] = DestructorTest(ptr);
@@ -66,12 +66,12 @@ void testDeletion (std::shared_ptr<int> ptr) {
 }
 
 void testCopyMove () {
-    util::Map<std::string, int> map;
+    Map<std::string, int> map;
     map["hello"] = 1;
     map["world"] = 2;
     map[":)"] = 3;
-    util::Map<std::string, int> mapCpy1(map);
-    util::Map<std::string, int> mapCpyEq;
+    Map<std::string, int> mapCpy1(map);
+    Map<std::string, int> mapCpyEq;
     mapCpyEq = map;
 
     assert(mapCpy1.size() == map.size());
@@ -114,7 +114,7 @@ void testCopyMove () {
     }
 
     auto mapMv(std::move(mapCpy2));
-    util::Map<std::string, int> mapMvEq;
+    Map<std::string, int> mapMvEq;
     mapMvEq = std::move(mapCpyEq);
 
     assert(mapMv.size() == map.size());
@@ -143,7 +143,7 @@ void testCopyMove () {
 void testMap () {
     logging::log(LEVEL_DEBUG, "Testing map!");
 
-    util::Map<std::string, int> map;
+    Map<std::string, int> map;
 
     assert(map.size() == 0);
 
@@ -209,7 +209,7 @@ void testMap () {
 }
 
 void testDataTypes () {
-    util::DataValue val;
+    DataValue val;
     //assert(val == std::monostate());
     val = 4;
     int v = (int)val;
@@ -231,7 +231,7 @@ void testDataTypes () {
     std::string s = (std::string)val;
     assert(s == "Hello World!");
 
-    util::DataObject obj;
+    DataObject obj;
 
     obj["test1"] = 1;
     obj["test2"] = 3.0f;
@@ -293,7 +293,7 @@ void testDataTypes () {
 
 void testJson () {
     auto jsonStr = R"({"hello" : 1, "world" : true, "test" : {"meme" : "lol", "testing" : 1.1}, "test2" : [4, 3, 2, 1, {}]})";
-    auto val = util::parseJson(jsonStr);
+    auto val = parseJson(jsonStr);
 
     DataObject obj = (DataObject)val;
 
@@ -329,7 +329,7 @@ void testJson () {
 }
 
 
-void util::testData () {
+void phenyl::util::testData () {
     testMap();
     testDataTypes();
     testJson();

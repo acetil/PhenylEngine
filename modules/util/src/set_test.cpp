@@ -6,7 +6,7 @@
 #include <iterator>
 #include <unordered_set>
 
-using namespace util;
+using namespace phenyl::util;
 
 static void testSetEmpty () {
     Set<std::string> set;
@@ -166,7 +166,7 @@ void testSetLarge () {
     set5.insert("hello");
 }
 
-void util::setTest () {
+void phenyl::util::setTest () {
     testSetEmpty();
     testSetContains();
     testSetSize();

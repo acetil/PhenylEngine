@@ -4,7 +4,7 @@
 #include "common/serializer.h"
 #include "common/maths/glm_serializer.h"
 
-namespace physics {
+namespace phenyl::physics {
     PHENYL_SERIALIZE(RigidBody2D, {
         PHENYL_MEMBER(momentum);
         PHENYL_MEMBER_NAMED(angularMomentum, "angular_momentum");

@@ -2,7 +2,7 @@
 
 #include "graphics/renderlayer/render_layer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class DebugPipeline;
     class DebugLayer : public RenderLayer {
     private:

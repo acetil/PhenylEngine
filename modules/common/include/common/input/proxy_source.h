@@ -2,7 +2,7 @@
 
 #include "input_source.h"
 
-namespace common {
+namespace phenyl::common {
     namespace detail {
         class Proxy;
     }

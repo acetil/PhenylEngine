@@ -8,7 +8,7 @@
 
 #include "util/optional.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     struct AtlasOffset {
         glm::vec2 topLeft;
         glm::vec2 bottomRight;

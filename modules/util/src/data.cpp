@@ -5,9 +5,9 @@
 #include "nlohmann/json.hpp"
 
 
-using namespace util;
+using namespace phenyl::util;
 
-namespace util {
+namespace phenyl::util {
     void to_json (nlohmann::json& json, const DataValue& val);
     void to_json (nlohmann::json& json, const DataArray& val);
     void to_json (nlohmann::json& json, const DataObject& val);
@@ -124,12 +124,12 @@ void DataArray::pop_back () {
     values.pop_back();
 }
 
-DataValue util::parseJson (const std::string& jsonStr) {
+DataValue phenyl::util::parseJson (const std::string& jsonStr) {
     auto json = nlohmann::json::parse(jsonStr);
     return internalParseJson(json);
 }
 
-DataValue util::parseFromFile (const std::string& filepath) {
+DataValue phenyl::util::parseFromFile (const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file) {
         logging::log(LEVEL_WARNING, "Failed to read file: {}", filepath);
@@ -144,7 +144,7 @@ DataValue util::parseFromFile (const std::string& filepath) {
     return DataValue();
 }
 
-DataValue util::parseFromStream (std::istream& stream) {
+DataValue phenyl::util::parseFromStream (std::istream& stream) {
     try {
         auto json = nlohmann::json::parse(stream);
         return internalParseJson(json);
@@ -218,30 +218,30 @@ std::string DataObject::convertToJsonPretty (int indent) {
     return json.dump(indent);
 }
 
-void util::to_json (nlohmann::json& json, const DataValue& val) {
+void phenyl::util::to_json (nlohmann::json& json, const DataValue& val) {
     internal::DataObserver::toJsonValue(json, val);
 }
-void util::to_json (nlohmann::json& json, const DataArray& val) {
+void phenyl::util::to_json (nlohmann::json& json, const DataArray& val) {
     internal::DataObserver::toJsonArr(json, val);
 }
-void util::to_json (nlohmann::json& json, const DataObject& val) {
+void phenyl::util::to_json (nlohmann::json& json, const DataObject& val) {
     internal::DataObserver::toJsonObj(json, val);
 }
 
-DataValue util::phenyl_to_data (const DataValue& val) {
+DataValue phenyl::util::phenyl_to_data (const DataValue& val) {
     return val;
 }
 
-bool util::phenyl_from_data (const DataValue& dataVal, DataValue& val) {
+bool phenyl::util::phenyl_from_data (const DataValue& dataVal, DataValue& val) {
     val = dataVal;
     return true;
 }
 
-meta::type_list_unroll<std::variant, util::data_types>& util::internal::internalGetData (util::DataValue& val) {
+phenyl::meta::type_list_unroll<std::variant, phenyl::util::data_types>& phenyl::util::internal::internalGetData (util::DataValue& val) {
     return val.obj;
 }
 
-const meta::type_list_unroll<std::variant, data_types>& util::internal::internalGetDataConst (const util::DataValue& val) {
+const phenyl::meta::type_list_unroll<std::variant, data_types>& phenyl::util::internal::internalGetDataConst (const util::DataValue& val) {
     return val.obj;
 }
 

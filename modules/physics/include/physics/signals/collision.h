@@ -4,7 +4,7 @@
 
 #include "component/entity_id.h"
 
-namespace physics {
+namespace phenyl::physics {
     struct OnCollision {
         component::EntityId otherId;
         std::uint32_t collisionLayers;

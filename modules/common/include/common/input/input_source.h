@@ -4,7 +4,7 @@
 
 #include "util/smart_help.h"
 
-namespace common {
+namespace phenyl::common {
     class InputSource : util::SmartHelper<InputSource, true> {
     public:
         virtual long getInputNum (const std::string& inputStr) = 0; // -1 on failure

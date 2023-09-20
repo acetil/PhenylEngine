@@ -1,8 +1,8 @@
 #include "graphics/ui/ui_defs.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
-glm::vec2 graphics::ui::getAxisVec (Axis axis) {
+glm::vec2 phenyl::graphics::ui::getAxisVec (Axis axis) {
     switch (axis) {
         case Axis::LEFT:
             return {-1, 0};

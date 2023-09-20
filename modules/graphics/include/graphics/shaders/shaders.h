@@ -6,7 +6,7 @@
 #include "graphics/maths_headers.h"
 #include "util/map.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 
     enum class ShaderType {
         VERTEX,

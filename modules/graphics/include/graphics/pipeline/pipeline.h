@@ -7,7 +7,7 @@
 //#include "graphics/renderers/buffer_new.h"
 #include "graphics/renderers/renderer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 
     /*c
 

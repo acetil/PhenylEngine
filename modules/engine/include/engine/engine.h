@@ -11,7 +11,7 @@
 #include "input/game_input.h"
 #include "application.h"
 
-namespace engine {
+namespace phenyl::engine {
 
     namespace detail {
         class Engine;

@@ -9,35 +9,35 @@
 #include "common/assets/assets.h"
 #include "engine/level/level.h"
 
-using namespace util;
+using namespace phenyl;
 
 
-static void handleProfiler (game::TestApp* app, const std::vector<std::string>& args) {
+static void handleProfiler (test::TestApp* app, const std::vector<std::string>& args) {
     if (args.empty()) {
-        logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
+        util::logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
         if (args.size() == 1 || (args[1] != "on" && args[1] != "off")) {
-            logging::log(LEVEL_WARNING, R"(Unknown or missing argument after "display". Should be either "on" or "off")");
+            util::logging::log(LEVEL_WARNING, R"(Unknown or missing argument after "display". Should be either "on" or "off")");
         } else {
             //bus->raise(event::ProfilerChangeEvent(args[1] == "on"));
             app->updateProfileRender(args[1] == "on");
         }
     } else {
-        logging::log(LEVEL_WARNING, "Unknown argument: \"{}\"", args[0]);
+        util::logging::log(LEVEL_WARNING, "Unknown argument: \"{}\"", args[0]);
     }
 }
 
-static void handleThemes (game::TestApp* app, std::vector<std::string>& args) {
+static void handleThemes (test::TestApp* app, std::vector<std::string>& args) {
     if (args.empty()) {
-        logging::log(LEVEL_WARNING, "Missing argument after \"theme\"!");
+        util::logging::log(LEVEL_WARNING, "Missing argument after \"theme\"!");
     } else if (args[0] == "load") {
         if (args.size() != 2) {
-            logging::log(LEVEL_WARNING, R"(Unknown argument after "theme".)");
+            util::logging::log(LEVEL_WARNING, R"(Unknown argument after "theme".)");
         } else {
             //bus->raise(event::ChangeThemeEvent{args[1]});
-            auto theme = common::Assets::Load<graphics::ui::Theme>(args[1]);
+            auto theme = phenyl::common::Assets::Load<phenyl::graphics::ui::Theme>(args[1]);
             if (!theme) {
-                logging::log(LEVEL_ERROR, "Failed to load theme \"{}\"!", args[1]);
+                util::logging::log(LEVEL_ERROR, "Failed to load theme \"{}\"!", args[1]);
             } else {
                 app->changeTheme(theme);
             }
@@ -45,12 +45,12 @@ static void handleThemes (game::TestApp* app, std::vector<std::string>& args) {
     }
 }
 
-static void doDebugConsole (game::TestApp* app) {
+static void doDebugConsole (test::TestApp* app) {
     std::cout << ">";
     std::string debugInput;
     std::getline(std::cin, debugInput);
 
-    std::vector<std::string> args  = stringSplit(debugInput);
+    std::vector<std::string> args  = util::stringSplit(debugInput);
 
     std::string command = std::move(args[0]);
     args.erase(args.begin());
@@ -65,12 +65,12 @@ static void doDebugConsole (game::TestApp* app) {
             app->dumpLevel(args[1]);
         } else if (args.size() == 2 && args[0] == "load") {
             //bus->raise(event::MapLoadRequestEvent(args[1]));
-            auto level = common::Assets::Load<game::Level>(args[1]);
+            auto level = phenyl::common::Assets::Load<phenyl::game::Level>(args[1]);
             if (level) {
                 level->load();
             }
         } else {
-            logging::log(LEVEL_WARNING, "Unknown arguments for level command: \"{}\"", util::joinStrings(" ", args));
+            util::logging::log(LEVEL_WARNING, "Unknown arguments for level command: \"{}\"", util::joinStrings(" ", args));
         }
     } else if (command == "theme") {
         handleThemes(app, args);
@@ -81,10 +81,10 @@ static void doDebugConsole (game::TestApp* app) {
             } else if (args[0] == "false") {
                 app->updateDebugRender(false);
             } else {
-                logging::log(LEVEL_WARNING, "Argument for debug_render command must be true or false");
+                util::logging::log(LEVEL_WARNING, "Argument for debug_render command must be true or false");
             }
         } else {
-            logging::log(LEVEL_WARNING, "debug_render command requires one argument: true/false");
+            util::logging::log(LEVEL_WARNING, "debug_render command requires one argument: true/false");
         }
     } else if (command == "debug_step") {
         if (args.size() == 1) {
@@ -93,18 +93,18 @@ static void doDebugConsole (game::TestApp* app) {
             } else if (args[0] == "false") {
                 app->stopStepping();
             } else {
-                logging::log(LEVEL_WARNING, "Argument for debug_step command must be true or false");
+                util::logging::log(LEVEL_WARNING, "Argument for debug_step command must be true or false");
             }
         } else {
-            logging::log(LEVEL_WARNING, "debug_step command requires one argument: true/false");
+            util::logging::log(LEVEL_WARNING, "debug_step command requires one argument: true/false");
         }
     } else {
-        logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
+        util::logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
     }
 
 }
 
-void util::doDebugConsole (game::TestApp* app) {
+void test::doDebugConsole (test::TestApp* app) {
     app->pause();
     ::doDebugConsole(app);
     app->queueResume();

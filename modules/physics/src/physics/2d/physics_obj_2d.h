@@ -5,7 +5,7 @@
 #include "collisions_2d.h"
 
 
-namespace physics {
+namespace phenyl::physics {
     class PhysicsObject2D : public IPhysics {
     private:
         void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager);

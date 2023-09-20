@@ -7,18 +7,18 @@
 #include "engine/input/game_input.h"
 #include "common/assets/asset.h"
 
-namespace game {
-    class TestApp : public engine::Application {
+namespace test {
+    class TestApp : public phenyl::engine::Application {
     private:
-        std::vector<graphics::ui::UILabel> extraLabels;
-        graphics::ui::UILabel label{"label"};
-        graphics::ui::UIFlexbox flexBoxC{"flex_box"};
+        std::vector<phenyl::graphics::ui::UILabel> extraLabels;
+        phenyl::graphics::ui::UILabel label{"label"};
+        phenyl::graphics::ui::UIFlexbox flexBoxC{"flex_box"};
 
-        graphics::ui::UIButton button4{"button"};
-        graphics::ui::UIButton button5{"button"};
+        phenyl::graphics::ui::UIButton button4{"button"};
+        phenyl::graphics::ui::UIButton button5{"button"};
 
-        common::InputAction stepAction;
-        common::InputAction consoleAction;
+        phenyl::common::InputAction stepAction;
+        phenyl::common::InputAction consoleAction;
 
         int numPresses = 0;
         bool isButtonDown = false;
@@ -38,7 +38,7 @@ namespace game {
         void stopStepping ();
         void step ();
 
-        void changeTheme (common::Asset<graphics::ui::Theme> theme);
+        void changeTheme (phenyl::common::Asset<phenyl::graphics::ui::Theme> theme);
         void updateDebugRender (bool doRender);
         void updateProfileRender (bool doRender);
         void dumpLevel (const std::string& path);

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace util {
+namespace phenyl::util {
     class DataValue;
     //template <typename T>
     //bool phenyl_from_data (const DataValue& dataVal, T& val);

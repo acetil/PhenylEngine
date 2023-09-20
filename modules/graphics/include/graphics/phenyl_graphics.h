@@ -10,7 +10,7 @@
 #include "component/forward.h"
 #include "util/optional.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     namespace detail {
         class Graphics;
     }

@@ -2,7 +2,7 @@
 #include "graphics/ui/ui_manager.h"
 #include "logging/logging.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 void UIButtonNode::render (UIManager& uiManager) {
     glm::vec4 colour;

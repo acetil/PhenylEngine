@@ -6,7 +6,7 @@
 #include "forward.h"
 #include "util/meta.h"
 
-namespace common {
+namespace phenyl::common {
     class Assets;
     namespace detail {
         class AssetManagerBase {

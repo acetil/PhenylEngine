@@ -1,7 +1,7 @@
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/ui_manager.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 void UIRootNode::render (UIManager& uiManager) {
     lockChildDestruction();

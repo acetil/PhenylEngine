@@ -9,7 +9,7 @@
 
 #include "logging/logging.h"
 
-namespace util {
+namespace phenyl::util {
     template <typename T>
     class FixedStack {
     private:

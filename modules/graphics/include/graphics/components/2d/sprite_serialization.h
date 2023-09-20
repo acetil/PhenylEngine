@@ -5,7 +5,7 @@
 #include "sprite.h"
 #include "common/assets/asset_serializer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     PHENYL_SERIALIZE(Sprite2D, {
         PHENYL_MEMBER(texture);
     })

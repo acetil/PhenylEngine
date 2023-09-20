@@ -2,7 +2,7 @@
 
 #include "util/string_help.h"
 
-using namespace util;
+using namespace phenyl;
 
 std::vector<std::string> stringSplit (std::string& str) {
     std::vector<std::string> substrings;

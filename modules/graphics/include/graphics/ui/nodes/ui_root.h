@@ -6,7 +6,7 @@
 #include "ui_node.h"
 #include "ui_container.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UIRootNode : public UIContainerNode {
     private:
         std::vector<std::tuple<glm::vec2, glm::vec2, std::shared_ptr<UIComponentNode>>> childNodes;

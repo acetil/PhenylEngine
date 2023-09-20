@@ -8,7 +8,7 @@
 
 #include "graphics/maths_headers.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class Font {
     private:
         FontFace face;

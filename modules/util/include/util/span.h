@@ -3,7 +3,7 @@
 #include <vector>
 #include <stddef.h>
 
-namespace util {
+namespace phenyl::util {
     template<typename T>
     class span {
     private:

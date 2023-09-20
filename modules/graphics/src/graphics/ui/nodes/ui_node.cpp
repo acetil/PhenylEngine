@@ -1,7 +1,7 @@
 #include "graphics/ui/nodes/ui_node.h"
 #include "graphics/ui/nodes/ui_container.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 void UIComponentNode::queueDestroy () {
     // TODO: queue destroy from parentId

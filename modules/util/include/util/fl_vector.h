@@ -6,7 +6,7 @@
 #include "iterable.h"
 #include <string>
 #include <sstream>
-namespace util {
+namespace phenyl::util {
     namespace detail {
         template <typename T>
         struct FlVectorItem {

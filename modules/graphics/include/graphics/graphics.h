@@ -21,7 +21,7 @@
 #include "util/smart_help.h"
 #include "util/optional.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 
     class GraphicsData {
     public:

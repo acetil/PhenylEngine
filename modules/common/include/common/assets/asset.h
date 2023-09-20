@@ -7,7 +7,7 @@
 #include "util/meta.h"
 #include "forward.h"
 
-namespace common {
+namespace phenyl::common {
     namespace detail {
         template <typename T>
         class AssetCache;

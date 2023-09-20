@@ -1,7 +1,7 @@
 #include "physics/phenyl_physics.h"
 #include "physics/physics.h"
 
-using namespace physics;
+using namespace phenyl::physics;
 
 PhenylPhysics::PhenylPhysics (physics::IPhysics* physicsObj) : physicsObj{physicsObj} {}
 

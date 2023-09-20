@@ -11,6 +11,8 @@
 #define COMMON_LOCATION "COMMON"
 #define SERIALIZER_LOCATION "SERIALIZER"
 
+using namespace phenyl;
+
 /*void component::logging::log (int level, const char* log) {
     internal::log_internal(level, COMPONENT_LOCATION, log);
 }*/

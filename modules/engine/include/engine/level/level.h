@@ -4,7 +4,7 @@
 
 #include "component/forward.h"
 
-namespace game {
+namespace phenyl::game {
     namespace detail {
         class LevelEntity;
     }

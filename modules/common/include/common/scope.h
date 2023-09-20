@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace common {
+namespace phenyl::common {
     namespace detail {
         // TODO: mutex
         struct ScopeControlBlock {

@@ -1,7 +1,7 @@
 #include "graphics/renderers/buffer.h"
 #include "graphics/renderers/renderer_buffer.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 /*void graphics::detail::BufferNewBase::allocBufferMemory (std::size_t memSize) {
     bufferHandle->allocBufferMemory(memSize);

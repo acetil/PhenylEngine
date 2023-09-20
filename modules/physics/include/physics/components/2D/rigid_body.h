@@ -4,10 +4,10 @@
 #include "physics/physics.h"
 #include "common/serializer_intrusive.h"
 
-namespace common {
+namespace phenyl::common {
     class GlobalTransform2D;
 }
-namespace physics {
+namespace phenyl::physics {
     struct RigidBody2D {
     private:
         glm::vec2 momentum{0, 0};
@@ -70,8 +70,5 @@ namespace physics {
         [[nodiscard]] float getAngularMomentum () const {
             return angularMomentum;
         }
-
-        [[nodiscard]] util::DataValue serialise () const;
-        bool deserialise (const util::DataValue& dataVal);
     };
 }

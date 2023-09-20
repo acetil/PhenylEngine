@@ -5,7 +5,7 @@
 #include "graphics/pipeline/pipeline.h"
 #include "graphics/ui/ui_rect.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 //#ifndef FONT_H
     class Font;
 //#endif

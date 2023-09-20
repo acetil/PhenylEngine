@@ -7,7 +7,7 @@
 #include "util/map.h"
 #include "glfw_input.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     struct ButtonState {
         std::size_t stateNum;
         int scancode;

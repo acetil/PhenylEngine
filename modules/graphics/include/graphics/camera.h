@@ -5,7 +5,7 @@
 #include "graphics_headers.h"
 #include "graphics/maths_headers.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class Camera {
     private:
         glm::mat4 camMatrix{};

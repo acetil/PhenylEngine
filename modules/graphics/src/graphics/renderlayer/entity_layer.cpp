@@ -6,13 +6,13 @@
 
 #define BUFFER_SIZE (100 * 2 * 6)
 
-using namespace graphics;
+using namespace phenyl;
 
-static void bufferPosData (const component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer);
-static void bufferUvData (const component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer);
+static void bufferPosData (const phenyl::component::EntityComponentManager& manager, graphics::Buffer<glm::vec2>& buffer);
+static void bufferUvData (const phenyl::component::EntityComponentManager& manager, graphics::Buffer<glm::vec2>& buffer);
 
-namespace graphics {
-    class EntityPipeline : public Pipeline<component::EntityComponentManager> {
+namespace phenyl::graphics {
+    class EntityPipeline : public Pipeline<phenyl::component::EntityComponentManager> {
     private:
         PipelineStage renderStage;
         Buffer<glm::vec2> posBuffer;
@@ -22,7 +22,7 @@ namespace graphics {
         EntityPipeline () = default;
 
         void init (Renderer* renderer) override {
-            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(common::Assets::Load<Shader>("resources/shaders/sprite"))
+            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("resources/shaders/sprite"))
                                                                .addVertexAttrib<glm::vec2>(0)
                                                                .addVertexAttrib<glm::vec2>(1));
                                                                //.addVertexAttrib<glm::vec2>(2)
@@ -54,11 +54,11 @@ namespace graphics {
     };
 }
 
-std::string EntityRenderLayer::getName () {
+std::string graphics::EntityRenderLayer::getName () {
     return "entity_layer";
 }
 
-int EntityRenderLayer::getPriority () {
+int graphics::EntityRenderLayer::getPriority () {
     return 2;
 }
 
@@ -66,11 +66,11 @@ bool graphics::EntityRenderLayer::isActive () {
     return active;
 }
 
-void EntityRenderLayer::gatherData () {
+void graphics::EntityRenderLayer::gatherData () {
 
 }
 
-void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
+void graphics::EntityRenderLayer::preRender (graphics::Renderer* renderer) {
     bool reloadNeeded = atlas.rebuild();
 
     componentManager->query<Sprite2D>().each([reloadNeeded] (auto entity, Sprite2D& sprite) {
@@ -82,32 +82,32 @@ void EntityRenderLayer::preRender (graphics::Renderer* renderer) {
     entityPipeline->bufferData(*componentManager);
 }
 
-int EntityRenderLayer::getUniformId (std::string uniformName) {
+int graphics::EntityRenderLayer::getUniformId (std::string uniformName) {
     return 0;
 }
 
-void EntityRenderLayer::applyUniform (int uniformId, void* data) {
+void graphics::EntityRenderLayer::applyUniform (int uniformId, void* data) {
 
 }
 
-void EntityRenderLayer::applyCamera (graphics::Camera camera) {
+void graphics::EntityRenderLayer::applyCamera (graphics::Camera camera) {
     entityPipeline->applyCamera(camera);
 }
 
-void EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
+void graphics::EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
     atlas.bind();
     entityPipeline->render();
 }
 
-EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
+graphics::EntityRenderLayer::EntityRenderLayer (graphics::Renderer* renderer,
                                                 component::EntityComponentManager*componentManager) : componentManager{componentManager}, atlas{renderer} {
     this->entityPipeline = std::make_unique<EntityPipeline>();
     this->entityPipeline->init(renderer);
 }
 
-EntityRenderLayer::~EntityRenderLayer () = default;
+graphics::EntityRenderLayer::~EntityRenderLayer () = default;
 
-static void bufferPosData (const component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer) {
+static void bufferPosData (const component::EntityComponentManager& manager, graphics::Buffer<glm::vec2>& buffer) {
     /*for (auto [model, transform] : manager.iterate<Model2D, common::GlobalTransform2D>()) {
         for (auto i : model.positionData) {
             buffer.pushData(transform.transform2D.apply(i));
@@ -123,14 +123,14 @@ static void bufferPosData (const component::EntityComponentManager& manager, Buf
             {-1.0f, -1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}
     };
 
-    manager.query<common::GlobalTransform2D, Sprite2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+    manager.query<common::GlobalTransform2D, graphics::Sprite2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const graphics::Sprite2D& sprite) {
         for (auto i : vertices) {
             buffer.pushData(transform.transform2D.apply(i));
         }
     });
 }
 
-static void bufferUvData (const component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer) {
+static void bufferUvData (const component::EntityComponentManager& manager, graphics::Buffer<glm::vec2>& buffer) {
     /*for (const auto& model : manager.iterate<Model2D>()) {
         buffer.pushData(model.uvData.begin(), model.uvData.end());
     }*/
@@ -138,7 +138,7 @@ static void bufferUvData (const component::EntityComponentManager& manager, Buff
         buffer.pushData(model.uvData.begin(), model.uvData.end());
     });*/
 
-    manager.query<common::GlobalTransform2D, Sprite2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+    manager.query<common::GlobalTransform2D, graphics::Sprite2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const graphics::Sprite2D& sprite) {
         auto topLeft = sprite.getTopLeft();
         auto bottomRight = sprite.getBottomRight();
 

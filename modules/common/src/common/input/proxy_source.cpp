@@ -3,9 +3,9 @@
 
 #include <utility>
 
-using namespace common;
+using namespace phenyl::common;
 
-namespace common::detail {
+namespace phenyl::common::detail {
     class Proxy : public InputSource {
     private:
         std::shared_ptr<InputSource> inputSource;

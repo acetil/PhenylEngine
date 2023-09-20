@@ -2,7 +2,7 @@
 
 #include "glbuffer.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 GlBuffer::GlBuffer () {
     glGenBuffers(1, &bufferId);

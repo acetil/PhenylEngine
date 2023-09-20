@@ -4,7 +4,7 @@
 
 #include "graphics/shaders/shaders.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class RendererShader {
     public:
         virtual ~RendererShader() = default;

@@ -1,7 +1,7 @@
 #include "graphics/ui/themes/theme.h"
 #include "graphics/ui/themes/theme_class.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 Theme::Theme (const util::DataValue& themeData) {
     const auto& obj = themeData.get<util::DataObject>();
@@ -30,7 +30,7 @@ Theme::Theme (const util::DataValue& themeData) {
     }
 }
 
-util::Optional<ThemeClass*> graphics::ui::Theme::getThemeClass (const std::string& classId) {
+phenyl::util::Optional<ThemeClass*> phenyl::graphics::ui::Theme::getThemeClass (const std::string& classId) {
     if (themeClassMap.contains(classId)) {
         return {themeClassMap[classId].get()};
     }
@@ -53,7 +53,7 @@ ThemeClass* Theme::addThemeClass (const std::string& classId, std::unique_ptr<Th
     return themeClassMap[classId].get();
 }
 
-std::unique_ptr<Theme> graphics::ui::loadTheme (std::istream& stream) {
+std::unique_ptr<Theme> phenyl::graphics::ui::loadTheme (std::istream& stream) {
     auto data = util::parseFromStream(stream);
     if (data.empty()) {
         logging::log(LEVEL_ERROR, "Failed to load theme!");

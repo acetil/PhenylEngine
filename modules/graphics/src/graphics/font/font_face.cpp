@@ -5,7 +5,7 @@
 #include "graphics/font/font_face.h"
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 FontFace::FontFace (const FT_Library& library, const std::string& path, int faceNum) {
     auto error = FT_New_Face(library, path.c_str(), faceNum, &ftFace);

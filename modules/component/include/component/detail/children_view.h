@@ -5,7 +5,7 @@
 #include "component/entity.h"
 #include "component/query.h"
 
-namespace component {
+namespace phenyl::component {
     class ChildrenView {
     private:
         class Iterator {

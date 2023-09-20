@@ -15,7 +15,7 @@
 #include "graphics/components/2d/sprite.h"
 #include "graphics/components/2d/sprite_serialization.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 void detail::Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
     renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer.get(), compManager));
@@ -101,8 +101,8 @@ void detail::Graphics::deleteWindowCallbacks () {
     renderer->invalidateWindowCallbacks();
 }
 
-std::vector<std::shared_ptr<common::InputSource>> detail::Graphics::getInputSources () {
-    std::vector<std::shared_ptr<common::InputSource>> proxies;
+std::vector<std::shared_ptr<phenyl::common::InputSource>> detail::Graphics::getInputSources () {
+    std::vector<std::shared_ptr<phenyl::common::InputSource>> proxies;
     for (auto& i : inputSources) {
         proxies.emplace_back(i->getProxy());
     }
@@ -118,10 +118,10 @@ void detail::Graphics::updateUI () {
     uiManager.updateUI();
 }
 
-void detail::Graphics::addComponentSerializers (component::EntitySerializer& serialiser) {
+void detail::Graphics::addComponentSerializers (phenyl::component::EntitySerializer& serialiser) {
     serialiser.addSerializer<graphics::Sprite2D>();
 }
 
-void detail::Graphics::addComponents (component::ComponentManager& manager) {
+void detail::Graphics::addComponents (phenyl::component::ComponentManager& manager) {
     manager.addComponent<graphics::Sprite2D>();
 }

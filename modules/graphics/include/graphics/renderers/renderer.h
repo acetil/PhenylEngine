@@ -10,7 +10,7 @@
 
 #include "util/optional.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 //#ifndef WINDOW_CALLBACKS_H
     class WindowCallbackContext;
 //#endif

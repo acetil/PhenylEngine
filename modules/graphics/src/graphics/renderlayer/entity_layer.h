@@ -5,7 +5,7 @@
 #include "graphics/pipeline/pipeline.h"
 #include "graphics/textures/sprite_atlas.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class EntityPipeline;
     class EntityRenderLayer : public RenderLayer {
     private:

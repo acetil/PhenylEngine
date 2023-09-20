@@ -6,6 +6,8 @@
 #include "util/profiler.h"
 #include "logging/logging.h"
 
+using namespace phenyl;
+
 struct Profiler {
       double lastFrameTime = 0;
       double frameStartTime = 0;

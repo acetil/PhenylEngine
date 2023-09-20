@@ -2,21 +2,21 @@
 #include "component/detail/children_view.h"
 #include "component/signals/children_update.h"
 
-using namespace component::detail;
+using namespace phenyl::component::detail;
 
-component::ChildrenView BasicManager::_children (EntityId id) {
+phenyl::component::ChildrenView BasicManager::_children (EntityId id) {
     return {this, id};
 }
 
-component::Entity BasicManager::_entity (component::EntityId id) {
+phenyl::component::Entity BasicManager::_entity (component::EntityId id) {
     return Entity{id, this};
 }
 
-component::ConstEntity BasicManager::_entity (component::EntityId id) const {
+phenyl::component::ConstEntity BasicManager::_entity (component::EntityId id) const {
     return _constEntity(id);
 }
 
-component::ConstEntity BasicManager::_constEntity (component::EntityId id) const {
+phenyl::component::ConstEntity BasicManager::_constEntity (component::EntityId id) const {
     return ConstEntity{id, this};
 }
 

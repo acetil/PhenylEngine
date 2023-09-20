@@ -1,6 +1,6 @@
 #pragma once
 
-namespace common {
+namespace phenyl::common {
     class InputSource;
     class ProxySource;
     class InputAction;

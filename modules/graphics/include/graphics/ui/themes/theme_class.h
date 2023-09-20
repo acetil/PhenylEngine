@@ -6,7 +6,7 @@
 #include "util/optional.h"
 #include "util/data.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class ThemeClass {
     private:
         util::Map<std::string, ThemeClass*> subClasses;

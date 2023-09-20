@@ -6,7 +6,7 @@
 #include "common/assets/assets.h"
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath);
 static GLuint loadShader (GLuint shaderType, const std::string& shaderPath);

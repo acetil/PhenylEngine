@@ -5,7 +5,7 @@
 
 #include "component/entity_id.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     class EntityIdList {
     private:
         static constexpr std::size_t GEN_BITS = sizeof(unsigned int) * 8 - 1;

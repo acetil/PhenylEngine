@@ -11,7 +11,7 @@
 #include "util/iterable.h"
 #include "util/meta.h"
 
-namespace component {
+namespace phenyl::component {
     namespace detail {
         template <typename ...Args>
         class QueryCursor;

@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-namespace util {
+namespace phenyl::util {
     template <typename T, typename C>
     class CallbackMember {
     public:

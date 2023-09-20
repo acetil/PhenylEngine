@@ -4,7 +4,7 @@
 
 #include "component/forward.h"
 
-namespace physics {
+namespace phenyl::physics {
     class IPhysics;
     class PhenylPhysics {
     private:

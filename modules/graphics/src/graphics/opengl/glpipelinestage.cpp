@@ -3,7 +3,7 @@
 
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, GLenum type, GLsizei size, GLsizei stride=0, std::size_t offset=0);
 static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, ShaderDataType attribType);

@@ -14,6 +14,8 @@
 
 #define FORCE_COMPONENT 6.5
 
+using namespace phenyl;
+
 static common::InputAction KeyLeft;
 static common::InputAction KeyRight;
 static common::InputAction KeyUp;
@@ -21,13 +23,13 @@ static common::InputAction KeyDown;
 
 static common::InputAction KeyShoot;
 
-static void updatePlayer (game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body, game::GameInput& input,
+static void updatePlayer (test::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body, game::GameInput& input,
                           game::GameCamera& camera);
 
 void addPlayerComponents (component::ComponentManager& manager, component::EntitySerializer& serialiser) {
-    manager.addComponent<game::Player>();
+    manager.addComponent<test::Player>();
 
-    serialiser.addSerializer<game::Player>();
+    serialiser.addSerializer<test::Player>();
 
 }
 
@@ -41,7 +43,7 @@ void inputSetup (game::GameInput& input) {
 }
 
 void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera) {
-    manager.query<game::Player, common::GlobalTransform2D, physics::RigidBody2D>().each([&camera, &input] (component::Entity entity, game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
+    manager.query<test::Player, common::GlobalTransform2D, physics::RigidBody2D>().each([&camera, &input] (component::Entity entity, test::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body) {
         updatePlayer(player, transform, body, input, camera);
     });
 }
@@ -78,7 +80,7 @@ static glm::vec2 getCursorDisp (game::GameInput& input, game::GameCamera& camera
     return worldCursorPos - pos;
 }
 
-static void updatePlayer (game::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body, game::GameInput& input,
+static void updatePlayer (test::Player& player, common::GlobalTransform2D& transform, physics::RigidBody2D& body, game::GameInput& input,
                           game::GameCamera& camera) {
     auto forceVec = getMovementForce(input);
     auto disp = getCursorDisp(input, camera, transform.transform2D.position());

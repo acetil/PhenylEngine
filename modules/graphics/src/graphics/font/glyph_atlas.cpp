@@ -15,7 +15,7 @@
 #define NUM_VERTICES 6
 #define UV_PER_VERTEX 2
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 struct GlyphDistanceField {
     int width = 0;
@@ -109,7 +109,7 @@ static GlyphDistanceField getDistField (unsigned char* data, int newWidth, int n
     return glyphDist;
 }
 
-graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int targetRes) {
+phenyl::graphics::GlyphAtlas::GlyphAtlas (const std::vector<GlyphImage>& glyphs, int targetRes) {
     // Uses valve distance field technique
     // See https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf
     std::vector<GlyphDistanceField> distFieldGlyphs;
@@ -198,7 +198,7 @@ void GlyphAtlas::loadAtlas (Renderer* renderer) {
     }*/
 }
 
-util::span<glm::vec2> GlyphAtlas::getCharUvs (int c) {
+phenyl::util::span<glm::vec2> GlyphAtlas::getCharUvs (int c) {
     if (!charUvs.contains(c)) {
         logging::log(LEVEL_DEBUG, "No glyph found with code {}", c);
         return {(glm::vec2*)charUvs[0].begin(), charUvs[0].size() / 2};

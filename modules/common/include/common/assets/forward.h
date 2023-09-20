@@ -1,6 +1,6 @@
 #pragma once
 
-namespace common {
+namespace phenyl::common {
     class Assets;
 
     template <typename T>

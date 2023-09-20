@@ -4,7 +4,7 @@
 #include "component/entity.h"
 #include "component/query.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     class QueryableManager : public BasicManager {
     protected:
         template <typename T>

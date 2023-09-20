@@ -6,7 +6,7 @@
 #include "harfbuzz_typedefs.h"
 #include "glyph_image.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     struct CharOffsets {
         int advance;
         int offsetX;

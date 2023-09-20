@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace util {
+namespace phenyl::util {
     template <typename T>
     concept BackingType = std::unsigned_integral<T>;
 

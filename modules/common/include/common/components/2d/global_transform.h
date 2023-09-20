@@ -2,11 +2,7 @@
 
 #include "common/maths/2d/transform.h"
 
-namespace util {
-    class DataValue;
-}
-
-namespace common {
+namespace phenyl::common {
     struct GlobalTransform2D {
     private:
     public:
@@ -17,7 +13,4 @@ namespace common {
         glm::mat2 rotTransform;*/
         common::Transform2D transform2D;
     };
-
-    util::DataValue phenyl_to_data (const GlobalTransform2D& comp);
-    bool phenyl_from_data (const util::DataValue& dataVal, GlobalTransform2D& comp);
 }

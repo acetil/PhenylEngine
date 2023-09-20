@@ -3,7 +3,7 @@
 #include "ui_component.h"
 #include "graphics/ui/nodes/ui_button.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
 
     class UIButtonNode;
 

@@ -11,7 +11,7 @@
 
 #include "util/meta.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     template <typename Signal, typename F, typename ...Args> requires meta::callable<F, void, const Signal&, Entity, Args&...>
     class TypedSignalHandler : public SignalHandler<Signal> {
     private:

@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace component {
+namespace phenyl::component {
     namespace detail {
         class ComponentSet;
         class EntityIdList;

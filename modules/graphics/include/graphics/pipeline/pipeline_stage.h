@@ -8,7 +8,7 @@
 #include "graphics/renderers/buffer.h"
 #include "util/meta.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class RendererPipelineStage;
 
     enum class PipelineType {

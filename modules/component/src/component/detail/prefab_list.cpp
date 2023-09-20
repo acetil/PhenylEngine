@@ -1,7 +1,7 @@
 #include "component/detail/prefab_list.h"
 #include "component/component.h"
 
-void component::detail::PrefabList::instantiate (component::Entity entity, std::size_t prefabId) {
+void phenyl::component::detail::PrefabList::instantiate (component::Entity entity, std::size_t prefabId) {
     assert(valid(prefabId));
 
     auto& entry = getPrefabEntry(prefabId);

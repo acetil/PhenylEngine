@@ -5,7 +5,7 @@
 #include "harfbuzz_typedefs.h"
 #include "font_face.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class FontManager {
     private:
         FT_Library freetypeLib = nullptr;

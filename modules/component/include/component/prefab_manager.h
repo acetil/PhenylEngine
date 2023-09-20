@@ -4,7 +4,7 @@
 #include "component/prefab.h"
 #include "forward.h"
 
-namespace component {
+namespace phenyl::component {
     class PrefabManager : public common::AssetManager<Prefab> {
     private:
         util::Map<std::size_t, std::unique_ptr<Prefab>> prefabs;

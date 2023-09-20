@@ -2,7 +2,7 @@
 
 #include "graphics/maths_headers.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class UIRect {
     public:
         const glm::vec2 screenPos;

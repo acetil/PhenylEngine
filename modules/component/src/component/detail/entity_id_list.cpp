@@ -3,13 +3,13 @@
 #include "component/entity_id.h"
 #include "logging/logging.h"
 
-using namespace component::detail;
+using namespace phenyl::component::detail;
 
 EntityIdList::EntityIdList (std::size_t capacity) : idSlots{}, freeListStart{FREE_LIST_EMPTY}, numEntities{0} {
     idSlots.reserve(capacity);
 }
 
-component::EntityId EntityIdList::newId () {
+phenyl::component::EntityId EntityIdList::newId () {
     if (freeListStart == FREE_LIST_EMPTY) {
         if (idSlots.size() >= MAX_NUM_IDS) {
             logging::log(LEVEL_ERROR, "Too many entity ids!");

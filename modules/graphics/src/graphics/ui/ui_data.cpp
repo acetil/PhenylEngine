@@ -1,8 +1,8 @@
 #include "graphics/ui/ui_data.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
-bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, Axis& val) {
+bool phenyl::graphics::ui::phenyl_from_data (const util::DataValue& dataVal, Axis& val) {
     if (!dataVal.is<std::string>()) {
         return false;
     }
@@ -26,7 +26,7 @@ bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, Axis& val) 
     return false;
 }
 
-util::DataValue graphics::ui::phenyl_to_data (const Axis& val) {
+phenyl::util::DataValue phenyl::graphics::ui::phenyl_to_data (const Axis& val) {
     switch (val) {
         case Axis::UP:
             return util::DataValue("up");
@@ -40,7 +40,7 @@ util::DataValue graphics::ui::phenyl_to_data (const Axis& val) {
     return util::DataValue{};
 }
 
-bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FlexAlign& val) {
+bool phenyl::graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FlexAlign& val) {
     if (!dataVal.is<std::string>()) {
         return false;
     }
@@ -61,7 +61,7 @@ bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FlexAlign& 
     return false;
 }
 
-util::DataValue graphics::ui::phenyl_to_data (const FlexAlign& val) {
+phenyl::util::DataValue phenyl::graphics::ui::phenyl_to_data (const FlexAlign& val) {
     switch (val) {
         case FlexAlign::CENTRE:
             return util::DataValue("centre");
@@ -74,7 +74,7 @@ util::DataValue graphics::ui::phenyl_to_data (const FlexAlign& val) {
     return util::DataValue{};
 }
 
-bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FlexJustify& val) {
+bool phenyl::graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FlexJustify& val) {
     if (!dataVal.is<std::string>()) {
         return false;
     }
@@ -101,7 +101,7 @@ bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FlexJustify
     return false;
 }
 
-util::DataValue graphics::ui::phenyl_to_data (const FlexJustify& val) {
+phenyl::util::DataValue phenyl::graphics::ui::phenyl_to_data (const FlexJustify& val) {
     switch (val) {
         case FlexJustify::CENTRE:
             return util::DataValue("centre");
@@ -118,7 +118,7 @@ util::DataValue graphics::ui::phenyl_to_data (const FlexJustify& val) {
     return util::DataValue{};
 }
 
-bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FloatAnchor& val) {
+bool phenyl::graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FloatAnchor& val) {
     if (!dataVal.is<std::string>()) {
         return false;
     }
@@ -141,7 +141,7 @@ bool graphics::ui::phenyl_from_data (const util::DataValue& dataVal, FloatAnchor
     return false;
 }
 
-util::DataValue graphics::ui::phenyl_to_data (const FloatAnchor& val) {
+phenyl::util::DataValue phenyl::graphics::ui::phenyl_to_data (const FloatAnchor& val) {
     switch (val) {
         case FloatAnchor::FLOAT_CENTRE:
             return util::DataValue("centre");

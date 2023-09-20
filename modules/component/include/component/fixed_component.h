@@ -11,7 +11,7 @@
 #include "util/meta.h"
 #include "util/optional.h"
 
-namespace component {
+namespace phenyl::component {
     namespace detail {
         template <std::random_access_iterator CompVecIt, util::PublicGameIdType IdType>
         class FixedComponentIterator;

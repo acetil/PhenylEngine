@@ -1,6 +1,6 @@
 #pragma once
 
-namespace util {
+namespace phenyl::util {
     template <typename T>
     class Iterable {
     private:

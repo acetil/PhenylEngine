@@ -8,10 +8,10 @@
 #include "graphics/opengl/glrenderer.h"
 #include "graphics/font/font_manager.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 // TODO: update to use exceptions instead of return values
 // TODO: proper error handling
-int graphics::initWindow (GLFWwindow** windowPtr) {
+int phenyl::graphics::initWindow (GLFWwindow** windowPtr) {
     glewExperimental = true;
     if (!glfwInit()) {
         logging::log(LEVEL_FATAL, "Failed to initialise GLFW!");
@@ -89,7 +89,7 @@ FontManager initFonts () {
     return manager;
 }
 
-int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew) {
+int phenyl::graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew) {
     auto renderer = std::make_unique<GLRenderer>(window);
 
     logging::log(LEVEL_INFO, "Adding shaders");
@@ -114,7 +114,7 @@ int graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& gra
 
 }
 
-void graphics::destroyGraphics (const detail::Graphics::SharedPtr& graphics) {
+void phenyl::graphics::destroyGraphics (const detail::Graphics::SharedPtr& graphics) {
     graphics->deleteWindowCallbacks();
     //delete graphics;
     //glfwTerminate(); // TODO: move to renderer

@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace graphics {
+namespace phenyl::graphics {
     class GlyphImage {
     public:
         unsigned char* data = nullptr;

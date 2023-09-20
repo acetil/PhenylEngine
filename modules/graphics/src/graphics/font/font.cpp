@@ -6,7 +6,7 @@
 #define NUM_POS_COMP 2
 #define NUM_COLOUR_COMP 3
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 /*void graphics::Font::renderText (const std::string& text, int size, int x, int y, glm::vec3 colour, Buffer* buffer) {
     float vertexPositions[NUM_VERTICES * NUM_POS_COMP];

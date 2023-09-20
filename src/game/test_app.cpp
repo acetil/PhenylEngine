@@ -7,18 +7,18 @@
 #include "util/debug_console.h"
 #include "graphics/ui/ui_manager.h"
 
-game::TestApp::TestApp () = default;
+test::TestApp::TestApp () = default;
 
-void game::TestApp::init () {
+void test::TestApp::init () {
     addBulletSignals(componentManager(), serializer());
     addPlayerComponents(componentManager(), serializer());
 
     inputSetup(input());
 
-    common::Assets::Load<Level>("resources/maps/testmap")->load();
+    phenyl::common::Assets::Load<phenyl::game::Level>("resources/maps/testmap")->load();
 
-    graphics::ui::UIButton buttonC{"button"};
-    graphics::ui::UIButton buttonC2{"button2"};
+    phenyl::graphics::ui::UIButton buttonC{"button"};
+    phenyl::graphics::ui::UIButton buttonC2{"button2"};
     label.text = "Hello World!";
 
     flexBoxC.add(buttonC.detach());
@@ -28,13 +28,13 @@ void game::TestApp::init () {
     uiManager().addUIComp(flexBoxC.detach(), {0, 100});
     uiManager().addUIComp(button4, {500, 300});
     uiManager().addUIComp(button5, {500, 385});
-    uiManager().setCurrentTheme(common::Assets::Load<graphics::ui::Theme>("resources/themes/default_theme"));
+    uiManager().setCurrentTheme(phenyl::common::Assets::Load<phenyl::graphics::ui::Theme>("resources/themes/default_theme"));
 
     stepAction = input().mapInput("debug_step", "key_f7");
     consoleAction = input().mapInput("debug_console", "key_f12");
 }
 
-void game::TestApp::fixedUpdate (float deltaTime) {
+void test::TestApp::fixedUpdate (float deltaTime) {
     playerUpdate(componentManager(), input(), camera());
 
     if (isStepping) {
@@ -42,12 +42,12 @@ void game::TestApp::fixedUpdate (float deltaTime) {
     }
 }
 
-void game::TestApp::update (double deltaTime) {
+void test::TestApp::update (double deltaTime) {
     if (button4 && !isButtonDown) {
         isButtonDown = true;
         numPresses++;
         label.text = "Pressed " + std::to_string(numPresses) + " times!";
-        auto newLabel = graphics::ui::UILabel("label");
+        auto newLabel = phenyl::graphics::ui::UILabel("label");
         newLabel.text = "Label " + std::to_string(extraLabels.size());
         flexBoxC.add(newLabel);
         extraLabels.emplace_back(std::move(newLabel));
@@ -80,47 +80,47 @@ void game::TestApp::update (double deltaTime) {
     }
 
     if (input().isDown(consoleAction)) {
-        util::doDebugConsole(this);
+        test::doDebugConsole(this);
     }
 }
 
-void game::TestApp::queueResume () {
+void test::TestApp::queueResume () {
     resumeFrames = 2;
 }
 
-void game::TestApp::startStepping () {
+void test::TestApp::startStepping () {
     isStepping = true;
     pause();
 }
 
-void game::TestApp::stopStepping () {
+void test::TestApp::stopStepping () {
     isStepping = false;
     resume();
 }
 
-void game::TestApp::step () {
+void test::TestApp::step () {
     if (isStepping) {
         resume();
     }
 }
 
-void game::TestApp::changeTheme (common::Asset<graphics::ui::Theme> theme) {
+void test::TestApp::changeTheme (phenyl::common::Asset<phenyl::graphics::ui::Theme> theme) {
     uiManager().setCurrentTheme(std::move(theme));
 }
 
-void game::TestApp::updateDebugRender (bool doRender) {
+void test::TestApp::updateDebugRender (bool doRender) {
     setDebugRender(doRender);
 }
 
-void game::TestApp::updateProfileRender (bool doRender) {
+void test::TestApp::updateProfileRender (bool doRender) {
     setProfileRender(doRender);
 }
 
-void game::TestApp::dumpLevel (const std::string& path) {
+void test::TestApp::dumpLevel (const std::string& path) {
     std::ofstream file{path};
     if (file) {
-        engine::Application::dumpLevel(file);
+        phenyl::engine::Application::dumpLevel(file);
     } else {
-        logging::log(LEVEL_ERROR, "Failed to open path \"{}\"!", path);
+        phenyl::game::logging::log(LEVEL_ERROR, "Failed to open path \"{}\"!", path);
     }
 }

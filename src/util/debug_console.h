@@ -4,6 +4,6 @@
 
 #include "game/test_app.h"
 
-namespace util {
-    void doDebugConsole (game::TestApp* app);
+namespace test {
+    void doDebugConsole (test::TestApp* app);
 }

@@ -10,7 +10,7 @@
 
 #include "engine/level/level.h"
 
-namespace game {
+namespace phenyl::game {
     class LevelManager : public common::AssetManager<Level> {
     private:
         util::Map<std::size_t, std::unique_ptr<Level>> levels;

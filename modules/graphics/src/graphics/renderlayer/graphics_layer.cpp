@@ -3,7 +3,7 @@
 
 #include "graphics/font/font_manager.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 GraphicsRenderLayer::GraphicsRenderLayer (Renderer* renderer) {
     //program = renderer->getProgram("graphics_program").value();

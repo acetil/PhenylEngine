@@ -16,7 +16,7 @@
 #include "util/fl_vector.h"
 #include "util/meta.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     class ComponentSet {
     private:
         struct Metadata {

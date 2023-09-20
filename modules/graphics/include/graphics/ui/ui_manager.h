@@ -15,7 +15,7 @@
 #include "common/input/remappable_proxy_input.h"
 #include "common/assets/asset_manager.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 //#ifndef FONT_H
 class Font;
 //#endif

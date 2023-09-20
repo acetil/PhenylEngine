@@ -11,7 +11,7 @@
 #include "serializer_intrusive.h"
 #include "util/optional.h"
 
-namespace common {
+namespace phenyl::common {
     class JsonSerializer;
     class JsonDeserializer;
 
@@ -345,7 +345,7 @@ namespace common {
             return T{};                                                  \
         }                                                                                         \
         \
-        static bool Accept (common::JsonSerializer& visitor, const T& val) {   \
+        static bool Accept (::phenyl::common::JsonSerializer& visitor, const T& val) {   \
             constexpr bool IN_SERIALIZE = std::is_same_v<std::void_t<T>, void>;                          \
             constexpr bool IN_DESERIALIZE = !std::is_same_v<std::void_t<T>, void>;                       \
             using Type = T;                                              \
@@ -358,7 +358,7 @@ namespace common {
             return true;                                                 \
         }                                                                                         \
         \
-        static bool Accept (const common::JsonDeserializer& visitor, T& val) { \
+        static bool Accept (const ::phenyl::common::JsonDeserializer& visitor, T& val) { \
             constexpr bool IN_SERIALIZE = !std::is_same_v<std::void_t<T>, void>;                         \
             constexpr bool IN_DESERIALIZE = std::is_same_v<std::void_t<T>, void>;                        \
             using Type = T;                                              \
@@ -417,7 +417,7 @@ namespace common {
                                                           \
         if constexpr (IN_DESERIALIZE) {                \
             using ValType = std::remove_cvref_t<decltype(val.getMethod())>; \
-            ValType newVal = ::common::detail::SerializerFactory<ValType>();   \
+            ValType newVal = ::phenyl::common::detail::SerializerFactory<ValType>();   \
             if (!visitor.visitMember(newVal, name)) {     \
                 return false;                                              \
             }                                             \

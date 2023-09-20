@@ -1,6 +1,6 @@
 #pragma once
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UIComponentNode;
     class UIAnchor;
 }

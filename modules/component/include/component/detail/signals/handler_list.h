@@ -2,7 +2,7 @@
 
 #include "component/forward.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     class BasicManager;
 
     template <typename Signal>

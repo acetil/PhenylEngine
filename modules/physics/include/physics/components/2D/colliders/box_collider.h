@@ -4,10 +4,10 @@
 
 #pragma once
 
-namespace physics {
+namespace phenyl::physics {
     class SATResult2D;
     class Face2D;
-    class BoxCollider2D : public ColliderComp2D {
+    class BoxCollider2D : public Collider2D {
     private:
         glm::vec2 scale;
         glm::mat2 frameTransform;
@@ -28,8 +28,5 @@ namespace physics {
         void setScale (glm::vec2 newScale) {
             scale = newScale;
         }
-
-        util::DataValue serialise () const override;
-        bool deserialise(const util::DataValue &val) override;
     };
 }

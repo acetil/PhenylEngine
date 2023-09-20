@@ -8,7 +8,7 @@
 
 #include "util/smart_help.h"
 
-namespace graphics {
+namespace phenyl::graphics {
 class GLPipelineStage : public RendererPipelineStage, public util::SmartHelper<GLPipelineStage, true> {
     private:
         GLuint vaoId{};

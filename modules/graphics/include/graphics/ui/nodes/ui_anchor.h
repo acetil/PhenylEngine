@@ -2,7 +2,7 @@
 
 #include "graphics/maths_headers.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
 
     /*enum class SizeAnchor {
         FIXED_SIZE,

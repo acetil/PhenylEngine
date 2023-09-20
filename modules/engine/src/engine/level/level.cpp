@@ -10,9 +10,9 @@
 #include "engine/level/level.h"
 #include "level_manager.h"
 
-using namespace game;
+using namespace phenyl::game;
 
-namespace game::detail {
+namespace phenyl::game::detail {
     struct LevelEntity {
         nlohmann::json components;
         common::Asset<component::Prefab> prefab;
@@ -22,10 +22,10 @@ namespace game::detail {
 
 namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities);
-    component::Prefab::Instantiator getInstantatior (const common::Asset<component::Prefab>& prefab, component::ComponentManager* manager);
+    phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager);
 }
 
-game::LevelManager::LevelManager (component::ComponentManager* manager, component::EntitySerializer* serializer) : manager{manager}, serializer{serializer} {}
+LevelManager::LevelManager (component::ComponentManager* manager, component::EntitySerializer* serializer) : manager{manager}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::istream& data, std::size_t id) {
@@ -115,7 +115,7 @@ void Level::load (bool additive) {
     manager->deferSignalsEnd();
 }
 
-component::Entity Level::loadEntity (std::size_t index) {
+phenyl::component::Entity Level::loadEntity (std::size_t index) {
     assert(index < entities.size());
     const auto& entity = entities[index];
 
@@ -142,14 +142,14 @@ namespace {
             return 0;
         }
 
-        common::Asset<component::Prefab> prefab;
+        phenyl::common::Asset<phenyl::component::Prefab> prefab;
         if (json.contains("prefab")) {
             if (!json.at("prefab").is_string()) {
                 logging::log(LEVEL_ERROR, "Expected string for prefab field, got {}!", json.at("prefab").type_name());
                 return 0;
             }
 
-            prefab = common::Assets::Load<component::Prefab>(json.at("prefab").get<std::string>());
+            prefab = phenyl::common::Assets::Load<phenyl::component::Prefab>(json.at("prefab").get<std::string>());
             if (!prefab) {
                 logging::log(LEVEL_ERROR, "Failed to load prefab {} for entity!", json.at("prefab").get<std::string>());
             }
@@ -177,11 +177,11 @@ namespace {
         return entity.numChildren + 1;
     }
 
-    component::Prefab::Instantiator getInstantatior (const common::Asset<component::Prefab>& prefab, component::ComponentManager* manager) {
+    phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager) {
         if (prefab) {
             return prefab->instantiate();
         } else {
-            return component::Prefab::NullPrefab(manager).instantiate();
+            return phenyl::component::Prefab::NullPrefab(manager).instantiate();
         }
     }
 }

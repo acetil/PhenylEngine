@@ -7,11 +7,11 @@
 #include "graphics/ui/nodes/forward.h"
 #include "util/optional.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class UIManager;
 }
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
 
     template <typename T>
     concept UIComp = requires (T t) {

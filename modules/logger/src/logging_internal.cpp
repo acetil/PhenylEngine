@@ -5,7 +5,7 @@
 
 #include "logging_internal.h"
 #define TIME_TEXT_LEN 21
-using namespace internal;
+using namespace phenyl::internal;
 char buffer[2000];
 
 #ifdef C_LOGGING
@@ -100,7 +100,7 @@ public:
 
 LogFile logFile{};
 
-void internal::log_internal (int level, const char* location, const char* log) {
+void phenyl::internal::log_internal (int level, const char* location, const char* log) {
     #ifndef DEBUG_LOG
         if (level == LEVEL_DEBUG) {
             return;
@@ -131,15 +131,15 @@ void internal::log_internal (int level, const char* location, const char* log) {
 
     logFile.writeLine(timeText, location, text, log);
 }
-void internal::vlogf_internal (int level, const char* location, const char* log, va_list l) {
+void phenyl::internal::vlogf_internal (int level, const char* location, const char* log, va_list l) {
     vsprintf(buffer, log, l);
     log_internal(level, location, buffer);
 }
 
-void internal::log_internal (int level, const std::string& location, const std::string& log) {
+void phenyl::internal::log_internal (int level, const std::string& location, const std::string& log) {
     log_internal(level, location.c_str(), log.c_str());
 }
 
-void internal::init_internal (const std::string& logPath) {
+void phenyl::internal::init_internal (const std::string& logPath) {
     logFile = LogFile(logPath);
 }

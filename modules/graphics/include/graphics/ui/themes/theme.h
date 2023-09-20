@@ -7,11 +7,11 @@
 #include "util/map.h"
 #include "util/optional.h"
 
-namespace util {
+namespace phenyl::util {
     class DataValue;
 }
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class Theme {
     private:
         util::Map<std::string, std::unique_ptr<ThemeClass>> themeClassMap;

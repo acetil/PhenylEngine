@@ -3,7 +3,7 @@
 #include <utility>
 #include "graphics/ui/themes/theme.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObject& classData, const std::string& classPrefix) : classId{std::move(_classId)},
     theme{_theme}, parent{nullptr} {
@@ -38,18 +38,18 @@ ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObj
     }
 }
 
-util::Optional<ThemeClass*> ThemeClass::getSubClass (const std::string& subClassId) {
+phenyl::util::Optional<ThemeClass*> ThemeClass::getSubClass (const std::string& subClassId) {
     return theme->getThemeClass(theme->getAbsoluteId(subClassId, classId));
 }
 
-util::Optional<ThemeClass*> ThemeClass::getChild (const std::string& childId) {
+phenyl::util::Optional<ThemeClass*> ThemeClass::getChild (const std::string& childId) {
     if (subClasses.contains(childId)) {
         return {subClasses[childId]};
     }
     return util::NullOpt;
 }
 
-util::Optional<const util::DataValue&> ThemeClass::getPropertyValue (const std::string& propertyId) {
+phenyl::util::Optional<const phenyl::util::DataValue&> ThemeClass::getPropertyValue (const std::string& propertyId) {
     if (properties.contains(propertyId)) {
         return util::Optional<const util::DataValue&>(properties.at(propertyId));
     } else if (parent) {

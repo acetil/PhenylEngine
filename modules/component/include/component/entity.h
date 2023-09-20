@@ -3,7 +3,7 @@
 #include "entity_id.h"
 #include "component/detail/managers/basic_manager.h"
 
-namespace component {
+namespace phenyl::component {
     class Entity;
     class ConstEntity;
     inline bool operator== (const Entity& entity1, const Entity& entity2);

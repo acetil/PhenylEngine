@@ -1,6 +1,6 @@
 #include "graphics/ui/components/ui_label.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 const std::string& UILabel::getText () {
     // TODO: investigate why this doesn't work

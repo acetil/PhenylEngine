@@ -9,7 +9,7 @@ inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
     return vec1.x * vec2.y - vec1.y * vec2.x;
 }
 
-using namespace physics;
+using namespace phenyl::physics;
 
 // Solve x1 + u1t1 = x2 + u2t2 and y1 + v1t1 = y2 + v2t2 by eliminating t2
 // You get t1 = (v2(x2 - x1) - u2(y2 - y1)) / (u1v2 - u2v1)
@@ -22,7 +22,7 @@ static inline float lineIntersection (glm::vec2 p, glm::vec2 dv, glm::vec2 ip, g
     return (v2 * (ip.x - p.x) - u2 * (ip.y - p.y)) / (u1 * v2 - u2 * v1);
 }
 
-static inline Manifold2D buildManifoldInternal (const physics::Face2D& refFace, const physics::Face2D& incFace, glm::vec2 normal, float depth) {
+static inline Manifold2D buildManifoldInternal (const Face2D& refFace, const Face2D& incFace, glm::vec2 normal, float depth) {
     auto dv = incFace.vertices[1] - incFace.vertices[0];
     auto inc1 = glm::clamp(lineIntersection(incFace.vertices[0], dv, refFace.vertices[0], refFace.normal), 0.0f, 1.0f) * dv + incFace.vertices[0];
     auto inc2 = glm::clamp(lineIntersection(incFace.vertices[0], dv, refFace.vertices[1], refFace.normal), 0.0f, 1.0f) * dv + incFace.vertices[0];
@@ -39,7 +39,7 @@ static inline Manifold2D buildManifoldInternal (const physics::Face2D& refFace, 
     }
 }
 
-Manifold2D physics::buildManifold (const physics::Face2D& face1, const physics::Face2D& face2, glm::vec2 normal, float depth) {
+Manifold2D phenyl::physics::buildManifold (const physics::Face2D& face1, const physics::Face2D& face2, glm::vec2 normal, float depth) {
     if (glm::dot(face1.normal, normal) >= glm::dot(face2.normal, -normal)) {
         return buildManifoldInternal(face1, face2, normal, depth);
     } else {
@@ -47,7 +47,7 @@ Manifold2D physics::buildManifold (const physics::Face2D& face1, const physics::
     }
 }
 
-Constraint2D Manifold2D::buildConstraint (ColliderComp2D* obj1, ColliderComp2D* obj2, float deltaTime) const {
+Constraint2D Manifold2D::buildConstraint (Collider2D* obj1, Collider2D* obj2, float deltaTime) const {
     auto contactPoint = (points[0] + points[1]) / 2.0f;
     auto r1 = contactPoint - obj1->getPosition();
     auto r2 = contactPoint - obj2->getPosition();
@@ -59,7 +59,7 @@ Constraint2D Manifold2D::buildConstraint (ColliderComp2D* obj1, ColliderComp2D* 
     return Constraint2D::ContactConstraint(obj1, obj2, contactPoint, normal, bias);
 }
 
-Constraint2D Constraint2D::ContactConstraint (ColliderComp2D* obj1, ColliderComp2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias) {
+Constraint2D Constraint2D::ContactConstraint (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias) {
     // See https://kevinyu.net/2018/01/17/understanding-constraint-solver-in-physics-engine/ and
     // https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf
 

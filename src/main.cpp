@@ -14,6 +14,8 @@
 #include "game/test_app.h"
 #include "engine/engine.h"
 
+using namespace phenyl;
+
 struct Foo {
     int a;
 };
@@ -255,7 +257,7 @@ int main (int argv, char* argc[]) {
 
     logger::log(LEVEL_DEBUG, "MAIN", "Started game!");
     engine::PhenylEngine engine;
-    engine.run<game::TestApp>();
+    engine.run<test::TestApp>();
 
     return EXIT_SUCCESS;
 }

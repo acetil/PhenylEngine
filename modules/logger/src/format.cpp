@@ -1,6 +1,6 @@
 #include "util/format.h"
-using namespace util;
-int util::getFormatStr (std::string_view view, int tot, int currPos) {
+using namespace phenyl::util;
+int phenyl::util::getFormatStr (std::string_view view, int tot, int currPos) {
     if (view.empty()) {
         if (currPos + 1 >= tot) {
             return -1;

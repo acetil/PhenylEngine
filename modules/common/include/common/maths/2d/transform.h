@@ -3,7 +3,7 @@
 #include "graphics/maths_headers.h"
 #include "common/serializer_intrusive.h"
 
-namespace common {
+namespace phenyl::common {
     class Transform2D {
     private:
         glm::vec2 positionVec{0, 0};
@@ -11,9 +11,6 @@ namespace common {
         glm::vec2 complexRotation{1.0f, 0.0f};
 
         Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec);
-
-        friend bool phenyl_from_data (const util::DataValue& val, Transform2D& transform);
-        friend util::DataValue phenyl_to_data (const Transform2D& transform);
 
         PHENYL_SERIALIZE_INTRUSIVE(Transform2D);
     public:
@@ -56,7 +53,4 @@ namespace common {
             return getMatrix() * vec + position();
         }
     };
-
-    bool phenyl_from_data (const util::DataValue& val, Transform2D& transform);
-    util::DataValue phenyl_to_data (const Transform2D& transform);
 }

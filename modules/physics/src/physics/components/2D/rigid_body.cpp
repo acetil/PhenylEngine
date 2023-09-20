@@ -5,7 +5,7 @@
 #define MIN_ANGULAR_VEL 0.01f
 #define MAX_ANGULAR_VEL (3.14f * 2.0f)
 
-using namespace physics;
+using namespace phenyl::physics;
 
 inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
     return vec1.x * vec2.y - vec1.y * vec2.x;
@@ -62,57 +62,4 @@ void RigidBody2D::applyAngularImpulse (float angularImpulse) {
 
 void RigidBody2D::applyTorque (float appliedTorque) {
     torque += appliedTorque;
-}
-
-util::DataValue RigidBody2D::serialise () const {
-    util::DataObject dataObj;
-    dataObj["momentum"] = momentum;
-    dataObj["angular_momentum"] = angularMomentum;
-
-    dataObj["mass"] = mass;
-    dataObj["inertial_moment"] = inertialMoment;
-
-    dataObj["gravity"] = gravity;
-    dataObj["drag"] = drag;
-    dataObj["angular_drag"] = angularDrag;
-
-    return dataObj;
-}
-
-bool RigidBody2D::deserialise (const util::DataValue& dataVal) {
-    if (!dataVal.is<util::DataObject>()) {
-        return false;
-    }
-
-    const auto& dataObj = dataVal.get<util::DataObject>();
-
-    if (dataObj.contains("momentum")) {
-        momentum = dataObj.at("momentum").get<glm::vec2>();
-    }
-
-    if (dataObj.contains<float>("angular_momentum")) {
-        angularMomentum = dataObj.at("angularMomentum").get<float>();
-    }
-
-    if (dataObj.contains<float>("mass")) {
-        setMass(dataObj.at("mass").get<float>());
-    }
-
-    if (dataObj.contains<float>("inertial_moment")) {
-        setInertia(dataObj.at("inertial_moment").get<float>());
-    }
-
-    if (dataObj.contains("gravity")) {
-        gravity = dataObj.at("gravity").get<glm::vec2>();
-    }
-
-    if (dataObj.contains<float>("drag")) {
-        drag = dataObj.at<float>("drag");
-    }
-
-    if (dataObj.contains<float>("angular_drag")) {
-        angularDrag = dataObj.at<float>("angular_drag");
-    }
-
-    return true;
 }

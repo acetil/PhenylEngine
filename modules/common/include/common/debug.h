@@ -2,7 +2,7 @@
 
 #include "graphics/maths_headers.h"
 
-namespace common {
+namespace phenyl::common {
     //void debugWorldRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour);
     void debugWorldRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour, glm::vec4 outlineColour=glm::vec4{});
     void debugWorldRectOutline (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 outlineColour);

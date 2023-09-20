@@ -5,7 +5,7 @@
 #include "graphics/renderers/renderer.h"
 #include "graphics/camera.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class RenderLayer {
     // TODO: insert initial setup function
     public:

@@ -5,7 +5,9 @@
 
 #include "bullet.h"
 
-void game::addBulletSignals (component::ComponentManager& manager, component::EntitySerializer& serialiser) {
+using namespace phenyl;
+
+void test::addBulletSignals (component::ComponentManager& manager, component::EntitySerializer& serialiser) {
     manager.addComponent<Bullet>();
 
     serialiser.addSerializer<Bullet>();

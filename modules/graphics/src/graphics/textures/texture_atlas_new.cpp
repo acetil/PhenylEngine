@@ -3,7 +3,7 @@
 
 #define CHANNELS 4
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 struct AtlasImage {
     std::size_t key;
@@ -67,7 +67,7 @@ const AtlasOffset& TextureAtlas::operator[] (std::size_t index) const {
     return items[index];
 }
 
-util::Optional<const AtlasOffset&> TextureAtlas::at (std::size_t index) const {
+phenyl::util::Optional<const AtlasOffset&> TextureAtlas::at (std::size_t index) const {
     return index < items.size() ? util::Optional<const AtlasOffset&>{items[index]} : util::Optional<const AtlasOffset&>{};
 }
 

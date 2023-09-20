@@ -1,9 +1,9 @@
 #include "graphics/shaders/shaders.h"
 #include "graphics/shaders/renderer_shader.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
-const char* graphics::getUniformTypeName (ShaderDataType type) {
+const char* phenyl::graphics::getUniformTypeName (ShaderDataType type) {
     switch (type) {
         case ShaderDataType::FLOAT:
             return "float";
@@ -28,7 +28,7 @@ const char* graphics::getUniformTypeName (ShaderDataType type) {
     }
 }
 
-graphics::Shader::~Shader () = default;
+Shader::~Shader () = default;
 
 void Shader::applyUniform (const std::string& uniform, ShaderDataType uniformType, const unsigned char* dataPtr) {
     if (debugCheckShared()) {

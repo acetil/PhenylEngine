@@ -4,7 +4,7 @@
 #include "graphics/ui/nodes/ui_label.h"
 #include "util/callback_member.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UILabel : public UIComponent<UILabelNode> {
     private:
         void setText (std::string&& newText);

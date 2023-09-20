@@ -5,9 +5,9 @@
 #include "graphics/textures/image.h"
 #include "stb/stb_image.h"
 #include "logging/logging.h"
-using namespace graphics;
+using namespace phenyl::graphics;
 
-graphics::Image::Image (const char* filename, std::string name) {
+Image::Image (const char* filename, std::string name) {
     width = 0; // to get clang to shut up
     height = 0;
     n = 0;
@@ -21,21 +21,21 @@ graphics::Image::Image (const char* filename, std::string name) {
     imageData = std::unique_ptr<std::byte[], DataDeleter>((std::byte*)data, DataDeleter{true});
 }
 
-std::byte* graphics::Image::getData () const {
+std::byte* Image::getData () const {
     return imageData.get();
 }
-graphics::Image::~Image () = default;
+Image::~Image () = default;
 
-int graphics::Image::getArea () const {
+int Image::getArea () const {
     return width * height;
 }
-int graphics::Image::getWidth () const {
+int Image::getWidth () const {
     return width;
 }
-int graphics::Image::getHeight () const {
+int Image::getHeight () const {
     return height;
 }
-std::string graphics::Image::getName () {
+std::string Image::getName () {
     return name;
 }
 

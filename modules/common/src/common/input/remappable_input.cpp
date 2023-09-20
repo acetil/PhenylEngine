@@ -2,7 +2,7 @@
 
 #include "logging/logging.h"
 
-using namespace common;
+using namespace phenyl::common;
 
 void RemappableInput::addInputSource (const std::shared_ptr<InputSource>& source) {
     inputSources.emplace_back(source);

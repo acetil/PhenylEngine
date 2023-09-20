@@ -6,6 +6,8 @@
 
 #include "common/assets/assets.h"
 
+using namespace phenyl;
+
 component::Prefab* component::PrefabManager::load (std::istream& data, std::size_t id) {
     assert(!prefabs.contains(id));
     nlohmann::json json;

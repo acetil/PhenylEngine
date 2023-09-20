@@ -5,7 +5,7 @@
 #include "ui_node.h"
 #include "graphics/font/rendered_text.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UILabelNode : public UIComponentNode {
     private:
         std::string text;

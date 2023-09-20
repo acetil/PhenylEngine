@@ -3,7 +3,7 @@
 #include "component/component.h"
 #include "component/forward.h"
 
-namespace physics {
+namespace phenyl::physics {
 
 
 

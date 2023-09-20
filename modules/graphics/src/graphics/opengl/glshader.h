@@ -8,7 +8,7 @@
 #include "util/map.h"
 #include "util/smart_help.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class GLRenderer;
 
     struct GLUniform {

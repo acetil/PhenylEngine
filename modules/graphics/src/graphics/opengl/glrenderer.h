@@ -10,7 +10,7 @@
 #include "glshader.h"
 
 
-namespace graphics {
+namespace phenyl::graphics {
     class GLFrameBuffer : public FrameBuffer {
     public:
         void bind () override {

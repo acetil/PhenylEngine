@@ -12,7 +12,7 @@
 #include "asset.h"
 #include "asset_manager.h"
 
-namespace common {
+namespace phenyl::common {
     namespace detail {
         template <typename T>
         struct AssetEntry {

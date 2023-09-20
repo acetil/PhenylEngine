@@ -3,7 +3,7 @@
 
 #ifndef DETAIL_MEMORY_H
 #define DETAIL_MEMORY_H
-namespace util::detail {
+namespace phenyl::util::detail {
 
     template <bool b>
     class Copyable;

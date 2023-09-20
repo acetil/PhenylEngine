@@ -1,7 +1,7 @@
 #include "common/maths/2d/transform.h"
 #include "util/data.h"
 
-using namespace common;
+using namespace phenyl::common;
 
 static inline glm::vec2 rotationCompose (glm::vec2 cRot1, glm::vec2 cRot2) {
     return {cRot1.x * cRot2.x - cRot1.y * cRot2.y, cRot1.x * cRot2.y + cRot1.y * cRot2.x};
@@ -69,49 +69,4 @@ Transform2D& Transform2D::setRotation (float angle) {
 
 Transform2D Transform2D::withRotation (float angle) {
     return Transform2D{positionVec, scaleVec, rotationFromAngle(angle)};
-}
-
-bool common::phenyl_from_data (const util::DataValue& val, common::Transform2D& transform) {
-    if (!val.is<util::DataObject>()) {
-        return false;
-    }
-    const auto& obj = val.get<util::DataObject>();
-
-    if (!obj.contains("position")) {
-        return false;
-    }
-    const auto& posData = obj.at("position");
-    if (!phenyl_from_data(posData, transform.positionVec)) {
-        return false;
-    }
-
-    if (!obj.contains("scale")) {
-        return false;
-    }
-    const auto& scaleData = obj.at("scale");
-    if (!phenyl_from_data(scaleData, transform.scaleVec)) {
-        return false;
-    }
-
-    if (!obj.contains("rotation")) {
-        return false;
-    }
-    const auto& rotation = obj.at("rotation");
-    if (!rotation.is<float>()) {
-        return false;
-    }
-
-    transform.complexRotation = rotationFromAngle(rotation.get<float>());
-
-    return true;
-}
-
-util::DataValue common::phenyl_to_data (const common::Transform2D& transform) {
-    util::DataObject obj;
-
-    obj["position"] = transform.positionVec;
-    obj["scale"] = transform.scaleVec;
-    obj["rotation"] = transform.rotationAngle();
-
-    return obj;
 }

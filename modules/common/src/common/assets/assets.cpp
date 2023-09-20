@@ -3,7 +3,7 @@
 #include "common/assets/asset_manager.h"
 #include "common/assets/asset_serializer.h"
 
-using namespace common;
+using namespace phenyl::common;
 
 Assets* Assets::INSTANCE = nullptr;
 

@@ -3,13 +3,13 @@
 
 #include <utility>
 
-using namespace game;
+using namespace phenyl::game;
 
-common::InputAction game::GameInput::mapInput (const std::string& actionName, const std::string& inputName) {
+phenyl::common::InputAction GameInput::mapInput (const std::string& actionName, const std::string& inputName) {
     return inputSource->addInputMapping(actionName, inputName);
 }
 
-common::InputAction GameInput::getInput (const std::string& actionName) {
+phenyl::common::InputAction GameInput::getInput (const std::string& actionName) {
     return inputSource->getInputAction(actionName);
 }
 

@@ -2,7 +2,7 @@
 #include "component/detail/children_view.h"
 #include "component/prefab.h"
 
-using namespace component;
+using namespace phenyl::component;
 
 PrefabBuilder ComponentManager::buildPrefab () {
     return PrefabBuilder{this, prefabs.create()};

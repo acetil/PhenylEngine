@@ -5,7 +5,7 @@
 
 #define STARTING_BUFFER_SIZE 256
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 struct DebugBox {
     glm::vec3 vertices[4];
@@ -51,7 +51,7 @@ struct DebugLine {
 static std::vector<DebugBox> boxes;
 static std::vector<DebugLine> lines;
 
-namespace graphics {
+namespace phenyl::graphics {
     class DebugPipeline : public Pipeline<> {
     private:
         PipelineStage boxStage;
@@ -190,7 +190,7 @@ void DebugLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* fr
     lines.clear();
 }
 
-std::shared_ptr<DebugLayer> graphics::makeDebugLayer (graphics::Renderer* renderer) {
+std::shared_ptr<DebugLayer> phenyl::graphics::makeDebugLayer (graphics::Renderer* renderer) {
     return std::make_shared<DebugLayer>(renderer);
 }
 
@@ -202,18 +202,18 @@ std::shared_ptr<DebugLayer> graphics::makeDebugLayer (graphics::Renderer* render
 void graphics::debugScreenRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour, glm::vec4 outlineColour) {
     boxes.push_back(DebugBox::ScreenBox(topLeft, bottomRight, colour, outlineColour));
 }*/
-void graphics::debugWorldRect (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 colour, glm::vec4 outlineColour) {
+void phenyl::graphics::debugWorldRect (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 colour, glm::vec4 outlineColour) {
     boxes.push_back(DebugBox::WorldBox(pos1, pos2, pos3, pos4, colour, outlineColour));
 }
 
-void graphics::debugScreenRect (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 colour, glm::vec4 outlineColour) {
+void phenyl::graphics::debugScreenRect (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 colour, glm::vec4 outlineColour) {
     boxes.push_back(DebugBox::ScreenBox(pos1, pos2, pos3, pos4, colour, outlineColour));
 }
 
-void graphics::debugWorldLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour) {
+void phenyl::graphics::debugWorldLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour) {
     lines.push_back(DebugLine::WorldLine(start, end, colour));
 }
 
-void graphics::debugScreenLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour) {
+void phenyl::graphics::debugScreenLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour) {
     lines.push_back(DebugLine::ScreenLine(start, end, colour));
 }

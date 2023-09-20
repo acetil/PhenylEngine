@@ -1,7 +1,7 @@
 #include "glcallbacks.h"
 #include "graphics/opengl/glrenderer.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 
 static void cursorPosCallback (GLFWwindow* window, double xPos, double yPos);
@@ -9,7 +9,7 @@ static void windowSizeCallback (GLFWwindow* window, int width, int height);
 static void keyChangeCallback (GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouseButtonChangeCallback (GLFWwindow* window, int button, int action, int mods);
 
-void graphics::setupGLWindowCallbacks (GLFWwindow* window, GLWindowCallbackCtx* ctx) {
+void phenyl::graphics::setupGLWindowCallbacks (GLFWwindow* window, GLWindowCallbackCtx* ctx) {
     glfwSetWindowUserPointer(window, (void*)ctx);
 
     glfwSetCursorPosCallback(window, cursorPosCallback);
@@ -18,7 +18,7 @@ void graphics::setupGLWindowCallbacks (GLFWwindow* window, GLWindowCallbackCtx* 
     glfwSetMouseButtonCallback(window, mouseButtonChangeCallback);
 }
 
-void graphics::removeGLWindowCallbacks (GLFWwindow* window) {
+void phenyl::graphics::removeGLWindowCallbacks (GLFWwindow* window) {
     glfwSetCursorPosCallback(window, nullptr);
 }
 

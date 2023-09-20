@@ -13,7 +13,7 @@
 #include "util/meta.h"
 #include "util/optional.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     class BasicManager {
     protected:
         EntityIdList idList;

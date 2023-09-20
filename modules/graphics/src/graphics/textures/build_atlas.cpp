@@ -6,7 +6,7 @@
 #include "build_atlas.h"
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 struct Node {
     int width = 0;

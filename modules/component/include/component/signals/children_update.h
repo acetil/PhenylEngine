@@ -2,7 +2,7 @@
 
 #include "component/entity.h"
 
-namespace component {
+namespace phenyl::component {
     struct OnAddChild {
         Entity child;
     };

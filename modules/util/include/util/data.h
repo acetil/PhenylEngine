@@ -15,7 +15,7 @@
 
 #include "logging/logging.h"
 
-namespace util {
+namespace phenyl::util {
 
     class DataValue;
     class DataObject;

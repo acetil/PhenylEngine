@@ -10,7 +10,7 @@
 #include "component_handler_base.h"
 #include "component/entity.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     template <typename T, TypedUntypedComponentSignal<T> SignalUntyped>
     class TypedComponentSignalHandler : public ComponentSignalHandler<SignalUntyped> {
     private:

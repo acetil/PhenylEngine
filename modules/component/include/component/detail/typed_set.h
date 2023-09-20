@@ -3,7 +3,7 @@
 #include "component_set.h"
 #include "signals/component_handler.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     template <typename T>
     class TypedComponentSet : public ComponentSet {
     protected:

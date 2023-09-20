@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace util {
+namespace phenyl::util {
     struct FakeBool {
         bool val;
         FakeBool () : val{false} {}

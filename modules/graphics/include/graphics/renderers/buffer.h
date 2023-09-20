@@ -5,7 +5,7 @@
 
 #include "logging/logging.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class RendererBufferHandle;
     class PipelineStage;
 

@@ -4,7 +4,7 @@
 #include "forward.h"
 #include "graphics/ui/forward.h"
 
-namespace engine {
+namespace phenyl::engine {
     namespace detail {
         class Engine;
     }

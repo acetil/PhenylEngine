@@ -5,7 +5,7 @@
 #include "component/detail/component_utils.h"
 
 
-namespace component::detail {
+namespace phenyl::component::detail {
     template <UntypedComponentSignal Signal>
     class ComponentSignalHandler {
     private:

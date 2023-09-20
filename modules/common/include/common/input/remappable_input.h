@@ -6,8 +6,7 @@
 
 #include "util/map.h"
 
-namespace common {
-
+namespace phenyl::common {
     namespace detail {
         struct SourceAction {
             size_t sourceIndex{0};

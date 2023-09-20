@@ -1,6 +1,6 @@
 #pragma once
 
-namespace util {
+namespace phenyl::util {
     template <class T, int N>
     class SmoothQueue {
         T totalVal{};

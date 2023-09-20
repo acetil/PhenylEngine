@@ -6,9 +6,9 @@
 #include <utility>
 #include "logging/logging.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
-namespace graphics::ui::detail {
+namespace phenyl::graphics::ui::detail {
     struct FlexBoxItem {
         UIComponentNode* node;
         glm::vec2 offset;
@@ -57,10 +57,10 @@ static void expandSecondaryAxis (detail::FlexBoxItem& item, glm::vec2 axis, floa
 static void alignItem (detail::FlexBoxItem& item, glm::vec2 axis, float axisSize, FloatAnchor floatAnchor) {
     float remainingSize = axisSize - glm::abs(glm::dot(axis, item.bounds));
     switch (floatAnchor) {
-        case graphics::ui::FloatAnchor::FLOAT_CENTRE:
+        case FloatAnchor::FLOAT_CENTRE:
             item.offset += axis * (remainingSize / 2);
             break;
-        case graphics::ui::FloatAnchor::FLOAT_END:
+        case FloatAnchor::FLOAT_END:
             item.offset += axis * remainingSize;
             break;
         default:

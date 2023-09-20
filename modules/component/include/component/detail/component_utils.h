@@ -5,7 +5,7 @@
 
 #include "component/entity_id.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     template<std::size_t N, typename ...Args>
     bool tupleAllNonNull (const std::tuple<std::remove_reference_t<Args>* ...>& tup) {
         if constexpr (N == sizeof...(Args)) {

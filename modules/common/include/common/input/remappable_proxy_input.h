@@ -4,7 +4,7 @@
 #include "remappable_input.h"
 #include "util/fake_bool.h"
 
-namespace common {
+namespace phenyl::common {
     class RemappableProxyInput : public RemappableInput {
     private:
         util::BoolVector isProxy;

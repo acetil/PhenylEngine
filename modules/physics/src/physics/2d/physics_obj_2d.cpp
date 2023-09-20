@@ -15,14 +15,14 @@
 
 #define SOLVER_ITERATIONS 10
 
-using namespace physics;
+using namespace phenyl::physics;
 
 void PhysicsObject2D::addComponents (component::EntityComponentManager& componentManager) {
     componentManager.addComponent<RigidBody2D>();
-    componentManager.addComponent<ColliderComp2D>();
+    componentManager.addComponent<Collider2D>();
     componentManager.addComponent<BoxCollider2D>();
 
-    componentManager.inherits<BoxCollider2D, ColliderComp2D>();
+    componentManager.inherits<BoxCollider2D, Collider2D>();
 
     componentManager.addRequirement<RigidBody2D, common::GlobalTransform2D>();
     componentManager.addRequirement<BoxCollider2D, common::GlobalTransform2D>();
@@ -59,7 +59,7 @@ void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componen
 }
 
 void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, float deltaTime) {
-    compManager.query<common::GlobalTransform2D, RigidBody2D, ColliderComp2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, ColliderComp2D& collider) {
+    compManager.query<common::GlobalTransform2D, RigidBody2D, Collider2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, Collider2D& collider) {
         collider.syncUpdates(body, transform.transform2D.position());
     });
 
@@ -126,7 +126,7 @@ void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, 
         }
     }
 
-    compManager.query<RigidBody2D, ColliderComp2D>().each([] (auto info, RigidBody2D& body, const ColliderComp2D& collider) {
+    compManager.query<RigidBody2D, Collider2D>().each([] (auto info, RigidBody2D& body, const Collider2D& collider) {
         collider.updateBody(body);
     });
 }

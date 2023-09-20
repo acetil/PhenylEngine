@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <concepts>
 
-namespace component {
+namespace phenyl::component {
     namespace detail {
         struct OnInsertUntyped;
         struct OnStatusChangeUntyped;

@@ -3,7 +3,7 @@
 #include "graphics/pipeline/pipeline_stage.h"
 #include "graphics/renderers/renderer_buffer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class RendererPipelineStage {
     public:
         virtual ~RendererPipelineStage() = default;

@@ -5,7 +5,7 @@
 #include "common/assets/asset_manager.h"
 #include "texture_atlas.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class SpriteTexture {
     private:
         std::unique_ptr<Image> image;

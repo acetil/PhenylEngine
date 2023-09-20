@@ -3,9 +3,9 @@
 #include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_manager.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
-graphics::FontManager::FontManager () {
+FontManager::FontManager () {
     auto error = FT_Init_FreeType(&freetypeLib);
     if (error) {
         throw util::InitException("Freetype lib init exception");

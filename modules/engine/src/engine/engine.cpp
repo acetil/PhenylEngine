@@ -22,7 +22,7 @@
 
 #define FIXED_FPS 60.0
 
-using namespace engine;
+using namespace phenyl;
 
 class engine::detail::Engine {
 private:
@@ -77,43 +77,43 @@ engine::PhenylEngine::PhenylEngine () {
 
 engine::PhenylEngine::~PhenylEngine () = default;
 
-graphics::PhenylGraphics PhenylEngine::getGraphics () {
+graphics::PhenylGraphics engine::PhenylEngine::getGraphics () {
     return internal->getGraphics();
 }
 
-component::EntityComponentManager& PhenylEngine::getComponentManager () {
+component::EntityComponentManager& engine::PhenylEngine::getComponentManager () {
     return internal->getComponentManager();
 }
 
-component::EntitySerializer& PhenylEngine::getEntitySerializer () {
+component::EntitySerializer& engine::PhenylEngine::getEntitySerializer () {
     return internal->getEntitySerializer();
 }
 
-physics::PhenylPhysics PhenylEngine::getPhysics () {
+physics::PhenylPhysics engine::PhenylEngine::getPhysics () {
     return internal->getPhysics();
 }
 
-void PhenylEngine::updateEntityPosition (float deltaTime) {
+void engine::PhenylEngine::updateEntityPosition (float deltaTime) {
     internal->updateEntityPosition(deltaTime);
 }
 
-void PhenylEngine::debugRender () {
+void engine::PhenylEngine::debugRender () {
     internal->debugRender();
 }
 
-void PhenylEngine::dumpLevel (std::ostream& file) {
+void engine::PhenylEngine::dumpLevel (std::ostream& file) {
     internal->dumpLevel(file);
 }
 
-game::GameCamera& PhenylEngine::getCamera () {
+game::GameCamera& engine::PhenylEngine::getCamera () {
     return internal->getCamera();
 }
 
-game::GameInput& PhenylEngine::getInput () {
+game::GameInput& engine::PhenylEngine::getInput () {
     return internal->getInput();
 }
 
-void PhenylEngine::exec (Application* app) {
+void engine::PhenylEngine::exec (Application* app) {
     internal = std::make_unique<engine::detail::Engine>();
     app->init();
     internal->gameloop(app);
@@ -121,11 +121,11 @@ void PhenylEngine::exec (Application* app) {
     internal = nullptr;
 }
 
-void PhenylEngine::setDebugRender (bool doRender) {
+void engine::PhenylEngine::setDebugRender (bool doRender) {
     internal->setDebugRender(doRender);
 }
 
-void PhenylEngine::setProfileRender (bool doRender) {
+void engine::PhenylEngine::setProfileRender (bool doRender) {
     internal->setProfileRender(doRender);
 }
 
@@ -171,67 +171,67 @@ engine::detail::Engine::~Engine () {
     componentManager.clearAll();
 }
 
-graphics::PhenylGraphics detail::Engine::getGraphics () const {
+graphics::PhenylGraphics engine::detail::Engine::getGraphics () const {
     return graphicsHolder.getGraphics();
 }
 
-void detail::Engine::setupCallbacks () {
+void engine::detail::Engine::setupCallbacks () {
     graphicsHolder.tempGetGraphics()->setupWindowCallbacks();
 }
 
-component::EntityComponentManager& detail::Engine::getComponentManager () {
+component::EntityComponentManager& engine::detail::Engine::getComponentManager () {
     return componentManager;
 }
 
-const component::EntityComponentManager& detail::Engine::getComponentManager () const {
+const component::EntityComponentManager& engine::detail::Engine::getComponentManager () const {
     return componentManager;
 }
 
-component::EntitySerializer& detail::Engine::getEntitySerializer () {
+component::EntitySerializer& engine::detail::Engine::getEntitySerializer () {
     return *entitySerializer;
 }
 
-void detail::Engine::addDefaultSerialisers () {
+void engine::detail::Engine::addDefaultSerialisers () {
     //entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
     entitySerializer->addSerializer<common::GlobalTransform2D>();
 }
 
-physics::PhenylPhysics detail::Engine::getPhysics () {
+physics::PhenylPhysics engine::detail::Engine::getPhysics () {
     return physics::PhenylPhysics(physicsObj.get());
 }
 
-game::GameCamera& detail::Engine::getCamera () {
+game::GameCamera& engine::detail::Engine::getCamera () {
     return gameCamera;
 }
 
-game::GameInput& detail::Engine::getInput () {
+game::GameInput& engine::detail::Engine::getInput () {
     return gameInput;
 }
 
-void detail::Engine::updateEntityPosition (float deltaTime) {
+void engine::detail::Engine::updateEntityPosition (float deltaTime) {
     // TODO: remove function?
     physicsObj->updatePhysics(getComponentManager(), deltaTime);
     physicsObj->checkCollisions(getComponentManager(), deltaTime);
 }
 
-void detail::Engine::debugRender () {
+void engine::detail::Engine::debugRender () {
     if (!doDebugRender) {
         return;
     }
     physicsObj->debugRender(getComponentManager());
 }
 
-void detail::Engine::addComponents () {
+void engine::detail::Engine::addComponents () {
     componentManager.addComponent<common::GlobalTransform2D>();
     physicsObj->addComponents(componentManager);
     graphicsHolder.tempGetGraphics()->addComponents(componentManager);
 }
 
-void detail::Engine::dumpLevel (std::ostream& file) {
+void engine::detail::Engine::dumpLevel (std::ostream& file) {
     levelManager->dump(file);
 }
 
-void detail::Engine::gameloop (Application* app) {
+void engine::detail::Engine::gameloop (Application* app) {
     double deltaPhysicsFrame = 0.0f;
     auto graphics = graphicsHolder.getGraphics();
     logger::log(LEVEL_DEBUG, "ENGINE", "Starting loop!");
@@ -263,17 +263,17 @@ void detail::Engine::gameloop (Application* app) {
     }
 }
 
-void detail::Engine::update (Application* app, double deltaTime) {
+void engine::detail::Engine::update (Application* app, double deltaTime) {
     app->update(deltaTime);
 }
 
-void detail::Engine::fixedUpdate (Application* app) {
+void engine::detail::Engine::fixedUpdate (Application* app) {
     app->fixedUpdate(1.0 / FIXED_FPS);
     updateEntityPosition(1.0f / FIXED_FPS);
     getCamera().updateCamera(getGraphics().getCamera());
 }
 
-void detail::Engine::render (Application* app, double deltaTime) {
+void engine::detail::Engine::render (Application* app, double deltaTime) {
     if (doProfileRender) {
         graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float) deltaTime);
     }
@@ -283,10 +283,10 @@ void detail::Engine::render (Application* app, double deltaTime) {
     getGraphics().render();
 }
 
-void detail::Engine::setDebugRender (bool doRender) {
+void engine::detail::Engine::setDebugRender (bool doRender) {
     doDebugRender = doRender;
 }
 
-void detail::Engine::setProfileRender (bool doRender) {
+void engine::detail::Engine::setProfileRender (bool doRender) {
     doProfileRender = doRender;
 }

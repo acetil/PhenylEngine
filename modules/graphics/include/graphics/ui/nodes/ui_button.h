@@ -4,7 +4,7 @@
 
 #include "ui_node.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UIButtonNode : public UIComponentNode {
     private:
         glm::vec2 minSize{};

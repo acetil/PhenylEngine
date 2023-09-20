@@ -5,7 +5,7 @@
 
 #include "util/smart_help.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class Image : public util::SmartHelper<Image>{
         private:
             struct DataDeleter {

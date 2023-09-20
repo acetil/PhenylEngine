@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace util {
+namespace phenyl::util {
     namespace detail {
         static constexpr std::size_t ceil (std::size_t val, std::size_t denom) {
             return val / denom + (val % denom ? 1 : 0);

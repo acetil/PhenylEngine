@@ -3,7 +3,7 @@
 
 #include "logging/logging.h"
 
-using namespace common;
+using namespace phenyl::common;
 
 void RemappableProxyInput::addInputSource (const std::shared_ptr<InputSource>& source) {
     RemappableInput::addInputSource(source);

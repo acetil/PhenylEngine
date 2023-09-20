@@ -6,7 +6,7 @@
 
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 #define BUFFER_SIZE (2000 * 6)
 
@@ -31,7 +31,7 @@ private:
 public:
     UIPipelineInt (GraphicsTexture _fontTexture) : fontTexture{std::move(_fontTexture)} {}
     void init (Renderer* renderer) override {
-        textStage = renderer->buildPipelineStage(PipelineStageBuilder(common::Assets::Load<Shader>("resources/shaders/text"))
+        textStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("resources/shaders/text"))
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec3>(2));
@@ -44,7 +44,7 @@ public:
         textStage.bindBuffer(1, textUvBuffer);
         textStage.bindBuffer(2, textColourBuffer);
 
-        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(common::Assets::Load<Shader>("resources/shaders/box"))
+        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("resources/shaders/box"))
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec4>(2)
@@ -103,39 +103,39 @@ public:
     }
 };
 
-std::string graphics::UIRenderLayer::getName () {
+std::string UIRenderLayer::getName () {
     return "ui_layer";
 }
 
-int graphics::UIRenderLayer::getPriority () {
+int UIRenderLayer::getPriority () {
     return 3;
 }
 
-bool graphics::UIRenderLayer::isActive () {
+bool UIRenderLayer::isActive () {
     return true;
 }
 
-void graphics::UIRenderLayer::gatherData () {
+void UIRenderLayer::gatherData () {
 
 }
 
-void graphics::UIRenderLayer::preRender (graphics::Renderer* renderer) {
+void UIRenderLayer::preRender (graphics::Renderer* renderer) {
     pipeline->bufferData();
 }
 
-int graphics::UIRenderLayer::getUniformId (std::string uniformName) {
+int UIRenderLayer::getUniformId (std::string uniformName) {
     return 0;
 }
 
-void graphics::UIRenderLayer::applyUniform (int uniformId, void* data) {
+void UIRenderLayer::applyUniform (int uniformId, void* data) {
 
 }
 
-void graphics::UIRenderLayer::applyCamera (graphics::Camera camera) {
+void UIRenderLayer::applyCamera (graphics::Camera camera) {
 
 }
 
-void graphics::UIRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
+void UIRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
     /*textProgram.bind();
 
     fontTexture.bindTexture();
@@ -148,7 +148,7 @@ void graphics::UIRenderLayer::render (graphics::Renderer* renderer, graphics::Fr
     pipeline->render();
 }
 
-void graphics::UIRenderLayer::bufferStr (graphics::Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour) {
+void UIRenderLayer::bufferStr (graphics::Font& font, const std::string& text, int size, int x, int y, glm::vec3 colour) {
     //font.renderText(text, size, x, y, colour, textBuffer);
 }
 

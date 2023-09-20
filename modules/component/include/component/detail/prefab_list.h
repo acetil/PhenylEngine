@@ -5,7 +5,7 @@
 #include "component_set.h"
 #include "util/fl_vector.h"
 
-namespace component::detail {
+namespace phenyl::component::detail {
     struct PrefabEntry {
         std::size_t inherits{};
         std::size_t refCount{1};

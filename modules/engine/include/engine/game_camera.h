@@ -3,12 +3,12 @@
 #include "graphics/maths_headers.h"
 
 #ifndef CAMERA_H
-namespace graphics{
+namespace phenyl::graphics {
     class Camera;
 }
 #endif
 
-namespace game {
+namespace phenyl::game {
     class GameCamera {
     private:
         glm::vec2 currentPos{};

@@ -25,7 +25,7 @@
 #include "util/meta.h"
 #include "util/optional.h"
 
-namespace component {
+namespace phenyl::component {
     class Prefab;
     class PrefabBuilder;
 

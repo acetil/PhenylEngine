@@ -1,7 +1,7 @@
 #include "physics/components/2D/colliders/box_collider.h"
 #include "physics/2d/collisions_2d.h"
 
-using namespace physics;
+using namespace phenyl;
 
 static float calculateRadius (glm::mat2 scaleMatrix) {
     auto vec = scaleMatrix * glm::vec2{1, 1};
@@ -12,7 +12,7 @@ static inline float sqLength (glm::vec2 vec) {
     return glm::dot(vec, vec);
 }
 
-void BoxCollider2D::applyFrameTransform (glm::mat2 transform) {
+void physics::BoxCollider2D::applyFrameTransform (glm::mat2 transform) {
     frameTransform = transform * glm::mat2{{scale.x, 0.0f}, {0.0f, scale.y}};
 
     setOuterRadius(calculateRadius(frameTransform));
@@ -46,7 +46,7 @@ static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float 
     }
 }
 
-util::Optional<SATResult2D> BoxCollider2D::collide (const physics::BoxCollider2D& other) {
+util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const physics::BoxCollider2D& other) {
     auto disp = getDisplacement(other);
 
     glm::vec2 basisVecs[] = {
@@ -108,7 +108,7 @@ static inline glm::vec2 calcSegmentNormal (glm::vec2 start, glm::vec2 end) {
     return glm::normalize(glm::vec2{-dv.y, dv.x});
 }
 
-Face2D BoxCollider2D::getSignificantFace (glm::vec2 normal) {
+physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
     glm::vec2 boxPoints[] = {
             {1, 1}, {-1, 1}, {-1, -1}, {1, -1}
     };
@@ -150,43 +150,4 @@ Face2D BoxCollider2D::getSignificantFace (glm::vec2 normal) {
 
     return dot1 >= dot2 ? Face2D{.vertices={furthestVertex + getPosition(), vec1 + getPosition()}, .normal=norm1} : Face2D{.vertices={vec2 + getPosition(), furthestVertex + getPosition()}, .normal=norm2};
 
-}
-
-util::DataValue BoxCollider2D::serialise () const {
-    util::DataObject obj;
-    obj["Collider2D"] = ColliderComp2D::serialise();
-    obj["scale_matrix"] = glm::mat2{{scale.x, 0.0f}, {0.0f, scale.y}};
-
-    return obj;
-}
-
-bool BoxCollider2D::deserialise (const util::DataValue& val) {
-    if (!val.is<util::DataObject>()) {
-        return false;
-    }
-
-    const auto& obj = val.get<util::DataObject>();
-
-    if (!obj.contains("scale_matrix")) {
-        return false;
-    }
-
-    if (!obj.contains("Collider2D")) {
-        return false;
-    }
-
-    glm::mat2 scaleMatrix;
-    if (!phenyl_from_data(obj.at("scale_matrix"), scaleMatrix)) {
-        return false;
-    }
-
-
-
-    if (!ColliderComp2D::deserialise(obj.at("Collider2D"))) {
-        return false;
-    }
-
-    scale = {glm::length(scaleMatrix[0]), glm::length(scaleMatrix[1])};
-
-    return true;
 }

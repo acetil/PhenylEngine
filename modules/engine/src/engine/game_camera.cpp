@@ -2,7 +2,7 @@
 #include "graphics/camera.h"
 
 
-using namespace game;
+using namespace phenyl::game;
 
 void GameCamera::setPos (glm::vec2 pos) {
     targetPos = pos;

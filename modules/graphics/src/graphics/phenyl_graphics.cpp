@@ -5,7 +5,7 @@
 #include "graphics/graphics.h"
 #include "graphics/graphics_init.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 PhenylGraphicsHolder::PhenylGraphicsHolder () {
     GLFWwindow* window = nullptr;

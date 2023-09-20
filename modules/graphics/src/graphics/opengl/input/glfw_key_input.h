@@ -8,7 +8,7 @@
 #include "graphics/graphics_headers.h"
 #include "glfw_input.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class GLFWKeyInput : public common::InputSource {
     private:
         util::Map<std::string, long> keyMap{};

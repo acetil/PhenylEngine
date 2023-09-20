@@ -5,13 +5,13 @@
 #include "common/assets/asset.h"
 #include "engine/game_camera.h"
 
-namespace game {
+namespace test {
     struct Player {
-        common::Asset<component::Prefab> bulletPrefab;
+        phenyl::common::Asset<phenyl::component::Prefab> bulletPrefab;
         bool hasShot{false};
     };
 }
 
-void addPlayerComponents (component::ComponentManager& manager, component::EntitySerializer& serialiser);
-void inputSetup (game::GameInput& input);
-void playerUpdate (component::ComponentManager& manager, game::GameInput& input, game::GameCamera& camera);
+void addPlayerComponents (phenyl::component::ComponentManager& manager, phenyl::component::EntitySerializer& serialiser);
+void inputSetup (phenyl::game::GameInput& input);
+void playerUpdate (phenyl::component::ComponentManager& manager, phenyl::game::GameInput& input, phenyl::game::GameCamera& camera);

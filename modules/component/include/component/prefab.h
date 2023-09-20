@@ -2,7 +2,7 @@
 
 #include "component.h"
 
-namespace component {
+namespace phenyl::component {
     class Prefab {
     private:
         std::size_t id{0};

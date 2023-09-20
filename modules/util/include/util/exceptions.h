@@ -3,7 +3,7 @@
 #include <exception>
 #include <memory>
 
-namespace util {
+namespace phenyl::util {
     class InitException : std::runtime_error {
     public:
         explicit InitException (const std::string& error) noexcept :

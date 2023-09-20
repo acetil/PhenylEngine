@@ -2,7 +2,7 @@
 
 #include "glfw_mouse_input.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 long GLFWMouseInput::getInputNum (const std::string& inputStr) {
     if (buttonMap.contains(inputStr)) {

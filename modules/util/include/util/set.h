@@ -4,7 +4,7 @@
 #include <memory>
 #include <utility>
 
-namespace util {
+namespace phenyl::util {
     namespace detail {
         template <typename K>
         struct SetElement {

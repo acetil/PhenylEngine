@@ -7,7 +7,7 @@
 
 #define TEXT_GLYPH_SIZE 6
 
-namespace graphics {
+namespace phenyl::graphics {
     class RenderedText {
     private:
         std::unique_ptr<glm::vec2[]> posComp;

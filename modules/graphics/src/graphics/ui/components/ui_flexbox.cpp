@@ -2,7 +2,7 @@
 
 #include "logging/logging.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 void UIFlexbox::addUINode (std::shared_ptr<UIComponentNode> node, int index) {
     if (!node) {

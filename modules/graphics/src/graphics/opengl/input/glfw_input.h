@@ -5,7 +5,7 @@
 #include "common/input/input_source.h"
 #include "util/map.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     namespace detail {
         struct ButtonState;
     }

@@ -8,7 +8,7 @@
 #include "glyph_image.h"
 #include "graphics/renderers/renderer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class GlyphAtlas {
     private:
         unsigned char* data = nullptr;

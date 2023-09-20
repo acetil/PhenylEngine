@@ -19,7 +19,7 @@ namespace std {
 #include "detail/memory.h"
 //#include "meta.h"
 
-namespace util {
+namespace phenyl::util {
 #ifndef PHENYL_OPTIONAL_DECLARE
 #define PHENYL_OPTIONAL_DECLARE
     template <typename T, typename = void>

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace util {
+namespace phenyl::util {
     namespace detail {
         template <class T>
         struct SmartHelperDefs {

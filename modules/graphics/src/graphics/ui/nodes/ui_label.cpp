@@ -3,7 +3,7 @@
 #include <utility>
 #include "graphics/ui/ui_manager.h"
 
-using namespace graphics::ui;
+using namespace phenyl::graphics::ui;
 
 void UILabelNode::render (UIManager& uiManager) {
     if (doTextRender) {

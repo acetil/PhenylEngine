@@ -6,7 +6,7 @@
 #include "common/assets/asset.h"
 #include "common/serializer_intrusive.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class SpriteTexture;
 
     class Sprite2D {

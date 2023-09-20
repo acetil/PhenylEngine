@@ -3,7 +3,7 @@
 #include "ui_component.h"
 #include "graphics/ui/nodes/ui_flexbox.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UIFlexbox : public UIComponent<UIFlexBoxNode> {
     private:
         void addUINode (std::shared_ptr<UIComponentNode> node, int index);

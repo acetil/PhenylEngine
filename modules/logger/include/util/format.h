@@ -8,7 +8,7 @@
 #include <charconv>
 #include <iostream>
 
-namespace util {
+namespace phenyl::util {
     template <int len, int N = 0, typename T, typename ...Args>
     std::array<std::string, len> getStringsHelp (std::stringstream& sstream, T t, Args... args);
     inline std::string format (std::string formatStr) {

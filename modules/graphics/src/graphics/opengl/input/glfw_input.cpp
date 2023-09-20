@@ -3,9 +3,9 @@
 #include "graphics/graphics_headers.h"
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
-namespace graphics::detail {
+namespace phenyl::graphics::detail {
     struct ButtonState {
         std::size_t stateNum{};
         int code;

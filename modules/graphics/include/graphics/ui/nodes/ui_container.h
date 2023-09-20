@@ -2,7 +2,7 @@
 
 #include "ui_node.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
     class UIContainerNode : public UIComponentNode {
     private:
         std::size_t lockNum = 0;

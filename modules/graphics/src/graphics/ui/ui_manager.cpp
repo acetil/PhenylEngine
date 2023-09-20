@@ -10,10 +10,10 @@
 
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 
-graphics::UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(std::move(_fontManager)) {
+UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(std::move(_fontManager)) {
 
     auto f = Font(fontManager.getFace("noto-serif"), 128);
 

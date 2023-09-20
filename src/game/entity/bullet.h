@@ -2,10 +2,10 @@
 
 #include "component/forward.h"
 
-namespace game {
+namespace test {
     class Bullet {
 
     };
 
-    void addBulletSignals (component::ComponentManager& manager, component::EntitySerializer& serialiser);
+    void addBulletSignals (phenyl::component::ComponentManager& manager, phenyl::component::EntitySerializer& serialiser);
 }

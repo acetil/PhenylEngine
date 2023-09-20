@@ -2,6 +2,6 @@
 
 #include "ui_manager.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     void renderDebugUi (UIManager& manager, float deltaTime);
 }

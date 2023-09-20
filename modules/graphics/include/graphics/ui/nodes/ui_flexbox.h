@@ -6,7 +6,7 @@
 #include "ui_container.h"
 #include "graphics/ui/ui_defs.h"
 
-namespace graphics::ui {
+namespace phenyl::graphics::ui {
 
     namespace detail {
         struct FlexBoxItem;

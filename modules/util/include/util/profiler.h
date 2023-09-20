@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace util {
+namespace phenyl::util {
     void setProfilerTimingFunction (std::function<double(void)> timeFunc);
 
     void startProfileFrame ();

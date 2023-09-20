@@ -2,11 +2,7 @@
 
 #include <cstddef>
 
-namespace util {
-    class DataValue;
-}
-
-namespace component {
+namespace phenyl::component {
     class EntityId;
     class ComponentManager;
     class EntitySerializer;

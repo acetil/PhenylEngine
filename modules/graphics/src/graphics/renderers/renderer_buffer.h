@@ -2,7 +2,7 @@
 
 #include "graphics/renderers/buffer.h"
 
-namespace graphics {
+namespace phenyl::graphics {
     class RendererBufferHandle {
     public:
         virtual ~RendererBufferHandle() = default;

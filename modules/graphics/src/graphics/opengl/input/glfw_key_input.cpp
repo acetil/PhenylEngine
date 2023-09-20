@@ -2,6 +2,7 @@
 
 #include "glfw_key_input.h"
 
+using namespace phenyl;
 
 long graphics::GLFWKeyInput::getInputNum (const std::string& inputStr) {
     if (keyMap.contains(inputStr)) {

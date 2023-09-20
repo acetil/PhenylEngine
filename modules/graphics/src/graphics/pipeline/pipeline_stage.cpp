@@ -3,7 +3,7 @@
 #include <utility>
 #include "graphics/renderers/renderer_pipelinestage.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 PipelineStage::PipelineStage (common::Asset<Shader> _shader, std::unique_ptr<RendererPipelineStage> _internal) : shader{std::move(_shader)}, internal{std::move(_internal)} {
 

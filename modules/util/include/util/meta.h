@@ -5,7 +5,7 @@
 #include <tuple>
 #include <concepts>
 
-namespace meta {
+namespace phenyl::meta {
     template <typename T>
     using add_pointer = T*;
     template <typename T>

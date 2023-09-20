@@ -4,7 +4,7 @@
 #include "component.h"
 #include "prefab.h"
 
-namespace component {
+namespace phenyl::component {
     class ComponentSerializer {
     public:
         virtual ~ComponentSerializer() = default;

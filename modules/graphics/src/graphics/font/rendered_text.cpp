@@ -1,7 +1,7 @@
 #include "graphics/font/rendered_text.h"
 #include "logging/logging.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 static glm::vec2 screenToWindowSpace (glm::vec2 vec, glm::vec2 screenSize) {
     glm::vec2 pos = vec / screenSize * 2.0f - glm::vec2{1.0f, 1.0f};
@@ -65,15 +65,15 @@ void RenderedText::addGlyph (glm::vec2 topLeftPos, glm::vec2 size, glm::vec2 scr
     textLen++;
 }
 
-util::span<glm::vec2> RenderedText::getPosComp () const {
+phenyl::util::span<glm::vec2> RenderedText::getPosComp () const {
     return {posComp.get(), textLen * TEXT_GLYPH_SIZE};
 }
 
-util::span<glm::vec2> RenderedText::getUvComp () const {
+phenyl::util::span<glm::vec2> RenderedText::getUvComp () const {
     return {uvComp.get(), textLen * TEXT_GLYPH_SIZE};
 }
 
-util::span<glm::vec3> RenderedText::getColourComp () const {
+phenyl::util::span<glm::vec3> RenderedText::getColourComp () const {
     return {colourComp.get(), textLen * TEXT_GLYPH_SIZE};
 }
 

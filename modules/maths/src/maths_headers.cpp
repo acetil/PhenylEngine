@@ -2,6 +2,8 @@
 
 #include "util/data.h"
 
+using namespace phenyl;
+
 bool glm::phenyl_from_data (const util::DataValue& val, glm::vec2& v) {
     if (val.is<util::DataObject>()) {
         auto& obj = val.get<util::DataObject>();

@@ -2,7 +2,7 @@
 
 #include "graphics/textures/sprite_atlas.h"
 
-using namespace graphics;
+using namespace phenyl::graphics;
 
 SpriteTexture* SpriteAtlas::load (std::istream& data, std::size_t id) {
     assert(!sprites.contains(id));

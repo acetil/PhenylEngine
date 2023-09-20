@@ -1,10 +1,10 @@
 #pragma once
 
-namespace engine {
+namespace phenyl::engine {
     class PhenylEngine;
 }
 
-namespace game {
+namespace phenyl::game {
     class GameCamera;
     class GameInput;
     class Level;

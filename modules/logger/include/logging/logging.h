@@ -9,7 +9,7 @@
 #define LEVEL_FATAL 3
 #define LEVEL_DEBUG 4
 
-namespace component::logging {
+namespace phenyl::component::logging {
     //void log (int level, const char* log);
     void log (int level, const std::string& log);
     template<typename ...Args>
@@ -20,7 +20,7 @@ namespace component::logging {
     }
     //void logf (int level, const char* log, ...);
 }
-namespace event::logging {
+namespace phenyl::event::logging {
     //void log (int level, const char* log);
     void log (int level, const std::string& log);
     template<typename ...Args>
@@ -29,7 +29,7 @@ namespace event::logging {
     }
     //void logf (int level, const char* log, ...);
 }
-namespace game::logging {
+namespace phenyl::game::logging {
     //void log (int level, const char* log);
     void log (int level, const std::string& log);
     template<typename ...Args>
@@ -38,7 +38,7 @@ namespace game::logging {
     }
     //void logf (int level, const char* log, ...);
 }
-namespace graphics::logging {
+namespace phenyl::graphics::logging {
     //void log (int level, const char* log);
     void log (int level, const std::string& log);
     template<typename ...Args>
@@ -47,7 +47,7 @@ namespace graphics::logging {
     }
     //void logf (int level, const char* log, ...);
 }
-namespace physics::logging {
+namespace phenyl::physics::logging {
     //void log (int level, const char* log);
     void log (int level, const std::string& log);
     template<typename ...Args>
@@ -56,7 +56,7 @@ namespace physics::logging {
     }
     //void logf (int level, const char* log, ...);
 }
-namespace util::logging {
+namespace phenyl::util::logging {
     void log (int level, const std::string& log);
     template<typename ...Args>
     void log (int level, const std::string& logStr, Args... args) {
@@ -64,7 +64,7 @@ namespace util::logging {
     }
 }
 
-namespace common::logging {
+namespace phenyl::common::logging {
     void log (int level, const std::string& log);
     template<typename ...Args>
     void log (int level, const std::string& logStr, Args... args) {
@@ -72,7 +72,7 @@ namespace common::logging {
     }
 }
 
-namespace serializer::logging {
+namespace phenyl::serializer::logging {
     void log (int level, const std::string& log);
     template<typename ...Args>
     void log (int level, const std::string& logStr, Args... args) {
@@ -80,7 +80,7 @@ namespace serializer::logging {
     }
 }
 
-namespace logger {
+namespace phenyl::logger {
     void initLogger (const std::string& logfile);
     void initLogger ();
 
