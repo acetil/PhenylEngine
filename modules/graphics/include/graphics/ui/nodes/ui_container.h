@@ -10,6 +10,9 @@ namespace phenyl::graphics::ui {
     protected:
         void addChild (const std::shared_ptr<UIComponentNode>& childNode) {
             childNode->setParent(this);
+            if (getThemePtr()) {
+                childNode->applyTheme(getThemePtr());
+            }
         }
 
         virtual void destroyChild (UIComponentNode* childNode) = 0;

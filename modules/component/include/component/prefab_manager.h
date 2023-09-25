@@ -15,6 +15,8 @@ namespace phenyl::component {
         ~PrefabManager() override;
 
         Prefab* load (std::istream& data, std::size_t id) override;
+        Prefab* load (phenyl::component::Prefab&& obj, std::size_t id) override;
+
         void queueUnload(std::size_t id) override;
         [[nodiscard]] const char* getFileType () const override;
 

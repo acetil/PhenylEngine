@@ -18,6 +18,7 @@ namespace phenyl::graphics::ui {
         UIContainerNode* parent = nullptr;
         glm::vec2 mousePos{};
         ThemeProperties themeProperties;
+        Theme* theme = nullptr;
 
         bool dirty = false;
 
@@ -36,7 +37,11 @@ namespace phenyl::graphics::ui {
             return themeProperties;
         };
 
-        virtual void onThemeUpdate (Theme* theme) {
+        [[nodiscard]] Theme* getThemePtr () const {
+            return theme;
+        }
+
+        virtual void onThemeUpdate () {
 
         }
 
@@ -74,9 +79,10 @@ namespace phenyl::graphics::ui {
 
         }
 
-        void applyTheme (Theme* theme) {
+        void applyTheme (Theme* _theme) {
+            this->theme = _theme;
             themeProperties.applyTheme(theme);
-            onThemeUpdate(theme);
+            onThemeUpdate();
         }
 
         void queueDestroy ();

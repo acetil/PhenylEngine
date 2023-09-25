@@ -23,7 +23,7 @@ namespace phenyl::graphics::ui {
         bool onMousePress() override;
         void onMouseRelease() override;
 
-        void onThemeUpdate(Theme *theme) override;
+        void onThemeUpdate() override;
 
         void destroyChild(UIComponentNode *childNode) override;
     };

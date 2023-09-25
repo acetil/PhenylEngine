@@ -98,6 +98,11 @@ nlohmann::json LevelManager::dumpEntity (component::Entity entity) const {
     return json;
 }
 
+Level* LevelManager::load (Level&& obj, std::size_t id) {
+    levels[id] = std::make_unique<Level>(std::move(obj));
+    return levels[id].get();
+}
+
 Level::Level (component::ComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : manager{manager}, serializer{serializer}, entities{std::move(entities)} {}
 
 void Level::load (bool additive) {

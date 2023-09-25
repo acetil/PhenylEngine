@@ -19,8 +19,20 @@ find_package(nlohmann_json REQUIRED)
 
 set_property(TARGET graphics PROPERTY CXX_STANDARD 20)
 
+target_gen_embedded(graphics
+        resources/shaders/box_vertex.vert
+        resources/shaders/box_fragment.frag
+        resources/shaders/debug_vertex.vert
+        resources/shaders/debug_fragment.frag
+        resources/shaders/sprite_vertex.vert
+        resources/shaders/sprite_fragment.frag
+        resources/shaders/text_vertex.vert
+        resources/shaders/text_fragment.frag
+        resources/themes/default_theme.json)
+
 target_include_directories(graphics PUBLIC include)
 target_include_directories(graphics PRIVATE src)
+target_include_directories(graphics PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
 target_link_libraries(graphics PRIVATE logger)
 target_link_libraries(graphics PRIVATE component)

@@ -8,8 +8,8 @@ using namespace phenyl::graphics::ui;
 ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObject& classData, const std::string& classPrefix) : classId{std::move(_classId)},
     theme{_theme}, parent{nullptr} {
 
-    if (classData.contains("parentId")) {
-        parentId = theme->getAbsoluteId(classData.at("parentId").toString(), classPrefix);
+    if (classData.contains("parent")) {
+        parentId = theme->getAbsoluteId(classData.at("parent").toString(), classPrefix);
     } else {
         parentId = "default";
     }

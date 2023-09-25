@@ -153,6 +153,9 @@ void UIFlexBoxNode::render (graphics::UIManager& uiManager) {
         i.node->render(uiManager);
         uiManager.popOffset();
     }
+
+    updateLayout(); // TODO: update only when items update
+
     uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
     uiManager.renderRect({0,0}, componentMinSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
 }
@@ -313,7 +316,11 @@ void UIFlexBoxNode::alignChildren (const std::vector<UIAnchor>& anchors) {
     }
 }
 
-void UIFlexBoxNode::onThemeUpdate (Theme* theme) {
+void UIFlexBoxNode::onThemeUpdate () {
+    for (auto& i : children) {
+        i->applyTheme(getThemePtr());
+    }
+
     minSize = getTheme().getProperty<glm::vec2>("size")
             .orOpt([this] () {return getTheme().getProperty<glm::vec2>("min_size");})
             .orElse({0, 0});
@@ -329,9 +336,6 @@ void UIFlexBoxNode::onThemeUpdate (Theme* theme) {
     setAlign(getTheme().getProperty<FlexAlign>("align_items").orElse(FlexAlign::START));
     setJustify(getTheme().getProperty<FlexJustify>("justify_items").orElse(FlexJustify::NONE));
 
-    for (auto& i : children) {
-        i->applyTheme(theme);
-    }
     updateLayout();
 }
 

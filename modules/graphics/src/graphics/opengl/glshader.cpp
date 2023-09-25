@@ -9,13 +9,22 @@
 using namespace phenyl::graphics;
 
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath);
+static GLuint loadShaderSource (ShaderType shaderType, const std::string& shaderSource);
 static GLuint loadShader (GLuint shaderType, const std::string& shaderPath);
+static GLuint loadShaderSource (GLuint shaderType, const std::string& shaderSource);
 
 GLShaderProgram::GLShaderProgram (ShaderBuilder& builder) {
-
     auto spec = builder.build();
 
     initShaders(spec.shaderPaths);
+
+    for (auto [name, type] : spec.uniforms.kv()) {
+        uniformMap[name] = {glGetUniformLocation(programId, name.c_str()), type};
+    }
+}
+
+GLShaderProgram::GLShaderProgram (const ShaderSourceSpec& spec) {
+    initShaderSources(spec.shaderSources);
 
     for (auto [name, type] : spec.uniforms.kv()) {
         uniformMap[name] = {glGetUniformLocation(programId, name.c_str()), type};
@@ -27,6 +36,48 @@ void GLShaderProgram::initShaders (util::Map<ShaderType, std::string>& shaders) 
 
     for (auto [type, path] : shaders.kv()) {
         shaderIds.push_back(loadShader(type, path));
+    }
+
+    logging::log(LEVEL_INFO, "Linking shader program.");
+
+    programId = glCreateProgram();
+
+    for (auto& i : shaderIds) {
+        glAttachShader(programId, i);
+    }
+    //glAttachShader(programId, vertexId);
+    //glAttachShader(programId, fragmentId);
+    glLinkProgram(programId);
+    GLint result = GL_FALSE;
+    int infoLength;
+    glGetProgramiv(programId, GL_LINK_STATUS, &result);
+    glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
+    if (infoLength > 0) {
+        char* infoLog = new char[infoLength];
+        glGetProgramInfoLog(programId, infoLength, nullptr, infoLog);
+        logging::log(LEVEL_ERROR, infoLog);
+        delete[] infoLog;
+    }
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        logging::log(LEVEL_ERROR, "Shader error code {}", error);
+    }
+
+    //glDetachShader(programId, vertexId);
+    //glDetachShader(programId, fragmentId);
+
+    for (auto& i : shaderIds) {
+        glDetachShader(programId, i);
+        glDeleteShader(i);
+    }
+}
+
+void GLShaderProgram::initShaderSources (const phenyl::util::Map<ShaderType, std::string>& sources) {
+    std::vector<GLuint> shaderIds;
+
+    for (auto [type, path] : sources.kv()) {
+        shaderIds.push_back(loadShaderSource(type, path));
     }
 
     logging::log(LEVEL_INFO, "Linking shader program.");
@@ -99,12 +150,25 @@ GLShaderProgram::~GLShaderProgram () {
     glDeleteProgram(programId);
 }
 
+
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath) {
     switch (shaderType) {
         case ShaderType::VERTEX:
             return loadShader(GL_VERTEX_SHADER, shaderPath);
         case ShaderType::FRAGMENT:
             return loadShader(GL_FRAGMENT_SHADER, shaderPath);
+        default:
+            logging::log(LEVEL_ERROR, "Unimplemented shader type!");
+            return 0;
+    }
+}
+
+static GLuint loadShaderSource (ShaderType shaderType, const std::string& shaderSource) {
+    switch (shaderType) {
+        case ShaderType::VERTEX:
+            return loadShaderSource(GL_VERTEX_SHADER, shaderSource);
+        case ShaderType::FRAGMENT:
+            return loadShaderSource(GL_FRAGMENT_SHADER, shaderSource);
         default:
             logging::log(LEVEL_ERROR, "Unimplemented shader type!");
             return 0;
@@ -129,6 +193,26 @@ static GLuint loadShader (GLuint shaderType, const std::string& shaderPath) {
     int infolength;
     logging::log(LEVEL_DEBUG, "Compiling shader file at {}", shaderPath);
     const char* shaderSourcePtr = shaderCode.c_str();
+    glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
+    glCompileShader(shader);
+
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolength);
+    if (infolength > 0) {
+        char* errorMessage = new char[infolength];
+        glGetShaderInfoLog(shader, infolength, nullptr, errorMessage);
+        logging::log(LEVEL_ERROR, errorMessage);
+        delete[] errorMessage;
+    }
+    return shader;
+}
+
+static GLuint loadShaderSource (GLuint shaderType, const std::string& shaderSource) {
+    GLuint shader = glCreateShader(shaderType);
+    //shaderStream.open(shaderType, std::ios::in);
+    GLint result = GL_FALSE;
+    int infolength;
+    const char* shaderSourcePtr = shaderSource.c_str();
     glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
     glCompileShader(shader);
 
@@ -239,4 +323,9 @@ void GLShaderManager::queueUnload (std::size_t id) {
 
 void GLShaderManager::selfRegister () {
     common::Assets::AddManager(this);
+}
+
+Shader* GLShaderManager::load (Shader&& obj, std::size_t id) {
+    shaders[id] = std::make_unique<Shader>(std::move(obj));
+    return shaders[id].get();
 }

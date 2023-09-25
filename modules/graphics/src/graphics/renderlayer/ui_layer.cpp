@@ -31,7 +31,7 @@ private:
 public:
     UIPipelineInt (GraphicsTexture _fontTexture) : fontTexture{std::move(_fontTexture)} {}
     void init (Renderer* renderer) override {
-        textStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("resources/shaders/text"))
+        textStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("phenyl/shaders/text"))
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec3>(2));
@@ -44,7 +44,7 @@ public:
         textStage.bindBuffer(1, textUvBuffer);
         textStage.bindBuffer(2, textColourBuffer);
 
-        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("resources/shaders/box"))
+        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("phenyl/shaders/box"))
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec4>(2)

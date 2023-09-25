@@ -90,7 +90,7 @@ namespace phenyl::graphics {
         explicit DebugPipeline () {}
 
         void init (graphics::Renderer* renderer) override {
-            auto shader = common::Assets::Load<Shader>("resources/shaders/debug");
+            auto shader = common::Assets::Load<Shader>("phenyl/shaders/debug");
             boxPos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
             boxColour = renderer->makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
             linePos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);

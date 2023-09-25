@@ -18,14 +18,17 @@ namespace phenyl::graphics {
 
     class GLShaderProgram : public RendererShader, public util::SmartHelper<GLShaderProgram> {
     private:
-        GLuint programId;
+        GLuint programId{0};
         util::Map<std::string, GLUniform> uniformMap;
 
         void initShaders (util::Map<ShaderType, std::string>& shaders);
+        void initShaderSources (const util::Map<ShaderType, std::string>& sources);
+
         void applyUniform (GLUniform uniform, const unsigned char* uniformPtr);
 
     public:
         explicit GLShaderProgram (ShaderBuilder& builder);
+        explicit GLShaderProgram (const ShaderSourceSpec& spec);
         ~GLShaderProgram() override;
 
         void applyUniform(const std::string &uniformName, ShaderDataType uniformType, const unsigned char *uniformPtr) override;
@@ -38,6 +41,8 @@ namespace phenyl::graphics {
         GLRenderer* renderer;
     protected:
         Shader* load (std::istream &data, std::size_t id) override;
+        Shader* load (phenyl::graphics::Shader &&obj, std::size_t id) override;
+
         [[nodiscard]] const char* getFileType () const override;
         void queueUnload (std::size_t id) override;
     public:

@@ -27,13 +27,15 @@ void detail::Graphics::setupWindowCallbacks () {
 }
 
 detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager) : uiManager(renderer.get(), manager) {
+    this->renderer = std::move(renderer);
     this->deltaTime = 0;
-    this->lastTime = renderer->getCurrentTime();
+    this->lastTime = this->renderer->getCurrentTime();
 
-    this->renderLayer = std::make_shared<GraphicsRenderLayer>(renderer.get());
-    renderLayer->addRenderLayer(makeDebugLayer(renderer.get()));
+    this->renderer->loadDefaultShaders();
+    this->renderLayer = std::make_shared<GraphicsRenderLayer>(this->renderer.get());
+    renderLayer->addRenderLayer(makeDebugLayer(this->renderer.get()));
 
-    auto rendererSources = renderer->getInputSources();
+    auto rendererSources = this->renderer->getInputSources();
 
     for (auto& i : rendererSources) {
         inputSources.emplace_back(std::make_shared<common::ProxySource>(i));
@@ -41,7 +43,6 @@ detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& man
 
     uiManager.addProxyInputSources(inputSources);
     uiManager.setupInputActions();
-    this->renderer = std::move(renderer);
 }
 
 double detail::Graphics::getDeltaTime() const {
@@ -102,6 +103,7 @@ void detail::Graphics::deleteWindowCallbacks () {
 }
 
 std::vector<std::shared_ptr<phenyl::common::InputSource>> detail::Graphics::getInputSources () {
+    
     std::vector<std::shared_ptr<phenyl::common::InputSource>> proxies;
     for (auto& i : inputSources) {
         proxies.emplace_back(i->getProxy());
@@ -115,6 +117,7 @@ detail::Graphics::~Graphics () {
 }
 
 void detail::Graphics::updateUI () {
+    uiManager.setMousePos(renderer->getMousePos());
     uiManager.updateUI();
 }
 

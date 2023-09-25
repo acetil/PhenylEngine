@@ -38,6 +38,11 @@ namespace phenyl::graphics {
 
         glm::vec2 screenSize;
         glm::vec2 mousePos;
+
+        common::Asset<Shader> boxShader;
+        common::Asset<Shader> debugShader;
+        common::Asset<Shader> spriteShader;
+        common::Asset<Shader> textShader;
     protected:
         std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
 
@@ -79,6 +84,7 @@ namespace phenyl::graphics {
 
         void setupCallbacks () override;
 
+        bool mouseDown() const override;
         [[nodiscard]] glm::vec2 getScreenSize() const override;
         [[nodiscard]] glm::vec2 getMousePos() const override;
         void setScreenSize (glm::vec2 screenSize);
@@ -86,6 +92,7 @@ namespace phenyl::graphics {
         void invalidateWindowCallbacks () override;
 
         PipelineStage buildPipelineStage (PipelineStageBuilder& builder) override;
+        void loadDefaultShaders() override;
 
         std::shared_ptr<common::InputSource> getMouseInput() override;
 

@@ -54,3 +54,8 @@ const char* component::PrefabManager::getFileType () const {
 void component::PrefabManager::clear () {
     prefabs.clear();
 }
+
+component::Prefab* component::PrefabManager::load (component::Prefab&& obj, std::size_t id) {
+    prefabs[id] = std::make_unique<component::Prefab>(std::move(obj));
+    return prefabs[id].get();
+}

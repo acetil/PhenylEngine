@@ -11,6 +11,11 @@ bool detail::AssetManagerBase::OnUnloadUntyped (std::size_t typeIndex, std::size
     return Assets::UnloadAsset(typeIndex, id);
 }
 
+std::size_t detail::AssetManagerBase::onVirtualLoadUntyped (std::size_t typeIndex, const std::string& virtualPath,
+                                                            std::byte* data) {
+    return 0;
+}
+
 void detail::AssetBase::IncRefCount (std::size_t typeIndex, std::size_t id) {
     Assets::IncrementRefCount(typeIndex, id);
 }

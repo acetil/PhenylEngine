@@ -8,6 +8,8 @@
 #include "graphics/ui/themes/theme_class.h"
 #include "common/assets/assets.h"
 
+#include "resources/themes/default_theme.json.h"
+
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;
@@ -27,6 +29,8 @@ UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManag
 
     uiRoot = std::make_shared<ui::UIRootNode>();
     themeManager.selfRegister();
+    defaultTheme = common::Assets::LoadVirtual("phenyl/themes/default", ui::Theme{util::parseJson(EMBED_DEFAULT_THEME_JSON)});
+    setCurrentTheme(defaultTheme);
 }
 
 void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y) {
@@ -208,4 +212,10 @@ void UIThemeManager::queueUnload (std::size_t id) {
 
 void UIThemeManager::selfRegister () {
     common::Assets::AddManager(this);
+}
+
+ui::Theme* UIThemeManager::load (ui::Theme&& obj, std::size_t id) {
+    themes[id] = std::make_unique<ui::Theme>(std::move(obj));
+
+    return themes[id].get();
 }

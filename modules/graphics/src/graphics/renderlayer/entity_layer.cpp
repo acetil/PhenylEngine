@@ -22,7 +22,7 @@ namespace phenyl::graphics {
         EntityPipeline () = default;
 
         void init (Renderer* renderer) override {
-            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("resources/shaders/sprite"))
+            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("phenyl/shaders/sprite"))
                                                                .addVertexAttrib<glm::vec2>(0)
                                                                .addVertexAttrib<glm::vec2>(1));
                                                                //.addVertexAttrib<glm::vec2>(2)

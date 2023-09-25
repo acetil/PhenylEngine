@@ -26,7 +26,7 @@ namespace phenyl::graphics::ui {
         void setColour (glm::vec4 newColour);
         void setDebug (bool isDebug);
 
-        void onThemeUpdate(Theme *theme) override;
+        void onThemeUpdate() override;
 
         const std::string& getCurrentText ();
     };

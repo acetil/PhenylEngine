@@ -33,6 +33,8 @@ namespace phenyl::graphics {
 
     protected:
         SpriteTexture* load (std::istream &data, std::size_t id) override;
+        SpriteTexture* load (phenyl::graphics::SpriteTexture&& obj, std::size_t id) override;
+
         [[nodiscard]] const char* getFileType () const override;
         void queueUnload (std::size_t id) override;
         bool isBinary() const override;

@@ -189,6 +189,33 @@ namespace phenyl::common {
         }
 
         template <typename T>
+        Asset<T> virtualLoad (const std::string& path, T&& obj) {
+            if (!caches.contains(meta::type_index<T>())) {
+                logging::log(LEVEL_ERROR, "Attempted to load asset of unknown type!");
+                return Asset<T>{};
+            }
+
+            auto* cache = static_cast<detail::AssetCache<T>*>(caches.at(meta::type_index<T>()).get());
+            Asset<T> asset;
+            if ((asset = std::move(cache->getCached(path)))) {
+                logging::log(LEVEL_FATAL, "Attempted to virtual load an asset multiple times!", path);
+                assert(false);
+                return std::move(asset);
+            }
+
+            auto id = cache->addEntry(path);
+            T* ptr = cache->getManager()->load(std::forward<T>(obj), id);
+            if (!ptr) {
+                logging::log(LEVEL_ERROR, "Failed to load asset at \"{}\"!", path);
+                cache->forceRemoveEntry(id);
+                return Asset<T>{};
+            }
+            cache->putData(id, ptr);
+
+            return Asset<T>{id, ptr};
+        }
+
+        template <typename T>
         void addManager (AssetManager<T>* manager) {
             if (caches.contains(meta::type_index<T>())) {
                 logging::log(LEVEL_ERROR, "Attempted to add asset manager that has already been added!");
@@ -236,6 +263,11 @@ namespace phenyl::common {
         template <typename T>
         static Asset<T> Load (const std::string& path) {
             return GetInstance()->load<T>(path);
+        }
+
+        template <typename T>
+        static Asset<T> LoadVirtual (const std::string& virtualPath, T&& obj) {
+            return GetInstance()->virtualLoad(virtualPath, std::forward<T>(obj));
         }
 
         template <typename T>

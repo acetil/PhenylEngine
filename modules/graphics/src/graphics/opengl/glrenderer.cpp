@@ -7,6 +7,17 @@
 
 #include "glcallbacks.h"
 #include "util/profiler.h"
+#include "common/assets/assets.h"
+
+#include "resources/shaders/box_vertex.vert.h"
+#include "resources/shaders/box_fragment.frag.h"
+#include "resources/shaders/debug_vertex.vert.h"
+#include "resources/shaders/debug_fragment.frag.h"
+#include "resources/shaders/sprite_vertex.vert.h"
+#include "resources/shaders/sprite_fragment.frag.h"
+#include "resources/shaders/text_vertex.vert.h"
+#include "resources/shaders/text_fragment.frag.h"
+
 #include <vector>
 using namespace phenyl::graphics;
 GLRenderer::GLRenderer (GLFWwindow* window) : shaderManager{this} {
@@ -247,12 +258,47 @@ void GLRenderer::onMouseButtonChange (int button, int action, int mods) {
     mouseInput->onButtonChange(button, action, mods);
 }
 
+bool GLRenderer::mouseDown () const {
+    return mouseInput->getStateNum(GLFW_MOUSE_BUTTON_LEFT);
+}
+
 void GLRenderer::onMousePosChange (glm::vec2 newPos) {
     mousePos = newPos;
 }
 
 glm::vec2 GLRenderer::getMousePos () const {
     return mousePos;
+}
+
+void GLRenderer::loadDefaultShaders () {
+    logging::log(LEVEL_DEBUG, "Loading virtual box shader!");
+    boxShader = common::Assets::LoadVirtual("phenyl/shaders/box", Shader{std::make_shared<GLShaderProgram>(
+            ShaderSourceBuilder{EMBED_BOX_VERTEX_VERT, EMBED_BOX_FRAGMENT_FRAG}
+                    .addUniform<glm::vec2>("screenSize")
+                    .build()
+    )});
+
+    logging::log(LEVEL_DEBUG, "Loading virtual debug shader!");
+    debugShader = common::Assets::LoadVirtual("phenyl/shaders/debug", Shader{std::make_shared<GLShaderProgram>(
+            ShaderSourceBuilder{EMBED_DEBUG_VERTEX_VERT, EMBED_DEBUG_FRAGMENT_FRAG}
+                    .addUniform<glm::mat4>("camera")
+                    .addUniform<glm::mat4>("screenTransform")
+                    .build()
+    )});
+
+    logging::log(LEVEL_DEBUG, "Loading virtual sprite shader!");
+    spriteShader = common::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{std::make_shared<GLShaderProgram>(
+            ShaderSourceBuilder{EMBED_SPRITE_VERTEX_VERT, EMBED_SPRITE_FRAGMENT_FRAG}
+                    .addUniform<glm::mat4>("camera")
+                    .build()
+    )});
+
+    logging::log(LEVEL_DEBUG, "Loading virtual text shader!");
+    textShader = common::Assets::LoadVirtual("phenyl/shaders/text", Shader{std::make_shared<GLShaderProgram>(
+            ShaderSourceBuilder{EMBED_TEXT_VERTEX_VERT, EMBED_TEXT_FRAGMENT_FRAG}
+                    .addUniform<glm::mat4>("camera")
+                    .build()
+    )});
 }
 
 

@@ -43,6 +43,8 @@ class Font;
         util::Map<std::size_t, std::unique_ptr<ui::Theme>> themes;
     public:
         ui::Theme* load(std::istream &data, std::size_t id) override;
+        ui::Theme* load(phenyl::graphics::ui::Theme&& obj, std::size_t id) override;
+
         [[nodiscard]] const char* getFileType() const override;
         void queueUnload (std::size_t id) override;
 
@@ -63,6 +65,7 @@ class Font;
         std::shared_ptr<ui::UIRootNode> uiRoot;
 
         UIThemeManager themeManager;
+        common::Asset<ui::Theme> defaultTheme;
         common::Asset<ui::Theme> currentTheme;
 
         //std::vector<std::shared_ptr<common::ProxySource>> inputSources;

@@ -21,6 +21,9 @@ add_executable(${PROJECT_NAME} src/main.cpp src/util/debug_console.cpp
         src/game/test_app.h
         src/game/test_app.cpp)
 
+find_package(PythonInterp REQUIRED)
+include(include.cmake)
+
 target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/lib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)

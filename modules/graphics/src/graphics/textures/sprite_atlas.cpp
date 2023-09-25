@@ -65,4 +65,9 @@ SpriteAtlas::SpriteAtlas (Renderer* renderer) : atlas{renderer} {
     common::Assets::AddManager(this);
 }
 
+SpriteTexture* SpriteAtlas::load (SpriteTexture&& obj, std::size_t id) {
+    sprites[id] = std::make_unique<SpriteTexture>(std::move(obj));
+    return sprites[id].get();
+}
+
 

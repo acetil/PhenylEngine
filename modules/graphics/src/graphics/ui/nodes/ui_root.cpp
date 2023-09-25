@@ -18,6 +18,7 @@ UIAnchor UIRootNode::getAnchor () {
 }
 
 void UIRootNode::addChildNode (const std::shared_ptr<UIComponentNode>& child, glm::vec2 pos) {
+    addChild(child);
     auto anchor = child->getAnchor();
     // TODO: deal with anchor
 
@@ -32,7 +33,6 @@ void UIRootNode::addChildNode (const std::shared_ptr<UIComponentNode>& child, gl
 
     childNodes.emplace_back(pos, size, child);
     child->setSize(size);
-    addChild(child);
 }
 
 void UIRootNode::onMousePosChange (glm::vec2 oldMousePos) {
@@ -40,6 +40,7 @@ void UIRootNode::onMousePosChange (glm::vec2 oldMousePos) {
     for (auto& i : childNodes) {
         std::get<std::shared_ptr<UIComponentNode>>(i)->setMousePos(getMousePos() - std::get<0>(i));
     }
+    unlockChildDestruction();
 }
 
 bool UIRootNode::onMousePress () {
@@ -63,11 +64,11 @@ void UIRootNode::onMouseRelease () {
     unlockChildDestruction();
 }
 
-void UIRootNode::onThemeUpdate (Theme* theme) {
+void UIRootNode::onThemeUpdate () {
     lockChildDestruction();
     for (auto& i : childNodes) {
         auto& child = std::get<2>(i);
-        child->applyTheme(theme);
+        child->applyTheme(getThemePtr());
 
         auto anchor = child->getAnchor();
         // TODO: deal with anchor

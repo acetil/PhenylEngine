@@ -28,7 +28,6 @@ void test::TestApp::init () {
     uiManager().addUIComp(flexBoxC.detach(), {0, 100});
     uiManager().addUIComp(button4, {500, 300});
     uiManager().addUIComp(button5, {500, 385});
-    uiManager().setCurrentTheme(phenyl::common::Assets::Load<phenyl::graphics::ui::Theme>("resources/themes/default_theme"));
 
     stepAction = input().mapInput("debug_step", "key_f7");
     consoleAction = input().mapInput("debug_console", "key_f12");

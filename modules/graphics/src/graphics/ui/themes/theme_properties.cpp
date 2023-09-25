@@ -23,7 +23,7 @@ bool ThemeProperties::hasProperty (const std::string& propertyId) const {
 
 phenyl::util::Optional<const phenyl::util::DataValue&> ThemeProperties::getPropertyValue (const std::string& propertyId) const {
     if (!hasProperty(propertyId)) {
-        //logging::log(LEVEL_ERROR, "Property {} not in theme class {}!", propertyId, className);
+        logging::log(LEVEL_ERROR, "Property {} not in theme class {}!", propertyId, className);
         return util::NullOpt;
     }
 

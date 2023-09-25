@@ -21,6 +21,8 @@ namespace phenyl::game {
         [[nodiscard]] const char* getFileType() const override;
     protected:
         Level* load(std::istream &data, std::size_t id) override;
+        Level* load (phenyl::game::Level&& obj, std::size_t id) override;
+
         [[nodiscard]] nlohmann::json dumpEntity (component::Entity entity) const;
     public:
         LevelManager (component::ComponentManager* manager, component::EntitySerializer* serializer);

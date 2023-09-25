@@ -19,6 +19,8 @@ namespace phenyl::common {
 
             static bool OnUnloadUntyped (std::size_t typeIndex, std::size_t id);
 
+            static std::size_t onVirtualLoadUntyped (std::size_t typeIndex, const std::string& virtualPath, std::byte* data);
+
             friend class common::Assets;
             template <typename T>
             friend class common::AssetManager;
@@ -33,8 +35,13 @@ namespace phenyl::common {
         friend class Assets;
     protected:
         virtual T* load (std::istream& data, std::size_t id) = 0;
+        virtual T* load (T&& obj, std::size_t id) = 0;
         bool onUnload (std::size_t id) {
             return detail::AssetManagerBase::OnUnloadUntyped(meta::type_index<T>(), id);
+        }
+
+        std::size_t onVirtualLoad (const std::string& virtualPath, T* data) {
+            return onVirtualLoadUntyped(meta::type_index<T>(), virtualPath, (std::byte*)data);
         }
     };
 }

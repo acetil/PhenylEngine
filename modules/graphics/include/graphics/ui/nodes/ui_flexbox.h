@@ -67,7 +67,7 @@ namespace phenyl::graphics::ui {
         void onMousePosChange(glm::vec2 oldMousePos) override;
         bool onMousePress() override;
         void onMouseRelease() override;
-        void onThemeUpdate(Theme *theme) override;
+        void onThemeUpdate() override;
 
         bool isDirty () override;
      };

@@ -97,6 +97,11 @@ namespace phenyl::graphics {
         util::Map<std::string, ShaderDataType> uniforms;
     };
 
+    struct ShaderSourceSpec {
+        util::Map<ShaderType, std::string> shaderSources;
+        util::Map<std::string, ShaderDataType> uniforms;
+    };
+
 
     class ShaderBuilder {
     private:
@@ -125,6 +130,27 @@ namespace phenyl::graphics {
 
         ShaderSpec build () {
             return {std::move(shaderPaths), std::move(uniforms)};
+        }
+    };
+
+    class ShaderSourceBuilder {
+    private:
+        util::Map<ShaderType, std::string> shaderSources;
+        util::Map<std::string, ShaderDataType> uniforms;
+    public:
+        ShaderSourceBuilder (const std::string& vertexSource, const std::string& fragmentSource) {
+            shaderSources[ShaderType::VERTEX] = vertexSource;
+            shaderSources[ShaderType::FRAGMENT] = fragmentSource;
+        }
+
+        template <typename T>
+        ShaderSourceBuilder& addUniform (const std::string& uniform) {
+            uniforms[uniform] = getShaderDataType<T>();
+            return *this;
+        }
+
+        ShaderSourceSpec build () {
+            return {std::move(shaderSources), std::move(uniforms)};
         }
     };
 }

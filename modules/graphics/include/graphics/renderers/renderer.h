@@ -50,6 +50,7 @@ namespace phenyl::graphics {
 
         virtual void setupCallbacks () = 0;
 
+        virtual bool mouseDown () const = 0; // TODO
         [[nodiscard]] virtual glm::vec2 getMousePos () const = 0;
         [[nodiscard]] virtual glm::vec2 getScreenSize () const = 0;
 
@@ -60,6 +61,8 @@ namespace phenyl::graphics {
         virtual PipelineStage buildPipelineStage (PipelineStageBuilder& stageBuilder) = 0;
 
         virtual std::shared_ptr<common::InputSource> getMouseInput () = 0;
+
+        virtual void loadDefaultShaders () = 0;
 
         virtual std::vector<std::shared_ptr<common::InputSource>> getInputSources () = 0;
 
