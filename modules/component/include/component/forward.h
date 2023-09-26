@@ -6,7 +6,6 @@ namespace phenyl::component {
     class EntityId;
     class ComponentManager;
     class EntitySerializer;
-    class EntityComponentFactory;
 
     using EntityComponentManager = ComponentManager;
 
