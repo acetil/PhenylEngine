@@ -243,11 +243,10 @@ static void testCompManager () {
 };
 
 int main (int argv, char* argc[]) {
-    logger::initLogger();
+    phenyl::PhenylEngine engine;
     testCompManager();
 
     logger::log(LEVEL_DEBUG, "MAIN", "Started game!");
-    phenyl::PhenylEngine engine;
     engine.run<test::TestApp>();
 
     return EXIT_SUCCESS;

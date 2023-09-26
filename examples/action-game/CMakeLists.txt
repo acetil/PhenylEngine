@@ -9,16 +9,18 @@ add_executable(action-game src/main.cpp src/util/debug_console.cpp
 
 set_property(TARGET action-game PROPERTY CXX_STANDARD 20)
 
-file(GLOB_RECURSE resource_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/" "resources/*")
-foreach(resource_file ${resource_files})
-    add_custom_command(
-            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${resource_file}"
-            COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${resource_file}" "${CMAKE_CURRENT_BINARY_DIR}/${resource_file}"
-            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${resource_file}"
-    )
-    list(APPEND resource_files_dest "${resource_file}")
-endforeach()
-add_custom_target(CopyResources ALL DEPENDS ${resource_files_dest})
+target_copy_resources(action-game
+        resources/images/test/bullet2.png
+        resources/images/test/manBlue_gun.png
+        resources/images/test/test_texture.png
+        resources/images/test/test_wall.png
+        resources/levels/test_level.json
+        resources/prefabs/block_entity.json
+        resources/prefabs/bullet_entity.json
+        resources/prefabs/test_entity.json
+        resources/prefabs/wall_entity.json
+        resources/themes/alt_theme.json
+)
 
 target_include_directories(action-game PRIVATE src)
 target_link_libraries(action-game PRIVATE phenyl)

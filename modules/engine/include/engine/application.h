@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iosfwd>
+
 #include "component/forward.h"
 #include "forward.h"
 #include "graphics/ui/forward.h"

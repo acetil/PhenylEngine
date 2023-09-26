@@ -73,6 +73,7 @@ public:
 
 engine::PhenylEngine::PhenylEngine () {
     //internal = std::make_unique<engine::detail::Engine>();
+    logger::initLogger();
 }
 
 engine::PhenylEngine::~PhenylEngine () = default;
