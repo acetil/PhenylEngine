@@ -8,4 +8,6 @@ target_copy_resources(breakout
         resources/levels/main.json
         resources/prefabs/paddle.json
         resources/images/paddle.png
+        resources/images/test_wall.png
+        resources/prefabs/wall.json
 )

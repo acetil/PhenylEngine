@@ -7,8 +7,8 @@
           "y": -0.9
         },
         "scale": {
-          "x": 0.37890625,
-          "y": 0.1
+          "x": 0.189453125,
+          "y": 0.05
         },
         "rotation": 0.0
       }
@@ -25,7 +25,7 @@
         "x": 0.0,
         "y": 0.0
       },
-      "mass": 0.0,
+      "mass": 1.0,
       "inertial_moment": 0.0,
       "drag": 0,
       "angular_drag": 0,
@@ -33,18 +33,21 @@
     },
     "BoxCollider2D": {
       "Collider2D": {
-        "layers": 0,
+        "layers": 1,
         "mask": 0,
         "elasticity": 0.0
       },
       "scale" : {
-        "x" : 0.37890625,
-        "y" : 0.1
+        "x" : 0.189453125,
+        "y" : 0.05
       }
     },
     "Paddle" : {
       "has_ball" : true,
-      "speed" : 1.2
+      "speed" : 1.2,
+      "width" : 0.43,
+      "min_x" : -0.975,
+      "max_x" : 0.975
     }
   }
 }

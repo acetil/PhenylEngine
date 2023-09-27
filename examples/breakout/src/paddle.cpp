@@ -17,7 +17,7 @@ void breakout::initPaddle (phenyl::ComponentManager& manager, phenyl::ComponentS
 }
 
 void breakout::updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera) {
-    manager.query<phenyl::GlobalTransform2D, const Paddle>().each([&input, &camera, deltaTime] (auto entity, phenyl::GlobalTransform2D& transform, const Paddle& paddle) {
+    manager.query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, const Paddle>().each([&input, &camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, const Paddle& paddle) {
         glm::vec2 direction{};
         if (input.isDown(LeftKey)) {
             direction += glm::vec2{-1.0f, 0.0f};
@@ -27,6 +27,12 @@ void breakout::updatePaddle (float deltaTime, phenyl::ComponentManager& manager,
             direction += glm::vec2{1.0f, 0.0f};
         }
 
-        transform.transform2D.translate(direction * paddle.speed * deltaTime);
+        auto vel = direction * paddle.speed;
+        auto newPos = vel * deltaTime + transform.transform2D.position();
+
+        vel.x = (glm::clamp(newPos.x, paddle.minX + paddle.width / 2, paddle.maxX - paddle.width / 2) - transform.transform2D.position().x) / deltaTime;
+
+        //transform.transform2D.translate(direction * paddle.speed * deltaTime);
+        body.applyImpulse(vel * body.getMass() - body.getMomentum());
     });
 }
