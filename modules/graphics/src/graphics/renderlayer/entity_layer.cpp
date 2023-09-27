@@ -120,7 +120,7 @@ static void bufferPosData (const component::EntityComponentManager& manager, gra
     });*/
 
     static glm::vec2 vertices[] =  {
-            {-1.0f, -1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}
+            {-1.0f, 1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}
     };
 
     manager.query<common::GlobalTransform2D, graphics::Sprite2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const graphics::Sprite2D& sprite) {

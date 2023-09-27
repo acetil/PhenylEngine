@@ -1,0 +1,50 @@
+{
+  "components" : {
+    "GlobalTransform2D" : {
+      "transform": {
+        "position": {
+          "x": 0.7,
+          "y": -0.9
+        },
+        "scale": {
+          "x": 0.37890625,
+          "y": 0.1
+        },
+        "rotation": 0.0
+      }
+    },
+    "Sprite2D" : {
+      "texture" : "resources/images/paddle.png"
+    },
+    "RigidBody2D" : {
+      "momentum": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "gravity": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "mass": 0.0,
+      "inertial_moment": 0.0,
+      "drag": 0,
+      "angular_drag": 0,
+      "angular_momentum" : 0
+    },
+    "BoxCollider2D": {
+      "Collider2D": {
+        "layers": 0,
+        "mask": 0,
+        "elasticity": 0.0
+      },
+      "scale" : {
+        "x" : 0.37890625,
+        "y" : 0.1
+      }
+    },
+    "Paddle" : {
+      "has_ball" : true,
+      "speed" : 1.2
+    }
+  }
+}

@@ -1,4 +1,11 @@
 {
   "entities": [
+    {
+      "components" :
+      {
+
+      },
+      "prefab" : "resources/prefabs/paddle"
+    }
   ]
 }
