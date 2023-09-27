@@ -1,20 +1,21 @@
 {
-  "components" : {
+  "components" :
+  {
     "GlobalTransform2D" : {
       "transform": {
         "position": {
-          "x": 0.7,
-          "y": -0.9
+          "x": 0.0,
+          "y": 0.0
         },
         "scale": {
-          "x": 0.189453125,
-          "y": 0.05
+          "x": 0.03125,
+          "y": 0.03125
         },
         "rotation": 0.0
       }
     },
     "Sprite2D" : {
-      "texture" : "resources/images/paddle.png"
+      "texture" : "resources/images/ball.png"
     },
     "RigidBody2D" : {
       "momentum": {
@@ -25,7 +26,7 @@
         "x": 0.0,
         "y": 0.0
       },
-      "mass": 1.0,
+      "mass": 0.001,
       "inertial_moment": 0.0,
       "drag": 0,
       "angular_drag": 0,
@@ -33,23 +34,15 @@
     },
     "BoxCollider2D": {
       "Collider2D": {
-        "layers": 1,
-        "mask": 0,
+        "layers": 7,
+        "mask": 7,
         "elasticity": 1.0
       },
       "scale" : {
-        "x" : 0.189453125,
-        "y" : 0.05
+        "x" : 0.03125,
+        "y" : 0.03125
       }
     },
-    "Paddle" : {
-      "has_ball" : true,
-      "speed" : 1.4,
-      "width" : 0.43,
-      "min_x" : -0.975,
-      "max_x" : 0.975,
-      "ball_prefab" : "resources/prefabs/ball",
-      "ball_speed" : 1.5
-    }
+    "Ball" : {}
   }
 }

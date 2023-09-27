@@ -27,7 +27,7 @@
           "Collider2D": {
             "layers": 2,
             "mask": 0,
-            "elasticity": 0.0
+            "elasticity": 1.0
           },
           "scale" : {
             "x" : 0.05,
@@ -57,7 +57,7 @@
           "Collider2D": {
             "layers": 2,
             "mask": 0,
-            "elasticity": 0.0
+            "elasticity": 1.0
           },
           "scale" : {
             "x" : 0.05,
@@ -87,7 +87,7 @@
           "Collider2D": {
             "layers": 2,
             "mask": 0,
-            "elasticity": 0.0
+            "elasticity": 1.0
           },
           "scale" : {
             "x" : 1.0,
@@ -130,9 +130,9 @@
         },
         "BoxCollider2D": {
           "Collider2D": {
-            "layers": 2,
-            "mask": 0,
-            "elasticity": 0.0
+            "layers": 4,
+            "mask": 4,
+            "elasticity": 1.0
           },
           "scale" : {
             "x" : 1.0,

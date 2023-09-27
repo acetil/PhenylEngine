@@ -203,13 +203,14 @@ namespace phenyl::component {
         }
 
         template <typename ...Args, meta::callable<void, Args&...> F>
-        void apply (F fn) {
+        Entity& apply (F fn) {
             if (!exists()) {
                 logging::log(LEVEL_ERROR, "Attempted to apply on invalid entity {}!", entityId.value());
-                return;
+                return *this;
             }
 
             compManager->_apply<Args...>(fn, entityId);
+            return *this;
         }
 
         template <typename Signal>

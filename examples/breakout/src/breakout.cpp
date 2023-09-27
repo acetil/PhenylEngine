@@ -2,6 +2,7 @@
 #include <phenyl/component.h>
 #include <phenyl/level.h>
 
+#include "ball.h"
 #include "breakout.h"
 #include "paddle.h"
 
@@ -15,6 +16,8 @@ void BreakoutApp::init () {
     //componentManager().addComponent<Paddle>();
     //serializer().addSerializer<Paddle>();
     breakout::initPaddle(componentManager(), serializer(), input());
+    breakout::initBall(componentManager(), serializer());
+
     phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
     this->setDebugRender(true);
 }
