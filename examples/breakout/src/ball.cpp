@@ -10,7 +10,7 @@ void breakout::initBall (phenyl::ComponentManager& manager, phenyl::ComponentSer
     manager.addComponent<Ball>();
     serializer.addSerializer<Ball>();
 
-    manager.handleSignal<phenyl::signals::OnCollision, Ball>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Ball&) {
+    manager.handleSignal<phenyl::signals::OnCollision, const Ball>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Ball&) {
         if (signal.collisionLayers & FLOOR_LAYER) {
             entity.remove();
         }

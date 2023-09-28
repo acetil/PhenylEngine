@@ -2,6 +2,7 @@
 
 #include "common/serializer.h"
 #include "physics/components/2D/collider_serialize.h"
+#include "common/maths/glm_serializer.h"
 #include "box_collider.h"
 
 namespace phenyl::physics {

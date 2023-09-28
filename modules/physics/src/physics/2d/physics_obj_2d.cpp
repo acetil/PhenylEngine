@@ -69,6 +69,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
 
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
     std::vector<Constraint2D> constraints;
+    compManager.deferSignals();
     compManager.query<BoxCollider2D>().pairs([&constraints, &events, deltaTime] (component::QueryBundle<BoxCollider2D> boxBundle1, component::QueryBundle<BoxCollider2D> boxBundle2) {
         //auto [info1, box1] = boxBundle1;
         //auto [info2, box2] = boxBundle2;
@@ -104,6 +105,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     });
 
     solveConstraints(constraints, compManager);
+    compManager.deferSignalsEnd();
 
     /*for (const auto& [id1, id2, layers] : events) {
         //eventBus->raise(event::EntityCollisionEvent{compManager.entity(id1), compManager.entity(id2), layers, compManager, eventBus, gameView});

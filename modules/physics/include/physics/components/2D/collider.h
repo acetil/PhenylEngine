@@ -8,7 +8,7 @@ namespace phenyl::physics {
 
     class Collider2D {
     private:
-        glm::vec2 currentPos = {0, 0};
+        //glm::vec2 currentPos = {0, 0};
 
         float invMass{1.0f};
         float invInertiaMoment{1.0f};
@@ -57,6 +57,7 @@ namespace phenyl::physics {
 
         [[nodiscard]] bool shouldCollide (const Collider2D& other) const;
     public:
+        glm::vec2 currentPos = {0, 0};
         std::uint64_t layers = 0;
         std::uint64_t mask = 0;
         float elasticity{0.0f};

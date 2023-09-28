@@ -149,6 +149,9 @@ bool ComponentSet::deleteComp (EntityId id) {
         auto movedId = ids[dataSize - 1];
         ids[compIndex] = movedId;
         metadataSet[movedId.id - 1].move(compIndex, compPtr);
+        if (parent) {
+            parent->onChildRelocate(movedId, compPtr);
+        }
 
         if (dataSize < allSize) {
             auto oldEndPtr = data.get() + compSize * (allSize - 1);
@@ -412,6 +415,9 @@ void ComponentSet::deactivate (component::EntityId id) {
         ids[oldIndex] = movedId;
 
         metadataSet[movedId.id - 1].move(oldIndex, oldPtr);
+        if (parent) {
+            parent->onChildRelocate(movedId, oldPtr);
+        }
         metadataSet[id.id - 1].move(dataSize - 1, nullptr);
     }
 
