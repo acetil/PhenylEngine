@@ -8,8 +8,8 @@
           "y": 0.0
         },
         "scale": {
-          "x": 0.09,
-          "y": 0.03
+          "x": 0.12,
+          "y": 0.04
         },
         "rotation": 0.0
       }
@@ -35,17 +35,19 @@
     "BoxCollider2D": {
       "Collider2D": {
         "layers": 8,
-        "mask": 8,
+        "mask": 4,
         "elasticity": 1.0
       },
       "scale" : {
-        "x" : 0.09,
-        "y" : 0.03
+        "x" : 0.12,
+        "y" : 0.04
       }
     },
     "Tile" : {
       "points" : 10,
-      "health" : 1
+      "health" : 1,
+      "width" : 0.12,
+      "height" : 0.04
     }
   }
 }

@@ -43,6 +43,9 @@
         "y" : 0.03125
       }
     },
-    "Ball" : {}
+    "Ball" : {
+      "max_speed" : 3.5,
+      "applied_drag" : 0.7
+    }
   }
 }

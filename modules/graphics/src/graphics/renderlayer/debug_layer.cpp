@@ -3,7 +3,7 @@
 #include "graphics/pipeline/pipeline.h"
 #include "common/assets/assets.h"
 
-#define STARTING_BUFFER_SIZE 256
+#define STARTING_BUFFER_SIZE 2048
 
 using namespace phenyl::graphics;
 

@@ -3,8 +3,8 @@
 #include "graphics/components/2d/sprite.h"
 #include "common/assets/assets.h"
 
-
-#define BUFFER_SIZE (100 * 2 * 6)
+#define MAX_ENTITIES 512
+#define BUFFER_SIZE (MAX_ENTITIES * 2 * 6)
 
 using namespace phenyl;
 

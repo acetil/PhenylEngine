@@ -140,26 +140,6 @@
           }
         }
       }
-    },
-    {
-      "components" :
-      {
-        "GlobalTransform2D" :
-        {
-          "transform": {
-            "position": {
-              "x": -0.5,
-              "y": 0.5
-            },
-            "scale": {
-              "x": 0.09,
-              "y": 0.03
-            },
-            "rotation": 0.0
-          }
-        }
-      },
-      "prefab" : "resources/prefabs/tile"
     }
   ]
 }
