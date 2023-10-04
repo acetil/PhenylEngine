@@ -8,6 +8,7 @@
 
 #include "player.h"
 #include "serializers.h"
+#include "game/test_app.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 7.5f
@@ -26,10 +27,8 @@ static phenyl::InputAction KeyShoot;
 static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input,
                           phenyl::GameCamera& camera);
 
-void addPlayerComponents (phenyl::ComponentManager& manager, phenyl::ComponentSerializer& serialiser) {
-    manager.addComponent<test::Player>();
-
-    serialiser.addSerializer<test::Player>();
+void addPlayerComponents (test::TestApp* app) {
+    app->addComponent<test::Player>();
 }
 
 void inputSetup (phenyl::GameInput& input) {

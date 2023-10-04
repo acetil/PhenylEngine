@@ -28,9 +28,9 @@ BreakoutApp::BreakoutApp () : pointsLabel{"label"} {}
 void BreakoutApp::init () {
     //componentManager().addComponent<Paddle>();
     //serializer().addSerializer<Paddle>();
-    breakout::initPaddle(componentManager(), serializer(), input());
-    breakout::initBall(componentManager(), serializer());
-    breakout::initTile(componentManager(), serializer(), this);
+    breakout::initPaddle(this, input());
+    breakout::initBall(this, componentManager());
+    breakout::initTile(this, componentManager());
 
     tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
 

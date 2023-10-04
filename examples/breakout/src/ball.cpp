@@ -2,14 +2,14 @@
 #include <phenyl/signals/physics.h>
 
 #include "ball.h"
+#include "breakout.h"
 
 static constexpr std::uint32_t FLOOR_LAYER = 1 << 2;
 
 using namespace breakout;
 
-void breakout::initBall (phenyl::ComponentManager& manager, phenyl::ComponentSerializer& serializer) {
-    manager.addComponent<Ball>();
-    serializer.addSerializer<Ball>();
+void breakout::initBall (BreakoutApp* app, phenyl::ComponentManager& manager) {
+    app->addComponent<Ball>();
 
     manager.handleSignal<phenyl::signals::OnCollision, const Ball>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Ball&) {
         if (signal.collisionLayers & FLOOR_LAYER) {

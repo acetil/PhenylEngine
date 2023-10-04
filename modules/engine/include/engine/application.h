@@ -6,6 +6,9 @@
 #include "forward.h"
 #include "graphics/ui/forward.h"
 
+#include "component/component.h"
+#include "component/component_serializer.h"
+
 namespace phenyl::engine {
     namespace detail {
         class Engine;
@@ -19,9 +22,9 @@ namespace phenyl::engine {
 
         friend class PhenylEngine;
         friend class detail::Engine;
+        component::EntitySerializer& serializer ();
     protected:
         component::ComponentManager& componentManager ();
-        component::EntitySerializer& serializer ();
         game::GameCamera& camera ();
         game::GameInput& input ();
         graphics::UIManager& uiManager ();
@@ -42,5 +45,16 @@ namespace phenyl::engine {
 
         void pause ();
         void resume ();
+
+        template <phenyl::common::CustomSerializable T>
+        void addComponent () {
+            componentManager().template addComponent<T>();
+            serializer().template addSerializer<T>();
+        };
+
+        template <typename T>
+        void addUnserializedComponent () {
+            componentManager().template addComponent<T>();
+        }
     };
 }

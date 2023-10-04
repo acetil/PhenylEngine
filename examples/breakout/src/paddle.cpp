@@ -2,6 +2,7 @@
 #include <phenyl/components/physics/2D/rigid_body.h>
 
 #include "paddle.h"
+#include "breakout.h"
 
 using namespace breakout;
 
@@ -10,9 +11,8 @@ static phenyl::InputAction RightKey;
 
 static phenyl::InputAction BallShoot;
 
-void breakout::initPaddle (phenyl::ComponentManager& manager, phenyl::ComponentSerializer& serializer, phenyl::GameInput& input) {
-    manager.addComponent<Paddle>();
-    serializer.addSerializer<Paddle>();
+void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input) {
+    app->addComponent<Paddle>();
 
     LeftKey = input.mapInput("move_left", "key_a");
     RightKey = input.mapInput("move_right", "key_d");

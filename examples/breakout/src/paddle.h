@@ -10,6 +10,7 @@
 #include <phenyl/serialization.h>
 
 namespace breakout {
+    class BreakoutApp;
     struct Paddle {
         bool hasBall = true;
         float speed = 1.0f;
@@ -32,7 +33,7 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(ballSpeed, "ball_speed");
     })
 
-    void initPaddle (phenyl::ComponentManager& manager, phenyl::ComponentSerializer& serializer, phenyl::GameInput& input);
+    void initPaddle (BreakoutApp* app, phenyl::GameInput& input);
 
     void updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera);
 }

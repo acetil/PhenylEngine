@@ -4,6 +4,8 @@
 #include <phenyl/serialization.h>
 
 namespace breakout {
+    class BreakoutApp;
+
     struct Ball {
         float maxSpeed = 1.0f;
         float appliedDrag = 0.3;
@@ -14,6 +16,6 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(appliedDrag, "applied_drag");
     })
 
-    void initBall (phenyl::ComponentManager& manager, phenyl::ComponentSerializer& serializer);
+    void initBall (BreakoutApp* app, phenyl::ComponentManager& manager);
     void updateBall (phenyl::ComponentManager& manager);
 }

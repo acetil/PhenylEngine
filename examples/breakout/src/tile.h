@@ -16,5 +16,5 @@ namespace breakout {
         PHENYL_MEMBER(health);
     })
 
-    void initTile (phenyl::ComponentManager& componentManager, phenyl::ComponentSerializer& serializer, BreakoutApp* app);
+    void initTile (breakout::BreakoutApp* app, phenyl::ComponentManager& componentManager);
 }

@@ -10,8 +10,8 @@
 test::TestApp::TestApp () = default;
 
 void test::TestApp::init () {
-    addBulletSignals(componentManager(), serializer());
-    addPlayerComponents(componentManager(), serializer());
+    addBulletSignals(this, componentManager());
+    addPlayerComponents(this);
 
     inputSetup(input());
 
