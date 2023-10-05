@@ -1,0 +1,37 @@
+{
+  "components" :
+  {
+    "GlobalTransform2D" :
+    {
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "scale": {
+          "x": 0.1,
+          "y": 0.1
+        },
+        "rotation": 0.0
+      }
+    },
+    "ParticleEmitter2D" :
+    {
+      "system" : "resources/particles/test_system",
+      "direction" :
+      {
+        "x" : -1,
+        "y" : 0
+      },
+      "duration" : 1.0,
+      "explosiveness" : 0.9,
+      "num_particles" : 8,
+      "one_shot" : true,
+      "enabled" : true
+    },
+    "TimedLifetime" :
+    {
+      "lifetime" : 0.6
+    }
+  }
+}

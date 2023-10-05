@@ -11,6 +11,9 @@ add_library(common include/common include/common/input/input_source.h include/co
         include/common/assets/forward.h
         src/common/assets/assets.cpp
         include/common/assets/asset_serializer.h
+        include/common/components/timed_lifetime.h
+        include/common/components/timed_lifetime_serialize.h
+        src/common/components/timed_lifetime.cpp
 )
 
 find_package(nlohmann_json REQUIRED)
@@ -24,4 +27,4 @@ target_include_directories(common PRIVATE src)
 #target_link_libraries(common PRIVATE logger maths eventbus)
 #target_link_libraries(common PUBLIC util)
 target_link_libraries(common PUBLIC maths util nlohmann_json::nlohmann_json)
-target_link_libraries(common PRIVATE logger graphics)
+target_link_libraries(common PRIVATE logger graphics component)

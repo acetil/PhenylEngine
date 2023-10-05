@@ -5,7 +5,16 @@ add_library(graphics src/graphics/graphics.cpp src/graphics/font/font.cpp src/gr
         include/graphics/components/2d/sprite.h
         include/graphics/components/2d/sprite_serialization.h
         src/graphics/textures/sprite_atlas.cpp
-        include/graphics/ui/forward.h)
+        include/graphics/ui/forward.h
+        include/graphics/particles/particle_system_2d.h
+        src/graphics/particles/particle_system_2d.cpp
+        src/graphics/renderlayer/particle_layer.h
+        src/graphics/renderlayer/particle_layer.cpp
+        include/graphics/particles/particle_manager.h
+        src/graphics/particles/particle_manager.cpp
+        include/graphics/components/2d/particle_emitter.h
+        src/graphics/particles/particle_emitter_2d.cpp
+        include/graphics/components/2d/particle_emitter_serialization.h)
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
 
@@ -28,6 +37,8 @@ target_gen_embedded(graphics
         resources/shaders/sprite_fragment.frag
         resources/shaders/text_vertex.vert
         resources/shaders/text_fragment.frag
+        resources/shaders/particle_vertex.vert
+        resources/shaders/particle_fragment.frag
         resources/themes/default_theme.json)
 
 target_include_directories(graphics PUBLIC include)

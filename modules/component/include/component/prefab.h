@@ -49,7 +49,7 @@ namespace phenyl::component {
                 if (prefabId) {
                     entity.manager().prefabs.instantiate(entity, prefabId);
                 }
-                entity.manager().deferSignalsEnd();
+                //entity.manager().deferSignalsEnd();
                 return entity;
             }
         };
@@ -97,12 +97,12 @@ namespace phenyl::component {
         }
 
         [[nodiscard]] Instantiator instantiate (Entity parent) const {
-            manager->deferSignals();
+            //manager->deferSignals();
             return Instantiator{parent.createChild(), id};
         }
 
         [[nodiscard]] Instantiator instantiate () const {
-            manager->deferSignals();
+            //manager->deferSignals();
             return Instantiator{manager->create(), id};
         }
 

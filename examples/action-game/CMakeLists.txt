@@ -8,6 +8,7 @@ add_executable(action-game src/main.cpp src/util/debug_console.cpp
         src/game/test_app.cpp)
 
 set_property(TARGET action-game PROPERTY CXX_STANDARD 20)
+target_compile_options(action-game PRIVATE "-g")
 
 file(GLOB_RECURSE resource_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/" "resources/*")
 foreach(resource_file ${resource_files})

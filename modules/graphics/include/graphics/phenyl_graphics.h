@@ -52,6 +52,7 @@ namespace phenyl::graphics {
             return getGraphics();
         }
         void updateUI ();
+        void frameUpdate (component::ComponentManager& componentManager);
 
         void addComponentSerializers (component::EntitySerializer& serialiser);
     };
