@@ -44,7 +44,7 @@
     },
     "Paddle" : {
       "has_ball" : true,
-      "speed" : 1.4,
+      "speed" : 1.8,
       "width" : 0.43,
       "min_x" : -0.975,
       "max_x" : 0.975,

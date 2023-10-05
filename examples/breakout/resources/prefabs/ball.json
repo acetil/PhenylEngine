@@ -36,7 +36,7 @@
       "Collider2D": {
         "layers": 15,
         "mask": 15,
-        "elasticity": 1.0
+        "elasticity": 0.95
       },
       "scale" : {
         "x" : 0.03125,

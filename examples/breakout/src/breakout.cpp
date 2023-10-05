@@ -13,6 +13,7 @@
 
 static constexpr std::size_t TileRows = 8;
 static constexpr std::size_t TileCols = 7;
+static constexpr std::size_t Lives = 4;
 
 static constexpr float TileWidth = 0.12f * 2;
 static constexpr float TileHeight = 0.04f * 2;
@@ -23,7 +24,9 @@ static constexpr float YStart = 1.0f - 0.075f - TileHeight / 2;
 
 using namespace breakout;
 
-BreakoutApp::BreakoutApp () : pointsLabel{"label"} {}
+BreakoutApp::BreakoutApp () : pointsLabel{"label"}, livesLabel{"label"} {
+    lives = Lives;
+}
 
 void BreakoutApp::init () {
     //componentManager().addComponent<Paddle>();
@@ -35,8 +38,10 @@ void BreakoutApp::init () {
     tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
 
     pointsLabel.text = "Points: 0";
+    livesLabel.text = "Lives: " + std::to_string(lives);
 
-    uiManager().addUIComp(pointsLabel, {180, 20});
+    uiManager().addUIComp(pointsLabel, {180, 30});
+    uiManager().addUIComp(livesLabel, {280, 30});
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
 
@@ -69,5 +74,16 @@ void BreakoutApp::addPoints (int points) {
         phenyl::ui::Label winLabel{"big_label"};
         winLabel.text = "You Win!";
         uiManager().addUIComp(winLabel.detach(), {240, 250});
+        pause();
+    }
+}
+
+void BreakoutApp::subtractLife () {
+    livesLabel.text = "Lives: " + std::to_string(lives - 1);
+    if (!--lives) {
+        phenyl::ui::Label loseLabel{"big_label"};
+        loseLabel.text = "You Lose!";
+        uiManager().addUIComp(loseLabel.detach(), {240, 250});
+        pause();
     }
 }

@@ -11,9 +11,10 @@ using namespace breakout;
 void breakout::initBall (BreakoutApp* app, phenyl::ComponentManager& manager) {
     app->addComponent<Ball>();
 
-    manager.handleSignal<phenyl::signals::OnCollision, const Ball>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Ball&) {
+    manager.handleSignal<phenyl::signals::OnCollision, const Ball>([app] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Ball&) {
         if (signal.collisionLayers & FLOOR_LAYER) {
             entity.remove();
+            app->subtractLife();
         }
     });
 }

@@ -9,7 +9,9 @@ namespace breakout {
     class BreakoutApp : public phenyl::Application {
     private:
         int totalPoints = 0;
+        int lives;
         phenyl::ui::Label pointsLabel;
+        phenyl::ui::Label livesLabel;
         phenyl::Asset<phenyl::Prefab> tilePrefab;
 
         void init () override;
@@ -22,5 +24,6 @@ namespace breakout {
         BreakoutApp ();
 
         void addPoints (int points);
+        void subtractLife ();
     };
 }
