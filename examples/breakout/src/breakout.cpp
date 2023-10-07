@@ -10,6 +10,7 @@
 #include "breakout.h"
 #include "paddle.h"
 #include "tile.h"
+#include "wall.h"
 
 static constexpr std::size_t TileRows = 8;
 static constexpr std::size_t TileCols = 7;
@@ -31,9 +32,10 @@ BreakoutApp::BreakoutApp () : pointsLabel{"label"}, livesLabel{"label"} {
 void BreakoutApp::init () {
     //componentManager().addComponent<Paddle>();
     //serializer().addSerializer<Paddle>();
-    breakout::initPaddle(this, input());
+    breakout::initPaddle(this, input(), componentManager());
     breakout::initBall(this, componentManager());
     breakout::initTile(this, componentManager());
+    breakout::initWall(this, componentManager());
 
     tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
 

@@ -1,7 +1,9 @@
 add_executable(breakout src/main.cpp src/breakout.cpp
         src/paddle.cpp
         src/ball.cpp
-        src/tile.cpp)
+        src/tile.cpp
+        src/wall.h
+        src/wall.cpp)
 
 set_property(TARGET breakout PROPERTY CXX_STANDARD 20)
 
@@ -16,4 +18,10 @@ target_copy_resources(breakout
         resources/images/ball.png
         resources/prefabs/tile.json
         resources/images/tile_1.png
+        resources/prefabs/paddle_collision_emitter.json
+        resources/particles/paddle_collision.json
+        resources/prefabs/wall_collision_emitter.json
+        resources/particles/wall_collision.json
+        resources/prefabs/tile_collision_emitter.json
+        resources/particles/tile_break.json
 )

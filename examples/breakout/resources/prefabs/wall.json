@@ -18,6 +18,9 @@
       "drag": 0,
       "angular_drag": 0,
       "angular_momentum" : 0
+    },
+    "Wall" : {
+      "emitter" : "resources/prefabs/wall_collision_emitter"
     }
   }
 }

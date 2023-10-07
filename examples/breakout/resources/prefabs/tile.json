@@ -47,7 +47,8 @@
       "points" : 10,
       "health" : 1,
       "width" : 0.12,
-      "height" : 0.04
+      "height" : 0.04,
+      "emitter" : "resources/prefabs/tile_collision_emitter"
     }
   }
 }

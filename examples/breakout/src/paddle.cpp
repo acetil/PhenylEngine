@@ -1,5 +1,8 @@
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/components/physics/2D/rigid_body.h>
+#include <phenyl/components/2D/particle_emitter.h>
+
+#include <phenyl/signals/physics.h>
 
 #include "paddle.h"
 #include "breakout.h"
@@ -11,12 +14,24 @@ static phenyl::InputAction RightKey;
 
 static phenyl::InputAction BallShoot;
 
-void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input) {
+void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input, phenyl::ComponentManager& manager) {
     app->addComponent<Paddle>();
 
     LeftKey = input.mapInput("move_left", "key_a");
     RightKey = input.mapInput("move_right", "key_d");
     BallShoot = input.mapInput("ball_shoot", "mouse_left");
+
+    manager.handleSignal<phenyl::signals::OnCollision, const Paddle>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Paddle& paddle) {
+        phenyl::GlobalTransform2D emitterTransform{};
+        emitterTransform.transform2D.setPosition(signal.worldContactPoint);
+
+        paddle.emitterPrefab->instantiate()
+              .with(emitterTransform)
+              .complete()
+              .apply<phenyl::ParticleEmitter2D>([normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) {
+                emitter.direction = normal;
+            });
+    });
 }
 
 void breakout::updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera) {

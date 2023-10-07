@@ -1,7 +1,10 @@
 #pragma once
 
+#include <phenyl/asset.h>
 #include <phenyl/component.h>
+#include <phenyl/prefab.h>
 #include <phenyl/serialization.h>
+
 
 namespace breakout {
     class BreakoutApp;

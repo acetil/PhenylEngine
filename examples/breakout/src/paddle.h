@@ -19,6 +19,7 @@ namespace breakout {
         float maxX = 1.0f;
         float ballSpeed = 1.0f;
         phenyl::Asset<phenyl::Prefab> ballPrefab;
+        phenyl::Asset<phenyl::Prefab> emitterPrefab;
 
         void update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::GameCamera& camera);
     };
@@ -31,9 +32,10 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(maxX, "max_x");
         PHENYL_MEMBER_NAMED(ballPrefab, "ball_prefab");
         PHENYL_MEMBER_NAMED(ballSpeed, "ball_speed");
+        PHENYL_MEMBER_NAMED(emitterPrefab, "emitter_prefab");
     })
 
-    void initPaddle (BreakoutApp* app, phenyl::GameInput& input);
+    void initPaddle (BreakoutApp* app, phenyl::GameInput& input, phenyl::ComponentManager& manager);
 
     void updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera);
 }

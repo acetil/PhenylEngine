@@ -54,6 +54,8 @@ namespace phenyl::physics {
         Manifold2DType type;
 
         Constraint2D buildConstraint (Collider2D* obj1, Collider2D* obj2, float deltaTime) const;
+
+        glm::vec2 getContactPoint () const;
     };
 
     Manifold2D buildManifold (const Face2D& face1, const Face2D& face2, glm::vec2 normal, float depth);

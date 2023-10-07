@@ -59,6 +59,10 @@ Constraint2D Manifold2D::buildConstraint (Collider2D* obj1, Collider2D* obj2, fl
     return Constraint2D::ContactConstraint(obj1, obj2, contactPoint, normal, bias);
 }
 
+glm::vec2 Manifold2D::getContactPoint () const {
+    return (points[0] + points[1]) / 2.0f;
+}
+
 Constraint2D Constraint2D::ContactConstraint (Collider2D* obj1, Collider2D* obj2, glm::vec2 contactPoint, glm::vec2 normal, float bias) {
     // See https://kevinyu.net/2018/01/17/understanding-constraint-solver-in-physics-engine/ and
     // https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics6collisionresponse/2017%20Tutorial%206%20-%20Collision%20Response.pdf

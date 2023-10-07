@@ -90,15 +90,16 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
                 auto manifold = buildManifold(face1, face2, result.normal, result.depth);
                 constraints.push_back(manifold.buildConstraint(&box1, &box2, deltaTime));
 
+                auto contactPoint = manifold.getContactPoint();
                 if (box1.layers & box2.mask) {
                     //manager._signal<OnCollision>(entity2.id(), entity1.id(), (std::uint32_t)(box1.layers & box2.mask));
-                    entity2.signal(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask)});
+                    entity2.signal(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask), contactPoint, -result.normal});
                     //events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
                 }
 
                 if (box2.layers & box1.mask) {
                     //manager.signal<OnCollision>(entity1.id(), entity2.id(), (std::uint32_t)(box2.layers & box1.mask));
-                    entity1.signal(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask)});
+                    entity1.signal(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask), contactPoint, result.normal});
                     //events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
                 }
             });
