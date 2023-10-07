@@ -17,6 +17,8 @@
 #include "resources/shaders/sprite_fragment.frag.h"
 #include "resources/shaders/text_vertex.vert.h"
 #include "resources/shaders/text_fragment.frag.h"
+#include "resources/shaders/particle_vertex.vert.h"
+#include "resources/shaders/particle_fragment.frag.h"
 
 #include <vector>
 using namespace phenyl::graphics;
@@ -296,6 +298,13 @@ void GLRenderer::loadDefaultShaders () {
     logging::log(LEVEL_DEBUG, "Loading virtual text shader!");
     textShader = common::Assets::LoadVirtual("phenyl/shaders/text", Shader{std::make_shared<GLShaderProgram>(
             ShaderSourceBuilder{EMBED_TEXT_VERTEX_VERT, EMBED_TEXT_FRAGMENT_FRAG}
+                    .addUniform<glm::mat4>("camera")
+                    .build()
+    )});
+
+    logging::log(LEVEL_DEBUG, "Loading virtual particle shader!");
+    particleShader = common::Assets::LoadVirtual("phenyl/shaders/particle", Shader{std::make_shared<GLShaderProgram>(
+            ShaderSourceBuilder{EMBED_PARTICLE_VERTEX_VERT, EMBED_PARTICLE_FRAGMENT_FRAG}
                     .addUniform<glm::mat4>("camera")
                     .build()
     )});

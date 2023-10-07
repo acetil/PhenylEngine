@@ -27,6 +27,7 @@ add_library(phenyl INTERFACE include/phenyl/phenyl.h
         include/phenyl/application.h
         include/phenyl/engine.h
         include/phenyl/input.h
-        include/phenyl/component.h)
+        include/phenyl/component.h
+        include/phenyl/components/2D/particle_emitter.h)
 target_include_directories(phenyl INTERFACE include)
 target_link_libraries(phenyl INTERFACE common component engine graphics logger maths physics util)

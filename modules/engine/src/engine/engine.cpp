@@ -15,6 +15,8 @@
 #include "logging/logging.h"
 #include "common/components/2d/global_transform.h"
 #include "common/components/2d/global_transform_serialize.h"
+#include "common/components/timed_lifetime.h"
+#include "common/components/timed_lifetime_serialize.h"
 #include "physics/physics.h"
 #include "component/prefab_manager.h"
 #include "engine/level/level_manager.h"
@@ -195,6 +197,7 @@ component::EntitySerializer& engine::detail::Engine::getEntitySerializer () {
 void engine::detail::Engine::addDefaultSerialisers () {
     //entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
     entitySerializer->addSerializer<common::GlobalTransform2D>();
+    entitySerializer->addSerializer<common::TimedLifetime>();
 }
 
 physics::PhenylPhysics engine::detail::Engine::getPhysics () {
@@ -224,6 +227,7 @@ void engine::detail::Engine::debugRender () {
 
 void engine::detail::Engine::addComponents () {
     componentManager.addComponent<common::GlobalTransform2D>();
+    componentManager.addComponent<common::TimedLifetime>();
     physicsObj->addComponents(componentManager);
     graphicsHolder.tempGetGraphics()->addComponents(componentManager);
 }
@@ -266,6 +270,8 @@ void engine::detail::Engine::gameloop (Application* app) {
 
 void engine::detail::Engine::update (Application* app, double deltaTime) {
     app->update(deltaTime);
+    graphicsHolder.getGraphics().frameUpdate(componentManager);
+    common::TimedLifetime::Update(componentManager, deltaTime); // TODO: put somewhere else
 }
 
 void engine::detail::Engine::fixedUpdate (Application* app) {

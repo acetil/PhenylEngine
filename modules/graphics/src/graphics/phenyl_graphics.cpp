@@ -99,6 +99,10 @@ void PhenylGraphics::addComponentSerializers (component::EntitySerializer& seria
     getGraphics()->addComponentSerializers(serialiser);
 }
 
+void PhenylGraphics::frameUpdate (phenyl::component::ComponentManager& componentManager) {
+    getGraphics()->frameUpdate(componentManager);
+}
+
 
 
 

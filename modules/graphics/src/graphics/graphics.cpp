@@ -14,6 +14,9 @@
 #include "component/component_serializer.h"
 #include "graphics/components/2d/sprite.h"
 #include "graphics/components/2d/sprite_serialization.h"
+#include "graphics/renderlayer/particle_layer.h"
+#include "graphics/components/2d/particle_emitter.h"
+#include "graphics/components/2d/particle_emitter_serialization.h"
 
 using namespace phenyl::graphics;
 
@@ -26,7 +29,7 @@ void detail::Graphics::setupWindowCallbacks () {
     logging::log(LEVEL_DEBUG, "Set up window callbacks!");
 }
 
-detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager) : uiManager(renderer.get(), manager) {
+detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager) : uiManager(renderer.get(), manager), particleManager{256} {
     this->renderer = std::move(renderer);
     this->deltaTime = 0;
     this->lastTime = this->renderer->getCurrentTime();
@@ -43,6 +46,9 @@ detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& man
 
     uiManager.addProxyInputSources(inputSources);
     uiManager.setupInputActions();
+
+    renderLayer->addRenderLayer(std::make_shared<ParticleRenderLayer>(this->renderer.get(), &particleManager));
+    particleManager.selfRegister();
 }
 
 double detail::Graphics::getDeltaTime() const {
@@ -123,8 +129,15 @@ void detail::Graphics::updateUI () {
 
 void detail::Graphics::addComponentSerializers (phenyl::component::EntitySerializer& serialiser) {
     serialiser.addSerializer<graphics::Sprite2D>();
+    serialiser.addSerializer<graphics::ParticleEmitter2D>();
 }
 
 void detail::Graphics::addComponents (phenyl::component::ComponentManager& manager) {
     manager.addComponent<graphics::Sprite2D>();
+    manager.addComponent<graphics::ParticleEmitter2D>();
+}
+
+void detail::Graphics::frameUpdate (component::ComponentManager& manager) {
+    particleManager.update((float)deltaTime);
+    ParticleEmitter2D::Update((float)deltaTime, manager);
 }

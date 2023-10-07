@@ -1,6 +1,8 @@
 {
   "components" : {
-    "Bullet": {},
+    "Bullet": {
+      "particle_prefab" : "resources/prefabs/bullet_particle_entity"
+    },
     "GlobalTransform2D": {
       "transform": {
         "position": {

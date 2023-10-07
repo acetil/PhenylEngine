@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdlib.h>
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +18,7 @@
 #include "common/input/forward.h"
 #include "util/smart_help.h"
 #include "util/optional.h"
+#include "particles/particle_manager.h"
 
 namespace phenyl::graphics {
 
@@ -66,7 +65,7 @@ namespace phenyl::graphics {
             GlyphAtlas glyphAtlas;
 
             UIManager uiManager;
-
+            ParticleManager2D particleManager;
         public:
             explicit Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager);
             ~Graphics ();
@@ -95,6 +94,8 @@ namespace phenyl::graphics {
 
             UIManager& getUIManager ();
             void updateUI ();
+
+            void frameUpdate (component::ComponentManager& manager);
 
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
 

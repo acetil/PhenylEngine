@@ -43,6 +43,7 @@ namespace phenyl::graphics {
         common::Asset<Shader> debugShader;
         common::Asset<Shader> spriteShader;
         common::Asset<Shader> textShader;
+        common::Asset<Shader> particleShader;
     protected:
         std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
 
