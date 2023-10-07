@@ -24,8 +24,8 @@
         "y" : 0
       },
       "duration" : 1.0,
-      "explosiveness" : 0.9,
-      "num_particles" : 8,
+      "explosiveness" : 0.85,
+      "num_particles" : 12,
       "one_shot" : true,
       "enabled" : true
     },

@@ -17,12 +17,25 @@ namespace phenyl::graphics {
         float velocityMax;
 
         glm::vec2 gravity;
+        float directionSpread;
 
-        float sizeMin;
-        float sizeMax;
+        float sizeStartMin;
+        float sizeStartMax;
 
-        glm::vec4 colourStart;
-        glm::vec4 colourEnd;
+        float sizeEndMin;
+        float sizeEndMax;
+
+        float angleMin;
+        float angleMax;
+
+        float angularVelMin;
+        float angularVelMax;
+
+        glm::vec4 colourStartMin;
+        glm::vec4 colourStartMax;
+
+        glm::vec4 colourEndMin;
+        glm::vec4 colourEndMax;
     };
 
     class ParticleSystem2D {
@@ -32,7 +45,13 @@ namespace phenyl::graphics {
             glm::vec2 vel{0, 0};
             glm::vec2 acc{0, 0};
 
+            float sizeStart;
+            float sizeEnd;
             float size{0};
+
+            float angle;
+            float angularVel;
+
             glm::vec4 colourStart{0, 0, 0, 0};
             glm::vec4 colourEnd{0, 0, 0, 0};
             glm::vec4 colour;
