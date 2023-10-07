@@ -11,7 +11,7 @@
 using namespace phenyl::graphics;
 // TODO: update to use exceptions instead of return values
 // TODO: proper error handling
-int phenyl::graphics::initWindow (GLFWwindow** windowPtr) {
+int phenyl::graphics::initWindow (GLFWwindow** windowPtr, const GraphicsProperties& properties) {
     glewExperimental = true;
     if (!glfwInit()) {
         logging::log(LEVEL_FATAL, "Failed to initialise GLFW!");
@@ -32,7 +32,7 @@ int phenyl::graphics::initWindow (GLFWwindow** windowPtr) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(DEFAULT_WINDOW_X, DEFAULT_WINDOW_Y, DEFAULT_WINDOW_NAME, nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(), properties.getWindowTitle().c_str(), nullptr, nullptr);
     if (window == nullptr) {
         logging::log(LEVEL_FATAL, "Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
 
@@ -53,7 +53,7 @@ int phenyl::graphics::initWindow (GLFWwindow** windowPtr) {
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glfwSwapInterval(0); // TODO: handle enable/disable vsync
+    glfwSwapInterval(properties.getVsync() ? 1 : 0); // TODO: handle enable/disable vsync
 
     *windowPtr = window;
     logging::log(LEVEL_INFO, "Window initialised successfully!");

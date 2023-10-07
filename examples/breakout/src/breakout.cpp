@@ -25,7 +25,7 @@ static constexpr float YStart = 1.0f - 0.075f - TileHeight / 2;
 
 using namespace breakout;
 
-BreakoutApp::BreakoutApp () : pointsLabel{"label"}, livesLabel{"label"} {
+BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Application(properties), pointsLabel{"label"}, livesLabel{"label"} {
     lives = Lives;
 }
 

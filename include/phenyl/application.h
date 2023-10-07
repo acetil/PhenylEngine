@@ -4,4 +4,5 @@
 
 namespace phenyl {
     using Application = phenyl::engine::Application;
+    using ApplicationProperties = phenyl::engine::ApplicationProperties;
 }

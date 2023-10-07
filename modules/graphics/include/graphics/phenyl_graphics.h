@@ -5,6 +5,7 @@
 
 #include "renderlayer/graphics_layer.h"
 #include "ui/ui_manager.h"
+#include "graphics_properties.h"
 
 #include "component/component.h"
 #include "component/forward.h"
@@ -61,7 +62,7 @@ namespace phenyl::graphics {
     private:
         std::shared_ptr<detail::Graphics> graphics;
     public:
-        PhenylGraphicsHolder ();
+        PhenylGraphicsHolder (const GraphicsProperties& properties);
         ~PhenylGraphicsHolder();
 
         PhenylGraphics getGraphics () const;

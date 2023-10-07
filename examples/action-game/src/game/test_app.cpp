@@ -7,7 +7,11 @@
 #include "entity/player.h"
 #include "util/debug_console.h"
 
-test::TestApp::TestApp () = default;
+test::TestApp::TestApp () :
+    phenyl::Application(phenyl::ApplicationProperties{}
+        .withResolution(800, 600)
+        .withWindowTitle("Action Game")
+        .withVsync(false)) {}
 
 void test::TestApp::init () {
     addBulletSignals(this, componentManager());

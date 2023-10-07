@@ -7,9 +7,9 @@
 
 using namespace phenyl::graphics;
 
-PhenylGraphicsHolder::PhenylGraphicsHolder () {
+PhenylGraphicsHolder::PhenylGraphicsHolder (const GraphicsProperties& properties) {
     GLFWwindow* window = nullptr;
-    if (graphics::initWindow(&window) != GRAPHICS_INIT_SUCCESS) {
+    if (graphics::initWindow(&window, properties) != GRAPHICS_INIT_SUCCESS) {
         logger::log(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
         throw std::runtime_error("Window creation failed!");
     }

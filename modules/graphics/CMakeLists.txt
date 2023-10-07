@@ -14,7 +14,8 @@ add_library(graphics src/graphics/graphics.cpp src/graphics/font/font.cpp src/gr
         src/graphics/particles/particle_manager.cpp
         include/graphics/components/2d/particle_emitter.h
         src/graphics/particles/particle_emitter_2d.cpp
-        include/graphics/components/2d/particle_emitter_serialization.h)
+        include/graphics/components/2d/particle_emitter_serialization.h
+        include/graphics/graphics_properties.h)
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
 

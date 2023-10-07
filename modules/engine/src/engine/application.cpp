@@ -5,6 +5,8 @@
 
 using namespace phenyl;
 
+engine::Application::Application (phenyl::engine::ApplicationProperties properties) : properties{properties} {}
+
 component::ComponentManager& engine::Application::componentManager () {
     assert(engine);
     return engine->getComponentManager();

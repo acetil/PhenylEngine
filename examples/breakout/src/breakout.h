@@ -21,7 +21,7 @@ namespace breakout {
         void fixedUpdate (float deltaTime) override;
 
     public:
-        BreakoutApp ();
+        BreakoutApp (phenyl::ApplicationProperties properties);
 
         void addPoints (int points);
         void subtractLife ();

@@ -45,7 +45,7 @@ private:
     void addDefaultSerialisers ();
     void addComponents ();
 public:
-    Engine ();
+    Engine (const ApplicationProperties& properties);
     ~Engine();
 
     //[[nodiscard]] game::detail::GameObject::SharedPtr getGameObjectTemp () const;
@@ -117,7 +117,7 @@ game::GameInput& engine::PhenylEngine::getInput () {
 }
 
 void engine::PhenylEngine::exec (Application* app) {
-    internal = std::make_unique<engine::detail::Engine>();
+    internal = std::make_unique<engine::detail::Engine>(app->properties);
     app->init();
     internal->gameloop(app);
     app->shutdown();
@@ -132,7 +132,7 @@ void engine::PhenylEngine::setProfileRender (bool doRender) {
     internal->setProfileRender(doRender);
 }
 
-engine::detail::Engine::Engine () : componentManager{256} {
+engine::detail::Engine::Engine (const ApplicationProperties& properties) : componentManager{256}, graphicsHolder(properties.graphicsProperties) {
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 
