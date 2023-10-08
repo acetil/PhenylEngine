@@ -20,6 +20,7 @@ add_subdirectory(modules/physics)
 add_subdirectory(modules/maths)
 add_subdirectory(modules/graphics)
 add_subdirectory(modules/engine)
+add_subdirectory(modules/audio)
 
 add_subdirectory(examples)
 

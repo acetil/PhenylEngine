@@ -10,6 +10,7 @@
 #define UTIL_LOCATION "UTIL"
 #define COMMON_LOCATION "COMMON"
 #define SERIALIZER_LOCATION "SERIALIZER"
+#define AUDIO_LOCATION "AUDIO"
 
 using namespace phenyl;
 
@@ -87,6 +88,10 @@ void common::logging::log (int level, const std::string& log) {
 
 void serializer::logging::log (int level, const std::string& log) {
     internal::log_internal(level, SERIALIZER_LOCATION, log);
+}
+
+void audio::logging::log (int level, const std::string& log) {
+    internal::log_internal(level, AUDIO_LOCATION, log);
 }
 
 void logger::initLogger (const std::string& logfile) {

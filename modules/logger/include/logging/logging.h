@@ -80,6 +80,14 @@ namespace phenyl::serializer::logging {
     }
 }
 
+namespace phenyl::audio::logging {
+    void log (int level, const std::string& log);
+    template<typename ...Args>
+    void log (int level, const std::string& logStr, Args... args) {
+        log(level, util::format(logStr, args...));
+    }
+}
+
 namespace phenyl::logger {
     void initLogger (const std::string& logfile);
     void initLogger ();
