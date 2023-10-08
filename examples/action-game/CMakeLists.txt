@@ -21,6 +21,7 @@ target_copy_resources(action-game
         resources/prefabs/test_entity.json
         resources/prefabs/wall_entity.json
         resources/themes/alt_theme.json
+        resources/audio/blastoff.wav
 )
 
 target_include_directories(action-game PRIVATE src)

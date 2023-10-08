@@ -88,7 +88,7 @@ namespace phenyl::util {
 
                 next = other.next;
                 if (other.isPresent()) {
-                    init(other.getUnsafe());
+                    init(std::move(other.getUnsafe()));
                     other.destroy(FREE_LIST_END);
                 }
 
@@ -418,7 +418,7 @@ namespace phenyl::util {
         std::size_t push (T&& val) {
             auto index = getNextIndex();
 
-            data[index].init(std::forward<T>(val));
+            data[index].init(std::move(val));
             presentNum++;
             return index;
         }

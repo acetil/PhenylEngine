@@ -35,6 +35,7 @@ private:
     std::unique_ptr<physics::IPhysics> physicsObj;
     std::unique_ptr<component::PrefabManager> prefabManager;
     std::unique_ptr<game::LevelManager> levelManager;
+    std::unique_ptr<audio::AudioSystem> audioSystem;
     game::GameCamera gameCamera;
     game::GameInput gameInput;
 
@@ -55,6 +56,7 @@ public:
     [[nodiscard]] const component::EntityComponentManager& getComponentManager () const;
     component::EntitySerializer& getEntitySerializer ();
     physics::PhenylPhysics getPhysics ();
+    audio::AudioSystem& getAudio ();
 
     game::GameCamera& getCamera ();
     game::GameInput& getInput ();
@@ -132,6 +134,10 @@ void engine::PhenylEngine::setProfileRender (bool doRender) {
     internal->setProfileRender(doRender);
 }
 
+audio::AudioSystem& phenyl::engine::PhenylEngine::getAudio () {
+    return internal->getAudio();
+}
+
 engine::detail::Engine::Engine (const ApplicationProperties& properties) : componentManager{256}, graphicsHolder(properties.graphicsProperties) {
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
@@ -145,6 +151,9 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : compo
     //auto gameObj = gameObjHolder.getGameObject();
     auto graphics = graphicsHolder.getGraphics();
     gameInput.setRenderer(graphics.getRenderer());
+
+    audioSystem = audio::MakeOpenALSystem();
+    audioSystem->selfRegister();
 
     //gameObj.setEntityComponentManager(&componentManager);
     //gameObj.setSerializer(entitySerializer.get());
@@ -296,4 +305,8 @@ void engine::detail::Engine::setDebugRender (bool doRender) {
 
 void engine::detail::Engine::setProfileRender (bool doRender) {
     doProfileRender = doRender;
+}
+
+audio::AudioSystem& engine::detail::Engine::getAudio () {
+    return *audioSystem;
 }

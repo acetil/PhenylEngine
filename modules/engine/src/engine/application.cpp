@@ -62,3 +62,7 @@ void engine::Application::setProfileRender (bool doRender) {
 void engine::Application::dumpLevel (std::ostream& file) {
     engine->dumpLevel(file);
 }
+
+audio::AudioSystem& engine::Application::audio () {
+    return engine->getAudio();
+}

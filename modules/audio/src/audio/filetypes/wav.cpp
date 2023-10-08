@@ -15,11 +15,12 @@ struct WAVHeader {
     std::uint32_t dataSize;
 };
 
-static constexpr std::uint32_t MAGIC_TAG = 0x52494646; // "RIFF"
-static constexpr std::uint32_t FMT_TAG = 0x666d7420;   // "fmt "
-static constexpr std::uint32_t DATA_TAG = 0x64617461; // "data"
+static constexpr std::uint32_t MAGIC_TAG = 0x46464952; // "RIFF" 52494646
+static constexpr std::uint32_t WAV_TAG = 0x45564157; // "WAVE"
+static constexpr std::uint32_t FMT_TAG = 0x20746d66;   // "fmt " 666d7420
+static constexpr std::uint32_t DATA_TAG = 0x61746164; // "data" 64617461
 
-static constexpr std::uint32_t HEADER_SIZE = 44;
+static constexpr std::uint32_t HEADER_SIZE = 44 - 8;
 static constexpr std::uint32_t FORMAT_SIZE = 16;
 static constexpr std::uint16_t PCM_TYPE = 1;
 
@@ -70,10 +71,10 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
     WAVHeader header{};
     std::uint32_t magic;
     if (!util::BinaryReadLittle(file, magic)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV file tag!");
+        audio::logging::log(LEVEL_ERROR, "Failed to read WAV RIFF file tag!");
         return util::NullOpt;
     } else if (magic != MAGIC_TAG) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV file tag: {} (expected {})", magic, MAGIC_TAG);
+        audio::logging::log(LEVEL_ERROR, "Invalid RIFF file tag: {} (expected {})", magic, MAGIC_TAG);
         return util::NullOpt;
     }
 
@@ -85,9 +86,19 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
         return util::NullOpt;
     }
 
+    std::uint32_t wavTag;
+    if (!util::BinaryReadLittle(file, wavTag)) {
+        audio::logging::log(LEVEL_ERROR, "Failed to read WAV format tag!");
+        return util::NullOpt;
+    } else if (wavTag != WAV_TAG) {
+        audio::logging::log(LEVEL_ERROR, "Invalid WAV format tag: {} (expected {})", wavTag, WAV_TAG);
+        return util::NullOpt;
+    }
+
+
     std::uint32_t fmtTag;
     if (!util::BinaryReadLittle(file, fmtTag)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV fmt file tag!");
+        audio::logging::log(LEVEL_ERROR, "Failed to read WAV file fmt tag!");
         return util::NullOpt;
     } else if (fmtTag != FMT_TAG) {
         audio::logging::log(LEVEL_ERROR, "Invalid WAV format tag: {} (expected {})", fmtTag, FMT_TAG);
@@ -108,11 +119,6 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
         return util::NullOpt;
     } else if (header.formatType != PCM_TYPE) {
         audio::logging::log(LEVEL_ERROR, "Unsupported WAV format type: {}", header.formatType);
-        return util::NullOpt;
-    }
-
-    if (!util::BinaryReadLittle(file, header.channels)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV channels!");
         return util::NullOpt;
     }
 

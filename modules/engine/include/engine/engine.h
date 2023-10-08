@@ -10,6 +10,7 @@
 #include "game_camera.h"
 #include "input/game_input.h"
 #include "application.h"
+#include "audio/audio_system.h"
 
 namespace phenyl::engine {
 
@@ -42,6 +43,7 @@ namespace phenyl::engine {
 
         game::GameCamera& getCamera ();
         game::GameInput& getInput ();
+        audio::AudioSystem& getAudio ();
 
         void dumpLevel (std::ostream& path);
 

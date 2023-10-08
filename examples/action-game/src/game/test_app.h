@@ -1,5 +1,6 @@
 #pragma once
 
+#include <phenyl/audio.h>
 #include <phenyl/application.h>
 #include <phenyl/asset.h>
 #include <phenyl/input.h>
@@ -8,6 +9,7 @@
 namespace test {
     class TestApp : public phenyl::Application {
     private:
+        phenyl::AudioSource testSource;
         std::vector<phenyl::ui::Label> extraLabels;
         phenyl::ui::Label label{"label"};
         phenyl::ui::Flexbox flexBoxC{"flex_box"};
