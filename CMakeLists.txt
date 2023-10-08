@@ -31,4 +31,4 @@ add_library(phenyl INTERFACE include/phenyl/phenyl.h
         include/phenyl/component.h
         include/phenyl/components/2D/particle_emitter.h)
 target_include_directories(phenyl INTERFACE include)
-target_link_libraries(phenyl INTERFACE common component engine graphics logger maths physics util)
+target_link_libraries(phenyl INTERFACE audio common component engine graphics logger maths physics util)
