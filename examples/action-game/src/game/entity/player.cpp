@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 #include <phenyl/input.h>
 #include <phenyl/engine.h>
@@ -25,6 +26,9 @@ static phenyl::InputAction KeyDown;
 
 static phenyl::InputAction KeyShoot;
 
+static phenyl::InputAction GainUp;
+static phenyl::InputAction GainDown;
+
 static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
                           phenyl::GameCamera& camera);
 
@@ -39,6 +43,9 @@ void inputSetup (phenyl::GameInput& input) {
     KeyDown = input.mapInput("move_down", "key_s");
 
     KeyShoot = input.mapInput("player_shoot", "mouse_left");
+
+    GainUp = input.mapInput("gain_up", "key_up");
+    GainDown = input.mapInput("gain_down", "key_down");
 }
 
 void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera) {
@@ -111,6 +118,18 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
         player.hasShot = true;
     } else if (!doShoot && player.hasShot) {
         player.hasShot = false;
+    }
+
+    if (input.isDown(GainUp) && !player.gainPressed) {
+        audioPlayer.setGain(audioPlayer.gain() + 0.1f);
+        player.gainPressed = true;
+        std::cout << "Player gain: " << audioPlayer.gain() << "\n";
+    } else if (input.isDown(GainDown) && !player.gainPressed) {
+        audioPlayer.setGain(audioPlayer.gain() - 0.1f);
+        player.gainPressed = true;
+        std::cout << "Player gain: " << audioPlayer.gain() << "\n";
+    } else if (player.gainPressed && !input.isDown(GainUp) && !input.isDown(GainDown)) {
+        player.gainPressed = false;
     }
 
     camera.setPos(transform.transform2D.position());

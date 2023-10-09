@@ -50,3 +50,11 @@ void audio::AudioSource::play (const common::Asset<AudioSample>& sample) {
         logging::log(LEVEL_ERROR, "Attempted to play invalid sample!");
     }
 }
+
+float audio::AudioSource::getGain () const {
+    return audioSystem->getSourceGain(sourceId);
+}
+
+void audio::AudioSource::setGain (float gain) {
+    audioSystem->setSourceGain(sourceId, gain);
+}

@@ -14,6 +14,7 @@ namespace test {
         phenyl::Asset<phenyl::AudioSample> gunshotSample;
 
         bool hasShot{false};
+        bool gainPressed{false};
     };
 }
 

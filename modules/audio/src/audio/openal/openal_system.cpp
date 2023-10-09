@@ -14,6 +14,8 @@ phenyl::audio::OpenALSystem::OpenALSystem () {
         auto err = alcGetError(device);
 
         logging::log(LEVEL_ERROR, "Failed to create OpenAL context: {}!", ALcStrError(err));
+        alcCloseDevice(device);
+        device = nullptr;
         return;
     }
 
@@ -21,6 +23,11 @@ phenyl::audio::OpenALSystem::OpenALSystem () {
         auto err = alcGetError(device);
 
         logging::log(LEVEL_ERROR, "Failed to make OpenAL context current: {}!", ALcStrError(err));
+
+        alcDestroyContext(context);
+        alcCloseDevice(device);
+        context = nullptr;
+        device = nullptr;
         return;
     }
 }
@@ -119,4 +126,28 @@ void phenyl::audio::OpenALSystem::playSample (std::size_t sourceId, std::size_t 
     auto& buffer = buffers.at(sampleId - 1);
 
     source.playBuffer(buffer);
+}
+
+float phenyl::audio::OpenALSystem::getSourceGain (std::size_t id) const {
+    if (!id) {
+        logging::log(LEVEL_ERROR, "Attempted to get gain of empty source!");
+        return 0;
+    } else if (!sources.present(id - 1)) {
+        logging::log(LEVEL_ERROR, "Attempted to get gain of invalid source {}!", id);
+        return 0;
+    }
+
+    return sources.at(id - 1).getGain();
+}
+
+void phenyl::audio::OpenALSystem::setSourceGain (std::size_t id, float gain) {
+    if (!id) {
+        logging::log(LEVEL_ERROR, "Attempted to set gain of empty source!");
+        return;
+    } else if (!sources.present(id - 1)) {
+        logging::log(LEVEL_ERROR, "Attempted to set gain of invalid source {}!", id);
+        return;
+    }
+
+    sources.at(id - 1).setGain(gain);
 }

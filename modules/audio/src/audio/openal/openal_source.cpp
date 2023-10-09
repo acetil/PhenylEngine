@@ -51,3 +51,29 @@ void OpenALSource::playBuffer (const OpenALBuffer& buffer) {
     }
     alSourcePlay(sourceId);
 }
+
+float OpenALSource::getGain () const {
+    alGetError();
+
+    float gain;
+    alGetSourcef(sourceId, AL_GAIN, &gain);
+
+    ALenum err;
+    if ((err = alGetError())) {
+        logging::log(LEVEL_ERROR, "Failed to get gain of sample {}: {}", sourceId, ALStrError(err));
+        return 0.0f;
+    }
+
+    return gain;
+}
+
+void OpenALSource::setGain (float gain) {
+    alGetError();
+
+    alSourcef(sourceId, AL_GAIN, gain);
+
+    ALenum err;
+    if ((err = alGetError())) {
+        logging::log(LEVEL_ERROR, "Failed to set gain of sample {} to {}: {}", sourceId, gain, ALStrError(err));
+    }
+}

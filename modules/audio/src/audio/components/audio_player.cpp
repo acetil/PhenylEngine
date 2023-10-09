@@ -6,7 +6,7 @@ void AudioPlayer::play (const common::Asset<AudioSample>& sample) {
     source.play(sample);
 }
 
-AudioPlayer::AudioPlayer (const AudioPlayer& other) : source{} {}
+AudioPlayer::AudioPlayer (const AudioPlayer& other) : source{}, sourceGain{other.sourceGain} {}
 
 AudioPlayer& AudioPlayer::operator= (const AudioPlayer& other) {
     if (this == &other) {
@@ -14,6 +14,16 @@ AudioPlayer& AudioPlayer::operator= (const AudioPlayer& other) {
     }
 
     source = AudioSource{};
+    sourceGain = other.sourceGain;
 
     return *this;
+}
+
+float AudioPlayer::gain () const {
+    return sourceGain;
+}
+
+void AudioPlayer::setGain (float gain) {
+    source.setGain(gain);
+    sourceGain = source.getGain();
 }

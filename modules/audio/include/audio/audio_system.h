@@ -29,6 +29,9 @@ namespace phenyl::audio {
         virtual void destroySource (std::size_t id) = 0;
         virtual void destroySample (std::size_t id) = 0;
 
+        [[nodiscard]] virtual float getSourceGain (std::size_t id) const = 0;
+        virtual void setSourceGain (std::size_t id, float gain) = 0;
+
         void cleanup ();
 
         friend AudioSource;

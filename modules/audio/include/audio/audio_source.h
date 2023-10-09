@@ -31,6 +31,9 @@ namespace phenyl::audio {
         void play (const common::Asset<AudioSample>& sample);
         void play (const AudioSample& sample);
 
+        [[nodiscard]] float getGain () const;
+        void setGain (float gain);
+
         ~AudioSource();
     };
 }

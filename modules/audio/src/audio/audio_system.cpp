@@ -9,7 +9,9 @@
 #include "audio/components/audio_player.h"
 
 namespace phenyl::audio {
-    PHENYL_SERIALIZE(AudioPlayer, {})
+    PHENYL_SERIALIZE(AudioPlayer, {
+        PHENYL_MEMBER_NAMED(sourceGain, "gain");
+    });
 }
 
 using namespace phenyl::audio;
@@ -71,6 +73,10 @@ void AudioSystem::addComponents (component::ComponentManager& manager, component
     serializer.addSerializer<AudioPlayer>();
 
     manager.handleSignal<component::OnInsert<AudioPlayer>>([this] (auto entity, const component::OnInsert<AudioPlayer>& signal) {
-        signal.get().source = this->createSource();
+        auto& comp = signal.get();
+        comp.source = this->createSource();
+
+        logging::log(LEVEL_DEBUG, "Initial gain: {}", comp.sourceGain);
+        comp.setGain(comp.sourceGain);
     });
 }

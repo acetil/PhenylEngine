@@ -33,5 +33,8 @@ namespace phenyl::audio {
         void destroySample (std::size_t id) override;
 
         void playSample (std::size_t sourceId, std::size_t sampleId) override;
+
+        [[nodiscard]] float getSourceGain (std::size_t id) const override;
+        void setSourceGain (std::size_t id, float gain) override;
     };
 }

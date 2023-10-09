@@ -27,6 +27,9 @@ namespace phenyl::audio {
 
         void playBuffer (const OpenALBuffer& buffer);
 
+        [[nodiscard]] float getGain () const;
+        void setGain (float gain);
+
         ~OpenALSource();
     };
 }
