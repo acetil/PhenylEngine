@@ -1,7 +1,8 @@
 {
   "components" : {
     "Player": {
-      "bullet_prefab" : "resources/prefabs/bullet_entity"
+      "bullet_prefab" : "resources/prefabs/bullet_entity",
+      "gunshot_sample" : "resources/audio/blastoff.wav"
     },
     "GlobalTransform2D": {
       "transform": {
@@ -54,6 +55,7 @@
         "x" : 0.1,
         "y" : 0.1
       }
-    }
+    },
+    "AudioPlayer" : {}
   }
 }

@@ -11,5 +11,6 @@ namespace test {
     })
     PHENYL_SERIALIZE(Player, {
         PHENYL_MEMBER_NAMED(bulletPrefab, "bullet_prefab");
+        PHENYL_MEMBER_NAMED(gunshotSample, "gunshot_sample");
     })
 }

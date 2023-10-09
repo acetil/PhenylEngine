@@ -30,6 +30,7 @@ add_library(phenyl INTERFACE include/phenyl/phenyl.h
         include/phenyl/input.h
         include/phenyl/component.h
         include/phenyl/components/2D/particle_emitter.h
-        include/phenyl/audio.h)
+        include/phenyl/audio.h
+        include/phenyl/components/audio_player.h)
 target_include_directories(phenyl INTERFACE include)
 target_link_libraries(phenyl INTERFACE audio common component engine graphics logger maths physics util)

@@ -8,6 +8,11 @@
 #include "audio_source.h"
 #include "audio_sample.h"
 
+namespace phenyl::component {
+    class ComponentManager;
+    class EntitySerializer;
+}
+
 namespace phenyl::audio {
     class WAVFile;
 
@@ -40,8 +45,7 @@ namespace phenyl::audio {
         virtual AudioSource createSource () = 0;
 
         void selfRegister ();
-
-        void test ();
+        void addComponents (component::ComponentManager& manager, component::EntitySerializer& serializer);
     };
 
     std::unique_ptr<AudioSystem> MakeOpenALSystem ();

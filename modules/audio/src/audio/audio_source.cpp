@@ -30,10 +30,20 @@ audio::AudioSource& audio::AudioSource::operator= (audio::AudioSource&& other) n
 }
 
 void audio::AudioSource::play (const audio::AudioSample& sample) {
+    if (!*this) {
+        logging::log(LEVEL_ERROR, "Attempted to play to empty source!");
+        return;
+    }
+
     audioSystem->playSample(sourceId, sample.sampleId);
 }
 
 void audio::AudioSource::play (const common::Asset<AudioSample>& sample) {
+    if (!*this) {
+        logging::log(LEVEL_ERROR, "Attempted to play to empty source!");
+        return;
+    }
+
     if (sample) {
         audioSystem->playSample(sourceId, sample->sampleId);
     } else {

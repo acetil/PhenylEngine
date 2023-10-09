@@ -11,12 +11,16 @@ phenyl::audio::OpenALSystem::OpenALSystem () {
     alGetError(); // ignored
     context = alcCreateContext(device, nullptr);
     if (!context) {
-        logging::log(LEVEL_ERROR, "Failed to create OpenAL context!");
+        auto err = alcGetError(device);
+
+        logging::log(LEVEL_ERROR, "Failed to create OpenAL context: {}!", ALcStrError(err));
         return;
     }
 
     if (!alcMakeContextCurrent(context)) {
-        logging::log(LEVEL_ERROR, "Failed to make OpenAL context current!");
+        auto err = alcGetError(device);
+
+        logging::log(LEVEL_ERROR, "Failed to make OpenAL context current: {}!", ALcStrError(err));
         return;
     }
 }

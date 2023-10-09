@@ -11,7 +11,7 @@ phenyl::audio::OpenALSource::OpenALSource () : valid{true}, sourceId{0} {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "OpenAL source creation failed: {}", err);
+        logging::log(LEVEL_ERROR, "OpenAL source creation failed: {}", ALStrError(err));
         valid = false;
     }
 }
@@ -46,7 +46,7 @@ void OpenALSource::playBuffer (const OpenALBuffer& buffer) {
     alSourcei(sourceId, AL_BUFFER, (ALint)buffer.id());
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to play sample {} to source {}: {}", buffer.id(), sourceId, err);
+        logging::log(LEVEL_ERROR, "Failed to play sample {} to source {}: {}", buffer.id(), sourceId, ALStrError(err));
         return;
     }
     alSourcePlay(sourceId);

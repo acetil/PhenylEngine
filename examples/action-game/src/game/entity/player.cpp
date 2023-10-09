@@ -5,6 +5,7 @@
 #include <phenyl/component.h>
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/components/physics/2D/rigid_body.h>
+#include <phenyl/components/audio_player.h>
 
 #include "player.h"
 #include "serializers.h"
@@ -24,7 +25,7 @@ static phenyl::InputAction KeyDown;
 
 static phenyl::InputAction KeyShoot;
 
-static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input,
+static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
                           phenyl::GameCamera& camera);
 
 void addPlayerComponents (test::TestApp* app) {
@@ -41,8 +42,9 @@ void inputSetup (phenyl::GameInput& input) {
 }
 
 void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera) {
-    manager.query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D>().each([&camera, &input] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
-        updatePlayer(player, transform, body, input, camera);
+    manager.query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera, &input] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
+            phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
+        updatePlayer(player, transform, body, audioPlayer, input, camera);
     });
 }
 
@@ -78,7 +80,7 @@ static glm::vec2 getCursorDisp (phenyl::GameInput& input, phenyl::GameCamera& ca
     return worldCursorPos - pos;
 }
 
-static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input,
+static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
                           phenyl::GameCamera& camera) {
     auto forceVec = getMovementForce(input);
     auto disp = getCursorDisp(input, camera, transform.transform2D.position());
@@ -103,6 +105,8 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
 
             body.applyImpulse(bulletVel * body.getMass());
         });
+
+        audioPlayer.play(player.gunshotSample);
 
         player.hasShot = true;
     } else if (!doShoot && player.hasShot) {

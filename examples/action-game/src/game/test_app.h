@@ -9,7 +9,6 @@
 namespace test {
     class TestApp : public phenyl::Application {
     private:
-        phenyl::AudioSource testSource;
         std::vector<phenyl::ui::Label> extraLabels;
         phenyl::ui::Label label{"label"};
         phenyl::ui::Flexbox flexBoxC{"flex_box"};

@@ -1,8 +1,16 @@
 #include "common/assets/assets.h"
+#include "component/component.h"
+#include "component/component_serializer.h"
+#include "component/signals/component_update.h"
 
 #include "audio/audio_system.h"
 #include "filetypes/wav.h"
 #include "openal/openal_system.h"
+#include "audio/components/audio_player.h"
+
+namespace phenyl::audio {
+    PHENYL_SERIALIZE(AudioPlayer, {})
+}
 
 using namespace phenyl::audio;
 
@@ -56,4 +64,13 @@ void AudioSystem::selfRegister () {
 
 bool AudioSystem::isBinary () const {
     return true;
+}
+
+void AudioSystem::addComponents (component::ComponentManager& manager, component::EntitySerializer& serializer) {
+    manager.addComponent<AudioPlayer>();
+    serializer.addSerializer<AudioPlayer>();
+
+    manager.handleSignal<component::OnInsert<AudioPlayer>>([this] (auto entity, const component::OnInsert<AudioPlayer>& signal) {
+        signal.get().source = this->createSource();
+    });
 }

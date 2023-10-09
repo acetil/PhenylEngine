@@ -8,7 +8,7 @@ OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to create OpenAL buffer: {}", err);
+        logging::log(LEVEL_ERROR, "Failed to create OpenAL buffer: {}", ALStrError(err));
         return;
     }
 
@@ -28,7 +28,7 @@ OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
 
     alBufferData(bufferId, format, wavFile.getData(), (int)wavFile.getDataSize(), (int)wavFile.getSampleRate());
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to create OpenAL buffer: {}", err);
+        logging::log(LEVEL_ERROR, "Failed to buffer data to OpenAL buffer: {}", ALStrError(err));
         return;
     }
     valid = true;

@@ -35,10 +35,6 @@ void test::TestApp::init () {
 
     stepAction = input().mapInput("debug_step", "key_f7");
     consoleAction = input().mapInput("debug_console", "key_f12");
-
-    testSource = audio().createSource();
-    auto sample = phenyl::Assets::Load<phenyl::AudioSample>("resources/audio/blastoff.wav");
-    testSource.play(sample);
 }
 
 void test::TestApp::fixedUpdate (float deltaTime) {

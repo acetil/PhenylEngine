@@ -239,6 +239,7 @@ void engine::detail::Engine::addComponents () {
     componentManager.addComponent<common::TimedLifetime>();
     physicsObj->addComponents(componentManager);
     graphicsHolder.tempGetGraphics()->addComponents(componentManager);
+    audioSystem->addComponents(componentManager,  *entitySerializer);
 }
 
 void engine::detail::Engine::dumpLevel (std::ostream& file) {
