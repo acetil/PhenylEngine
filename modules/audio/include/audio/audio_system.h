@@ -4,9 +4,11 @@
 
 #include "common/assets/asset_manager.h"
 #include "util/map.h"
+#include "util/fl_vector.h"
 
 #include "audio_source.h"
 #include "audio_sample.h"
+#include "audio_backend.h"
 
 namespace phenyl::component {
     class ComponentManager;
@@ -18,26 +20,50 @@ namespace phenyl::audio {
 
     class AudioSystem : public common::AssetManager<AudioSample> {
     private:
+        static constexpr std::size_t EMPTY_INDEX = static_cast<std::size_t>(-1);
+        struct VirtualSource {
+            float gain{1.0f};
+
+            std::size_t sourcesStart{EMPTY_INDEX};
+        };
+
+        struct BackendSource {
+            std::size_t backendId{};
+            std::size_t ownerId{EMPTY_INDEX};
+
+            std::size_t next{EMPTY_INDEX};
+            std::size_t prev{EMPTY_INDEX};
+
+            std::size_t nextLRU{EMPTY_INDEX};
+            std::size_t prevLRU{EMPTY_INDEX};
+
+            float remainingDuration{0.0f};
+            bool active{false};
+        };
+
         util::Map<std::size_t, std::unique_ptr<AudioSample>> samples;
+        std::unique_ptr<AudioBackend> backend;
+
+        util::FLVector<VirtualSource> virtualSources;
+        std::vector<BackendSource> backendSources;
+
+        std::size_t sourceFreeList;
+        std::size_t LRUHead;
+        std::size_t LRUTail;
+
+
+        std::size_t provisionSource (std::size_t virtualId);
+        [[nodiscard]] std::size_t getVirtualSource (const AudioSource& source) const;
+        [[nodiscard]] float getSampleDuration (const AudioSample& sample) const;
     protected:
-        AudioSource makeSource (std::size_t id);
-        AudioSample makeSample (std::size_t id);
-
-        virtual AudioSample makeWAVSample (const WAVFile& wavFile) = 0;
-
-        virtual void playSample (std::size_t sourceId, std::size_t sampleId) = 0;
-        virtual void destroySource (std::size_t id) = 0;
-        virtual void destroySample (std::size_t id) = 0;
-
-        [[nodiscard]] virtual float getSourceGain (std::size_t id) const = 0;
-        virtual void setSourceGain (std::size_t id, float gain) = 0;
-
-        void cleanup ();
+        void destroySource (std::size_t id);
+        void destroySample (std::size_t id);
 
         friend AudioSource;
         friend AudioSample;
     public:
-        ~AudioSystem() override = default;
+        explicit AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources=32);
+        ~AudioSystem() override;
 
         AudioSample* load (std::istream &data, std::size_t id) override;
         AudioSample* load (phenyl::audio::AudioSample &&obj, std::size_t id) override;
@@ -45,10 +71,18 @@ namespace phenyl::audio {
         [[nodiscard]] const char* getFileType() const override;
         bool isBinary() const override;
 
-        virtual AudioSource createSource () = 0;
+        //virtual AudioSource createSource () = 0;
+        AudioSource createSource ();
 
         void selfRegister ();
         void addComponents (component::ComponentManager& manager, component::EntitySerializer& serializer);
+
+        void playSample (AudioSource& source, const AudioSample& sample);
+
+        [[nodiscard]] float getSourceGain (const AudioSource& source) const;
+        void setSourceGain (AudioSource& source, float gain);
+
+        void update (float deltaTime);
     };
 
     std::unique_ptr<AudioSystem> MakeOpenALSystem ();

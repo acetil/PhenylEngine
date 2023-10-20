@@ -27,3 +27,7 @@ AudioSample::~AudioSample () {
         audioSystem->destroySample(sampleId);
     }
 }
+
+float AudioSample::duration () const {
+    return audioSystem->getSampleDuration(*this);
+}

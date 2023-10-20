@@ -57,3 +57,16 @@ OpenALBuffer::~OpenALBuffer () {
         alDeleteBuffers(1, &bufferId);
     }
 }
+
+float OpenALBuffer::duration () const {
+    if (!valid) {
+        return 0.0f;
+    }
+    ALint frequency, channels, bits, size;
+    alGetBufferi(bufferId, AL_FREQUENCY, &frequency);
+    alGetBufferi(bufferId, AL_CHANNELS, &channels);
+    alGetBufferi(bufferId, AL_BITS, &bits);
+    alGetBufferi(bufferId, AL_SIZE, &size);
+
+    return ((float) size) / (float) (frequency * channels * bits / 8);
+}

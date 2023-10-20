@@ -27,6 +27,8 @@ namespace phenyl::audio {
             return bufferId;
         }
 
+        [[nodiscard]] float duration () const;
+
         ~OpenALBuffer ();
     };
 }

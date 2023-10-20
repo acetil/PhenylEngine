@@ -9,9 +9,9 @@ namespace phenyl::audio {
         AudioSystem* audioSystem{nullptr};
         std::size_t sampleId{0};
 
-        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : audioSystem{audioSystem}, sampleId{sampleId} {}
-        friend class AudioSystem;
+        friend AudioSystem;
         friend class AudioSource;
+        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : audioSystem{audioSystem}, sampleId{sampleId} {}
     public:
         AudioSample () = default;
 
@@ -24,6 +24,8 @@ namespace phenyl::audio {
         explicit operator bool () const {
             return audioSystem && sampleId;
         }
+
+        [[nodiscard]] float duration () const;
 
         ~AudioSample();
     };

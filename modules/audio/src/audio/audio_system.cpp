@@ -16,16 +16,37 @@ namespace phenyl::audio {
 
 using namespace phenyl::audio;
 
+AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) : backend{std::move(backend)} {
+    backendSources.reserve(maxBackendSources);
+    for (std::size_t i = 0; i < maxBackendSources; i++) {
+        auto id = this->backend->makeSource();
+        if (!id) {
+            logging::log(LEVEL_ERROR, "Failed to provision backend source!");
+            break;
+        }
+
+        backendSources.emplace_back(BackendSource{.backendId=id});
+    }
+
+    sourceFreeList = 0;
+    for (std::size_t i = 0; i < backendSources.size() - 1; i++) {
+        backendSources[i].next = i + 1;
+    }
+    backendSources.back().next = EMPTY_INDEX;
+
+    LRUHead = EMPTY_INDEX;
+    LRUTail = EMPTY_INDEX;
+}
+
+AudioSystem::~AudioSystem () {
+    samples.clear();
+    for (auto& i : backendSources) {
+        backend->destroySource(i.backendId);
+    }
+}
+
 std::unique_ptr<AudioSystem> phenyl::audio::MakeOpenALSystem () {
-    return std::make_unique<OpenALSystem>();
-}
-
-AudioSource AudioSystem::makeSource (std::size_t id) {
-    return {this, id};
-}
-
-AudioSample AudioSystem::makeSample (std::size_t id) {
-    return {this, id};
+    return std::make_unique<AudioSystem>(std::make_unique<OpenALSystem>());
 }
 
 AudioSample* AudioSystem::load (std::istream& data, std::size_t id) {
@@ -35,7 +56,7 @@ AudioSample* AudioSystem::load (std::istream& data, std::size_t id) {
         return nullptr;
     }
 
-    samples[id] = std::make_unique<AudioSample>(makeWAVSample(wavOpt.getUnsafe()));
+    samples[id] = std::unique_ptr<AudioSample>(new AudioSample(this, backend->makeWAVSample(wavOpt.getUnsafe()))); // cpp is trash
 
     return samples[id].get();
 }
@@ -54,10 +75,6 @@ void AudioSystem::queueUnload (std::size_t id) {
 
 const char* AudioSystem::getFileType () const {
     return "";
-}
-
-void AudioSystem::cleanup () {
-    samples.clear();
 }
 
 void AudioSystem::selfRegister () {
@@ -79,4 +96,200 @@ void AudioSystem::addComponents (component::ComponentManager& manager, component
         logging::log(LEVEL_DEBUG, "Initial gain: {}", comp.sourceGain);
         comp.setGain(comp.sourceGain);
     });
+}
+
+AudioSource AudioSystem::createSource () {
+    auto id = virtualSources.emplace();
+
+    return {this, id + 1};
+}
+
+void AudioSystem::destroySource (std::size_t id) {
+    //backend->destroySource(id);
+
+    // TODO
+    assert(id);
+    auto virtualIndex = id - 1;
+    for (auto curr = virtualSources[virtualIndex].sourcesStart; curr != EMPTY_INDEX; curr = backendSources[curr].next) {
+        auto& source = backendSources[curr];
+        assert(source.active);
+        backend->stopSource(source.backendId);
+
+        if (LRUHead == curr) {
+            LRUHead = source.next;
+        } else {
+            assert(source.prev != EMPTY_INDEX);
+            backendSources[source.prev].next = source.next;
+        }
+
+        if (LRUTail == curr) {
+            LRUTail = source.prev;
+        } else {
+            assert(source.next != EMPTY_INDEX);
+            backendSources[source.next].prev = source.prev;
+        }
+
+        source.next = sourceFreeList;
+        sourceFreeList = curr;
+        source.active = false;
+    }
+
+    virtualSources.remove(id);
+}
+
+void AudioSystem::destroySample (std::size_t id) {
+    backend->destroySample(id);
+}
+
+void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
+    //backend->playSample(source.sourceId, sample.sampleId);
+    auto virtualIndex = getVirtualSource(source);
+    if (virtualIndex == EMPTY_INDEX) {
+        logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");
+        return;
+    }
+
+    auto& virtualSource = virtualSources[virtualIndex];
+
+    auto sourceIndex = provisionSource(virtualIndex);
+    auto& backendSource = backendSources[sourceIndex];
+
+    backendSource.next = virtualSource.sourcesStart;
+    backendSource.prev = EMPTY_INDEX;
+
+    if (virtualSource.sourcesStart != EMPTY_INDEX) {
+        backendSources[virtualSource.sourcesStart].prev = sourceIndex;
+    }
+
+    virtualSource.sourcesStart = sourceIndex;
+
+    if (LRUTail == EMPTY_INDEX) {
+        assert(LRUHead == EMPTY_INDEX);
+        LRUHead = sourceIndex;
+        LRUTail = sourceIndex;
+    } else {
+        backendSources[LRUTail].nextLRU = sourceIndex;
+        backendSource.prevLRU = LRUTail;
+        backendSource.nextLRU = EMPTY_INDEX;
+        LRUTail = sourceIndex;
+    }
+
+    backend->setSourceGain(backendSource.backendId, virtualSource.gain);
+    backend->playSample(backendSource.backendId, sample.sampleId);
+
+    backendSource.remainingDuration = sample.duration();
+}
+
+float AudioSystem::getSourceGain (const AudioSource& source) const {
+    auto index = getVirtualSource(source);
+    if (index == EMPTY_INDEX) {
+        logging::log(LEVEL_ERROR, "Attempted to get gain of invalid source!");
+        return 0.0f;
+    }
+
+    return virtualSources[index].gain;
+}
+
+void AudioSystem::setSourceGain (AudioSource& source, float gain) {
+    auto index = getVirtualSource(source);
+    if (index == EMPTY_INDEX) {
+        logging::log(LEVEL_ERROR, "Attempted to get gain of invalid source!");
+        return;
+    }
+
+    virtualSources[index].gain = gain;
+    for (auto curr = virtualSources[index].sourcesStart; curr != EMPTY_INDEX; curr = backendSources[curr].next) {
+        backend->setSourceGain(backendSources[curr].backendId, gain);
+    }
+}
+
+std::size_t AudioSystem::provisionSource (std::size_t virtualId) {
+    if (sourceFreeList != EMPTY_INDEX) {
+        auto newIndex = sourceFreeList;
+        sourceFreeList = backendSources[newIndex].next;
+
+        backendSources[newIndex].active = true;
+        backendSources[newIndex].ownerId = virtualId;
+
+        return newIndex;
+    }
+
+    auto index = LRUHead;
+    LRUHead = backendSources[index].nextLRU;
+
+    if (LRUHead == EMPTY_INDEX) {
+        LRUTail = EMPTY_INDEX;
+    } else {
+        backendSources[LRUHead].prevLRU = EMPTY_INDEX;
+    }
+
+    auto& source = backendSources[index];
+    backend->stopSource(source.backendId);
+    if (source.prev == EMPTY_INDEX) {
+        virtualSources[source.ownerId].sourcesStart = source.next;
+    } else {
+        backendSources[source.prev].next = source.next;
+    }
+
+    if (source.next != EMPTY_INDEX) {
+        backendSources[source.next].prev = source.prev;
+    }
+
+    backendSources[index].ownerId = virtualId;
+    assert(source.active);
+
+    return index;
+}
+
+std::size_t AudioSystem::getVirtualSource (const AudioSource& source) const {
+    if (!source) {
+        return EMPTY_INDEX;
+    }
+
+    return source.sourceId - 1;
+}
+
+float AudioSystem::getSampleDuration (const AudioSample& sample) const {
+    return backend->getSampleDuration(sample.sampleId);
+}
+
+void AudioSystem::update (float deltaTime) {
+    for (std::size_t i = 0; i < backendSources.size(); i++) {
+        auto& source = backendSources[i];
+        if (!source.active) {
+            continue;
+        }
+
+        source.remainingDuration -= deltaTime;
+        if (source.remainingDuration >= 0.0f || !backend->isSourceStopped(source.backendId)) {
+            continue;
+        }
+
+        if (source.prev == EMPTY_INDEX) {
+            assert(source.ownerId != EMPTY_INDEX);
+            virtualSources[source.ownerId].sourcesStart = source.next;
+        } else {
+            backendSources[source.prev].next = source.next;
+        }
+
+        if (source.next != EMPTY_INDEX) {
+            backendSources[source.next].prev = source.prev;
+        }
+
+        if (LRUHead == i) {
+            LRUHead = source.nextLRU;
+        } else {
+            backendSources[source.prevLRU].nextLRU = source.nextLRU;
+        }
+
+        if (LRUTail == i) {
+            LRUTail = source.prevLRU;
+        } else {
+            backendSources[source.nextLRU].prevLRU = source.prevLRU;
+        }
+
+        source.next = sourceFreeList;
+        sourceFreeList = i;
+        source.active = false;
+    }
 }

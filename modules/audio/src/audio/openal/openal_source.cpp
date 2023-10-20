@@ -60,7 +60,7 @@ float OpenALSource::getGain () const {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to get gain of sample {}: {}", sourceId, ALStrError(err));
+        logging::log(LEVEL_ERROR, "Failed to get gain of source {}: {}", sourceId, ALStrError(err));
         return 0.0f;
     }
 
@@ -74,6 +74,23 @@ void OpenALSource::setGain (float gain) {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to set gain of sample {} to {}: {}", sourceId, gain, ALStrError(err));
+        logging::log(LEVEL_ERROR, "Failed to set gain of source {} to {}: {}", sourceId, gain, ALStrError(err));
     }
+}
+
+void OpenALSource::stop () {
+    alGetError();
+    alSourceStop(sourceId);
+
+    ALenum err;
+    if ((err = alGetError())) {
+        logging::log(LEVEL_ERROR, "Failed to stop source {}: {}", sourceId, ALStrError(err));
+    }
+}
+
+bool OpenALSource::stopped () {
+    ALint status;
+    alGetSourcei(sourceId, AL_SOURCE_STATE, &status);
+
+    return status == AL_STOPPED;
 }

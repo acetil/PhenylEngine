@@ -280,6 +280,7 @@ void engine::detail::Engine::gameloop (Application* app) {
 
 void engine::detail::Engine::update (Application* app, double deltaTime) {
     app->update(deltaTime);
+    audioSystem->update((float)deltaTime);
     graphicsHolder.getGraphics().frameUpdate(componentManager);
     common::TimedLifetime::Update(componentManager, deltaTime); // TODO: put somewhere else
 }

@@ -33,7 +33,6 @@ phenyl::audio::OpenALSystem::OpenALSystem () {
 }
 
 phenyl::audio::OpenALSystem::~OpenALSystem () {
-    cleanup();
     alcMakeContextCurrent(nullptr);
     alcDestroyContext(context);
     alcCloseDevice(device);
@@ -62,26 +61,25 @@ phenyl::audio::OpenALSystem& phenyl::audio::OpenALSystem::operator= (phenyl::aud
     return *this;
 }
 
-phenyl::audio::AudioSource phenyl::audio::OpenALSystem::createSource () {
+std::size_t phenyl::audio::OpenALSystem::makeSource () {
     OpenALSource source{};
     if (!source) {
-        return {};
+        return 0;
     }
 
     auto sourceId = sources.emplace(std::move(source));
 
-    return makeSource(sourceId + 1);
+    return sourceId + 1;
 }
-
-phenyl::audio::AudioSample phenyl::audio::OpenALSystem::makeWAVSample (const phenyl::audio::WAVFile& wavFile) {
+std::size_t phenyl::audio::OpenALSystem::makeWAVSample (const phenyl::audio::WAVFile& wavFile) {
     OpenALBuffer buffer{wavFile};
     if (!buffer) {
-        return {};
+        return 0;
     }
 
     auto bufId = buffers.emplace(std::move(buffer));
 
-    return makeSample(bufId + 1);
+    return bufId + 1;
 }
 
 
@@ -150,4 +148,40 @@ void phenyl::audio::OpenALSystem::setSourceGain (std::size_t id, float gain) {
     }
 
     sources.at(id - 1).setGain(gain);
+}
+
+float phenyl::audio::OpenALSystem::getSampleDuration (std::size_t id) const {
+    if (!id) {
+        logging::log(LEVEL_ERROR, "Attempted to get sample duration of empty sample!");
+        return 0.0f;
+    } else if (!buffers.present(id - 1)) {
+        logging::log(LEVEL_ERROR, "Attempted to get sample duration of invalid sample {}!", id);
+        return 0.0f;
+    }
+
+    return buffers[id - 1].duration();
+}
+
+void phenyl::audio::OpenALSystem::stopSource (std::size_t id) {
+    if (!id) {
+        logging::log(LEVEL_ERROR, "Attempted to stop empty source!");
+        return;
+    } else if (!sources.present(id - 1)) {
+        logging::log(LEVEL_ERROR, "Attempted to stop invalid source {}!", id);
+        return;
+    }
+
+    sources[id - 1].stop();
+}
+
+bool phenyl::audio::OpenALSystem::isSourceStopped (std::size_t id) {
+    if (!id) {
+        logging::log(LEVEL_ERROR, "Attempted to stop empty source!");
+        return false;
+    } else if (!sources.present(id - 1)) {
+        logging::log(LEVEL_ERROR, "Attempted to stop invalid source {}!", id);
+        return false;
+    }
+
+    return sources[id - 1].stopped();
 }

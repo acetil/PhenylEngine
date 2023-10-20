@@ -35,26 +35,21 @@ void audio::AudioSource::play (const audio::AudioSample& sample) {
         return;
     }
 
-    audioSystem->playSample(sourceId, sample.sampleId);
+    audioSystem->playSample(*this, sample);
 }
 
 void audio::AudioSource::play (const common::Asset<AudioSample>& sample) {
-    if (!*this) {
-        logging::log(LEVEL_ERROR, "Attempted to play to empty source!");
-        return;
-    }
-
     if (sample) {
-        audioSystem->playSample(sourceId, sample->sampleId);
+        play(*sample);
     } else {
         logging::log(LEVEL_ERROR, "Attempted to play invalid sample!");
     }
 }
 
 float audio::AudioSource::getGain () const {
-    return audioSystem->getSourceGain(sourceId);
+    return audioSystem->getSourceGain(*this);
 }
 
 void audio::AudioSource::setGain (float gain) {
-    audioSystem->setSourceGain(sourceId, gain);
+    audioSystem->setSourceGain(*this, gain);
 }

@@ -71,12 +71,14 @@ namespace phenyl::util {
                 }
                 if (isPresent()) {
                     getUnsafe().~T();
+                    next = FREE_LIST_END;
                 }
 
-                next = other.next;
                 if (other.isPresent()) {
                     init(other.getUnsafe());
                 }
+
+                next = other.next;
 
                 return *this;
             }
@@ -84,13 +86,16 @@ namespace phenyl::util {
             FlVectorItem<T>& operator= (FlVectorItem<T>&& other) noexcept {
                 if (isPresent()) {
                     getUnsafe().~T();
+                    next = FREE_LIST_END;
                 }
 
-                next = other.next;
                 if (other.isPresent()) {
                     init(std::move(other.getUnsafe()));
+                    next = other.next;
+
                     other.destroy(FREE_LIST_END);
                 }
+
 
                 return *this;
             }

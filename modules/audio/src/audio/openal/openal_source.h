@@ -30,6 +30,9 @@ namespace phenyl::audio {
         [[nodiscard]] float getGain () const;
         void setGain (float gain);
 
+        void stop ();
+        bool stopped ();
+
         ~OpenALSource();
     };
 }
