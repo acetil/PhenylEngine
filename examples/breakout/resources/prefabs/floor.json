@@ -1,9 +1,6 @@
 {
   "components" :
   {
-    "Sprite2D" : {
-      "texture" : "resources/images/test_wall.png"
-    },
     "RigidBody2D" : {
       "momentum": {
         "x": 0.0,
@@ -19,11 +16,11 @@
       "angular_drag": 0,
       "angular_momentum" : 0
     },
-    "Wall" : {
-      "emitter" : "resources/prefabs/wall_collision_emitter",
-      "bounce_sample" : "resources/audio/hit2.wav"
+    "Floor" : {
+      "sample" : "resources/audio/fail.wav"
     },
-    "AudioPlayer" : {
+    "AudioPlayer" :
+    {
       "gain" : 0.5
     }
   }

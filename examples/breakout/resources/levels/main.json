@@ -100,21 +100,6 @@
     {
       "components" :
       {
-        "RigidBody2D" : {
-          "momentum": {
-            "x": 0.0,
-            "y": 0.0
-          },
-          "gravity": {
-            "x": 0.0,
-            "y": 0.0
-          },
-          "mass": 0.0,
-          "inertial_moment": 0.0,
-          "drag": 0,
-          "angular_drag": 0,
-          "angular_momentum" : 0
-        },
         "GlobalTransform2D" : {
           "transform": {
             "position": {
@@ -139,7 +124,8 @@
             "y" : 0.025
           }
         }
-      }
+      },
+      "prefab" : "resources/prefabs/floor"
     }
   ]
 }

@@ -48,7 +48,8 @@
       "health" : 1,
       "width" : 0.12,
       "height" : 0.04,
-      "emitter" : "resources/prefabs/tile_collision_emitter"
+      "emitter" : "resources/prefabs/tile_collision_emitter",
+      "break_sample" : "resources/audio/slap.wav"
     }
   }
 }

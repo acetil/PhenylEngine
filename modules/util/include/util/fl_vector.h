@@ -438,6 +438,10 @@ namespace phenyl::util {
         }
 
         void remove (std::size_t index) {
+            if (listSize <= index) {
+                logging::log(LEVEL_ERROR, "Attempted to remove invalid element of FLVector!");
+                return;
+            }
             if (!data[index].isPresent()) {
                 logging::log(LEVEL_ERROR, "Attempted to remove already removed element of FLVector!");
                 return;

@@ -92,8 +92,6 @@ void AudioSystem::addComponents (component::ComponentManager& manager, component
     manager.handleSignal<component::OnInsert<AudioPlayer>>([this] (auto entity, const component::OnInsert<AudioPlayer>& signal) {
         auto& comp = signal.get();
         comp.source = this->createSource();
-
-        logging::log(LEVEL_DEBUG, "Initial gain: {}", comp.sourceGain);
         comp.setGain(comp.sourceGain);
     });
 }
@@ -105,8 +103,6 @@ AudioSource AudioSystem::createSource () {
 }
 
 void AudioSystem::destroySource (std::size_t id) {
-    //backend->destroySource(id);
-
     // TODO
     assert(id);
     auto virtualIndex = id - 1;
@@ -134,7 +130,7 @@ void AudioSystem::destroySource (std::size_t id) {
         source.active = false;
     }
 
-    virtualSources.remove(id);
+    virtualSources.remove(virtualIndex);
 }
 
 void AudioSystem::destroySample (std::size_t id) {
@@ -142,7 +138,6 @@ void AudioSystem::destroySample (std::size_t id) {
 }
 
 void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
-    //backend->playSample(source.sourceId, sample.sampleId);
     auto virtualIndex = getVirtualSource(source);
     if (virtualIndex == EMPTY_INDEX) {
         logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");

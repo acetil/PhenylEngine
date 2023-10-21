@@ -50,7 +50,12 @@
       "max_x" : 0.975,
       "ball_prefab" : "resources/prefabs/ball",
       "ball_speed" : 1.5,
-      "emitter_prefab" : "resources/prefabs/paddle_collision_emitter"
+      "emitter_prefab" : "resources/prefabs/paddle_collision_emitter",
+      "bounce_sample" : "resources/audio/bounce.wav"
+    },
+    "AudioPlayer" :
+    {
+      "gain" : 0.5
     }
   }
 }

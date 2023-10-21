@@ -1,6 +1,7 @@
 #pragma once
 
 #include <phenyl/asset.h>
+#include <phenyl/audio.h>
 #include <phenyl/component.h>
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/components/physics/2D/rigid_body.h>
@@ -20,6 +21,7 @@ namespace breakout {
         float ballSpeed = 1.0f;
         phenyl::Asset<phenyl::Prefab> ballPrefab;
         phenyl::Asset<phenyl::Prefab> emitterPrefab;
+        phenyl::Asset<phenyl::AudioSample> bounceSample;
 
         void update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::GameCamera& camera);
     };
@@ -33,6 +35,7 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(ballPrefab, "ball_prefab");
         PHENYL_MEMBER_NAMED(ballSpeed, "ball_speed");
         PHENYL_MEMBER_NAMED(emitterPrefab, "emitter_prefab");
+        PHENYL_MEMBER_NAMED(bounceSample, "bounce_sample");
     })
 
     void initPaddle (BreakoutApp* app, phenyl::GameInput& input, phenyl::ComponentManager& manager);

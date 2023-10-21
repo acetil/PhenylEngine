@@ -1,3 +1,4 @@
+#include <phenyl/components/audio_player.h>
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/components/physics/2D/rigid_body.h>
 #include <phenyl/components/2D/particle_emitter.h>
@@ -21,7 +22,7 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input,
     RightKey = input.mapInput("move_right", "key_d");
     BallShoot = input.mapInput("ball_shoot", "mouse_left");
 
-    manager.handleSignal<phenyl::signals::OnCollision, const Paddle>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Paddle& paddle) {
+    manager.handleSignal<phenyl::signals::OnCollision, const Paddle, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Paddle& paddle, phenyl::AudioPlayer& audioPlayer) {
         phenyl::GlobalTransform2D emitterTransform{};
         emitterTransform.transform2D.setPosition(signal.worldContactPoint);
 
@@ -31,6 +32,7 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input,
               .apply<phenyl::ParticleEmitter2D>([normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) {
                 emitter.direction = normal;
             });
+        audioPlayer.play(paddle.bounceSample);
     });
 }
 

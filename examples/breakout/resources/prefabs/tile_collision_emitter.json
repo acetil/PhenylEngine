@@ -32,6 +32,10 @@
     "TimedLifetime" :
     {
       "lifetime" : 0.5
+    },
+    "AudioPlayer" :
+    {
+      "gain" : 0.5
     }
   }
 }

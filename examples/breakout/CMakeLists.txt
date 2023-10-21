@@ -24,4 +24,9 @@ target_copy_resources(breakout
         resources/particles/wall_collision.json
         resources/prefabs/tile_collision_emitter.json
         resources/particles/tile_break.json
+        resources/audio/hit2.wav
+        resources/audio/slap.wav
+        resources/audio/bounce.wav
+        resources/prefabs/floor.json
+        resources/audio/fail.wav
 )
