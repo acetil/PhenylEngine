@@ -3,6 +3,7 @@
 #include "particle_emitter.h"
 #include "common/serializer.h"
 #include "common/assets/asset_serializer.h"
+#include "common/assets/asset_serializer_f.h"
 #include "common/maths/glm_serializer.h"
 
 namespace phenyl::graphics {

@@ -1,9 +1,7 @@
-#include <stdlib.h>
-
 #include <logging/logging.h>
 #include <phenyl/phenyl.h>
 
-#include "game/test_app.h"
+import test_app;
 
 using namespace phenyl;
 

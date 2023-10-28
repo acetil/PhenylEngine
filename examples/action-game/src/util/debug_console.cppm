@@ -1,7 +1,7 @@
+module;
+
 #include <iostream>
 #include <vector>
-
-#include "util/debug_console.h"
 
 #include <logging/logging.h>
 #include <util/string_help.h>
@@ -9,10 +9,14 @@
 #include <phenyl/asset.h>
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
+#include "phenyl/application.h"
+
+
+export module debug_console;
 
 using namespace phenyl;
 
-static void handleProfiler (test::TestApp* app, const std::vector<std::string>& args) {
+/*static void handleProfiler (test::TestApp* app, const std::vector<std::string>& args) {
     if (args.empty()) {
         util::logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
@@ -58,9 +62,7 @@ static void doDebugConsole (test::TestApp* app) {
     if (command == "profiler") {
         handleProfiler(app, args);
     } else if (command == "level"){
-        /*if (args.size() == 1 && args[0] == "reload") {
-            bus->raise(event::ReloadMapEvent());
-        } else*/ if (args.size() == 2 && args[0] == "dump") {
+        if (args.size() == 2 && args[0] == "dump") {
             //bus->raise(event::DumpMapEvent(args[1]));
             app->dumpLevel(args[1]);
         } else if (args.size() == 2 && args[0] == "load") {
@@ -102,10 +104,12 @@ static void doDebugConsole (test::TestApp* app) {
         util::logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
     }
 
-}
+}*/
 
-void test::doDebugConsole (test::TestApp* app) {
-    app->pause();
-    ::doDebugConsole(app);
-    app->queueResume();
+namespace test {
+    export void doDebugConsole (phenyl::Application* app) {
+        //app->pause();
+        //::doDebugConsole(app);
+        //app->queueResume();
+    }
 }

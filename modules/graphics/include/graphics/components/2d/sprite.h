@@ -5,6 +5,7 @@
 #include "graphics/maths_headers.h"
 #include "common/assets/asset.h"
 #include "common/serializer_intrusive.h"
+#include "graphics/textures/sprite_atlas.h"
 
 namespace phenyl::graphics {
     class SpriteTexture;

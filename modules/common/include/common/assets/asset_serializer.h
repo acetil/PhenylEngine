@@ -34,7 +34,4 @@ namespace phenyl::common {
             return true;
         }
     };
-
-    template <typename T>
-    phenyl_AssetSerializer<T> phenyl_serialization_obj(Asset<T>*);
 }
