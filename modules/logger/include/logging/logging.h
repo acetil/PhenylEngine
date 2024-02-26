@@ -1,5 +1,7 @@
 #pragma once
 
+#include "logging2.h"
+
 #include <string>
 #include "util/format.h"
 

@@ -138,7 +138,9 @@ audio::AudioSystem& phenyl::engine::PhenylEngine::getAudio () {
     return internal->getAudio();
 }
 
-engine::detail::Engine::Engine (const ApplicationProperties& properties) : componentManager{256}, graphicsHolder(properties.graphicsProperties) {
+engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties), componentManager{256} {
+    InitLogging(LEVEL_DEBUG, "debug.log");
+
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 
@@ -181,6 +183,8 @@ engine::detail::Engine::~Engine () {
     logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
     prefabManager->clear();
     componentManager.clearAll();
+
+    ShutdownLogging();
 }
 
 graphics::PhenylGraphics engine::detail::Engine::getGraphics () const {
