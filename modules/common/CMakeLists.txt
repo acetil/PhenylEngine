@@ -14,6 +14,8 @@ add_library(common include/common include/common/input/input_source.h include/co
         include/common/components/timed_lifetime.h
         include/common/components/timed_lifetime_serialize.h
         src/common/components/timed_lifetime.cpp
+        include/common/detail/loggers.h
+        src/common/loggers.cpp
 )
 
 find_package(nlohmann_json REQUIRED)

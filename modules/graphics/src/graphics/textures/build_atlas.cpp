@@ -8,6 +8,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"ATLAS_BUILDER"};
+
 struct Node {
     int width = 0;
     int height = 0;
@@ -59,18 +61,18 @@ std::pair<std::vector<AtlasObject<int>>, int> atlas_internal::buildAtlasInternal
         length *= 2;
     }
 
-    logging::log(LEVEL_INFO, "Initiated creation of atlas of {} images of total area {}.",
+    PHENYL_LOGI(LOGGER, "Initiated creation of atlas of {} images of total area {}.",
                  imgs.size(), totalArea);
 
     Node* tree = new Node();
     tree->setDimensions(length, length, 0, 0);
-    logging::log(LEVEL_INFO, "Attempting packing of {} * {} atlas.", length, length);
+    PHENYL_LOGD(LOGGER, "Attempting packing of {} * {} atlas.", length, length);
     while (!insertImages(tree, imgs, padding)) {
         // space isn't big enough
         tree->destroy();
         length *= 2;
         tree->setDimensions(length, length, 0, 0);
-        logging::log(LEVEL_INFO, "Unable to pack, attempting packing of {} * {} atlas.", length, length);
+        PHENYL_LOGD(LOGGER, "Unable to pack, attempting packing of {} * {} atlas.", length, length);
     }
 
     std::vector<Node*> nodes;
@@ -87,7 +89,7 @@ std::pair<std::vector<AtlasObject<int>>, int> atlas_internal::buildAtlasInternal
 
     delete tree;
 
-    logging::log(LEVEL_INFO, "Packing success.");
+    PHENYL_LOGD(LOGGER, "Packing success.");
 
     return {objs, length};
 }

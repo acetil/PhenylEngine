@@ -22,6 +22,9 @@
 
 #include <vector>
 using namespace phenyl::graphics;
+
+static phenyl::Logger LOGGER{"GL_RENDERER"};
+
 GLRenderer::GLRenderer (GLFWwindow* window) : shaderManager{this} {
     // TODO: move graphics init code here
     this->window = window;
@@ -129,22 +132,21 @@ void GLRenderer::setupErrorHandling () {
         }
         switch(severity) {
             case GL_DEBUG_SEVERITY_NOTIFICATION:
-                //logging::logf(LEVEL_INFO, "GL info notification from %s with type %s and message %s",
-                //sourceString, typeString, message);
+                PHENYL_LOGT(LOGGER,  "GL debug notification from {} with type {} and message {}", sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
-                logging::log(LEVEL_WARNING, "GL low severity message from {} with type {} and message {}",
+                PHENYL_LOGW(LOGGER, "GL low severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
-                logging::log(LEVEL_ERROR, "GL medium severity message from {} with type {} and message {}",
+                PHENYL_LOGE(LOGGER, "GL medium severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_HIGH:
-                logging::log(LEVEL_ERROR, "GL high severity message from {} with type {} and message {}",
+                PHENYL_LOGE(LOGGER, "GL high severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
             default:
-                logging::log(LEVEL_WARNING, "GL unknown severity message from {} with type {} and message {}",
+                PHENYL_LOGW(LOGGER, "GL unknown severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
         }
     }, nullptr);
@@ -159,7 +161,7 @@ GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* d
     // mipmapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
+    PHENYL_LOGD(LOGGER, "Generating mipmaps for {} * {} texture", width, width);
     glGenerateMipmap(GL_TEXTURE_2D);
     return GraphicsTexture(this, id);
 }
@@ -171,7 +173,7 @@ void GLRenderer::reloadTexture (unsigned int textureId, int width, int height, u
     // mipmapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
+    PHENYL_LOGD(LOGGER, "Generating mipmaps for {} * {} texture atlas", width, width);
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
@@ -273,14 +275,15 @@ glm::vec2 GLRenderer::getMousePos () const {
 }
 
 void GLRenderer::loadDefaultShaders () {
-    logging::log(LEVEL_DEBUG, "Loading virtual box shader!");
+    PHENYL_LOGD(LOGGER, "Loading virtual box shader!");
     boxShader = common::Assets::LoadVirtual("phenyl/shaders/box", Shader{std::make_shared<GLShaderProgram>(
             ShaderSourceBuilder{EMBED_BOX_VERTEX_VERT, EMBED_BOX_FRAGMENT_FRAG}
                     .addUniform<glm::vec2>("screenSize")
                     .build()
     )});
 
-    logging::log(LEVEL_DEBUG, "Loading virtual debug shader!");
+
+   PHENYL_LOGD(LOGGER, "Loading virtual debug shader!");
     debugShader = common::Assets::LoadVirtual("phenyl/shaders/debug", Shader{std::make_shared<GLShaderProgram>(
             ShaderSourceBuilder{EMBED_DEBUG_VERTEX_VERT, EMBED_DEBUG_FRAGMENT_FRAG}
                     .addUniform<glm::mat4>("camera")
@@ -288,21 +291,21 @@ void GLRenderer::loadDefaultShaders () {
                     .build()
     )});
 
-    logging::log(LEVEL_DEBUG, "Loading virtual sprite shader!");
+    PHENYL_LOGD(LOGGER, "Loading virtual sprite shader!");
     spriteShader = common::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{std::make_shared<GLShaderProgram>(
             ShaderSourceBuilder{EMBED_SPRITE_VERTEX_VERT, EMBED_SPRITE_FRAGMENT_FRAG}
                     .addUniform<glm::mat4>("camera")
                     .build()
     )});
 
-    logging::log(LEVEL_DEBUG, "Loading virtual text shader!");
+    PHENYL_LOGD(LOGGER, "Loading virtual text shader!");
     textShader = common::Assets::LoadVirtual("phenyl/shaders/text", Shader{std::make_shared<GLShaderProgram>(
             ShaderSourceBuilder{EMBED_TEXT_VERTEX_VERT, EMBED_TEXT_FRAGMENT_FRAG}
                     .addUniform<glm::mat4>("camera")
                     .build()
     )});
 
-    logging::log(LEVEL_DEBUG, "Loading virtual particle shader!");
+    PHENYL_LOGD(LOGGER, "Loading virtual particle shader!");
     particleShader = common::Assets::LoadVirtual("phenyl/shaders/particle", Shader{std::make_shared<GLShaderProgram>(
             ShaderSourceBuilder{EMBED_PARTICLE_VERTEX_VERT, EMBED_PARTICLE_FRAGMENT_FRAG}
                     .addUniform<glm::mat4>("camera")

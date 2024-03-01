@@ -1,4 +1,4 @@
-add_library(logger src/logging.cpp src/logging_internal.cpp src/format.cpp
+add_library(logger
         include/logging/logger.h
         src/logger.cpp
         include/logging/log_sink.h
@@ -7,11 +7,14 @@ add_library(logger src/logging.cpp src/logging_internal.cpp src/format.cpp
         src/log_manager.cpp
         src/stream_sink.cpp
         src/stream_sink.h
-        include/logging/logging2.h
         include/logging/forward.h)
+
+find_package(cpptrace REQUIRED)
 
 set_property(TARGET logger PROPERTY CXX_STANDARD 20)
 
 target_include_directories(logger PUBLIC include)
 target_include_directories(logger PRIVATE src)
+
+target_link_libraries(logger PUBLIC cpptrace::cpptrace)
 

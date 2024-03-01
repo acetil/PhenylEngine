@@ -7,6 +7,8 @@
 
 using namespace phenyl::util;
 
+static phenyl::Logger LOGGER{"DATA"};
+
 namespace phenyl::util {
     void to_json (nlohmann::json& json, const DataValue& val);
     void to_json (nlohmann::json& json, const DataArray& val);
@@ -132,14 +134,14 @@ DataValue phenyl::util::parseJson (const std::string& jsonStr) {
 DataValue phenyl::util::parseFromFile (const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file) {
-        logging::log(LEVEL_WARNING, "Failed to read file: {}", filepath);
+        PHENYL_LOGE(LOGGER, "Failed to read file: {}", filepath);
         return DataValue();
     }
     try {
         auto json = nlohmann::json::parse(file);
         return internalParseJson(json);
     } catch (std::exception&) {
-        logging::log(LEVEL_WARNING, "Failed to parse json from file {}", filepath);
+        PHENYL_LOGE(LOGGER, "Failed to parse json from file {}", filepath);
     }
     return DataValue();
 }
@@ -149,7 +151,7 @@ DataValue phenyl::util::parseFromStream (std::istream& stream) {
         auto json = nlohmann::json::parse(stream);
         return internalParseJson(json);
     } catch (std::exception&) {
-        logging::log(LEVEL_WARNING, "Failed to parse json from stream!");
+        PHENYL_LOGE(LOGGER, "Failed to parse json from stream");
         return util::DataValue{};
     }
 }

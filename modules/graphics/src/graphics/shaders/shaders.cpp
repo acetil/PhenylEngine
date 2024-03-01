@@ -31,13 +31,12 @@ const char* phenyl::graphics::getUniformTypeName (ShaderDataType type) {
 Shader::~Shader () = default;
 
 void Shader::applyUniform (const std::string& uniform, ShaderDataType uniformType, const unsigned char* dataPtr) {
-    if (debugCheckShared()) {
-        internal->applyUniform(uniform, uniformType, dataPtr);
-    }
+    PHENYL_DASSERT(internal);
+    internal->applyUniform(uniform, uniformType, dataPtr);
+
 }
 
 void Shader::bind () {
-    if (debugCheckShared()) {
-        internal->bind();
-    }
+    PHENYL_DASSERT(internal);
+    internal->bind();
 }

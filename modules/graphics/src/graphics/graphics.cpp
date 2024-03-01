@@ -6,6 +6,7 @@
 #include <utility>
 #include "graphics/renderlayer/entity_layer.h"
 #include "logging/logging.h"
+#include "graphics/detail/loggers.h"
 #include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/font/font_manager.h"
 #include "graphics/phenyl_graphics.h"
@@ -26,7 +27,7 @@ void detail::Graphics::addEntityLayer (component::EntityComponentManager* compMa
 
 void detail::Graphics::setupWindowCallbacks () {
     renderer->setupCallbacks();
-    logging::log(LEVEL_DEBUG, "Set up window callbacks!");
+    PHENYL_LOGD(detail::GRAPHICS_LOGGER, "Set up window callbacks!");
 }
 
 detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager) : uiManager(renderer.get(), manager), particleManager{256} {

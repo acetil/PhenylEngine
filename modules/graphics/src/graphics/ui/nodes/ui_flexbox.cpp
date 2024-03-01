@@ -8,6 +8,8 @@
 
 using namespace phenyl::graphics::ui;
 
+static phenyl::Logger LOGGER{"UI_FLEXBOX"};
+
 namespace phenyl::graphics::ui::detail {
     struct FlexBoxItem {
         UIComponentNode* node;
@@ -73,7 +75,7 @@ void UIFlexBoxNode::setAxes (Axis primaryAxis, Axis secondaryAxis) {
     auto secondaryDir = getAxisVec(secondaryAxis);
 
     if (glm::dot(primaryDir, secondaryDir) != 0) {
-        graphics::logging::log(LEVEL_ERROR, "Flexbox axes must be perpendicular!");
+        PHENYL_LOGE(LOGGER, "Flexbox axes must be perpendicular!");
         return;
     }
 

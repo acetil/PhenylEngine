@@ -5,6 +5,8 @@
 
 using namespace phenyl::common;
 
+static phenyl::Logger LOGGER{"REMAPPABLE_PROXY_INPUT"};
+
 void RemappableProxyInput::addInputSource (const std::shared_ptr<InputSource>& source) {
     RemappableInput::addInputSource(source);
     isProxy.emplace_back(false);
@@ -17,7 +19,7 @@ void RemappableProxyInput::addInputSource (const std::shared_ptr<ProxySource>& p
 
 void RemappableProxyInput::consumeProxyInput (InputAction action) {
     if (!action || getActionIndex(action) > actions.size()) {
-        logging::log(LEVEL_ERROR, "Invalid input action!");
+        PHENYL_LOGE(LOGGER, "Invalid input action!");
         return;
     }
 
@@ -27,6 +29,6 @@ void RemappableProxyInput::consumeProxyInput (InputAction action) {
         auto* proxySource = (common::ProxySource*)inputSources[sourceAction.sourceIndex].get();
         proxySource->consumeForProxies(sourceAction.actionIndex);
     } else {
-        logging::log(LEVEL_ERROR, "Cannot consume proxied input for non-proxy source!");
+        PHENYL_LOGE(LOGGER, "Cannot consume proxied input for non-proxy source!");
     }
 }

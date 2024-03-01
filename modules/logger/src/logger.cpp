@@ -1,4 +1,4 @@
-#include <logging/logger.h>
+#include "logging/logger.h"
 
 #include "log_manager.h"
 
@@ -12,9 +12,9 @@ void Logger::initSink() {
     logSink = LOG_MANAGER.makeSink(this, parent);
 }
 
-Logger::Logger (std::string name) : name{std::move(name)}, parent{nullptr} {}
+Logger::Logger (const std::string_view name) : name{name}, parent{nullptr} {}
 
-Logger::Logger (std::string name, Logger& parent) : name{std::move(name)}, parent{&parent} {}
+Logger::Logger (const std::string_view name, Logger& parent) : name{name}, parent{&parent} {}
 
 void Logger::setMinLevel (const int level) {
     minLogLevel = level;

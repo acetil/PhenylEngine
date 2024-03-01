@@ -1,4 +1,7 @@
 #include "wav.h"
+
+#include <assert.h>
+
 #include "util/endian.h"
 #include "util/istream_help.h"
 
@@ -24,6 +27,7 @@ static constexpr std::uint32_t HEADER_SIZE = 44 - 8;
 static constexpr std::uint32_t FORMAT_SIZE = 16;
 static constexpr std::uint16_t PCM_TYPE = 1;
 
+static Logger LOGGER{"WAV_FILE"};
 
 static util::Optional<WAVHeader> readHeader (std::istream& file);
 
@@ -51,6 +55,7 @@ const std::byte* audio::WAVFile::getData () const {
 }
 
 util::Optional<audio::WAVFile> audio::WAVFile::Load (std::istream& file) {
+    PHENYL_LOGD(LOGGER, "Loading WAV file");
     auto headerOpt = readHeader(file);
     if (!headerOpt) {
         return util::NullOpt;
@@ -60,7 +65,7 @@ util::Optional<audio::WAVFile> audio::WAVFile::Load (std::istream& file) {
     auto data = std::make_unique<std::byte[]>(header.dataSize);
 
     if (!file.read((char*)data.get(), header.dataSize)) {
-        logging::log(LEVEL_ERROR, "Failed to read WAV file data!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV file data!");
         return util::NullOpt;
     }
 
@@ -71,108 +76,111 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
     WAVHeader header{};
     std::uint32_t magic;
     if (!util::BinaryReadLittle(file, magic)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV RIFF file tag!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV RIFF file tag!");
         return util::NullOpt;
     } else if (magic != MAGIC_TAG) {
-        audio::logging::log(LEVEL_ERROR, "Invalid RIFF file tag: {} (expected {})", magic, MAGIC_TAG);
+        PHENYL_LOGE(LOGGER, "Invalid RIFF file tag: {} (expected {})", magic, MAGIC_TAG);
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.fileSize)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV file size!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV file size!");
         return util::NullOpt;
     } else if (header.fileSize < HEADER_SIZE) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV file size: {}", header.fileSize);
+        PHENYL_LOGE(LOGGER, "Invalid WAV file size: {}", header.fileSize);
         return util::NullOpt;
     }
 
     std::uint32_t wavTag;
     if (!util::BinaryReadLittle(file, wavTag)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV format tag!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV format tag!");
         return util::NullOpt;
     } else if (wavTag != WAV_TAG) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV format tag: {} (expected {})", wavTag, WAV_TAG);
+        PHENYL_LOGE(LOGGER, "Invalid WAV format tag: {} (expected {})", wavTag, WAV_TAG);
         return util::NullOpt;
     }
 
 
     std::uint32_t fmtTag;
     if (!util::BinaryReadLittle(file, fmtTag)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV file fmt tag!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV file fmt tag!");
         return util::NullOpt;
     } else if (fmtTag != FMT_TAG) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV format tag: {} (expected {})", fmtTag, FMT_TAG);
+        PHENYL_LOGE(LOGGER, "Invalid WAV format tag: {} (expected {})", fmtTag, FMT_TAG);
         return util::NullOpt;
     }
 
     std::uint32_t fmtSize;
     if (!util::BinaryReadLittle(file, fmtSize)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV fmt size!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV fmt size!");
         return util::NullOpt;
     } else if (fmtSize != FORMAT_SIZE) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV fmt size: {} (expected {})", fmtSize, FORMAT_SIZE);
+        PHENYL_LOGE(LOGGER, "Invalid WAV fmt size: {} (expected {})", fmtSize, FORMAT_SIZE);
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.formatType)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV fmt type!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV fmt type!");
         return util::NullOpt;
     } else if (header.formatType != PCM_TYPE) {
-        audio::logging::log(LEVEL_ERROR, "Unsupported WAV format type: {}", header.formatType);
+        PHENYL_LOGE(LOGGER, "Unsupported WAV format type: {}", header.formatType);
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.channels)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV channels!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV channels!");
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.sampleRate)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV sample rate!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV sample rate!");
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.byteRate)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV byte rate!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV byte rate!");
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.blockAlign)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV block align!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV block align!");
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.sampleBits)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV sample bits!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV sample bits!");
         return util::NullOpt;
     }
 
     if (header.byteRate != header.sampleRate * header.channels * header.sampleBits / 8) {
-        audio::logging::log(LEVEL_ERROR, "Invalid byte rate {} (sample rate: {}, channels: {}, sample bits: {})", header.byteRate, header.sampleRate, header.channels, header.sampleBits);
+        PHENYL_LOGE(LOGGER, "Invalid byte rate {} (sample rate: {}, channels: {}, sample bits: {})", header.byteRate, header.sampleRate, header.channels, header.sampleBits);
         return util::NullOpt;
     }
 
     if (header.blockAlign != header.channels * header.sampleBits / 8) {
-        audio::logging::log(LEVEL_ERROR, "Invalid block align {} (channels: {}, sample bits: {})", header.blockAlign, header.channels, header.sampleBits);
+        PHENYL_LOGE(LOGGER, "Invalid block align {} (channels: {}, sample bits: {})", header.blockAlign, header.channels, header.sampleBits);
         return util::NullOpt;
     }
 
     std::uint32_t dataTag;
     if (!util::BinaryReadLittle(file, dataTag)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV data tag!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV data tag!");
         return util::NullOpt;
     } else if (dataTag != DATA_TAG) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV data tag: {} (expected {})", dataTag, DATA_TAG);
+        PHENYL_LOGE(LOGGER, "Invalid WAV data tag: {} (expected {})", dataTag, DATA_TAG);
         return util::NullOpt;
     }
 
     if (!util::BinaryReadLittle(file, header.dataSize)) {
-        audio::logging::log(LEVEL_ERROR, "Failed to read WAV data size!");
+        PHENYL_LOGE(LOGGER, "Failed to read WAV data size!");
         return util::NullOpt;
     } else if (header.dataSize != header.fileSize - HEADER_SIZE) {
-        audio::logging::log(LEVEL_ERROR, "Invalid WAV data size: {} (file size: {}, header size: {})", header.dataSize, header.fileSize, HEADER_SIZE);
+        PHENYL_LOGE(LOGGER, "Invalid WAV data size: {} (file size: {}, header size: {})", header.dataSize, header.fileSize, HEADER_SIZE);
         return util::NullOpt;
     }
+
+    PHENYL_LOGT(LOGGER, "Read WAV header: fileSize={}, formatType={}, channels={}, sampleRate={}, byteRate={}, blockAlign={}, sampleBits={}, dataSize={}", header.fileSize, header.formatType, header.channels, header.sampleRate,
+            header.byteRate, header.blockAlign, header.sampleBits, header.dataSize);
 
     return header;
 }

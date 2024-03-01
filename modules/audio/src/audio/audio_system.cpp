@@ -16,17 +16,22 @@ namespace phenyl::audio {
 
 using namespace phenyl::audio;
 
+static phenyl::Logger LOGGER{"AUDIO_SYSTEM"};
+
 AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) : backend{std::move(backend)} {
+    PHENYL_LOGD(LOGGER, "Attempting to provision {} sources", maxBackendSources);
     backendSources.reserve(maxBackendSources);
     for (std::size_t i = 0; i < maxBackendSources; i++) {
         auto id = this->backend->makeSource();
         if (!id) {
-            logging::log(LEVEL_ERROR, "Failed to provision backend source!");
+            PHENYL_LOGE(LOGGER, "Failed to provision backend source!");
             break;
         }
 
         backendSources.emplace_back(BackendSource{.backendId=id});
     }
+
+    PHENYL_LOGI(LOGGER, "Initialising audio system with {} backend sources", backendSources.size());
 
     sourceFreeList = 0;
     for (std::size_t i = 0; i < backendSources.size() - 1; i++) {
@@ -140,7 +145,8 @@ void AudioSystem::destroySample (std::size_t id) {
 void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
     auto virtualIndex = getVirtualSource(source);
     if (virtualIndex == EMPTY_INDEX) {
-        logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");
+        //logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");
+        PHENYL_LOGE(LOGGER, "Attepted to play sample {} to empty source {}", sample.sampleId, source.sourceId);
         return;
     }
 
@@ -178,7 +184,7 @@ void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
 float AudioSystem::getSourceGain (const AudioSource& source) const {
     auto index = getVirtualSource(source);
     if (index == EMPTY_INDEX) {
-        logging::log(LEVEL_ERROR, "Attempted to get gain of invalid source!");
+        PHENYL_LOGE(LOGGER, "Attempted to get gain of invalid source {}!", source.sourceId);
         return 0.0f;
     }
 
@@ -188,7 +194,7 @@ float AudioSystem::getSourceGain (const AudioSource& source) const {
 void AudioSystem::setSourceGain (AudioSource& source, float gain) {
     auto index = getVirtualSource(source);
     if (index == EMPTY_INDEX) {
-        logging::log(LEVEL_ERROR, "Attempted to get gain of invalid source!");
+        PHENYL_LOGE(LOGGER, "Attempted to set gain of invalid source {}!", source.sourceId);
         return;
     }
 

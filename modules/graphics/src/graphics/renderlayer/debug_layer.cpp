@@ -7,6 +7,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"DEBUG_LAYER"};
+
 struct DebugBox {
     glm::vec3 vertices[4];
     glm::vec4 colour;
@@ -171,12 +173,12 @@ void DebugLayer::preRender (graphics::Renderer* renderer) {
 }
 
 int DebugLayer::getUniformId (std::string uniformName) {
-    logging::log(LEVEL_WARNING, "The debug pipeline does not accept uniform \"{}\"!", uniformName);
+    PHENYL_LOGW(LOGGER, "The debug pipeline does not accept uniform \"{}\"!", uniformName);
     return 0;
 }
 
 void DebugLayer::applyUniform (int uniformId, void* data) {
-    logging::log(LEVEL_WARNING, "The debug pipeline does not accept uniforms!");
+    PHENYL_LOGW(LOGGER, "The debug pipeline does not accept uniforms!");
 }
 
 void DebugLayer::applyCamera (graphics::Camera camera) {

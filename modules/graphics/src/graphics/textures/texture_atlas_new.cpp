@@ -5,6 +5,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"TEXTURE_ATLAS"};
+
 struct AtlasImage {
     std::size_t key;
     int width;
@@ -40,11 +42,11 @@ void TextureAtlas::build (const std::vector<Image*>& images) {
     int imgSize = buildAtlas(atlasImages.begin(), atlasImages.end(), std::back_inserter(objs), 1);
 
     if (imgSize <= 0) {
-        logging::log(LEVEL_ERROR, "Atlas build failed!");
+        PHENYL_LOGE(LOGGER, "Atlas build failed!");
         return;
     }
 
-    logging::log(LEVEL_INFO, "Stitching atlas.");
+    PHENYL_LOGD(LOGGER, "Stitching atlas.");
     auto data = std::make_unique<std::byte[]>(imgSize * imgSize * CHANNELS);
     items.clear();
     items.reserve(objs.size());
@@ -56,7 +58,7 @@ void TextureAtlas::build (const std::vector<Image*>& images) {
     }
 
     texture.reload(imgSize, imgSize, (unsigned char*)data.get());
-    logging::log(LEVEL_INFO, "Stitching complete");
+    PHENYL_LOGD(LOGGER, "Stitching complete");
 }
 
 std::size_t TextureAtlas::size () const {

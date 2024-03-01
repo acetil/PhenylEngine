@@ -4,24 +4,24 @@
 
 using namespace phenyl::common;
 
+static phenyl::Logger LOGGER{"REMAPPABLE_INPUT"};
+
 void RemappableInput::addInputSource (const std::shared_ptr<InputSource>& source) {
     inputSources.emplace_back(source);
 }
 
 InputAction RemappableInput::addInputMapping (const std::string& actionName, const std::string& inputName) {
-    InputAction inputAction;
-
     if (!actionMap.contains(actionName)) {
         uint32_t index = actions.size() + 1;
         actions.push_back({});
         actionMap[actionName] = InputAction{index};
     }
 
-    inputAction = actionMap.at(actionName);
+    const InputAction inputAction = actionMap.at(actionName);
 
     detail::SourceAction sourceAction;
-    if (!(sourceAction = getSourceAction(inputName))) {
-        logging::log(LEVEL_ERROR, "Unable to find input {}!", inputName);
+    if (!((sourceAction = getSourceAction(inputName)))) {
+        PHENYL_LOGE(LOGGER, "Unable to find input {}!", inputName);
         return {};
     }
 
@@ -32,7 +32,7 @@ InputAction RemappableInput::addInputMapping (const std::string& actionName, con
 
 InputAction RemappableInput::getInputAction (const std::string& actionName) {
     if (!actionMap.contains(actionName)) {
-        logging::log(LEVEL_ERROR, "Unable to find input action {}!", actionName);
+        PHENYL_LOGE(LOGGER, "Unable to find input action {}!", actionName);
         return {};
     }
 
@@ -41,14 +41,14 @@ InputAction RemappableInput::getInputAction (const std::string& actionName) {
 
 void RemappableInput::setInputMapping (const InputAction& action, const std::string& inputName) {
     if (!action || (action.actionIndex > actions.size())) {
-        logging::log(LEVEL_ERROR, "Invalid input action!");
+        PHENYL_LOGE(LOGGER, "Invalid input action!");
         return;
     }
 
     auto sourceAction = getSourceAction(inputName);
 
     if (!sourceAction) {
-        logging::log(LEVEL_ERROR, "Unable to find input {}!", inputName);
+        PHENYL_LOGE(LOGGER, "Unable to find input {}!", inputName);
         return;
     }
 
@@ -73,7 +73,7 @@ detail::SourceAction RemappableInput::getSourceAction (const std::string& inputN
 
 bool RemappableInput::isActive (const InputAction& action) {
     if (!action || (action.actionIndex > actions.size())) {
-        logging::log(LEVEL_ERROR, "Invalid input action!");
+        PHENYL_LOGE(LOGGER, "Invalid input action!");
         return false;
     }
 

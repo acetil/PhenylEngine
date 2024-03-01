@@ -3,6 +3,7 @@
 #include <memory>
 #include <utility>
 #include "logging/logging.h"
+#include "graphics/detail/loggers.h"
 #include "graphics/maths_headers.h"
 #include "util/map.h"
 
@@ -60,7 +61,7 @@ namespace phenyl::graphics {
         void applyUniform (const std::string& uniformName, ShaderDataType uniformType, const T* dataPtr) {
             applyUniform(uniformName, uniformType, (const unsigned char*)dataPtr);
         }
-        inline bool debugCheckShared () {
+        /*inline bool debugCheckShared () {
 #ifndef NDEBUG
             if (!internal) {
                 logging::log(LEVEL_ERROR, "Empty ShaderProgram instance! Engine will crash here in release!");
@@ -68,7 +69,7 @@ namespace phenyl::graphics {
             }
 #endif
             return true;
-        }
+        }*/
     public:
         Shader () = default;
         explicit Shader (std::shared_ptr<RendererShader> _internal) : internal{std::move(_internal)} {};
@@ -85,7 +86,7 @@ namespace phenyl::graphics {
             } else if constexpr (uniformType == ShaderDataType::MAT2F || uniformType == ShaderDataType::MAT3F || uniformType == ShaderDataType::MAT4F) {
                 applyUniform(uniformName, uniformType, &val[0][0]);
             } else {
-                logging::log(LEVEL_WARNING, "Bad uniform type for uniform \"{}\"!", uniformName);
+                PHENYL_LOGW(detail::SHADER_LOGGER, "Bad uniform type for uniform \"{}\"!", uniformName);
             }
         }
 
@@ -115,7 +116,7 @@ namespace phenyl::graphics {
 
         ShaderBuilder& addShader (ShaderType shaderType, const std::string& shaderPath) {
             if (shaderPaths.contains(shaderType)) {
-                logging::log(LEVEL_ERROR, "Attempted to insert shader \"{}\" to program but there already was a shader of that type!", shaderPath);
+                PHENYL_LOGE(detail::SHADER_LOGGER, "Attempted to insert shader \"{}\" to program but there already was a shader of that type!", shaderPath);
             } else {
                 shaderPaths[shaderType] = shaderPath;
             }

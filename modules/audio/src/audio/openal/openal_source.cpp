@@ -5,15 +5,19 @@
 
 using namespace phenyl::audio;
 
-phenyl::audio::OpenALSource::OpenALSource () : valid{true}, sourceId{0} {
+static phenyl::Logger LOGGER{"AL_SOURCE"};
+
+phenyl::audio::OpenALSource::OpenALSource () : sourceId{0}, valid{true} {
     alGetError();
     alGenSources(1, &sourceId);
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "OpenAL source creation failed: {}", ALStrError(err));
+        PHENYL_LOGE(LOGGER, "OpenAL source creation failed: {}", ALStrError(err));
         valid = false;
     }
+
+    PHENYL_LOGT_IF(valid, LOGGER, "Created source with id={}", sourceId);
 }
 
 phenyl::audio::OpenALSource::~OpenALSource () {
@@ -42,11 +46,13 @@ OpenALSource& OpenALSource::operator= (OpenALSource&& other) noexcept {
 }
 
 void OpenALSource::playBuffer (const OpenALBuffer& buffer) {
+    PHENYL_LOGD(LOGGER, "Source id={} playing buffer id={}", sourceId, buffer.id());
+
     alGetError();
     alSourcei(sourceId, AL_BUFFER, (ALint)buffer.id());
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to play sample {} to source {}: {}", buffer.id(), sourceId, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to play sample {} to source {}: {}", buffer.id(), sourceId, ALStrError(err));
         return;
     }
     alSourcePlay(sourceId);
@@ -60,7 +66,7 @@ float OpenALSource::getGain () const {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to get gain of source {}: {}", sourceId, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to get gain of source {}: {}", sourceId, ALStrError(err));
         return 0.0f;
     }
 
@@ -74,7 +80,7 @@ void OpenALSource::setGain (float gain) {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to set gain of source {} to {}: {}", sourceId, gain, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to set gain of source {} to {}: {}", sourceId, gain, ALStrError(err));
     }
 }
 
@@ -84,11 +90,11 @@ void OpenALSource::stop () {
 
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to stop source {}: {}", sourceId, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to stop source {}: {}", sourceId, ALStrError(err));
     }
 }
 
-bool OpenALSource::stopped () {
+bool OpenALSource::stopped () const {
     ALint status;
     alGetSourcei(sourceId, AL_SOURCE_STATE, &status);
 

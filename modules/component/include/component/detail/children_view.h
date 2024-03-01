@@ -133,7 +133,7 @@ namespace phenyl::component {
             auto compSets = std::array{manager->getComponent<Args>()...};
             for (auto i = 0; i < sizeof...(Args); i++) {
                 if (!compSets[i]) {
-                    logging::log(LEVEL_ERROR, "Attempted to call each() with component that hasn't been added yet!");
+                    PHENYL_LOGE(detail::MANAGER_LOGGER, "Attempted to call each() with component that hasn't been added yet!");
                     return;
                 }
             }
@@ -146,7 +146,7 @@ namespace phenyl::component {
             auto compSets = std::array{manager->getComponent<Args>()...};
             for (auto i = 0; i < sizeof...(Args); i++) {
                 if (!compSets[i]) {
-                    logging::log(LEVEL_ERROR, "Attempted to call each() with component that hasn't been added yet!");
+                    PHENYL_LOGE(detail::MANAGER_LOGGER, "Attempted to call each() with component that hasn't been added yet!");
                     return;
                 }
             }

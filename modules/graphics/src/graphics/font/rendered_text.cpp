@@ -3,6 +3,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"RENDERED_TEXT"};
+
 static glm::vec2 screenToWindowSpace (glm::vec2 vec, glm::vec2 screenSize) {
     glm::vec2 pos = vec / screenSize * 2.0f - glm::vec2{1.0f, 1.0f};
     pos.y *= -1.0f;
@@ -22,7 +24,7 @@ static glm::vec2 windowToScreenSpace (glm::vec2 pos, glm::vec2 screenSize) {
 
 void RenderedText::addGlyph (glm::vec2 topLeftPos, glm::vec2 size, glm::vec2 screenSize, util::span<glm::vec2> uvs, glm::vec3 colour) {
     if (textLen == maxTextLen) {
-        logging::log(LEVEL_ERROR, "Too many glyphs for rendered text!");
+        PHENYL_LOGE(LOGGER, "Too many glyphs for rendered text (max={})!", maxTextLen);
         return;
     }
     glm::vec2* posPtr = posComp.get() + textLen * TEXT_GLYPH_SIZE;

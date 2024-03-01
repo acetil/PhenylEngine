@@ -10,16 +10,14 @@ using namespace phenyl::graphics;
 PhenylGraphicsHolder::PhenylGraphicsHolder (const GraphicsProperties& properties) {
     GLFWwindow* window = nullptr;
     if (graphics::initWindow(&window, properties) != GRAPHICS_INIT_SUCCESS) {
-        logger::log(LEVEL_FATAL, "MAIN", "Window init failure, stopping!");
-        throw std::runtime_error("Window creation failed!");
+        PHENYL_ABORT("Window init failure!");
     }
 
     if (graphics::initGraphics(window, graphics) != GRAPHICS_INIT_SUCCESS) {
-        logger::log(LEVEL_FATAL, "MAIN", "Graphics init failure, stopping!");
-        throw std::runtime_error("Graphics init failed!");
+        PHENYL_ABORT("Graphics init failure!");
     }
 
-    logger::log(LEVEL_INFO, "MAIN", "Successfully initialised graphics");
+    PHENYL_LOGI(detail::GRAPHICS_LOGGER, "Successfully initialised graphics");
 }
 
 PhenylGraphics PhenylGraphicsHolder::getGraphics () const {
@@ -33,12 +31,8 @@ PhenylGraphicsHolder::~PhenylGraphicsHolder () {
 std::shared_ptr<detail::Graphics> PhenylGraphics::getGraphics () const {
     auto ptr = graphics.lock();
 
-#ifndef NDEBUG
-    if (!ptr) {
-        logging::log(LEVEL_FATAL, "Graphics attempted to be accessed after it was deleted!");
-        throw std::runtime_error("Graphics attempted to be accessed after it was deleted!");
-    }
-#endif
+    PHENYL_DASSERT_MSG(ptr, "Graphics attempted to be accessed after it was deleted!");
+
     return ptr;
 }
 

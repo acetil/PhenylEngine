@@ -9,6 +9,7 @@
 
 #include "graphics/maths_headers.h"
 #include "serializer_intrusive.h"
+#include "detail/loggers.h"
 #include "util/optional.h"
 
 namespace phenyl::common {
@@ -177,7 +178,7 @@ namespace phenyl::common {
             if (json.is_object()) {
                 return true;
             } else {
-                logging::log(LEVEL_WARNING, "Expected object, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected object, got \"{}\"", json.type_name());
                 return false;
             }
         }
@@ -187,7 +188,7 @@ namespace phenyl::common {
             if (CustomSerializer<T>::Accept(*this, val)) {
                 return true;
             } else {
-                logging::log(LEVEL_WARNING, "Failed to parse {}", CustomSerializer<T>::Name);
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to parse {}", CustomSerializer<T>::Name);
                 return false;
             }
         }
@@ -195,7 +196,7 @@ namespace phenyl::common {
         template <Serializable T>
         bool visit (std::vector<T>& val) const {
             if (!json.is_array()) {
-                logging::log(LEVEL_WARNING, "Expected list, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected list, got \"{}\"", json.type_name());
                 return false;
             }
 
@@ -216,13 +217,13 @@ namespace phenyl::common {
         template <std::size_t N, Serializable T>
         bool visitArray (T* vals) const {
             if (!json.is_array()) {
-                logging::log(LEVEL_WARNING, "Expected array, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected array, got \"{}\"", json.type_name());
                 return false;
             }
 
             const auto& arr = json.get<nlohmann::json::array_t>();
             if (arr.size() != N) {
-                logging::log(LEVEL_WARNING, "Array size is incorrect, expected {} got {}", N, arr.size());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Array size is incorrect, expected {} got {}", N, arr.size());
                 return false;
             }
 
@@ -243,20 +244,20 @@ namespace phenyl::common {
         template <Serializable T>
         bool visitMember (T& member, const std::string& memberName) const {
             if (!json.is_object()) {
-                logging::log(LEVEL_WARNING, "Expected object, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected object, got \"{}\"", json.type_name());
                 return false;
             }
 
             const auto& obj = json.get<nlohmann::json::object_t>();
             if (!obj.contains(memberName)) {
-                logging::log(LEVEL_WARNING, "Failed to find member \"{}\"", memberName);
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to find member \"{}\"", memberName);
                 return false;
             }
 
             if (JsonDeserializer{obj.at(memberName)}.visit(member)) {
                 return true;
             } else {
-                logging::log(LEVEL_WARNING, "Failed to parse member \"{}\"", memberName);
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to parse member \"{}\"", memberName);
                 return false;
             }
         }
@@ -267,7 +268,7 @@ namespace phenyl::common {
 
         bool visit (bool& val) const {
             if (!json.is_boolean()) {
-                logging::log(LEVEL_WARNING, "Expected bool, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected bool, got \"{}\"", json.type_name());
                 return false;
             }
 
@@ -277,7 +278,7 @@ namespace phenyl::common {
 
         bool visit (std::string& val) const {
             if (!json.is_string()) {
-                logging::log(LEVEL_WARNING, "Expected string, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected string, got \"{}\"", json.type_name());
                 return false;
             }
 
@@ -288,7 +289,7 @@ namespace phenyl::common {
         template <detail::SerializableFloat T>
         bool visit (T& val) const {
             if (!json.is_number()) {
-                logging::log(LEVEL_WARNING, "Expected float, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected float, got \"{}\"", json.type_name());
                 return false;
             }
 
@@ -299,7 +300,7 @@ namespace phenyl::common {
         template <detail::SerializableInt T>
         bool visit (T& val) const {
             if (!json.is_number_integer()) {
-                logging::log(LEVEL_WARNING, "Expected int, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected int, got \"{}\"", json.type_name());
                 return false;
             }
 
@@ -310,7 +311,7 @@ namespace phenyl::common {
         template <detail::SerializableUInt T>
         bool visit (T& val) const {
             if (!json.is_number_unsigned()) {
-                logging::log(LEVEL_WARNING, "Expected uint, got \"{}\"", json.type_name());
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected uint, got \"{}\"", json.type_name());
                 return false;
             }
 
@@ -325,7 +326,7 @@ namespace phenyl::common {
             if (visit(val)) {
                 return util::Optional<T>{std::move(val)};
             } else {
-                logging::log(LEVEL_WARNING, "Failed to deserialize {}!", CustomSerializer<T>::Name);
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to deserialize {}!", CustomSerializer<T>::Name);
                 return util::NullOpt;
             }
         }

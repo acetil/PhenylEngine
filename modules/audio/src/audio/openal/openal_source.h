@@ -31,7 +31,7 @@ namespace phenyl::audio {
         void setGain (float gain);
 
         void stop ();
-        bool stopped ();
+        bool stopped () const;
 
         ~OpenALSource();
     };

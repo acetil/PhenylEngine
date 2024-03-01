@@ -6,6 +6,7 @@
 #include "component/detail/component_utils.h"
 #include "component/detail/component_set.h"
 #include "component/detail/entity_id_list.h"
+#include "component/detail/loggers.h"
 #include "component/detail/signals/handler_list.h"
 #include "component/detail/relationships.h"
 
@@ -116,7 +117,7 @@ namespace phenyl::component::detail {
         ComponentSet* getComponent () const {
             auto typeIndex = meta::type_index<T>();
             if (!components.contains(typeIndex)) {
-                logging::log(LEVEL_ERROR, "Failed to get component for index {}!", typeIndex);
+                PHENYL_LOGE(MANAGER_LOGGER, "Failed to get component for index {}!", typeIndex);
                 return nullptr;
             }
 
@@ -126,7 +127,7 @@ namespace phenyl::component::detail {
         template <typename T>
         T* getEntityComp (EntityId id) const {
             if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to get component from invalid entity {}!", id.value());
+                PHENYL_LOGE(MANAGER_LOGGER, "Attempted to get component from invalid entity {}!", id.value());
                 return nullptr;
             }
             ComponentSet* component = getComponent<T>();
@@ -153,7 +154,7 @@ namespace phenyl::component::detail {
 
         void _remove (EntityId id) {
             if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to delete invalid entity {}!", id.value());
+                PHENYL_LOGE(MANAGER_LOGGER, "Attempted to delete invalid entity {}!", id.value());
                 return;
             }
 
@@ -168,7 +169,7 @@ namespace phenyl::component::detail {
         template <typename ...Args, meta::callable<void, Args&...> F>
         void _apply (F fn, EntityId id) {
             if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to apply on invalid entity {}!", id.value());
+                PHENYL_LOGE(MANAGER_LOGGER, "Attempted to apply on invalid entity {}!", id.value());
                 return;
             }
 
@@ -223,7 +224,7 @@ namespace phenyl::component::detail {
         template <typename Signal>
         void _signal (EntityId id, Signal signal) requires (!ComponentSignal<Signal>) {
             if (!idList.check(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to signal invalid entity {}!", id.value());
+                PHENYL_LOGE(MANAGER_LOGGER, "Attempted to signal invalid entity {}!", id.value());
                 return;
             }
 

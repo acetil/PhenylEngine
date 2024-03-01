@@ -9,7 +9,7 @@
 namespace phenyl::logging {
     class Logger {
     private:
-        std::string name;
+        std::string_view name;
         int minLogLevel = LEVEL_DEBUG;
         Logger* parent;
         LogSink* logSink = nullptr;
@@ -20,8 +20,8 @@ namespace phenyl::logging {
 
         friend class LogManager;
     public:
-        explicit Logger (std::string name);
-        Logger (std::string name, Logger& parent);
+        explicit Logger (std::string_view name);
+        Logger (std::string_view name, Logger& parent);
 
         template <typename ...Args>
         void log (const std::source_location sourceLoc, const int level, std::format_string<Args...> fmt, Args&&... args) {
@@ -35,6 +35,11 @@ namespace phenyl::logging {
             }
 
             logSink->log(sourceLoc, level, std::format(fmt, std::forward<Args>(args)...));
+        }
+
+        template <typename ...Args>
+        void trace (const std::source_location sourceLoc, std::format_string<Args...> fmt, Args&&... args) {
+            log(sourceLoc, LEVEL_TRACE, std::move(fmt), std::forward<Args>(args)...);
         }
 
         template <typename ...Args>

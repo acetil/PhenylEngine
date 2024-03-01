@@ -6,6 +6,8 @@
 
 using namespace phenyl::graphics::ui;
 
+static phenyl::Logger LOGGER{"THEME_PROPERTIES"};
+
 ThemeProperties::ThemeProperties (std::string _className, std::string _fallbackName, std::string _classPrefix) :
     className{std::move(_className)}, fallbackName{std::move(_fallbackName)}, classPrefix{std::move(_classPrefix)} {}
 
@@ -23,7 +25,7 @@ bool ThemeProperties::hasProperty (const std::string& propertyId) const {
 
 phenyl::util::Optional<const phenyl::util::DataValue&> ThemeProperties::getPropertyValue (const std::string& propertyId) const {
     if (!hasProperty(propertyId)) {
-        logging::log(LEVEL_ERROR, "Property {} not in theme class {}!", propertyId, className);
+        PHENYL_LOGE(LOGGER, "Property {} not in theme class {}!", propertyId, className);
         return util::NullOpt;
     }
 

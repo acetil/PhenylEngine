@@ -5,10 +5,7 @@
 using namespace phenyl::graphics::ui;
 
 void UIFlexbox::addUINode (std::shared_ptr<UIComponentNode> node, int index) {
-    if (!node) {
-        graphics::logging::log(LEVEL_ERROR, "Attempted to insert already attached component to flexbox!");
-        return;
-    }
+    PHENYL_ASSERT(node);
 
     getNodeOpt().ifPresent([&node, &index] (const std::shared_ptr<UIFlexBoxNode>& flexbox) {
         // TODO: move to flexbox

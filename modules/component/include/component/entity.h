@@ -33,13 +33,13 @@ namespace phenyl::component {
         template <typename T>
         util::Optional<const T&> get () const {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to get component of invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to get component of invalid entity {}!", entityId.value());
                 return util::NullOpt;
             }
 
             detail::ComponentSet* compSet;
-            if (!(compSet = compManager->getComponent<T>())) {
-                logging::log(LEVEL_ERROR, "Failed to get component for entity {}!", entityId.value());
+            if (!((compSet = compManager->getComponent<T>()))) {
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to get component for entity {}!", entityId.value());
                 return util::NullOpt;
             }
 
@@ -50,7 +50,7 @@ namespace phenyl::component {
         template <typename T>
         [[nodiscard]] bool has () const {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to check component for invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to check component for invalid entity {}!", entityId.value());
                 return false;
             }
 
@@ -99,13 +99,13 @@ namespace phenyl::component {
         template <typename T>
         util::Optional<T&> get () {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to get component of invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to get component of invalid entity {}!", entityId.value());
                 return util::NullOpt;
             }
 
             detail::ComponentSet* compSet;
-            if (!(compSet = compManager->getComponent<T>())) {
-                logging::log(LEVEL_ERROR, "Failed to get component for entity {}!", entityId.value());
+            if (!((compSet = compManager->getComponent<T>()))) {
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to get component for entity {}!", entityId.value());
                 return util::NullOpt;
             }
 
@@ -116,13 +116,13 @@ namespace phenyl::component {
         template <typename T>
         util::Optional<const T&> get () const {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to get component of invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to get component of invalid entity {}!", entityId.value());
                 return util::NullOpt;
             }
 
             detail::ComponentSet* compSet;
-            if (!(compSet = compManager->getComponent<T>())) {
-                logging::log(LEVEL_ERROR, "Failed to get component for entity {}!", entityId.value());
+            if (!((compSet = compManager->getComponent<T>()))) {
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to get component for entity {}!", entityId.value());
                 return util::NullOpt;
             }
 
@@ -133,7 +133,7 @@ namespace phenyl::component {
         template <typename T>
         void insert (T comp) {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to insert component in invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to insert component in invalid entity {}!", entityId.value());
                 return;
             }
 
@@ -141,14 +141,14 @@ namespace phenyl::component {
             if ((compSet = compManager->getComponent<T>())) {
                 compSet->insertComp<T>(entityId, std::move(comp));
             } else {
-                logging::log(LEVEL_ERROR, "Failed to insert component in entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to insert component in entity {}!", entityId.value());
             }
         }
 
         template <typename T, typename ...Args>
         void emplace (Args&&... args) {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to emplace component in invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to emplace component in invalid entity {}!", entityId.value());
                 return;
             }
 
@@ -156,14 +156,14 @@ namespace phenyl::component {
             if ((compSet = compManager->getComponent<T>())) {
                 compSet->insertComp<T>(entityId, std::forward<Args>(args)...);
             } else {
-                logging::log(LEVEL_ERROR, "Failed to emplace component in entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to emplace component in entity {}!", entityId.value());
             }
         }
 
         template <typename T>
         bool set (T comp) {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to set component in invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to set component in invalid entity {}!", entityId.value());
                 return false;
             }
 
@@ -171,7 +171,7 @@ namespace phenyl::component {
             if ((compSet = compManager->getComponent<T>())) {
                 return compSet->setComp(entityId, std::move(comp));
             } else {
-                logging::log(LEVEL_ERROR, "Failed to set component in entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to set component in entity {}!", entityId.value());
                 return false;
             }
         }
@@ -179,7 +179,7 @@ namespace phenyl::component {
         template <typename T>
         void erase () {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to erase component in invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to erase component in invalid entity {}!", entityId.value());
                 return;
             }
 
@@ -187,14 +187,14 @@ namespace phenyl::component {
             if ((compSet = compManager->getComponent<T>())) {
                 compSet->deleteComp(entityId);
             } else {
-                logging::log(LEVEL_ERROR, "Failed to erase component in entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to erase component in entity {}!", entityId.value());
             }
         }
 
         template <typename T>
         [[nodiscard]] bool has () const {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to check component for invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to check component for invalid entity {}!", entityId.value());
                 return false;
             }
 
@@ -205,7 +205,7 @@ namespace phenyl::component {
         template <typename ...Args, meta::callable<void, Args&...> F>
         Entity& apply (F fn) {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to apply on invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to apply on invalid entity {}!", entityId.value());
                 return *this;
             }
 
@@ -225,7 +225,7 @@ namespace phenyl::component {
 
         void remove () {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to remove invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to remove invalid entity {}!", entityId.value());
                 return;
             }
 
@@ -234,7 +234,7 @@ namespace phenyl::component {
 
         Entity createChild () {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to create child for invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to create child for invalid entity {}!", entityId.value());
                 return {};
             }
 
@@ -243,7 +243,7 @@ namespace phenyl::component {
 
         void addChild (Entity child) {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to add child to invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to add child to invalid entity {}!", entityId.value());
                 return;
             }
 
@@ -252,12 +252,12 @@ namespace phenyl::component {
 
         void detach () {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to detach invalid entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach invalid entity {}!", entityId.value());
                 return;
             }
 
             if (!compManager->_parent(entityId)) {
-                logging::log(LEVEL_ERROR, "Attempted to detach root entity {}!", entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach root entity {}!", entityId.value());
                 return;
             }
 
@@ -266,12 +266,12 @@ namespace phenyl::component {
 
         void detachChild (Entity child) {
             if (!exists()) {
-                logging::log(LEVEL_ERROR, "Attempted to detach {} from invalid {}!", child.id().value(), entityId.value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach {} from invalid {}!", child.id().value(), entityId.value());
                 return;
             }
 
             if (child.parent() != *this) {
-                logging::log(LEVEL_ERROR, "Attempted to detach {} from non-parent {}! (parent: {})", child.id().value(), entityId.value(), child.parent().id().value());
+                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach {} from non-parent {}! (parent: {})", child.id().value(), entityId.value(), child.parent().id().value());
                 return;
             }
 

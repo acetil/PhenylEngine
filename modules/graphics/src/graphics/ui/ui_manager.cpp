@@ -14,6 +14,7 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"UI_MANAGER"};
 
 UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(std::move(_fontManager)) {
 
@@ -54,7 +55,7 @@ void UIManager::addRenderLayer (const detail::Graphics::SharedPtr& graphics, Ren
 void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
                             glm::vec3 colour) {
     if (!fonts.contains(font)) {
-        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
+        PHENYL_LOGE(LOGGER, "Font {} does not exist!", font);
     } else {
         auto offVec = offsetStack.back() + glm::vec2{x, y};
         textBuf.emplace_back(offVec, fonts.at(font).renderText(text, size, 0, 0, colour));
@@ -108,7 +109,7 @@ void UIManager::pushOffset (glm::vec2 relOffset) {
 
 void UIManager::popOffset () {
     if (offsetStack.size() == 1) {
-        logging::log(LEVEL_ERROR, "Attempted to pop too many elements off offset stack!");
+        PHENYL_LOGE(LOGGER, "Attempted to pop too many elements off offset stack!");
     } else {
         offsetStack.pop_back();
     }
@@ -120,7 +121,7 @@ void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, g
 
 RenderedText UIManager::getRenderedText (const std::string& font, const std::string& text, int size, glm::vec3 colour) {
     if (!fonts.contains(font)) {
-        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
+        PHENYL_LOGE(LOGGER, "Font {} does not exist!", font);
         return RenderedText{0};
     } else {
         return fonts.at(font).renderText(text, size, 0, 0, colour);

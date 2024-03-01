@@ -6,6 +6,8 @@
 
 using namespace phenyl::util;
 
+phenyl::Logger LOGGER{"UTIL_TEST"};
+
 struct DestructorTest {
     std::shared_ptr<int> ptr{};
     DestructorTest() = default;
@@ -47,21 +49,21 @@ void testDeletion (std::shared_ptr<int> ptr) {
         map[i] = DestructorTest(ptr);
     }
 
-    logging::log(LEVEL_DEBUG, "Size: {}", *ptr);
+    PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
     assert((*ptr) == 49);
 
     auto mapCpy(map);
-    logging::log(LEVEL_DEBUG, "Size: {}", *ptr);
+    PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
     assert((*ptr) == 98);
 
     auto mapMv(std::move(mapCpy));
-    logging::log(LEVEL_DEBUG, "Size: {}", *ptr);
+    PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
     assert((*ptr) == 98);
 
     for (int i = 1; i < 22; i += 2) {
         map.remove(i);
     }
-    logging::log(LEVEL_DEBUG, "Size: {}", *ptr);
+    PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
     assert((*ptr) == 87);
 }
 
@@ -141,7 +143,7 @@ void testCopyMove () {
 }
 
 void testMap () {
-    logging::log(LEVEL_DEBUG, "Testing map!");
+    PHENYL_LOGD(LOGGER, "Testing map!");
 
     Map<std::string, int> map;
 
@@ -204,7 +206,7 @@ void testMap () {
 
     assert((*ptr) == 0);
 
-    logging::log(LEVEL_DEBUG, "Assertions for map passed!");
+    PHENYL_LOGD(LOGGER, "Assertions for map passed!");
 
 }
 
@@ -322,8 +324,8 @@ void testJson () {
         assert(arr[i] == arr.size() - i - 1);
     }
 
-    logging::log(LEVEL_DEBUG, "Json: {}", val.convertToJson());
-    logging::log(LEVEL_DEBUG, "Json: \n{}", val.convertToJsonPretty());
+    PHENYL_LOGD(LOGGER, "Json: {}", val.convertToJson());
+    PHENYL_LOGD(LOGGER, "Json: \n{}", val.convertToJsonPretty());
     assert(val.convertToJson() == parseJson(val.convertToJson()).convertToJson());
 
 }

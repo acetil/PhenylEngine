@@ -9,17 +9,17 @@
 using namespace phenyl;
 
 component::Prefab* component::PrefabManager::load (std::istream& data, std::size_t id) {
-    assert(!prefabs.contains(id));
+    PHENYL_DASSERT(!prefabs.contains(id));
     nlohmann::json json;
     data >> json;
 
     if (!json.is_object()) {
-        logging::log(LEVEL_ERROR, "Expected object for prefab, got {}!", json.type_name());
+        PHENYL_LOGE(detail::PREFAB_LOGGER, "Expected object for prefab, got {}!", json.type_name());
         return nullptr;
     }
 
     if (!json.contains("components")) {
-        logging::log(LEVEL_ERROR, "Failed to find components member of prefab!");
+        PHENYL_LOGE(detail::PREFAB_LOGGER, "Failed to find components member of prefab!");
         return nullptr;
     }
 
@@ -30,13 +30,13 @@ component::Prefab* component::PrefabManager::load (std::istream& data, std::size
     auto* ptr = prefab.get();
     prefabs[id] = std::move(prefab);
 
-    logging::log(LEVEL_DEBUG, "Loaded prefab {}!", id);
+    PHENYL_LOGD(detail::PREFAB_LOGGER, "Loaded prefab {}!", id);
 
     return ptr;
 }
 
 void component::PrefabManager::queueUnload (std::size_t id) {
-    logging::log(LEVEL_DEBUG, "Unload requested for prefab {}!", id);
+    PHENYL_LOGD(detail::PREFAB_LOGGER, "Unload requested for prefab {}!", id);
 }
 
 void component::PrefabManager::selfRegister () {

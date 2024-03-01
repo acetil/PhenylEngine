@@ -1,5 +1,6 @@
 #pragma once
 
+#define LEVEL_TRACE (-1)
 #define LEVEL_DEBUG 0
 #define LEVEL_INFO 1
 #define LEVEL_WARN 2

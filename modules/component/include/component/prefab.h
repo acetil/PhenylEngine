@@ -127,7 +127,7 @@ namespace phenyl::component {
         PrefabBuilder& with (T comp) {
             auto* set = (detail::TypedComponentSet<T>*)manager->getComponent<T>();
             if (!set) {
-                logging::log(LEVEL_ERROR, "Attempted to add component that doesn't exist to prefab!");
+                PHENYL_LOGE(detail::PREFAB_LOGGER, "Attempted to add component that doesn't exist to prefab!");
                 return *this;
             }
 

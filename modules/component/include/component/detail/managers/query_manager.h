@@ -22,7 +22,7 @@ namespace phenyl::component::detail {
         template <typename ...Args>
         Query<Args...> _query () {
             if (!hasAllComponents<Args...>()) {
-                logging::log(LEVEL_ERROR, "Failed to build query!");
+                PHENYL_LOGE(MANAGER_LOGGER, "Failed to build query!");
                 return Query<Args...>{};
             }
 
@@ -32,7 +32,7 @@ namespace phenyl::component::detail {
         template <typename ...Args>
         ConstQuery<Args...> _query () const {
             if (!hasAllComponents<Args...>()) {
-                logging::log(LEVEL_ERROR, "Failed to build query!");
+                PHENYL_LOGE(MANAGER_LOGGER, "Failed to build query!");
                 return ConstQuery<Args...>{};
             }
 

@@ -11,16 +11,19 @@
 using namespace phenyl::graphics;
 // TODO: update to use exceptions instead of return values
 // TODO: proper error handling
+
+static phenyl::Logger LOGGER{"GRAPHICS_INIT"};
+
 int phenyl::graphics::initWindow (GLFWwindow** windowPtr, const GraphicsProperties& properties) {
     glewExperimental = true;
     if (!glfwInit()) {
-        logging::log(LEVEL_FATAL, "Failed to initialise GLFW!");
-
         const char* glfwError;
         int code;
         if ((code = glfwGetError(&glfwError))) {
-            logging::log(LEVEL_FATAL, "GLFW error code {}: {}", code, glfwError);
+            PHENYL_LOGE(LOGGER, "glfwInit() error code {}: {}", code, glfwError);
         }
+
+        PHENYL_ABORT("Failed to initialise GLFW!");
 
         return GRAPHICS_INIT_FAILURE;
     }
@@ -34,29 +37,30 @@ int phenyl::graphics::initWindow (GLFWwindow** windowPtr, const GraphicsProperti
 
     GLFWwindow* window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(), properties.getWindowTitle().c_str(), nullptr, nullptr);
     if (window == nullptr) {
-        logging::log(LEVEL_FATAL, "Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
-
         const char* glfwError;
         int code;
         if ((code = glfwGetError(&glfwError))) {
-            logging::log(LEVEL_FATAL, "GLFW error code {}: {}", code, glfwError);
+            PHENYL_LOGE(LOGGER, "glfwCreatWindow() error code {}: {}", code, glfwError);
         }
+
+        PHENYL_ABORT("Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
 
         return GRAPHICS_INIT_FAILURE;
     }
     glfwMakeContextCurrent(window);
     glewExperimental = true; // TODO: check if removal affects anything
     if (glewInit() != GLEW_OK) {
-        logging::log(LEVEL_FATAL, "Failed to initialise GLEW!");
+        PHENYL_ABORT("Failed to initialise GLEW!");
         return GRAPHICS_INIT_FAILURE;
     }
+
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glfwSwapInterval(properties.getVsync() ? 1 : 0); // TODO: handle enable/disable vsync
 
     *windowPtr = window;
-    logging::log(LEVEL_INFO, "Window initialised successfully!");
+    PHENYL_LOGD(LOGGER, "Window initialised successfully!");
     return GRAPHICS_INIT_SUCCESS;
 }
 /*
@@ -91,8 +95,6 @@ FontManager initFonts () {
 
 int phenyl::graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew) {
     auto renderer = std::make_unique<GLRenderer>(window);
-
-    logging::log(LEVEL_INFO, "Adding shaders");
     //renderer->addShader("default", loadShaderProgram("resources/shaders/sprite_vertex.vert", "resources/shaders/sprite_fragment.frag", "default"));
     //renderer->addShader("text", loadShaderProgram("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag", "text"));
     //renderer->getProgram("text").value()->registerUniform("camera");

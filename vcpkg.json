@@ -9,6 +9,7 @@
     "glm",
     "freetype",
     "harfbuzz",
-    "openal-soft"
+    "openal-soft",
+    "cpptrace"
   ]
 }

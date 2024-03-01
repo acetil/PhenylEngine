@@ -8,6 +8,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"GL_SHADER"};
+
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath);
 static GLuint loadShaderSource (ShaderType shaderType, const std::string& shaderSource);
 static GLuint loadShader (GLuint shaderType, const std::string& shaderPath);
@@ -38,7 +40,7 @@ void GLShaderProgram::initShaders (util::Map<ShaderType, std::string>& shaders) 
         shaderIds.push_back(loadShader(type, path));
     }
 
-    logging::log(LEVEL_INFO, "Linking shader program.");
+    PHENYL_LOGD(LOGGER, "Linking shader program.");
 
     programId = glCreateProgram();
 
@@ -55,13 +57,13 @@ void GLShaderProgram::initShaders (util::Map<ShaderType, std::string>& shaders) 
     if (infoLength > 0) {
         char* infoLog = new char[infoLength];
         glGetProgramInfoLog(programId, infoLength, nullptr, infoLog);
-        logging::log(LEVEL_ERROR, infoLog);
+        PHENYL_LOGE(LOGGER, "Shader link error: {}", infoLog);
         delete[] infoLog;
     }
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        logging::log(LEVEL_ERROR, "Shader error code {}", error);
+        PHENYL_LOGE(LOGGER, "Shader link error code {}", error);
     }
 
     //glDetachShader(programId, vertexId);
@@ -80,7 +82,7 @@ void GLShaderProgram::initShaderSources (const phenyl::util::Map<ShaderType, std
         shaderIds.push_back(loadShaderSource(type, path));
     }
 
-    logging::log(LEVEL_INFO, "Linking shader program.");
+    PHENYL_LOGD(LOGGER, "Linking shader program.");
 
     programId = glCreateProgram();
 
@@ -97,13 +99,13 @@ void GLShaderProgram::initShaderSources (const phenyl::util::Map<ShaderType, std
     if (infoLength > 0) {
         char* infoLog = new char[infoLength];
         glGetProgramInfoLog(programId, infoLength, nullptr, infoLog);
-        logging::log(LEVEL_ERROR, infoLog);
+        PHENYL_LOGE(LOGGER, "Shader link error: {}", infoLog);
         delete[] infoLog;
     }
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        logging::log(LEVEL_ERROR, "Shader error code {}", error);
+        PHENYL_LOGE(LOGGER, "Shader link error code {}", error);
     }
 
     //glDetachShader(programId, vertexId);
@@ -117,7 +119,7 @@ void GLShaderProgram::initShaderSources (const phenyl::util::Map<ShaderType, std
 
 void GLShaderProgram::applyUniform (const std::string& uniformName, ShaderDataType uniformType, const unsigned char* uniformPtr) {
     if (!uniformMap.contains(uniformName) || uniformMap.at(uniformName).uniformType != uniformType) {
-        logging::log(LEVEL_DEBUG, "Wrong uniform type for uniform \"{}\": expected {}, got {}", uniformName,
+        PHENYL_LOGE(LOGGER, "Wrong uniform type for uniform \"{}\": expected {}, got {}", uniformName,
                      getUniformTypeName(uniformMap.at(uniformName).uniformType), getUniformTypeName(uniformType));
         return;
     }
@@ -138,7 +140,7 @@ void GLShaderProgram::applyUniform (GLUniform uniform, const unsigned char* unif
             glUniformMatrix4fv(uniform.uniformId, 1, GL_FALSE, (float*)uniformPtr);
             break;
         default:
-            logging::log(LEVEL_WARNING, "Unimplemented uniform type: {}", getUniformTypeName(uniform.uniformType));
+            PHENYL_LOGE(LOGGER, "Unimplemented uniform type: {}", getUniformTypeName(uniform.uniformType));
     }
 }
 
@@ -158,7 +160,7 @@ static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath) 
         case ShaderType::FRAGMENT:
             return loadShader(GL_FRAGMENT_SHADER, shaderPath);
         default:
-            logging::log(LEVEL_ERROR, "Unimplemented shader type!");
+            PHENYL_LOGE(LOGGER, "Unimplemented shader type {}!", static_cast<int>(shaderType));
             return 0;
     }
 }
@@ -170,7 +172,7 @@ static GLuint loadShaderSource (ShaderType shaderType, const std::string& shader
         case ShaderType::FRAGMENT:
             return loadShaderSource(GL_FRAGMENT_SHADER, shaderSource);
         default:
-            logging::log(LEVEL_ERROR, "Unimplemented shader type!");
+            PHENYL_LOGE(LOGGER, "Unimplemented shader type {}!", static_cast<int>(shaderType));
             return 0;
     }
 }
@@ -186,12 +188,12 @@ static GLuint loadShader (GLuint shaderType, const std::string& shaderPath) {
         shaderCode = sstr.str();
         shaderStream.close();
     } else {
-        logging::log(LEVEL_ERROR, "Error reading shader file {}", shaderPath);
+        PHENYL_LOGE(LOGGER, "Error reading shader file {}", shaderPath);
         return 0;
     }
     GLint result = GL_FALSE;
     int infolength;
-    logging::log(LEVEL_DEBUG, "Compiling shader file at {}", shaderPath);
+    PHENYL_LOGD(LOGGER, "Compiling shader file at {}", shaderPath);
     const char* shaderSourcePtr = shaderCode.c_str();
     glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
     glCompileShader(shader);
@@ -201,7 +203,7 @@ static GLuint loadShader (GLuint shaderType, const std::string& shaderPath) {
     if (infolength > 0) {
         char* errorMessage = new char[infolength];
         glGetShaderInfoLog(shader, infolength, nullptr, errorMessage);
-        logging::log(LEVEL_ERROR, errorMessage);
+        PHENYL_LOGE(LOGGER, "Shader compile error: {}", errorMessage);
         delete[] errorMessage;
     }
     return shader;
@@ -221,7 +223,7 @@ static GLuint loadShaderSource (GLuint shaderType, const std::string& shaderSour
     if (infolength > 0) {
         char* errorMessage = new char[infolength];
         glGetShaderInfoLog(shader, infolength, nullptr, errorMessage);
-        logging::log(LEVEL_ERROR, errorMessage);
+        PHENYL_LOGE(LOGGER, "Shader compile error: {}", errorMessage);
         delete[] errorMessage;
     }
     return shader;
@@ -233,17 +235,17 @@ Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
     nlohmann::json json;
     data >> json;
     if (!json.is_object()) {
-        logging::log(LEVEL_ERROR, "Expected object for shader, got {}!", json.type_name());
+        PHENYL_LOGE(LOGGER, "Expected object for shader, got {}!", json.type_name());
         return nullptr;
     }
 
     if (!json.contains("shaders")) {
-        logging::log(LEVEL_ERROR, "Failed to find member \"shaders\" of shader!");
+        PHENYL_LOGE(LOGGER, "Failed to find member \"shaders\" of shader!");
         return nullptr;
     }
     const auto& shaderObj = json.at("shaders");
     if (!shaderObj.is_object()) {
-        logging::log(LEVEL_ERROR, "Expected object for shaders member, got {}!", shaderObj.type_name());
+        PHENYL_LOGE(LOGGER, "Expected object for shaders member, got {}!", shaderObj.type_name());
         return nullptr;
     }
 
@@ -255,13 +257,13 @@ Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
     for (const auto& i : obj) {
         if (i.first == "fragment") {
             if (!i.second.is_string()) {
-                logging::log(LEVEL_ERROR, "Expected string for fragment path, got {}!", i.second.type_name());
+                PHENYL_LOGE(LOGGER, "Expected string for fragment path, got {}!", i.second.type_name());
                 return nullptr;
             }
             fragmentPath = i.second.get<std::string>();
         } else if (i.first == "vertex") {
             if (!i.second.is_string()) {
-                logging::log(LEVEL_ERROR, "Expected string for vertex path, got {}!", i.second.type_name());
+                PHENYL_LOGE(LOGGER, "Expected string for vertex path, got {}!", i.second.type_name());
                 return nullptr;
             }
             vertexPath = i.second.get<std::string>();
@@ -271,14 +273,14 @@ Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
     ShaderBuilder builder{vertexPath, fragmentPath};
     if (json.contains("uniforms")) {
         if (!json["uniforms"].is_object()) {
-            logging::log(LEVEL_ERROR, "Expected object for uniforms member, got {}!", json["uniforms"].type_name());
+            PHENYL_LOGE(LOGGER, "Expected object for uniforms member, got {}!", json["uniforms"].type_name());
             return nullptr;
         }
 
         const auto& uniforms = json["uniforms"].get<nlohmann::json::object_t>();
         for (const auto& [key, val] : uniforms) {
             if (!val.is_string()) {
-                logging::log(LEVEL_ERROR, "Expected string for uniform type, got {}!", val.type_name());
+                PHENYL_LOGE(LOGGER, "Expected string for uniform type, got {}!", val.type_name());
                 return nullptr;
             }
             const auto& type = val.get<std::string>();
@@ -299,7 +301,7 @@ Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
             } else if (type == "mat4f") {
                 builder.addUniform<glm::mat4>(key);
             } else {
-                logging::log(LEVEL_ERROR, "Unknown uniform type: \"{}\"", type);
+                PHENYL_LOGE(LOGGER, "Unknown uniform type: \"{}\"", type);
                 return nullptr;
             }
         }

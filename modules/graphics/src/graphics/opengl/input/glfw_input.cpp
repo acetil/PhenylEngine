@@ -5,6 +5,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"GLFW_INPUT"};
+
 namespace phenyl::graphics::detail {
     struct ButtonState {
         std::size_t stateNum{};
@@ -34,21 +36,21 @@ long GLFWInput::getInputNum (const std::string& inputStr) {
 
 bool GLFWInput::isDown (long inputNum) {
     if (inputNum < 0 || inputNum >= buttons.size()) {
-        logging::log(LEVEL_ERROR, "Unable to find button for input num {}!", inputNum);
+        PHENYL_LOGE(LOGGER, "Unable to find button for input num {}!", inputNum);
     }
     return buttons[inputNum].isEnabled && buttons[inputNum].currentState;
 }
 
 void GLFWInput::consume (long inputNum) {
     if (inputNum < 0 || inputNum >= buttons.size()) {
-        logging::log(LEVEL_ERROR, "Unable to find button for input num {}!", inputNum);
+        PHENYL_LOGE(LOGGER, "Unable to find button for input num {}!", inputNum);
     }
     buttons[inputNum].isEnabled = false;
 }
 
 std::size_t GLFWInput::getStateNum (long inputNum) {
     if (inputNum < 0 || inputNum >= buttons.size()) {
-        logging::log(LEVEL_ERROR, "Unable to find button for input num {}!", inputNum);
+        PHENYL_LOGE(LOGGER, "Unable to find button for input num {}!", inputNum);
     }
     return buttons[inputNum].stateNum;
 }
@@ -62,7 +64,7 @@ void GLFWInput::addButton (const std::string& button, int buttonCode) {
 
 void GLFWInput::onButtonChange (int code, int action, int mods) {
     if (!buttonCodeMap.contains(code)) {
-        logging::log(LEVEL_ERROR, "Unable to find button with code {}!", code);
+        PHENYL_LOGE(LOGGER, "Unable to find button with code {}!", code);
         return;
     }
     long button = buttonCodeMap[code];

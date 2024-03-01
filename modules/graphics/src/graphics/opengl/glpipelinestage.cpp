@@ -5,6 +5,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"GL_PIPELINE_STAGE"};
+
 static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, GLenum type, GLsizei size, GLsizei stride=0, std::size_t offset=0);
 static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, ShaderDataType attribType);
 
@@ -23,7 +25,7 @@ GLPipelineStage::GLPipelineStage (PipelineStageSpec& spec) {
 
 void GLPipelineStage::bindBuffer (int location, ShaderDataType attribType, std::shared_ptr<RendererBufferHandle> handle) {
     if (vertexAttribs[location].first != attribType) {
-        logging::log(LEVEL_ERROR, "Attempted to bind buffer of type {} to attribute of type {}!", getUniformTypeName(attribType),
+        PHENYL_LOGE(LOGGER, "Attempted to bind buffer of type {} to attribute of type {}!", getUniformTypeName(attribType),
                      getUniformTypeName(vertexAttribs[location].first));
         return;
     }
@@ -104,7 +106,7 @@ static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int locati
             enableVertexAttribPointer(vaoId, buffer, location + 3, GL_FLOAT, 4, sizeof(float) * 16, sizeof(float) * 12);
             break;
         default:
-            logging::log(LEVEL_WARNING, "Unable to setup attrib pointer for shader data type {}", getUniformTypeName(attribType));
+            PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", getUniformTypeName(attribType));
     }
 }
 

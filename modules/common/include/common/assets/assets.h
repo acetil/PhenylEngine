@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 
+#include "common/detail/loggers.h"
 #include "util/fl_vector.h"
 #include "util/map.h"
 #include "util/meta.h"
@@ -133,7 +134,7 @@ namespace phenyl::common {
 
         void decrementRefCount (std::size_t typeIndex, std::size_t id) {
             if (!caches.contains(typeIndex)) {
-                logging::log(LEVEL_WARNING, "Attempted to decrement ref count of manager with type {} that no longer exists!", typeIndex);
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to decrement ref count of manager with type {} that no longer exists!", typeIndex);
                 return;
             }
             auto& entry = caches.at(typeIndex);
@@ -149,17 +150,15 @@ namespace phenyl::common {
         template <typename T>
         Asset<T> load (const std::string& path) {
             if (!caches.contains(meta::type_index<T>())) {
-                logging::log(LEVEL_ERROR, "Attempted to load asset of unknown type!");
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
                 return Asset<T>{};
             }
 
             auto* cache = static_cast<detail::AssetCache<T>*>(caches.at(meta::type_index<T>()).get());
             Asset<T> asset;
             if ((asset = std::move(cache->getCached(path)))) {
-                if (!asset.get()) {
-                    logging::log(LEVEL_FATAL, "Possible cyclic dependency including \"{}\"!", path);
-                    assert(false);
-                }
+                PHENYL_ASSERT_MSG(asset.get(), "Possible cyclic dependency including \"{}\"!", path);
+
                 return std::move(asset);
             }
 
@@ -172,14 +171,14 @@ namespace phenyl::common {
             }
 
             if (!file) {
-                logging::log(LEVEL_ERROR, "Failed to open file at \"{}\"!", path + cache->getManager()->getFileType());
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to open file at \"{}\"!", path + cache->getManager()->getFileType());
                 return Asset<T>{};
             }
 
             auto id = cache->addEntry(path);
             T* ptr = cache->getManager()->load(file, id);
             if (!ptr) {
-                logging::log(LEVEL_ERROR, "Failed to load asset at \"{}\"!", path);
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to load asset at \"{}\"!", path);
                 cache->forceRemoveEntry(id);
                 return Asset<T>{};
             }
@@ -191,22 +190,18 @@ namespace phenyl::common {
         template <typename T>
         Asset<T> virtualLoad (const std::string& path, T&& obj) {
             if (!caches.contains(meta::type_index<T>())) {
-                logging::log(LEVEL_ERROR, "Attempted to load asset of unknown type!");
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
                 return Asset<T>{};
             }
 
             auto* cache = static_cast<detail::AssetCache<T>*>(caches.at(meta::type_index<T>()).get());
-            Asset<T> asset;
-            if ((asset = std::move(cache->getCached(path)))) {
-                logging::log(LEVEL_FATAL, "Attempted to virtual load an asset multiple times!", path);
-                assert(false);
-                return std::move(asset);
-            }
+
+            PHENYL_ASSERT_MSG(!cache->getCached(path), "Attempted to virtual load an asset multiple times!", path);
 
             auto id = cache->addEntry(path);
             T* ptr = cache->getManager()->load(std::forward<T>(obj), id);
             if (!ptr) {
-                logging::log(LEVEL_ERROR, "Failed to load asset at \"{}\"!", path);
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to load asset at \"{}\"!", path);
                 cache->forceRemoveEntry(id);
                 return Asset<T>{};
             }
@@ -218,7 +213,7 @@ namespace phenyl::common {
         template <typename T>
         void addManager (AssetManager<T>* manager) {
             if (caches.contains(meta::type_index<T>())) {
-                logging::log(LEVEL_ERROR, "Attempted to add asset manager that has already been added!");
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to add asset manager that has already been added!");
                 return;
             }
 
@@ -228,7 +223,7 @@ namespace phenyl::common {
         template <typename T>
         void removeManager (AssetManager<T>* manager) {
             if (!caches.contains(meta::type_index<T>())) {
-                logging::log(LEVEL_ERROR, "Attempted to remove asset manager that does not exist!");
+                PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to remove asset manager that does not exist!");
                 return;
             }
 

@@ -5,6 +5,8 @@
 
 using namespace phenyl::component::detail;
 
+static phenyl::Logger LOGGER{"ENTITY_ID_LIST"};
+
 EntityIdList::EntityIdList (std::size_t capacity) : idSlots{}, freeListStart{FREE_LIST_EMPTY}, numEntities{0} {
     idSlots.reserve(capacity);
 }
@@ -12,20 +14,20 @@ EntityIdList::EntityIdList (std::size_t capacity) : idSlots{}, freeListStart{FRE
 phenyl::component::EntityId EntityIdList::newId () {
     if (freeListStart == FREE_LIST_EMPTY) {
         if (idSlots.size() >= MAX_NUM_IDS) {
-            logging::log(LEVEL_ERROR, "Too many entity ids!");
+            PHENYL_LOGE(LOGGER, "Too many entity ids!");
             return EntityId{};
         }
         idSlots.push_back(1);
         numEntities++;
 
-        assert(idSlots.size() < (std::size_t{1} << FREE_LIST_BITS));
+        PHENYL_DASSERT(idSlots.size() < (std::size_t{1} << FREE_LIST_BITS));
 
         return EntityId{1, static_cast<unsigned int>(idSlots.size())};
     } else {
         auto index = freeListStart - 1;
 
-        assert(idSlots.size() > index);
-        assert(EMPTY_BIT & idSlots.at(index));
+        PHENYL_DASSERT(idSlots.size() > index);
+        PHENYL_DASSERT(EMPTY_BIT & idSlots.at(index));
 
         freeListStart = (idSlots.at(index) & FREE_LIST_MASK) >> GEN_BITS;
         auto gen = static_cast<unsigned int>(idSlots.at(index) & GEN_MASK);
@@ -131,7 +133,7 @@ void EntityIdList::IdIterator::prev () {
 }
 
 EntityIdList::IdIterator::value_type EntityIdList::IdIterator::operator* () const {
-    assert((idList->idSlots[slotPos] & EMPTY_BIT) == 0);
+    PHENYL_DASSERT((idList->idSlots[slotPos] & EMPTY_BIT) == 0);
     return EntityId{static_cast<unsigned int>(idList->idSlots[slotPos]), static_cast<unsigned int>(slotPos + 1)};
 }
 

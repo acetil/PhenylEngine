@@ -3,6 +3,7 @@
 #include <cstddef>
 
 #include "component_set.h"
+#include "loggers.h"
 #include "util/fl_vector.h"
 
 namespace phenyl::component::detail {
@@ -49,9 +50,8 @@ namespace phenyl::component::detail {
         }
 
         void decRefCount (std::size_t id) {
-            //assert(valid(id));
             if (!valid(id)) {
-                logging::log(LEVEL_ERROR, "Attempted to decrement ref count of invalid prefab {}!", id);
+                PHENYL_LOGE(PREFAB_LOGGER, "Attempted to decrement ref count of invalid prefab {}!", id);
                 return;
             }
 
@@ -61,10 +61,10 @@ namespace phenyl::component::detail {
         }
 
         void setInherits (std::size_t id, std::size_t inherits) {
-            assert(valid(id));
-            assert(valid(inherits));
+            PHENYL_DASSERT(valid(id));
+            PHENYL_DASSERT(valid(inherits));
             if (getPrefabEntry(id).inherits) {
-                logging::log(LEVEL_ERROR, "Prefab {} already has inherits set (set to {}, attempted to set to {})!", getPrefabEntry(id).inherits, inherits);
+                PHENYL_LOGE(PREFAB_LOGGER, "Prefab {} already has inherits set (set to {}, attempted to set to {})!", id, getPrefabEntry(id).inherits, inherits);
                 return;
             }
 
@@ -73,14 +73,14 @@ namespace phenyl::component::detail {
         }
 
         void addComponent (std::size_t id, ComponentSet* set, std::size_t compId) {
-            assert(valid(id));
-            assert(set);
+            PHENYL_DASSERT(valid(id));
+            PHENYL_DASSERT(set);
             getPrefabEntry(id).comps.emplace_back(set, compId);
         }
 
         void addChild (std::size_t id, std::size_t child) {
-            assert(valid(id));
-            assert(valid(child));
+            PHENYL_DASSERT(valid(id));
+            PHENYL_DASSERT(valid(child));
             getPrefabEntry(id).children.push_back(child);
             incRefCount(child);
         }

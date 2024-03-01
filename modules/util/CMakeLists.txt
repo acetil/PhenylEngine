@@ -2,7 +2,9 @@ add_library(util src/data.cpp src/profiler.cpp src/string_help.cpp src/test_data
         include/util/random.h
         src/random.cpp
         include/util/endian.h
-        include/util/istream_help.h)
+        include/util/istream_help.h
+        include/util/detail/loggers.h
+        src/loggers.cpp)
 
 find_package(nlohmann_json REQUIRED)
 

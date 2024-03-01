@@ -2,13 +2,17 @@
 
 using namespace phenyl::audio;
 
+static phenyl::Logger LOGGER{"AL_BUF"};
+
 OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
     alGetError();
     alGenBuffers(1, &bufferId);
 
+    PHENYL_LOGT(LOGGER, "Initialising buffer with id={}", bufferId);
+
     ALenum err;
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to create OpenAL buffer: {}", ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to create OpenAL buffer: {}", ALStrError(err));
         return;
     }
 
@@ -22,13 +26,13 @@ OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
     } else if (wavFile.getNumChannels() == 2 && wavFile.getBitDepth() == 16) {
         format = AL_FORMAT_STEREO16;
     } else {
-        logging::log(LEVEL_ERROR, "Unsupported WAV file settings: channels={}, bit depth={}", wavFile.getNumChannels(), wavFile.getBitDepth());
+        PHENYL_LOGE(LOGGER, "Unsupported WAV file settings: channels={}, bit depth={}", wavFile.getNumChannels(), wavFile.getBitDepth());
         return;
     }
 
     alBufferData(bufferId, format, wavFile.getData(), (int)wavFile.getDataSize(), (int)wavFile.getSampleRate());
     if ((err = alGetError())) {
-        logging::log(LEVEL_ERROR, "Failed to buffer data to OpenAL buffer: {}", ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to buffer data to OpenAL buffer: {}", ALStrError(err));
         return;
     }
     valid = true;
@@ -60,6 +64,7 @@ OpenALBuffer::~OpenALBuffer () {
 
 float OpenALBuffer::duration () const {
     if (!valid) {
+        PHENYL_LOGD(LOGGER, "Attempted to get duration for invalid buffer");
         return 0.0f;
     }
     ALint frequency, channels, bits, size;
@@ -68,5 +73,6 @@ float OpenALBuffer::duration () const {
     alGetBufferi(bufferId, AL_BITS, &bits);
     alGetBufferi(bufferId, AL_SIZE, &size);
 
+    PHENYL_LOGT(LOGGER, "Buffer id={} freq={}, channels={}, bits={}, size={}", bufferId, frequency, channels, bits, size);
     return ((float) size) / (float) (frequency * channels * bits / 8);
 }

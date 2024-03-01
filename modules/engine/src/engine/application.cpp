@@ -8,22 +8,22 @@ using namespace phenyl;
 engine::Application::Application (phenyl::engine::ApplicationProperties properties) : properties{properties} {}
 
 component::ComponentManager& engine::Application::componentManager () {
-    assert(engine);
+    PHENYL_DASSERT(engine);
     return engine->getComponentManager();
 }
 
 game::GameCamera& engine::Application::camera () {
-    assert(engine);
+    PHENYL_DASSERT(engine);
     return engine->getCamera();
 }
 
 game::GameInput& engine::Application::input () {
-    assert(engine);
+    PHENYL_DASSERT(engine);
     return engine->getInput();
 }
 
 graphics::UIManager& engine::Application::uiManager () {
-    assert(engine);
+    PHENYL_DASSERT(engine);
     return engine->getGraphics().getUIManager();
 }
 

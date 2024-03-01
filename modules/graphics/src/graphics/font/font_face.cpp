@@ -7,6 +7,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"FONT_FACE"};
+
 FontFace::FontFace (const FT_Library& library, const std::string& path, int faceNum) {
     auto error = FT_New_Face(library, path.c_str(), faceNum, &ftFace);
     if (error) {
@@ -14,7 +16,7 @@ FontFace::FontFace (const FT_Library& library, const std::string& path, int face
     }
     error = FT_Set_Char_Size(ftFace, 0, size * 64, 0, 0); // TODO
     if (error) {
-        logging::log(LEVEL_ERROR, "Error encountered when setting char size: {}", error);
+        PHENYL_LOGE(LOGGER, "Error encountered when setting char size: {}", error);
     }
     fontFace = hb_ft_face_create(ftFace, nullptr);
 }
@@ -64,7 +66,7 @@ void FontFace::setFontSize (int _size) {
     size = _size;
     int error = FT_Set_Char_Size(ftFace, 0, size * 64, 0, 0);
     if (error) {
-        logging::log(LEVEL_ERROR, "Error encountered while setting char size: {}", error);
+        PHENYL_LOGE(LOGGER, "Error encountered while setting char size: {}", error);
     }
 }
 
@@ -78,16 +80,16 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
     int error;
     error = FT_Select_Charmap(ftFace, FT_ENCODING_UNICODE);
     if (error) {
-        logging::log(LEVEL_ERROR, "Charmap select encountered error code {}!", error);
+        PHENYL_LOGE(LOGGER, "Charmap select encountered error code {}!", error);
     }
 
     error = FT_Load_Glyph(ftFace, 0, FT_LOAD_DEFAULT);
     if (error) {
-        logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+        PHENYL_LOGE(LOGGER, "Load char encountered error code {}!", error);
     }
     error = FT_Render_Glyph(ftFace->glyph, FT_RENDER_MODE_NORMAL);
     if (error) {
-        logging::log(LEVEL_ERROR, "Render glyph encountered error code {}!", error);
+        PHENYL_LOGE(LOGGER, "Render glyph encountered error code {}!", error);
     }
     auto buf = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
     memcpy(buf, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
@@ -100,11 +102,11 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
             //logging::log(LEVEL_DEBUG, "Char index: {}", index);
             error = FT_Load_Char(ftFace, i, FT_LOAD_DEFAULT);
             if (error) {
-                logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+                PHENYL_LOGE(LOGGER, "Load char encountered error code {}!", error);
             }
             error = FT_Render_Glyph(ftFace->glyph, FT_RENDER_MODE_NORMAL);
             if (error) {
-                logging::log(LEVEL_ERROR, "Render glyph encountered error code {}!", error);
+                PHENYL_LOGE(LOGGER, "Render glyph encountered error code {}!", error);
             }
             auto buf2 = new unsigned char[ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows];
             memcpy(buf2, ftFace->glyph->bitmap.buffer, ftFace->glyph->bitmap.width * ftFace->glyph->bitmap.rows);
@@ -119,9 +121,8 @@ std::vector<GlyphImage> FontFace::getGlyphs () {
 }
 
 CharOffsets FontFace::renderText (int c, int prev) {
-    int error = FT_Load_Char(ftFace, c, FT_LOAD_BITMAP_METRICS_ONLY);
-    if (error) {
-        logging::log(LEVEL_ERROR, "Load char encountered error code {}!", error);
+    if (int error = FT_Load_Char(ftFace, c, FT_LOAD_BITMAP_METRICS_ONLY)) {
+        PHENYL_LOGE(LOGGER, "Load char encountered error code {}!", error);
         return CharOffsets(0, 0, 0, 0, 0);
     }
     FT_Vector vec;

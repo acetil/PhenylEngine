@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -7,13 +8,15 @@
 #include "logging/logging.h"
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"IMAGE"};
+
 Image::Image (const char* filename, std::string name) {
     width = 0; // to get clang to shut up
     height = 0;
     n = 0;
     unsigned char* data = stbi_load(filename, &width, &height, &n, 4);
     if (data == nullptr) {
-        logging::log(LEVEL_ERROR, "Failed to load texture \"{}\" at path \"{}\"", name, filename);
+        PHENYL_LOGE(LOGGER, "Failed to load texture \"{}\" at path \"{}\"", name, filename);
         return;
     }
     this->name = std::move(name);
@@ -70,7 +73,7 @@ Image::Image (std::istream& file) {
     n = 0;
     unsigned char* data = stbi_load_from_memory(contents.data(), static_cast<int>(contents.size()), &width, &height, &n, 4);
     if (data == nullptr) {
-        logging::log(LEVEL_ERROR, "Failed to load texture from istream!");
+        PHENYL_LOGE(LOGGER, "Failed to load texture from istream!");
         return;
     }
 

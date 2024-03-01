@@ -17,9 +17,11 @@ namespace std {
 #endif
 
 #include "detail/memory.h"
+#include "detail/loggers.h"
 //#include "meta.h"
 
 namespace phenyl::util {
+
 #ifndef PHENYL_OPTIONAL_DECLARE
 #define PHENYL_OPTIONAL_DECLARE
     template <typename T, typename = void>
@@ -121,9 +123,8 @@ namespace phenyl::util {
         }
 #else
         T& getUnsafe (const std::source_location& loc = std::source_location::current()) const {
-            if (!hasVal) {
-                logging::log(LEVEL_FATAL, "Unsafe optional get of empty opt at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
-            }
+            PHENYL_DASSERT_MSG(hasVal, "Unsafe optional get of empty opt at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
+
             return memory.mget();
         }
 #endif
@@ -234,9 +235,8 @@ namespace phenyl::util {
         }
 #else
         T& getUnsafe (const std::source_location loc = std::source_location::current()) const {
-            if (!hasVal) {
-                logging::log(LEVEL_FATAL, "Unsafe optional get at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
-            }
+            PHENYL_DASSERT_MSG(hasVal, "Unsafe optional get of empty opt at {}({}:{}) ({})!", loc.file_name(), loc.line(), loc.column(), loc.function_name());
+
             return memory.get();
         }
 #endif

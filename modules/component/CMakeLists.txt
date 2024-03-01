@@ -26,6 +26,8 @@ add_library(component include/component/forward.h include/component/fixed_compon
         include/component/component_serializer.h
         include/component/prefab_manager.h
         src/component/prefab_manager.cpp
+        include/component/detail/loggers.h
+        src/component/detail/loggers.cpp
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

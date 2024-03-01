@@ -17,6 +17,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"GLYPH_ATLAS"};
+
 struct GlyphDistanceField {
     int width = 0;
     int height = 0;
@@ -200,7 +202,7 @@ void GlyphAtlas::loadAtlas (Renderer* renderer) {
 
 phenyl::util::span<glm::vec2> GlyphAtlas::getCharUvs (int c) {
     if (!charUvs.contains(c)) {
-        logging::log(LEVEL_DEBUG, "No glyph found with code {}", c);
+        PHENYL_LOGW(LOGGER, "No glyph found with code {}", c);
         return {(glm::vec2*)charUvs[0].begin(), charUvs[0].size() / 2};
     } else {
         return {(glm::vec2*)charUvs[c].begin(), charUvs[c].size() / 2};

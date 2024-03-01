@@ -5,6 +5,8 @@
 
 using namespace phenyl::graphics;
 
+static phenyl::Logger LOGGER{"FONT_MANAGER"};
+
 FontManager::FontManager () {
     auto error = FT_Init_FreeType(&freetypeLib);
     if (error) {
@@ -23,8 +25,7 @@ void FontManager::addFace (const std::string& face, const std::string& path, int
     try {
         fontFaces.insert(std::make_pair(face, FontFace(freetypeLib, path, faceNum)));
     } catch (util::InitException& e) {
-        logging::log(LEVEL_ERROR, "Error creating font \"{}\": ", face);
-        logging::log(LEVEL_ERROR, e.getMsg());
+        PHENYL_LOGW(LOGGER,  "Error creating font \"{}\": {}", face, e.getMsg());
     }
 }
 

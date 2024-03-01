@@ -3,6 +3,8 @@
 
 using namespace phenyl::graphics::ui;
 
+static phenyl::Logger LOGGER{"UI_THEME"};
+
 Theme::Theme (const util::DataValue& themeData) {
     const auto& obj = themeData.get<util::DataObject>();
 
@@ -12,7 +14,7 @@ Theme::Theme (const util::DataValue& themeData) {
         if (id == "theme_name") {
             continue;
         } else if (!data.is<util::DataObject>()) {
-            logging::log(LEVEL_ERROR, R"(Data of class "{}" in theme "{}" is not an object!)", id, themeName);
+            PHENYL_LOGE(LOGGER, R"(Data of class "{}" in theme "{}" is not an object!)", id, themeName);
         } else {
             std::unique_ptr<ThemeClass> themeClass = std::make_unique<ThemeClass>(id, this, data.get<util::DataObject>(), "");
 
@@ -21,7 +23,7 @@ Theme::Theme (const util::DataValue& themeData) {
     }
 
     if (!themeClassMap.contains("default")) {
-        logging::log(LEVEL_ERROR, "No default class found in theme \"{}\"!", themeName);
+        PHENYL_LOGE(LOGGER, "No default class found in theme \"{}\"!", themeName);
         themeClassMap["default"] = std::make_unique<ThemeClass>("default", this, util::DataObject(), "");
     }
 
@@ -56,7 +58,7 @@ ThemeClass* Theme::addThemeClass (const std::string& classId, std::unique_ptr<Th
 std::unique_ptr<Theme> phenyl::graphics::ui::loadTheme (std::istream& stream) {
     auto data = util::parseFromStream(stream);
     if (data.empty()) {
-        logging::log(LEVEL_ERROR, "Failed to load theme!");
+        PHENYL_LOGE(LOGGER, "Failed to load theme!");
         return nullptr;
     }
 

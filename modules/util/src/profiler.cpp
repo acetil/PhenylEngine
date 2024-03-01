@@ -8,6 +8,8 @@
 
 using namespace phenyl;
 
+static Logger LOGGER{"PROFILER"};
+
 struct Profiler {
       double lastFrameTime = 0;
       double frameStartTime = 0;
@@ -69,7 +71,7 @@ void util::startProfile (const std::string& category) {
 void util::endProfile () {
     auto time = profiler.timeFunc();
     if (profiler.activeSet.empty()) {
-        logging::log(LEVEL_WARNING, "Profiler has not active categories to end!");
+        PHENYL_LOGW(LOGGER, "Profiler has not active categories to end!");
     } else {
         auto category = profiler.activeCategories.back();
 

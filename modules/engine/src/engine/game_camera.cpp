@@ -1,8 +1,11 @@
 #include "engine/game_camera.h"
 #include "graphics/camera.h"
+#include "logging/logging.h"
 
 
 using namespace phenyl::game;
+
+static phenyl::Logger LOGGER{"CAMERA"};
 
 void GameCamera::setPos (glm::vec2 pos) {
     targetPos = pos;
@@ -22,6 +25,7 @@ void GameCamera::scaleBy (float scaleX, float scaleY) {
 }
 
 void GameCamera::updateCamera (graphics::Camera& camera) {
+    PHENYL_LOGT(LOGGER, "Updating camera: pos={}, targetPos={}, scale={}, targetScale={}", currentPos, targetPos, currentScale, targetScale);
     glm::vec2 transVec = targetPos - currentPos;
     camera.translate(transVec.x, transVec.y);
     auto scaleVec = currentScale / targetScale;

@@ -4,6 +4,8 @@
 
 using namespace phenyl::graphics::ui;
 
+static phenyl::Logger LOGGER{"UI_BUTTON"};
+
 void UIButtonNode::render (UIManager& uiManager) {
     glm::vec4 colour;
     if (isPressed) {
@@ -23,7 +25,7 @@ UIAnchor UIButtonNode::getAnchor () {
 
 bool UIButtonNode::onMousePress () {
     if (isHovered && !isPressed) {
-        graphics::logging::log(LEVEL_INFO, "Button pressed!");
+        PHENYL_LOGT(LOGGER, "Button pressed!");
         isPressed = true;
     }
 
@@ -32,7 +34,7 @@ bool UIButtonNode::onMousePress () {
 
 void UIButtonNode::onMouseRelease () {
     if (isPressed) {
-        graphics::logging::log(LEVEL_INFO, "Button released!");
+        PHENYL_LOGT(LOGGER, "Button released!");
         isPressed = false;
     }
 }

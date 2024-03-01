@@ -5,6 +5,8 @@
 
 using namespace phenyl::graphics::ui;
 
+static phenyl::Logger LOGGER{"THEME_CLASS"};
+
 ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObject& classData, const std::string& classPrefix) : classId{std::move(_classId)},
     theme{_theme}, parent{nullptr} {
 
@@ -17,11 +19,11 @@ ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObj
     if (classData.contains("subclasses")) {
         auto& subclassesVal = classData.at("subclasses");
         if (!subclassesVal.is<util::DataObject>()) {
-            logging::log(LEVEL_ERROR, "Subclasses property of class {} in theme {} is not object!", classId, theme->getThemeName());
+            PHENYL_LOGE(LOGGER, "Subclasses property of class {} in theme {} is not object!", classId, theme->getThemeName());
         } else {
             for (auto [id, data] : subclassesVal.get<util::DataObject>().kv()) {
                 if (!data.is<util::DataObject>()) {
-                    logging::log(LEVEL_ERROR, "Class {} data of theme {} is not an object!", classId + "." + id, theme->getThemeName());
+                    PHENYL_LOGE(LOGGER, "Class {} data of theme {} is not an object!", classId + "." + id, theme->getThemeName());
                 } else {
                     subClasses[id] = theme->addThemeClass(classId + "." + id, std::make_unique<ThemeClass>(classId + "." + id, theme, data.get<util::DataObject>(), classId));
                 }
@@ -83,7 +85,7 @@ void ThemeClass::setParent () {
             this->parent = parentClass;
         })
         .ifNotPresent([this] () {
-            logging::log(LEVEL_ERROR, "Could not find parentId class {} for theme class {}!", parentId, classId);
+            PHENYL_LOGE(LOGGER, "Could not find parentId class {} for theme class {}!", parentId, classId);
             this->parent = theme->getThemeClass("default").orElse(nullptr);
         });
 }

@@ -18,8 +18,8 @@ void ComponentSet::guaranteeEntityIndex (std::size_t index) {
 }
 
 std::byte* ComponentSet::getComponentUntyped (EntityId id) const {
-    assert(id.id > 0);
-    assert(metadataSet.size() > id.id - 1);
+    PHENYL_DASSERT(id.id > 0);
+    PHENYL_DASSERT(metadataSet.size() > id.id - 1);
 
     return metadataSet[id.id - 1].data;
 }
@@ -29,7 +29,7 @@ bool ComponentSet::canInsert (component::EntityId id) {
 }
 
 std::byte* ComponentSet::tryInsert (EntityId id) {
-    assert(metadataSet.size() > id.id - 1);
+    PHENYL_DASSERT(metadataSet.size() > id.id - 1);
 
     if (compSize == 0 || !canInsert(id)) {
         return nullptr;
@@ -53,7 +53,7 @@ std::byte* ComponentSet::tryInsert (EntityId id) {
             metadataSet[id.id - 1].fill((std::uint32_t) allSize, ptr);
             ids.push_back(id);
         } else {
-            assert(dataSize < allSize);
+            PHENYL_DASSERT(dataSize < allSize);
 
             auto* activeEndPtr = data.get() + (compSize * dataSize);
             auto* dataEndPtr = data.get() + (compSize * allSize);
@@ -97,8 +97,8 @@ void ComponentSet::onInsert (component::EntityId id, std::byte* ptr, std::byte* 
 }
 
 void ComponentSet::onChildInsert (component::EntityId id, std::byte* ptr) {
-    assert(metadataSet[id.id - 1].empty());
-    assert(!metadataSet[id.id - 1].present());
+    PHENYL_DASSERT(metadataSet[id.id - 1].empty());
+    PHENYL_DASSERT(!metadataSet[id.id - 1].present());
 
     metadataSet[id.id - 1].fillChild(ptr);
     inheritedSize++;
@@ -118,7 +118,7 @@ bool ComponentSet::deleteComp (EntityId id) {
         return true;
     }
 
-    assert(metadataSet.size() > id.id - 1);
+    PHENYL_DASSERT(metadataSet.size() > id.id - 1);
     if (metadataSet[id.id - 1].empty()) {
         return false;
     }
@@ -130,7 +130,7 @@ bool ComponentSet::deleteComp (EntityId id) {
             }
         }
 
-        logging::log(LEVEL_ERROR, "Failed to find component for id {} despite it supposedly existing!");
+        PHENYL_LOGE(COMPONENT_SET_LOGGER, "Failed to find component for id {} despite it supposedly existing!", id.id);
         metadataSet[id.id - 1].clear();
         return false;
     }
@@ -194,8 +194,8 @@ void ComponentSet::onRemove (component::EntityId id) {
 }
 
 void ComponentSet::onChildDelete (component::EntityId id) {
-    assert(!metadataSet[id.id - 1].empty());
-    assert(inheritedSize > 0);
+    PHENYL_DASSERT(!metadataSet[id.id - 1].empty());
+    PHENYL_DASSERT(inheritedSize > 0);
 
     metadataSet[id.id - 1].clear();
     inheritedSize--;
@@ -206,7 +206,7 @@ void ComponentSet::onChildDelete (component::EntityId id) {
 }
 
 void ComponentSet::guaranteeCapacity (std::size_t capacity) {
-    assert(compSize > 0);
+    PHENYL_DASSERT(compSize > 0);
     if (dataCapacity >= capacity) {
         return;
     }
@@ -257,13 +257,13 @@ void ComponentSet::clear () {
 }
 
 bool ComponentSet::hasComp (EntityId id) const {
-    assert(metadataSet.size() > id.id - 1);
+    PHENYL_DASSERT(metadataSet.size() > id.id - 1);
     return !metadataSet[id.id - 1].empty();
 }
 
-bool ComponentSet::setParent (detail::ComponentSet* parentSet) {
+bool ComponentSet::setParent (ComponentSet* parentSet) {
     if (parent && parentSet) {
-        logging::log(LEVEL_ERROR, "Attempted to set parentId for component that already has parentId!");
+        PHENYL_LOGE(COMPONENT_SET_LOGGER, "Attempted to set parentId for component that already has parentId!");
         return false;
     }
 
@@ -297,7 +297,7 @@ std::size_t ComponentSet::getHierachyDepth () const {
 }
 
 void ComponentSet::addChild (ComponentSet* child) {
-    assert(child);
+    PHENYL_DASSERT(child);
 
     if (!children) {
         children = child;
@@ -314,10 +314,10 @@ void ComponentSet::addChild (ComponentSet* child) {
 }
 
 void ComponentSet::removeChild (ComponentSet* child) {
-    assert(child);
+    PHENYL_DASSERT(child);
 
     if (!children) {
-        logging::log(LEVEL_ERROR, "Attempted to remove child from component with no children!");
+        PHENYL_LOGE(COMPONENT_SET_LOGGER, "Attempted to remove child from component with no children!");
         return;
     } else if (children == child) {
         children = children->nextChild;
@@ -333,7 +333,7 @@ void ComponentSet::removeChild (ComponentSet* child) {
         }
     }
 
-    logging::log(LEVEL_ERROR, "Attempted to remove child from component that does not directly parentId that child!");
+    PHENYL_LOGE(COMPONENT_SET_LOGGER, "Attempted to remove child from component that does not directly parentId that child!");
 }
 
 void ComponentSet::addDependency () {
@@ -342,11 +342,11 @@ void ComponentSet::addDependency () {
 
 void ComponentSet::addDependent (ComponentSet* dependent) {
     if (!ids.empty()) {
-        logging::log(LEVEL_ERROR, "Cannot add dependent after entities have been added!");
+        PHENYL_LOGE(COMPONENT_SET_LOGGER, "Cannot add dependent after entities have been added!");
         return;
     }
     if (std::find(dependents.begin(), dependents.end(), dependent) != dependents.end()) {
-        logging::log(LEVEL_ERROR, "Dependent has already been added!");
+        PHENYL_LOGE(COMPONENT_SET_LOGGER, "Dependent has already been added!");
         return;
     }
 
@@ -355,7 +355,7 @@ void ComponentSet::addDependent (ComponentSet* dependent) {
 }
 
 void ComponentSet::onDependencyInsert (component::EntityId id) {
-    assert(metadataSet.size() > id.id - 1);
+    PHENYL_DASSERT(metadataSet.size() > id.id - 1);
     metadataSet[id.id - 1].decrementDependencies();
 
     if (metadataSet[id.id - 1].present() && metadataSet[id.id - 1].active()) {
@@ -364,7 +364,7 @@ void ComponentSet::onDependencyInsert (component::EntityId id) {
 }
 
 void ComponentSet::onDependencyRemove (component::EntityId id) {
-    assert(metadataSet.size() > id.id - 1);
+    PHENYL_DASSERT(metadataSet.size() > id.id - 1);
     bool active = metadataSet[id.id - 1].active();
     metadataSet[id.id - 1].incrementDepenencies();
 

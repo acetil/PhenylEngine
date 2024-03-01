@@ -1,6 +1,7 @@
 #pragma once
 
 #include "component_set.h"
+#include "loggers.h"
 #include "signals/component_handler.h"
 
 namespace phenyl::component::detail {
@@ -8,10 +9,7 @@ namespace phenyl::component::detail {
     class TypedComponentSet : public ComponentSet {
     protected:
         void assertTypeIndex (std::size_t typeIndex, const char* debugOtherName) const override {
-            if (typeIndex != meta::type_index<T>()) {
-                logging::log(LEVEL_FATAL, "Attempted to access component of type index {} ({}) with type of index {} ()!", meta::type_index<T>(), typeid(T).name(), typeIndex, debugOtherName);
-                std::exit(1);
-            }
+            PHENYL_DASSERT_MSG(typeIndex == meta::type_index<T>(), "Attempted to access component of type index {} ({}) with type of index {} ()!", meta::type_index<T>(), typeid(T).name(), typeIndex, debugOtherName);
         }
 
         TypedComponentSignalHandler<T, OnInsertUntyped>& getInsertHandler () {
@@ -123,28 +121,23 @@ namespace phenyl::component::detail {
     class AbstractComponentSet : public TypedComponentSet<T> {
     protected:
         void moveTypedComp(std::byte *dest, std::byte *src) override {
-            logging::log(LEVEL_FATAL, "Attempted to move comp of abstract component set!");
-            assert(false);
+            PHENYL_ABORT("Attempted to move comp of abstract component set!");
         }
 
         void deleteTypedComp(std::byte *comp) override {
-            logging::log(LEVEL_FATAL, "Attempted to delete comp of abstract component set!");
-            assert(false);
+            PHENYL_ABORT("Attempted to delete comp of abstract component set!");
         }
 
         void moveAllComps (std::byte* dest, std::byte* src, std::size_t len) override {
-            logging::log(LEVEL_FATAL, "Attempted to move all comps of abstract component set!");
-            assert(false);
+            PHENYL_ABORT("Attempted to move all comps of abstract component set!");
         }
 
         void swapTypedComp (std::byte* ptr1, std::byte* ptr2) override {
-            logging::log(LEVEL_FATAL, "Attempted to swap comps of abstract component set!");
-            assert(false);
+            PHENYL_ABORT("Attempted to swap comps of abstract component set!");
         }
 
         void deferInsertion (std::byte* comp, EntityId id) override {
-            logging::log(LEVEL_FATAL, "Attempted to defer insertion of abstract comp!");
-            assert(false);
+            PHENYL_ABORT("Attempted to defer insertion of abstract comp!");
         }
 
         void popDeferredInsertions () override {
@@ -152,20 +145,15 @@ namespace phenyl::component::detail {
         }
 
         void initPrefab (EntityId id, std::size_t prefabId) override {
-            logging::log(LEVEL_FATAL, "Attempted to init prefab of abstract comp!");
-            assert(false);
+            PHENYL_ABORT("Attempted to init prefab of abstract comp!");
         }
 
         std::size_t addPrefab (T&& comp) override {
-            logging::log(LEVEL_FATAL, "Attempted to add prefab of abstract comp!");
-            assert(false);
-
-            return -1;
+            PHENYL_ABORT("Attempted to add prefab of abstract comp!");
         }
 
         void deletePrefab (std::size_t prefabId) override {
-            logging::log(LEVEL_FATAL, "Attempted to remove prefab of abstract comp!");
-            assert(false);
+            PHENYL_ABORT("Attempted to remove prefab of abstract comp!");
         }
     public:
         explicit AbstractComponentSet (BasicManager* manager, std::size_t startCapacity) : TypedComponentSet<T>{manager, startCapacity, 0} {}

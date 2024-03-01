@@ -3,6 +3,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "common/serializer.h"
+#include "common/detail/loggers.h"
 
 namespace phenyl::common {
     template <typename T>
@@ -20,13 +21,13 @@ namespace phenyl::common {
         static bool Accept (const JsonDeserializer& deserializer, Asset<T>& asset) {
             std::string path;
             if (!deserializer.visit(path)) {
-                logging::log(LEVEL_ERROR, "Failed to parse asset path!");
+                PHENYL_LOGE(detail::ASSET_SERIALIZER_LOGGER, "Failed to parse asset path!");
                 return false;
             }
 
             Asset<T> newAsset = Assets::Load<T>(path);
             if (!newAsset) {
-                logging::log(LEVEL_ERROR, "Failed to load asset at \"{}\"!", path);
+                PHENYL_LOGE(detail::ASSET_SERIALIZER_LOGGER, "Failed to load asset at \"{}\"!", path);
                 return false;
             }
 

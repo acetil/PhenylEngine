@@ -22,12 +22,8 @@ void GlBuffer::bindBuffer () const {
 }
 
 void GlBuffer::bufferItems (const void* _data, std::size_t size) {
-#ifndef NDEBUG
-    if (currentSize + size > maxSize) {
-        logging::log(LEVEL_ERROR, "Buffer to GlBuffer failed: max size of {} exceeded!", maxSize);
-        logging::log(LEVEL_ERROR, "This check will be removed in release builds!");
-    }
-#endif
+    PHENYL_DASSERT_MSG(currentSize + size <= maxSize, "Buffer to GlBuffer failed: max size of {} exceeded!", maxSize);
+
     std::memcpy(data.get() + currentSize, _data, size);
     currentSize += size;
 }
@@ -52,12 +48,3 @@ GlBuffer::~GlBuffer () {
 void GlBuffer::setElementSize (std::size_t elementSize) {
     this->elementSize = elementSize;
 }
-
-/*void GlBuffer::onStageBind (std::shared_ptr<GLPipelineStage> pipelineStage, std::size_t stageBufId) {
-    pipelineStage = std::move(pipelineStage);
-    stageBufId = stageBufId;
-}*/
-
-/*GLuint GlBuffer::getBufferId () const {
-    return bufferId;
-}*/

@@ -69,7 +69,7 @@ namespace phenyl::component {
         template <common::CustomSerializable T>
         void addSerializer () {
             if (serializers.contains(common::CustomSerializer<T>::Name)) {
-                logging::log(LEVEL_ERROR, "Attempted to add serializer \"{}\" that already exists!", common::CustomSerializer<T>::Name);
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Attempted to add serializer \"{}\" that already exists!", common::CustomSerializer<T>::Name);
                 return;
             }
 
@@ -90,7 +90,7 @@ namespace phenyl::component {
 
         void deserializeEntity (component::Prefab::Instantiator& instantiator, const nlohmann::json& data) {
             if (!data.is_object()) {
-                logging::log(LEVEL_ERROR, "Entity component data is not an object!");
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Entity component data is not an object!");
                 return;
             }
 
@@ -100,14 +100,14 @@ namespace phenyl::component {
                 if (serializers.contains(k)) {
                     serializers.at(k)->deserialize(instantiator, v);
                 } else {
-                    logging::log(LEVEL_WARNING, "Component serializer not available for component \"{}\"!", k);
+                    PHENYL_LOGW(detail::SERIALIZER_LOGGER, "Component serializer not available for component \"{}\"!", k);
                 }
             }
         }
 
         void deserializePrefab (component::PrefabBuilder& builder, const nlohmann::json& data) {
             if (!data.is_object()) {
-                logging::log(LEVEL_ERROR, "Entity component data is not an object!");
+                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Entity component data is not an object!");
                 return;
             }
 
@@ -117,7 +117,7 @@ namespace phenyl::component {
                 if (serializers.contains(k)) {
                     serializers.at(k)->deserialize(builder, v);
                 } else {
-                    logging::log(LEVEL_WARNING, "Component serializer not available for component \"{}\"!", k);
+                    PHENYL_LOGW(detail::SERIALIZER_LOGGER, "Component serializer not available for component \"{}\"!", k);
                 }
             }
         }

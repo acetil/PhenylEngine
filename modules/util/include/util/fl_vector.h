@@ -6,6 +6,9 @@
 #include "iterable.h"
 #include <string>
 #include <sstream>
+
+#include "detail/loggers.h"
+
 namespace phenyl::util {
     namespace detail {
         template <typename T>
@@ -31,9 +34,11 @@ namespace phenyl::util {
 
             template <typename ...Args>
             std::size_t init (Args&&... args) {
-                if (isPresent()) {
+                /*if (isPresent()) {
                     logging::log(LEVEL_ERROR, "Attempting to init already present FLVectorItem!");
-                }
+                }*/
+                PHENYL_ASSERT_MSG(!isPresent(), "Attempting to init already present FLVectorItem!");
+
                 new (&getUnsafe()) T(std::forward<Args>(args)...);
                 std::size_t oldNext = next;
                 next = PRESENT_INDEX;
@@ -438,14 +443,8 @@ namespace phenyl::util {
         }
 
         void remove (std::size_t index) {
-            if (listSize <= index) {
-                logging::log(LEVEL_ERROR, "Attempted to remove invalid element of FLVector!");
-                return;
-            }
-            if (!data[index].isPresent()) {
-                logging::log(LEVEL_ERROR, "Attempted to remove already removed element of FLVector!");
-                return;
-            }
+            PHENYL_ASSERT_MSG(index < listSize, "Attempted to remove invalid element {} of FLVector!", index);
+            PHENYL_ASSERT_MSG(data[index].isPresent(), "Attempted to remove already removed element {} of FLVector!", index);
 
             data[index].destroy(flHead);
             flHead = index + 1;

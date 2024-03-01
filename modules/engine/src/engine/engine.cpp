@@ -26,6 +26,8 @@
 
 using namespace phenyl;
 
+static Logger LOGGER{"ENGINE"};
+
 class engine::detail::Engine {
 private:
     //game::PhenylGameHolder gameObjHolder;
@@ -76,11 +78,12 @@ public:
 };
 
 engine::PhenylEngine::PhenylEngine () {
-    //internal = std::make_unique<engine::detail::Engine>();
-    logger::initLogger();
+    InitLogging(PHENYL_DEFAULT_ROOT_LEVEL, "debug.log");
 }
 
-engine::PhenylEngine::~PhenylEngine () = default;
+engine::PhenylEngine::~PhenylEngine () {
+    ShutdownLogging();
+}
 
 graphics::PhenylGraphics engine::PhenylEngine::getGraphics () {
     return internal->getGraphics();
@@ -139,8 +142,6 @@ audio::AudioSystem& phenyl::engine::PhenylEngine::getAudio () {
 }
 
 engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties), componentManager{256} {
-    InitLogging(LEVEL_DEBUG, "debug.log");
-
     entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 
@@ -180,11 +181,9 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 }
 
 engine::detail::Engine::~Engine () {
-    logger::log(LEVEL_INFO, "MAIN", "Shutting down!");
+    PHENYL_LOGI(LOGGER, "Shutting down!");
     prefabManager->clear();
     componentManager.clearAll();
-
-    ShutdownLogging();
 }
 
 graphics::PhenylGraphics engine::detail::Engine::getGraphics () const {
@@ -253,8 +252,9 @@ void engine::detail::Engine::dumpLevel (std::ostream& file) {
 void engine::detail::Engine::gameloop (Application* app) {
     double deltaPhysicsFrame = 0.0f;
     auto graphics = graphicsHolder.getGraphics();
-    logger::log(LEVEL_DEBUG, "ENGINE", "Starting loop!");
+    PHENYL_LOGD(LOGGER, "Starting loop!");
     while (!graphics.shouldClose()) {
+        PHENYL_LOGT(LOGGER, "Frame start");
         util::startProfileFrame();
 
         graphics.updateUI();
@@ -265,8 +265,10 @@ void engine::detail::Engine::gameloop (Application* app) {
 
         util::startProfile("physics");
         while (deltaPhysicsFrame >= 1.0 / FIXED_FPS) {
+            PHENYL_LOGT(LOGGER, "Physics frame start");
             fixedUpdate(app);
             deltaPhysicsFrame -= 1.0 / FIXED_FPS;
+            PHENYL_LOGT(LOGGER, "Physics frame end");
         }
         util::endProfile();
 
@@ -279,23 +281,29 @@ void engine::detail::Engine::gameloop (Application* app) {
 
         graphics.sync((int)app->targetFps); // TODO
         graphics.pollEvents();
+        PHENYL_LOGT(LOGGER, "Frame end");
     }
 }
 
 void engine::detail::Engine::update (Application* app, double deltaTime) {
+    PHENYL_LOGT(LOGGER, "Update start");
     app->update(deltaTime);
     audioSystem->update((float)deltaTime);
     graphicsHolder.getGraphics().frameUpdate(componentManager);
     common::TimedLifetime::Update(componentManager, deltaTime); // TODO: put somewhere else
+    PHENYL_LOGT(LOGGER, "Update end");
 }
 
 void engine::detail::Engine::fixedUpdate (Application* app) {
+    PHENYL_LOGT(LOGGER, "Fixed update start");
     app->fixedUpdate(1.0 / FIXED_FPS);
     updateEntityPosition(1.0f / FIXED_FPS);
     getCamera().updateCamera(getGraphics().getCamera());
+    PHENYL_LOGT(LOGGER, "Fixed update end");
 }
 
 void engine::detail::Engine::render (Application* app, double deltaTime) {
+    PHENYL_LOGT(LOGGER, "Render start");
     if (doProfileRender) {
         graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float) deltaTime);
     }
@@ -303,6 +311,7 @@ void engine::detail::Engine::render (Application* app, double deltaTime) {
     getGraphics().getUIManager().renderUI();
 
     getGraphics().render();
+    PHENYL_LOGT(LOGGER, "Render end");
 }
 
 void engine::detail::Engine::setDebugRender (bool doRender) {

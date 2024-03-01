@@ -195,7 +195,7 @@ namespace phenyl::component {
         void addComponent () {
             auto typeIndex = meta::type_index<T>();
             if (components.contains(typeIndex)) {
-                logging::log(LEVEL_ERROR, "Attempted to insert component type of index {} that already exists!", typeIndex);
+                PHENYL_LOGE(detail::MANAGER_LOGGER, "Attempted to insert component type of index {} that already exists!", typeIndex);
                 return;
             }
 
@@ -217,7 +217,7 @@ namespace phenyl::component {
         }
 
         void clear () {
-            logging::log(LEVEL_DEBUG, "Clearing entities!");
+            PHENYL_LOGD(detail::MANAGER_LOGGER, "Clearing entities!");
             for (auto [i, comp] : components.kv()) {
                 comp->clear();
             }
@@ -226,7 +226,7 @@ namespace phenyl::component {
         }
 
         void clearAll () {
-            logging::log(LEVEL_DEBUG, "Clearing all!");
+            PHENYL_LOGD(detail::MANAGER_LOGGER, "Clearing all!");
             clear();
             prefabs.clear();
         }
@@ -237,14 +237,12 @@ namespace phenyl::component {
             detail::ComponentSet* base = getComponent<Base>();
 
             if (!derived) {
-                logging::log(LEVEL_ERROR, "Failed to get derived component!");
+                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get derived component!");
+                return;
             }
 
             if (!base) {
-                logging::log(LEVEL_ERROR, "Failed to get base component!");
-            }
-
-            if (!derived || !base) {
+                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get base component!");
                 return;
             }
 
@@ -259,14 +257,12 @@ namespace phenyl::component {
             detail::ComponentSet* dependency = getComponent<Dependency>();
 
             if (!dependent) {
-                logging::log(LEVEL_ERROR, "Failed to get dependent component!");
+                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get dependent component!");
+                return;
             }
 
             if (!dependency) {
-                logging::log(LEVEL_ERROR, "Failed to get dependency component!");
-            }
-
-            if (!dependent || !dependency) {
+                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get dependency component!");
                 return;
             }
 
@@ -278,7 +274,7 @@ namespace phenyl::component {
             auto comps = std::array{getComponent<std::remove_reference_t<Args>>()...};
             for (auto i : comps) {
                 if (!i) {
-                    logging::log(LEVEL_ERROR, "Failed to get all components for signal handler!");
+                    PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get all components for signal handler!");
                     return;
                 }
             }
@@ -293,7 +289,7 @@ namespace phenyl::component {
         void handleSignal (std::function<void(Entity, const Signal&)> handler) {
             auto* comp = (detail::TypedComponentSet<typename Signal::Type>*)getComponent<typename Signal::Type>();
             if (!comp) {
-                logging::log(LEVEL_ERROR, "Failed to get component for component signal handler!");
+                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get component for component signal handler!");
                 return;
             }
 

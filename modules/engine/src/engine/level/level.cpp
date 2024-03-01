@@ -12,6 +12,8 @@
 
 using namespace phenyl::game;
 
+static phenyl::Logger LOGGER{"LEVEL_MANAGER"};
+
 namespace phenyl::game::detail {
     struct LevelEntity {
         nlohmann::json components;
@@ -29,18 +31,21 @@ LevelManager::LevelManager (component::ComponentManager* manager, component::Ent
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::istream& data, std::size_t id) {
-    assert(!levels.contains(id));
+    PHENYL_LOGI(LOGGER, "Loading level with id={}", id);
+    PHENYL_ASSERT(!levels.contains(id));
     nlohmann::json json;
     data >> json;
 
+    PHENYL_LOGT(LOGGER, "Level json: {}", json.dump(4));
+
     if (!json.contains("entities")) {
-        logging::log(LEVEL_ERROR, "Failed to find entities field in level!");
+        PHENYL_LOGE(LOGGER, "Failed to find \"entities\" field in level!");
         return nullptr;
     }
 
     auto& entitiesJson = json.at("entities");
     if (!entitiesJson.is_array()) {
-        logging::log(LEVEL_ERROR, "Expected array for entities, got {}!", entitiesJson.type_name());
+        PHENYL_LOGE(LOGGER, "Expected array for entities, got {}!", entitiesJson.type_name());
         return nullptr;
     }
 
@@ -49,7 +54,8 @@ Level* LevelManager::load (std::istream& data, std::size_t id) {
 
     for (const auto& i : entitiesJson.get<nlohmann::json::array_t>()) {
         if (!parseEntity(i, entities)) {
-            logging::log(LEVEL_ERROR, "Failed to parse entity!");
+            PHENYL_LOGE(LOGGER, "Failed to parse entity");
+
             return nullptr;
         }
     }
@@ -74,6 +80,7 @@ void LevelManager::selfRegister () {
 }
 
 void LevelManager::dump (std::ostream& file) const {
+    PHENYL_LOGI(LOGGER, "Dumping level");
     auto entities = nlohmann::json::array_t{};
     for (auto i : manager->root()) {
         entities.emplace_back(dumpEntity(i));
@@ -85,6 +92,8 @@ void LevelManager::dump (std::ostream& file) const {
 }
 
 nlohmann::json LevelManager::dumpEntity (component::Entity entity) const {
+    PHENYL_LOGD(LOGGER, "Dumping entity id={}", entity.id().value());
+
     nlohmann::json json;
     json["components"] = serializer->serializeEntity(entity);
 
@@ -95,10 +104,13 @@ nlohmann::json LevelManager::dumpEntity (component::Entity entity) const {
 
     json["children"] = std::move(children);
 
+    PHENYL_LOGT(LOGGER, "Entity json: {}", json.dump(4));
+
     return json;
 }
 
 Level* LevelManager::load (Level&& obj, std::size_t id) {
+    PHENYL_LOGD(LOGGER, "Loading already created level");
     levels[id] = std::make_unique<Level>(std::move(obj));
     return levels[id].get();
 }
@@ -107,6 +119,7 @@ Level::Level (component::ComponentManager* manager, component::EntitySerializer*
 
 void Level::load (bool additive) {
     if (!additive) {
+        PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
         manager->clear();
     }
 
@@ -121,7 +134,7 @@ void Level::load (bool additive) {
 }
 
 phenyl::component::Entity Level::loadEntity (std::size_t index) {
-    assert(index < entities.size());
+    PHENYL_ASSERT(index < entities.size());
     const auto& entity = entities[index];
 
     auto instantatior = getInstantatior(entity.prefab, manager);
@@ -137,27 +150,26 @@ phenyl::component::Entity Level::loadEntity (std::size_t index) {
 
 namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities) {
+        PHENYL_LOGT(LOGGER, "Parsing entity json={}", json.dump(4));
         if (!json.is_object()) {
-            logging::log(LEVEL_ERROR, "Expected object for entity, got {}!", json.type_name());
+            PHENYL_LOGE(LOGGER, "Expected object for entity, got {}!", json.type_name());
             return 0;
         }
 
         if (!json.contains("components")) {
-            logging::log(LEVEL_ERROR, "Failed to find components field in entity!");
+            PHENYL_LOGE(LOGGER, "Failed to find components field in entity!");
             return 0;
         }
 
         phenyl::common::Asset<phenyl::component::Prefab> prefab;
         if (json.contains("prefab")) {
             if (!json.at("prefab").is_string()) {
-                logging::log(LEVEL_ERROR, "Expected string for prefab field, got {}!", json.at("prefab").type_name());
+                PHENYL_LOGE(LOGGER, "Expected string for prefab field, got {}!", json.at("prefab").type_name());
                 return 0;
             }
 
             prefab = phenyl::common::Assets::Load<phenyl::component::Prefab>(json.at("prefab").get<std::string>());
-            if (!prefab) {
-                logging::log(LEVEL_ERROR, "Failed to load prefab {} for entity!", json.at("prefab").get<std::string>());
-            }
+            PHENYL_LOGE_IF(!prefab, LOGGER, "Failed to load prefab {} for entity!", json.at("prefab").get<std::string>());
         }
 
         entities.emplace_back(json.at("components"), std::move(prefab), 0);
@@ -165,7 +177,7 @@ namespace {
 
         if (json.contains("children")) {
             if (!json.at("children").is_array()) {
-                logging::log(LEVEL_ERROR, "Expected array for children field, got {}!", json.at("children").type_name());
+                PHENYL_LOGE(LOGGER, "Expected array for children field, got {}!", json.at("children").type_name());
                 return 0;
             }
 

@@ -5,6 +5,8 @@
 
 using namespace phenyl;
 
+static Logger LOGGER{"AUDIO_SOURCE"};
+
 audio::AudioSource::~AudioSource () {
     if (audioSystem) {
         audioSystem->destroySource(sourceId);
@@ -30,20 +32,15 @@ audio::AudioSource& audio::AudioSource::operator= (audio::AudioSource&& other) n
 }
 
 void audio::AudioSource::play (const audio::AudioSample& sample) {
-    if (!*this) {
-        logging::log(LEVEL_ERROR, "Attempted to play to empty source!");
-        return;
-    }
+    PHENYL_ASSERT_MSG(*this, "Attempted to play to empty source");
 
     audioSystem->playSample(*this, sample);
 }
 
 void audio::AudioSource::play (const common::Asset<AudioSample>& sample) {
-    if (sample) {
-        play(*sample);
-    } else {
-        logging::log(LEVEL_ERROR, "Attempted to play invalid sample!");
-    }
+    PHENYL_ASSERT_MSG(sample, "Attempted to play empty sample");
+
+    play(*sample);
 }
 
 float audio::AudioSource::getGain () const {

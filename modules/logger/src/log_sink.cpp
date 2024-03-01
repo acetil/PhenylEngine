@@ -1,8 +1,10 @@
 #include <chrono>
+#include <utility>
 
-#include <logging/log_sink.h>
-#include <logging/logger.h>
+#include "logging/log_sink.h"
+#include "logging/logger.h"
 
+#define TRACE_TEXT "TRACE"
 #define DEBUG_TEXT "DEBUG"
 #define INFO_TEXT "INFO"
 #define WARNING_TEXT "WARN"
@@ -13,6 +15,8 @@ using namespace phenyl::logging;
 
 static constexpr std::string_view GetLevelText (const int level) {
     switch (level) {
+        case LEVEL_TRACE:
+            return TRACE_TEXT;
         case LEVEL_DEBUG:
             return DEBUG_TEXT;
         case LEVEL_INFO:
