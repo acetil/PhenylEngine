@@ -138,7 +138,7 @@ namespace phenyl::component {
                 auto compIndex = comps.size();
 
                 auto idIndex = indexes.push(compIndex);
-                assert(idIndex <= generations.size());
+                PHENYL_DASSERT(idIndex <= generations.size());
 
                 if (idIndex < generations.size()) {
                     generations[idIndex] = (generations[idIndex] + 1) % (1 << GenBits);
@@ -166,7 +166,7 @@ namespace phenyl::component {
             }
 
             const void* getErased (IdType id) const {
-                assert(id.getType() == typeIndex);
+                PHENYL_DASSERT(id.getType() == typeIndex);
 
                 return get(id).thenMap([] (auto& comp) { return static_cast<const void*>(&comp); })
                     .orElse(nullptr);

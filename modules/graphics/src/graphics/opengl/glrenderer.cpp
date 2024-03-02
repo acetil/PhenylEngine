@@ -132,7 +132,7 @@ void GLRenderer::setupErrorHandling () {
         }
         switch(severity) {
             case GL_DEBUG_SEVERITY_NOTIFICATION:
-                PHENYL_LOGT(LOGGER,  "GL debug notification from {} with type {} and message {}", sourceString, typeString, message);
+                PHENYL_TRACE(LOGGER,  "GL debug notification from {} with type {} and message {}", sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
                 PHENYL_LOGW(LOGGER, "GL low severity message from {} with type {} and message {}",

@@ -52,8 +52,8 @@ bool EntityIdList::check (EntityId id) const {
 }
 
 void EntityIdList::removeId (EntityId id) {
-    assert(id && id.id <= idSlots.size());
-    assert(check(id));
+    PHENYL_DASSERT(id && id.id <= idSlots.size());
+    PHENYL_DASSERT(check(id));
 
     idSlots[id.id - 1] |= EMPTY_BIT | (freeListStart << GEN_BITS);
     freeListStart = id.id;

@@ -59,13 +59,13 @@ namespace phenyl::component::detail {
         };
         std::vector<Relationship> relationships{};
         Relationship& getRelationship (EntityId id) {
-            assert(id.id < relationships.size());
+            PHENYL_DASSERT(id.id < relationships.size());
 
             return relationships[id.id];
         }
 
         [[nodiscard]] const Relationship& getRelationship (EntityId id) const {
-            assert(id.id < relationships.size());
+            PHENYL_DASSERT(id.id < relationships.size());
 
             return relationships[id.id];
         }
@@ -81,7 +81,7 @@ namespace phenyl::component::detail {
         }
 
         void add (EntityId id, EntityId parent) {
-            assert(relationships.size() >= id.id);
+            PHENYL_DASSERT(relationships.size() >= id.id);
             if (relationships.size() <= id.id) {
                 relationships.push_back(Relationship{});
             }

@@ -2,7 +2,7 @@
 #include "component/component.h"
 
 void phenyl::component::detail::PrefabList::instantiate (component::Entity entity, std::size_t prefabId) {
-    assert(valid(prefabId));
+    PHENYL_DASSERT(valid(prefabId));
 
     auto& entry = getPrefabEntry(prefabId);
     for (auto& [set, compId] : entry.comps) {

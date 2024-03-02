@@ -1,7 +1,5 @@
 #include "wav.h"
 
-#include <assert.h>
-
 #include "util/endian.h"
 #include "util/istream_help.h"
 
@@ -179,7 +177,7 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
         return util::NullOpt;
     }
 
-    PHENYL_LOGT(LOGGER, "Read WAV header: fileSize={}, formatType={}, channels={}, sampleRate={}, byteRate={}, blockAlign={}, sampleBits={}, dataSize={}", header.fileSize, header.formatType, header.channels, header.sampleRate,
+    PHENYL_TRACE(LOGGER, "Read WAV header: fileSize={}, formatType={}, channels={}, sampleRate={}, byteRate={}, blockAlign={}, sampleBits={}, dataSize={}", header.fileSize, header.formatType, header.channels, header.sampleRate,
             header.byteRate, header.blockAlign, header.sampleBits, header.dataSize);
 
     return header;

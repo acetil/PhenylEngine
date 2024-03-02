@@ -28,7 +28,7 @@ static inline Manifold2D buildManifoldInternal (const Face2D& refFace, const Fac
     auto inc2 = glm::clamp(lineIntersection(incFace.vertices[0], dv, refFace.vertices[1], refFace.normal), 0.0f, 1.0f) * dv + incFace.vertices[0];
 
     // At least one point should not be clipped
-    assert(glm::dot(inc1 - refFace.vertices[0], refFace.normal) <= 0 || glm::dot(inc2 - refFace.vertices[0], refFace.normal) <= 0);
+    PHENYL_DASSERT(glm::dot(inc1 - refFace.vertices[0], refFace.normal) <= 0 || glm::dot(inc2 - refFace.vertices[0], refFace.normal) <= 0);
 
     if (glm::dot(inc1 - refFace.vertices[0], refFace.normal) > 0) {
         return Manifold2D{.points={inc2, inc2}, .normal=normal, .depth=depth, .type=Manifold2DType::POINT};

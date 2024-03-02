@@ -17,7 +17,7 @@ phenyl::audio::OpenALSource::OpenALSource () : sourceId{0}, valid{true} {
         valid = false;
     }
 
-    PHENYL_LOGT_IF(valid, LOGGER, "Created source with id={}", sourceId);
+    PHENYL_TRACE_IF(valid, LOGGER, "Created source with id={}", sourceId);
 }
 
 phenyl::audio::OpenALSource::~OpenALSource () {

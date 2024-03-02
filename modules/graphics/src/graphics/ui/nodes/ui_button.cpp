@@ -25,7 +25,7 @@ UIAnchor UIButtonNode::getAnchor () {
 
 bool UIButtonNode::onMousePress () {
     if (isHovered && !isPressed) {
-        PHENYL_LOGT(LOGGER, "Button pressed!");
+        PHENYL_TRACE(LOGGER, "Button pressed!");
         isPressed = true;
     }
 
@@ -34,7 +34,7 @@ bool UIButtonNode::onMousePress () {
 
 void UIButtonNode::onMouseRelease () {
     if (isPressed) {
-        PHENYL_LOGT(LOGGER, "Button released!");
+        PHENYL_TRACE(LOGGER, "Button released!");
         isPressed = false;
     }
 }

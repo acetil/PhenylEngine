@@ -39,13 +39,6 @@ static_assert(PHENYL_MIN_LOG_LEVEL <= LEVEL_FATAL);
 #else
 #define PRINT_STACKTRACE()
 #endif
-#if LEVEL_TRACE >= PHENYL_MIN_LOG_LEVEL
-#define PHENYL_LOGT(logger, fmt, ...) logger.trace(std::source_location::current(), fmt __VA_OPT__(,) __VA_ARGS__)
-#define PHENYL_LOGT_IF(cond, logger, fmt, ...) if (cond) PHENYL_LOGT(logger, fmt __VA_OPT__(,) __VA_ARGS__)
-#else
-#define PHENYL_LOGT(logger, fmt, ...)
-#define PHENYL_LOGT_IF(cond, logger, fmt, ...)
-#endif
 
 #if LEVEL_DEBUG >= PHENYL_MIN_LOG_LEVEL
 #define PHENYL_LOGD(logger, fmt, ...) logger.debug(std::source_location::current(), fmt __VA_OPT__(,) __VA_ARGS__)
@@ -88,7 +81,7 @@ PRINT_STACKTRACE(); \
 #define PHENYL_ASSERT(cond) do {\
     if (!(cond)) { \
         auto sourceLoc = std::source_location::current(); \
-        PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond); \
+        ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond); \
         PRINT_STACKTRACE(); \
         throw std::logic_error("Assertion failure: \"" #cond "\""); \
     } \
@@ -97,7 +90,7 @@ PRINT_STACKTRACE(); \
 #define PHENYL_ASSERT_MSG(cond, fmt, ...) do {\
 if (!(cond)) { \
 auto sourceLoc = std::source_location::current(); \
-PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond, std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
+::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond, std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
 PRINT_STACKTRACE(); \
 throw std::logic_error("Assertion failure: \"" #cond "\""); \
 } \
@@ -105,12 +98,20 @@ throw std::logic_error("Assertion failure: \"" #cond "\""); \
 
 #define PHENYL_ABORT(fmt, ...) do { \
 auto sourceLoc = std::source_location::current(); \
-PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): runtime abort: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
+::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): runtime abort: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
 PRINT_STACKTRACE(); \
 throw std::logic_error("Program abort");\
 } while (0)
 
 #ifndef NDEBUG
+#if LEVEL_TRACE >= PHENYL_MIN_LOG_LEVEL
+#define PHENYL_TRACE(logger, fmt, ...) logger.trace(std::source_location::current(), fmt __VA_OPT__(,) __VA_ARGS__)
+#define PHENYL_TRACE_IF(cond, logger, fmt, ...) if (cond) PHENYL_TRACE(logger, fmt __VA_OPT__(,) __VA_ARGS__)
+#else
+#define PHENYL_TRACE(logger, fmt, ...)
+#define PHENYL_TRACE_IF(cond, logger, fmt, ...)
+#endif
+
 #define PHENYL_DLOGI(logger, fmt, ...) PHENYL_LOGI(logger, fmt __VA_OPT__(,) __VA_ARGS__)
 #define PHENYL_DLOGI_IF(cond, logger, fmt, ...) PHENYL_LOGI_IF(cond, logger, fmt__VA_OPT__(,) __VA_ARGS__)
 #define PHENYL_DLOGW(logger, fmt, ...) PHENYL_LOGW(logger, fmt __VA_OPT__(,) __VA_ARGS__.)
@@ -123,6 +124,9 @@ throw std::logic_error("Program abort");\
 #define PHENYL_DASSERT(cond) PHENYL_ASSERT(cond)
 #define PHENYL_DASSERT_MSG(cond, fmt, ...) PHENYL_ASSERT_MSG(cond, fmt __VA_OPT__(,) __VA_ARGS__)
 #else
+#define PHENYL_TRACE
+#define PHENYL_TRACE_IF
+
 #define PHENYL_DLOGI(logger, fmt, ...)
 #define PHENYL_DLOGI_IF(cond, logger, fmt, ...)
 #define PHENYL_DLOGW(logger, fmt, ...)

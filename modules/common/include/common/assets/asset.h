@@ -80,12 +80,12 @@ namespace phenyl::common {
         }
 
         T& operator* () {
-            assert(ptr);
+            PHENYL_DASSERT(ptr);
             return *ptr;
         }
 
         const T& operator* () const {
-            assert(ptr);
+            PHENYL_DASSERT(ptr);
             return *ptr;
         }
 

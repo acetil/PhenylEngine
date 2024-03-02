@@ -52,12 +52,12 @@ LogSink* LogManager::makeSink (Logger* logger, Logger* parent) {
 
 void LogManager::setLogLevel (const std::string& loggerPath, const int level) {
     if (loggerPath.empty()) {
-        PHENYL_LOGT(LOGGER, "Setting root log level: level={}", level);
+        PHENYL_TRACE(LOGGER, "Setting root log level: level={}", level);
         rootLogLevel = level;
         return;
     }
 
-    PHENYL_LOGT(LOGGER, "Setting log level of {}: level={}", loggerPath, level);
+    PHENYL_TRACE(LOGGER, "Setting log level of {}: level={}", loggerPath, level);
     if (const auto it = loggers.find(loggerPath); it != loggers.end()) {
         it->second->setMinLevel(level);
     }
@@ -69,7 +69,7 @@ void LogManager::setLogLevel (const std::string& loggerPath, const int level) {
 
 void LogManager::shutdownLogging () {
     for (auto* logger : std::ranges::views::values(loggers)) {
-        PHENYL_LOGT(LOGGER, "Clearing sink for {}", logger->logSink->getPath());
+        PHENYL_TRACE(LOGGER, "Clearing sink for {}", logger->logSink->getPath());
         logger->logSink = nullptr;
     }
 
@@ -83,7 +83,7 @@ void LogManager::shutdownLogging () {
 
 void phenyl::InitLogging (const int rootLevel, const std::string& logPath) {
     LOG_MANAGER.init(rootLevel, logPath);
-    PHENYL_LOGD(LOGGER, "Initialised logging to {}", logPath);
+    PHENYL_LOGI(LOGGER, "Initialised logging to {}", logPath);
 }
 
 void phenyl::SetLogLevel (const std::string& logger, const int level) {
@@ -91,6 +91,6 @@ void phenyl::SetLogLevel (const std::string& logger, const int level) {
 }
 
 void phenyl::ShutdownLogging () {
-    PHENYL_LOGD(LOGGER, "Shutting down logging");
+    PHENYL_LOGI(LOGGER, "Shutting down logging");
     LOG_MANAGER.shutdownLogging();
 }

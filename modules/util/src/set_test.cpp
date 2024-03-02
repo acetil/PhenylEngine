@@ -11,60 +11,60 @@ using namespace phenyl::util;
 static void testSetEmpty () {
     Set<std::string> set;
 
-    assert(set.empty());
+    PHENYL_DASSERT(set.empty());
 
     set.insert("Hello");
 
-    assert(!set.empty());
+    PHENYL_DASSERT(!set.empty());
 
     set.remove("Hello");
 
-    assert(set.empty());
+    PHENYL_DASSERT(set.empty());
 }
 
 static void testSetContains () {
     Set<std::string> set;
 
-    assert(!set.contains("Hello"));
-    assert(!set["Hello"]);
+    PHENYL_DASSERT(!set.contains("Hello"));
+    PHENYL_DASSERT(!set["Hello"]);
 
     set.insert("Hello");
 
-    assert(set.contains("Hello"));
-    assert(set["Hello"]);
+    PHENYL_DASSERT(set.contains("Hello"));
+    PHENYL_DASSERT(set["Hello"]);
 
-    assert(!set.contains("Goodbye"));
-    assert(!set["Goodbye"]);
+    PHENYL_DASSERT(!set.contains("Goodbye"));
+    PHENYL_DASSERT(!set["Goodbye"]);
 
     set.insert("Goodbye");
 
-    assert(set["Hello"]);
-    assert(set["Goodbye"]);
+    PHENYL_DASSERT(set["Hello"]);
+    PHENYL_DASSERT(set["Goodbye"]);
 
     set.remove("Hello");
 
-    assert(!set["Hello"]);
-    assert(set["Goodbye"]);
+    PHENYL_DASSERT(!set["Hello"]);
+    PHENYL_DASSERT(set["Goodbye"]);
 }
 
 static void testSetSize () {
     Set<std::string> set;
 
-    assert(set.size() == 0);
+    PHENYL_DASSERT(set.size() == 0);
 
     set.insert("test1");
-    assert(set.size() == 1);
+    PHENYL_DASSERT(set.size() == 1);
     set.insert("test2");
-    assert(set.size() == 2);
+    PHENYL_DASSERT(set.size() == 2);
     set.insert("test3");
-    assert(set.size() == 3);
+    PHENYL_DASSERT(set.size() == 3);
 
     set.remove("test3");
-    assert(set.size() == 2);
+    PHENYL_DASSERT(set.size() == 2);
     set.remove("test2");
-    assert(set.size() == 1);
+    PHENYL_DASSERT(set.size() == 1);
     set.remove("test1");
-    assert(set.size() == 0);
+    PHENYL_DASSERT(set.size() == 0);
 }
 
 static void testSetClear () {
@@ -77,17 +77,17 @@ static void testSetClear () {
     set.insert("test5");
     set.insert("test6");
 
-    assert(set.size() == 6);
+    PHENYL_DASSERT(set.size() == 6);
 
     set.clear();
 
-    assert(!set.contains("test1"));
-    assert(!set.contains("test2"));
-    assert(!set.contains("test3"));
-    assert(!set.contains("test4"));
-    assert(!set.contains("test5"));
-    assert(!set.contains("test6"));
-    assert(set.size() == 0);
+    PHENYL_DASSERT(!set.contains("test1"));
+    PHENYL_DASSERT(!set.contains("test2"));
+    PHENYL_DASSERT(!set.contains("test3"));
+    PHENYL_DASSERT(!set.contains("test4"));
+    PHENYL_DASSERT(!set.contains("test5"));
+    PHENYL_DASSERT(!set.contains("test6"));
+    PHENYL_DASSERT(set.size() == 0);
 }
 
 void testSetLarge () {
@@ -97,10 +97,10 @@ void testSetLarge () {
         set.insert("test" + std::to_string(i));
     }
 
-    assert(set.size() == 1000);
+    PHENYL_DASSERT(set.size() == 1000);
 
     for (int i = 0; i < 1000; i++) {
-        assert(set["test" + std::to_string(i)]);
+        PHENYL_DASSERT(set["test" + std::to_string(i)]);
     }
 
     for (int i = 0; i < 1000; i += 3) {
@@ -108,45 +108,45 @@ void testSetLarge () {
     }
 
     for (int i = 0; i < 1000; i += 3) {
-        assert(!set.contains("test" + std::to_string(i)));
+        PHENYL_DASSERT(!set.contains("test" + std::to_string(i)));
     }
 
-    assert(set.size() == 1000 - 334);
+    PHENYL_DASSERT(set.size() == 1000 - 334);
 
     for (int i = 0; i < 500; i++) {
         set.insert("abc" + std::to_string(i));
     }
 
-    assert(set.size() == 1000 - 334 + 500);
+    PHENYL_DASSERT(set.size() == 1000 - 334 + 500);
 
     for (int i = 0; i < 1000; i++) {
         if (i % 3 == 0) {
-            assert(!set["test" + std::to_string(i)]);
+            PHENYL_DASSERT(!set["test" + std::to_string(i)]);
         } else {
-            assert(set["test" + std::to_string(i)]);
+            PHENYL_DASSERT(set["test" + std::to_string(i)]);
         }
     }
 
     for (int i = 0; i < 500; i++) {
-        assert(set["abc" + std::to_string(i)]);
+        PHENYL_DASSERT(set["abc" + std::to_string(i)]);
     }
 
     for (int i = 0; i < 1000; i++) {
         set.remove("testing" + std::to_string(i));
     }
 
-    assert(set.size() == 1000 - 334 + 500);
+    PHENYL_DASSERT(set.size() == 1000 - 334 + 500);
 
     for (int i = 0; i < 1000; i++) {
         if (i % 3 == 0) {
-            assert(!set["test" + std::to_string(i)]);
+            PHENYL_DASSERT(!set["test" + std::to_string(i)]);
         } else {
-            assert(set["test" + std::to_string(i)]);
+            PHENYL_DASSERT(set["test" + std::to_string(i)]);
         }
     }
 
     for (int i = 0; i < 500; i++) {
-        assert(set["abc" + std::to_string(i)]);
+        PHENYL_DASSERT(set["abc" + std::to_string(i)]);
     }
 
     std::unordered_set<std::string> vals;
@@ -155,7 +155,7 @@ void testSetLarge () {
         vals.insert(i);
     }
 
-    assert(vals.size() == set.size());
+    PHENYL_DASSERT(vals.size() == set.size());
 
     auto set2 = set;
     auto set3 = std::move(set2);

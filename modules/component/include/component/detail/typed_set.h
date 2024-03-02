@@ -94,7 +94,7 @@ namespace phenyl::component::detail {
         }
 
         void initPrefab (EntityId id, std::size_t prefabId) override {
-            assert(prefabs.present(prefabId));
+            PHENYL_DASSERT(prefabs.present(prefabId));
             ComponentSet::insertComp<T>(id, prefabs[prefabId]);
         }
 
@@ -112,7 +112,7 @@ namespace phenyl::component::detail {
         }
 
         void deletePrefab (std::size_t prefabId) override {
-            assert(prefabs.present(prefabId));
+            PHENYL_DASSERT(prefabs.present(prefabId));
             prefabs.remove(prefabId);
         }
     };

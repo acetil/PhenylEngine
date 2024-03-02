@@ -33,29 +33,29 @@ namespace phenyl::util {
         public:
             template <std::unsigned_integral V>
             GameIdData (V generation, V type, V index) {
-                assert(generation < (1ul << GenerationBits));
-                assert(type < (1ul << TypeBits));
-                assert(index < (1ul << IndexBits));
+                PHENYL_DASSERT(generation < (1ul << GenerationBits));
+                PHENYL_DASSERT(type < (1ul << TypeBits));
+                PHENYL_DASSERT(index < (1ul << IndexBits));
                 data = index | (type << IndexBits) | (generation << (IndexBits + TypeBits));
             }
 
             template <std::unsigned_integral V>
             GameIdData (V type, V index) {
-                assert(type < (1ul << TypeBits));
-                assert(index < (1ul << IndexBits));
+                PHENYL_DASSERT(type < (1ul << TypeBits));
+                PHENYL_DASSERT(index < (1ul << IndexBits));
                 data = index | (type << IndexBits);
             }
 
             template <std::unsigned_integral V>
             GameIdData (V generation, V index, IdConstructorTag) {
-                assert(generation < (1ul << GenerationBits));
-                assert(index < (1ul << IndexBits));
+                PHENYL_DASSERT(generation < (1ul << GenerationBits));
+                PHENYL_DASSERT(index < (1ul << IndexBits));
                 data = index | (generation << (IndexBits + TypeBits));
             }
 
             template <std::unsigned_integral V>
             GameIdData (V index) {
-                assert(index <= ((1ul << (IndexBits - 1)) | 1));
+                PHENYL_DASSERT(index <= ((1ul << (IndexBits - 1)) | 1));
                 data = index;
             }
 
@@ -102,13 +102,13 @@ namespace phenyl::util {
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits != 0 && TypeBits != 0>>
         explicit PublicGameId (V generation, V type, V index) {
-            assert(index != (detail::safeMask<T, IndexBits>()));
+            PHENYL_DASSERT(index != (detail::safeMask<T, IndexBits>()));
             data = BaseType{generation, type, index + 1};
         }
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && ((GenBits == 0 && TypeBits != 0) || (GenBits != 0 && TypeBits == 0))>>
         explicit PublicGameId (V genType, V index) {
-            assert(index != (detail::safeMask<T, IndexBits>()));
+            PHENYL_DASSERT(index != (detail::safeMask<T, IndexBits>()));
             if constexpr (GenBits == 0) {
                 data = BaseType{genType, index + 1};
             }
@@ -120,7 +120,7 @@ namespace phenyl::util {
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits == 0 && TypeBits == 0>>
         explicit PublicGameId (V index) {
-            assert(index != (detail::safeMask<T, IndexBits>()));
+            PHENYL_DASSERT(index != (detail::safeMask<T, IndexBits>()));
             data = BaseType{index + 1};
         }
 

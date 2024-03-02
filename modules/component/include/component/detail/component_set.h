@@ -50,7 +50,7 @@ namespace phenyl::component::detail {
             }
 
             static constexpr Metadata Empty (std::uint32_t dependencySize) {
-                assert(dependencySize < (1 << DEPENDENCY_BITS));
+                PHENYL_DASSERT(dependencySize < (1 << DEPENDENCY_BITS));
                 return {.index = EMPTY_INDEX, .metadata = dependencySize, .data = nullptr};
             }
 
@@ -65,20 +65,20 @@ namespace phenyl::component::detail {
             }
 
             inline constexpr void move (std::uint32_t newIndex, std::byte* newData) {
-                assert(!(metadata & CHILD_BIT));
+                PHENYL_DASSERT(!(metadata & CHILD_BIT));
                 index = newIndex;
                 data = newData;
             }
 
             inline constexpr void incrementDepenencies () {
-                assert((metadata & DEPENDENCY_MASK) < MAX_DEPENDENCY_NUM);
+                PHENYL_DASSERT((metadata & DEPENDENCY_MASK) < MAX_DEPENDENCY_NUM);
                 auto nonDependencies = metadata & (METADATA_MASK ^ DEPENDENCY_MASK);
 
                 metadata = nonDependencies | ((metadata & METADATA_MASK) + 1);
             }
 
             inline constexpr void decrementDependencies () {
-                assert((metadata & DEPENDENCY_MASK) > 0);
+                PHENYL_DASSERT((metadata & DEPENDENCY_MASK) > 0);
                 auto nonDependencies = metadata & (METADATA_MASK ^ DEPENDENCY_MASK);
 
                 metadata = nonDependencies | ((metadata & METADATA_MASK) - 1);
@@ -195,7 +195,7 @@ namespace phenyl::component::detail {
         template <typename T>
         bool setComp (EntityId id, T comp) {
             assertType<T>();
-            assert(id);
+            PHENYL_DASSERT(id);
 
             if (metadataSet[id.id - 1].empty()) {
                 return insertComp<T>(id, std::move(comp));
@@ -250,12 +250,12 @@ namespace phenyl::component::detail {
         }
 
         std::byte* getAtIndex (std::size_t index) const {
-            assert(index < size());
+            PHENYL_DASSERT(index < size());
             return data.get() + compSize * index;
         }
 
         EntityId idAtIndex (std::size_t index) const {
-            assert(index < ids.size());
+            PHENYL_DASSERT(index < ids.size());
             return ids[index];
         }
     };

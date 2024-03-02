@@ -1,5 +1,6 @@
 add_library(logger
         include/logging/logger.h
+        include/logging/logging.h
         src/logger.cpp
         include/logging/log_sink.h
         src/log_sink.cpp

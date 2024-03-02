@@ -20,12 +20,12 @@ namespace phenyl::component::detail {
         util::FLVector<PrefabEntry> entries;
 
         PrefabEntry& getPrefabEntry (std::size_t id) {
-            assert(valid(id));
+            PHENYL_DASSERT(valid(id));
             return entries[id - 1];
         }
 
         void deleteEntry (std::size_t id) {
-            assert(valid(id));
+            PHENYL_DASSERT(valid(id));
             auto& entry = getPrefabEntry(id);
 
             for (auto& [set, compId] : entry.comps) {
@@ -45,7 +45,7 @@ namespace phenyl::component::detail {
         }
 
         void incRefCount (std::size_t id) {
-            assert(valid(id));
+            PHENYL_DASSERT(valid(id));
             getPrefabEntry(id).refCount++;
         }
 

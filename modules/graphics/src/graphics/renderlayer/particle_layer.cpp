@@ -47,7 +47,7 @@ namespace phenyl::graphics {
 }
 
 phenyl::graphics::ParticleRenderLayer::ParticleRenderLayer (phenyl::graphics::Renderer* renderer, ParticleManager2D* manager) : manager{manager}, pipeline{std::make_unique<ParticlePipeline>()} {
-    assert(manager);
+    PHENYL_DASSERT(manager);
     pipeline->init(renderer);
 }
 

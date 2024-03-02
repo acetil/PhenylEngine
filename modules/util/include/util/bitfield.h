@@ -45,7 +45,7 @@ namespace phenyl::util {
         }
 
         static Bitfield<N> Mask (std::size_t numBits) {
-            assert(numBits <= N);
+            PHENYL_DASSERT(numBits <= N);
             Bitfield<N> result;
 
             std::size_t index = 0;
@@ -70,13 +70,13 @@ namespace phenyl::util {
         }
 
         void putBit (std::size_t bit) {
-            assert(bit < N);
+            PHENYL_DASSERT(bit < N);
 
             data[bit / IntSize] |= 1 << (bit % IntSize);
         }
 
         void maskBit (std::size_t bit) {
-            assert(bit < N);
+            PHENYL_DASSERT(bit < N);
 
             data[bit / IntSize] &= (FullMask ^ (1 << (bit % IntSize)));
         }

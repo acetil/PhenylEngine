@@ -7,7 +7,7 @@ static phenyl::Logger LOGGER{"AL_SYSTEM"};
 phenyl::audio::OpenALSystem::OpenALSystem () {
     PHENYL_LOGD(LOGGER, "Initialising OpenAL system");
 
-    PHENYL_LOGT(LOGGER, "Opening device");
+    PHENYL_TRACE(LOGGER, "Opening device");
     device = alcOpenDevice(nullptr);
     if (!device) {
         PHENYL_LOGE(LOGGER, "Failed to open OpenAL device!");
@@ -15,7 +15,7 @@ phenyl::audio::OpenALSystem::OpenALSystem () {
     }
     alGetError(); // ignored
 
-    PHENYL_LOGT(LOGGER, "Creating context");
+    PHENYL_TRACE(LOGGER, "Creating context");
     context = alcCreateContext(device, nullptr);
     if (!context) {
         auto err = alcGetError(device);
@@ -26,7 +26,7 @@ phenyl::audio::OpenALSystem::OpenALSystem () {
         return;
     }
 
-    PHENYL_LOGT(LOGGER, "Making context current");
+    PHENYL_TRACE(LOGGER, "Making context current");
     if (!alcMakeContextCurrent(context)) {
         auto err = alcGetError(device);
 
@@ -70,7 +70,7 @@ phenyl::audio::OpenALSystem& phenyl::audio::OpenALSystem::operator= (phenyl::aud
 }
 
 std::size_t phenyl::audio::OpenALSystem::makeSource () {
-    PHENYL_LOGT(LOGGER, "Making source");
+    PHENYL_TRACE(LOGGER, "Making source");
     OpenALSource source{};
     if (!source) {
         PHENYL_LOGI(LOGGER, "Failed to make source");
@@ -79,11 +79,11 @@ std::size_t phenyl::audio::OpenALSystem::makeSource () {
 
     auto sourceId = sources.emplace(std::move(source));
 
-    PHENYL_LOGT(LOGGER, "Initialised source with sourceId={}", sourceId + 1);
+    PHENYL_TRACE(LOGGER, "Initialised source with sourceId={}", sourceId + 1);
     return sourceId + 1;
 }
 std::size_t phenyl::audio::OpenALSystem::makeWAVSample (const phenyl::audio::WAVFile& wavFile) {
-    PHENYL_LOGT(LOGGER, "Making sample");
+    PHENYL_TRACE(LOGGER, "Making sample");
     OpenALBuffer buffer{wavFile};
     if (!buffer) {
         PHENYL_LOGI(LOGGER, "Failed to make buffer");
@@ -92,7 +92,7 @@ std::size_t phenyl::audio::OpenALSystem::makeWAVSample (const phenyl::audio::WAV
 
     auto bufId = buffers.emplace(std::move(buffer));
 
-    PHENYL_LOGT(LOGGER, "Initialised buffer with bufId={}", bufId + 1);
+    PHENYL_TRACE(LOGGER, "Initialised buffer with bufId={}", bufId + 1);
     return bufId + 1;
 }
 

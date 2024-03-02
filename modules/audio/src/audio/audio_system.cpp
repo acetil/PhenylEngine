@@ -109,24 +109,24 @@ AudioSource AudioSystem::createSource () {
 
 void AudioSystem::destroySource (std::size_t id) {
     // TODO
-    assert(id);
+    PHENYL_DASSERT(id);
     auto virtualIndex = id - 1;
     for (auto curr = virtualSources[virtualIndex].sourcesStart; curr != EMPTY_INDEX; curr = backendSources[curr].next) {
         auto& source = backendSources[curr];
-        assert(source.active);
+        PHENYL_DASSERT(source.active);
         backend->stopSource(source.backendId);
 
         if (LRUHead == curr) {
             LRUHead = source.next;
         } else {
-            assert(source.prev != EMPTY_INDEX);
+            PHENYL_DASSERT(source.prev != EMPTY_INDEX);
             backendSources[source.prev].next = source.next;
         }
 
         if (LRUTail == curr) {
             LRUTail = source.prev;
         } else {
-            assert(source.next != EMPTY_INDEX);
+            PHENYL_DASSERT(source.next != EMPTY_INDEX);
             backendSources[source.next].prev = source.prev;
         }
 
@@ -165,7 +165,7 @@ void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
     virtualSource.sourcesStart = sourceIndex;
 
     if (LRUTail == EMPTY_INDEX) {
-        assert(LRUHead == EMPTY_INDEX);
+        PHENYL_DASSERT(LRUHead == EMPTY_INDEX);
         LRUHead = sourceIndex;
         LRUTail = sourceIndex;
     } else {
@@ -237,7 +237,7 @@ std::size_t AudioSystem::provisionSource (std::size_t virtualId) {
     }
 
     backendSources[index].ownerId = virtualId;
-    assert(source.active);
+    PHENYL_DASSERT(source.active);
 
     return index;
 }
@@ -267,7 +267,7 @@ void AudioSystem::update (float deltaTime) {
         }
 
         if (source.prev == EMPTY_INDEX) {
-            assert(source.ownerId != EMPTY_INDEX);
+            PHENYL_DASSERT(source.ownerId != EMPTY_INDEX);
             virtualSources[source.ownerId].sourcesStart = source.next;
         } else {
             backendSources[source.prev].next = source.next;

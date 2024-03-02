@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "util/data.h"
 
 #include "logging/logging.h"
@@ -39,32 +37,32 @@ struct DestructorTest {
 
 void testDeletion (std::shared_ptr<int> ptr) {
     Map<int, DestructorTest> map;
-    assert(*ptr == 0);
+    PHENYL_DASSERT(*ptr == 0);
 
     map[-1] = DestructorTest(ptr);
 
-    assert(*ptr == 1);
+    PHENYL_DASSERT(*ptr == 1);
 
     for (int i = 0; i < 48; i++) {
         map[i] = DestructorTest(ptr);
     }
 
     PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
-    assert((*ptr) == 49);
+    PHENYL_DASSERT((*ptr) == 49);
 
     auto mapCpy(map);
     PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
-    assert((*ptr) == 98);
+    PHENYL_DASSERT((*ptr) == 98);
 
     auto mapMv(std::move(mapCpy));
     PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
-    assert((*ptr) == 98);
+    PHENYL_DASSERT((*ptr) == 98);
 
     for (int i = 1; i < 22; i += 2) {
         map.remove(i);
     }
     PHENYL_LOGD(LOGGER, "Size: {}", *ptr);
-    assert((*ptr) == 87);
+    PHENYL_DASSERT((*ptr) == 87);
 }
 
 void testCopyMove () {
@@ -76,21 +74,21 @@ void testCopyMove () {
     Map<std::string, int> mapCpyEq;
     mapCpyEq = map;
 
-    assert(mapCpy1.size() == map.size());
-    assert(mapCpyEq.size() == map.size());
+    PHENYL_DASSERT(mapCpy1.size() == map.size());
+    PHENYL_DASSERT(mapCpyEq.size() == map.size());
 
-    assert(mapCpy1["hello"] == 1);
-    assert(mapCpy1["world"] == 2);
-    assert(mapCpy1[":)"] == 3);
+    PHENYL_DASSERT(mapCpy1["hello"] == 1);
+    PHENYL_DASSERT(mapCpy1["world"] == 2);
+    PHENYL_DASSERT(mapCpy1[":)"] == 3);
 
-    assert(mapCpyEq["hello"] == 1);
-    assert(mapCpyEq["world"] == 2);
-    assert(mapCpyEq[":)"] == 3);
+    PHENYL_DASSERT(mapCpyEq["hello"] == 1);
+    PHENYL_DASSERT(mapCpyEq["world"] == 2);
+    PHENYL_DASSERT(mapCpyEq[":)"] == 3);
 
     map["hello"] = 4;
 
-    assert(mapCpy1["hello"] == 1);
-    assert(mapCpyEq["hello"] == 1);
+    PHENYL_DASSERT(mapCpy1["hello"] == 1);
+    PHENYL_DASSERT(mapCpyEq["hello"] == 1);
 
     for (int i = 0; i < 11; i++) {
         map["test" + std::to_string(i)] = i * i;
@@ -99,16 +97,16 @@ void testCopyMove () {
     auto mapCpy2(map);
     mapCpyEq = map;
 
-    assert(mapCpy2.size() == map.size());
-    assert(mapCpyEq.size() == map.size());
+    PHENYL_DASSERT(mapCpy2.size() == map.size());
+    PHENYL_DASSERT(mapCpyEq.size() == map.size());
 
-    assert(mapCpy2["hello"] == 4);
-    assert(mapCpy2["world"] == 2);
-    assert(mapCpy2[":)"] == 3);
+    PHENYL_DASSERT(mapCpy2["hello"] == 4);
+    PHENYL_DASSERT(mapCpy2["world"] == 2);
+    PHENYL_DASSERT(mapCpy2[":)"] == 3);
 
-    assert(mapCpyEq["hello"] == 4);
-    assert(mapCpyEq["world"] == 2);
-    assert(mapCpyEq[":)"] == 3);
+    PHENYL_DASSERT(mapCpyEq["hello"] == 4);
+    PHENYL_DASSERT(mapCpyEq["world"] == 2);
+    PHENYL_DASSERT(mapCpyEq[":)"] == 3);
 
     for (int i = 0; i < 11; i++) {
         mapCpy2["test" + std::to_string(i)] = i * i;
@@ -119,16 +117,16 @@ void testCopyMove () {
     Map<std::string, int> mapMvEq;
     mapMvEq = std::move(mapCpyEq);
 
-    assert(mapMv.size() == map.size());
-    assert(mapMvEq.size() == map.size());
+    PHENYL_DASSERT(mapMv.size() == map.size());
+    PHENYL_DASSERT(mapMvEq.size() == map.size());
 
-    assert(mapMv["hello"] == 4);
-    assert(mapMv["world"] == 2);
-    assert(mapMv[":)"] == 3);
+    PHENYL_DASSERT(mapMv["hello"] == 4);
+    PHENYL_DASSERT(mapMv["world"] == 2);
+    PHENYL_DASSERT(mapMv[":)"] == 3);
 
-    assert(mapMvEq["hello"] == 4);
-    assert(mapMvEq["world"] == 2);
-    assert(mapMvEq[":)"] == 3);
+    PHENYL_DASSERT(mapMvEq["hello"] == 4);
+    PHENYL_DASSERT(mapMvEq["world"] == 2);
+    PHENYL_DASSERT(mapMvEq[":)"] == 3);
 
     for (int i = 0; i < 11; i++) {
         mapMv["test" + std::to_string(i)] = i * i;
@@ -136,8 +134,8 @@ void testCopyMove () {
     }
 
     for (auto i : map.kv()) {
-        assert(map.contains(i.first));
-        assert(map[i.first] == i.second);
+        PHENYL_DASSERT(map.contains(i.first));
+        PHENYL_DASSERT(map[i.first] == i.second);
     }
 
 }
@@ -147,55 +145,55 @@ void testMap () {
 
     Map<std::string, int> map;
 
-    assert(map.size() == 0);
+    PHENYL_DASSERT(map.size() == 0);
 
     map["hello"] = 4;
 
-    assert(map["hello"] == 4);
+    PHENYL_DASSERT(map["hello"] == 4);
 
     map["world"] = 3;
 
-    assert(map["hello"] == 4);
-    assert(map["world"] == 3);
+    PHENYL_DASSERT(map["hello"] == 4);
+    PHENYL_DASSERT(map["world"] == 3);
 
     map["hello"] = 10;
 
-    assert(map["hello"] == 10);
-    assert(map["world"] == 3);
+    PHENYL_DASSERT(map["hello"] == 10);
+    PHENYL_DASSERT(map["world"] == 3);
 
-    assert(map.contains("hello"));
-    assert(map.contains("world"));
-    assert(!map.contains("cherry"));
+    PHENYL_DASSERT(map.contains("hello"));
+    PHENYL_DASSERT(map.contains("world"));
+    PHENYL_DASSERT(!map.contains("cherry"));
 
-    assert(map.size() == 2);
+    PHENYL_DASSERT(map.size() == 2);
 
     for (int i = 0; i < 11; i++) {
         map["test" + std::to_string(i)] = i * i;
     }
 
-    assert(map.size() == 13);
+    PHENYL_DASSERT(map.size() == 13);
 
-    assert(map.contains("hello"));
-    assert(map["hello"] == 10);
-    assert(map.contains("world"));
-    assert(map["world"] == 3);
+    PHENYL_DASSERT(map.contains("hello"));
+    PHENYL_DASSERT(map["hello"] == 10);
+    PHENYL_DASSERT(map.contains("world"));
+    PHENYL_DASSERT(map["world"] == 3);
 
     for (int i = 0; i < 11; i++) {
-        assert(map.contains("test" + std::to_string(i)));
+        PHENYL_DASSERT(map.contains("test" + std::to_string(i)));
         //logging::log(LEVEL_DEBUG, "Key: {}, val: {}", "test" + std::to_string(i), map["test" + std::to_string(i)]);
-        assert(map["test" + std::to_string(i)] == i * i);
+        PHENYL_DASSERT(map["test" + std::to_string(i)] == i * i);
     }
 
     map.remove("world");
 
-    assert(map.size() == 12);
-    assert(map.contains("hello"));
-    assert(!map.contains("world"));
-    assert(map["hello"] == 10);
+    PHENYL_DASSERT(map.size() == 12);
+    PHENYL_DASSERT(map.contains("hello"));
+    PHENYL_DASSERT(!map.contains("world"));
+    PHENYL_DASSERT(map["hello"] == 10);
 
     for (int i = 0; i < 11; i++) {
-        assert(map.contains("test" + std::to_string(i)));
-        assert(map["test" + std::to_string(i)] == i * i);
+        PHENYL_DASSERT(map.contains("test" + std::to_string(i)));
+        PHENYL_DASSERT(map["test" + std::to_string(i)] == i * i);
     }
 
     auto ptr = std::make_shared<int>(0);
@@ -204,7 +202,7 @@ void testMap () {
 
     testDeletion(ptr);
 
-    assert((*ptr) == 0);
+    PHENYL_DASSERT((*ptr) == 0);
 
     PHENYL_LOGD(LOGGER, "Assertions for map passed!");
 
@@ -212,26 +210,26 @@ void testMap () {
 
 void testDataTypes () {
     DataValue val;
-    //assert(val == std::monostate());
+    //PHENYL_DASSERT(val == std::monostate());
     val = 4;
     int v = (int)val;
-    assert (v == 4);
+    PHENYL_DASSERT (v == 4);
     bool threw = false;
     try {
         float f = (float)val;
     } catch (std::exception&) {
         threw = true;
     }
-    assert(threw);
+    PHENYL_DASSERT(threw);
     val = 4.5f;
     float f;
-    assert(val.getValue(f));
-    assert(f == 4.5f);
+    PHENYL_DASSERT(val.getValue(f));
+    PHENYL_DASSERT(f == 4.5f);
 
     val = std::string("Hello World!");
 
     std::string s = (std::string)val;
-    assert(s == "Hello World!");
+    PHENYL_DASSERT(s == "Hello World!");
 
     DataObject obj;
 
@@ -240,57 +238,57 @@ void testDataTypes () {
     obj["test3"] = true;
     obj["test4"] = val;
 
-    assert(obj.contains("test1"));
-    assert(obj.contains("test2"));
-    assert(obj.contains("test3"));
-    assert(obj.contains("test4"));
+    PHENYL_DASSERT(obj.contains("test1"));
+    PHENYL_DASSERT(obj.contains("test2"));
+    PHENYL_DASSERT(obj.contains("test3"));
+    PHENYL_DASSERT(obj.contains("test4"));
 
     int t1 = (int)obj["test1"];
     float t2 = (float)obj["test2"];
     bool t3 = (bool)obj["test3"];
     std::string t4 = (std::string)obj["test4"];
-    assert(t1 == 1);
-    assert(t2 == 3.0f);
-    assert(t3);
-    assert(t4 == "Hello World!");
+    PHENYL_DASSERT(t1 == 1);
+    PHENYL_DASSERT(t2 == 3.0f);
+    PHENYL_DASSERT(t3);
+    PHENYL_DASSERT(t4 == "Hello World!");
 
     DataArray arr;
 
-    assert(arr.empty());
-    assert(arr.size() == 0);
+    PHENYL_DASSERT(arr.empty());
+    PHENYL_DASSERT(arr.size() == 0);
 
     arr.push_back(4);
     arr.push_back(4.5f);
 
-    assert(!arr.empty());
-    assert(arr.size() == 2);
+    PHENYL_DASSERT(!arr.empty());
+    PHENYL_DASSERT(arr.size() == 2);
     v = (int)arr[0];
     f = (float)arr[1];
 
-    assert(v == 4);
-    assert(f == 4.5f);
+    PHENYL_DASSERT(v == 4);
+    PHENYL_DASSERT(f == 4.5f);
 
     val = 4;
 
     //auto eq = Operations::eq(v);
 
-    //assert(eq(4));
+    //PHENYL_DASSERT(eq(4));
 
-    assert(val == 4);
+    PHENYL_DASSERT(val == 4);
 
-    assert(val > 1);
+    PHENYL_DASSERT(val > 1);
 
-    assert(val >= 4.0);
-    assert(val >= 3);
+    PHENYL_DASSERT(val >= 4.0);
+    PHENYL_DASSERT(val >= 3);
 
-    assert(val < 13.7);
-    assert(val <= 4.1);
-    assert(val <= 4);
+    PHENYL_DASSERT(val < 13.7);
+    PHENYL_DASSERT(val <= 4.1);
+    PHENYL_DASSERT(val <= 4);
 
-    assert(val != false);
+    PHENYL_DASSERT(val != false);
 
     auto s1 = val.toString();
-    assert(s1 == "4");
+    PHENYL_DASSERT(s1 == "4");
 }
 
 void testJson () {
@@ -299,34 +297,34 @@ void testJson () {
 
     DataObject obj = (DataObject)val;
 
-    assert(obj.contains("hello"));
-    assert(obj.contains("world"));
-    assert(obj.contains("test"));
-    assert(obj.contains("test2"));
+    PHENYL_DASSERT(obj.contains("hello"));
+    PHENYL_DASSERT(obj.contains("world"));
+    PHENYL_DASSERT(obj.contains("test"));
+    PHENYL_DASSERT(obj.contains("test2"));
 
-    assert(obj["hello"] == 1);
-    assert(obj["world"] == true);
+    PHENYL_DASSERT(obj["hello"] == 1);
+    PHENYL_DASSERT(obj["world"] == true);
 
     DataObject obj2 = (DataObject)obj["test"];
 
-    assert(obj2.contains("meme"));
-    assert(obj2.contains("testing"));
+    PHENYL_DASSERT(obj2.contains("meme"));
+    PHENYL_DASSERT(obj2.contains("testing"));
 
     //logging::log(LEVEL_DEBUG, "meme = {}", (std::string)obj2Old["meme"]);
     std::string x = (std::string)obj2["meme"];
-    assert(x == std::string("lol"));
-    assert(obj2["testing"] == 1.1f);
+    PHENYL_DASSERT(x == std::string("lol"));
+    PHENYL_DASSERT(obj2["testing"] == 1.1f);
 
     DataArray arr = (DataArray)obj["test2"];
-    assert(arr.size() == 5);
+    PHENYL_DASSERT(arr.size() == 5);
 
     for (int i = 0; i < arr.size() - 1; i++) {
-        assert(arr[i] == arr.size() - i - 1);
+        PHENYL_DASSERT(arr[i] == arr.size() - i - 1);
     }
 
     PHENYL_LOGD(LOGGER, "Json: {}", val.convertToJson());
     PHENYL_LOGD(LOGGER, "Json: \n{}", val.convertToJsonPretty());
-    assert(val.convertToJson() == parseJson(val.convertToJson()).convertToJson());
+    PHENYL_DASSERT(val.convertToJson() == parseJson(val.convertToJson()).convertToJson());
 
 }
 

@@ -87,12 +87,12 @@ namespace phenyl::component {
             std::size_t pos{0};
 
             QueryCursor (const std::array<detail::ComponentSet*, sizeof...(Args)>* compSets, detail::ComponentSet* primarySet) : compSets{compSets}, primarySet{primarySet} {
-                assert(compSets);
+                PHENYL_DASSERT(compSets);
                 advanceToFirst();
             }
 
             explicit QueryCursor (const std::array<detail::ComponentSet*, sizeof...(Args)>* compSets) : compSets{compSets}, primarySet{nullptr} {
-                assert(compSets);
+                PHENYL_DASSERT(compSets);
                 auto minSize = std::numeric_limits<std::size_t>::max();
 
                 for (detail::ComponentSet* i : *compSets) {
@@ -351,7 +351,7 @@ namespace phenyl::component {
 
         template <std::same_as<detail::ComponentSet> ...Args2>
         Query (detail::BasicManager* manager, Args2*... args) requires (sizeof...(Args) == sizeof...(Args2)) : manager{manager}, querySets{args...} {
-            assert(manager);
+            PHENYL_DASSERT(manager);
         }
 
         void eachInt (QueryCallback<Args...> auto& fn, detail::QueryCursor<Args...> cursor) const {
@@ -420,40 +420,40 @@ namespace phenyl::component {
         }
 
         void entity (QueryCallback<Args...> auto fn, Entity entity) {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             querySets.single(fn, entity);
         }
 
         void entity (QueryCallback<const Args...> auto fn, Entity entity) const {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             querySets.single(fn, entity);
             manager->_deferEnd();
         }
 
         void each (QueryCallback<Args...> auto fn) {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             eachInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
             manager->_deferEnd();
         }
 
         void each (QueryCallback<const Args...> auto fn) const {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             eachInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
             manager->_deferEnd();
         }
 
         void pairs (QueryPairCallback<Args...> auto fn) {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             pairsInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
             manager->_deferEnd();
         }
 
         void pairs (QueryPairCallback<const Args...> auto fn) const {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             pairsInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
             manager->_deferEnd();
@@ -468,7 +468,7 @@ namespace phenyl::component {
 
         template <std::same_as<detail::ComponentSet> ...Args2>
         ConstQuery (const detail::BasicManager* manager, Args2*... args) requires (sizeof...(Args) == sizeof...(Args2)) : manager{const_cast<detail::BasicManager*>(manager)}, querySets{args...} {
-            assert(manager);
+            PHENYL_DASSERT(manager);
         }
 
         void eachInt (QueryCallback<Args...> auto& fn, detail::QueryCursor<Args...> cursor) const {
@@ -537,19 +537,19 @@ namespace phenyl::component {
         }
 
         void entity (ConstQueryCallback<Args...> auto fn, Entity entity) const {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             querySets.single(fn, entity);
         }
 
         void each (ConstQueryCallback<Args...> auto fn) const {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             eachInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
             manager->_deferEnd();
         }
 
         void pairs (ConstQueryPairCallback<Args...> auto fn) const {
-            assert(*this);
+            PHENYL_DASSERT(*this);
             manager->_defer();
             pairsInt(fn, detail::QueryCursor<Args...>{querySets.getCursorRef()});
             manager->_deferEnd();

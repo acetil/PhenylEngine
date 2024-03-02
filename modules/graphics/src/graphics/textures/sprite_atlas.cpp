@@ -5,7 +5,7 @@
 using namespace phenyl::graphics;
 
 SpriteTexture* SpriteAtlas::load (std::istream& data, std::size_t id) {
-    assert(!sprites.contains(id));
+    PHENYL_DASSERT(!sprites.contains(id));
     rebuildRequired = true;
     auto image = std::make_unique<Image>(data);
     if (!*image) {

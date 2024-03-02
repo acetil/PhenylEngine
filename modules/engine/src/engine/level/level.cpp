@@ -36,7 +36,7 @@ Level* LevelManager::load (std::istream& data, std::size_t id) {
     nlohmann::json json;
     data >> json;
 
-    PHENYL_LOGT(LOGGER, "Level json: {}", json.dump(4));
+    PHENYL_TRACE(LOGGER, "Level json: {}", json.dump(4));
 
     if (!json.contains("entities")) {
         PHENYL_LOGE(LOGGER, "Failed to find \"entities\" field in level!");
@@ -104,7 +104,7 @@ nlohmann::json LevelManager::dumpEntity (component::Entity entity) const {
 
     json["children"] = std::move(children);
 
-    PHENYL_LOGT(LOGGER, "Entity json: {}", json.dump(4));
+    PHENYL_TRACE(LOGGER, "Entity json: {}", json.dump(4));
 
     return json;
 }
@@ -150,7 +150,7 @@ phenyl::component::Entity Level::loadEntity (std::size_t index) {
 
 namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities) {
-        PHENYL_LOGT(LOGGER, "Parsing entity json={}", json.dump(4));
+        PHENYL_TRACE(LOGGER, "Parsing entity json={}", json.dump(4));
         if (!json.is_object()) {
             PHENYL_LOGE(LOGGER, "Expected object for entity, got {}!", json.type_name());
             return 0;

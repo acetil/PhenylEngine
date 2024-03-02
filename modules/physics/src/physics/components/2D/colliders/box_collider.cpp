@@ -19,7 +19,7 @@ void physics::BoxCollider2D::applyFrameTransform (glm::mat2 transform) {
 }
 
 static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
-    assert(box1Axis >= 0);
+    PHENYL_DASSERT(box1Axis >= 0);
 
     float minAxis = std::numeric_limits<float>::max();
     float maxAxis = -std::numeric_limits<float>::max();
@@ -135,8 +135,8 @@ physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
     auto dot1 = glm::dot(norm1, normal);
     auto dot2 = glm::dot(norm2, normal);
 
-    //assert(dot1 >= 0);
-    //assert(dot2 >= 0);
+    //PHENYL_DASSERT(dot1 >= 0);
+    //PHENYL_DASSERT(dot2 >= 0);
 
     if (dot1 < 0) {
         norm1 *= -1;

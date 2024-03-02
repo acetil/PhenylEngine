@@ -64,7 +64,7 @@ namespace phenyl::common {
             }
 
             std::size_t addEntry (const std::string& path) {
-                assert(!pathMap.contains(path));
+                PHENYL_DASSERT(!pathMap.contains(path));
                 auto index = cache.emplace(nullptr, path, 1);
                 pathMap[path] = index;
 
@@ -72,23 +72,23 @@ namespace phenyl::common {
             }
 
             void putData (std::size_t id, T* data) {
-                assert(id && cache.present(id - 1));
+                PHENYL_DASSERT(id && cache.present(id - 1));
                 cache.at(id - 1).data = data;
             }
 
             void incRefCount (std::size_t id) override {
-                assert(id && cache.present(id - 1));
+                PHENYL_DASSERT(id && cache.present(id - 1));
                 cache.at(id - 1).refCount++;
             }
 
             bool decRefCount (std::size_t id) override {
-                assert(id && cache.present(id - 1));
-                assert(cache.at(id - 1).refCount);
+                PHENYL_DASSERT(id && cache.present(id - 1));
+                PHENYL_DASSERT(cache.at(id - 1).refCount);
                 return --cache.at(id - 1).refCount;
             }
 
             bool removeEntry (std::size_t id) override {
-                assert(id && cache.present(id - 1));
+                PHENYL_DASSERT(id && cache.present(id - 1));
                 if (cache.at(id - 1).refCount) {
                     return false;
                 }
@@ -98,7 +98,7 @@ namespace phenyl::common {
             }
 
             void forceRemoveEntry (std::size_t id) {
-                assert(id && cache.present(id - 1));
+                PHENYL_DASSERT(id && cache.present(id - 1));
                 pathMap.remove(cache.at(id - 1).path);
                 cache.remove(id - 1);
             }
@@ -128,7 +128,7 @@ namespace phenyl::common {
         util::Map<std::size_t, std::unique_ptr<detail::AssetCacheBase>> caches;
 
         void incrementRefCount (std::size_t typeIndex, std::size_t id) {
-            assert(caches.contains(typeIndex));
+            PHENYL_DASSERT(caches.contains(typeIndex));
             caches.at(typeIndex)->incRefCount(id);
         }
 
@@ -143,7 +143,7 @@ namespace phenyl::common {
             }
         }
         bool unloadAsset (std::size_t typeIndex, std::size_t id) {
-            assert(caches.contains(typeIndex));
+            PHENYL_DASSERT(caches.contains(typeIndex));
             return caches.at(typeIndex)->removeEntry(id);
         }
 
@@ -231,7 +231,7 @@ namespace phenyl::common {
         }
 
         std::string_view getPath (std::size_t typeIndex, std::size_t id) {
-            assert(caches.contains(typeIndex));
+            PHENYL_DASSERT(caches.contains(typeIndex));
             auto& cache = caches.at(typeIndex);
             return cache->getPath(id);
         }

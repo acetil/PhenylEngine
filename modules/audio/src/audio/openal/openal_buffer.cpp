@@ -8,7 +8,7 @@ OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
     alGetError();
     alGenBuffers(1, &bufferId);
 
-    PHENYL_LOGT(LOGGER, "Initialising buffer with id={}", bufferId);
+    PHENYL_TRACE(LOGGER, "Initialising buffer with id={}", bufferId);
 
     ALenum err;
     if ((err = alGetError())) {
@@ -73,6 +73,6 @@ float OpenALBuffer::duration () const {
     alGetBufferi(bufferId, AL_BITS, &bits);
     alGetBufferi(bufferId, AL_SIZE, &size);
 
-    PHENYL_LOGT(LOGGER, "Buffer id={} freq={}, channels={}, bits={}, size={}", bufferId, frequency, channels, bits, size);
+    PHENYL_TRACE(LOGGER, "Buffer id={} freq={}, channels={}, bits={}, size={}", bufferId, frequency, channels, bits, size);
     return ((float) size) / (float) (frequency * channels * bits / 8);
 }
