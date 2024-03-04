@@ -11,6 +11,8 @@
 #include "component/component.h"
 #include "component/component_serializer.h"
 
+#include "logging/properties.h"
+
 namespace phenyl::engine {
     namespace detail {
         class Engine;
@@ -19,12 +21,14 @@ namespace phenyl::engine {
     class ApplicationProperties {
     private:
         phenyl::graphics::GraphicsProperties graphicsProperties;
+        logging::LoggingProperties loggingProperties;
 
         friend class detail::Engine;
+        friend class PhenylEngine;
     public:
         ApplicationProperties () = default;
 
-        ApplicationProperties& withResolution (int width, int height) {
+        ApplicationProperties& withResolution (const int width, const int height) {
             graphicsProperties.withWindowSize(width, height);
 
             return *this;
@@ -36,8 +40,26 @@ namespace phenyl::engine {
             return *this;
         }
 
-        ApplicationProperties& withVsync (bool vsync) {
+        ApplicationProperties& withVsync (const bool vsync) {
             graphicsProperties.withVsync(vsync);
+
+            return *this;
+        }
+
+        ApplicationProperties& withLogFile (std::string logFile) {
+            loggingProperties.withLogFile(std::move(logFile));
+
+            return *this;
+        }
+
+        ApplicationProperties& withLogLevel (const std::string& logger, const int level) {
+            loggingProperties.withLogLevel(logger, level);
+
+            return *this;
+        }
+
+        ApplicationProperties& withRootLogLevel (const int level) {
+            loggingProperties.withRootLogLevel(level);
 
             return *this;
         }

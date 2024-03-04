@@ -1,8 +1,10 @@
 #include "openal_buffer.h"
 
+#include "audio/detail/loggers.h"
+
 using namespace phenyl::audio;
 
-static phenyl::Logger LOGGER{"AL_BUF"};
+static phenyl::Logger LOGGER{"AL_BUF", detail::AUDIO_LOGGER};
 
 OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
     alGetError();

@@ -1,9 +1,10 @@
+#include "graphics/detail/loggers.h"
 #include "graphics/font/rendered_text.h"
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"RENDERED_TEXT"};
+static phenyl::Logger LOGGER{"RENDERED_TEXT", detail::GRAPHICS_LOGGER};
 
 static glm::vec2 screenToWindowSpace (glm::vec2 vec, glm::vec2 screenSize) {
     glm::vec2 pos = vec / screenSize * 2.0f - glm::vec2{1.0f, 1.0f};

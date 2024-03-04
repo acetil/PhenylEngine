@@ -5,7 +5,7 @@
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"TEXTURE_ATLAS"};
+static phenyl::Logger LOGGER{"TEXTURE_ATLAS", detail::GRAPHICS_LOGGER};
 
 struct AtlasImage {
     std::size_t key;

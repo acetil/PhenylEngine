@@ -23,7 +23,7 @@
 #include <vector>
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_RENDERER"};
+static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
 GLRenderer::GLRenderer (GLFWwindow* window) : shaderManager{this} {
     // TODO: move graphics init code here

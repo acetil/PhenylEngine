@@ -7,7 +7,7 @@
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"DEBUG_LAYER"};
+static phenyl::Logger LOGGER{"DEBUG_LAYER", detail::GRAPHICS_LOGGER};
 
 struct DebugBox {
     glm::vec3 vertices[4];

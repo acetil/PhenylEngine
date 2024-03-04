@@ -2,10 +2,11 @@
 
 #include "audio/audio_source.h"
 #include "audio/audio_system.h"
+#include "audio/detail/loggers.h"
 
 using namespace phenyl;
 
-static Logger LOGGER{"AUDIO_SOURCE"};
+static Logger LOGGER{"AUDIO_SOURCE", audio::detail::AUDIO_LOGGER};
 
 audio::AudioSource::~AudioSource () {
     if (audioSystem) {

@@ -2,7 +2,7 @@
 
 using namespace phenyl;
 
-Logger component::detail::COMPONENT_LOGGER{"COMPONENT"};
+Logger component::detail::COMPONENT_LOGGER{"COMPONENT", PHENYL_LOGGER};
 Logger component::detail::COMPONENT_SET_LOGGER{"COMPONENT_SET", COMPONENT_LOGGER};
 Logger component::detail::ENTITY_LOGGER{"ENTITY", COMPONENT_LOGGER};
 Logger component::detail::MANAGER_LOGGER{"COMPONENT_MANAGER", COMPONENT_LOGGER};

@@ -4,6 +4,7 @@
 #include "component/component.h"
 
 #include "engine/engine.h"
+#include "engine/detail/loggers.h"
 #include "component/component_serializer.h"
 
 #include "graphics/graphics_init.h"
@@ -26,7 +27,7 @@
 
 using namespace phenyl;
 
-static Logger LOGGER{"ENGINE"};
+Logger engine::detail::ENGINE_LOGGER{"ENGINE", PHENYL_LOGGER};
 
 class engine::detail::Engine {
 private:
@@ -77,13 +78,9 @@ public:
     void setProfileRender (bool doRender);
 };
 
-engine::PhenylEngine::PhenylEngine () {
-    InitLogging(PHENYL_DEFAULT_ROOT_LEVEL, "debug.log");
-}
+engine::PhenylEngine::PhenylEngine () = default;
 
-engine::PhenylEngine::~PhenylEngine () {
-    ShutdownLogging();
-}
+engine::PhenylEngine::~PhenylEngine () = default;
 
 graphics::PhenylGraphics engine::PhenylEngine::getGraphics () {
     return internal->getGraphics();
@@ -122,11 +119,14 @@ game::GameInput& engine::PhenylEngine::getInput () {
 }
 
 void engine::PhenylEngine::exec (Application* app) {
+    InitLogging(app->properties.loggingProperties);
+
     internal = std::make_unique<engine::detail::Engine>(app->properties);
     app->init();
     internal->gameloop(app);
     app->shutdown();
     internal = nullptr;
+    ShutdownLogging();
 }
 
 void engine::PhenylEngine::setDebugRender (bool doRender) {
@@ -181,7 +181,7 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 }
 
 engine::detail::Engine::~Engine () {
-    PHENYL_LOGI(LOGGER, "Shutting down!");
+    PHENYL_LOGI(ENGINE_LOGGER, "Shutting down!");
     prefabManager->clear();
     componentManager.clearAll();
 }
@@ -252,9 +252,9 @@ void engine::detail::Engine::dumpLevel (std::ostream& file) {
 void engine::detail::Engine::gameloop (Application* app) {
     double deltaPhysicsFrame = 0.0f;
     auto graphics = graphicsHolder.getGraphics();
-    PHENYL_LOGD(LOGGER, "Starting loop!");
+    PHENYL_LOGD(ENGINE_LOGGER, "Starting loop!");
     while (!graphics.shouldClose()) {
-        PHENYL_TRACE(LOGGER, "Frame start");
+        PHENYL_TRACE(ENGINE_LOGGER, "Frame start");
         util::startProfileFrame();
 
         graphics.updateUI();
@@ -265,10 +265,10 @@ void engine::detail::Engine::gameloop (Application* app) {
 
         util::startProfile("physics");
         while (deltaPhysicsFrame >= 1.0 / FIXED_FPS) {
-            PHENYL_TRACE(LOGGER, "Physics frame start");
+            PHENYL_TRACE(ENGINE_LOGGER, "Physics frame start");
             fixedUpdate(app);
             deltaPhysicsFrame -= 1.0 / FIXED_FPS;
-            PHENYL_TRACE(LOGGER, "Physics frame end");
+            PHENYL_TRACE(ENGINE_LOGGER, "Physics frame end");
         }
         util::endProfile();
 
@@ -281,29 +281,29 @@ void engine::detail::Engine::gameloop (Application* app) {
 
         graphics.sync((int)app->targetFps); // TODO
         graphics.pollEvents();
-        PHENYL_TRACE(LOGGER, "Frame end");
+        PHENYL_TRACE(ENGINE_LOGGER, "Frame end");
     }
 }
 
 void engine::detail::Engine::update (Application* app, double deltaTime) {
-    PHENYL_TRACE(LOGGER, "Update start");
+    PHENYL_TRACE(ENGINE_LOGGER, "Update start");
     app->update(deltaTime);
     audioSystem->update((float)deltaTime);
     graphicsHolder.getGraphics().frameUpdate(componentManager);
     common::TimedLifetime::Update(componentManager, deltaTime); // TODO: put somewhere else
-    PHENYL_TRACE(LOGGER, "Update end");
+    PHENYL_TRACE(ENGINE_LOGGER, "Update end");
 }
 
 void engine::detail::Engine::fixedUpdate (Application* app) {
-    PHENYL_TRACE(LOGGER, "Fixed update start");
+    PHENYL_TRACE(ENGINE_LOGGER, "Fixed update start");
     app->fixedUpdate(1.0 / FIXED_FPS);
     updateEntityPosition(1.0f / FIXED_FPS);
     getCamera().updateCamera(getGraphics().getCamera());
-    PHENYL_TRACE(LOGGER, "Fixed update end");
+    PHENYL_TRACE(ENGINE_LOGGER, "Fixed update end");
 }
 
 void engine::detail::Engine::render (Application* app, double deltaTime) {
-    PHENYL_TRACE(LOGGER, "Render start");
+    PHENYL_TRACE(ENGINE_LOGGER, "Render start");
     if (doProfileRender) {
         graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float) deltaTime);
     }
@@ -311,7 +311,7 @@ void engine::detail::Engine::render (Application* app, double deltaTime) {
     getGraphics().getUIManager().renderUI();
 
     getGraphics().render();
-    PHENYL_TRACE(LOGGER, "Render end");
+    PHENYL_TRACE(ENGINE_LOGGER, "Render end");
 }
 
 void engine::detail::Engine::setDebugRender (bool doRender) {

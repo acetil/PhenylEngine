@@ -5,10 +5,11 @@
 
 #include "util/profiler.h"
 #include "logging/logging.h"
+#include "util/detail/loggers.h"
 
 using namespace phenyl;
 
-static Logger LOGGER{"PROFILER"};
+static Logger LOGGER{"PROFILER", util::detail::UTIL_LOGGER};
 
 struct Profiler {
       double lastFrameTime = 0;

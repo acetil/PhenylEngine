@@ -1,8 +1,9 @@
 #include "openal_system.h"
 
+#include "audio/detail/loggers.h"
 #include "logging/logging.h"
 
-static phenyl::Logger LOGGER{"AL_SYSTEM"};
+static phenyl::Logger LOGGER{"AL_SYSTEM", phenyl::audio::detail::AUDIO_LOGGER};
 
 phenyl::audio::OpenALSystem::OpenALSystem () {
     PHENYL_LOGD(LOGGER, "Initialising OpenAL system");

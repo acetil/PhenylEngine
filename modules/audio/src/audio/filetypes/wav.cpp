@@ -1,5 +1,6 @@
 #include "wav.h"
 
+#include "audio/detail/loggers.h"
 #include "util/endian.h"
 #include "util/istream_help.h"
 
@@ -25,7 +26,7 @@ static constexpr std::uint32_t HEADER_SIZE = 44 - 8;
 static constexpr std::uint32_t FORMAT_SIZE = 16;
 static constexpr std::uint16_t PCM_TYPE = 1;
 
-static Logger LOGGER{"WAV_FILE"};
+static Logger LOGGER{"WAV_FILE", audio::detail::AUDIO_LOGGER};
 
 static util::Optional<WAVHeader> readHeader (std::istream& file);
 

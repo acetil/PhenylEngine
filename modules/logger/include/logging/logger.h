@@ -3,14 +3,12 @@
 #include <format>
 #include <string>
 
-#include "forward.h"
 #include "log_sink.h"
 
 namespace phenyl::logging {
     class Logger {
     private:
         std::string_view name;
-        int minLogLevel = LEVEL_DEBUG;
         Logger* parent;
         LogSink* logSink = nullptr;
 
@@ -25,13 +23,13 @@ namespace phenyl::logging {
 
         template <typename ...Args>
         void log (const std::source_location sourceLoc, const int level, std::format_string<Args...> fmt, Args&&... args) {
-            if (level < minLogLevel) {
-                return;
-            }
-
             if (!logSink) {
                 [[unlikely]]
                 initSink();
+            }
+
+            if (level < logSink->getMinLogLevel()) {
+                return;
             }
 
             logSink->log(sourceLoc, level, std::format(fmt, std::forward<Args>(args)...));

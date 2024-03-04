@@ -1,11 +1,13 @@
 #include "engine/game_camera.h"
+
+#include "engine/detail/loggers.h"
 #include "graphics/camera.h"
 #include "logging/logging.h"
 
 
 using namespace phenyl::game;
 
-static phenyl::Logger LOGGER{"CAMERA"};
+static phenyl::Logger LOGGER{"CAMERA", phenyl::engine::detail::ENGINE_LOGGER};
 
 void GameCamera::setPos (glm::vec2 pos) {
     targetPos = pos;

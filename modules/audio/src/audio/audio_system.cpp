@@ -7,6 +7,7 @@
 #include "filetypes/wav.h"
 #include "openal/openal_system.h"
 #include "audio/components/audio_player.h"
+#include "audio/detail/loggers.h"
 
 namespace phenyl::audio {
     PHENYL_SERIALIZE(AudioPlayer, {
@@ -16,7 +17,7 @@ namespace phenyl::audio {
 
 using namespace phenyl::audio;
 
-static phenyl::Logger LOGGER{"AUDIO_SYSTEM"};
+static phenyl::Logger LOGGER{"AUDIO_SYSTEM", detail::AUDIO_LOGGER};
 
 AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) : backend{std::move(backend)} {
     PHENYL_LOGD(LOGGER, "Attempting to provision {} sources", maxBackendSources);

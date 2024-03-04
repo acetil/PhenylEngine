@@ -4,11 +4,13 @@
 #include "math.h"
 
 #include "build_atlas.h"
+
+#include "graphics/detail/loggers.h"
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"ATLAS_BUILDER"};
+static phenyl::Logger LOGGER{"ATLAS_BUILDER", detail::GRAPHICS_LOGGER};
 
 struct Node {
     int width = 0;

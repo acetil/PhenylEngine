@@ -8,7 +8,7 @@
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_SHADER"};
+static phenyl::Logger LOGGER{"GL_SHADER", detail::GRAPHICS_LOGGER};
 
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath);
 static GLuint loadShaderSource (ShaderType shaderType, const std::string& shaderSource);

@@ -4,9 +4,11 @@
 #include "logging/logging.h"
 #include <utility>
 
+#include "graphics/detail/loggers.h"
+
 using namespace phenyl::graphics::ui;
 
-static phenyl::Logger LOGGER{"THEME_PROPERTIES"};
+static phenyl::Logger LOGGER{"THEME_PROPERTIES", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 ThemeProperties::ThemeProperties (std::string _className, std::string _fallbackName, std::string _classPrefix) :
     className{std::move(_className)}, fallbackName{std::move(_fallbackName)}, classPrefix{std::move(_classPrefix)} {}

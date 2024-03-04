@@ -1,11 +1,13 @@
 #include "graphics/ui/themes/theme_class.h"
 
 #include <utility>
+
+#include "graphics/detail/loggers.h"
 #include "graphics/ui/themes/theme.h"
 
 using namespace phenyl::graphics::ui;
 
-static phenyl::Logger LOGGER{"THEME_CLASS"};
+static phenyl::Logger LOGGER{"THEME_CLASS", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 ThemeClass::ThemeClass (std::string _classId, Theme* _theme, const util::DataObject& classData, const std::string& classPrefix) : classId{std::move(_classId)},
     theme{_theme}, parent{nullptr} {

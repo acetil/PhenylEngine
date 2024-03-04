@@ -4,7 +4,7 @@
 
 using namespace phenyl::graphics::ui;
 
-static phenyl::Logger LOGGER{"UI_BUTTON"};
+static phenyl::Logger LOGGER{"UI_BUTTON", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 void UIButtonNode::render (UIManager& uiManager) {
     glm::vec4 colour;

@@ -12,32 +12,34 @@
 
 using namespace phenyl;
 
+static Logger LOGGER{"DEBUG_CONSOLE"};
+
 static void handleProfiler (test::TestApp* app, const std::vector<std::string>& args) {
     if (args.empty()) {
-        util::logging::log(LEVEL_WARNING, "Missing argument after \"profiler\"");
+        PHENYL_LOGW(LOGGER, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
         if (args.size() == 1 || (args[1] != "on" && args[1] != "off")) {
-            util::logging::log(LEVEL_WARNING, R"(Unknown or missing argument after "display". Should be either "on" or "off")");
+            PHENYL_LOGW(LOGGER, R"(Unknown or missing argument after "display". Should be either "on" or "off")");
         } else {
             //bus->raise(event::ProfilerChangeEvent(args[1] == "on"));
             app->updateProfileRender(args[1] == "on");
         }
     } else {
-        util::logging::log(LEVEL_WARNING, "Unknown argument: \"{}\"", args[0]);
+        PHENYL_LOGW(LOGGER, "Unknown argument: \"{}\"", args[0]);
     }
 }
 
 static void handleThemes (test::TestApp* app, std::vector<std::string>& args) {
     if (args.empty()) {
-        util::logging::log(LEVEL_WARNING, "Missing argument after \"theme\"!");
+        PHENYL_LOGW(LOGGER, "Missing argument after \"theme\"!");
     } else if (args[0] == "load") {
         if (args.size() != 2) {
-            util::logging::log(LEVEL_WARNING, R"(Unknown argument after "theme".)");
+            PHENYL_LOGW(LOGGER, R"(Unknown argument after "theme".)");
         } else {
             //bus->raise(event::ChangeThemeEvent{args[1]});
             auto theme = phenyl::Assets::Load<phenyl::ui::Theme>(args[1]);
             if (!theme) {
-                util::logging::log(LEVEL_ERROR, "Failed to load theme \"{}\"!", args[1]);
+                PHENYL_LOGE(LOGGER, "Failed to load theme \"{}\"!", args[1]);
             } else {
                 app->changeTheme(theme);
             }
@@ -70,7 +72,7 @@ static void doDebugConsole (test::TestApp* app) {
                 level->load();
             }
         } else {
-            util::logging::log(LEVEL_WARNING, "Unknown arguments for level command: \"{}\"", util::joinStrings(" ", args));
+            PHENYL_LOGW(LOGGER, "Unknown arguments for level command: \"{}\"", util::joinStrings(" ", args));
         }
     } else if (command == "theme") {
         handleThemes(app, args);
@@ -81,10 +83,10 @@ static void doDebugConsole (test::TestApp* app) {
             } else if (args[0] == "false") {
                 app->updateDebugRender(false);
             } else {
-                util::logging::log(LEVEL_WARNING, "Argument for debug_render command must be true or false");
+                PHENYL_LOGW(LOGGER, "Argument for debug_render command must be true or false");
             }
         } else {
-            util::logging::log(LEVEL_WARNING, "debug_render command requires one argument: true/false");
+            PHENYL_LOGW(LOGGER, "debug_render command requires one argument: true/false");
         }
     } else if (command == "debug_step") {
         if (args.size() == 1) {
@@ -93,13 +95,13 @@ static void doDebugConsole (test::TestApp* app) {
             } else if (args[0] == "false") {
                 app->stopStepping();
             } else {
-                util::logging::log(LEVEL_WARNING, "Argument for debug_step command must be true or false");
+                PHENYL_LOGW(LOGGER, "Argument for debug_step command must be true or false");
             }
         } else {
-            util::logging::log(LEVEL_WARNING, "debug_step command requires one argument: true/false");
+            PHENYL_LOGW(LOGGER, "debug_step command requires one argument: true/false");
         }
     } else {
-        util::logging::log(LEVEL_WARNING, "Unknown debug command: \"{}\"", command);
+        PHENYL_LOGW(LOGGER, "Unknown debug command: \"{}\"", command);
     }
 
 }

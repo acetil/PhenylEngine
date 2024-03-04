@@ -5,7 +5,7 @@
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_PIPELINE_STAGE"};
+static phenyl::Logger LOGGER{"GL_PIPELINE_STAGE", detail::GRAPHICS_LOGGER};
 
 static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, GLenum type, GLsizei size, GLsizei stride=0, std::size_t offset=0);
 static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, ShaderDataType attribType);

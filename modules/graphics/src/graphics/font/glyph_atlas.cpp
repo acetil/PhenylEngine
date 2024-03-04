@@ -17,7 +17,7 @@
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GLYPH_ATLAS"};
+static phenyl::Logger LOGGER{"GLYPH_ATLAS", detail::GRAPHICS_LOGGER};
 
 struct GlyphDistanceField {
     int width = 0;

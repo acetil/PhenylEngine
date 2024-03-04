@@ -10,4 +10,5 @@
 namespace phenyl::logging {
     class LogSink;
     class Logger;
+    class LoggingProperties;
 }

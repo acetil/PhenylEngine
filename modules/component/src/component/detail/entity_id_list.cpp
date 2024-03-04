@@ -1,11 +1,12 @@
 #include <cassert>
 #include "component/detail/entity_id_list.h"
 #include "component/entity_id.h"
+#include "component/detail/loggers.h"
 #include "logging/logging.h"
 
 using namespace phenyl::component::detail;
 
-static phenyl::Logger LOGGER{"ENTITY_ID_LIST"};
+static phenyl::Logger LOGGER{"ENTITY_ID_LIST", COMPONENT_LOGGER};
 
 EntityIdList::EntityIdList (std::size_t capacity) : idSlots{}, freeListStart{FREE_LIST_EMPTY}, numEntities{0} {
     idSlots.reserve(capacity);

@@ -7,7 +7,7 @@ namespace phenyl::logging {
     private:
         std::ostream& file;
     public:
-        StreamSink (std::ostream& file, std::string name, std::string path);
+        StreamSink (std::ostream& file, std::string path);
 
         void log(const std::string& prefix, const std::string& logText) override;
     };

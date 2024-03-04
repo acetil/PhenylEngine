@@ -141,7 +141,7 @@ throw std::logic_error("Program abort");\
 #endif
 
 namespace phenyl {
-    void InitLogging (int rootLevel, const std::string& logPath);
+    void InitLogging (const logging::LoggingProperties& properties);
     void ShutdownLogging ();
 
     void SetLogLevel (const std::string& logger, int level);

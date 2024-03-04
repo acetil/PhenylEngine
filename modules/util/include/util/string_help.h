@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <string_view>
@@ -32,4 +33,14 @@ namespace phenyl::util {
 
         return str.substr(sizeof(T));
     };
+
+    inline std::string ToLower (std::string str) {
+        std::ranges::transform(str, str.begin(), [] (const auto c) { return std::tolower(c); });
+        return str;
+    }
+
+    template <typename T>
+    std::string ToLower (T&& str) requires (std::constructible_from<std::string, T>) {
+        return ToLower(std::string{str});
+    }
 }

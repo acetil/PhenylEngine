@@ -1,11 +1,13 @@
 #include "common/input/remappable_proxy_input.h"
+
+#include "common/detail/loggers.h"
 #include "common/input/proxy_source.h"
 
 #include "logging/logging.h"
 
 using namespace phenyl::common;
 
-static phenyl::Logger LOGGER{"REMAPPABLE_PROXY_INPUT"};
+static phenyl::Logger LOGGER{"REMAPPABLE_PROXY_INPUT", detail::COMMON_LOGGER};
 
 void RemappableProxyInput::addInputSource (const std::shared_ptr<InputSource>& source) {
     RemappableInput::addInputSource(source);

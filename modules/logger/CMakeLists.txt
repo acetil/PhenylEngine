@@ -8,7 +8,9 @@ add_library(logger
         src/log_manager.cpp
         src/stream_sink.cpp
         src/stream_sink.h
-        include/logging/forward.h)
+        include/logging/forward.h
+        include/logging/properties.h
+        src/properties.cpp)
 
 find_package(cpptrace REQUIRED)
 

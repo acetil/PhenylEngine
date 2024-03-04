@@ -14,7 +14,9 @@ add_library(audio src/audio/audio_system.cpp
         src/audio/openal/openal_buffer.cpp
         include/audio/components/audio_player.h
         src/audio/components/audio_player.cpp
-        include/audio/audio_backend.h)
+        include/audio/audio_backend.h
+        include/audio/detail/loggers.h
+        src/audio/detail/loggers.cpp)
 
 find_package(OpenAL REQUIRED)
 set_property(TARGET audio PROPERTY CXX_STANDARD 20)

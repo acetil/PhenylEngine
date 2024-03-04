@@ -7,6 +7,8 @@
 #include "entity/player.h"
 #include "util/debug_console.h"
 
+static phenyl::Logger LOGGER{"TEST_APP"};
+
 test::TestApp::TestApp () :
     phenyl::Application(phenyl::ApplicationProperties{}
         .withResolution(800, 600)
@@ -124,6 +126,6 @@ void test::TestApp::dumpLevel (const std::string& path) {
     if (file) {
         phenyl::Application::dumpLevel(file);
     } else {
-        phenyl::game::logging::log(LEVEL_ERROR, "Failed to open path \"{}\"!", path);
+        PHENYL_LOGE(LOGGER, "Failed to open path \"{}\"!", path);
     }
 }

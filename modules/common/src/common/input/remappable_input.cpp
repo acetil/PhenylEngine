@@ -1,10 +1,11 @@
 #include "common/input/remappable_input.h"
 
+#include "common/detail/loggers.h"
 #include "logging/logging.h"
 
 using namespace phenyl::common;
 
-static phenyl::Logger LOGGER{"REMAPPABLE_INPUT"};
+static phenyl::Logger LOGGER{"REMAPPABLE_INPUT", detail::COMMON_LOGGER};
 
 void RemappableInput::addInputSource (const std::shared_ptr<InputSource>& source) {
     inputSources.emplace_back(source);

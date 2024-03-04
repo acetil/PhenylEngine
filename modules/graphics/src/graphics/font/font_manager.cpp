@@ -1,11 +1,12 @@
 #include "logging/logging.h"
 #include "util/exceptions.h"
+#include "graphics/detail/loggers.h"
 #include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_manager.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"FONT_MANAGER"};
+static phenyl::Logger LOGGER{"FONT_MANAGER", detail::GRAPHICS_LOGGER};
 
 FontManager::FontManager () {
     auto error = FT_Init_FreeType(&freetypeLib);

@@ -1,11 +1,12 @@
 #include "logging/logging.h"
 
+#include "audio/detail/loggers.h"
 #include "openal_source.h"
 #include "openal_buffer.h"
 
 using namespace phenyl::audio;
 
-static phenyl::Logger LOGGER{"AL_SOURCE"};
+static phenyl::Logger LOGGER{"AL_SOURCE", detail::AUDIO_LOGGER};
 
 phenyl::audio::OpenALSource::OpenALSource () : sourceId{0}, valid{true} {
     alGetError();

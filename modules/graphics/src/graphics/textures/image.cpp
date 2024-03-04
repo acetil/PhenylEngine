@@ -4,11 +4,13 @@
 #include <vector>
 
 #include "graphics/textures/image.h"
+
+#include "graphics/detail/loggers.h"
 #include "stb/stb_image.h"
 #include "logging/logging.h"
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"IMAGE"};
+static phenyl::Logger LOGGER{"IMAGE", detail::GRAPHICS_LOGGER};
 
 Image::Image (const char* filename, std::string name) {
     width = 0; // to get clang to shut up

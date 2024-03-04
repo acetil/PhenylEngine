@@ -3,11 +3,12 @@
 #include "util/data.h"
 #include "util/data_funcs.h"
 #include "nlohmann/json.hpp"
+#include "util/detail/loggers.h"
 
 
 using namespace phenyl::util;
 
-static phenyl::Logger LOGGER{"DATA"};
+static phenyl::Logger LOGGER{"DATA", detail::UTIL_LOGGER};
 
 namespace phenyl::util {
     void to_json (nlohmann::json& json, const DataValue& val);

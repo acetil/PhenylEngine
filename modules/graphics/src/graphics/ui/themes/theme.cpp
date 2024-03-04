@@ -1,9 +1,11 @@
 #include "graphics/ui/themes/theme.h"
+
+#include "graphics/detail/loggers.h"
 #include "graphics/ui/themes/theme_class.h"
 
 using namespace phenyl::graphics::ui;
 
-static phenyl::Logger LOGGER{"UI_THEME"};
+static phenyl::Logger LOGGER{"UI_THEME", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 Theme::Theme (const util::DataValue& themeData) {
     const auto& obj = themeData.get<util::DataObject>();

@@ -12,7 +12,7 @@ using namespace phenyl::graphics;
 // TODO: update to use exceptions instead of return values
 // TODO: proper error handling
 
-static phenyl::Logger LOGGER{"GRAPHICS_INIT"};
+static phenyl::Logger LOGGER{"GRAPHICS_INIT", detail::GRAPHICS_LOGGER};
 
 int phenyl::graphics::initWindow (GLFWwindow** windowPtr, const GraphicsProperties& properties) {
     glewExperimental = true;

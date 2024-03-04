@@ -13,7 +13,6 @@
 #include "audio/audio_system.h"
 
 namespace phenyl::engine {
-
     namespace detail {
         class Engine;
     }

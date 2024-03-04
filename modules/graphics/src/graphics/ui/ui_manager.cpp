@@ -14,7 +14,7 @@
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"UI_MANAGER"};
+static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
 UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(std::move(_fontManager)) {
 

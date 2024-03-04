@@ -1,13 +1,14 @@
 #include <stdlib.h>
 
 #include "util/exceptions.h"
+#include "graphics/detail/loggers.h"
 #include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_face.h"
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"FONT_FACE"};
+static phenyl::Logger LOGGER{"FONT_FACE", detail::GRAPHICS_LOGGER};
 
 FontFace::FontFace (const FT_Library& library, const std::string& path, int faceNum) {
     auto error = FT_New_Face(library, path.c_str(), faceNum, &ftFace);

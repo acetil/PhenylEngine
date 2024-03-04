@@ -2,7 +2,7 @@
 
 using namespace phenyl;
 
-Logger common::detail::COMMON_LOGGER{"COMMON"};
+Logger common::detail::COMMON_LOGGER{"COMMON", PHENYL_LOGGER};
 
 Logger common::detail::ASSETS_LOGGER{"ASSETS", COMMON_LOGGER};
 Logger common::detail::ASSET_SERIALIZER_LOGGER{"ASSET_SERIALIZER", ASSETS_LOGGER};

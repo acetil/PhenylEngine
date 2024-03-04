@@ -1,11 +1,12 @@
 #include "glfw_input.h"
 
 #include "graphics/graphics_headers.h"
+#include "graphics/detail/loggers.h"
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GLFW_INPUT"};
+static phenyl::Logger LOGGER{"GLFW_INPUT", detail::GRAPHICS_LOGGER};
 
 namespace phenyl::graphics::detail {
     struct ButtonState {

@@ -1,10 +1,11 @@
 #include "util/data.h"
 
 #include "logging/logging.h"
+#include "util/detail/loggers.h"
 
 using namespace phenyl::util;
 
-phenyl::Logger LOGGER{"UTIL_TEST"};
+phenyl::Logger LOGGER{"UTIL_TEST", detail::UTIL_LOGGER};
 
 struct DestructorTest {
     std::shared_ptr<int> ptr{};

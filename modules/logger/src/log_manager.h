@@ -9,18 +9,34 @@
 #include "logging/logger.h"
 
 namespace phenyl::logging {
+    namespace detail {
+        struct StringHasher {
+            using is_transparent = void;
+
+            auto operator() (const std::string& val) const {
+                return std::hash<std::string>{}(val);
+            }
+
+            auto operator() (const std::string_view val) const {
+                return std::hash<std::string_view>{}(val);
+            }
+        };
+    }
+
     class LogManager {
     private:
-        std::unordered_map<std::string, std::unique_ptr<LogSink>> sinks;
-        std::unordered_map<std::string, int> logLevels;
-        std::unordered_map<std::string, Logger*> loggers;
+        std::unordered_map<std::string, std::unique_ptr<LogSink>, detail::StringHasher, std::equal_to<>> sinks;
+        std::unordered_map<std::string, int, detail::StringHasher, std::equal_to<>> logLevels;
+        std::unordered_map<std::string, Logger*, detail::StringHasher, std::equal_to<>> loggers;
 
         std::ofstream logFile;
         int rootLogLevel = LEVEL_FATAL;
     public:
         void init (int rootLogLevel, const std::string& logPath);
-        LogSink* makeSink (Logger* logger, Logger* parent);
-        void setLogLevel (const std::string& loggerPath, int level);
+        LogSink* getSink (const Logger* logger, Logger* parent);
+        LogSink* getSink (std::string_view path);
+
+        void setLogLevel (const std::string& loggerPath, int level, bool propagate=true);
         void shutdownLogging ();
     };
 

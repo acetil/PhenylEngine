@@ -8,7 +8,7 @@
 
 using namespace phenyl::graphics::ui;
 
-static phenyl::Logger LOGGER{"UI_FLEXBOX"};
+static phenyl::Logger LOGGER{"UI_FLEXBOX", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 namespace phenyl::graphics::ui::detail {
     struct FlexBoxItem {
