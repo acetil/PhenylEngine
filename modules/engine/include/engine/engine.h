@@ -57,6 +57,8 @@ namespace phenyl::engine {
             app->engine = this;
 
             exec(app.get());
+            app = nullptr;
+            ShutdownLogging();
         }
     };
 }

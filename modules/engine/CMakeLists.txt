@@ -14,4 +14,4 @@ set_property(TARGET engine PROPERTY CXX_STANDARD 20)
 target_include_directories(engine PUBLIC include)
 target_include_directories(engine PRIVATE src)
 
-target_link_libraries(engine PRIVATE logger component util maths graphics physics common nlohmann_json audio)
+target_link_libraries(engine PRIVATE logger component util maths graphics physics common nlohmann_json audio runtime)

@@ -23,6 +23,8 @@
 #include "engine/level/level_manager.h"
 #include "util/profiler.h"
 
+#include "runtime/runtime.h"
+
 #define FIXED_FPS 60.0
 
 using namespace phenyl;
@@ -33,14 +35,15 @@ class engine::detail::Engine {
 private:
     //game::PhenylGameHolder gameObjHolder;
     graphics::PhenylGraphicsHolder graphicsHolder;
-    component::EntityComponentManager componentManager;
-    std::unique_ptr<component::EntitySerializer> entitySerializer;
+    //component::EntityComponentManager componentManager;
+    //std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<physics::IPhysics> physicsObj;
     std::unique_ptr<component::PrefabManager> prefabManager;
     std::unique_ptr<game::LevelManager> levelManager;
     std::unique_ptr<audio::AudioSystem> audioSystem;
     game::GameCamera gameCamera;
     game::GameInput gameInput;
+    runtime::PhenylRuntime runtime;
 
     bool doDebugRender = false;
     bool doProfileRender = true;
@@ -126,7 +129,6 @@ void engine::PhenylEngine::exec (Application* app) {
     internal->gameloop(app);
     app->shutdown();
     internal = nullptr;
-    ShutdownLogging();
 }
 
 void engine::PhenylEngine::setDebugRender (bool doRender) {
@@ -141,12 +143,13 @@ audio::AudioSystem& phenyl::engine::PhenylEngine::getAudio () {
     return internal->getAudio();
 }
 
-engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties), componentManager{256} {
-    entitySerializer = std::make_unique<component::EntitySerializer>();
+engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties),
+                                                                           runtime(component::EntityComponentManager{256}) {
+    //entitySerializer = std::make_unique<component::EntitySerializer>();
     physicsObj = physics::makeDefaultPhysics();
 
-    prefabManager = std::make_unique<component::PrefabManager>(&componentManager, entitySerializer.get());
-    levelManager = std::make_unique<game::LevelManager>(&componentManager, entitySerializer.get());
+    prefabManager = std::make_unique<component::PrefabManager>(&runtime.manager(), &runtime.serializer());
+    levelManager = std::make_unique<game::LevelManager>(&runtime.manager(), &runtime.serializer());
     prefabManager->selfRegister();
     levelManager->selfRegister();
     setupCallbacks();
@@ -171,7 +174,7 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
-    graphics.addEntityLayer(&componentManager); // TODO: unhackify
+    graphics.addEntityLayer(&runtime.manager()); // TODO: unhackify
     graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
 
     //gameObjHolder.initGame(graphics, eventBus);
@@ -183,7 +186,7 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 engine::detail::Engine::~Engine () {
     PHENYL_LOGI(ENGINE_LOGGER, "Shutting down!");
     prefabManager->clear();
-    componentManager.clearAll();
+    runtime.manager().clearAll();
 }
 
 graphics::PhenylGraphics engine::detail::Engine::getGraphics () const {
@@ -195,21 +198,21 @@ void engine::detail::Engine::setupCallbacks () {
 }
 
 component::EntityComponentManager& engine::detail::Engine::getComponentManager () {
-    return componentManager;
+    return runtime.manager();
 }
 
 const component::EntityComponentManager& engine::detail::Engine::getComponentManager () const {
-    return componentManager;
+    return runtime.manager();
 }
 
 component::EntitySerializer& engine::detail::Engine::getEntitySerializer () {
-    return *entitySerializer;
+    return runtime.serializer();
 }
 
 void engine::detail::Engine::addDefaultSerialisers () {
     //entitySerialiser->addComponentSerialiser<component::Position2D>("Position2D");
-    entitySerializer->addSerializer<common::GlobalTransform2D>();
-    entitySerializer->addSerializer<common::TimedLifetime>();
+    runtime.serializer().addSerializer<common::GlobalTransform2D>();
+    runtime.serializer().addSerializer<common::TimedLifetime>();
 }
 
 physics::PhenylPhysics engine::detail::Engine::getPhysics () {
@@ -238,11 +241,11 @@ void engine::detail::Engine::debugRender () {
 }
 
 void engine::detail::Engine::addComponents () {
-    componentManager.addComponent<common::GlobalTransform2D>();
-    componentManager.addComponent<common::TimedLifetime>();
-    physicsObj->addComponents(componentManager);
-    graphicsHolder.tempGetGraphics()->addComponents(componentManager);
-    audioSystem->addComponents(componentManager,  *entitySerializer);
+    runtime.manager().addComponent<common::GlobalTransform2D>();
+    runtime.manager().addComponent<common::TimedLifetime>();
+    physicsObj->addComponents(runtime.manager());
+    graphicsHolder.tempGetGraphics()->addComponents(runtime.manager());
+    audioSystem->addComponents(runtime.manager(),  runtime.serializer());
 }
 
 void engine::detail::Engine::dumpLevel (std::ostream& file) {
@@ -289,8 +292,10 @@ void engine::detail::Engine::update (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Update start");
     app->update(deltaTime);
     audioSystem->update((float)deltaTime);
-    graphicsHolder.getGraphics().frameUpdate(componentManager);
-    common::TimedLifetime::Update(componentManager, deltaTime); // TODO: put somewhere else
+    graphicsHolder.getGraphics().frameUpdate(runtime.manager());
+    common::TimedLifetime::Update(runtime.manager(), deltaTime); // TODO: put somewhere else
+
+    runtime.pluginUpdate(deltaTime);
     PHENYL_TRACE(ENGINE_LOGGER, "Update end");
 }
 
@@ -299,6 +304,10 @@ void engine::detail::Engine::fixedUpdate (Application* app) {
     app->fixedUpdate(1.0 / FIXED_FPS);
     updateEntityPosition(1.0f / FIXED_FPS);
     getCamera().updateCamera(getGraphics().getCamera());
+
+    runtime.pluginFixedUpdate(1.0 / FIXED_FPS);
+
+    runtime.pluginPhysicsUpdate(1.0 / FIXED_FPS);
     PHENYL_TRACE(ENGINE_LOGGER, "Fixed update end");
 }
 

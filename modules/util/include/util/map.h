@@ -261,7 +261,7 @@ namespace phenyl::util {
 
             template <typename T = iterator>
             std::enable_if_t<!IsConst, T> begin () {
-                return iterator(data, maxSize);
+                return data ? iterator(data, maxSize) : end();
             }
 
             template <typename T = iterator>
@@ -271,7 +271,7 @@ namespace phenyl::util {
 
             template <typename T = const_iterator>
             std::enable_if_t<IsConst, T> begin () const {
-                return const_iterator(data, maxSize);
+                return data ? const_iterator(data, maxSize) : end();
             }
 
             template <typename T = const_iterator>
@@ -280,7 +280,7 @@ namespace phenyl::util {
             }
 
             const_iterator cbegin () const {
-                return const_iterator(data, maxSize);
+                return data ? const_iterator(data, maxSize) : cend();
             }
 
             const_iterator cend () const {

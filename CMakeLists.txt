@@ -21,6 +21,7 @@ add_subdirectory(modules/maths)
 add_subdirectory(modules/graphics)
 add_subdirectory(modules/engine)
 add_subdirectory(modules/audio)
+add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
 
