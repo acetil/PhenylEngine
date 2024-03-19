@@ -2,21 +2,22 @@
 
 #include "component/component.h"
 #include "component/forward.h"
+#include "runtime/plugin.h"
 
 namespace phenyl::physics {
+    class Physics2D;
 
-
-
-    class IPhysics {
+    class PhysicsPlugin2D : public runtime::IPlugin {
+    private:
+        std::unique_ptr<Physics2D> physics;
     public:
-        virtual ~IPhysics() = default;
-        virtual void addComponents (component::EntityComponentManager& componentManager) = 0;
-        virtual void addComponentSerializers (component::EntitySerializer& serializer) = 0;
-        virtual void updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) = 0;
-        virtual void checkCollisions (component::EntityComponentManager& componentManager, float deltaTime) = 0;
+        PhysicsPlugin2D ();
+        ~PhysicsPlugin2D() override;
 
-        virtual void debugRender (const component::EntityComponentManager& componentManager) = 0;
+        [[nodiscard]] std::string_view getName() const noexcept override;
+
+        void init(runtime::PhenylRuntime& runtime) override;
+        void physicsUpdate(runtime::PhenylRuntime &runtime, double deltaTime) override;
+        void render(runtime::PhenylRuntime& runtime) override;
     };
-
-    std::unique_ptr<IPhysics> makeDefaultPhysics ();
 }

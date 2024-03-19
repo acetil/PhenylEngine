@@ -9,7 +9,7 @@ namespace phenyl::runtime {
 
         [[nodiscard]] virtual std::string_view getName () const noexcept = 0;
 
-        virtual void init (PhenylRuntime& runtime) {}
+        virtual void init (PhenylRuntime& runtime) = 0;
 
         virtual void frameBegin (PhenylRuntime& runtime) {}
         virtual void update (PhenylRuntime& runtime, double deltaTime) {}

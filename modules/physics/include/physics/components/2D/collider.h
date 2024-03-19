@@ -40,7 +40,7 @@ namespace phenyl::physics {
         void syncUpdates (const RigidBody2D& body, glm::vec2 pos);
         void updateBody (RigidBody2D& body) const;
 
-        friend class PhysicsObject2D;
+        friend class Physics2D;
         friend class Constraint2D;
         friend class Manifold2D;
     protected:

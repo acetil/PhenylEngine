@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/maths_headers.h"
+#include "runtime/iresource.h"
 
 namespace phenyl::common {
     //void debugWorldRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour);
@@ -18,4 +19,13 @@ namespace phenyl::common {
 
     void debugWorldLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour);
     void debugLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour);
+
+    struct DebugRenderConfig : public runtime::IResource {
+        bool doPhysicsRender = false;
+        bool doProfileRender = true;
+
+        [[nodiscard]] std::string_view getName() const noexcept override {
+            return "DebugRuntimeConfig";
+        }
+    };
 }

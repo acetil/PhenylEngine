@@ -1,4 +1,4 @@
-#include "physics_obj_2d.h"
+#include "physics_2d.h"
 #include "physics/components/2D/rigid_body.h"
 #include "common/debug.h"
 
@@ -17,48 +17,27 @@
 
 using namespace phenyl::physics;
 
-void PhysicsObject2D::addComponents (component::EntityComponentManager& componentManager) {
-    componentManager.addComponent<RigidBody2D>();
-    componentManager.addComponent<Collider2D>();
-    componentManager.addComponent<BoxCollider2D>();
+void Physics2D::addComponents (runtime::PhenylRuntime& runtime) {
+    runtime.addComponent<RigidBody2D>();
+    runtime.addUnserializedComponent<Collider2D>();
+    runtime.addComponent<BoxCollider2D>();
 
-    componentManager.inherits<BoxCollider2D, Collider2D>();
+    runtime.manager().inherits<BoxCollider2D, Collider2D>();
 
-    componentManager.addRequirement<RigidBody2D, common::GlobalTransform2D>();
-    componentManager.addRequirement<BoxCollider2D, common::GlobalTransform2D>();
-    componentManager.addRequirement<BoxCollider2D, RigidBody2D>();
+    runtime.manager().addRequirement<RigidBody2D, common::GlobalTransform2D>();
+    runtime.manager().addRequirement<BoxCollider2D, common::GlobalTransform2D>();
+    runtime.manager().addRequirement<BoxCollider2D, RigidBody2D>();
 }
 
-void PhysicsObject2D::addComponentSerializers (component::EntitySerializer& serializer) {
-    /*serialiser.addComponentSerialiser<RigidBody2D>("RigidBody2D", [] (const RigidBody2D& body) -> util::DataValue {
-        return body.serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<RigidBody2D> {
-        RigidBody2D body{};
-        if (!body.deserialise(val)) {
-            return util::NullOpt;
-        }
-        return {body};
-    });
-    serialiser.addComponentSerialiser<BoxCollider2D>("BoxCollider2D", [] (const BoxCollider2D& box) -> util::DataValue {
-        return box.serialise();
-    }, [] (const util::DataValue& val) -> util::Optional<BoxCollider2D> {
-        BoxCollider2D box{};
-        if (!box.deserialise(val)) {
-            return util::NullOpt;
-        }
-        return {box};
-    });*/
-    serializer.addSerializer<RigidBody2D>();
-    serializer.addSerializer<BoxCollider2D>();
-}
-
-void PhysicsObject2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
+void Physics2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
     componentManager.query<common::GlobalTransform2D, RigidBody2D>().each([deltaTime] (component::Entity entity, common::GlobalTransform2D& transform, RigidBody2D& body) {
         body.doMotion(transform, deltaTime);
     });
+
+    checkCollisions(componentManager, deltaTime);
 }
 
-void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compManager, float deltaTime) {
+void Physics2D::checkCollisions (component::EntityComponentManager& compManager, float deltaTime) {
     compManager.query<common::GlobalTransform2D, RigidBody2D, Collider2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, Collider2D& collider) {
         collider.syncUpdates(body, transform.transform2D.position());
     });
@@ -114,7 +93,7 @@ void PhysicsObject2D::checkCollisions (component::EntityComponentManager& compMa
     }*/
 }
 
-void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager) {
+void Physics2D::solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager) {
     //std::shuffle(constraints.begin(), constraints.end(), std::random_device{});
     for (auto i = 0; i < SOLVER_ITERATIONS; i++) {
         bool shouldContinue = false;
@@ -134,7 +113,7 @@ void PhysicsObject2D::solveConstraints (std::vector<Constraint2D>& constraints, 
     });
 }
 
-void PhysicsObject2D::debugRender (const component::EntityComponentManager& componentManager) {
+void Physics2D::debugRender (const component::EntityComponentManager& componentManager) {
     // Debug render
     componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (component::ConstEntity entity, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
         auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();

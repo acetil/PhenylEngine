@@ -42,7 +42,7 @@ namespace phenyl::runtime {
             auto typeIndex = meta::type_index<T>();
             PHENYL_ASSERT_MSG(resources.contains(typeIndex), "Attempted to get resource that does not exist!");
 
-            return *resources[typeIndex];
+            return (T&)*resources[typeIndex];
         }
 
         template <std::derived_from<IResource> T>
@@ -50,12 +50,12 @@ namespace phenyl::runtime {
             auto typeIndex = meta::type_index<T>();
             PHENYL_ASSERT_MSG(resources.contains(typeIndex), "Attempted to get resource that does not exist!");
 
-            return *resources[typeIndex];
+            return (const T&)*resources[typeIndex];
         }
 
         template <std::derived_from<IResource> T, typename ...Args>
         void addResource (Args&&... args) requires (std::constructible_from<T, Args...>) {
-            addResource(meta::type_index<T>(), std::make_unique<T>(std::forward<Args>(args)...));
+            registerResource(meta::type_index<T>(), std::make_unique<T>(std::forward<Args>(args)...));
         }
 
         template <std::derived_from<IPlugin> T>

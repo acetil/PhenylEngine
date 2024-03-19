@@ -17,7 +17,7 @@ namespace phenyl::physics {
         util::Optional<SATResult2D> collide (const BoxCollider2D& other);
         Face2D getSignificantFace (glm::vec2 normal);
 
-        friend class PhysicsObject2D;
+        friend class Physics2D;
 
         PHENYL_SERIALIZE_INTRUSIVE(BoxCollider2D)
     public:

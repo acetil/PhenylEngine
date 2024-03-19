@@ -6,7 +6,6 @@
 #include "component/forward.h"
 #include "graphics/graphics.h"
 #include "graphics/phenyl_graphics.h"
-#include "physics/phenyl_physics.h"
 #include "game_camera.h"
 #include "input/game_input.h"
 #include "application.h"
@@ -38,7 +37,7 @@ namespace phenyl::engine {
 
         component::EntitySerializer& getEntitySerializer ();
 
-        physics::PhenylPhysics getPhysics ();
+        //physics::PhenylPhysics getPhysics ();
 
         game::GameCamera& getCamera ();
         game::GameInput& getInput ();
