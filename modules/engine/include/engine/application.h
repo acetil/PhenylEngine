@@ -6,7 +6,6 @@
 #include "forward.h"
 #include "graphics/ui/forward.h"
 #include "graphics/graphics_properties.h"
-#include "audio/audio_system.h"
 
 #include "component/component.h"
 #include "component/component_serializer.h"
@@ -81,7 +80,6 @@ namespace phenyl::engine {
         game::GameCamera& camera ();
         game::GameInput& input ();
         graphics::UIManager& uiManager ();
-        audio::AudioSystem& audio ();
         void setTargetFPS (double fps);
         void setFixedTimeScale (double newTimeScale);
         void setDebugRender (bool doRender); // TODO: remove?

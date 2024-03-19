@@ -25,6 +25,7 @@
 
 #include "runtime/runtime.h"
 #include "common/debug.h"
+#include "audio/audio_plugin.h"
 
 #define FIXED_FPS 60.0
 
@@ -40,7 +41,6 @@ private:
     //std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<component::PrefabManager> prefabManager;
     std::unique_ptr<game::LevelManager> levelManager;
-    std::unique_ptr<audio::AudioSystem> audioSystem;
     game::GameCamera gameCamera;
     game::GameInput gameInput;
     runtime::PhenylRuntime runtime;
@@ -61,7 +61,6 @@ public:
     component::EntityComponentManager& getComponentManager ();
     [[nodiscard]] const component::EntityComponentManager& getComponentManager () const;
     component::EntitySerializer& getEntitySerializer ();
-    audio::AudioSystem& getAudio ();
 
     game::GameCamera& getCamera ();
     game::GameInput& getInput ();
@@ -126,14 +125,8 @@ void engine::PhenylEngine::setProfileRender (bool doRender) {
     internal->setProfileRender(doRender);
 }
 
-audio::AudioSystem& phenyl::engine::PhenylEngine::getAudio () {
-    return internal->getAudio();
-}
-
 engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties),
                                                                            runtime(component::EntityComponentManager{256}) {
-    runtime.addPlugin<physics::PhysicsPlugin2D>();
-
     prefabManager = std::make_unique<component::PrefabManager>(&runtime.manager(), &runtime.serializer());
     levelManager = std::make_unique<game::LevelManager>(&runtime.manager(), &runtime.serializer());
     prefabManager->selfRegister();
@@ -143,9 +136,6 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     //auto gameObj = gameObjHolder.getGameObject();
     auto graphics = graphicsHolder.getGraphics();
     gameInput.setRenderer(graphics.getRenderer());
-
-    audioSystem = audio::MakeOpenALSystem();
-    audioSystem->selfRegister();
 
     //gameObj.setEntityComponentManager(&componentManager);
     //gameObj.setSerializer(entitySerializer.get());
@@ -157,6 +147,9 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     graphics.addComponentSerializers(getEntitySerializer());
 
     runtime.addResource<common::DebugRenderConfig>();
+
+    runtime.addPlugin<physics::PhysicsPlugin2D>();
+    runtime.addPlugin<audio::AudioPlugin>();
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
@@ -213,7 +206,7 @@ void engine::detail::Engine::addComponents () {
     runtime.manager().addComponent<common::TimedLifetime>();
    // physicsObj->addComponents(runtime.manager());
     graphicsHolder.tempGetGraphics()->addComponents(runtime.manager());
-    audioSystem->addComponents(runtime.manager(),  runtime.serializer());
+    //audioSystem->addComponents(runtime.manager(),  runtime.serializer());
 }
 
 void engine::detail::Engine::dumpLevel (std::ostream& file) {
@@ -259,7 +252,7 @@ void engine::detail::Engine::gameloop (Application* app) {
 void engine::detail::Engine::update (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Update start");
     app->update(deltaTime);
-    audioSystem->update((float)deltaTime);
+    //audioSystem->update((float)deltaTime);
     graphicsHolder.getGraphics().frameUpdate(runtime.manager());
     common::TimedLifetime::Update(runtime.manager(), deltaTime); // TODO: put somewhere else
 
@@ -299,8 +292,4 @@ void engine::detail::Engine::setDebugRender (bool doRender) {
 void engine::detail::Engine::setProfileRender (bool doRender) {
     doProfileRender = doRender;
     runtime.resource<common::DebugRenderConfig>().doProfileRender = doRender;
-}
-
-audio::AudioSystem& engine::detail::Engine::getAudio () {
-    return *audioSystem;
 }

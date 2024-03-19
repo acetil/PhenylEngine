@@ -7,8 +7,8 @@
 #include "util/fl_vector.h"
 
 #include "audio_source.h"
-#include "audio_sample.h"
-#include "audio_backend.h"
+#include "audio/audio_sample.h"
+#include "audio/audio_backend.h"
 
 namespace phenyl::component {
     class ComponentManager;

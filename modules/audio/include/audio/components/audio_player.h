@@ -1,6 +1,6 @@
 #pragma once
 
-#include "audio/audio_source.h"
+#include "../../../src/audio/audio_source.h"
 #include "common/serializer_intrusive.h"
 
 namespace phenyl::audio {
