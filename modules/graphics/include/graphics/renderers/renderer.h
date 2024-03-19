@@ -7,6 +7,7 @@
 #include "graphics/shaders/shaders.h"
 #include "graphics/pipeline/pipeline_stage.h"
 #include "common/input/input_source.h"
+#include "runtime/iresource.h"
 
 #include "util/optional.h"
 
@@ -20,11 +21,10 @@ namespace phenyl::graphics {
         virtual void bind () = 0;
     };
 
-    class Renderer {
+    class Renderer : public runtime::IResource {
     protected:
         virtual std::shared_ptr<RendererBufferHandle> makeBufferHandle () = 0;
     public:
-
         virtual ~Renderer() = default;
 
         virtual double getCurrentTime () = 0;

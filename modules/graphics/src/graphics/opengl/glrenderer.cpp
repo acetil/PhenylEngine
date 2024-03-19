@@ -313,6 +313,10 @@ void GLRenderer::loadDefaultShaders () {
     )});
 }
 
+std::string_view GLRenderer::getName () const noexcept {
+    return "GLRenderer";
+}
+
 
 
 

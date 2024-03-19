@@ -13,11 +13,11 @@ PhenylRuntime::PhenylRuntime (phenyl::component::ComponentManager&& compManager)
 
 PhenylRuntime::~PhenylRuntime () = default;
 
-void PhenylRuntime::registerResource (std::size_t typeIndex, std::unique_ptr<IResource> resource) {
+void PhenylRuntime::registerResource (std::size_t typeIndex, IResource* resource) {
     PHENYL_ASSERT_MSG(!resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!", resource->getName());
 
     PHENYL_LOGI(LOGGER, "Registered resource \"{}\"", resource->getName());
-    resources.emplace(typeIndex, std::move(resource));
+    resources.emplace(typeIndex, resource);
 }
 
 void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin) {

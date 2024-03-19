@@ -15,11 +15,13 @@ namespace phenyl::runtime {
         component::ComponentManager compManager;
         component::EntitySerializer serializationManager;
 
-        util::Map<std::size_t, std::unique_ptr<IResource>> resources;
+        std::vector<std::unique_ptr<IResource>> ownedResources;
+
+        util::Map<std::size_t, IResource*> resources;
         util::Map<std::size_t, std::unique_ptr<IPlugin>> plugins;
 
 
-        void registerResource (std::size_t typeIndex, std::unique_ptr<IResource> resource);
+        void registerResource (std::size_t typeIndex, IResource* resource);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
 
     public:
@@ -55,7 +57,13 @@ namespace phenyl::runtime {
 
         template <std::derived_from<IResource> T, typename ...Args>
         void addResource (Args&&... args) requires (std::constructible_from<T, Args...>) {
-            registerResource(meta::type_index<T>(), std::make_unique<T>(std::forward<Args>(args)...));
+            auto& res = ownedResources.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+            addResource<T>((T*)res.get());
+        }
+
+        template <std::derived_from<IResource> T>
+        void addResource (T* resource) {
+            registerResource(meta::type_index<T>(), resource);
         }
 
         template <std::derived_from<IPlugin> T>

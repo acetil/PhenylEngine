@@ -19,7 +19,7 @@ game::GameCamera& engine::Application::camera () {
 
 game::GameInput& engine::Application::input () {
     PHENYL_DASSERT(engine);
-    return engine->getInput();
+    return engine->getRuntime().resource<game::GameInput>(); // TODO
 }
 
 graphics::UIManager& engine::Application::uiManager () {

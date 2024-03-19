@@ -189,6 +189,10 @@ void UIManager::updateUI () {
     mouseDown = newMouse;
 }
 
+std::string_view UIManager::getName () const noexcept {
+    return "UIManager";
+}
+
 UIManager::~UIManager () = default;
 
 ui::Theme* UIThemeManager::load (std::istream& data, std::size_t id) {

@@ -1,5 +1,6 @@
 #include "engine/input/game_input.h"
 #include "graphics/renderers/renderer.h"
+#include "runtime/runtime.h"
 
 #include <utility>
 
@@ -40,4 +41,22 @@ glm::vec2 GameInput::screenSize () const {
 
 void GameInput::setRenderer (graphics::Renderer* renderer) {
     this->renderer = renderer;
+}
+
+std::string_view GameInput::getName () const noexcept {
+    return "GameInput";
+}
+
+std::string_view GameInputPlugin::getName () const noexcept {
+    return "GameInputPlugin";
+}
+
+void GameInputPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
+    runtime.addResource(&input);
+
+    input.setRenderer(&runtime.resource<graphics::Renderer>());
+}
+
+void GameInputPlugin::frameBegin (phenyl::runtime::PhenylRuntime& runtime) {
+    input.poll();
 }

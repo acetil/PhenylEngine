@@ -109,7 +109,7 @@ AudioSource AudioSystem::createSource () {
 }
 
 void AudioSystem::destroySource (std::size_t id) {
-    // TODO
+    // TODO find bug where crashes on exit
     PHENYL_DASSERT(id);
     auto virtualIndex = id - 1;
     for (auto curr = virtualSources[virtualIndex].sourcesStart; curr != EMPTY_INDEX; curr = backendSources[curr].next) {

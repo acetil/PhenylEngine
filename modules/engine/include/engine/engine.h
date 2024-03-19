@@ -39,7 +39,8 @@ namespace phenyl::engine {
         //physics::PhenylPhysics getPhysics ();
 
         game::GameCamera& getCamera ();
-        game::GameInput& getInput ();
+
+        runtime::PhenylRuntime& getRuntime ();
 
         void dumpLevel (std::ostream& path);
 

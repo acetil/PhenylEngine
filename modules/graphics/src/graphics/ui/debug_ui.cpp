@@ -27,7 +27,7 @@ void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
         return;
     }
 
-    auto& uiManager = runtime.resource<UIManagerRes>().manager;
+    auto& uiManager = runtime.resource<UIManager>();
 
     uiManager.renderText("noto-serif", "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
                          15);

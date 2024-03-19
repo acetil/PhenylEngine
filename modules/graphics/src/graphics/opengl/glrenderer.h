@@ -52,6 +52,8 @@ namespace phenyl::graphics {
 
         ~GLRenderer() override;
 
+        std::string_view getName() const noexcept override;
+
         double getCurrentTime () override;
 
         bool shouldClose () override;

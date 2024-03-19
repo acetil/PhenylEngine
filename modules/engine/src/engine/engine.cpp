@@ -43,7 +43,6 @@ private:
     std::unique_ptr<component::PrefabManager> prefabManager;
     std::unique_ptr<game::LevelManager> levelManager;
     game::GameCamera gameCamera;
-    game::GameInput gameInput;
     runtime::PhenylRuntime runtime;
 
     bool doDebugRender = false;
@@ -64,7 +63,7 @@ public:
     component::EntitySerializer& getEntitySerializer ();
 
     game::GameCamera& getCamera ();
-    game::GameInput& getInput ();
+    runtime::PhenylRuntime& getRuntime ();
 
     void dumpLevel (std::ostream& file);
 
@@ -79,6 +78,7 @@ public:
     void setDebugRender (bool doRender);
     void setProfileRender (bool doRender);
 };
+
 
 engine::PhenylEngine::PhenylEngine () = default;
 
@@ -104,10 +104,6 @@ game::GameCamera& engine::PhenylEngine::getCamera () {
     return internal->getCamera();
 }
 
-game::GameInput& engine::PhenylEngine::getInput () {
-    return internal->getInput();
-}
-
 void engine::PhenylEngine::exec (Application* app) {
     InitLogging(app->properties.loggingProperties);
 
@@ -126,6 +122,10 @@ void engine::PhenylEngine::setProfileRender (bool doRender) {
     internal->setProfileRender(doRender);
 }
 
+runtime::PhenylRuntime& phenyl::engine::PhenylEngine::getRuntime () {
+    return internal->getRuntime();
+}
+
 engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties),
                                                                            runtime(component::EntityComponentManager{256}) {
     prefabManager = std::make_unique<component::PrefabManager>(&runtime.manager(), &runtime.serializer());
@@ -136,7 +136,6 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 
     //auto gameObj = gameObjHolder.getGameObject();
     auto graphics = graphicsHolder.getGraphics();
-    gameInput.setRenderer(graphics.getRenderer());
 
     //gameObj.setEntityComponentManager(&componentManager);
     //gameObj.setSerializer(entitySerializer.get());
@@ -148,11 +147,13 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     graphics.addComponentSerializers(getEntitySerializer());
 
     runtime.addResource<common::DebugRenderConfig>();
-    runtime.addResource<graphics::UIManagerRes>(graphics.getUIManager());
+    runtime.addResource<graphics::UIManager>(&graphics.getUIManager());
+    runtime.addResource<graphics::Renderer>(graphics.getRenderer());
 
     runtime.addPlugin<physics::PhysicsPlugin2D>();
     runtime.addPlugin<audio::AudioPlugin>();
     runtime.addPlugin<graphics::ProfileUiPlugin>();
+    runtime.addPlugin<game::GameInputPlugin>();
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
@@ -162,7 +163,7 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     //gameObjHolder.initGame(graphics, eventBus);
 
     //gameObjHolder.getGameObject().getGameInput().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
-    gameInput.addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
+    runtime.resource<game::GameInput>().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources()); // TODO
 }
 
 engine::detail::Engine::~Engine () {
@@ -200,8 +201,8 @@ game::GameCamera& engine::detail::Engine::getCamera () {
     return gameCamera;
 }
 
-game::GameInput& engine::detail::Engine::getInput () {
-    return gameInput;
+runtime::PhenylRuntime& engine::detail::Engine::getRuntime () {
+    return runtime;
 }
 
 void engine::detail::Engine::addComponents () {
@@ -224,7 +225,7 @@ void engine::detail::Engine::gameloop (Application* app) {
         util::startProfileFrame();
 
         graphics.updateUI();
-        gameInput.poll();
+        runtime.pluginFrameBegin();
 
         double deltaTime = graphics.getDeltaTime();
         deltaPhysicsFrame += deltaTime * app->fixedTimeScale;
