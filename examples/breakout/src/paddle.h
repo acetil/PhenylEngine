@@ -23,7 +23,7 @@ namespace breakout {
         phenyl::Asset<phenyl::Prefab> emitterPrefab;
         phenyl::Asset<phenyl::AudioSample> bounceSample;
 
-        void update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::GameCamera& camera);
+        void update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::Camera& camera);
     };
 
     PHENYL_SERIALIZE(Paddle, {
@@ -40,5 +40,5 @@ namespace breakout {
 
     void initPaddle (BreakoutApp* app, phenyl::GameInput& input, phenyl::ComponentManager& manager);
 
-    void updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera);
+    void updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera);
 }

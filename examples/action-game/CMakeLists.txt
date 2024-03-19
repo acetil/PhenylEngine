@@ -20,6 +20,8 @@ target_copy_resources(action-game
         resources/prefabs/bullet_entity.json
         resources/prefabs/test_entity.json
         resources/prefabs/wall_entity.json
+        resources/prefabs/bullet_particle_entity.json
+        resources/particles/test_system.json
         resources/themes/alt_theme.json
         resources/audio/blastoff.wav
 )

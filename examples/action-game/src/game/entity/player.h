@@ -20,4 +20,4 @@ namespace test {
 
 void addPlayerComponents (test::TestApp* app);
 void inputSetup (phenyl::GameInput& input);
-void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera);
+void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera);

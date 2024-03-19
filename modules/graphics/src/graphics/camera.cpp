@@ -34,3 +34,18 @@ glm::mat4 Camera::getCamMatrix () const {
 std::string Camera::getUniformName () {
     return "camera";
 }
+
+glm::vec2 Camera::getWorldPos2D (glm::vec2 screenPos) {
+    auto worldPos4 (camMatrix * glm::vec4{screenPos, 0, 1});
+
+    return -glm::vec2{worldPos4.x, worldPos4.y};
+}
+
+void Camera::setPos2D (glm::vec2 newPos) {
+    positionMat = glm::translate(glm::mat4(1.0f), glm::vec3(-newPos, 0.0f));
+    camMatrix = scaleMat * positionMat;
+}
+
+std::string_view Camera::getName () const noexcept {
+    return "Camera";
+}

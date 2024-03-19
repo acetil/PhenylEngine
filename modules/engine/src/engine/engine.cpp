@@ -42,7 +42,6 @@ private:
     //std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<component::PrefabManager> prefabManager;
     std::unique_ptr<game::LevelManager> levelManager;
-    game::GameCamera gameCamera;
     runtime::PhenylRuntime runtime;
 
     bool doDebugRender = false;
@@ -62,7 +61,6 @@ public:
     [[nodiscard]] const component::EntityComponentManager& getComponentManager () const;
     component::EntitySerializer& getEntitySerializer ();
 
-    game::GameCamera& getCamera ();
     runtime::PhenylRuntime& getRuntime ();
 
     void dumpLevel (std::ostream& file);
@@ -100,9 +98,6 @@ void engine::PhenylEngine::dumpLevel (std::ostream& file) {
     internal->dumpLevel(file);
 }
 
-game::GameCamera& engine::PhenylEngine::getCamera () {
-    return internal->getCamera();
-}
 
 void engine::PhenylEngine::exec (Application* app) {
     InitLogging(app->properties.loggingProperties);
@@ -147,8 +142,9 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     graphics.addComponentSerializers(getEntitySerializer());
 
     runtime.addResource<common::DebugRenderConfig>();
-    runtime.addResource<graphics::UIManager>(&graphics.getUIManager());
-    runtime.addResource<graphics::Renderer>(graphics.getRenderer());
+    runtime.addResource<graphics::UIManager>(&graphics.getUIManager()); // TODO
+    runtime.addResource<graphics::Renderer>(graphics.getRenderer()); // TODO
+    runtime.addResource(&graphics.getCamera()); // TODO
 
     runtime.addPlugin<physics::PhysicsPlugin2D>();
     runtime.addPlugin<audio::AudioPlugin>();
@@ -195,10 +191,6 @@ component::EntitySerializer& engine::detail::Engine::getEntitySerializer () {
 void engine::detail::Engine::addDefaultSerialisers () {
     runtime.serializer().addSerializer<common::GlobalTransform2D>();
     runtime.serializer().addSerializer<common::TimedLifetime>();
-}
-
-game::GameCamera& engine::detail::Engine::getCamera () {
-    return gameCamera;
 }
 
 runtime::PhenylRuntime& engine::detail::Engine::getRuntime () {
@@ -265,7 +257,7 @@ void engine::detail::Engine::update (Application* app, double deltaTime) {
 void engine::detail::Engine::fixedUpdate (Application* app) {
     PHENYL_TRACE(ENGINE_LOGGER, "Fixed update start");
     app->fixedUpdate(1.0 / FIXED_FPS);
-    getCamera().updateCamera(getGraphics().getCamera());
+    //getCamera().updateCamera(getGraphics().getCamera());
 
     runtime.pluginFixedUpdate(1.0 / FIXED_FPS);
 

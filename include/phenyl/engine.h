@@ -4,5 +4,5 @@
 
 namespace phenyl {
     using PhenylEngine = phenyl::engine::PhenylEngine;
-    using GameCamera = phenyl::game::GameCamera;
+    using Camera = phenyl::graphics::Camera;
 }

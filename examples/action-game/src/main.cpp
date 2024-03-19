@@ -54,6 +54,7 @@ struct Test2 {
 static phenyl::Logger LOGGER{"MAIN"};
 
 static void testCompManager () {
+    InitLogging(logging::LoggingProperties{}.withRootLogLevel(LEVEL_DEBUG).withLogFile("comp_manager.log"));
     PHENYL_LOGD(LOGGER, "Starting comp manager tests!");
     auto manager = phenyl::ComponentManager{2};
 
@@ -242,11 +243,13 @@ static void testCompManager () {
             PHENYL_LOGD(LOGGER, "{}", j.id().value());
         }
     }
+
+    ShutdownLogging();
 };
 
 int main (int argv, char* argc[]) {
     phenyl::PhenylEngine engine;
-    testCompManager();
+    //testCompManager();
 
     PHENYL_LOGD(LOGGER, "Started game!");
     engine.run<test::TestApp>();

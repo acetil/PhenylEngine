@@ -12,9 +12,9 @@ component::ComponentManager& engine::Application::componentManager () {
     return engine->getComponentManager();
 }
 
-game::GameCamera& engine::Application::camera () {
+graphics::Camera& engine::Application::camera () {
     PHENYL_DASSERT(engine);
-    return engine->getCamera();
+    return engine->getRuntime().resource<graphics::Camera>(); // TODO
 }
 
 game::GameInput& engine::Application::input () {
@@ -24,7 +24,7 @@ game::GameInput& engine::Application::input () {
 
 graphics::UIManager& engine::Application::uiManager () {
     PHENYL_DASSERT(engine);
-    return engine->getGraphics().getUIManager();
+    return engine->getRuntime().resource<graphics::UIManager>(); // TODO
 }
 
 void engine::Application::setTargetFPS (double fps) {

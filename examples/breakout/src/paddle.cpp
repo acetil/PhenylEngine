@@ -36,13 +36,13 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input,
     });
 }
 
-void breakout::updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera) {
+void breakout::updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera) {
     manager.query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, Paddle>().each([&input, &camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, Paddle& paddle) {
         paddle.update(deltaTime, entity, transform, body, input, camera);
     });
 }
 
-void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::GameCamera& camera) {
+void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::Camera& camera) {
     glm::vec2 direction{};
     if (input.isDown(LeftKey)) {
         direction += glm::vec2{-1.0f, 0.0f};
@@ -63,7 +63,7 @@ void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::Globa
         hasBall = false;
         auto pos = transform.transform2D.position() + glm::vec2{0, 0.1};
 
-        auto mousePos = camera.getWorldPos(input.cursorPos() / input.screenSize() * 2.0f - glm::vec2{1.0f, 1.0f});
+        auto mousePos = camera.getWorldPos2D(input.cursorPos() / input.screenSize() * 2.0f - glm::vec2{1.0f, 1.0f});
         mousePos.y *= -1;
 
         auto ballVel = /*vel + */glm::normalize(mousePos - pos) * ballSpeed;

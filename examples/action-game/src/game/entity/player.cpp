@@ -11,6 +11,7 @@
 #include "player.h"
 #include "serializers.h"
 #include "game/test_app.h"
+#include "phenyl/components/2D/sprite.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 7.5f
@@ -30,7 +31,7 @@ static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
 static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
-                          phenyl::GameCamera& camera);
+                          phenyl::Camera& camera);
 
 void addPlayerComponents (test::TestApp* app) {
     app->addComponent<test::Player>();
@@ -48,7 +49,7 @@ void inputSetup (phenyl::GameInput& input) {
     GainDown = input.mapInput("gain_down", "key_down");
 }
 
-void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::GameCamera& camera) {
+void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera) {
     manager.query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera, &input] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
             phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
         updatePlayer(player, transform, body, audioPlayer, input, camera);
@@ -78,27 +79,26 @@ static glm::vec2 getMovementForce (phenyl::GameInput& input) {
     return forceVec;
 }
 
-static glm::vec2 getCursorDisp (phenyl::GameInput& input, phenyl::GameCamera& camera, glm::vec2 pos) {
+static glm::vec2 getCursorDisp (phenyl::GameInput& input, phenyl::Camera camera, glm::vec2 pos) {
     glm::vec2 pixelPos = input.cursorPos();
     glm::vec2 cursorPos = pixelPos / input.screenSize() * 2.0f - glm::vec2{1.0f, 1.0f};
-    cursorPos.y *= -1;
-    glm::vec2 worldCursorPos = camera.getWorldPos(cursorPos);
+    glm::vec2 worldCursorPos = camera.getWorldPos2D(cursorPos);
 
-    return worldCursorPos - pos;
+    return pos - worldCursorPos;
 }
 
 static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
-                          phenyl::GameCamera& camera) {
+                          phenyl::Camera& camera) {
     auto forceVec = getMovementForce(input);
     auto disp = getCursorDisp(input, camera, transform.transform2D.position());
     bool doShoot = input.isDown(KeyShoot);
 
     body.applyForce(forceVec * body.getMass());
     auto rot = std::atan2(disp.y, disp.x);
-    transform.transform2D.setRotation(rot);
+    transform.transform2D.setRotation(-rot);
 
     if (doShoot && !player.hasShot) {
-        glm::vec2 rotVec = glm::vec2{std::cos(rot), std::sin(rot)};
+        glm::vec2 rotVec = glm::vec2{std::cos(-rot), std::sin(-rot)};
         glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
@@ -108,7 +108,7 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
         bulletView.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel, rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
             transform.transform2D
                      .setPosition(pos)
-                     .setRotation(rot);
+                     .setRotation(-rot);
 
             body.applyImpulse(bulletVel * body.getMass());
         });
@@ -132,5 +132,5 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
         player.gainPressed = false;
     }
 
-    camera.setPos(transform.transform2D.position());
+    camera.setPos2D(transform.transform2D.position());
 }

@@ -32,7 +32,7 @@ void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlug
 }
 
 void PhenylRuntime::pluginFrameBegin () {
-    PHENYL_LOGD(LOGGER, "Running plugin frameBegin()");
+    PHENYL_TRACE(LOGGER, "Running plugin frameBegin()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running frameBegin() for {}", plugin->getName());
         plugin->frameBegin(*this);
@@ -40,7 +40,7 @@ void PhenylRuntime::pluginFrameBegin () {
 }
 
 void PhenylRuntime::pluginUpdate (double deltaTime) {
-    PHENYL_LOGD(LOGGER, "Running plugin update()");
+    PHENYL_TRACE(LOGGER, "Running plugin update()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running update() for {}", plugin->getName());
         plugin->update(*this, deltaTime);
@@ -48,7 +48,7 @@ void PhenylRuntime::pluginUpdate (double deltaTime) {
 }
 
 void PhenylRuntime::pluginRender (double deltaTime) {
-    PHENYL_LOGD(LOGGER, "Running plugin render()");
+    PHENYL_TRACE(LOGGER, "Running plugin render()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running render() for {}", plugin->getName());
         plugin->render(*this);
@@ -56,7 +56,7 @@ void PhenylRuntime::pluginRender (double deltaTime) {
 }
 
 void PhenylRuntime::pluginFixedUpdate (double deltaTime) {
-    PHENYL_LOGD(LOGGER, "Running plugin fixedUpdate()");
+    PHENYL_TRACE(LOGGER, "Running plugin fixedUpdate()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running fixedUpdate() for {}", plugin->getName());
         plugin->fixedUpdate(*this, deltaTime);
@@ -64,7 +64,7 @@ void PhenylRuntime::pluginFixedUpdate (double deltaTime) {
 }
 
 void PhenylRuntime::pluginPhysicsUpdate (double deltaTime) {
-    PHENYL_LOGD(LOGGER, "Running plugin physicsUpdate()");
+    PHENYL_TRACE(LOGGER, "Running plugin physicsUpdate()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running physicsUpdate() for {}", plugin->getName());
         plugin->physicsUpdate(*this, deltaTime);

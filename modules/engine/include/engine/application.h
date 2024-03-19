@@ -11,6 +11,7 @@
 #include "component/component_serializer.h"
 
 #include "logging/properties.h"
+#include "graphics/camera.h"
 
 namespace phenyl::engine {
     namespace detail {
@@ -77,7 +78,7 @@ namespace phenyl::engine {
         component::EntitySerializer& serializer ();
     protected:
         component::ComponentManager& componentManager ();
-        game::GameCamera& camera ();
+        graphics::Camera& camera ();
         game::GameInput& input ();
         graphics::UIManager& uiManager ();
         void setTargetFPS (double fps);
