@@ -14,6 +14,7 @@
 #include "common/input/forward.h"
 #include "common/input/remappable_proxy_input.h"
 #include "common/assets/asset_manager.h"
+#include "runtime/iresource.h"
 
 namespace phenyl::graphics {
 //#ifndef FONT_H
@@ -100,5 +101,15 @@ class Font;
         void addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources);
         void setupInputActions ();
         void updateUI ();
+    };
+
+    struct UIManagerRes : public runtime::IResource {
+        UIManagerRes (UIManager& manager) : manager{manager} {}
+
+        UIManager& manager;
+
+        [[nodiscard]] std::string_view getName() const noexcept override {
+            return "UiManagerRes";
+        }
     };
 }

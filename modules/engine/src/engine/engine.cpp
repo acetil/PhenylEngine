@@ -10,6 +10,7 @@
 #include "graphics/graphics_init.h"
 #include "graphics/graphics_headers.h"
 #include "graphics/ui/debug_ui.h"
+#include "graphics/ui/ui_manager.h"
 
 #include "physics/physics.h"
 
@@ -147,9 +148,11 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     graphics.addComponentSerializers(getEntitySerializer());
 
     runtime.addResource<common::DebugRenderConfig>();
+    runtime.addResource<graphics::UIManagerRes>(graphics.getUIManager());
 
     runtime.addPlugin<physics::PhysicsPlugin2D>();
     runtime.addPlugin<audio::AudioPlugin>();
+    runtime.addPlugin<graphics::ProfileUiPlugin>();
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
@@ -204,9 +207,8 @@ game::GameInput& engine::detail::Engine::getInput () {
 void engine::detail::Engine::addComponents () {
     runtime.manager().addComponent<common::GlobalTransform2D>();
     runtime.manager().addComponent<common::TimedLifetime>();
-   // physicsObj->addComponents(runtime.manager());
+
     graphicsHolder.tempGetGraphics()->addComponents(runtime.manager());
-    //audioSystem->addComponents(runtime.manager(),  runtime.serializer());
 }
 
 void engine::detail::Engine::dumpLevel (std::ostream& file) {
@@ -252,7 +254,6 @@ void engine::detail::Engine::gameloop (Application* app) {
 void engine::detail::Engine::update (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Update start");
     app->update(deltaTime);
-    //audioSystem->update((float)deltaTime);
     graphicsHolder.getGraphics().frameUpdate(runtime.manager());
     common::TimedLifetime::Update(runtime.manager(), deltaTime); // TODO: put somewhere else
 
@@ -273,9 +274,6 @@ void engine::detail::Engine::fixedUpdate (Application* app) {
 
 void engine::detail::Engine::render (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Render start");
-    if (doProfileRender) {
-        graphics::renderDebugUi(graphicsHolder.getGraphics().getUIManager(), (float) deltaTime);
-    }
 
     getGraphics().getUIManager().renderUI();
     runtime.pluginRender(deltaTime);
@@ -285,11 +283,9 @@ void engine::detail::Engine::render (Application* app, double deltaTime) {
 }
 
 void engine::detail::Engine::setDebugRender (bool doRender) {
-    //doDebugRender = doRender;
     runtime.resource<common::DebugRenderConfig>().doPhysicsRender = doRender;
 }
 
 void engine::detail::Engine::setProfileRender (bool doRender) {
-    doProfileRender = doRender;
     runtime.resource<common::DebugRenderConfig>().doProfileRender = doRender;
 }
