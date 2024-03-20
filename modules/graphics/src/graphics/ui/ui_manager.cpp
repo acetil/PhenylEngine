@@ -16,7 +16,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(std::move(_fontManager)) {
+UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(_fontManager) {
 
     auto f = Font(fontManager.getFace("noto-serif"), 128);
 
@@ -38,9 +38,9 @@ void UIManager::renderText (const std::string& font, const std::string& text, in
     renderText(font, text, size, x, y, {1.0f, 1.0f, 1.0f});
 }
 
-void UIManager::addRenderLayer (const detail::Graphics::SharedPtr& graphics, Renderer* renderer) {
+void UIManager::addRenderLayer (detail::Graphics& graphics, Renderer* renderer) {
     uiLayer = std::make_shared<UIRenderLayer>(std::move(fonts.at("noto-serif").getAtlasTexture()), renderer);
-    graphics->getRenderLayer()->addRenderLayer(uiLayer);
+    graphics.getRenderLayer()->addRenderLayer(uiLayer);
 }
 
 /*void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,

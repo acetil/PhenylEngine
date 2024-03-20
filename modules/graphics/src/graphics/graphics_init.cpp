@@ -93,7 +93,7 @@ FontManager initFonts () {
     return manager;
 }
 
-int phenyl::graphics::initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew) {
+std::unique_ptr<detail::Graphics> phenyl::graphics::initGraphics (GLFWwindow* window) {
     auto renderer = std::make_unique<GLRenderer>(window);
     //renderer->addShader("default", loadShaderProgram("resources/shaders/sprite_vertex.vert", "resources/shaders/sprite_fragment.frag", "default"));
     //renderer->addShader("text", loadShaderProgram("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag", "text"));
@@ -105,19 +105,6 @@ int phenyl::graphics::initGraphics (GLFWwindow* window, detail::Graphics::Shared
     //renderer->addShader("text", ShaderBuilder("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag").addUniform<glm::mat4>("camera"));
     //renderer->addShader("box", ShaderBuilder("resources/shaders/box_vertex.vert", "resources/shaders/box_fragment.frag").addUniform<glm::vec2>("screenSize"));
 
-    auto manager = initFonts();
+    return std::make_unique<detail::Graphics>(std::move(renderer), initFonts());
 
-    auto graphics = std::make_shared<detail::Graphics>(std::move(renderer), manager);
-
-    graphicsNew = graphics;
-
-
-    return GRAPHICS_INIT_SUCCESS;
-
-}
-
-void phenyl::graphics::destroyGraphics (const detail::Graphics::SharedPtr& graphics) {
-    graphics->deleteWindowCallbacks();
-    //delete graphics;
-    //glfwTerminate(); // TODO: move to renderer
 }

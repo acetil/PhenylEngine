@@ -11,6 +11,7 @@
 #include "graphics/graphics_headers.h"
 #include "graphics/ui/debug_ui.h"
 #include "graphics/ui/ui_manager.h"
+#include "graphics/ui/ui_plugin.h"
 
 #include "physics/physics.h"
 
@@ -37,7 +38,8 @@ Logger engine::detail::ENGINE_LOGGER{"ENGINE", PHENYL_LOGGER};
 class engine::detail::Engine {
 private:
     //game::PhenylGameHolder gameObjHolder;
-    graphics::PhenylGraphicsHolder graphicsHolder;
+    //graphics::PhenylGraphicsHolder graphicsHolder;
+    std::unique_ptr<graphics::detail::Graphics> graphics;
     //component::EntityComponentManager componentManager;
     //std::unique_ptr<component::EntitySerializer> entitySerializer;
     std::unique_ptr<component::PrefabManager> prefabManager;
@@ -56,7 +58,7 @@ public:
 
     //[[nodiscard]] game::detail::GameObject::SharedPtr getGameObjectTemp () const;
     //[[nodiscard]] game::PhenylGame getGameObject () const;
-    [[nodiscard]] graphics::PhenylGraphics getGraphics () const;
+    //[[nodiscard]] graphics::PhenylGraphics getGraphics () const;
     component::EntityComponentManager& getComponentManager ();
     [[nodiscard]] const component::EntityComponentManager& getComponentManager () const;
     component::EntitySerializer& getEntitySerializer ();
@@ -81,10 +83,6 @@ public:
 engine::PhenylEngine::PhenylEngine () = default;
 
 engine::PhenylEngine::~PhenylEngine () = default;
-
-graphics::PhenylGraphics engine::PhenylEngine::getGraphics () {
-    return internal->getGraphics();
-}
 
 component::EntityComponentManager& engine::PhenylEngine::getComponentManager () {
     return internal->getComponentManager();
@@ -121,7 +119,7 @@ runtime::PhenylRuntime& phenyl::engine::PhenylEngine::getRuntime () {
     return internal->getRuntime();
 }
 
-engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphicsHolder(properties.graphicsProperties),
+engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphics(graphics::MakeGraphics(properties.graphicsProperties)),
                                                                            runtime(component::EntityComponentManager{256}) {
     prefabManager = std::make_unique<component::PrefabManager>(&runtime.manager(), &runtime.serializer());
     levelManager = std::make_unique<game::LevelManager>(&runtime.manager(), &runtime.serializer());
@@ -130,7 +128,6 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     setupCallbacks();
 
     //auto gameObj = gameObjHolder.getGameObject();
-    auto graphics = graphicsHolder.getGraphics();
 
     //gameObj.setEntityComponentManager(&componentManager);
     //gameObj.setSerializer(entitySerializer.get());
@@ -139,13 +136,15 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 
     addDefaultSerialisers();
     //gameObj.addDefaultSerialisers();
-    graphics.addComponentSerializers(getEntitySerializer());
+    graphics->addComponentSerializers(getEntitySerializer());
 
     runtime.addResource<common::DebugRenderConfig>();
-    runtime.addResource<graphics::UIManager>(&graphics.getUIManager()); // TODO
-    runtime.addResource<graphics::Renderer>(graphics.getRenderer()); // TODO
-    runtime.addResource(&graphics.getCamera()); // TODO
+    runtime.addResource(graphics.get());
+    //runtime.addResource<graphics::UIManager>(&graphics->getUIManager()); // TODO
+    runtime.addResource<graphics::Renderer>(graphics->getRenderer()); // TODO
+    runtime.addResource(&graphics->getCamera()); // TODO
 
+    runtime.addPlugin<graphics::UIPlugin>();
     runtime.addPlugin<physics::PhysicsPlugin2D>();
     runtime.addPlugin<audio::AudioPlugin>();
     runtime.addPlugin<graphics::ProfileUiPlugin>();
@@ -153,13 +152,13 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 
     // TODO: move all to user
     //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
-    graphics.addEntityLayer(&runtime.manager()); // TODO: unhackify
-    graphics.getUIManager().addRenderLayer(graphics.tempGetGraphics(), graphics.getRenderer());
+    graphics->addEntityLayer(&runtime.manager()); // TODO: unhackify
+    //graphics->getUIManager().addRenderLayer(*graphics, graphics->getRenderer());
 
     //gameObjHolder.initGame(graphics, eventBus);
 
     //gameObjHolder.getGameObject().getGameInput().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
-    runtime.resource<game::GameInput>().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources()); // TODO
+    runtime.resource<game::GameInput>().addInputSources(graphics->getInputSources()); // TODO
 }
 
 engine::detail::Engine::~Engine () {
@@ -168,12 +167,8 @@ engine::detail::Engine::~Engine () {
     runtime.manager().clearAll();
 }
 
-graphics::PhenylGraphics engine::detail::Engine::getGraphics () const {
-    return graphicsHolder.getGraphics();
-}
-
 void engine::detail::Engine::setupCallbacks () {
-    graphicsHolder.tempGetGraphics()->setupWindowCallbacks();
+    graphics->setupWindowCallbacks();
 }
 
 component::EntityComponentManager& engine::detail::Engine::getComponentManager () {
@@ -201,7 +196,7 @@ void engine::detail::Engine::addComponents () {
     runtime.manager().addComponent<common::GlobalTransform2D>();
     runtime.manager().addComponent<common::TimedLifetime>();
 
-    graphicsHolder.tempGetGraphics()->addComponents(runtime.manager());
+    graphics->addComponents(runtime.manager());
 }
 
 void engine::detail::Engine::dumpLevel (std::ostream& file) {
@@ -210,16 +205,15 @@ void engine::detail::Engine::dumpLevel (std::ostream& file) {
 
 void engine::detail::Engine::gameloop (Application* app) {
     double deltaPhysicsFrame = 0.0f;
-    auto graphics = graphicsHolder.getGraphics();
     PHENYL_LOGD(ENGINE_LOGGER, "Starting loop!");
-    while (!graphics.shouldClose()) {
+    while (!graphics->shouldClose()) {
         PHENYL_TRACE(ENGINE_LOGGER, "Frame start");
         util::startProfileFrame();
 
-        graphics.updateUI();
+        //graphics->updateUI();
         runtime.pluginFrameBegin();
 
-        double deltaTime = graphics.getDeltaTime();
+        double deltaTime = graphics->getDeltaTime();
         deltaPhysicsFrame += deltaTime * app->fixedTimeScale;
 
         util::startProfile("physics");
@@ -238,8 +232,8 @@ void engine::detail::Engine::gameloop (Application* app) {
 
         util::endProfileFrame();
 
-        graphics.sync((int)app->targetFps); // TODO
-        graphics.pollEvents();
+        graphics->sync((int)app->targetFps); // TODO
+        graphics->pollEvents();
         PHENYL_TRACE(ENGINE_LOGGER, "Frame end");
     }
 }
@@ -247,7 +241,7 @@ void engine::detail::Engine::gameloop (Application* app) {
 void engine::detail::Engine::update (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Update start");
     app->update(deltaTime);
-    graphicsHolder.getGraphics().frameUpdate(runtime.manager());
+    graphics->frameUpdate(runtime.manager());
     common::TimedLifetime::Update(runtime.manager(), deltaTime); // TODO: put somewhere else
 
     runtime.pluginUpdate(deltaTime);
@@ -268,10 +262,10 @@ void engine::detail::Engine::fixedUpdate (Application* app) {
 void engine::detail::Engine::render (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Render start");
 
-    getGraphics().getUIManager().renderUI();
+    //graphics->getUIManager().renderUI();
     runtime.pluginRender(deltaTime);
 
-    getGraphics().render();
+    graphics->render();
     PHENYL_TRACE(ENGINE_LOGGER, "Render end");
 }
 

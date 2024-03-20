@@ -13,6 +13,5 @@
 #define GRAPHICS_INIT_FAILURE -1
 namespace phenyl::graphics {
     int initWindow (GLFWwindow** windowPtr, const GraphicsProperties& properties);
-    int initGraphics (GLFWwindow* window, detail::Graphics::SharedPtr& graphicsNew);
-    void destroyGraphics (const detail::Graphics::SharedPtr& graphics);
+    std::unique_ptr<detail::Graphics> initGraphics (GLFWwindow* window);
 }

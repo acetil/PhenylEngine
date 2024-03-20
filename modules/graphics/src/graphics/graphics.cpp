@@ -30,7 +30,7 @@ void detail::Graphics::setupWindowCallbacks () {
     PHENYL_LOGD(detail::GRAPHICS_LOGGER, "Set up window callbacks!");
 }
 
-detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager) : uiManager(renderer.get(), manager), particleManager{256} {
+detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager) : fontManager{std::move(fontManager)}, particleManager{256} {
     this->renderer = std::move(renderer);
     this->deltaTime = 0;
     this->lastTime = this->renderer->getCurrentTime();
@@ -45,8 +45,8 @@ detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager& man
         inputSources.emplace_back(std::make_shared<common::ProxySource>(i));
     }
 
-    uiManager.addProxyInputSources(inputSources);
-    uiManager.setupInputActions();
+    //uiManager.addProxyInputSources(inputSources);
+    //uiManager.setupInputActions();
 
     renderLayer->addRenderLayer(std::make_shared<ParticleRenderLayer>(this->renderer.get(), &particleManager));
     particleManager.selfRegister();
@@ -101,10 +101,6 @@ std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
     return renderLayer;
 }
 
-UIManager& detail::Graphics::getUIManager () {
-    return uiManager;
-}
-
 void detail::Graphics::deleteWindowCallbacks () {
     renderer->invalidateWindowCallbacks();
 }
@@ -123,11 +119,6 @@ detail::Graphics::~Graphics () {
 
 }
 
-void detail::Graphics::updateUI () {
-    uiManager.setMousePos(renderer->getMousePos());
-    uiManager.updateUI();
-}
-
 void detail::Graphics::addComponentSerializers (phenyl::component::EntitySerializer& serialiser) {
     serialiser.addSerializer<graphics::Sprite2D>();
     serialiser.addSerializer<graphics::ParticleEmitter2D>();
@@ -141,4 +132,16 @@ void detail::Graphics::addComponents (phenyl::component::ComponentManager& manag
 void detail::Graphics::frameUpdate (component::ComponentManager& manager) {
     particleManager.update((float)deltaTime);
     ParticleEmitter2D::Update((float)deltaTime, manager);
+}
+
+std::string_view detail::Graphics::getName () const noexcept {
+    return "Graphics";
+}
+
+const std::vector<std::shared_ptr<phenyl::common::ProxySource>>& detail::Graphics::getProxySources () {
+    return inputSources;
+}
+
+FontManager& detail::Graphics::getFontManager () {
+    return fontManager;
 }

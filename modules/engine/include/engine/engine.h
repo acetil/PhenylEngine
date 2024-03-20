@@ -30,8 +30,6 @@ namespace phenyl::engine {
         ~PhenylEngine();
         //game::PhenylGame getGame ();
 
-        graphics::PhenylGraphics getGraphics ();
-
         component::EntityComponentManager& getComponentManager ();
 
         component::EntitySerializer& getEntitySerializer ();

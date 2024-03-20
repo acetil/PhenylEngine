@@ -54,7 +54,7 @@ class Font;
 
     class UIManager : public runtime::IResource {
     private:
-        FontManager fontManager;
+        FontManager& fontManager; // TODO
         std::unordered_map<std::string, Font> fonts;
         std::shared_ptr<UIRenderLayer> uiLayer;
         std::vector<std::pair<glm::vec2, RenderedText>> textBuf;
@@ -82,7 +82,7 @@ class Font;
         RenderedText getRenderedText (const std::string& font, const std::string& text, int size, glm::vec3 colour);
         void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
         void renderUI ();
-        void addRenderLayer (const std::shared_ptr<detail::Graphics>& graphics, Renderer* renderer);
+        void addRenderLayer (detail::Graphics& graphics, Renderer* renderer);
         void setMousePos (glm::vec2 _mousePos);
         bool setMouseDown (bool mouseDown);
 

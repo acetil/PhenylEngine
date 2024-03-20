@@ -71,4 +71,6 @@ namespace phenyl::graphics {
             return graphics;
         }
     };
+
+    std::unique_ptr<detail::Graphics> MakeGraphics (const GraphicsProperties& properties);
 }

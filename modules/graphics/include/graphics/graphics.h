@@ -19,6 +19,7 @@
 #include "util/smart_help.h"
 #include "util/optional.h"
 #include "particles/particle_manager.h"
+#include "runtime/iresource.h"
 
 namespace phenyl::graphics {
 
@@ -47,7 +48,7 @@ namespace phenyl::graphics {
 
                                     };*/
 
-        class Graphics : public util::SmartHelper<Graphics, true> {
+        class Graphics : public util::SmartHelper<Graphics, true>, public runtime::IResource {
         private:
             std::unique_ptr<Renderer> renderer;
 
@@ -64,11 +65,14 @@ namespace phenyl::graphics {
 
             GlyphAtlas glyphAtlas;
 
-            UIManager uiManager;
+            FontManager fontManager;
             ParticleManager2D particleManager;
         public:
-            explicit Graphics (std::unique_ptr<Renderer> renderer, FontManager& manager);
+            explicit Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager);
             ~Graphics ();
+
+            std::string_view getName() const noexcept override;
+
             bool shouldClose ();
             void pollEvents ();
             void render ();
@@ -92,12 +96,12 @@ namespace phenyl::graphics {
             void setupWindowCallbacks ();
             void deleteWindowCallbacks ();
 
-            UIManager& getUIManager ();
-            void updateUI ();
+            FontManager& getFontManager ();
 
             void frameUpdate (component::ComponentManager& manager);
 
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
+            const std::vector<std::shared_ptr<common::ProxySource>>& getProxySources (); // TODO
 
             void addComponents (component::ComponentManager& manager);
             void addComponentSerializers (component::EntitySerializer& serialiser);

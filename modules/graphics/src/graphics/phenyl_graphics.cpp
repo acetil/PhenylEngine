@@ -8,16 +8,7 @@
 using namespace phenyl::graphics;
 
 PhenylGraphicsHolder::PhenylGraphicsHolder (const GraphicsProperties& properties) {
-    GLFWwindow* window = nullptr;
-    if (graphics::initWindow(&window, properties) != GRAPHICS_INIT_SUCCESS) {
-        PHENYL_ABORT("Window init failure!");
-    }
 
-    if (graphics::initGraphics(window, graphics) != GRAPHICS_INIT_SUCCESS) {
-        PHENYL_ABORT("Graphics init failure!");
-    }
-
-    PHENYL_LOGI(detail::GRAPHICS_LOGGER, "Successfully initialised graphics");
 }
 
 PhenylGraphics PhenylGraphicsHolder::getGraphics () const {
@@ -25,7 +16,7 @@ PhenylGraphics PhenylGraphicsHolder::getGraphics () const {
 }
 
 PhenylGraphicsHolder::~PhenylGraphicsHolder () {
-    graphics::destroyGraphics(graphics);
+
 }
 
 std::shared_ptr<detail::Graphics> PhenylGraphics::getGraphics () const {
@@ -81,20 +72,24 @@ void PhenylGraphics::deleteWindowCallbacks () {
     getGraphics()->deleteWindowCallbacks();
 }
 
-UIManager& PhenylGraphics::getUIManager () {
-    return getGraphics()->getUIManager();
-}
-
-void PhenylGraphics::updateUI () {
-    getGraphics()->updateUI();
-}
-
 void PhenylGraphics::addComponentSerializers (component::EntitySerializer& serialiser) {
     getGraphics()->addComponentSerializers(serialiser);
 }
 
 void PhenylGraphics::frameUpdate (phenyl::component::ComponentManager& componentManager) {
     getGraphics()->frameUpdate(componentManager);
+}
+
+std::unique_ptr<detail::Graphics> phenyl::graphics::MakeGraphics (const phenyl::graphics::GraphicsProperties& properties) {
+    GLFWwindow* window = nullptr;
+    if (graphics::initWindow(&window, properties) != GRAPHICS_INIT_SUCCESS) {
+        PHENYL_ABORT("Window init failure!");
+    }
+
+    auto graphics = graphics::initGraphics(window);
+
+    PHENYL_LOGI(detail::GRAPHICS_LOGGER, "Successfully initialised graphics");
+    return graphics;
 }
 
 
