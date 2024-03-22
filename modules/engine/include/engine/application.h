@@ -6,6 +6,7 @@
 #include "forward.h"
 #include "graphics/ui/forward.h"
 #include "graphics/graphics_properties.h"
+#include "runtime/runtime.h"
 
 #include "component/component.h"
 #include "component/component_serializer.h"
@@ -75,17 +76,14 @@ namespace phenyl::engine {
 
         friend class PhenylEngine;
         friend class detail::Engine;
-        component::EntitySerializer& serializer ();
     protected:
         component::ComponentManager& componentManager ();
-        graphics::Camera& camera ();
-        game::GameInput& input ();
-        graphics::UIManager& uiManager ();
+        runtime::PhenylRuntime& runtime ();
+        //graphics::Camera& camera ();
+        //game::GameInput& input ();
+        //graphics::UIManager& uiManager ();
         void setTargetFPS (double fps);
         void setFixedTimeScale (double newTimeScale);
-        void setDebugRender (bool doRender); // TODO: remove?
-        void setProfileRender (bool doRender); // TODO: remove?
-        void dumpLevel (std::ostream& file);
     public:
         Application (ApplicationProperties properties);
         virtual ~Application() = default;
@@ -102,13 +100,12 @@ namespace phenyl::engine {
 
         template <phenyl::common::CustomSerializable T>
         void addComponent () {
-            componentManager().template addComponent<T>();
-            serializer().template addSerializer<T>();
+            runtime().template addComponent<T>();
         };
 
         template <typename T>
         void addUnserializedComponent () {
-            componentManager().template addComponent<T>();
+            runtime().template addUnserializedComponent<T>();
         }
     };
 }

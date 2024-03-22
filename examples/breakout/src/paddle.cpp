@@ -15,14 +15,16 @@ static phenyl::InputAction RightKey;
 
 static phenyl::InputAction BallShoot;
 
-void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input, phenyl::ComponentManager& manager) {
+void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& runtime) {
     app->addComponent<Paddle>();
+
+    auto& input = runtime.resource<phenyl::GameInput>();
 
     LeftKey = input.mapInput("move_left", "key_a");
     RightKey = input.mapInput("move_right", "key_d");
     BallShoot = input.mapInput("ball_shoot", "mouse_left");
 
-    manager.handleSignal<phenyl::signals::OnCollision, const Paddle, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Paddle& paddle, phenyl::AudioPlayer& audioPlayer) {
+    runtime.manager().handleSignal<phenyl::signals::OnCollision, const Paddle, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Paddle& paddle, phenyl::AudioPlayer& audioPlayer) {
         phenyl::GlobalTransform2D emitterTransform{};
         emitterTransform.transform2D.setPosition(signal.worldContactPoint);
 
@@ -36,8 +38,11 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::GameInput& input,
     });
 }
 
-void breakout::updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera) {
-    manager.query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, Paddle>().each([&input, &camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, Paddle& paddle) {
+void breakout::updatePaddle (float deltaTime, phenyl::PhenylRuntime& runtime) {
+    auto& input = runtime.resource<phenyl::GameInput>();
+    auto& camera = runtime.resource<phenyl::Camera>();
+
+    runtime.manager().query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, Paddle>().each([&input, &camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, Paddle& paddle) {
         paddle.update(deltaTime, entity, transform, body, input, camera);
     });
 }

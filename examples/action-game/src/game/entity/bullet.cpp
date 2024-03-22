@@ -14,9 +14,6 @@ void test::addBulletSignals (TestApp* app, phenyl::ComponentManager& manager) {
     app->addComponent<Bullet>();
 
     manager.handleSignal<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D>([] (const physics::OnCollision& signal, phenyl::Entity entity, Bullet& bullet, const phenyl::GlobalTransform2D& transform) {
-        //info.manager().remove(info.id()); // TODO: queue
-        //info.manager().entity(info.id()).remove();
-
         GlobalTransform2D particleTransform{};
         particleTransform.transform2D
             .setPosition(transform.transform2D.position())

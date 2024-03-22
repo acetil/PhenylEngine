@@ -6,6 +6,7 @@
 #include <phenyl/engine.h>
 #include <phenyl/input.h>
 #include <phenyl/prefab.h>
+#include <phenyl/runtime.h>
 
 namespace test {
     class TestApp;
@@ -20,4 +21,4 @@ namespace test {
 
 void addPlayerComponents (test::TestApp* app);
 void inputSetup (phenyl::GameInput& input);
-void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera);
+void playerUpdate (phenyl::PhenylRuntime& runtime);

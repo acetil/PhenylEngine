@@ -23,8 +23,8 @@ component::Prefab* component::PrefabManager::load (std::istream& data, std::size
         return nullptr;
     }
 
-    auto builder = manager->buildPrefab();
-    serializer->deserializePrefab(builder, json.at("components"));
+    auto builder = manager.buildPrefab();
+    serializer.deserializePrefab(builder, json.at("components"));
 
     auto prefab = std::make_unique<Prefab>(builder.build());
     auto* ptr = prefab.get();

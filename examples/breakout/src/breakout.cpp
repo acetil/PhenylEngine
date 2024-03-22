@@ -4,7 +4,9 @@
 #include <phenyl/component.h>
 #include <phenyl/components/physics/2D/colliders/box_collider.h>
 #include <phenyl/components/physics/2D/collider.h>
+#include <phenyl/debug.h>
 #include <phenyl/level.h>
+#include <phenyl/ui/ui.h>
 
 #include "ball.h"
 #include "breakout.h"
@@ -32,7 +34,7 @@ BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Ap
 void BreakoutApp::init () {
     //componentManager().addComponent<Paddle>();
     //serializer().addSerializer<Paddle>();
-    breakout::initPaddle(this, input(), componentManager());
+    breakout::initPaddle(this, runtime());
     breakout::initBall(this, componentManager());
     breakout::initTile(this, componentManager());
     breakout::initWall(this, componentManager());
@@ -42,8 +44,10 @@ void BreakoutApp::init () {
     pointsLabel.text = "Points: 0";
     livesLabel.text = "Lives: " + std::to_string(lives);
 
-    uiManager().addUIComp(pointsLabel, {180, 30});
-    uiManager().addUIComp(livesLabel, {280, 30});
+    auto& uiManager = runtime().resource<phenyl::UIManager>();
+
+    uiManager.addUIComp(pointsLabel, {180, 30});
+    uiManager.addUIComp(livesLabel, {280, 30});
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
 
@@ -56,7 +60,11 @@ void BreakoutApp::init () {
                 });
         }
     }
-    this->setDebugRender(true);
+
+    auto* renderConfig = runtime().resourceMaybe<phenyl::DebugRenderConfig>();
+    if (renderConfig) {
+        renderConfig->doPhysicsRender = false;
+    }
 }
 
 void BreakoutApp::update (double deltaTime) {
@@ -64,7 +72,7 @@ void BreakoutApp::update (double deltaTime) {
 }
 
 void BreakoutApp::fixedUpdate (float deltaTime) {
-    updatePaddle(deltaTime, componentManager(), input(), camera());
+    updatePaddle(deltaTime, runtime());
     updateBall(componentManager());
 }
 
@@ -75,7 +83,7 @@ void BreakoutApp::addPoints (int points) {
     if (totalPoints == TileCols * TileRows * 10) {
         phenyl::ui::Label winLabel{"big_label"};
         winLabel.text = "You Win!";
-        uiManager().addUIComp(winLabel.detach(), {240, 250});
+        runtime().resource<phenyl::UIManager>().addUIComp(winLabel.detach(), {240, 250});
         pause();
     }
 }
@@ -85,7 +93,7 @@ void BreakoutApp::subtractLife () {
     if (!--lives) {
         phenyl::ui::Label loseLabel{"big_label"};
         loseLabel.text = "You Lose!";
-        uiManager().addUIComp(loseLabel.detach(), {240, 250});
+        runtime().resource<phenyl::UIManager>().addUIComp(loseLabel.detach(), {240, 250});
         pause();
     }
 }

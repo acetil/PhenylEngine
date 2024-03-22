@@ -30,20 +30,9 @@ namespace phenyl::engine {
         ~PhenylEngine();
         //game::PhenylGame getGame ();
 
-        component::EntityComponentManager& getComponentManager ();
-
-        component::EntitySerializer& getEntitySerializer ();
-
         //physics::PhenylPhysics getPhysics ();
 
         runtime::PhenylRuntime& getRuntime ();
-
-        void dumpLevel (std::ostream& path);
-
-        void updateEntityPosition (float deltaTime);
-        void debugRender ();
-        void setDebugRender (bool doRender);
-        void setProfileRender (bool doRender);
 
         template <std::derived_from<Application> T, typename ...Args>
         void run (Args&&... args) {

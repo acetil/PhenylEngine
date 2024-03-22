@@ -49,8 +49,11 @@ void inputSetup (phenyl::GameInput& input) {
     GainDown = input.mapInput("gain_down", "key_down");
 }
 
-void playerUpdate (phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera) {
-    manager.query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera, &input] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
+void playerUpdate (phenyl::PhenylRuntime& runtime) {
+    auto& input = runtime.resource<phenyl::GameInput>();
+    auto& camera = runtime.resource<phenyl::Camera>();
+
+    runtime.manager().query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera, &input] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
             phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
         updatePlayer(player, transform, body, audioPlayer, input, camera);
     });

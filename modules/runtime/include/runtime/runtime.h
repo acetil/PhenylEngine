@@ -6,6 +6,8 @@
 #include "component/component_serializer.h"
 
 #include "iresource.h"
+#include "init_plugin.h"
+#include "util/set.h"
 
 namespace phenyl::runtime {
     class IPlugin;
@@ -18,10 +20,12 @@ namespace phenyl::runtime {
         std::vector<std::unique_ptr<IResource>> ownedResources;
 
         util::Map<std::size_t, IResource*> resources;
+        util::Set<std::size_t> initPlugins;
         util::Map<std::size_t, std::unique_ptr<IPlugin>> plugins;
 
 
         void registerResource (std::size_t typeIndex, IResource* resource);
+        void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
 
     public:
@@ -89,6 +93,18 @@ namespace phenyl::runtime {
             registerPlugin(typeIndex, std::make_unique<T>());
         }
 
+        template <std::derived_from<IInitPlugin> T>
+        void addPlugin () requires std::is_default_constructible_v<T> {
+            auto typeIndex = meta::type_index<T>();
+            if (initPlugins.contains(typeIndex)) {
+                // Do not add plugins twice
+                return;
+            }
+
+            T plugin{};
+            registerPlugin(typeIndex, plugin);
+        }
+
         template <common::CustomSerializable T>
         void addComponent () {
             addUnserializedComponent<T>();
@@ -108,5 +124,7 @@ namespace phenyl::runtime {
 
         void pluginFixedUpdate (double deltaTime);
         void pluginPhysicsUpdate (double deltaTime);
+
+        void shutdown ();
     };
 }

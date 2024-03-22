@@ -18,5 +18,7 @@ namespace phenyl::runtime {
 
         virtual void fixedUpdate (PhenylRuntime& runtime, double deltaTime) {}
         virtual void physicsUpdate (PhenylRuntime& runtime, double deltaTime) {}
+
+        virtual void shutdown (PhenylRuntime& runtime) {}
     };
 }

@@ -8,6 +8,7 @@
 #include <phenyl/engine.h>
 #include <phenyl/input.h>
 #include <phenyl/prefab.h>
+#include <phenyl/runtime.h>
 #include <phenyl/serialization.h>
 
 namespace breakout {
@@ -38,7 +39,7 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(bounceSample, "bounce_sample");
     })
 
-    void initPaddle (BreakoutApp* app, phenyl::GameInput& input, phenyl::ComponentManager& manager);
+    void initPaddle (BreakoutApp* app, phenyl::PhenylRuntime& runtime);
 
-    void updatePaddle (float deltaTime, phenyl::ComponentManager& manager, phenyl::GameInput& input, phenyl::Camera& camera);
+    void updatePaddle (float deltaTime, phenyl::PhenylRuntime& runtime);
 }

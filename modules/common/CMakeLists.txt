@@ -16,6 +16,10 @@ add_library(common include/common include/common/input/input_source.h include/co
         src/common/components/timed_lifetime.cpp
         include/common/detail/loggers.h
         src/common/loggers.cpp
+        include/common/plugins/timed_lifetime_plugin.h
+        src/common/plugins/timed_lifetime_plugin.cpp
+        include/common/plugins/core_plugin_2d.h
+        src/common/plugins/core_plugin_2d.cpp
 )
 
 find_package(nlohmann_json REQUIRED)

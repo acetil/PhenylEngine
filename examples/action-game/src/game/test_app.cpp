@@ -1,4 +1,5 @@
 #include <phenyl/asset.h>
+#include <phenyl/debug.h>
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
 
@@ -21,7 +22,8 @@ void test::TestApp::init () {
     addBulletSignals(this, componentManager());
     addPlayerComponents(this);
 
-    inputSetup(input());
+    auto& input = runtime().resource<phenyl::GameInput>();
+    inputSetup(input);
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
 
@@ -33,16 +35,17 @@ void test::TestApp::init () {
     flexBoxC.add(buttonC2.detach());
     flexBoxC.add(label);
 
-    uiManager().addUIComp(flexBoxC.detach(), {0, 100});
-    uiManager().addUIComp(button4, {500, 300});
-    uiManager().addUIComp(button5, {500, 385});
+    auto& uiManager = runtime().resource<phenyl::UIManager>();
+    uiManager.addUIComp(flexBoxC.detach(), {0, 100});
+    uiManager.addUIComp(button4, {500, 300});
+    uiManager.addUIComp(button5, {500, 385});
 
-    stepAction = input().mapInput("debug_step", "key_f7");
-    consoleAction = input().mapInput("debug_console", "key_f12");
+    stepAction = input.mapInput("debug_step", "key_f7");
+    consoleAction = input.mapInput("debug_console", "key_f12");
 }
 
 void test::TestApp::fixedUpdate (float deltaTime) {
-    playerUpdate(componentManager(), input(), camera());
+    playerUpdate(runtime());
 
     if (isStepping) {
         pause();
@@ -79,14 +82,16 @@ void test::TestApp::update (double deltaTime) {
         }
     }
 
-    if (input().isDown(stepAction) && !stepDown) {
+    auto& input = runtime().resource<phenyl::GameInput>();
+
+    if (input.isDown(stepAction) && !stepDown) {
         stepDown = true;
         step();
-    } else if (!input().isDown(stepAction)) {
+    } else if (!input.isDown(stepAction)) {
         stepDown = false;
     }
 
-    if (input().isDown(consoleAction)) {
+    if (input.isDown(consoleAction)) {
         test::doDebugConsole(this);
     }
 }
@@ -112,21 +117,21 @@ void test::TestApp::step () {
 }
 
 void test::TestApp::changeTheme (phenyl::Asset<phenyl::ui::Theme> theme) {
-    uiManager().setCurrentTheme(std::move(theme));
+    runtime().resource<phenyl::UIManager>().setCurrentTheme(std::move(theme));
 }
 
 void test::TestApp::updateDebugRender (bool doRender) {
-    setDebugRender(doRender);
+    runtime().resource<phenyl::DebugRenderConfig>().doPhysicsRender = doRender;
 }
 
 void test::TestApp::updateProfileRender (bool doRender) {
-    setProfileRender(doRender);
+    runtime().resource<phenyl::DebugRenderConfig>().doProfileRender = doRender;
 }
 
 void test::TestApp::dumpLevel (const std::string& path) {
     std::ofstream file{path};
     if (file) {
-        phenyl::Application::dumpLevel(file);
+        runtime().resource<phenyl::LevelManager>().dump(file);
     } else {
         PHENYL_LOGE(LOGGER, "Failed to open path \"{}\"!", path);
     }

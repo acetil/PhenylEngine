@@ -8,7 +8,7 @@
 #include "common/assets/assets.h"
 
 #include "engine/level/level.h"
-#include "level_manager.h"
+#include "engine/level/level_manager.h"
 
 using namespace phenyl::game;
 
@@ -27,7 +27,7 @@ namespace {
     phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager);
 }
 
-LevelManager::LevelManager (component::ComponentManager* manager, component::EntitySerializer* serializer) : manager{manager}, serializer{serializer} {}
+LevelManager::LevelManager (component::ComponentManager& manager, component::EntitySerializer& serializer) : manager{manager}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::istream& data, std::size_t id) {
@@ -60,7 +60,7 @@ Level* LevelManager::load (std::istream& data, std::size_t id) {
         }
     }
 
-    levels[id] = std::make_unique<Level>(Level{manager, serializer, std::move(entities)});
+    levels[id] = std::make_unique<Level>(Level{&manager, &serializer, std::move(entities)});
 
     return levels[id].get();
 }
@@ -82,7 +82,7 @@ void LevelManager::selfRegister () {
 void LevelManager::dump (std::ostream& file) const {
     PHENYL_LOGI(LOGGER, "Dumping level");
     auto entities = nlohmann::json::array_t{};
-    for (auto i : manager->root()) {
+    for (auto i : manager.root()) {
         entities.emplace_back(dumpEntity(i));
     }
 
@@ -95,7 +95,7 @@ nlohmann::json LevelManager::dumpEntity (component::Entity entity) const {
     PHENYL_LOGD(LOGGER, "Dumping entity id={}", entity.id().value());
 
     nlohmann::json json;
-    json["components"] = serializer->serializeEntity(entity);
+    json["components"] = serializer.serializeEntity(entity);
 
     nlohmann::json::array_t children;
     for (auto i : entity.children()) {
@@ -113,6 +113,10 @@ Level* LevelManager::load (Level&& obj, std::size_t id) {
     PHENYL_LOGD(LOGGER, "Loading already created level");
     levels[id] = std::make_unique<Level>(std::move(obj));
     return levels[id].get();
+}
+
+std::string_view LevelManager::getName () const noexcept {
+    return "LevelManager";
 }
 
 Level::Level (component::ComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : manager{manager}, serializer{serializer}, entities{std::move(entities)} {}

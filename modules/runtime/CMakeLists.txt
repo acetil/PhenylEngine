@@ -1,7 +1,8 @@
 add_library(runtime
         include/runtime/runtime.h
         include/runtime/iresource.h
-        src/runtime.cpp)
+        src/runtime.cpp
+        include/runtime/init_plugin.h)
 
 set_property(TARGET runtime PROPERTY CXX_STANDARD 20)
 
