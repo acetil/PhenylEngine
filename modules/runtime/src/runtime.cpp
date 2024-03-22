@@ -31,6 +31,14 @@ void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlug
     pluginRef.init(*this);
 }
 
+void PhenylRuntime::pluginPostInit () {
+    PHENYL_TRACE(LOGGER, "Running plugin postInit()");
+    for (auto [_, plugin] : plugins.kv()) {
+        PHENYL_TRACE(LOGGER, "Running postInit() for {}", plugin->getName());
+        plugin->postInit(*this);
+    }
+}
+
 void PhenylRuntime::pluginFrameBegin () {
     PHENYL_TRACE(LOGGER, "Running plugin frameBegin()");
     for (auto [_, plugin] : plugins.kv()) {

@@ -66,7 +66,6 @@ namespace phenyl::graphics {
             GlyphAtlas glyphAtlas;
 
             FontManager fontManager;
-            ParticleManager2D particleManager;
         public:
             explicit Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager);
             ~Graphics ();
@@ -98,13 +97,8 @@ namespace phenyl::graphics {
 
             FontManager& getFontManager ();
 
-            void frameUpdate (component::ComponentManager& manager);
-
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
             const std::vector<std::shared_ptr<common::ProxySource>>& getProxySources (); // TODO
-
-            void addComponents (component::ComponentManager& manager);
-            void addComponentSerializers (component::EntitySerializer& serialiser);
         };
     }
 }

@@ -30,7 +30,7 @@ void detail::Graphics::setupWindowCallbacks () {
     PHENYL_LOGD(detail::GRAPHICS_LOGGER, "Set up window callbacks!");
 }
 
-detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager) : fontManager{std::move(fontManager)}, particleManager{256} {
+detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager) : fontManager{std::move(fontManager)} {
     this->renderer = std::move(renderer);
     this->deltaTime = 0;
     this->lastTime = this->renderer->getCurrentTime();
@@ -48,8 +48,8 @@ detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager font
     //uiManager.addProxyInputSources(inputSources);
     //uiManager.setupInputActions();
 
-    renderLayer->addRenderLayer(std::make_shared<ParticleRenderLayer>(this->renderer.get(), &particleManager));
-    particleManager.selfRegister();
+    //renderLayer->addRenderLayer(std::make_shared<ParticleRenderLayer>(this->renderer.get(), &particleManager));
+    //particleManager.selfRegister();
 }
 
 double detail::Graphics::getDeltaTime() const {
@@ -117,21 +117,6 @@ std::vector<std::shared_ptr<phenyl::common::InputSource>> detail::Graphics::getI
 
 detail::Graphics::~Graphics () {
 
-}
-
-void detail::Graphics::addComponentSerializers (phenyl::component::EntitySerializer& serialiser) {
-    serialiser.addSerializer<graphics::Sprite2D>();
-    serialiser.addSerializer<graphics::ParticleEmitter2D>();
-}
-
-void detail::Graphics::addComponents (phenyl::component::ComponentManager& manager) {
-    manager.addComponent<graphics::Sprite2D>();
-    manager.addComponent<graphics::ParticleEmitter2D>();
-}
-
-void detail::Graphics::frameUpdate (component::ComponentManager& manager) {
-    particleManager.update((float)deltaTime);
-    ParticleEmitter2D::Update((float)deltaTime, manager);
 }
 
 std::string_view detail::Graphics::getName () const noexcept {

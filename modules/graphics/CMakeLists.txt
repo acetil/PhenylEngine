@@ -19,7 +19,11 @@ add_library(graphics src/graphics/graphics.cpp src/graphics/font/font.cpp src/gr
         include/graphics/detail/loggers.h
         src/graphics/detail/loggers.cpp
         include/graphics/ui/ui_plugin.h
-        src/graphics/ui/ui_plugin.cpp)
+        src/graphics/ui/ui_plugin.cpp
+        include/graphics/graphics_plugin.h
+        src/graphics/graphics_plugin.cpp
+        include/graphics/particles/particle_plugin.h
+        src/graphics/particles/particle_plugin.cpp)
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
 

@@ -41,18 +41,30 @@ namespace phenyl::runtime {
 
         template <std::derived_from<IResource> T>
         T& resource () {
-            auto typeIndex = meta::type_index<T>();
-            PHENYL_ASSERT_MSG(resources.contains(typeIndex), "Attempted to get resource that does not exist!");
+            auto* resPtr = resourceMaybe<T>();
+            PHENYL_ASSERT_MSG(resPtr, "Attempted to get resource that does not exist!");
 
-            return (T&)*resources[typeIndex];
+            return *resPtr;
         }
 
         template <std::derived_from<IResource> T>
         const T& resource () const {
-            auto typeIndex = meta::type_index<T>();
-            PHENYL_ASSERT_MSG(resources.contains(typeIndex), "Attempted to get resource that does not exist!");
+            const auto* resPtr = resourceMaybe<T>();
+            PHENYL_ASSERT_MSG(resPtr, "Attempted to get resource that does not exist!");
 
-            return (const T&)*resources[typeIndex];
+            return *resPtr;
+        }
+
+        template <std::derived_from<IResource> T>
+        T* resourceMaybe () {
+            auto typeIndex = meta::type_index<T>();
+            return resources.contains(typeIndex) ? static_cast<T*>(resources[typeIndex]) : nullptr;
+        }
+
+        template <std::derived_from<IResource> T>
+        const T* resourceMaybe () const {
+            auto typeIndex = meta::type_index<T>();
+            return resources.contains(typeIndex) ? static_cast<const T*>(resources[typeIndex]) : nullptr;
         }
 
         template <std::derived_from<IResource> T, typename ...Args>
@@ -87,6 +99,8 @@ namespace phenyl::runtime {
         void addUnserializedComponent () {
             manager().addComponent<T>();
         }
+
+        void pluginPostInit ();
 
         void pluginFrameBegin ();
         void pluginUpdate (double deltaTime);

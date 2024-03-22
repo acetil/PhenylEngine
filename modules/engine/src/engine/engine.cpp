@@ -9,6 +9,7 @@
 
 #include "graphics/graphics_init.h"
 #include "graphics/graphics_headers.h"
+#include "graphics/graphics.h"
 #include "graphics/ui/debug_ui.h"
 #include "graphics/ui/ui_manager.h"
 #include "graphics/ui/ui_plugin.h"
@@ -28,6 +29,8 @@
 #include "runtime/runtime.h"
 #include "common/debug.h"
 #include "audio/audio_plugin.h"
+#include "graphics/graphics_plugin.h"
+#include "graphics/particles/particle_plugin.h"
 
 #define FIXED_FPS 60.0
 
@@ -136,29 +139,19 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
 
     addDefaultSerialisers();
     //gameObj.addDefaultSerialisers();
-    graphics->addComponentSerializers(getEntitySerializer());
 
     runtime.addResource<common::DebugRenderConfig>();
     runtime.addResource(graphics.get());
-    //runtime.addResource<graphics::UIManager>(&graphics->getUIManager()); // TODO
-    runtime.addResource<graphics::Renderer>(graphics->getRenderer()); // TODO
-    runtime.addResource(&graphics->getCamera()); // TODO
 
+    runtime.addPlugin<graphics::GraphicsPlugin>();
+    runtime.addPlugin<graphics::Particle2DPlugin>();
     runtime.addPlugin<graphics::UIPlugin>();
     runtime.addPlugin<physics::PhysicsPlugin2D>();
     runtime.addPlugin<audio::AudioPlugin>();
     runtime.addPlugin<graphics::ProfileUiPlugin>();
     runtime.addPlugin<game::GameInputPlugin>();
 
-    // TODO: move all to user
-    //graphics.getTextureAtlas("sprite").ifPresent([&gameObj](auto& atlas){gameObj.setTextureIds(atlas);});
-    graphics->addEntityLayer(&runtime.manager()); // TODO: unhackify
-    //graphics->getUIManager().addRenderLayer(*graphics, graphics->getRenderer());
-
-    //gameObjHolder.initGame(graphics, eventBus);
-
-    //gameObjHolder.getGameObject().getGameInput().addInputSources(graphicsHolder.tempGetGraphics()->getInputSources());
-    runtime.resource<game::GameInput>().addInputSources(graphics->getInputSources()); // TODO
+    runtime.pluginPostInit();
 }
 
 engine::detail::Engine::~Engine () {
@@ -168,7 +161,7 @@ engine::detail::Engine::~Engine () {
 }
 
 void engine::detail::Engine::setupCallbacks () {
-    graphics->setupWindowCallbacks();
+    //graphics->setupWindowCallbacks();
 }
 
 component::EntityComponentManager& engine::detail::Engine::getComponentManager () {
@@ -195,8 +188,6 @@ runtime::PhenylRuntime& engine::detail::Engine::getRuntime () {
 void engine::detail::Engine::addComponents () {
     runtime.manager().addComponent<common::GlobalTransform2D>();
     runtime.manager().addComponent<common::TimedLifetime>();
-
-    graphics->addComponents(runtime.manager());
 }
 
 void engine::detail::Engine::dumpLevel (std::ostream& file) {
@@ -241,7 +232,6 @@ void engine::detail::Engine::gameloop (Application* app) {
 void engine::detail::Engine::update (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Update start");
     app->update(deltaTime);
-    graphics->frameUpdate(runtime.manager());
     common::TimedLifetime::Update(runtime.manager(), deltaTime); // TODO: put somewhere else
 
     runtime.pluginUpdate(deltaTime);
@@ -251,21 +241,19 @@ void engine::detail::Engine::update (Application* app, double deltaTime) {
 void engine::detail::Engine::fixedUpdate (Application* app) {
     PHENYL_TRACE(ENGINE_LOGGER, "Fixed update start");
     app->fixedUpdate(1.0 / FIXED_FPS);
-    //getCamera().updateCamera(getGraphics().getCamera());
 
     runtime.pluginFixedUpdate(1.0 / FIXED_FPS);
-
     runtime.pluginPhysicsUpdate(1.0 / FIXED_FPS);
+
     PHENYL_TRACE(ENGINE_LOGGER, "Fixed update end");
 }
 
 void engine::detail::Engine::render (Application* app, double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Render start");
 
-    //graphics->getUIManager().renderUI();
     runtime.pluginRender(deltaTime);
 
-    graphics->render();
+    graphics->render(); // TODO: remove dependency on graphics once refactored
     PHENYL_TRACE(ENGINE_LOGGER, "Render end");
 }
 
