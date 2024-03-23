@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "graphics/maths_headers.h"
+#include "graphics/textures/sprite_atlas.h"
 #include "common/assets/asset.h"
 #include "common/serializer_intrusive.h"
 

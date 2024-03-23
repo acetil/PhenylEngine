@@ -6,9 +6,9 @@
 namespace phenyl::engine {
     class AppPlugin : public runtime::IPlugin {
     private:
-        Application* app;
+        ApplicationBase* app;
     public:
-        explicit AppPlugin (Application* app);
+        explicit AppPlugin (ApplicationBase* app);
 
         [[nodiscard]] std::string_view getName() const noexcept override;
         void init (runtime::PhenylRuntime &runtime) override;

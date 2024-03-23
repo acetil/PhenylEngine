@@ -4,7 +4,7 @@
 using namespace phenyl::engine;
 
 PrefabPlugin::PrefabPlugin () = default;
-PrefabPlugin::~PrefabPlugin () noexcept = default;
+PrefabPlugin::~PrefabPlugin () = default;
 
 std::string_view PrefabPlugin::getName () const noexcept {
     return "PrefabPlugin";

@@ -7,12 +7,12 @@
 namespace phenyl::physics {
     class Physics2D;
 
-    class PhysicsPlugin2D : public runtime::IPlugin {
+    class Physics2DPlugin : public runtime::IPlugin {
     private:
         std::unique_ptr<Physics2D> physics;
     public:
-        PhysicsPlugin2D ();
-        ~PhysicsPlugin2D() override;
+        Physics2DPlugin ();
+        ~Physics2DPlugin() override;
 
         [[nodiscard]] std::string_view getName() const noexcept override;
 

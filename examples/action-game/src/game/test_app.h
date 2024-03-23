@@ -7,7 +7,7 @@
 #include <phenyl/ui/ui.h>
 
 namespace test {
-    class TestApp : public phenyl::Application {
+    class TestApp : public phenyl::Application2D {
     private:
         std::vector<phenyl::ui::Label> extraLabels;
         phenyl::ui::Label label{"label"};

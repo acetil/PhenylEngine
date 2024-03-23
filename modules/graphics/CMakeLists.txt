@@ -18,12 +18,15 @@ add_library(graphics src/graphics/graphics.cpp src/graphics/font/font.cpp src/gr
         include/graphics/graphics_properties.h
         include/graphics/detail/loggers.h
         src/graphics/detail/loggers.cpp
-        include/graphics/ui/ui_plugin.h
-        src/graphics/ui/ui_plugin.cpp
-        include/graphics/graphics_plugin.h
-        src/graphics/graphics_plugin.cpp
-        include/graphics/particles/particle_plugin.h
-        src/graphics/particles/particle_plugin.cpp)
+        include/graphics/plugins/ui_plugin.h
+        src/graphics/plugins/ui_plugin.cpp
+        include/graphics/plugins/graphics_plugin.h
+        src/graphics/plugins/graphics_plugin.cpp
+        include/graphics/plugins/particle_plugin.h
+        src/graphics/plugins/particle_plugin.cpp
+        include/graphics/plugins/sprite_2d_plugin.h
+        src/graphics/plugins/sprite_2d_plugin.cpp
+        include/graphics/plugins/graphics_2d_plugin.h)
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
 

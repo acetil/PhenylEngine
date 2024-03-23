@@ -5,34 +5,18 @@
 
 using namespace phenyl;
 
-engine::Application::Application (phenyl::engine::ApplicationProperties properties) : properties{properties} {}
+engine::ApplicationBase::ApplicationBase (phenyl::engine::ApplicationProperties properties) : properties{properties} {}
 
-runtime::PhenylRuntime& engine::Application::runtime () {
+runtime::PhenylRuntime& engine::ApplicationBase::runtime () {
     PHENYL_DASSERT(engineRuntime);
     return *engineRuntime;
 }
 
-component::ComponentManager& engine::Application::componentManager () {
-    PHENYL_DASSERT(engine);
+component::ComponentManager& engine::ApplicationBase::componentManager () {
     return runtime().manager();
 }
 
-/*graphics::Camera& engine::Application::camera () {
-    PHENYL_DASSERT(engine);
-    return engine->getRuntime().resource<graphics::Camera>(); // TODO
-}
-
-game::GameInput& engine::Application::input () {
-    PHENYL_DASSERT(engine);
-    return engine->getRuntime().resource<game::GameInput>(); // TODO
-}
-
-graphics::UIManager& engine::Application::uiManager () {
-    PHENYL_DASSERT(engine);
-    return engine->getRuntime().resource<graphics::UIManager>(); // TODO
-}*/
-
-void engine::Application::setTargetFPS (double fps) {
+void engine::ApplicationBase::setTargetFPS (double fps) {
     if (fps <= 0) {
         targetFrameTime = 0;
     } else {
@@ -40,14 +24,14 @@ void engine::Application::setTargetFPS (double fps) {
     }
 }
 
-void engine::Application::setFixedTimeScale (double newTimeScale) {
+void engine::ApplicationBase::setFixedTimeScale (double newTimeScale) {
     fixedTimeScale = newTimeScale;
 }
 
-void engine::Application::pause () {
+void engine::ApplicationBase::pause () {
     setFixedTimeScale(0.0);
 }
 
-void engine::Application::resume () {
+void engine::ApplicationBase::resume () {
     setFixedTimeScale(1.0);
 }

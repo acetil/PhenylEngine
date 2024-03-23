@@ -6,6 +6,7 @@
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
 #include "common/debug.h"
+#include "graphics/plugins/ui_plugin.h"
 
 using namespace phenyl;
 
@@ -13,7 +14,10 @@ std::string_view graphics::ProfileUiPlugin::getName () const noexcept {
     return "ProfileUiPlugin";
 }
 
-void graphics::ProfileUiPlugin::init (runtime::PhenylRuntime& runtime) {}
+void graphics::ProfileUiPlugin::init (runtime::PhenylRuntime& runtime) {
+    runtime.addPlugin<graphics::UIPlugin>();
+    runtime.addResource<common::DebugRenderConfig>();
+}
 
 void graphics::ProfileUiPlugin::update (runtime::PhenylRuntime& runtime, double deltaTime) {
     deltaTimeQueue.pushPop((float)deltaTime);

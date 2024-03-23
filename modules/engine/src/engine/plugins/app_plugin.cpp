@@ -2,7 +2,7 @@
 
 using namespace phenyl::engine;
 
-AppPlugin::AppPlugin (Application* app) : app{app} {}
+AppPlugin::AppPlugin (ApplicationBase* app) : app{app} {}
 
 std::string_view AppPlugin::getName () const noexcept {
     return "AppPlugin";
@@ -11,7 +11,7 @@ std::string_view AppPlugin::getName () const noexcept {
 void AppPlugin::init (runtime::PhenylRuntime& runtime) {
     app->engineRuntime = &runtime;
 
-    app->init();
+    app->_init();
 }
 
 void AppPlugin::update (runtime::PhenylRuntime& runtime, double deltaTime) {

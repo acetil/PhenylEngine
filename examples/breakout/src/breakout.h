@@ -6,7 +6,7 @@
 #include <phenyl/prefab.h>
 
 namespace breakout {
-    class BreakoutApp : public phenyl::Application {
+    class BreakoutApp : public phenyl::Application2D {
     private:
         int totalPoints = 0;
         int lives;

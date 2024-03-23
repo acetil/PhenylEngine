@@ -1,5 +1,5 @@
 #include "graphics/graphics.h"
-#include "graphics/graphics_plugin.h"
+#include "graphics/plugins/graphics_plugin.h"
 
 #include "graphics/components/2d/sprite_serialization.h"
 
@@ -15,8 +15,5 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addResource<graphics::Renderer>(graphics->getRenderer());
     runtime.addResource(&graphics->getCamera());
 
-    runtime.addComponent<Sprite2D>();
-
-    graphics->addEntityLayer(&runtime.manager()); // TODO: unhackify
     graphics->setupWindowCallbacks();
 }

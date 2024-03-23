@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui_manager.h"
+#include "graphics/ui/ui_manager.h"
 #include "runtime/plugin.h"
 
 namespace phenyl::graphics {

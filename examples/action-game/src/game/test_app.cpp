@@ -11,7 +11,7 @@
 static phenyl::Logger LOGGER{"TEST_APP"};
 
 test::TestApp::TestApp () :
-    phenyl::Application(phenyl::ApplicationProperties{}
+    phenyl::Application2D(phenyl::ApplicationProperties{}
         .withResolution(800, 600)
         .withLogFile("debug.log")
         .withRootLogLevel(LEVEL_DEBUG)

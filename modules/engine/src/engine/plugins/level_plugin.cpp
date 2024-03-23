@@ -1,5 +1,6 @@
 #include "engine/level/level_manager.h"
 #include "engine/plugins/level_plugin.h"
+#include "engine/plugins/prefab_plugin.h"
 
 using namespace phenyl::engine;
 
@@ -12,6 +13,8 @@ std::string_view LevelPlugin::getName () const noexcept {
 }
 
 void LevelPlugin::init (runtime::PhenylRuntime& runtime) {
+    runtime.addPlugin<PrefabPlugin>();
+
     runtime.addResource<game::LevelManager>(runtime.manager(), runtime.serializer());
     runtime.resource<game::LevelManager>().selfRegister();
 }
