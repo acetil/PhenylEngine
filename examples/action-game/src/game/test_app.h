@@ -30,7 +30,7 @@ namespace test {
 
         void init () override;
         void update (double deltaTime) override;
-        void fixedUpdate (float deltaTime) override;
+        void fixedUpdate (double deltaTime) override;
 
         void queueResume ();
         void startStepping ();

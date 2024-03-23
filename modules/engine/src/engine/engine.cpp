@@ -35,6 +35,7 @@
 #include "common/plugins/core_plugin_2d.h"
 #include "engine/plugins/level_plugin.h"
 #include "engine/plugins/prefab_plugin.h"
+#include "engine/plugins/app_plugin.h"
 
 #define FIXED_FPS 60.0
 
@@ -63,11 +64,11 @@ public:
 
     runtime::PhenylRuntime& getRuntime ();
 
-
+    void init (Application* app);
     void gameloop (Application* app);
-    void update (Application* app, double deltaTime);
-    void fixedUpdate (Application* app);
-    void render (Application* app, double deltaTime);
+    void update (double deltaTime);
+    void fixedUpdate ();
+    void render (double deltaTime);
 };
 
 
@@ -80,7 +81,7 @@ void engine::PhenylEngine::exec (Application* app) {
     InitLogging(app->properties.loggingProperties);
 
     internal = std::make_unique<engine::detail::Engine>(app->properties);
-    app->init();
+    internal->init(app);
     internal->gameloop(app);
     app->shutdown();
     internal = nullptr;
@@ -92,7 +93,18 @@ runtime::PhenylRuntime& phenyl::engine::PhenylEngine::getRuntime () {
 
 engine::detail::Engine::Engine (const ApplicationProperties& properties) : graphics(graphics::MakeGraphics(properties.graphicsProperties)),
                                                                            runtime(component::EntityComponentManager{256}) {
+}
 
+engine::detail::Engine::~Engine () {
+    PHENYL_LOGI(ENGINE_LOGGER, "Shutting down!");
+    runtime.shutdown();
+}
+
+runtime::PhenylRuntime& engine::detail::Engine::getRuntime () {
+    return runtime;
+}
+
+void engine::detail::Engine::init (phenyl::engine::Application* app) {
     runtime.addResource<common::DebugRenderConfig>();
     runtime.addResource(graphics.get());
 
@@ -108,16 +120,9 @@ engine::detail::Engine::Engine (const ApplicationProperties& properties) : graph
     runtime.addPlugin<game::GameInputPlugin>();
     runtime.addPlugin<common::TimedLifetimePlugin>();
 
+    runtime.registerPlugin(std::make_unique<AppPlugin>(app));
+
     runtime.pluginPostInit();
-}
-
-engine::detail::Engine::~Engine () {
-    PHENYL_LOGI(ENGINE_LOGGER, "Shutting down!");
-    runtime.shutdown();
-}
-
-runtime::PhenylRuntime& engine::detail::Engine::getRuntime () {
-    return runtime;
 }
 
 void engine::detail::Engine::gameloop (Application* app) {
@@ -135,15 +140,15 @@ void engine::detail::Engine::gameloop (Application* app) {
         util::startProfile("physics");
         while (deltaPhysicsFrame >= 1.0 / FIXED_FPS) {
             PHENYL_TRACE(ENGINE_LOGGER, "Physics frame start");
-            fixedUpdate(app);
+            fixedUpdate();
             deltaPhysicsFrame -= 1.0 / FIXED_FPS;
             PHENYL_TRACE(ENGINE_LOGGER, "Physics frame end");
         }
         util::endProfile();
 
         util::startProfile("graphics");
-        update(app, deltaTime);
-        render(app, deltaTime);
+        update(deltaTime);
+        render(deltaTime);
         util::endProfile();
 
         util::endProfileFrame();
@@ -154,25 +159,21 @@ void engine::detail::Engine::gameloop (Application* app) {
     }
 }
 
-void engine::detail::Engine::update (Application* app, double deltaTime) {
+void engine::detail::Engine::update (double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Update start");
-    app->update(deltaTime);
-
     runtime.pluginUpdate(deltaTime);
     PHENYL_TRACE(ENGINE_LOGGER, "Update end");
 }
 
-void engine::detail::Engine::fixedUpdate (Application* app) {
+void engine::detail::Engine::fixedUpdate () {
     PHENYL_TRACE(ENGINE_LOGGER, "Fixed update start");
-    app->fixedUpdate(1.0 / FIXED_FPS);
-
     runtime.pluginFixedUpdate(1.0 / FIXED_FPS);
     runtime.pluginPhysicsUpdate(1.0 / FIXED_FPS);
 
     PHENYL_TRACE(ENGINE_LOGGER, "Fixed update end");
 }
 
-void engine::detail::Engine::render (Application* app, double deltaTime) {
+void engine::detail::Engine::render (double deltaTime) {
     PHENYL_TRACE(ENGINE_LOGGER, "Render start");
 
     runtime.pluginRender(deltaTime);

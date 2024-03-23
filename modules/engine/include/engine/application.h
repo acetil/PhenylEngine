@@ -13,6 +13,7 @@
 
 #include "logging/properties.h"
 #include "graphics/camera.h"
+#include "runtime/runtime.h"
 
 namespace phenyl::engine {
     namespace detail {
@@ -70,12 +71,14 @@ namespace phenyl::engine {
     private:
         ApplicationProperties properties;
         PhenylEngine* engine = nullptr;
+        runtime::PhenylRuntime* engineRuntime = nullptr;
         double targetFrameTime{1.0 / 60};
         double targetFps{60};
         double fixedTimeScale{1.0};
 
         friend class PhenylEngine;
         friend class detail::Engine;
+        friend class AppPlugin;
     protected:
         component::ComponentManager& componentManager ();
         runtime::PhenylRuntime& runtime ();
@@ -90,7 +93,7 @@ namespace phenyl::engine {
 
         virtual void init () = 0;
         virtual void update (double deltaTime) = 0;
-        virtual void fixedUpdate (float deltaTime) = 0;
+        virtual void fixedUpdate (double deltaTime) = 0;
         virtual void shutdown () {
 
         }

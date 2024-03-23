@@ -71,8 +71,8 @@ void BreakoutApp::update (double deltaTime) {
 
 }
 
-void BreakoutApp::fixedUpdate (float deltaTime) {
-    updatePaddle(deltaTime, runtime());
+void BreakoutApp::fixedUpdate (double deltaTime) {
+    updatePaddle((float)deltaTime, runtime());
     updateBall(componentManager());
 }
 

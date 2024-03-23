@@ -18,7 +18,7 @@ namespace breakout {
 
         void update (double deltaTime) override;
 
-        void fixedUpdate (float deltaTime) override;
+        void fixedUpdate (double deltaTime) override;
 
     public:
         BreakoutApp (phenyl::ApplicationProperties properties);

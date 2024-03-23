@@ -9,7 +9,9 @@ add_library(engine include src src/engine/game_camera.cpp include/engine/engine.
         include/engine/plugins/level_plugin.h
         src/engine/plugins/level_plugin.cpp
         include/engine/plugins/prefab_plugin.h
-        src/engine/plugins/prefab_plugin.cpp)
+        src/engine/plugins/prefab_plugin.cpp
+        src/engine/plugins/app_plugin.h
+        src/engine/plugins/app_plugin.cpp)
 
 find_package(nlohmann_json REQUIRED)
 

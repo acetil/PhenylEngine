@@ -7,6 +7,7 @@
 #include "input.h"
 #include "level.h"
 #include "prefab.h"
+#include "runtime.h"
 #include "serialization.h"
 #include "transform_2d.h"
 

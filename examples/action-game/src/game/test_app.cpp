@@ -44,7 +44,7 @@ void test::TestApp::init () {
     consoleAction = input.mapInput("debug_console", "key_f12");
 }
 
-void test::TestApp::fixedUpdate (float deltaTime) {
+void test::TestApp::fixedUpdate (double deltaTime) {
     playerUpdate(runtime());
 
     if (isStepping) {

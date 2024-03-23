@@ -27,7 +27,6 @@ namespace phenyl::runtime {
         void registerResource (std::size_t typeIndex, IResource* resource);
         void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
-
     public:
         explicit PhenylRuntime (component::ComponentManager&& compManager);
         virtual ~PhenylRuntime();
@@ -103,6 +102,11 @@ namespace phenyl::runtime {
 
             T plugin{};
             registerPlugin(typeIndex, plugin);
+        }
+
+        template <std::derived_from<IPlugin> T>
+        void registerPlugin (std::unique_ptr<T> plugin) {
+            registerPlugin(meta::type_index<T>(), std::move(plugin));
         }
 
         template <common::CustomSerializable T>

@@ -8,8 +8,8 @@ using namespace phenyl;
 engine::Application::Application (phenyl::engine::ApplicationProperties properties) : properties{properties} {}
 
 runtime::PhenylRuntime& engine::Application::runtime () {
-    PHENYL_DASSERT(engine);
-    return engine->getRuntime();
+    PHENYL_DASSERT(engineRuntime);
+    return *engineRuntime;
 }
 
 component::ComponentManager& engine::Application::componentManager () {
