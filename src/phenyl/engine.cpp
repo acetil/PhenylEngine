@@ -3,14 +3,14 @@
 
 #include "component/component.h"
 
-#include "engine/engine.h"
+#include "phenyl/engine.h"
 #include "graphics/graphics.h"
 
 #include "logging/logging.h"
 #include "util/profiler.h"
 
 #include "runtime/runtime.h"
-#include "engine/plugins/app_plugin.h"
+#include "plugins/app_plugin.h"
 
 #define FIXED_FPS 60.0
 
@@ -18,7 +18,7 @@ using namespace phenyl;
 
 static Logger LOGGER{"ENGINE", PHENYL_LOGGER};
 
-class engine::detail::Engine {
+class engine::Engine {
 private:
     std::unique_ptr<graphics::detail::Graphics> graphics; // TODO: move to plugin
     runtime::PhenylRuntime runtime;
@@ -99,14 +99,14 @@ public:
 };
 
 
-engine::PhenylEngine::PhenylEngine () = default;
+PhenylEngine::PhenylEngine () = default;
 
-engine::PhenylEngine::~PhenylEngine () = default;
+PhenylEngine::~PhenylEngine () = default;
 
-void engine::PhenylEngine::exec (ApplicationBase* app) {
+void PhenylEngine::exec (engine::ApplicationBase* app) {
     InitLogging(app->getProperties().loggingProperties);
 
-    internal = std::make_unique<engine::detail::Engine>(app->getProperties());
+    internal = std::make_unique<engine::Engine>(app->getProperties());
     internal->init(app);
     internal->gameloop(app);
     internal = nullptr;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/application.h"
+#include "phenyl/application.h"
 #include "runtime/plugin.h"
 
 namespace phenyl::engine {

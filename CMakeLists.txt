@@ -25,15 +25,17 @@ add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
 
-add_library(phenyl INTERFACE include/phenyl/phenyl.h
-        include/phenyl/application.h
-        include/phenyl/engine.h
-        include/phenyl/input.h
-        include/phenyl/component.h
-        include/phenyl/components/2D/particle_emitter.h
-        include/phenyl/audio.h
-        include/phenyl/components/audio_player.h
-        include/phenyl/debug.h
-        include/phenyl/runtime.h)
-target_include_directories(phenyl INTERFACE include)
-target_link_libraries(phenyl INTERFACE audio common component engine graphics logger maths physics runtime util)
+add_library(phenyl
+        src/phenyl/application.cpp
+        src/phenyl/plugins/app_plugin.cpp
+        src/phenyl/plugins/default_2d_plugin.cpp
+        src/phenyl/plugins/level_plugin.cpp
+        src/phenyl/plugins/prefab_plugin.cpp
+        src/phenyl/engine.cpp
+        include/phenyl/properties.h)
+target_include_directories(phenyl PUBLIC include)
+target_include_directories(phenyl PRIVATE src)
+
+set_property(TARGET phenyl PROPERTY CXX_STANDARD 20)
+
+target_link_libraries(phenyl PUBLIC audio common component engine graphics logger maths physics runtime util)
