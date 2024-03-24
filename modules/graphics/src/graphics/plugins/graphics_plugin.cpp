@@ -14,6 +14,4 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
 
     runtime.addResource<graphics::Renderer>(graphics->getRenderer());
     runtime.addResource(&graphics->getCamera());
-
-    graphics->setupWindowCallbacks();
 }

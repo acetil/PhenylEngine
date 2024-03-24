@@ -83,19 +83,3 @@ void graphics::destroyGraphics (Graphics* graphics) {
     delete graphics;
     glfwTerminate();
 }*/
-
-std::unique_ptr<detail::Graphics> phenyl::graphics::initGraphics (GLFWwindow* window) {
-    auto renderer = std::make_unique<GLRenderer>(window);
-    //renderer->addShader("default", loadShaderProgram("resources/shaders/sprite_vertex.vert", "resources/shaders/sprite_fragment.frag", "default"));
-    //renderer->addShader("text", loadShaderProgram("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag", "text"));
-    //renderer->getProgram("text").value()->registerUniform("camera");
-
-    //renderer->getProgram("default").value()->registerUniform("camera"); // TODO: update
-
-    //renderer->addShader("default", ShaderBuilder("resources/shaders/sprite_vertex.vert", "resources/shaders/sprite_fragment.frag").addUniform<glm::mat4>("camera"));
-    //renderer->addShader("text", ShaderBuilder("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag").addUniform<glm::mat4>("camera"));
-    //renderer->addShader("box", ShaderBuilder("resources/shaders/box_vertex.vert", "resources/shaders/box_fragment.frag").addUniform<glm::vec2>("screenSize"));
-
-    return std::make_unique<detail::Graphics>(std::move(renderer));
-
-}

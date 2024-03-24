@@ -8,6 +8,7 @@
 #include "graphics/graphics_headers.h"
 
 #include "glshader.h"
+#include "graphics/glfw/glfw_viewport.h"
 
 
 namespace phenyl::graphics {
@@ -26,14 +27,10 @@ namespace phenyl::graphics {
 
     class GLRenderer : public Renderer {
     private:
-        GLFWwindow* window;
+        std::unique_ptr<GLFWViewport> viewport;
         std::shared_ptr<GLFrameBuffer> windowBuf;
         util::Map<std::string, Shader> shaderProgramsNew;
 
-        std::shared_ptr<GLFWInput> keyInput;
-        std::shared_ptr<GLFWInput> mouseInput;
-
-        std::unique_ptr<GLWindowCallbackCtx> windowCallbackCtx;
         GLShaderManager shaderManager;
 
         glm::vec2 screenSize;
@@ -48,7 +45,9 @@ namespace phenyl::graphics {
         std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
 
     public:
-        explicit GLRenderer (GLFWwindow* window);
+        explicit GLRenderer (std::unique_ptr<GLFWViewport> viewport);
+
+        static std::unique_ptr<GLRenderer> Make (const GraphicsProperties& properties);
 
         ~GLRenderer() override;
 
@@ -56,9 +55,9 @@ namespace phenyl::graphics {
 
         double getCurrentTime () override;
 
-        bool shouldClose () override;
+        //bool shouldClose () override;
 
-        void pollEvents () override;
+        //void pollEvents () override;
 
         void clearWindow () override;
 
@@ -72,9 +71,6 @@ namespace phenyl::graphics {
 
         //void addShader(const std::string &shaderName, const ShaderBuilder& shaderBuilder) override;
 
-        GLFWwindow* getWindow () {
-            return window; // TODO: remove
-        }
         void setupErrorHandling ();
 
         GraphicsTexture loadTexture (int width, int height, unsigned char* data) override;
@@ -85,24 +81,18 @@ namespace phenyl::graphics {
 
         void destroyTexture(unsigned int textureId) override;
 
-        void setupCallbacks () override;
-
-        bool mouseDown() const override;
-        [[nodiscard]] glm::vec2 getScreenSize() const override;
-        [[nodiscard]] glm::vec2 getMousePos() const override;
+        //[[nodiscard]] glm::vec2 getScreenSize() const override;
+        //[[nodiscard]] glm::vec2 getMousePos() const override;
         void setScreenSize (glm::vec2 screenSize);
 
-        void invalidateWindowCallbacks () override;
 
         PipelineStage buildPipelineStage (PipelineStageBuilder& builder) override;
         void loadDefaultShaders() override;
 
-        std::shared_ptr<common::InputSource> getMouseInput() override;
+        //std::vector<std::shared_ptr<common::InputSource>> getInputSources () override;
+        //std::vector<std::shared_ptr<common::ProxySource>> getProxySources() override;
 
-        std::vector<std::shared_ptr<common::InputSource>> getInputSources () override;
-
-        void onKeyChange (int key, int scancode, int action, int mods);
-        void onMouseButtonChange (int button, int action, int mods);
-        void onMousePosChange (glm::vec2 newPos);
+        Viewport& getViewport() override;
+        const Viewport& getViewport() const override;
     };
 }

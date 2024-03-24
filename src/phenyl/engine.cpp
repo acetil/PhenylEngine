@@ -21,9 +21,10 @@ static Logger LOGGER{"ENGINE", PHENYL_LOGGER};
 class engine::Engine {
 private:
     std::unique_ptr<graphics::detail::Graphics> graphics; // TODO: move to plugin
+    graphics::Renderer* renderer;
     runtime::PhenylRuntime runtime;
 public:
-    Engine (const ApplicationProperties& properties) : graphics(graphics::MakeGraphics(properties.graphicsProperties)), runtime(component::EntityComponentManager{256}) {}
+    Engine (const ApplicationProperties& properties) : graphics(graphics::MakeGraphics(properties.graphicsProperties)), runtime(component::EntityComponentManager{256}), renderer{graphics->getRenderer()} {}
     ~Engine() {
         PHENYL_LOGI(LOGGER, "Shutting down!");
         runtime.shutdown();
@@ -44,7 +45,7 @@ public:
     void gameloop (ApplicationBase* app) {
         double deltaPhysicsFrame = 0.0f;
         PHENYL_LOGD(LOGGER, "Starting loop!");
-        while (!graphics->shouldClose()) {
+        while (!renderer->getViewport().shouldClose()) {
             PHENYL_TRACE(LOGGER, "Frame start");
             util::startProfileFrame();
 
@@ -70,7 +71,7 @@ public:
             util::endProfileFrame();
 
             graphics->sync((int)app->getTargetFps()); // TODO
-            graphics->pollEvents();
+            renderer->getViewport().poll();
             PHENYL_TRACE(LOGGER, "Frame end");
         }
     }

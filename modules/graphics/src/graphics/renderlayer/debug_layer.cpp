@@ -147,7 +147,7 @@ namespace phenyl::graphics {
     };
 }
 
-DebugLayer::DebugLayer (Renderer* renderer) : pipeline{}, screenSize{renderer->getScreenSize()} {
+DebugLayer::DebugLayer (Renderer* renderer) : pipeline{}, screenSize{renderer->getViewport().getResolution()} {
     pipeline = std::make_unique<graphics::DebugPipeline>();
     pipeline->init(renderer);
 }

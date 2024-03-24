@@ -25,10 +25,6 @@ void detail::Graphics::addEntityLayer (component::EntityComponentManager* compMa
     renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer.get(), compManager));
 }
 
-void detail::Graphics::setupWindowCallbacks () {
-    renderer->setupCallbacks();
-    PHENYL_LOGD(detail::GRAPHICS_LOGGER, "Set up window callbacks!");
-}
 
 detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer){
     this->renderer = std::move(renderer);
@@ -38,30 +34,10 @@ detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer){
     this->renderer->loadDefaultShaders();
     this->renderLayer = std::make_shared<GraphicsRenderLayer>(this->renderer.get());
     renderLayer->addRenderLayer(makeDebugLayer(this->renderer.get()));
-
-    auto rendererSources = this->renderer->getInputSources();
-
-    for (auto& i : rendererSources) {
-        inputSources.emplace_back(std::make_shared<common::ProxySource>(i));
-    }
-
-    //uiManager.addProxyInputSources(inputSources);
-    //uiManager.setupInputActions();
-
-    //renderLayer->addRenderLayer(std::make_shared<ParticleRenderLayer>(this->renderer.get(), &particleManager));
-    //particleManager.selfRegister();
 }
 
 double detail::Graphics::getDeltaTime() const {
     return deltaTime;
-}
-
-bool detail::Graphics::shouldClose() {
-    return renderer->shouldClose();
-}
-
-void detail::Graphics::pollEvents() {
-    renderer->pollEvents();
 }
 
 void detail::Graphics::render () {
@@ -101,18 +77,9 @@ std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
     return renderLayer;
 }
 
-void detail::Graphics::deleteWindowCallbacks () {
-    renderer->invalidateWindowCallbacks();
-}
 
 std::vector<std::shared_ptr<phenyl::common::InputSource>> detail::Graphics::getInputSources () {
-    
-    std::vector<std::shared_ptr<phenyl::common::InputSource>> proxies;
-    for (auto& i : inputSources) {
-        proxies.emplace_back(i->getProxy());
-    }
-
-    return proxies;
+    return renderer->getViewport().getInputSources();
 }
 
 detail::Graphics::~Graphics () {
@@ -123,6 +90,6 @@ std::string_view detail::Graphics::getName () const noexcept {
     return "Graphics";
 }
 
-const std::vector<std::shared_ptr<phenyl::common::ProxySource>>& detail::Graphics::getProxySources () {
-    return inputSources;
+std::vector<std::shared_ptr<phenyl::common::ProxySource>> detail::Graphics::getProxySources () {
+    return renderer->getViewport().getProxySources();
 }

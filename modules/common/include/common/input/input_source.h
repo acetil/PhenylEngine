@@ -7,6 +7,8 @@
 namespace phenyl::common {
     class InputSource : util::SmartHelper<InputSource, true> {
     public:
+        virtual ~InputSource() = default;
+
         virtual long getInputNum (const std::string& inputStr) = 0; // -1 on failure
         virtual bool isDown (long inputNum) = 0;
         bool isDown (const std::string& inputStr) {

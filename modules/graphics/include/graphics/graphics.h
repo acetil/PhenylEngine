@@ -59,19 +59,13 @@ namespace phenyl::graphics {
 
             //std::unordered_map<std::string, TextureAtlas> atlases;
 
-            std::vector<std::shared_ptr<common::ProxySource>> inputSources;
-
             Camera camera;
-
-            GlyphAtlas glyphAtlas;
         public:
             explicit Graphics (std::unique_ptr<Renderer> renderer);
             ~Graphics ();
 
             std::string_view getName() const noexcept override;
 
-            bool shouldClose ();
-            void pollEvents ();
             void render ();
             //void addShader (std::string name, ShaderProgram* program);
             void sync (int fps);
@@ -90,11 +84,9 @@ namespace phenyl::graphics {
                 glyphAtlas = std::move(atlas);
                 renderLayer->addTex(glyphAtlas.getTex());
             }*/
-            void setupWindowCallbacks ();
-            void deleteWindowCallbacks ();
 
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
-            const std::vector<std::shared_ptr<common::ProxySource>>& getProxySources (); // TODO
+            std::vector<std::shared_ptr<common::ProxySource>> getProxySources (); // TODO
         };
     }
 }

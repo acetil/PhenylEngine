@@ -5,7 +5,6 @@
 #include "graphics/opengl/input/glfw_key_input.h"
 #include "graphics/opengl/input/glfw_mouse_input.h"
 
-#include "glcallbacks.h"
 #include "util/profiler.h"
 #include "common/assets/assets.h"
 
@@ -25,38 +24,17 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
-GLRenderer::GLRenderer (GLFWwindow* window) : shaderManager{this} {
-    // TODO: move graphics init code here
-    this->window = window;
+GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, shaderManager{this} {
     windowBuf = std::make_shared<GLFrameBuffer>();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
 
-    //keyInput = std::make_shared<GLFWKeyInput>(window);
-    keyInput = std::make_shared<GLFWKeyInput2>();
-    //mouseInput = std::make_shared<GLFWMouseInput>(window);
-    mouseInput = std::make_shared<GLFWMouseInput2>();
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
-
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    screenSize = {width, height};
     shaderManager.selfRegister();
 }
 
 double GLRenderer::getCurrentTime () {
-    return glfwGetTime();
-}
-
-bool GLRenderer::shouldClose () {
-    return glfwWindowShouldClose(window);
-}
-
-void GLRenderer::pollEvents () {
-    glfwPollEvents();
-    //keyInput->update();
-    //mouseInput->update();
+    return viewport->getTime();
 }
 
 void GLRenderer::clearWindow () {
@@ -75,7 +53,7 @@ FrameBuffer* GLRenderer::getWindowBuffer () {
 }*/
 
 void GLRenderer::finishRender () {
-    glfwSwapBuffers(window);
+    viewport->swapBuffers();
 }
 
 void GLRenderer::setupErrorHandling () {
@@ -201,15 +179,8 @@ GraphicsTexture GLRenderer::loadTextureGrey (int width, int height, unsigned cha
     return GraphicsTexture(this, id);
 }
 
-void GLRenderer::invalidateWindowCallbacks () {
-    glfwSetWindowUserPointer(window, nullptr);
-    removeGLWindowCallbacks(window);
-    windowCallbackCtx = nullptr;
-}
-
 GLRenderer::~GLRenderer () {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+
 }
 
 /*void GLRenderer::addShader (const std::string& shaderName, const ShaderBuilder& shaderBuilder) {
@@ -233,46 +204,6 @@ std::shared_ptr<RendererBufferHandle> GLRenderer::makeBufferHandle () {
     return std::make_shared<GlBuffer>();
 }
 
-std::shared_ptr<phenyl::common::InputSource> GLRenderer::getMouseInput () {
-    return mouseInput;
-}
-
-std::vector<std::shared_ptr<phenyl::common::InputSource>> GLRenderer::getInputSources () {
-    return {mouseInput, keyInput};
-}
-
-void GLRenderer::setupCallbacks () {
-    windowCallbackCtx = std::make_unique<GLWindowCallbackCtx>(this);
-    setupGLWindowCallbacks(window, windowCallbackCtx.get());
-}
-
-glm::vec2 GLRenderer::getScreenSize () const {
-    return screenSize;
-}
-
-void GLRenderer::setScreenSize (glm::vec2 _screenSize) {
-    screenSize = _screenSize;
-}
-
-void GLRenderer::onKeyChange (int key, int scancode, int action, int mods) {
-    keyInput->onButtonChange(scancode, action, mods);
-}
-
-void GLRenderer::onMouseButtonChange (int button, int action, int mods) {
-    mouseInput->onButtonChange(button, action, mods);
-}
-
-bool GLRenderer::mouseDown () const {
-    return mouseInput->getStateNum(GLFW_MOUSE_BUTTON_LEFT);
-}
-
-void GLRenderer::onMousePosChange (glm::vec2 newPos) {
-    mousePos = newPos;
-}
-
-glm::vec2 GLRenderer::getMousePos () const {
-    return mousePos;
-}
 
 void GLRenderer::loadDefaultShaders () {
     PHENYL_LOGD(LOGGER, "Loading virtual box shader!");
@@ -315,6 +246,21 @@ void GLRenderer::loadDefaultShaders () {
 
 std::string_view GLRenderer::getName () const noexcept {
     return "GLRenderer";
+}
+
+Viewport& GLRenderer::getViewport () {
+    return *viewport;
+}
+
+const Viewport& GLRenderer::getViewport () const {
+    return *viewport;
+}
+
+std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properties) {
+    auto viewport = std::make_unique<GLFWViewport>(properties);
+    PHENYL_ASSERT_MSG(viewport, "Failed to initialise GLFW viewport!");
+
+    return std::make_unique<GLRenderer>(std::move(viewport));
 }
 
 

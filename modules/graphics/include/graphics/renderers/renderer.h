@@ -10,6 +10,8 @@
 #include "runtime/iresource.h"
 
 #include "util/optional.h"
+#include "common/input/proxy_source.h"
+#include "graphics/viewport.h"
 
 namespace phenyl::graphics {
 //#ifndef WINDOW_CALLBACKS_H
@@ -29,15 +31,9 @@ namespace phenyl::graphics {
 
         virtual double getCurrentTime () = 0;
 
-        virtual bool shouldClose () = 0;
-
-        virtual void pollEvents () = 0;
-
         virtual void clearWindow () = 0;
 
         virtual FrameBuffer* getWindowBuffer () = 0;
-        //virtual std::optional<ShaderProgram*> getProgram (std::string program) = 0;
-        //virtual util::Optional<Shader> getProgramNew (const std::string& program) = 0;
 
         virtual void finishRender () = 0;
 
@@ -48,23 +44,12 @@ namespace phenyl::graphics {
         virtual void bindTexture (unsigned int textureId) = 0;
         virtual void destroyTexture (unsigned int textureId) = 0;
 
-        virtual void setupCallbacks () = 0;
-
-        virtual bool mouseDown () const = 0; // TODO
-        [[nodiscard]] virtual glm::vec2 getMousePos () const = 0;
-        [[nodiscard]] virtual glm::vec2 getScreenSize () const = 0;
-
-        virtual void invalidateWindowCallbacks () = 0;
-
-        //virtual void addShader (const std::string& shaderName, const ShaderBuilder& shaderBuilder) = 0;
-
         virtual PipelineStage buildPipelineStage (PipelineStageBuilder& stageBuilder) = 0;
-
-        virtual std::shared_ptr<common::InputSource> getMouseInput () = 0;
 
         virtual void loadDefaultShaders () = 0;
 
-        virtual std::vector<std::shared_ptr<common::InputSource>> getInputSources () = 0;
+        virtual Viewport& getViewport () = 0;
+        virtual const Viewport& getViewport () const = 0;
 
         template <typename T>
         Buffer<T> makeBuffer (unsigned int bufferCapacity, std::size_t elementSize=1) {

@@ -33,11 +33,11 @@ void GameInput::addInputSources (const std::vector<std::shared_ptr<common::Input
 }
 
 glm::vec2 GameInput::cursorPos () const {
-    return renderer->getMousePos();
+    return renderer->getViewport().getCursorPos();
 }
 
 glm::vec2 GameInput::screenSize () const {
-    return renderer->getScreenSize();
+    return renderer->getViewport().getResolution();
 }
 
 void GameInput::setRenderer (graphics::Renderer* renderer) {

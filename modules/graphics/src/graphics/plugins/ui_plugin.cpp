@@ -25,7 +25,7 @@ void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
 }
 
 void UIPlugin::frameBegin (runtime::PhenylRuntime& runtime) {
-    manager->setMousePos(runtime.resource<Renderer>().getMousePos());
+    manager->setMousePos(runtime.resource<Renderer>().getViewport().getCursorPos());
     manager->updateUI();
 }
 
