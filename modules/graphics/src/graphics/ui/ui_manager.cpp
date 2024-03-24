@@ -16,15 +16,12 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManager(_fontManager) {
+UIManager::UIManager (Renderer* renderer) : fontManager{} {
+    fontManager.selfRegister();
 
-    auto f = Font(fontManager.getFace("noto-serif"), 128);
+    defaultFont = common::Assets::Load<Font>("/usr/share/fonts/noto/NotoSerif-Regular");
 
-    fonts.insert(std::make_pair("noto-serif", std::move(f)));
-
-    //fonts["noto-serif"] = std::move(Font(fontManager.getFace("noto-serif"), 128)));
-
-    fonts.at("noto-serif").loadAtlas(renderer);
+    defaultFont->loadAtlas(renderer); // TODO
     uiLayer = nullptr;
     offsetStack.emplace_back(0,0);
 
@@ -34,32 +31,19 @@ UIManager::UIManager (Renderer* renderer, FontManager& _fontManager) : fontManag
     setCurrentTheme(defaultTheme);
 }
 
-void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y) {
-    renderText(font, text, size, x, y, {1.0f, 1.0f, 1.0f});
+void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y) {
+    renderText(std::move(font), text, size, x, y, {1.0f, 1.0f, 1.0f});
 }
 
 void UIManager::addRenderLayer (detail::Graphics& graphics, Renderer* renderer) {
-    uiLayer = std::make_shared<UIRenderLayer>(std::move(fonts.at("noto-serif").getAtlasTexture()), renderer);
+    uiLayer = std::make_shared<UIRenderLayer>(std::move(defaultFont->getAtlasTexture()), renderer);
     graphics.getRenderLayer()->addRenderLayer(uiLayer);
 }
 
-/*void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
+void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y,
                             glm::vec3 colour) {
-    if (!fonts.contains(font)) {
-        logging::log(LEVEL_ERROR, "Font {} does not exist!", font);
-    } else {
-        uiLayer->bufferStr(fonts.at(font), text, size, x, y, colour);
-    }
-}*/
-
-void UIManager::renderText (const std::string& font, const std::string& text, int size, int x, int y,
-                            glm::vec3 colour) {
-    if (!fonts.contains(font)) {
-        PHENYL_LOGE(LOGGER, "Font {} does not exist!", font);
-    } else {
-        auto offVec = offsetStack.back() + glm::vec2{x, y};
-        textBuf.emplace_back(offVec, fonts.at(font).renderText(text, size, 0, 0, colour));
-    }
+    auto offVec = offsetStack.back() + glm::vec2{x, y};
+    textBuf.emplace_back(offVec, font->renderText(text, size, 0, 0, colour));
 }
 
 void UIManager::renderUI () {
@@ -119,21 +103,12 @@ void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, g
     uiRoot->addChildNode(uiNode, pos);
 }
 
-RenderedText UIManager::getRenderedText (const std::string& font, const std::string& text, int size, glm::vec3 colour) {
-    if (!fonts.contains(font)) {
-        PHENYL_LOGE(LOGGER, "Font {} does not exist!", font);
-        return RenderedText{0};
-    } else {
-        return fonts.at(font).renderText(text, size, 0, 0, colour);
-    }
-}
-
-void UIManager::renderText (RenderedText& text, int x, int y) {
+void UIManager::renderText (RenderedText text, int x, int y) {
     auto offVec = offsetStack.back() + glm::vec2{x, y};
     //text.setOffset(offVec, screenSize);
 
     //uiLayer->bufferText(text);
-    textBuf2.emplace_back(offVec, text);
+    textBuf.emplace_back(offVec, std::move(text));
 }
 
 /*void UIManager::addTheme (const std::string& themePath) {

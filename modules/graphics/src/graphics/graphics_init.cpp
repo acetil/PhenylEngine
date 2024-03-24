@@ -84,15 +84,6 @@ void graphics::destroyGraphics (Graphics* graphics) {
     glfwTerminate();
 }*/
 
-FontManager initFonts () {
-    FontManager manager;
-    manager.addFace("noto-serif", "/usr/share/fonts/noto/NotoSerif-Regular.ttf");
-    manager.getFace("noto-serif").setFontSize(72);
-    manager.getFace("noto-serif").setGlyphs({AsciiGlyphRange});
-
-    return manager;
-}
-
 std::unique_ptr<detail::Graphics> phenyl::graphics::initGraphics (GLFWwindow* window) {
     auto renderer = std::make_unique<GLRenderer>(window);
     //renderer->addShader("default", loadShaderProgram("resources/shaders/sprite_vertex.vert", "resources/shaders/sprite_fragment.frag", "default"));
@@ -105,6 +96,6 @@ std::unique_ptr<detail::Graphics> phenyl::graphics::initGraphics (GLFWwindow* wi
     //renderer->addShader("text", ShaderBuilder("resources/shaders/text_vertex.vert", "resources/shaders/text_fragment.frag").addUniform<glm::mat4>("camera"));
     //renderer->addShader("box", ShaderBuilder("resources/shaders/box_vertex.vert", "resources/shaders/box_fragment.frag").addUniform<glm::vec2>("screenSize"));
 
-    return std::make_unique<detail::Graphics>(std::move(renderer), initFonts());
+    return std::make_unique<detail::Graphics>(std::move(renderer));
 
 }

@@ -16,7 +16,7 @@ namespace phenyl::graphics {
         int screenX = 800;
         int screenY = 600;
     public:
-        Font (FontFace& _face, int targetRes) : atlas(face.getGlyphs(), targetRes), face(std::move(_face)) {
+        Font (FontFace _face, int targetRes) : atlas(face.getGlyphs(), targetRes), face(std::move(_face)) {
             face.updateResolution(72, 72);
         };
         RenderedText renderText (const std::string& text, int size, int x, int y, glm::vec3 colour);

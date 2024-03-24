@@ -30,7 +30,7 @@ void detail::Graphics::setupWindowCallbacks () {
     PHENYL_LOGD(detail::GRAPHICS_LOGGER, "Set up window callbacks!");
 }
 
-detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager) : fontManager{std::move(fontManager)} {
+detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer){
     this->renderer = std::move(renderer);
     this->deltaTime = 0;
     this->lastTime = this->renderer->getCurrentTime();
@@ -125,8 +125,4 @@ std::string_view detail::Graphics::getName () const noexcept {
 
 const std::vector<std::shared_ptr<phenyl::common::ProxySource>>& detail::Graphics::getProxySources () {
     return inputSources;
-}
-
-FontManager& detail::Graphics::getFontManager () {
-    return fontManager;
 }

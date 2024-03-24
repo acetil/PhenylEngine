@@ -5,6 +5,7 @@
 
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
+#include "common/assets/assets.h"
 #include "common/debug.h"
 #include "graphics/plugins/ui_plugin.h"
 
@@ -17,6 +18,8 @@ std::string_view graphics::ProfileUiPlugin::getName () const noexcept {
 void graphics::ProfileUiPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<graphics::UIPlugin>();
     runtime.addResource<common::DebugRenderConfig>();
+
+    font = common::Assets::Load<Font>("/usr/share/fonts/noto/NotoSerif-Regular");
 }
 
 void graphics::ProfileUiPlugin::update (runtime::PhenylRuntime& runtime, double deltaTime) {
@@ -33,12 +36,12 @@ void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
 
     auto& uiManager = runtime.resource<UIManager>();
 
-    uiManager.renderText("noto-serif", "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
+    uiManager.renderText(font, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
                          15);
-    uiManager.renderText("noto-serif", "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
+    uiManager.renderText(font, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
                          30);
-    uiManager.renderText("noto-serif", "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms", 14, 5,
+    uiManager.renderText(font, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms", 14, 5,
                          45);
-    uiManager.renderText("noto-serif", std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps",
+    uiManager.renderText(font, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps",
                          14, 700, 15, {0.0f, 1.0f, 0.0f});
 }

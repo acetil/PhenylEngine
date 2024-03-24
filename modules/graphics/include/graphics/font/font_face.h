@@ -20,6 +20,7 @@ namespace phenyl::graphics {
     constexpr std::pair<int, int> AsciiGlyphRange = {32, 255};
     class FontFace {
     private:
+        std::vector<unsigned char> faceData{};
         hb_face_t* fontFace = nullptr;
         FT_Face ftFace = nullptr;
         int size = 11;
@@ -29,8 +30,13 @@ namespace phenyl::graphics {
     public:
         FontFace () = default;
         FontFace (const FT_Library& library, const std::string& path, int faceNum);
-        FontFace(FontFace& face) = delete;
+        FontFace (const FT_Library& library, std::vector<unsigned char> faceData);
+        FontFace(const FontFace& face) = delete;
         FontFace(FontFace&& face) noexcept;
+
+        FontFace& operator= (const FontFace&) = delete;
+        FontFace& operator= (FontFace&& other);
+
         ~FontFace();
         int getNumGlyphs ();
         std::vector<int> getFixedFontSizes ();

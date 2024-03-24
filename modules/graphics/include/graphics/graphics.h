@@ -64,10 +64,8 @@ namespace phenyl::graphics {
             Camera camera;
 
             GlyphAtlas glyphAtlas;
-
-            FontManager fontManager;
         public:
-            explicit Graphics (std::unique_ptr<Renderer> renderer, FontManager fontManager);
+            explicit Graphics (std::unique_ptr<Renderer> renderer);
             ~Graphics ();
 
             std::string_view getName() const noexcept override;
@@ -94,8 +92,6 @@ namespace phenyl::graphics {
             }*/
             void setupWindowCallbacks ();
             void deleteWindowCallbacks ();
-
-            FontManager& getFontManager ();
 
             std::vector<std::shared_ptr<common::InputSource>> getInputSources ();
             const std::vector<std::shared_ptr<common::ProxySource>>& getProxySources (); // TODO

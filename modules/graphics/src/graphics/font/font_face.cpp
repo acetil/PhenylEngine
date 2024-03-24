@@ -22,6 +22,20 @@ FontFace::FontFace (const FT_Library& library, const std::string& path, int face
     fontFace = hb_ft_face_create(ftFace, nullptr);
 }
 
+FontFace::FontFace (const FT_Library& library, std::vector<unsigned char> faceData) : faceData{std::move(faceData)} {
+    auto* data = (const FT_Byte*)this->faceData.data();
+    long size = (long)this->faceData.size();
+
+    auto error = FT_New_Memory_Face(library, data, size, 0, &ftFace);
+    PHENYL_ASSERT_MSG(!error, "Failed to init FT font face with error code {}: {}", error, FT_Error_String(error));
+
+    error = FT_Set_Char_Size(ftFace, 0, size * 64, 0, 0); // TODO
+    if (error) {
+        PHENYL_LOGE(LOGGER, "Error code {} encountered when setting char size: {}", error, FT_Error_String(error));
+    }
+    fontFace = hb_ft_face_create(ftFace, nullptr);
+}
+
 FontFace::~FontFace () {
     if (fontFace) {
         hb_face_destroy(fontFace);
@@ -32,9 +46,29 @@ FontFace::~FontFace () {
 }
 
 FontFace::FontFace (FontFace&& face) noexcept : fontFace(std::exchange(face.fontFace, nullptr)),
-                                                ftFace(std::exchange(face.ftFace,nullptr)), glyphRanges(std::move(face.glyphRanges)), size(face.size) {
+                                                ftFace(std::exchange(face.ftFace,nullptr)), glyphRanges(std::move(face.glyphRanges)), size(face.size), faceData{std::move(face.faceData)} {
 
 }
+
+FontFace& FontFace::operator= (FontFace&& other) {
+    if (fontFace) {
+        hb_face_destroy(fontFace);
+    }
+
+    if (ftFace) {
+        FT_Done_Face(ftFace);
+        faceData.clear();
+    }
+
+    fontFace = std::exchange(other.fontFace, nullptr);
+    ftFace = std::exchange(other.ftFace, nullptr);
+    glyphRanges = std::move(other.glyphRanges);
+    size = other.size;
+    faceData = std::move(other.faceData);
+
+    return *this;
+}
+
 
 int FontFace::getNumGlyphs () {
     if (ftFace == nullptr) {

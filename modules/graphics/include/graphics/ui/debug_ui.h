@@ -12,6 +12,8 @@ namespace phenyl::graphics {
         util::SmoothQueue<double, 30> physicsQueue;
         util::SmoothQueue<double, 30> frameQueue;
         util::SmoothQueue<float, 30> deltaTimeQueue;
+
+        common::Asset<Font> font;
     public:
         std::string_view getName() const noexcept override;
 

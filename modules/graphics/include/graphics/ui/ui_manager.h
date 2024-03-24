@@ -54,7 +54,8 @@ class Font;
 
     class UIManager : public runtime::IResource {
     private:
-        FontManager& fontManager; // TODO
+        FontManager fontManager; // TODO
+        common::Asset<Font> defaultFont;
         std::unordered_map<std::string, Font> fonts;
         std::shared_ptr<UIRenderLayer> uiLayer;
         std::vector<std::pair<glm::vec2, RenderedText>> textBuf;
@@ -73,13 +74,12 @@ class Font;
         common::RemappableProxyInput uiInput;
         common::InputAction selectAction;
     public:
-        UIManager(Renderer* renderer, FontManager& _fontManager);
+        UIManager(Renderer* renderer);
         ~UIManager();
-        void renderText(const std::string& font, const std::string& text, int size, int x, int y);
+        void renderText(common::Asset<Font> font, const std::string& text, int size, int x, int y);
         //void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        void renderText (const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        void renderText (RenderedText& text, int x, int y);
-        RenderedText getRenderedText (const std::string& font, const std::string& text, int size, glm::vec3 colour);
+        void renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y, glm::vec3 colour);
+        void renderText (RenderedText text, int x, int y);
         void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
         void renderUI ();
         void addRenderLayer (detail::Graphics& graphics, Renderer* renderer);

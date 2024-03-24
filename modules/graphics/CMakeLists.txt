@@ -26,7 +26,8 @@ add_library(graphics src/graphics/graphics.cpp src/graphics/font/font.cpp src/gr
         src/graphics/plugins/particle_plugin.cpp
         include/graphics/plugins/sprite_2d_plugin.h
         src/graphics/plugins/sprite_2d_plugin.cpp
-        include/graphics/plugins/graphics_2d_plugin.h)
+        include/graphics/plugins/graphics_2d_plugin.h
+)
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
 

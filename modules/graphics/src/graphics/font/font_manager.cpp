@@ -1,3 +1,6 @@
+#include <iostream>
+
+#include "common/assets/assets.h"
 #include "logging/logging.h"
 #include "util/exceptions.h"
 #include "graphics/detail/loggers.h"
@@ -16,6 +19,8 @@ FontManager::FontManager () {
 }
 
 FontManager::~FontManager () {
+    common::Assets::RemoveManager(this);
+
     fontFaces.clear();
     if (freetypeLib) {
         FT_Done_FreeType(freetypeLib);
@@ -37,4 +42,39 @@ FontManager::FontManager (FontManager&& manager) noexcept : freetypeLib(std::exc
 
 FontFace& FontManager::getFace (const std::string& face) {
     return fontFaces[face];
+}
+
+const char* FontManager::getFileType () const {
+    return ".ttf";
+}
+
+Font* FontManager::load (std::istream& file, std::size_t id) {
+    std::vector<unsigned char> data{std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{}};
+
+    FontFace face{freetypeLib, std::move(data)};
+    face.setFontSize(72);
+    face.setGlyphs({AsciiGlyphRange});
+    auto font = std::make_unique<Font>(std::move(face), 128); // TODO
+
+    auto* ptr = font.get();
+    fonts[id] = std::move(font);
+
+    return ptr;
+}
+
+Font* FontManager::load (Font&& obj, std::size_t id) {
+    auto font = std::make_unique<Font>(std::move(obj));
+
+    auto* ptr = font.get();
+    fonts[id] = std::move(font);
+
+    return ptr;
+}
+
+void FontManager::queueUnload (std::size_t id) {
+    fonts.erase(id);
+}
+
+void FontManager::selfRegister () {
+    common::Assets::AddManager(this);
 }

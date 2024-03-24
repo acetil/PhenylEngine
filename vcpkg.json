@@ -7,7 +7,12 @@
     "glfw3",
     "nlohmann-json",
     "glm",
-    "freetype",
+    {
+      "name" : "freetype",
+      "features": [
+        "error-strings"
+      ]
+    },
     "harfbuzz",
     "openal-soft",
     "cpptrace"

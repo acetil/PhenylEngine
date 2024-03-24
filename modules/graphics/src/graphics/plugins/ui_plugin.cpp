@@ -14,7 +14,7 @@ void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     auto& graphics = runtime.resource<detail::Graphics>();
     auto& renderer = runtime.resource<Renderer>();
 
-    manager = std::make_unique<UIManager>(&renderer, graphics.getFontManager());
+    manager = std::make_unique<UIManager>(&renderer);
 
     manager->addProxyInputSources(graphics.getProxySources());
     manager->setupInputActions();
