@@ -4,7 +4,6 @@
 
 #include "graphics/renderers/renderer_pipelinestage.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/opengl/glbuffer.h"
 
 #include "util/smart_help.h"
 
@@ -13,17 +12,17 @@ class GLPipelineStage : public RendererPipelineStage, public util::SmartHelper<G
     private:
         GLuint vaoId{};
         GLenum renderMode;
-        util::Map<int, std::pair<ShaderDataType, std::shared_ptr<GlBuffer>>> vertexAttribs{};
+        util::Map<int, ShaderDataType> vertexAttribs{};
     public:
         explicit GLPipelineStage (PipelineStageSpec& spec);
         ~GLPipelineStage() override;
 
-        void bindBuffer(int location, ShaderDataType attribType, std::shared_ptr<RendererBufferHandle> handle) override;
+        void bindBuffer(int location, ShaderDataType attribType, const IBuffer& buffer) override;
 
-        void render() override;
+        void render(std::size_t numVertices) override;
 
-        void clearBuffers() override;
+        //void clearBuffers() override;
 
-        void bufferData() override;
+        //void bufferData() override;
     };
 }

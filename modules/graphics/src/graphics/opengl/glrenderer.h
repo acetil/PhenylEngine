@@ -42,7 +42,7 @@ namespace phenyl::graphics {
         common::Asset<Shader> textShader;
         common::Asset<Shader> particleShader;
     protected:
-        std::shared_ptr<RendererBufferHandle> makeBufferHandle() override;
+        std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity) override;
 
     public:
         explicit GLRenderer (std::unique_ptr<GLFWViewport> viewport);

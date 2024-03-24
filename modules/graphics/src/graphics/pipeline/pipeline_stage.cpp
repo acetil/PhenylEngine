@@ -9,14 +9,13 @@ PipelineStage::PipelineStage (common::Asset<Shader> _shader, std::unique_ptr<Ren
 
 }
 
-
-void PipelineStage::bindBuffer (int location, ShaderDataType attribType, const std::shared_ptr<RendererBufferHandle>& handle) {
-    internal->bindBuffer(location, attribType, handle);
+void PipelineStage::bindBuffer (int location, ShaderDataType attribType, const IBuffer& buffer) {
+    internal->bindBuffer(location, attribType, buffer);
 }
 
-void PipelineStage::render () {
+void PipelineStage::render (std::size_t numVertices) {
     shader->bind();
-    internal->render();
+    internal->render(numVertices);
 }
 
 PipelineStage& PipelineStage::operator= (PipelineStage&& other) noexcept {
@@ -24,14 +23,6 @@ PipelineStage& PipelineStage::operator= (PipelineStage&& other) noexcept {
     shader = other.shader;
 
     return *this;
-}
-
-void PipelineStage::clearBuffers () {
-    internal->clearBuffers();
-}
-
-void PipelineStage::bufferAllData () {
-    internal->bufferData();
 }
 
 PipelineStage::PipelineStage () = default;

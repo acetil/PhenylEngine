@@ -143,7 +143,7 @@ void ParticleSystem2D::bufferPos (Buffer<glm::vec2>& buffer) const {
         glm::mat2 mat = glm::mat2{{glm::cos(particle.angle), glm::sin(particle.angle)}, {-glm::sin(particle.angle), glm::cos(particle.angle)}} * glm::mat2{{particle.size, 0}, {0, particle.size}};
 
         for (auto v : vertices) {
-            buffer.pushData(mat * v + particle.pos);
+            buffer.emplace(mat * v + particle.pos);
         }
     }
 }
@@ -158,7 +158,7 @@ void ParticleSystem2D::bufferColour (Buffer<glm::vec4>& buffer) const {
         }
 
         for (auto j = 0; j < 6; j++) {
-            buffer.pushData(particle.colour);
+            buffer.emplace(particle.colour);
         }
     }
 }

@@ -8,7 +8,7 @@
 
 using namespace phenyl::graphics;
 
-#define BUFFER_SIZE (2000 * 6)
+#define BUFFER_SIZE (256 * 6)
 
 class UIPipelineInt : public UIPipeline {
 private:
@@ -36,9 +36,9 @@ public:
                 .addVertexAttrib<glm::vec2>(1)
                 .addVertexAttrib<glm::vec3>(2));
 
-        textPosBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
-        textUvBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
-        textColourBuffer = renderer->makeBuffer<glm::vec3>(BUFFER_SIZE);
+        textPosBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
+        textUvBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
+        textColourBuffer = renderer->makeBuffer2<glm::vec3>(BUFFER_SIZE);
 
         textStage.bindBuffer(0, textPosBuffer);
         textStage.bindBuffer(1, textUvBuffer);
@@ -51,11 +51,11 @@ public:
                 .addVertexAttrib<glm::vec4>(3)
                 .addVertexAttrib<glm::vec4>(4));
 
-        boxPosBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
-        boxRectPosBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
-        boxBorderBuffer = renderer->makeBuffer<glm::vec4>(BUFFER_SIZE);
-        boxBgBuffer = renderer->makeBuffer<glm::vec4>(BUFFER_SIZE);
-        boxDetailsBuffer = renderer->makeBuffer<glm::vec4>(BUFFER_SIZE);
+        boxPosBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
+        boxRectPosBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
+        boxBorderBuffer = renderer->makeBuffer2<glm::vec4>(BUFFER_SIZE);
+        boxBgBuffer = renderer->makeBuffer2<glm::vec4>(BUFFER_SIZE);
+        boxDetailsBuffer = renderer->makeBuffer2<glm::vec4>(BUFFER_SIZE);
 
         boxStage.bindBuffer(0, boxPosBuffer);
         boxStage.bindBuffer(1, boxRectPosBuffer);
@@ -65,41 +65,60 @@ public:
     }
 
     void bufferData () override {
-        textStage.bufferAllData();
-        boxStage.bufferAllData();
+        textPosBuffer.upload();
+        textUvBuffer.upload();
+        textColourBuffer.upload();
+
+        boxPosBuffer.upload();
+        boxRectPosBuffer.upload();
+        boxBorderBuffer.upload();
+        boxBgBuffer.upload();
+        boxDetailsBuffer.upload();
     }
 
     void render () override {
         fontTexture.bindTexture();
-        textStage.render();
-        textStage.clearBuffers();
+        textStage.render(textPosBuffer.size());
 
         //boxShader.applyUniform<glm::vec2>("screenSize", screenSize);
         boxStage.applyUniform("screenSize", screenSize);
-        boxStage.render();
-        boxStage.clearBuffers();
+        boxStage.render(boxPosBuffer.size());
+
+        clearBuffers();
     }
 
     void bufferText(const RenderedText &text) override {
-        textPosBuffer.pushData(text.getPosComp().cbegin(), text.getPosComp().cend());
-        textUvBuffer.pushData(text.getUvComp().cbegin(), text.getUvComp().cend());
-        textColourBuffer.pushData(text.getColourComp().cbegin(), text.getColourComp().cend());
+        textPosBuffer.insertRange(text.getPosComp().cbegin(), text.getPosComp().cend());
+        textUvBuffer.insertRange(text.getUvComp().cbegin(), text.getUvComp().cend());
+        textColourBuffer.insertRange(text.getColourComp().cbegin(), text.getColourComp().cend());
     }
 
     void bufferRect(const UIRect &rect) override {
         for (int i = 0; i < 6; i++) {
             int vertexNum = i == 3 ? i : i % 3;
 
-            boxPosBuffer.pushData({rect.screenPos.x + (float)(vertexNum % 2 == 1) * rect.size.x, rect.screenPos.y + (float)(vertexNum / 2 == 1) * rect.size.y});
-            boxRectPosBuffer.pushData({-1.0f + (float)(vertexNum % 2 == 1) * 2.0f, -1.0f + (float)(vertexNum / 2 == 1) * 2.0f});
-            boxBorderBuffer.pushData(rect.borderColour);
-            boxBgBuffer.pushData(rect.bgColour);
-            boxDetailsBuffer.pushData(rect.details);
+            boxPosBuffer.emplace(rect.screenPos.x + (float)(vertexNum % 2 == 1) * rect.size.x, rect.screenPos.y + (float)(vertexNum / 2 == 1) * rect.size.y);
+            boxRectPosBuffer.emplace(-1.0f + (float)(vertexNum % 2 == 1) * 2.0f, -1.0f + (float)(vertexNum / 2 == 1) * 2.0f);
+            boxBorderBuffer.emplace(rect.borderColour);
+            boxBgBuffer.emplace(rect.bgColour);
+            boxDetailsBuffer.emplace(rect.details);
         }
     }
 
     void setScreenSize(glm::vec2 _screenSize) override {
         screenSize = _screenSize;
+    }
+
+    void clearBuffers () {
+        textPosBuffer.clear();
+        textUvBuffer.clear();
+        textColourBuffer.clear();
+
+        boxPosBuffer.clear();
+        boxRectPosBuffer.clear();
+        boxBorderBuffer.clear();
+        boxBgBuffer.clear();
+        boxDetailsBuffer.clear();
     }
 };
 

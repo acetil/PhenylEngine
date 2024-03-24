@@ -28,11 +28,11 @@ namespace phenyl::graphics {
         ~PipelineStage();
         //~PipelineStage() = default;
 
-        void bindBuffer (int location, ShaderDataType attribType, const std::shared_ptr<RendererBufferHandle>& handle);
+        void bindBuffer (int location, ShaderDataType attribType, const IBuffer& buffer);
 
         template <typename T>
-        void bindBuffer (int location, Buffer<T> buffer) {
-            bindBuffer(location, getShaderDataType<T>(), buffer.bufferHandle);
+        void bindBuffer (int location, const Buffer<T>& buffer) {
+            bindBuffer(location, getShaderDataType<T>(), buffer.getUnderlying());
         }
 
         template <typename T>
@@ -40,11 +40,7 @@ namespace phenyl::graphics {
             shader->applyUniform(uniformName, val);
         }
 
-        void render ();
-
-        void clearBuffers ();
-
-        void bufferAllData ();
+        void render (std::size_t numVertices);
     };
 
     class PipelineStageSpec {

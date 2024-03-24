@@ -2,9 +2,6 @@
 #include "graphics/opengl/glshader.h"
 #include "graphics/opengl/glpipelinestage.h"
 
-#include "graphics/opengl/input/glfw_key_input.h"
-#include "graphics/opengl/input/glfw_mouse_input.h"
-
 #include "util/profiler.h"
 #include "common/assets/assets.h"
 
@@ -18,6 +15,7 @@
 #include "resources/shaders/text_fragment.frag.h"
 #include "resources/shaders/particle_vertex.vert.h"
 #include "resources/shaders/particle_fragment.frag.h"
+#include "glbuffer.h"
 
 #include <vector>
 using namespace phenyl::graphics;
@@ -200,8 +198,8 @@ PipelineStage GLRenderer::buildPipelineStage (PipelineStageBuilder& stageBuilder
     return PipelineStage{spec.shader, std::make_unique<GLPipelineStage>(spec)};
 }
 
-std::shared_ptr<RendererBufferHandle> GLRenderer::makeBufferHandle () {
-    return std::make_shared<GlBuffer>();
+std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity) {
+    return std::make_unique<GlBuffer>(startCapacity);
 }
 
 

@@ -4,7 +4,7 @@
 #include "graphics/pipeline/pipeline.h"
 #include "graphics/particles/particle_manager.h"
 
-#define MAX_PARTICLES 3000
+#define MAX_PARTICLES 512
 #define VERTICES_PER_PARTICLE 6
 #define MAX_VERTICES (MAX_PARTICLES * VERTICES_PER_PARTICLE)
 
@@ -23,8 +23,8 @@ namespace phenyl::graphics {
                 .addVertexAttrib<glm::vec2>(0)
                 .addVertexAttrib<glm::vec4>(1));
 
-            posBuffer = renderer->makeBuffer<glm::vec2>(MAX_VERTICES);
-            colourBuffer = renderer->makeBuffer<glm::vec4>(MAX_VERTICES);
+            posBuffer = renderer->makeBuffer2<glm::vec2>(MAX_VERTICES);
+            colourBuffer = renderer->makeBuffer2<glm::vec4>(MAX_VERTICES);
 
             renderStage.bindBuffer(0, posBuffer);
             renderStage.bindBuffer(1, colourBuffer);
@@ -35,13 +35,17 @@ namespace phenyl::graphics {
         }
 
         void bufferData (phenyl::graphics::ParticleManager2D& manager) override {
-            renderStage.clearBuffers();
+            posBuffer.clear();
+            colourBuffer.clear();
+
             manager.buffer(posBuffer, colourBuffer);
-            renderStage.bufferAllData();
+
+            posBuffer.upload();
+            colourBuffer.upload();
         }
 
         void render() override {
-            renderStage.render();
+            renderStage.render(posBuffer.size());
         }
     };
 }

@@ -4,8 +4,8 @@
 
 #include "graphics/viewport.h"
 #include "graphics/graphics_properties.h"
-#include "graphics/opengl/input/glfw_key_input.h"
-#include "graphics/opengl/input/glfw_mouse_input.h"
+#include "input/glfw_key_input.h"
+#include "input/glfw_mouse_input.h"
 
 namespace phenyl::graphics {
     class GLFWViewport : public Viewport {

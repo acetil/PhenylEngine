@@ -64,39 +64,42 @@ namespace phenyl::graphics {
         Buffer<glm::vec3> linePos;
         Buffer<glm::vec4> lineColour;
 
+        std::size_t boxVertices = 0;
+        std::size_t lineVertices = 0;
+
         void bufferBox (const DebugBox& box) {
             for (int i = 0; i < 6; i++) {
                 int boxPoint = i != 4 ? (i % 3) : 3;
 
-                boxPos.pushData(box.vertices[boxPoint]);
-                boxColour.pushData(box.colour);
+                boxPos.emplace(box.vertices[boxPoint]);
+                boxColour.emplace(box.colour);
             }
 
             for (int i = 0; i < 4; i++) {
                 int nextI = (i + 1) % 4;
 
-                linePos.pushData(box.vertices[i]);
-                linePos.pushData(box.vertices[nextI]);
-                lineColour.pushData(box.outlineColour);
-                lineColour.pushData(box.outlineColour);
+                linePos.emplace(box.vertices[i]);
+                linePos.emplace(box.vertices[nextI]);
+                lineColour.emplace(box.outlineColour);
+                lineColour.emplace(box.outlineColour);
             }
         }
 
         void bufferLine (const DebugLine& line) {
-            linePos.pushData(line.vertices[0]);
-            linePos.pushData(line.vertices[1]);
-            lineColour.pushData(line.colour);
-            lineColour.pushData(line.colour);
+            linePos.emplace(line.vertices[0]);
+            linePos.emplace(line.vertices[1]);
+            lineColour.emplace(line.colour);
+            lineColour.emplace(line.colour);
         }
     public:
         explicit DebugPipeline () {}
 
         void init (graphics::Renderer* renderer) override {
             auto shader = common::Assets::Load<Shader>("phenyl/shaders/debug");
-            boxPos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
-            boxColour = renderer->makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
-            linePos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
-            lineColour = renderer->makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
+            boxPos = renderer->makeBuffer2<glm::vec3>(STARTING_BUFFER_SIZE);
+            boxColour = renderer->makeBuffer2<glm::vec4>(STARTING_BUFFER_SIZE);
+            linePos = renderer->makeBuffer2<glm::vec3>(STARTING_BUFFER_SIZE);
+            lineColour = renderer->makeBuffer2<glm::vec4>(STARTING_BUFFER_SIZE);
 
             boxStage = renderer->buildPipelineStage(PipelineStageBuilder{shader}
                                                             .addVertexAttrib<glm::vec3>(0)
@@ -113,8 +116,11 @@ namespace phenyl::graphics {
         }
 
         void bufferData () override {
-            boxStage.clearBuffers();
-            lineStage.clearBuffers();
+            boxPos.clear();
+            boxColour.clear();
+            linePos.clear();
+            lineColour.clear();
+
             for (const auto& i : boxes) {
                 bufferBox(i);
             }
@@ -123,15 +129,21 @@ namespace phenyl::graphics {
                 bufferLine(i);
             }
 
-            boxStage.bufferAllData();
-            lineStage.bufferAllData();
+            boxVertices = boxes.size() * 6;
+            lineVertices = boxes.size() * 4 + lines.size() * 2;
+
+            boxPos.upload();
+            boxColour.upload();
+            linePos.upload();
+            lineColour.upload();
+
             boxes.clear();
             lines.clear();
         }
 
         void render () override {
-            boxStage.render();
-            lineStage.render();
+            boxStage.render(boxPos.size());
+            lineStage.render(linePos.size());
         }
 
         void applyCamera (const Camera& camera) {

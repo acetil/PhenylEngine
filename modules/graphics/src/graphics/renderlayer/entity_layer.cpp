@@ -17,7 +17,6 @@ namespace phenyl::graphics {
         PipelineStage renderStage;
         Buffer<glm::vec2> posBuffer;
         Buffer<glm::vec2> uvBuffer;
-
     public:
         EntityPipeline () = default;
 
@@ -28,8 +27,8 @@ namespace phenyl::graphics {
                                                                //.addVertexAttrib<glm::vec2>(2)
                                                                //.addVertexAttrib<glm::mat2>(3)));
 
-            posBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
-            uvBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
+            posBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
+            uvBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
 
             renderStage.bindBuffer(0, posBuffer);
             renderStage.bindBuffer(1, uvBuffer);
@@ -40,16 +39,18 @@ namespace phenyl::graphics {
         }
 
         void bufferData (component::EntityComponentManager& manager) override {
-            renderStage.clearBuffers();
+            posBuffer.clear();
+            uvBuffer.clear();
 
             bufferPosData(manager, posBuffer);
             bufferUvData(manager, uvBuffer);
 
-            renderStage.bufferAllData();
+            posBuffer.upload();
+            uvBuffer.upload();
         }
 
         void render () override {
-            renderStage.render();
+            renderStage.render(posBuffer.size());
         }
     };
 }
@@ -125,7 +126,7 @@ static void bufferPosData (const component::EntityComponentManager& manager, gra
 
     manager.query<common::GlobalTransform2D, graphics::Sprite2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const graphics::Sprite2D& sprite) {
         for (auto i : vertices) {
-            buffer.pushData(transform.transform2D.apply(i));
+            buffer.emplace(transform.transform2D.apply(i));
         }
     });
 }
@@ -142,11 +143,11 @@ static void bufferUvData (const component::EntityComponentManager& manager, grap
         auto topLeft = sprite.getTopLeft();
         auto bottomRight = sprite.getBottomRight();
 
-        buffer.pushData({topLeft.x, topLeft.y});
-        buffer.pushData({bottomRight.x, topLeft.y});
-        buffer.pushData({topLeft.x, bottomRight.y});
-        buffer.pushData({bottomRight.x, bottomRight.y});
-        buffer.pushData({bottomRight.x, topLeft.y});
-        buffer.pushData({topLeft.x, bottomRight.y});
+        buffer.emplace(topLeft.x, topLeft.y);
+        buffer.emplace(bottomRight.x, topLeft.y);
+        buffer.emplace(topLeft.x, bottomRight.y);
+        buffer.emplace(bottomRight.x, bottomRight.y);
+        buffer.emplace(bottomRight.x, topLeft.y);
+        buffer.emplace(topLeft.x, bottomRight.y);
     });
 }

@@ -1,67 +1,65 @@
 #pragma once
 
 #include <memory>
-#include <utility>
+#include <vector>
 
 #include "logging/logging.h"
 
 namespace phenyl::graphics {
-    class RendererBufferHandle;
-    class PipelineStage;
-
-    namespace detail {
-        class BufferBase {
-        private:
-            std::shared_ptr<RendererBufferHandle> bufferHandle{};
-        protected:
-            void pushDataInt (const unsigned char* dataInternal, std::size_t size);
-            void resizeInt (std::size_t newMemSize);
-            void setElementSize (std::size_t elementSize);
-        public:
-            explicit BufferBase (std::shared_ptr<RendererBufferHandle> _bufferHandle) : bufferHandle{std::move(_bufferHandle)} {}
-            ~BufferBase();
-
-            void clearData ();
-
-            void bufferData ();
-
-            friend PipelineStage;
-        };
-    }
-
-    // TODO: disable/change copy behaviour
-    template <typename T>
-    class Buffer : public detail::BufferBase {
-    private:
-        std::size_t elementSize{};
+    class IBuffer {
     public:
-        Buffer () : detail::BufferBase(nullptr) {};
-        explicit Buffer (std::shared_ptr<RendererBufferHandle> _bufferHandle, std::size_t _elementSize, std::size_t initialNumElements) : detail::BufferBase(std::move(_bufferHandle)),
-                                                                                                                                          elementSize{_elementSize} {
-            resizeBuffer(initialNumElements);
-            setElementSize(elementSize * sizeof(T));
+        virtual ~IBuffer() = default;
+
+        virtual void upload (unsigned char* data, std::size_t size) = 0;
+    };
+
+    template <typename T>
+    class Buffer {
+    private:
+        std::unique_ptr<IBuffer> rendererBuffer;
+        std::vector<T> data;
+    public:
+        Buffer () : rendererBuffer{}, data{} {}
+        explicit Buffer (std::unique_ptr<IBuffer> rendererBuffer) : rendererBuffer{std::move(rendererBuffer)}, data{} {}
+
+        explicit operator bool () const {
+            return (bool)rendererBuffer;
         }
 
-        void pushData (const T* data, std::size_t num) {
-            pushDataInt((unsigned char*)data, num * elementSize * sizeof(T));
+        template <typename ...Args>
+        void emplace (Args&&... args) {
+            data.emplace_back(std::forward<Args>(args)...);
         }
 
-        template <typename DataIt>
-        void pushData (DataIt begin, DataIt end) {
-            static_assert(std::is_assignable_v<T, decltype(*begin)>, "Error: must be correct iterator type!");
-
-            for (auto curr = begin; curr != end; curr++) {
-                pushData(*curr);
-            }
+        template <std::input_iterator It>
+        void insertRange (It begin, It end) {
+            data.insert(data.end(), begin, end);
         }
 
-        void pushData (const T& data) {
-            PHENYL_DASSERT_MSG(elementSize == 1, "Pushing single data item to buffer when element size is not 1!");
-            pushDataInt((const unsigned char*)&data, sizeof(T));
+        void reserve (std::size_t newSize) {
+            data.reserve(newSize);
         }
 
-        void resizeBuffer (std::size_t newNumVertices) {
-            resizeInt(newNumVertices * elementSize * sizeof(T));
+        std::size_t size () const {
+            return data.size();
+        }
+
+        void clear () {
+            data.clear();
+        }
+
+        void upload () {
+            rendererBuffer->upload(reinterpret_cast<unsigned char*>(data.data()), data.size() * sizeof(T));
+        }
+
+        IBuffer& getUnderlying () {
+            PHENYL_DASSERT(rendererBuffer);
+            return *rendererBuffer;
+        }
+
+        const IBuffer& getUnderlying () const {
+            PHENYL_DASSERT(rendererBuffer);
+            return *rendererBuffer;
         }
     };
 }

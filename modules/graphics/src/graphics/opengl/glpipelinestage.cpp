@@ -7,72 +7,43 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_PIPELINE_STAGE", detail::GRAPHICS_LOGGER};
 
-static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, GLenum type, GLsizei size, GLsizei stride=0, std::size_t offset=0);
-static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, ShaderDataType attribType);
+static void enableVertexAttribPointer (GLuint vaoId, const GlBuffer& buffer, int location, GLenum type, GLsizei size, GLsizei stride=0, std::size_t offset=0);
+static void setupVertexAttribPointer (GLuint vaoId, const GlBuffer& buffer, int location, ShaderDataType attribType);
 
 static GLenum getRenderMode (PipelineType type);
 
-GLPipelineStage::GLPipelineStage (PipelineStageSpec& spec) {
+GLPipelineStage::GLPipelineStage (PipelineStageSpec& spec) : vertexAttribs{std::move(spec.vertexAttribs)} {
     glGenVertexArrays(1, &vaoId);
     glBindVertexArray(vaoId);
     //std::size_t i = 0;
-    for (auto [k, v] : spec.vertexAttribs.kv()) {
-        vertexAttribs[k] = {v, nullptr};
-    }
 
     renderMode = getRenderMode(spec.type);
 }
 
-void GLPipelineStage::bindBuffer (int location, ShaderDataType attribType, std::shared_ptr<RendererBufferHandle> handle) {
-    if (vertexAttribs[location].first != attribType) {
+void GLPipelineStage::bindBuffer (int location, ShaderDataType attribType, const IBuffer& buffer) {
+    if (vertexAttribs[location] != attribType) {
         PHENYL_LOGE(LOGGER, "Attempted to bind buffer of type {} to attribute of type {}!", getUniformTypeName(attribType),
-                     getUniformTypeName(vertexAttribs[location].first));
+                    getUniformTypeName(vertexAttribs[location]));
         return;
     }
 
-    auto glBuffer = std::dynamic_pointer_cast<GlBuffer>(handle);
+    const auto& glBuffer = reinterpret_cast<const GlBuffer&>(buffer);
+
     glBindVertexArray(vaoId);
-    //glBuffer->bindBuffer();
-
-    setupVertexAttribPointer(vaoId, glBuffer.get(), location, vertexAttribs[location].first);
-
-    vertexAttribs[location].second = glBuffer;
-
-    //glBuffer->onStageBind(shared_from_this(), vertexAttribs[location].second);
+    setupVertexAttribPointer(vaoId, glBuffer, location, vertexAttribs[location]);
 }
 
-void GLPipelineStage::render () {
-    std::size_t numVertices = -1;
-    for (auto [k, buf] : vertexAttribs.kv()) {
-        auto n = buf.second->getNumElements();
-
-        if (n < numVertices) {
-            numVertices = n;
-        }
-    }
-
+void GLPipelineStage::render (std::size_t numVertices) {
     //logging::log(LEVEL_DEBUG, "Drawing {} vertices!", numVertices);
     glBindVertexArray(vaoId);
-    glDrawArrays(renderMode, 0, static_cast<int>(numVertices));
+    glDrawArrays(renderMode, 0, static_cast<GLsizei>(numVertices));
 }
 
 GLPipelineStage::~GLPipelineStage () {
     glDeleteVertexArrays(1, &vaoId);
 }
 
-void GLPipelineStage::clearBuffers () {
-    for (auto [k, buf] : vertexAttribs.kv()) {
-        buf.second->clearBuffer();
-    }
-}
-
-void GLPipelineStage::bufferData () {
-    for (auto [k, buf] : vertexAttribs.kv()) {
-        buf.second->bufferData();
-    }
-}
-
-static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, ShaderDataType attribType) {
+static void setupVertexAttribPointer (GLuint vaoId, const GlBuffer& buffer, int location, ShaderDataType attribType) {
     //glBindVertexArray(vaoId);
     switch (attribType) {
         case ShaderDataType::FLOAT:
@@ -106,13 +77,13 @@ static void setupVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int locati
             enableVertexAttribPointer(vaoId, buffer, location + 3, GL_FLOAT, 4, sizeof(float) * 16, sizeof(float) * 12);
             break;
         default:
-            PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", getUniformTypeName(attribType));
+        PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", getUniformTypeName(attribType));
     }
 }
 
-static void enableVertexAttribPointer (GLuint vaoId, GlBuffer* buffer, int location, GLenum type, GLsizei size, GLsizei stride, std::size_t offset) {
+static void enableVertexAttribPointer (GLuint vaoId, const GlBuffer& buffer, int location, GLenum type, GLsizei size, GLsizei stride, std::size_t offset) {
     glBindVertexArray(vaoId);
-    buffer->bindBuffer();
+    buffer.bind();
     glEnableVertexAttribArray(location);
     glVertexAttribPointer(location, size, type, GL_FALSE, stride, (void*)offset);
 }

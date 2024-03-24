@@ -8,6 +8,7 @@
 #include "graphics/pipeline/pipeline_stage.h"
 #include "common/input/input_source.h"
 #include "runtime/iresource.h"
+#include "buffer.h"
 
 #include "util/optional.h"
 #include "common/input/proxy_source.h"
@@ -25,7 +26,7 @@ namespace phenyl::graphics {
 
     class Renderer : public runtime::IResource {
     protected:
-        virtual std::shared_ptr<RendererBufferHandle> makeBufferHandle () = 0;
+        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity) = 0;
     public:
         virtual ~Renderer() = default;
 
@@ -52,8 +53,8 @@ namespace phenyl::graphics {
         virtual const Viewport& getViewport () const = 0;
 
         template <typename T>
-        Buffer<T> makeBuffer (unsigned int bufferCapacity, std::size_t elementSize=1) {
-            return Buffer<T>{makeBufferHandle(), elementSize, bufferCapacity};
+        Buffer<T> makeBuffer2 (std::size_t capacity) {
+            return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity));
         }
     };
     class GraphicsTexture {
