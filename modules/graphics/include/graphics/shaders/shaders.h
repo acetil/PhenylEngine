@@ -27,7 +27,7 @@ namespace phenyl::graphics {
     };
 
     template <typename T>
-    consteval ShaderDataType getShaderDataType () {
+    consteval ShaderDataType GetShaderDataType () {
         if constexpr (std::is_same_v<T, float>) {
             return ShaderDataType::FLOAT;
         } else if constexpr (std::is_same_v<T, int>) {
@@ -77,7 +77,7 @@ namespace phenyl::graphics {
 
         template <typename T>
         void applyUniform (const std::string& uniformName, const T& val) {
-            constexpr auto uniformType = getShaderDataType<T>();
+            constexpr auto uniformType = GetShaderDataType<T>();
 
             if constexpr (uniformType == ShaderDataType::FLOAT || uniformType == ShaderDataType::INT) {
                 applyUniform(uniformName, uniformType, &val);
@@ -91,6 +91,8 @@ namespace phenyl::graphics {
         }
 
         void bind ();
+
+        unsigned int getUniformLocation (const std::string& uniform);
     };
 
     struct ShaderSpec {
@@ -125,7 +127,7 @@ namespace phenyl::graphics {
 
         template <typename T>
         ShaderBuilder& addUniform (const std::string& uniform) {
-            uniforms[uniform] = getShaderDataType<T>();
+            uniforms[uniform] = GetShaderDataType<T>();
             return *this;
         }
 
@@ -146,7 +148,7 @@ namespace phenyl::graphics {
 
         template <typename T>
         ShaderSourceBuilder& addUniform (const std::string& uniform) {
-            uniforms[uniform] = getShaderDataType<T>();
+            uniforms[uniform] = GetShaderDataType<T>();
             return *this;
         }
 

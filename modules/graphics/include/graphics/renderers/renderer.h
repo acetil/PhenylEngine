@@ -5,14 +5,15 @@
 #include <memory>
 
 #include "graphics/shaders/shaders.h"
-#include "graphics/pipeline/pipeline_stage.h"
 #include "common/input/input_source.h"
 #include "runtime/iresource.h"
 #include "buffer.h"
+#include "uniform_buffer.h"
 
 #include "util/optional.h"
 #include "common/input/proxy_source.h"
 #include "graphics/viewport.h"
+#include "graphics/pipeline/pipeline2.h"
 
 namespace phenyl::graphics {
 //#ifndef WINDOW_CALLBACKS_H
@@ -26,7 +27,8 @@ namespace phenyl::graphics {
 
     class Renderer : public runtime::IResource {
     protected:
-        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity) = 0;
+        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) = 0;
+        virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
     public:
         virtual ~Renderer() = default;
 
@@ -45,7 +47,7 @@ namespace phenyl::graphics {
         virtual void bindTexture (unsigned int textureId) = 0;
         virtual void destroyTexture (unsigned int textureId) = 0;
 
-        virtual PipelineStage buildPipelineStage (PipelineStageBuilder& stageBuilder) = 0;
+        virtual PipelineBuilder buildPipeline () = 0;
 
         virtual void loadDefaultShaders () = 0;
 
@@ -53,8 +55,18 @@ namespace phenyl::graphics {
         virtual const Viewport& getViewport () const = 0;
 
         template <typename T>
-        Buffer<T> makeBuffer2 (std::size_t capacity) {
-            return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity));
+        Buffer<T> makeBuffer (std::size_t capacity) {
+            return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity, sizeof(T)));
+        }
+
+        template <typename T, typename ...Args>
+        UniformBuffer<T> makeUniformBuffer (bool readable, Args&&...args) {
+            return UniformBuffer<T>(makeRendererUniformBuffer(readable), std::forward<Args>(args)...);
+        }
+
+        template <typename T, typename ...Args>
+        UniformBuffer<T> makeUniformBuffer (Args&&...args) {
+            return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
         }
     };
     class GraphicsTexture {
@@ -93,6 +105,10 @@ namespace phenyl::graphics {
         }
         void reload (int width, int height, unsigned char* data) {
             renderer->reloadTexture(textureId, width, height, data);
+        }
+
+        [[nodiscard]] unsigned int id () const {
+            return textureId;
         }
     };
 

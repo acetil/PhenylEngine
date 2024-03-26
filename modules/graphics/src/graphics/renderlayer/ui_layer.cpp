@@ -10,115 +10,137 @@ using namespace phenyl::graphics;
 
 #define BUFFER_SIZE (256 * 6)
 
+namespace {
+    struct Uniform {
+        glm::vec2 screenSize;
+    };
+
+    struct TextVertex {
+        glm::vec2 pos;
+        glm::vec2 uv;
+        glm::vec3 colour;
+    };
+
+    struct BoxVertex {
+        glm::vec2 pos;
+        glm::vec2 rectPos;
+        glm::vec4 borderColour;
+        glm::vec4 bgColour;
+        glm::vec4 details;
+    };
+}
+
 class UIPipelineInt : public UIPipeline {
 private:
-    PipelineStage textStage;
+    Pipeline2 textPipeline;
     GraphicsTexture fontTexture;
+    SamplerBinding samplerBinding;
+    Buffer<TextVertex> textBuffer;
 
-    Buffer<glm::vec2> textPosBuffer;
-    Buffer<glm::vec2> textUvBuffer;
-    Buffer<glm::vec3> textColourBuffer;
+    Pipeline2 boxPipeline;
+    Buffer<BoxVertex> boxBuffer;
 
-    PipelineStage boxStage;
-
-    Buffer<glm::vec2> boxPosBuffer;
-    Buffer<glm::vec2> boxRectPosBuffer;
-    Buffer<glm::vec4> boxBorderBuffer;
-    Buffer<glm::vec4> boxBgBuffer;
-    Buffer<glm::vec4> boxDetailsBuffer;
+    UniformBinding uniformBinding;
+    UniformBuffer<Uniform> uniformBuffer;
 
     glm::vec2 screenSize = {800, 600};
 public:
     UIPipelineInt (GraphicsTexture _fontTexture) : fontTexture{std::move(_fontTexture)} {}
     void init (Renderer* renderer) override {
-        textStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("phenyl/shaders/text"))
-                .addVertexAttrib<glm::vec2>(0)
-                .addVertexAttrib<glm::vec2>(1)
-                .addVertexAttrib<glm::vec3>(2));
+        BufferBinding textBinding;
+        textPipeline = renderer->buildPipeline()
+                .withShader(phenyl::common::Assets::Load<Shader>("phenyl/shaders/text"))
+                .withBuffer<TextVertex>(textBinding)
+                .withAttrib<glm::vec2>(0, textBinding, offsetof(TextVertex, pos))
+                .withAttrib<glm::vec2>(1, textBinding, offsetof(TextVertex, uv))
+                .withAttrib<glm::vec3>(2, textBinding, offsetof(TextVertex, colour))
+                .withSampler2D(0, samplerBinding)
+                .build();
 
-        textPosBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
-        textUvBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
-        textColourBuffer = renderer->makeBuffer2<glm::vec3>(BUFFER_SIZE);
 
-        textStage.bindBuffer(0, textPosBuffer);
-        textStage.bindBuffer(1, textUvBuffer);
-        textStage.bindBuffer(2, textColourBuffer);
+        textBuffer = renderer->makeBuffer<TextVertex>(BUFFER_SIZE);
 
-        boxStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("phenyl/shaders/box"))
-                .addVertexAttrib<glm::vec2>(0)
-                .addVertexAttrib<glm::vec2>(1)
-                .addVertexAttrib<glm::vec4>(2)
-                .addVertexAttrib<glm::vec4>(3)
-                .addVertexAttrib<glm::vec4>(4));
+        textPipeline.bindBuffer(textBinding, textBuffer);
+        textPipeline.bindSampler(samplerBinding, fontTexture);
 
-        boxPosBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
-        boxRectPosBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
-        boxBorderBuffer = renderer->makeBuffer2<glm::vec4>(BUFFER_SIZE);
-        boxBgBuffer = renderer->makeBuffer2<glm::vec4>(BUFFER_SIZE);
-        boxDetailsBuffer = renderer->makeBuffer2<glm::vec4>(BUFFER_SIZE);
+        BufferBinding boxBinding;
 
-        boxStage.bindBuffer(0, boxPosBuffer);
-        boxStage.bindBuffer(1, boxRectPosBuffer);
-        boxStage.bindBuffer(2, boxBorderBuffer);
-        boxStage.bindBuffer(3, boxBgBuffer);
-        boxStage.bindBuffer(4, boxDetailsBuffer);
+        auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/box");
+        boxPipeline = renderer->buildPipeline()
+                .withShader(shader)
+                .withBuffer<BoxVertex>(boxBinding)
+                .withAttrib<glm::vec2>(0, boxBinding, offsetof(BoxVertex, pos))
+                .withAttrib<glm::vec2>(1, boxBinding, offsetof(BoxVertex, rectPos))
+                .withAttrib<glm::vec4>(2, boxBinding, offsetof(BoxVertex, borderColour))
+                .withAttrib<glm::vec4>(3, boxBinding, offsetof(BoxVertex, bgColour))
+                .withAttrib<glm::vec4>(4, boxBinding, offsetof(BoxVertex, details))
+                .withUniform<Uniform>(shader->getUniformLocation("Uniform"), uniformBinding)
+                .build();
+
+        boxBuffer = renderer->makeBuffer<BoxVertex>(BUFFER_SIZE);
+        uniformBuffer = renderer->makeUniformBuffer<Uniform>(glm::vec2{800, 600});
+
+        boxPipeline.bindBuffer(boxBinding, boxBuffer);
+        boxPipeline.bindUniform(uniformBinding, uniformBuffer);
     }
 
     void bufferData () override {
-        textPosBuffer.upload();
-        textUvBuffer.upload();
-        textColourBuffer.upload();
-
-        boxPosBuffer.upload();
-        boxRectPosBuffer.upload();
-        boxBorderBuffer.upload();
-        boxBgBuffer.upload();
-        boxDetailsBuffer.upload();
+        textBuffer.upload();
+        boxBuffer.upload();
     }
 
     void render () override {
-        fontTexture.bindTexture();
-        textStage.render(textPosBuffer.size());
+        textPipeline.bindSampler(samplerBinding, fontTexture);
+        textPipeline.render(textBuffer.size());
 
-        //boxShader.applyUniform<glm::vec2>("screenSize", screenSize);
-        boxStage.applyUniform("screenSize", screenSize);
-        boxStage.render(boxPosBuffer.size());
+        boxPipeline.bindUniform(uniformBinding, uniformBuffer);
+        boxPipeline.render(boxBuffer.size());
 
         clearBuffers();
     }
 
-    void bufferText(const RenderedText &text) override {
-        textPosBuffer.insertRange(text.getPosComp().cbegin(), text.getPosComp().cend());
-        textUvBuffer.insertRange(text.getUvComp().cbegin(), text.getUvComp().cend());
-        textColourBuffer.insertRange(text.getColourComp().cbegin(), text.getColourComp().cend());
+    void bufferText(const RenderedText& text) override {
+        auto posIt = text.getPosComp().cbegin();
+        auto uvIt = text.getUvComp().cbegin();
+        auto colourIt = text.getColourComp().cbegin();
+
+        while (posIt != text.getPosComp().cend()) {
+            textBuffer.emplace(TextVertex{
+                .pos = *posIt,
+                .uv = *uvIt,
+                .colour = *colourIt
+            });
+
+            ++posIt;
+            ++uvIt;
+            ++colourIt;
+        }
     }
 
     void bufferRect(const UIRect &rect) override {
         for (int i = 0; i < 6; i++) {
             int vertexNum = i == 3 ? i : i % 3;
 
-            boxPosBuffer.emplace(rect.screenPos.x + (float)(vertexNum % 2 == 1) * rect.size.x, rect.screenPos.y + (float)(vertexNum / 2 == 1) * rect.size.y);
-            boxRectPosBuffer.emplace(-1.0f + (float)(vertexNum % 2 == 1) * 2.0f, -1.0f + (float)(vertexNum / 2 == 1) * 2.0f);
-            boxBorderBuffer.emplace(rect.borderColour);
-            boxBgBuffer.emplace(rect.bgColour);
-            boxDetailsBuffer.emplace(rect.details);
+            glm::vec2 pos{rect.screenPos.x + (float)(vertexNum % 2 == 1) * rect.size.x, rect.screenPos.y + (float)(vertexNum / 2 == 1) * rect.size.y};
+            glm::vec2 rectPos{-1.0f + (float)(vertexNum % 2 == 1) * 2.0f, -1.0f + (float)(vertexNum / 2 == 1) * 2.0f};
+
+            boxBuffer.emplace(BoxVertex{
+                .pos = pos,
+                .rectPos = rectPos,
+                .borderColour = rect.borderColour,
+                .bgColour = rect.bgColour,
+                .details = rect.details
+            });
         }
     }
 
     void setScreenSize(glm::vec2 _screenSize) override {
-        screenSize = _screenSize;
+        uniformBuffer->screenSize = _screenSize;
     }
 
     void clearBuffers () {
-        textPosBuffer.clear();
-        textUvBuffer.clear();
-        textColourBuffer.clear();
-
-        boxPosBuffer.clear();
-        boxRectPosBuffer.clear();
-        boxBorderBuffer.clear();
-        boxBgBuffer.clear();
-        boxDetailsBuffer.clear();
+        textBuffer.clear();
+        boxBuffer.clear();
     }
 };
 

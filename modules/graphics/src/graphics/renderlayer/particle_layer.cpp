@@ -8,30 +8,49 @@
 #define VERTICES_PER_PARTICLE 6
 #define MAX_VERTICES (MAX_PARTICLES * VERTICES_PER_PARTICLE)
 
+namespace {
+    struct Uniform {
+        glm::mat4 camera;
+    };
+}
+
 namespace phenyl::graphics {
     class ParticlePipeline : public Pipeline<ParticleManager2D> {
     private:
-        PipelineStage renderStage;
+        Pipeline2 pipeline;
         Buffer<glm::vec2> posBuffer;
         Buffer<glm::vec4> colourBuffer;
+        UniformBuffer<Uniform> uniformBuffer;
 
     public:
         ParticlePipeline () = default;
 
         void init (Renderer* renderer) override {
-            renderStage = renderer->buildPipelineStage(PipelineStageBuilder{phenyl::common::Assets::Load<Shader>("phenyl/shaders/particle")}
-                .addVertexAttrib<glm::vec2>(0)
-                .addVertexAttrib<glm::vec4>(1));
+            BufferBinding posBinding;
+            BufferBinding colourBinding;
+            UniformBinding uniformBinding;
+            auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/particle");
+            pipeline = renderer->buildPipeline()
+                    .withShader(shader)
+                    .withBuffer<glm::vec2>(posBinding)
+                    .withBuffer<glm::vec4>(colourBinding)
+                    .withAttrib<glm::vec2>(0, posBinding)
+                    .withAttrib<glm::vec4>(1, colourBinding)
+                    .withUniform<Uniform>(shader->getUniformLocation("Camera"), uniformBinding)
+                    .build();
 
-            posBuffer = renderer->makeBuffer2<glm::vec2>(MAX_VERTICES);
-            colourBuffer = renderer->makeBuffer2<glm::vec4>(MAX_VERTICES);
 
-            renderStage.bindBuffer(0, posBuffer);
-            renderStage.bindBuffer(1, colourBuffer);
+            posBuffer = renderer->makeBuffer<glm::vec2>(MAX_VERTICES);
+            colourBuffer = renderer->makeBuffer<glm::vec4>(MAX_VERTICES);
+            uniformBuffer = renderer->makeUniformBuffer<Uniform>();
+
+            pipeline.bindBuffer(posBinding, posBuffer);
+            pipeline.bindBuffer(colourBinding, colourBuffer);
+            pipeline.bindUniform(uniformBinding, uniformBuffer);
         }
 
         void applyCamera (const Camera& camera) {
-            renderStage.applyUniform(Camera::getUniformName(), camera.getCamMatrix());
+            uniformBuffer->camera = camera.getCamMatrix();
         }
 
         void bufferData (phenyl::graphics::ParticleManager2D& manager) override {
@@ -45,7 +64,7 @@ namespace phenyl::graphics {
         }
 
         void render() override {
-            renderStage.render(posBuffer.size());
+            pipeline.render(posBuffer.size());
         }
     };
 }

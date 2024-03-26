@@ -40,3 +40,8 @@ void Shader::bind () {
     PHENYL_DASSERT(internal);
     internal->bind();
 }
+
+unsigned int Shader::getUniformLocation (const std::string& uniform) {
+    PHENYL_DASSERT(internal);
+    return internal->getUniformBlockLocation(uniform);
+}

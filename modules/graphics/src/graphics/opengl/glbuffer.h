@@ -9,10 +9,11 @@ namespace phenyl::graphics {
         GLuint bufferId = 0;
         GLenum usageHint;
         std::size_t capacity;
+        std::size_t elemSize;
 
         void ensureCapacity (std::size_t requiredCapacity);
     public:
-        GlBuffer (std::size_t capacity, GLenum usageHint = GL_DYNAMIC_DRAW);
+        GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint = GL_DYNAMIC_DRAW);
 
         GlBuffer (const GlBuffer&) = delete;
         GlBuffer (GlBuffer&& other) noexcept;
@@ -25,5 +26,13 @@ namespace phenyl::graphics {
         void upload(unsigned char* data, std::size_t size) override;
 
         void bind () const;
+
+        [[nodiscard]] GLuint id () const {
+            return bufferId;
+        }
+
+        std::size_t elementSize () const {
+            return elemSize;
+        }
     };
 }

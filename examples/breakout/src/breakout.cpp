@@ -64,7 +64,7 @@ void BreakoutApp::init () {
 
     auto* renderConfig = runtime().resourceMaybe<phenyl::DebugRenderConfig>();
     if (renderConfig) {
-        renderConfig->doPhysicsRender = false;
+        renderConfig->doPhysicsRender = true;
     }
 }
 

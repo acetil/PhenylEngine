@@ -20,6 +20,7 @@ namespace phenyl::graphics {
     private:
         GLuint programId{0};
         util::Map<std::string, GLUniform> uniformMap;
+        util::Map<std::string, unsigned int> blockUniformLocations;
 
         void initShaders (util::Map<ShaderType, std::string>& shaders);
         void initShaderSources (const util::Map<ShaderType, std::string>& sources);
@@ -33,6 +34,7 @@ namespace phenyl::graphics {
 
         void applyUniform(const std::string &uniformName, ShaderDataType uniformType, const unsigned char *uniformPtr) override;
         void bind() override;
+        unsigned int getUniformBlockLocation (const std::string& uniform) override;
     };
 
     class GLShaderManager : public common::AssetManager<Shader> {

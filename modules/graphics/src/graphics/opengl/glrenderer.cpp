@@ -1,6 +1,5 @@
 #include "graphics/opengl/glrenderer.h"
 #include "graphics/opengl/glshader.h"
-#include "graphics/opengl/glpipelinestage.h"
 
 #include "util/profiler.h"
 #include "common/assets/assets.h"
@@ -16,6 +15,8 @@
 #include "resources/shaders/particle_vertex.vert.h"
 #include "resources/shaders/particle_fragment.frag.h"
 #include "glbuffer.h"
+#include "gluniform_buffer.h"
+#include "glpipeline.h"
 
 #include <vector>
 using namespace phenyl::graphics;
@@ -119,11 +120,13 @@ void GLRenderer::setupErrorHandling () {
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_HIGH:
-                PHENYL_LOGE(LOGGER, "GL high severity message from {} with type {} and message {}",
+                PHENYL_LOGF(LOGGER, "GL high severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
+                break;
             default:
                 PHENYL_LOGW(LOGGER, "GL unknown severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
+                break;
         }
     }, nullptr);
 }
@@ -193,13 +196,17 @@ util::Optional<Shader> GLRenderer::getProgramNew (const std::string& program) {
     }
 }*/
 
-PipelineStage GLRenderer::buildPipelineStage (PipelineStageBuilder& stageBuilder) {
-    auto spec = stageBuilder.build();
-    return PipelineStage{spec.shader, std::make_unique<GLPipelineStage>(spec)};
+std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) {
+    return std::make_unique<GlBuffer>(startCapacity, elementSize);
 }
 
-std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity) {
-    return std::make_unique<GlBuffer>(startCapacity);
+PipelineBuilder GLRenderer::buildPipeline () {
+    return PipelineBuilder(std::make_unique<GlPipelineBuilder>());
+}
+
+
+std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool readable) {
+    return std::move(std::make_unique<GlUniformBuffer>(readable));
 }
 
 
@@ -260,7 +267,6 @@ std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properti
 
     return std::make_unique<GLRenderer>(std::move(viewport));
 }
-
 
 
 

@@ -26,5 +26,7 @@ namespace phenyl::graphics {
         const AtlasOffset& operator[] (std::size_t index) const;
         [[nodiscard]] util::Optional<const AtlasOffset&> at (std::size_t index) const;
         void bind ();
+
+        GraphicsTexture& getTexture ();
     };
 }

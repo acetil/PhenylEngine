@@ -5,7 +5,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_BUFFER", detail::GRAPHICS_LOGGER};
 
-GlBuffer::GlBuffer (std::size_t capacity, GLenum usageHint) : capacity{0}, usageHint{usageHint} {
+GlBuffer::GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint) : capacity{0}, elemSize{elemSize}, usageHint{usageHint} {
     glGenBuffers(1, &bufferId);
 
     ensureCapacity(capacity);

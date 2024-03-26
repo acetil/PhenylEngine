@@ -10,6 +10,8 @@ namespace phenyl::graphics {
         virtual ~RendererShader() = default;
         virtual void applyUniform (const std::string& uniformName, ShaderDataType uniformType, const unsigned char* uniformPtr) = 0;
 
+        virtual unsigned int getUniformBlockLocation (const std::string& uniform) = 0;
+
         virtual void bind () = 0;
     };
 }

@@ -53,19 +53,25 @@ struct DebugLine {
 static std::vector<DebugBox> boxes;
 static std::vector<DebugLine> lines;
 
+namespace {
+    struct Uniform {
+        glm::mat4 camera;
+        glm::mat4 screenTransform;
+    };
+}
+
 namespace phenyl::graphics {
     class DebugPipeline : public Pipeline<> {
     private:
-        PipelineStage boxStage;
+        Pipeline2 boxPipeline;
         Buffer<glm::vec3> boxPos;
         Buffer<glm::vec4> boxColour;
 
-        PipelineStage lineStage;
+        Pipeline2 linePipeline;
         Buffer<glm::vec3> linePos;
         Buffer<glm::vec4> lineColour;
 
-        std::size_t boxVertices = 0;
-        std::size_t lineVertices = 0;
+        UniformBuffer<Uniform> uniformBuffer;
 
         void bufferBox (const DebugBox& box) {
             for (int i = 0; i < 6; i++) {
@@ -96,23 +102,39 @@ namespace phenyl::graphics {
 
         void init (graphics::Renderer* renderer) override {
             auto shader = common::Assets::Load<Shader>("phenyl/shaders/debug");
-            boxPos = renderer->makeBuffer2<glm::vec3>(STARTING_BUFFER_SIZE);
-            boxColour = renderer->makeBuffer2<glm::vec4>(STARTING_BUFFER_SIZE);
-            linePos = renderer->makeBuffer2<glm::vec3>(STARTING_BUFFER_SIZE);
-            lineColour = renderer->makeBuffer2<glm::vec4>(STARTING_BUFFER_SIZE);
+            boxPos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
+            boxColour = renderer->makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
+            linePos = renderer->makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
+            lineColour = renderer->makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
+            uniformBuffer = renderer->makeUniformBuffer<Uniform>();
 
-            boxStage = renderer->buildPipelineStage(PipelineStageBuilder{shader}
-                                                            .addVertexAttrib<glm::vec3>(0)
-                                                            .addVertexAttrib<glm::vec4>(1));
-            boxStage.bindBuffer(0, boxPos);
-            boxStage.bindBuffer(1, boxColour);
+            BufferBinding posBinding;
+            BufferBinding colourBinding;
+            UniformBinding uniformBinding;
+            boxPipeline = renderer->buildPipeline()
+                    .withShader(shader)
+                    .withBuffer<glm::vec3>(posBinding)
+                    .withBuffer<glm::vec4>(colourBinding)
+                    .withAttrib<glm::vec3>(0, posBinding)
+                    .withAttrib<glm::vec4>(1, colourBinding)
+                    .withUniform<Uniform>(shader->getUniformLocation("Uniform"), uniformBinding)
+                    .build();
+            boxPipeline.bindBuffer(posBinding, boxPos);
+            boxPipeline.bindBuffer(colourBinding, boxColour);
+            boxPipeline.bindUniform(uniformBinding, uniformBuffer);
 
-            lineStage = renderer->buildPipelineStage(PipelineStageBuilder{std::move(shader)}
-                                                            .withPipelineType(PipelineType::LINES)
-                                                            .addVertexAttrib<glm::vec3>(0)
-                                                            .addVertexAttrib<glm::vec4>(1));
-            lineStage.bindBuffer(0, linePos);
-            lineStage.bindBuffer(1, lineColour);
+            linePipeline = renderer->buildPipeline()
+                    .withGeometryType(GeometryType::LINES)
+                    .withShader(shader)
+                    .withBuffer<glm::vec3>(posBinding)
+                    .withBuffer<glm::vec4>(colourBinding)
+                    .withAttrib<glm::vec3>(0, posBinding)
+                    .withAttrib<glm::vec4>(1, colourBinding)
+                    .withUniform<Uniform>(shader->getUniformLocation("Uniform"), uniformBinding)
+                    .build();
+            linePipeline.bindBuffer(posBinding, linePos);
+            linePipeline.bindBuffer(colourBinding, lineColour);
+            linePipeline.bindUniform(uniformBinding, uniformBuffer);
         }
 
         void bufferData () override {
@@ -129,9 +151,6 @@ namespace phenyl::graphics {
                 bufferLine(i);
             }
 
-            boxVertices = boxes.size() * 6;
-            lineVertices = boxes.size() * 4 + lines.size() * 2;
-
             boxPos.upload();
             boxColour.upload();
             linePos.upload();
@@ -142,19 +161,17 @@ namespace phenyl::graphics {
         }
 
         void render () override {
-            boxStage.render(boxPos.size());
-            lineStage.render(linePos.size());
+            boxPipeline.render(boxPos.size());
+            linePipeline.render(linePos.size());
         }
 
         void applyCamera (const Camera& camera) {
-            boxStage.applyUniform(Camera::getUniformName(), camera.getCamMatrix());
-            lineStage.applyUniform(Camera::getUniformName(), camera.getCamMatrix());
+            uniformBuffer->camera = camera.getCamMatrix();
         }
 
         void applyScreenSize (glm::vec2 screenSize) {
             auto screenTransform = glm::scale(glm::vec3{2 / screenSize.x, 2 / screenSize.y, 1}) * glm::translate(glm::vec3{-1, -1, 0});
-            boxStage.applyUniform("screenTransform", screenTransform);
-            lineStage.applyUniform("screenTransform", screenTransform);
+            uniformBuffer->screenTransform = screenTransform;
         }
     };
 }

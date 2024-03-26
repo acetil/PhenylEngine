@@ -152,6 +152,19 @@ GLShaderProgram::~GLShaderProgram () {
     glDeleteProgram(programId);
 }
 
+unsigned int GLShaderProgram::getUniformBlockLocation (const std::string& uniform) {
+    if (blockUniformLocations.contains(uniform)) {
+        return blockUniformLocations.at(uniform);
+    }
+
+    unsigned int nextLocation = blockUniformLocations.size();
+    auto blockIndex = glGetUniformBlockIndex(programId, uniform.c_str());
+    glUniformBlockBinding(programId, blockIndex, nextLocation);
+
+    blockUniformLocations[uniform] = nextLocation;
+    return nextLocation;
+}
+
 
 static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath) {
     switch (shaderType) {

@@ -43,5 +43,7 @@ namespace phenyl::graphics {
 
         bool rebuild ();
         void bind ();
+
+        GraphicsTexture& getTexture ();
     };
 }

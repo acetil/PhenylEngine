@@ -42,7 +42,8 @@ namespace phenyl::graphics {
         common::Asset<Shader> textShader;
         common::Asset<Shader> particleShader;
     protected:
-        std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity) override;
+        std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
+        std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
 
     public:
         explicit GLRenderer (std::unique_ptr<GLFWViewport> viewport);
@@ -86,7 +87,7 @@ namespace phenyl::graphics {
         void setScreenSize (glm::vec2 screenSize);
 
 
-        PipelineStage buildPipelineStage (PipelineStageBuilder& builder) override;
+        PipelineBuilder buildPipeline () override;
         void loadDefaultShaders() override;
 
         //std::vector<std::shared_ptr<common::InputSource>> getInputSources () override;

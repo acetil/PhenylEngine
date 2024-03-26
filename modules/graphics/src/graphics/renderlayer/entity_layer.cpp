@@ -11,34 +11,57 @@ using namespace phenyl;
 static void bufferPosData (const phenyl::component::EntityComponentManager& manager, graphics::Buffer<glm::vec2>& buffer);
 static void bufferUvData (const phenyl::component::EntityComponentManager& manager, graphics::Buffer<glm::vec2>& buffer);
 
+namespace {
+    struct Uniform {
+        glm::mat4 camera;
+    };
+}
+
 namespace phenyl::graphics {
-    class EntityPipeline : public Pipeline<phenyl::component::EntityComponentManager> {
+    class EntityPipeline : public Pipeline<phenyl::component::EntityComponentManager, GraphicsTexture&> {
     private:
-        PipelineStage renderStage;
+        Pipeline2 pipeline;
+
         Buffer<glm::vec2> posBuffer;
         Buffer<glm::vec2> uvBuffer;
+
+        UniformBinding uniformBinding;
+        UniformBuffer<Uniform> uniformBuffer;
+
+        SamplerBinding samplerBinding;
+        GraphicsTexture* texture;
     public:
         EntityPipeline () = default;
 
         void init (Renderer* renderer) override {
-            renderStage = renderer->buildPipelineStage(PipelineStageBuilder(phenyl::common::Assets::Load<Shader>("phenyl/shaders/sprite"))
-                                                               .addVertexAttrib<glm::vec2>(0)
-                                                               .addVertexAttrib<glm::vec2>(1));
-                                                               //.addVertexAttrib<glm::vec2>(2)
-                                                               //.addVertexAttrib<glm::mat2>(3)));
+            BufferBinding posBinding;
+            BufferBinding uvBinding;
+            auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/sprite");
+            pipeline = renderer->buildPipeline()
+               .withShader(shader)
+               .withBuffer<glm::vec2>(posBinding)
+               .withBuffer<glm::vec2>(uvBinding)
+               .withAttrib<glm::vec2>(0, posBinding)
+               .withAttrib<glm::vec2>(1, uvBinding)
+               .withUniform<Uniform>(shader->getUniformLocation("Camera"), uniformBinding)
+               .withSampler2D(0, samplerBinding)
+               .build();
 
-            posBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
-            uvBuffer = renderer->makeBuffer2<glm::vec2>(BUFFER_SIZE);
+            posBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
+            uvBuffer = renderer->makeBuffer<glm::vec2>(BUFFER_SIZE);
+            uniformBuffer = renderer->makeUniformBuffer<Uniform>();
 
-            renderStage.bindBuffer(0, posBuffer);
-            renderStage.bindBuffer(1, uvBuffer);
+            pipeline.bindBuffer(posBinding, posBuffer);
+            pipeline.bindBuffer(uvBinding, uvBuffer);
         }
 
         void applyCamera (graphics::Camera& camera) {
-            renderStage.applyUniform(Camera::getUniformName(), camera.getCamMatrix());
+            uniformBuffer->camera = camera.getCamMatrix();
         }
 
-        void bufferData (component::EntityComponentManager& manager) override {
+        void bufferData (component::EntityComponentManager& manager, GraphicsTexture& texture) override {
+            this->texture = &texture;
+
             posBuffer.clear();
             uvBuffer.clear();
 
@@ -50,7 +73,10 @@ namespace phenyl::graphics {
         }
 
         void render () override {
-            renderStage.render(posBuffer.size());
+            pipeline.bindUniform(uniformBinding, uniformBuffer);
+            pipeline.bindSampler(samplerBinding, *texture);
+
+            pipeline.render(posBuffer.size());
         }
     };
 }
@@ -80,7 +106,7 @@ void graphics::EntityRenderLayer::preRender (graphics::Renderer* renderer) {
         }
     });
 
-    entityPipeline->bufferData(*componentManager);
+    entityPipeline->bufferData(*componentManager, atlas.getTexture());
 }
 
 int graphics::EntityRenderLayer::getUniformId (std::string uniformName) {
@@ -96,7 +122,7 @@ void graphics::EntityRenderLayer::applyCamera (graphics::Camera camera) {
 }
 
 void graphics::EntityRenderLayer::render (graphics::Renderer* renderer, graphics::FrameBuffer* frameBuf) {
-    atlas.bind();
+    //atlas.bind();
     entityPipeline->render();
 }
 

@@ -77,6 +77,10 @@ void TextureAtlas::bind () {
     texture.bindTexture();
 }
 
+GraphicsTexture& TextureAtlas::getTexture () {
+    return texture;
+}
+
 static void fillData (std::byte* data, int size, const Image* image, int xOff, int yOff) {
     for (int y = 0; y < image->getHeight(); y++) {
         int dataY = y + yOff;

@@ -70,4 +70,8 @@ SpriteTexture* SpriteAtlas::load (SpriteTexture&& obj, std::size_t id) {
     return sprites[id].get();
 }
 
+GraphicsTexture& SpriteAtlas::getTexture () {
+    return atlas.getTexture();
+}
+
 

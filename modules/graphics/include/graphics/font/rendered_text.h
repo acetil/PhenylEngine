@@ -33,6 +33,7 @@ namespace phenyl::graphics {
         [[nodiscard]] util::span<glm::vec3> getColourComp () const;
         void setOffset (glm::vec2 offset, glm::vec2 screenSize);
 
-        glm::vec2 getSize ();
+        std::size_t textSize () const;
+        glm::vec2 getSize () const;
     };
 }

@@ -101,7 +101,7 @@ void RenderedText::setOffset (glm::vec2 offset, glm::vec2 screenSize) {
     currentOffset = offset;
 }
 
-glm::vec2 RenderedText::getSize () {
+glm::vec2 RenderedText::getSize () const {
     return bottomRight - topLeft;
 }
 
@@ -113,4 +113,8 @@ void RenderedText::finishRender (glm::vec2 screenSize) {
     }
     bottomRight -= topLeft;
     topLeft = {0, 0};
+}
+
+std::size_t RenderedText::textSize () const {
+    return textLen;
 }
