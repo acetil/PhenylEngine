@@ -1,4 +1,3 @@
-#include "graphics/graphics.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/debug_layer.h"
 
@@ -11,12 +10,11 @@ std::string_view GraphicsPlugin::getName () const noexcept {
 }
 
 void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
-    graphics = &runtime.resource<detail::Graphics>();
-
-    runtime.addResource<graphics::Renderer>(graphics->getRenderer());
-    runtime.addResource(&graphics->getCamera());
+    runtime.addResource<Camera>();
 
     auto& renderer = runtime.resource<Renderer>();
+    renderer.loadDefaultShaders();
+
     debugLayer = &renderer.addLayer<DebugLayer>();
 }
 

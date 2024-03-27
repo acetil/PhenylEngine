@@ -3,7 +3,6 @@
 #include "graphics/plugins/particle_plugin.h"
 #include "graphics/particles/particle_manager.h"
 #include "graphics/renderers/renderer.h"
-#include "graphics/graphics.h"
 #include "graphics/renderlayer/particle_layer.h"
 #include "graphics/plugins/graphics_plugin.h"
 
@@ -19,7 +18,6 @@ std::string_view Particle2DPlugin::getName () const noexcept {
 void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
-    auto& graphics = runtime.resource<detail::Graphics>();
     auto& renderer = runtime.resource<Renderer>();
 
     runtime.addComponent<ParticleEmitter2D>();
@@ -27,7 +25,6 @@ void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
     manager = std::make_unique<ParticleManager2D>(256);
     manager->selfRegister();
 
-    //graphics.getRenderLayer()->addRenderLayer(std::make_shared<ParticleRenderLayer>(&renderer, manager.get()));
     layer = &renderer.addLayer<ParticleRenderLayer>();
 }
 

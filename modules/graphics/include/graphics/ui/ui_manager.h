@@ -21,9 +21,6 @@ namespace phenyl::graphics {
     class Renderer;
 
     class UIRenderLayer;
-    namespace detail {
-        class Graphics;
-    }
 
     class RenderedText;
     namespace ui {
@@ -48,7 +45,6 @@ namespace phenyl::graphics {
         FontManager fontManager; // TODO
         common::Asset<Font> defaultFont;
         std::unordered_map<std::string, Font> fonts;
-        //std::shared_ptr<UIRenderLayer> uiLayer;
         UIRenderLayer* uiLayer;
         std::vector<std::pair<glm::vec2, RenderedText>> textBuf;
         std::vector<std::pair<glm::vec2, RenderedText&>> textBuf2;

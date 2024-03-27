@@ -1,5 +1,4 @@
 #include "graphics/plugins/ui_plugin.h"
-#include "graphics/graphics.h"
 #include "graphics/plugins/graphics_plugin.h"
 
 using namespace phenyl::graphics;
@@ -11,12 +10,11 @@ std::string_view UIPlugin::getName () const noexcept {
 void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
-    auto& graphics = runtime.resource<detail::Graphics>();
     auto& renderer = runtime.resource<Renderer>();
 
     manager = std::make_unique<UIManager>(&renderer);
 
-    manager->addProxyInputSources(graphics.getProxySources());
+    manager->addProxyInputSources(renderer.getViewport().getProxySources());
     manager->setupInputActions();
 
     manager->addRenderLayer(renderer);

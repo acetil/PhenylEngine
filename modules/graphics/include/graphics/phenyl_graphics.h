@@ -11,11 +11,5 @@
 #include "util/optional.h"
 
 namespace phenyl::graphics {
-    namespace detail {
-        class Graphics;
-    }
-
-    class Renderer;
-
-    std::unique_ptr<detail::Graphics> MakeGraphics (const GraphicsProperties& properties);
+    std::unique_ptr<Renderer> MakeGLRenderer (const GraphicsProperties& properties);
 }

@@ -1,16 +1,19 @@
+#include <chrono>
+#include <thread>
 #include <exception>
 #include <fstream>
 
 #include "component/component.h"
 
 #include "phenyl/engine.h"
-#include "graphics/graphics.h"
 
 #include "logging/logging.h"
 #include "util/profiler.h"
 
 #include "runtime/runtime.h"
 #include "plugins/app_plugin.h"
+#include "graphics/renderers/renderer.h"
+#include "graphics/phenyl_graphics.h"
 
 #define FIXED_FPS 60.0
 
@@ -20,11 +23,15 @@ static Logger LOGGER{"ENGINE", PHENYL_LOGGER};
 
 class engine::Engine {
 private:
-    std::unique_ptr<graphics::detail::Graphics> graphics; // TODO: move to plugin
-    graphics::Renderer* renderer;
+    std::unique_ptr<graphics::Renderer> renderer;
     runtime::PhenylRuntime runtime;
+
+    double lastTime;
+    double deltaTime{0.0};
+    double fixedTimeSlop{0.0};
 public:
-    Engine (const ApplicationProperties& properties) : graphics(graphics::MakeGraphics(properties.graphicsProperties)), runtime(component::EntityComponentManager{256}), renderer{graphics->getRenderer()} {}
+    explicit Engine (const ApplicationProperties& properties) : renderer{graphics::MakeGLRenderer(properties.graphicsProperties)}, runtime(component::EntityComponentManager{256}), lastTime{renderer->getCurrentTime()} {}
+
     ~Engine() {
         PHENYL_LOGI(LOGGER, "Shutting down!");
         runtime.shutdown();
@@ -36,7 +43,7 @@ public:
     }
 
     void init (ApplicationBase* app) {
-        runtime.addResource(graphics.get()); // TODO: remove
+        runtime.addResource(renderer.get());
 
         runtime.registerPlugin(std::make_unique<AppPlugin>(app));
 
@@ -44,7 +51,7 @@ public:
     }
 
     void gameloop (ApplicationBase* app) {
-        double deltaPhysicsFrame = 0.0f;
+        //double deltaPhysicsFrame = 0.0f;
         PHENYL_LOGD(LOGGER, "Starting loop!");
         while (!renderer->getViewport().shouldClose()) {
             PHENYL_TRACE(LOGGER, "Frame start");
@@ -52,14 +59,14 @@ public:
 
             runtime.pluginFrameBegin();
 
-            double deltaTime = graphics->getDeltaTime();
-            deltaPhysicsFrame += deltaTime * app->getFixedTimeScale();
+            //double deltaTime = graphics->getDeltaTime();
+            fixedTimeSlop += deltaTime * app->getFixedTimeScale();
 
             util::startProfile("physics");
-            while (deltaPhysicsFrame >= 1.0 / FIXED_FPS) {
+            while (fixedTimeSlop >= 1.0 / FIXED_FPS) {
                 PHENYL_TRACE(LOGGER, "Physics frame start");
                 fixedUpdate();
-                deltaPhysicsFrame -= 1.0 / FIXED_FPS;
+                fixedTimeSlop -= 1.0 / FIXED_FPS;
                 PHENYL_TRACE(LOGGER, "Physics frame end");
             }
             util::endProfile();
@@ -71,7 +78,7 @@ public:
 
             util::endProfileFrame();
 
-            graphics->sync((int)app->getTargetFps()); // TODO
+            sync(app->getTargetFps()); // TODO
             renderer->getViewport().poll();
             PHENYL_TRACE(LOGGER, "Frame end");
         }
@@ -97,6 +104,15 @@ public:
 
         renderer->render();
         PHENYL_TRACE(LOGGER, "Render end");
+    }
+
+    void sync (double fps) {
+        while (renderer->getCurrentTime() - lastTime < 1.0 / (fps)) {
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+        double currTime = renderer->getCurrentTime();
+        deltaTime = currTime - lastTime;
+        lastTime = currTime;
     }
 };
 

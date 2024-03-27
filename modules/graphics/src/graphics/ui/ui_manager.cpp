@@ -1,6 +1,5 @@
 #include "graphics/ui/ui_manager.h"
 #include "graphics/renderers/renderer.h"
-#include "graphics/graphics.h"
 #include "graphics/renderlayer/ui_layer.h"
 #include "graphics/font/rendered_text.h"
 #include "graphics/ui/nodes/ui_root.h"
