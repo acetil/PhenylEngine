@@ -27,12 +27,18 @@ void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
     manager = std::make_unique<ParticleManager2D>(256);
     manager->selfRegister();
 
-    graphics.getRenderLayer()->addRenderLayer(std::make_shared<ParticleRenderLayer>(&renderer, manager.get()));
+    //graphics.getRenderLayer()->addRenderLayer(std::make_shared<ParticleRenderLayer>(&renderer, manager.get()));
+    layer = &renderer.addLayer<ParticleRenderLayer>();
 }
 
 void Particle2DPlugin::update (runtime::PhenylRuntime& runtime, double deltaTime) {
     manager->update((float)deltaTime);
     ParticleEmitter2D::Update((float)deltaTime, runtime.manager());
+}
+
+void Particle2DPlugin::render (runtime::PhenylRuntime& runtime) {
+    PHENYL_DASSERT(layer);
+    layer->bufferData(*manager);
 }
 
 

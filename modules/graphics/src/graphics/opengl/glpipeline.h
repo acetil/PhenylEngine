@@ -2,7 +2,7 @@
 
 #include "util/map.h"
 
-#include "graphics/pipeline/pipeline2.h"
+#include "graphics/renderers/pipeline.h"
 #include "graphics/graphics_headers.h"
 
 namespace phenyl::graphics {

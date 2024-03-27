@@ -1,27 +1,28 @@
 #pragma once
 
-#include "graphics/renderlayer/render_layer.h"
+#include "graphics/abstract_render_layer.h"
+#include "graphics/renderers/renderer.h"
 
 namespace phenyl::graphics {
-    class ParticlePipeline;
     class ParticleManager2D;
 
-    class ParticleRenderLayer : public RenderLayer {
+    class ParticleRenderLayer : public AbstractRenderLayer {
     private:
-        std::unique_ptr<ParticlePipeline> pipeline;
-        ParticleManager2D* manager;
-    public:
-        explicit ParticleRenderLayer (phenyl::graphics::Renderer* renderer, ParticleManager2D* manager);
-        ~ParticleRenderLayer() override;
+        struct Uniform {
+            glm::mat4 camera;
+        };
 
-        std::string getName () override;
-        int getPriority () override;
-        bool isActive () override;
-        void gatherData () override;
-        void preRender (phenyl::graphics::Renderer* renderer) override;
-        int getUniformId (std::string uniformName) override;
-        void applyUniform (int uniformId, void* data) override;
-        void applyCamera (phenyl::graphics::Camera camera) override;
-        void render (phenyl::graphics::Renderer* renderer, phenyl::graphics::FrameBuffer* frameBuf) override;
+        Pipeline pipeline;
+        Buffer<glm::vec2> posBuffer;
+        Buffer<glm::vec4> colourBuffer;
+        UniformBuffer<Uniform> uniformBuffer;
+    public:
+        ParticleRenderLayer ();
+
+        [[nodiscard]] std::string_view getName () const override;
+        void init (Renderer& renderer) override;
+        void render () override;
+
+        void bufferData (const ParticleManager2D& manager);
     };
 }

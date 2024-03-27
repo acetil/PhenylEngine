@@ -268,6 +268,12 @@ std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properti
     return std::make_unique<GLRenderer>(std::move(viewport));
 }
 
+void GLRenderer::render () {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    layerRender();
+    viewport->swapBuffers();
+}
+
 
 
 

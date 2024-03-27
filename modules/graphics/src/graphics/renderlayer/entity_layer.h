@@ -1,39 +1,37 @@
 #pragma once
 
-#include "graphics/renderlayer/render_layer.h"
+#include "graphics/abstract_render_layer.h"
+#include "graphics/camera.h"
 #include "component/component.h"
-#include "graphics/pipeline/pipeline.h"
 #include "graphics/textures/sprite_atlas.h"
 
 namespace phenyl::graphics {
-    class EntityPipeline;
-    class EntityRenderLayer : public RenderLayer {
+    class EntityRenderLayer : public AbstractRenderLayer {
     private:
-        bool active = true;
-        component::EntityComponentManager* componentManager;
+        struct Uniform {
+            glm::mat4 camera;
+        };
 
-        std::unique_ptr<EntityPipeline> entityPipeline;
-        SpriteAtlas atlas;
+        Pipeline pipeline;
+
+        Buffer<glm::vec2> posBuffer;
+        Buffer<glm::vec2> uvBuffer;
+
+        UniformBinding uniformBinding{};
+        UniformBuffer<Uniform> uniformBuffer;
+
+        SamplerBinding samplerBinding{};
+        std::unique_ptr<SpriteAtlas> atlas;
+
+        void bufferData (const component::ComponentManager& manager, const Camera& camera);
     public:
-        EntityRenderLayer (Renderer* renderer, component::EntityComponentManager* componentManager);
-        ~EntityRenderLayer() override;
+        EntityRenderLayer ();
 
-        std::string getName () override;
+        [[nodiscard]] std::string_view getName () const override;
 
-        int getPriority () override;
+        void init (Renderer& renderer) override;
 
-        bool isActive () override;
-
-        void gatherData () override;
-
-        void preRender (Renderer* renderer) override;
-
-        int getUniformId (std::string uniformName) override;
-
-        void applyUniform (int uniformId, void* data) override;
-
-        void applyCamera (Camera camera) override;
-
-        void render (Renderer* renderer, FrameBuffer* frameBuf) override;
+        void preRender (component::ComponentManager& manager, const Camera& camera);
+        void render () override;
     };
 }

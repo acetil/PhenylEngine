@@ -13,7 +13,9 @@
 #include "util/optional.h"
 #include "common/input/proxy_source.h"
 #include "graphics/viewport.h"
-#include "graphics/pipeline/pipeline2.h"
+#include "pipeline.h"
+#include "graphics/abstract_render_layer.h"
+#include "graphics/detail/loggers.h"
 
 namespace phenyl::graphics {
 //#ifndef WINDOW_CALLBACKS_H
@@ -26,9 +28,17 @@ namespace phenyl::graphics {
     };
 
     class Renderer : public runtime::IResource {
+    private:
+        std::vector<std::unique_ptr<AbstractRenderLayer>> layers;
     protected:
         virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) = 0;
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
+
+        void layerRender () {
+            for (auto& i : layers) {
+                i->render();
+            }
+        }
     public:
         virtual ~Renderer() = default;
 
@@ -68,6 +78,27 @@ namespace phenyl::graphics {
         UniformBuffer<T> makeUniformBuffer (Args&&...args) {
             return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
         }
+
+        template <std::derived_from<AbstractRenderLayer> T, typename ...Args>
+        T& addLayer (Args&&... args) requires std::constructible_from<T, Args&&...> {
+            auto* ptr = layers.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get();
+
+            std::sort(layers.begin(), layers.end(), [] (const auto& lhs, const auto& rhs) {
+                return lhs->getPriority() < rhs->getPriority();
+            });
+
+            ptr->init(*this);
+
+            PHENYL_LOGI(detail::RENDERER_LOGGER, "Added render layer \"{}\"", ptr->getName());
+
+            return static_cast<T&>(*ptr);
+        }
+
+        void clearLayers () {
+            layers.clear();
+        }
+
+        virtual void render () = 0;
     };
     class GraphicsTexture {
         Renderer* renderer;

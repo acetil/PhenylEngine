@@ -7,7 +7,6 @@
 #include "graphics/renderlayer/entity_layer.h"
 #include "logging/logging.h"
 #include "graphics/detail/loggers.h"
-#include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/font/font_manager.h"
 #include "graphics/phenyl_graphics.h"
 #include "common/input/proxy_source.h"
@@ -21,19 +20,12 @@
 
 using namespace phenyl::graphics;
 
-void detail::Graphics::addEntityLayer (component::EntityComponentManager* compManager) {
-    renderLayer->addRenderLayer(std::make_shared<EntityRenderLayer>(renderer.get(), compManager));
-}
-
-
 detail::Graphics::Graphics (std::unique_ptr<Renderer> renderer){
     this->renderer = std::move(renderer);
     this->deltaTime = 0;
     this->lastTime = this->renderer->getCurrentTime();
 
     this->renderer->loadDefaultShaders();
-    this->renderLayer = std::make_shared<GraphicsRenderLayer>(this->renderer.get());
-    renderLayer->addRenderLayer(makeDebugLayer(this->renderer.get()));
 }
 
 double detail::Graphics::getDeltaTime() const {
@@ -41,22 +33,7 @@ double detail::Graphics::getDeltaTime() const {
 }
 
 void detail::Graphics::render () {
-    renderer->clearWindow();
-    if (!renderLayer->isActive()) {
-        return;
-    }
-    FrameBuffer* buf = renderer->getWindowBuffer();
-
-
-    renderLayer->gatherData();
-
-    renderLayer->preRender(renderer.get());
-
-    renderLayer->applyCamera(camera);
-
-    renderLayer->render(renderer.get(), buf);
-
-    renderer->finishRender();
+    renderer->render();
 
 }
 
@@ -71,10 +48,6 @@ void detail::Graphics::sync (int fps) {
 
 [[maybe_unused]] Camera & detail::Graphics::getCamera () {
     return camera;
-}
-
-std::shared_ptr<GraphicsRenderLayer> detail::Graphics::getRenderLayer () {
-    return renderLayer;
 }
 
 

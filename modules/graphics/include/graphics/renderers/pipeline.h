@@ -35,19 +35,19 @@ namespace phenyl::graphics {
         virtual void render (std::size_t vertices) = 0; // TODO: command buffer
     };
 
-    class Pipeline2 {
+    class Pipeline {
     private:
         std::unique_ptr<IPipeline> pipeline;
     public:
-        Pipeline2 () = default;
-        explicit Pipeline2 (std::unique_ptr<IPipeline> underlying) : pipeline{std::move(underlying)} {}
+        Pipeline () = default;
+        explicit Pipeline (std::unique_ptr<IPipeline> underlying) : pipeline{std::move(underlying)} {}
 
         explicit operator bool () const {
             return (bool)pipeline;
         }
 
         template <typename T>
-        Pipeline2& bindBuffer (BufferBinding binding, Buffer<T>& buffer) {
+        Pipeline& bindBuffer (BufferBinding binding, Buffer<T>& buffer) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindBuffer(meta::type_index<T>(), binding, buffer.getUnderlying());
 
@@ -55,14 +55,14 @@ namespace phenyl::graphics {
         }
 
         template <typename T>
-        Pipeline2& bindUniform (UniformBinding binding, UniformBuffer<T>& buffer) {
+        Pipeline& bindUniform (UniformBinding binding, UniformBuffer<T>& buffer) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying());
 
             return *this;
         }
 
-        Pipeline2& bindSampler (SamplerBinding binding, GraphicsTexture& texture) {
+        Pipeline& bindSampler (SamplerBinding binding, GraphicsTexture& texture) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindSampler(binding, texture);
 
@@ -142,10 +142,10 @@ namespace phenyl::graphics {
             return *this;
         }
 
-        Pipeline2 build () {
+        Pipeline build () {
             PHENYL_DASSERT(builder);
 
-            return Pipeline2{builder->build()};
+            return Pipeline{builder->build()};
         }
     };
 }

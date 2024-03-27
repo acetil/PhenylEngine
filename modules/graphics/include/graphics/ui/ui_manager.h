@@ -17,22 +17,13 @@
 #include "runtime/iresource.h"
 
 namespace phenyl::graphics {
-//#ifndef FONT_H
-class Font;
-//#endif
-    //#ifndef RENDERER_H
+    class Font;
     class Renderer;
-    //#endif
 
-    //#ifndef UI_LAYER_H
     class UIRenderLayer;
-    //#endif
-
-    //#ifndef GRAPHICS_H
     namespace detail {
         class Graphics;
     }
-    //#endif
 
     class RenderedText;
     namespace ui {
@@ -57,7 +48,8 @@ class Font;
         FontManager fontManager; // TODO
         common::Asset<Font> defaultFont;
         std::unordered_map<std::string, Font> fonts;
-        std::shared_ptr<UIRenderLayer> uiLayer;
+        //std::shared_ptr<UIRenderLayer> uiLayer;
+        UIRenderLayer* uiLayer;
         std::vector<std::pair<glm::vec2, RenderedText>> textBuf;
         std::vector<std::pair<glm::vec2, RenderedText&>> textBuf2;
         glm::vec2 screenSize = {800, 600};
@@ -82,7 +74,7 @@ class Font;
         void renderText (RenderedText text, int x, int y);
         void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
         void renderUI ();
-        void addRenderLayer (detail::Graphics& graphics, Renderer* renderer);
+        void addRenderLayer (Renderer& renderer);
         void setMousePos (glm::vec2 _mousePos);
         bool setMouseDown (bool mouseDown);
 

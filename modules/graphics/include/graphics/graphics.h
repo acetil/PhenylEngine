@@ -8,8 +8,6 @@
 #include <optional>
 #include "logging/logging.h"
 #include "component/component.h"
-#include "graphics/renderlayer/render_layer.h"
-#include "graphics/renderlayer/graphics_layer.h"
 #include "graphics/renderers/renderer.h"
 #include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/ui_manager.h"
@@ -20,6 +18,7 @@
 #include "util/optional.h"
 #include "particles/particle_manager.h"
 #include "runtime/iresource.h"
+#include "graphics/camera.h"
 
 namespace phenyl::graphics {
 
@@ -55,8 +54,6 @@ namespace phenyl::graphics {
             double lastTime;
             double deltaTime;
 
-            std::shared_ptr<GraphicsRenderLayer> renderLayer;
-
             //std::unordered_map<std::string, TextureAtlas> atlases;
 
             Camera camera;
@@ -70,12 +67,10 @@ namespace phenyl::graphics {
             //void addShader (std::string name, ShaderProgram* program);
             void sync (int fps);
             double getDeltaTime () const;
-            std::shared_ptr<GraphicsRenderLayer> getRenderLayer ();
             //int createLayer (RenderLayer* layer);
             //RenderLayer* getLayer (std::string name);
             //virtual RenderLayer* getLayer (int layer);
             [[maybe_unused]] Camera& getCamera ();
-            void addEntityLayer (component::EntityComponentManager* compManager);
 
             Renderer* getRenderer () {
                 return renderer.get(); // TODO: remove

@@ -24,6 +24,7 @@ namespace phenyl::graphics {
 
         PHENYL_SERIALIZE_INTRUSIVE(Sprite2D);
         friend class EntityRenderLayer;
+        friend class EntityRenderLayer;
     public:
         explicit operator bool () const {
             return (bool)texture;

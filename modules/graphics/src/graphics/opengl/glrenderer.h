@@ -95,5 +95,7 @@ namespace phenyl::graphics {
 
         Viewport& getViewport() override;
         const Viewport& getViewport() const override;
+
+        void render() override;
     };
 }

@@ -35,9 +35,8 @@ void UIManager::renderText (common::Asset<Font> font, const std::string& text, i
     renderText(std::move(font), text, size, x, y, {1.0f, 1.0f, 1.0f});
 }
 
-void UIManager::addRenderLayer (detail::Graphics& graphics, Renderer* renderer) {
-    uiLayer = std::make_shared<UIRenderLayer>(std::move(defaultFont->getAtlasTexture()), renderer);
-    graphics.getRenderLayer()->addRenderLayer(uiLayer);
+void UIManager::addRenderLayer (Renderer& renderer) {
+    uiLayer = &renderer.addLayer<UIRenderLayer>(std::move(defaultFont->getAtlasTexture()));
 }
 
 void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y,
@@ -62,6 +61,9 @@ void UIManager::renderUI () {
         text.setOffset(textPair.first, screenSize);
         uiLayer->bufferText(text);
     }
+
+    uiLayer->uploadData();
+
     textBuf.clear();
     textBuf2.clear();
 }

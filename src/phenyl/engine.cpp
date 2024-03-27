@@ -28,6 +28,7 @@ public:
     ~Engine() {
         PHENYL_LOGI(LOGGER, "Shutting down!");
         runtime.shutdown();
+        renderer->clearLayers();
     }
 
     runtime::PhenylRuntime& getRuntime () {
@@ -94,7 +95,7 @@ public:
 
         runtime.pluginRender(deltaTime);
 
-        graphics->render(); // TODO: remove dependency on graphics once refactored
+        renderer->render();
         PHENYL_TRACE(LOGGER, "Render end");
     }
 };

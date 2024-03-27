@@ -1,5 +1,6 @@
 #include "graphics/graphics.h"
 #include "graphics/plugins/graphics_plugin.h"
+#include "graphics/renderlayer/debug_layer.h"
 
 #include "graphics/components/2d/sprite_serialization.h"
 
@@ -14,4 +15,15 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
 
     runtime.addResource<graphics::Renderer>(graphics->getRenderer());
     runtime.addResource(&graphics->getCamera());
+
+    auto& renderer = runtime.resource<Renderer>();
+    debugLayer = &renderer.addLayer<DebugLayer>();
+}
+
+void GraphicsPlugin::render (runtime::PhenylRuntime& runtime) {
+    auto& renderer = runtime.resource<Renderer>();
+    const auto& camera = runtime.resource<const Camera>();
+
+    PHENYL_DASSERT(debugLayer);
+    debugLayer->bufferData(camera, renderer.getViewport().getResolution());
 }

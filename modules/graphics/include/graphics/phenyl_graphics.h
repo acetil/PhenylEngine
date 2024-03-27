@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "renderlayer/graphics_layer.h"
 #include "ui/ui_manager.h"
 #include "graphics_properties.h"
 

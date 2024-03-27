@@ -1,27 +1,40 @@
 #pragma once
 
-#include "graphics/renderlayer/render_layer.h"
+#include "graphics/renderers/renderer.h"
+#include "graphics/camera.h"
+#include "graphics/abstract_render_layer.h"
 
 namespace phenyl::graphics {
-    class DebugPipeline;
-    class DebugLayer : public RenderLayer {
+    struct DebugBox;
+    struct DebugLine;
+
+    class DebugLayer : public AbstractRenderLayer {
     private:
-        bool active = true;
-        std::unique_ptr<DebugPipeline> pipeline;
-        glm::vec2 screenSize;
+        struct Uniform {
+            glm::mat4 camera;
+            glm::mat4 screenTransform;
+        };
+
+        Pipeline boxPipeline;
+        Buffer<glm::vec3> boxPos;
+        Buffer<glm::vec4> boxColour;
+
+        Pipeline linePipeline;
+        Buffer<glm::vec3> linePos;
+        Buffer<glm::vec4> lineColour;
+
+        UniformBuffer<Uniform> uniformBuffer;
+
+        void bufferBox (const DebugBox& box);
+        void bufferLine (const DebugLine& line);
     public:
-        explicit DebugLayer (Renderer* renderer);
+        DebugLayer ();
 
-        std::string getName() override;
-        int getPriority() override;
-        bool isActive() override;
-        void gatherData() override;
-        void preRender(graphics::Renderer *renderer) override;
-        int getUniformId(std::string uniformName) override;
-        void applyUniform(int uniformId, void *data) override;
-        void applyCamera(graphics::Camera camera) override;
-        void render(graphics::Renderer *renderer, graphics::FrameBuffer *frameBuf) override;
+        [[nodiscard]] std::string_view getName () const override;
+        void init (Renderer& renderer) override;
+
+        void bufferData (const Camera& camera, glm::vec2 screenSize);
+
+        void render () override;
     };
-
-    std::shared_ptr<DebugLayer> makeDebugLayer (Renderer* renderer);
 }

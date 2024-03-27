@@ -19,7 +19,7 @@ void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     manager->addProxyInputSources(graphics.getProxySources());
     manager->setupInputActions();
 
-    manager->addRenderLayer(graphics, &renderer);
+    manager->addRenderLayer(renderer);
 
     runtime.addResource(manager.get());
 }
