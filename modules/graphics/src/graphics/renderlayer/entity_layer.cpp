@@ -75,17 +75,6 @@ void EntityRenderLayer::bufferData (const phenyl::component::ComponentManager& m
 }
 
 static void bufferPosData (const phenyl::component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer) {
-    /*for (auto [model, transform] : manager.iterate<Model2D, common::GlobalTransform2D>()) {
-        for (auto i : model.positionData) {
-            buffer.pushData(transform.transform2D.apply(i));
-        }
-    }*/
-    /*manager.query<common::GlobalTransform2D, Model2D>().each([&buffer] (auto info, const common::GlobalTransform2D& transform, const Model2D& model) {
-        for (auto i : model.positionData) {
-            buffer.pushData(transform.transform2D.apply(i));
-        }
-    });*/
-
     static glm::vec2 vertices[] =  {
             {-1.0f, 1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}
     };
@@ -98,13 +87,6 @@ static void bufferPosData (const phenyl::component::EntityComponentManager& mana
 }
 
 static void bufferUvData (const phenyl::component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer) {
-    /*for (const auto& model : manager.iterate<Model2D>()) {
-        buffer.pushData(model.uvData.begin(), model.uvData.end());
-    }*/
-    /*manager.query<Model2D>().each([&buffer] (auto info, const Model2D& model) {
-        buffer.pushData(model.uvData.begin(), model.uvData.end());
-    });*/
-
     manager.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&buffer] (auto info, const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
         auto topLeft = sprite.getTopLeft();
         auto bottomRight = sprite.getBottomRight();

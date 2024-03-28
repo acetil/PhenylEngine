@@ -7,12 +7,12 @@ using namespace phenyl::graphics;
 SpriteTexture* SpriteAtlas::load (std::istream& data, std::size_t id) {
     PHENYL_DASSERT(!sprites.contains(id));
     rebuildRequired = true;
-    auto image = std::make_unique<Image>(data);
-    if (!*image) {
+    auto imageOpt = Image::Load(data);
+    if (!imageOpt) {
         return nullptr;
     }
 
-    sprites[id] = std::make_unique<SpriteTexture>(std::move(image));
+    sprites[id] = std::make_unique<SpriteTexture>(std::move(imageOpt.getUnsafe()));
     return sprites[id].get();
 }
 
@@ -44,7 +44,7 @@ bool SpriteAtlas::rebuild () {
     images.reserve(sprites.size());
     std::size_t index = 0;
     for (auto [k, v] : sprites.kv()) {
-        images.push_back(v->image.get());
+        images.push_back(&v->image);
         v->atlasIndex = index++;
     }
 
@@ -57,10 +57,6 @@ bool SpriteAtlas::rebuild () {
     return true;
 }
 
-void SpriteAtlas::bind () {
-    atlas.bind();
-}
-
 SpriteAtlas::SpriteAtlas (Renderer* renderer) : atlas{renderer} {
     common::Assets::AddManager(this);
 }
@@ -70,7 +66,7 @@ SpriteTexture* SpriteAtlas::load (SpriteTexture&& obj, std::size_t id) {
     return sprites[id].get();
 }
 
-GraphicsTexture& SpriteAtlas::getTexture () {
+const Texture& SpriteAtlas::getTexture () const {
     return atlas.getTexture();
 }
 

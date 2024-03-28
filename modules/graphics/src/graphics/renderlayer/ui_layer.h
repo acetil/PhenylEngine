@@ -28,7 +28,7 @@ namespace phenyl::graphics {
         };
 
         Pipeline textPipeline;
-        GraphicsTexture fontTexture;
+        const Texture& fontTexture;
         SamplerBinding samplerBinding{};
         Buffer<TextVertex> textBuffer;
 
@@ -38,7 +38,7 @@ namespace phenyl::graphics {
         UniformBinding uniformBinding{};
         UniformBuffer<Uniform> uniformBuffer;
     public:
-        explicit UIRenderLayer (GraphicsTexture fontTexture);
+        explicit UIRenderLayer (const Texture& fontTexture);
 
         [[nodiscard]] std::string_view getName () const override;
         void init (Renderer& renderer) override;

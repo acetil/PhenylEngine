@@ -5,11 +5,10 @@
 
 #include "graphics/shaders/shaders.h"
 #include "graphics/renderers/buffer.h"
+#include "graphics/renderers/texture.h"
 #include "graphics/renderers/uniform_buffer.h"
 
 namespace phenyl::graphics {
-    class GraphicsTexture;
-
     enum class GeometryType {
         TRIANGLES,
         LINES
@@ -31,7 +30,7 @@ namespace phenyl::graphics {
 
         virtual void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) = 0;
         virtual void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) = 0;
-        virtual void bindSampler (SamplerBinding binding, GraphicsTexture& texture) = 0; // TODO
+        virtual void bindSampler (SamplerBinding binding, const ITexture& texture) = 0;
         virtual void render (std::size_t vertices) = 0; // TODO: command buffer
     };
 
@@ -62,9 +61,9 @@ namespace phenyl::graphics {
             return *this;
         }
 
-        Pipeline& bindSampler (SamplerBinding binding, GraphicsTexture& texture) {
+        Pipeline& bindSampler (SamplerBinding binding, const Texture& texture) {
             PHENYL_DASSERT(pipeline);
-            pipeline->bindSampler(binding, texture);
+            pipeline->bindSampler(binding, texture.getUnderlying());
 
             return *this;
         }

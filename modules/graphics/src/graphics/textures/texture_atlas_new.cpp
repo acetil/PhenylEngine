@@ -27,14 +27,14 @@ struct AtlasImage {
 
 static void fillData (std::byte* data, int size, const Image* image, int xOff, int yOff);
 
-TextureAtlas::TextureAtlas (Renderer* renderer) : texture{renderer->loadTexture(0, 0, nullptr)}, items{} {}
+TextureAtlas::TextureAtlas (Renderer* renderer) : texture{renderer->makeImageTexture(TextureProperties{.format = ImageFormat::RGBA, .filter = TextureFilter::POINT, .useMipmapping = true})}, items{} {}
 
 void TextureAtlas::build (const std::vector<Image*>& images) {
     std::vector<AtlasImage> atlasImages;
     atlasImages.reserve(images.size());
 
     for (std::size_t i = 0; i < images.size(); i++) {
-        atlasImages.emplace_back(i, images[i]->getWidth(), images[i]->getHeight());
+        atlasImages.emplace_back(i, images[i]->width(), images[i]->height());
     }
 
     std::vector<AtlasObject<std::size_t>> objs;
@@ -47,17 +47,20 @@ void TextureAtlas::build (const std::vector<Image*>& images) {
     }
 
     PHENYL_LOGD(LOGGER, "Stitching atlas.");
-    auto data = std::make_unique<std::byte[]>(imgSize * imgSize * CHANNELS);
+    //auto data = std::make_unique<std::byte[]>(imgSize * imgSize * CHANNELS);
+    Image atlasImage{static_cast<std::uint32_t>(imgSize), static_cast<std::uint32_t>(imgSize), ImageFormat::RGBA};
     items.clear();
     items.reserve(objs.size());
     std::fill_n(std::back_inserter(items), objs.size(), AtlasOffset{});
 
     for (auto& i : objs) {
-        fillData(data.get(), imgSize, images.at(i.key), i.xOff, i.yOff);
+        //fillData(data.get(), imgSize, images.at(i.key), i.xOff, i.yOff);
+        atlasImage.blit(*images.at(i.key), {i.xOff, i.yOff});
         items.at(i.key) = AtlasOffset{glm::vec2{i.uOff, i.vOff}, glm::vec2 {i.uOff + i.uSize, i.vOff + i.vSize}};
     }
 
-    texture.reload(imgSize, imgSize, (unsigned char*)data.get());
+    //texture.reload(imgSize, imgSize, (unsigned char*)data.get());
+    texture.upload(atlasImage);
     PHENYL_LOGD(LOGGER, "Stitching complete");
 }
 
@@ -73,23 +76,7 @@ phenyl::util::Optional<const AtlasOffset&> TextureAtlas::at (std::size_t index) 
     return index < items.size() ? util::Optional<const AtlasOffset&>{items[index]} : util::Optional<const AtlasOffset&>{};
 }
 
-void TextureAtlas::bind () {
-    texture.bindTexture();
-}
-
-GraphicsTexture& TextureAtlas::getTexture () {
+const Texture& TextureAtlas::getTexture () const {
     return texture;
 }
-
-static void fillData (std::byte* data, int size, const Image* image, int xOff, int yOff) {
-    for (int y = 0; y < image->getHeight(); y++) {
-        int dataY = y + yOff;
-        for (int x = 0; x < image->getWidth(); x++) {
-            int dataX = x + xOff;
-            // TODO: channel num differences
-            memcpy(data + dataY * size * CHANNELS + dataX * CHANNELS, image->getData() + y * image->getWidth() * CHANNELS + x * CHANNELS, CHANNELS);
-        }
-    }
-}
-
 

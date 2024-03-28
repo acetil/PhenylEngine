@@ -8,12 +8,12 @@
 namespace phenyl::graphics {
     class SpriteTexture {
     private:
-        std::unique_ptr<Image> image;
+        Image image;
         std::size_t atlasIndex;
         AtlasOffset offset;
         friend class SpriteAtlas;
     public:
-        explicit SpriteTexture (std::unique_ptr<Image> image) : image{std::move(image)}, atlasIndex{static_cast<std::size_t>(-1)}, offset{} {}
+        explicit SpriteTexture (Image image) : image{std::move(image)}, atlasIndex{static_cast<std::size_t>(-1)}, offset{} {}
         [[nodiscard]] inline glm::vec2 topLeft () const {
             return offset.topLeft;
         }
@@ -42,8 +42,7 @@ namespace phenyl::graphics {
         explicit SpriteAtlas (Renderer* renderer);
 
         bool rebuild ();
-        void bind ();
 
-        GraphicsTexture& getTexture ();
+        const Texture& getTexture () const;
     };
 }

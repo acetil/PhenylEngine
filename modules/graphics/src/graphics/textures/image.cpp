@@ -2,8 +2,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstring>
 
-#include "graphics/textures/image.h"
+#include "graphics/image.h"
 
 #include "graphics/detail/loggers.h"
 #include "stb/stb_image.h"
@@ -12,84 +13,66 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"IMAGE", detail::GRAPHICS_LOGGER};
 
-Image::Image (const char* filename, std::string name) {
-    width = 0; // to get clang to shut up
-    height = 0;
-    n = 0;
-    unsigned char* data = stbi_load(filename, &width, &height, &n, 4);
-    if (data == nullptr) {
-        PHENYL_LOGE(LOGGER, "Failed to load texture \"{}\" at path \"{}\"", name, filename);
-        return;
+unsigned int Image::FormatComps (ImageFormat format) {
+    switch (format) {
+        case ImageFormat::R:
+            return 1;
+        case ImageFormat::RGBA:
+            return 4;
     }
-    this->name = std::move(name);
 
-    imageData = std::unique_ptr<std::byte[], DataDeleter>((std::byte*)data, DataDeleter{true});
+    PHENYL_ABORT("Invalid format: {}", static_cast<std::uint32_t>(format));
 }
 
-std::byte* Image::getData () const {
-    return imageData.get();
-}
-Image::~Image () = default;
+std::size_t Image::FormatSize (ImageFormat format) {
+    switch (format) {
+        case ImageFormat::R:
+            return 1;
+        case ImageFormat::RGBA:
+            return 4;
+    }
 
-int Image::getArea () const {
-    return width * height;
-}
-int Image::getWidth () const {
-    return width;
-}
-int Image::getHeight () const {
-    return height;
-}
-std::string Image::getName () {
-    return name;
+    PHENYL_ABORT("Invalid format: {}", static_cast<std::uint32_t>(format));
 }
 
-Image::Image (Image&& other) noexcept : imageData{std::move(other.imageData)}, width{other.width}, height{other.height}, n{other.n}, name{std::move(other.name)} {
-    other.width = 0;
-    other.height = 0;
-    other.n = 0;
-}
-
-Image& Image::operator= (Image&& other) noexcept {
-    imageData = std::move(other.imageData);
-    width = other.width;
-    height = other.height;
-    n = other.n;
-    name = std::move(other.name);
-
-    other.width = 0;
-    other.height = 0;
-    other.n = 0;
-
-    return *this;
-}
-
-Image::Image (std::string name, int width, int height, int n) : name{std::move(name)}, width{width}, height{height}, n{n} {
-    imageData = std::unique_ptr<std::byte[], DataDeleter>{new std::byte[width * height * n], DataDeleter{false}};
-}
-
-Image::Image (std::istream& file) {
+phenyl::util::Optional<Image> Image::Load (std::istream& file, ImageFormat format) {
     std::vector<unsigned char> contents{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
-    width = 0; // to get clang to shut up
-    height = 0;
-    n = 0;
-    unsigned char* data = stbi_load_from_memory(contents.data(), static_cast<int>(contents.size()), &width, &height, &n, 4);
-    if (data == nullptr) {
-        PHENYL_LOGE(LOGGER, "Failed to load texture from istream!");
-        return;
+
+    int width;
+    int height;
+    int n;
+
+    auto* baseData = stbi_load_from_memory(contents.data(), static_cast<int>(contents.size()), &width, &height, &n,
+                                       static_cast<int>(FormatComps(format)));
+    if (!baseData) {
+        PHENYL_LOGE(LOGGER, "Failed to load image from istream!");
+        return util::NullOpt;
     }
 
-    imageData = std::unique_ptr<std::byte[], DataDeleter>((std::byte*)data, DataDeleter{true});
+    DataPtr data{reinterpret_cast<std::byte*>(baseData), [] (std::byte* data) { stbi_image_free(reinterpret_cast<void*>(data)); } };
+
+    return Image{std::move(data), static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height), format};
 }
 
-Image::operator bool () const {
-    return (bool)imageData;
+Image::Image (std::uint32_t width, std::uint32_t height, ImageFormat format) : Image{MakeData<float>(width * height * FormatComps(format)), width, height, format} {}
+
+Image::Image (Image::DataPtr data, std::uint32_t width, std::uint32_t height, ImageFormat format) : imgData{std::move(data)}, imgWidth{width}, imgHeight{height}, imgFormat{format} {}
+
+Image Image::MakeNonOwning (std::span<std::byte> data, std::uint32_t width, std::uint32_t height, ImageFormat format) {
+    PHENYL_ASSERT_MSG(data.size() == width * height * FormatSize(format), "Invalid data size: expected {}, got {}", width * height * FormatSize(format), data.size());
+
+    return Image{DataPtr{data.data(), [] (auto*) {}}, width, height, format};
 }
 
-void Image::DataDeleter::operator() (std::byte* data) const noexcept {
-    if (isSTB) {
-        stbi_image_free(data);
-    } else {
-        delete[] data;
+void Image::blit (const Image& src, glm::uvec2 offset) {
+    PHENYL_ASSERT(offset.x + src.width() <= width());
+    PHENYL_ASSERT(offset.y + src.height() <= height());
+    PHENYL_ASSERT_MSG(format() == src.format(), "Format mismatch: format conversion not yet supported!");
+
+    auto formatSize = FormatSize(format());
+    const auto* srcData = src.data().data();
+
+    for (uint32_t y = 0; y < src.height(); y++) {
+        std::memcpy(imgData.get() + ((y + offset.y) * width() + offset.x) * formatSize, srcData + y * src.width() * formatSize, src.width() * formatSize);
     }
 }

@@ -18,7 +18,7 @@ namespace phenyl::graphics {
         float offsetY = 0.0f;
         int width = 0;
         int height = 0;
-        GraphicsTexture texture;
+        Texture texture;
     public:
         GlyphAtlas () = default;
         GlyphAtlas (const std::vector<GlyphImage>& glyphs, int targetRes);
@@ -43,7 +43,7 @@ namespace phenyl::graphics {
             return *this;
         }
         void loadAtlas (Renderer* renderer);
-        GraphicsTexture& getTex () {
+        const Texture& getTex () const {
             return texture;
         }
         util::span<glm::vec2> getCharUvs (int c);

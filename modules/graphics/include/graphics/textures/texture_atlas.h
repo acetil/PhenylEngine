@@ -4,7 +4,7 @@
 
 #include "graphics/maths_headers.h"
 #include "graphics/renderers/renderer.h"
-#include "image.h"
+#include "graphics/image.h"
 
 #include "util/optional.h"
 
@@ -15,7 +15,7 @@ namespace phenyl::graphics {
     };
     class TextureAtlas {
     private:
-        GraphicsTexture texture;
+        ImageTexture texture;
         std::vector<AtlasOffset> items;
     public:
         explicit TextureAtlas (Renderer* renderer);
@@ -25,8 +25,8 @@ namespace phenyl::graphics {
         [[nodiscard]] std::size_t size () const;
         const AtlasOffset& operator[] (std::size_t index) const;
         [[nodiscard]] util::Optional<const AtlasOffset&> at (std::size_t index) const;
-        void bind ();
+        //void bind ();
 
-        GraphicsTexture& getTexture ();
+        const Texture& getTexture () const;
     };
 }

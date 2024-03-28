@@ -42,11 +42,7 @@ void Font::loadAtlas (Renderer* renderer) {
     atlas.loadAtlas(renderer);
 }
 
-void Font::bindAtlasTexture () {
-    atlas.getTex().bindTexture();
-}
-
-GraphicsTexture& Font::getAtlasTexture () {
+const Texture& Font::getAtlasTexture () const {
     // TODO: it now moves, fix lifetime issues
     return atlas.getTex();
 }

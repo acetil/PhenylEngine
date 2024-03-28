@@ -17,6 +17,7 @@
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
 #include "glpipeline.h"
+#include "gltexture.h"
 
 #include <vector>
 using namespace phenyl::graphics;
@@ -24,7 +25,6 @@ using namespace phenyl::graphics;
 static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
 GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, shaderManager{this} {
-    windowBuf = std::make_shared<GLFrameBuffer>();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
@@ -39,17 +39,6 @@ double GLRenderer::getCurrentTime () {
 void GLRenderer::clearWindow () {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-
-FrameBuffer* GLRenderer::getWindowBuffer () {
-    return windowBuf.get();
-}
-
-/*std::optional<ShaderProgram*> GLRenderer::getProgram (std::string program) {
-    if (shaderPrograms.find(program) == shaderPrograms.end()) {
-        return std::nullopt;
-    }
-    return std::optional(shaderPrograms[program]);
-}*/
 
 void GLRenderer::finishRender () {
     viewport->swapBuffers();
@@ -131,71 +120,6 @@ void GLRenderer::setupErrorHandling () {
     }, nullptr);
 }
 
-GraphicsTexture GLRenderer::loadTexture (int width, int height, unsigned char* data) {
-    unsigned int id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-    // mipmapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    PHENYL_LOGD(LOGGER, "Generating mipmaps for {} * {} texture", width, width);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    return GraphicsTexture(this, id);
-}
-
-void GLRenderer::reloadTexture (unsigned int textureId, int width, int height, unsigned char* data) {
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, width, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-    // mipmapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    PHENYL_LOGD(LOGGER, "Generating mipmaps for {} * {} texture atlas", width, width);
-    glGenerateMipmap(GL_TEXTURE_2D);
-}
-
-
-void GLRenderer::bindTexture (unsigned int textureId) {
-    glBindTexture(GL_TEXTURE_2D, textureId);
-}
-
-void GLRenderer::destroyTexture (unsigned int textureId) {
-    glDeleteTextures(1, &textureId);
-}
-
-// TODO: make profiles for different magfilter/minfilter/mipmapping
-GraphicsTexture GLRenderer::loadTextureGrey (int width, int height, unsigned char* data) {
-    unsigned int id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
-
-    // mipmapping
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    //logging::log(LEVEL_INFO, "Generating mipmaps for {} * {} texture atlas", width, width);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    return GraphicsTexture(this, id);
-}
-
-GLRenderer::~GLRenderer () {
-
-}
-
-/*void GLRenderer::addShader (const std::string& shaderName, const ShaderBuilder& shaderBuilder) {
-    shaderProgramsNew[shaderName] = Shader{GLShaderProgram::NewSharedPtr(shaderBuilder)};
-}
-
-util::Optional<Shader> GLRenderer::getProgramNew (const std::string& program) {
-    if (shaderProgramsNew.contains(program)) {
-        return {shaderProgramsNew.at(program)};
-    } else {
-        return util::NullOpt;
-    }
-}*/
-
 std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) {
     return std::make_unique<GlBuffer>(startCapacity, elementSize);
 }
@@ -204,11 +128,9 @@ PipelineBuilder GLRenderer::buildPipeline () {
     return PipelineBuilder(std::make_unique<GlPipelineBuilder>());
 }
 
-
 std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool readable) {
     return std::move(std::make_unique<GlUniformBuffer>(readable));
 }
-
 
 void GLRenderer::loadDefaultShaders () {
     PHENYL_LOGD(LOGGER, "Loading virtual box shader!");
@@ -274,6 +196,13 @@ void GLRenderer::render () {
     viewport->swapBuffers();
 }
 
+std::unique_ptr<ITexture> GLRenderer::makeRendererTexture (const TextureProperties& properties, const Image& image) {
+    auto texture = std::make_unique<GlTexture>(properties);
+    texture->upload(image);
 
+    return texture;
+}
 
-
+std::unique_ptr<IImageTexture> GLRenderer::makeRendererImageTexture (const TextureProperties& properties) {
+    return std::make_unique<GlTexture>(properties);
+}

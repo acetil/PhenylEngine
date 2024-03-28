@@ -191,7 +191,8 @@ GlyphAtlas::~GlyphAtlas () {
 }
 
 void GlyphAtlas::loadAtlas (Renderer* renderer) {
-    texture = renderer->loadTextureGrey(width, height, data);
+    auto image = Image::MakeNonOwning(std::span{reinterpret_cast<std::byte*>(data), static_cast<std::size_t>(width * height)}, width, height, ImageFormat::R);
+    texture = renderer->makeTexture(TextureProperties{.format = image.format(), .filter = TextureFilter::TRILINEAR, .useMipmapping = true}, image);
     /*for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             printf("%c", data[i * width + j] ? '*' : ' ');

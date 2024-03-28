@@ -40,6 +40,9 @@ add_library(graphics src/graphics/font/font.cpp src/graphics/font/font_face.cpp 
         src/graphics/opengl/glpipeline.h
         src/graphics/opengl/glpipeline.cpp
         include/graphics/abstract_render_layer.h
+        include/graphics/renderers/texture.h
+        src/graphics/opengl/gltexture.h
+        src/graphics/opengl/gltexture.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL

@@ -12,29 +12,12 @@
 
 
 namespace phenyl::graphics {
-    class GLFrameBuffer : public FrameBuffer {
-    public:
-        void bind () override {
-            // TODO: do something
-        }
-    };
-
-    class GLFWKeyInput;
-    class GLFWMouseInput;
-    class GLFWInput;
-
-    class GLWindowCallbackCtx;
-
     class GLRenderer : public Renderer {
     private:
         std::unique_ptr<GLFWViewport> viewport;
-        std::shared_ptr<GLFrameBuffer> windowBuf;
         util::Map<std::string, Shader> shaderProgramsNew;
 
         GLShaderManager shaderManager;
-
-        glm::vec2 screenSize;
-        glm::vec2 mousePos;
 
         common::Asset<Shader> boxShader;
         common::Asset<Shader> debugShader;
@@ -44,58 +27,28 @@ namespace phenyl::graphics {
     protected:
         std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
         std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
+        std::unique_ptr<ITexture> makeRendererTexture (const TextureProperties& properties, const Image& image) override;
+        std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) override;
 
     public:
+        static std::unique_ptr<GLRenderer> Make (const GraphicsProperties& properties);
         explicit GLRenderer (std::unique_ptr<GLFWViewport> viewport);
 
-        static std::unique_ptr<GLRenderer> Make (const GraphicsProperties& properties);
-
-        ~GLRenderer() override;
+        void setupErrorHandling ();
 
         std::string_view getName() const noexcept override;
 
         double getCurrentTime () override;
 
-        //bool shouldClose () override;
-
-        //void pollEvents () override;
-
         void clearWindow () override;
-
-        FrameBuffer* getWindowBuffer () override;
-
-       //std::optional<ShaderProgram*> getProgram (std::string program) override;
-
-        //util::Optional<Shader> getProgramNew (const std::string& program) override;
-
+        void render () override;
         void finishRender () override;
 
-        //void addShader(const std::string &shaderName, const ShaderBuilder& shaderBuilder) override;
-
-        void setupErrorHandling ();
-
-        GraphicsTexture loadTexture (int width, int height, unsigned char* data) override;
-        GraphicsTexture loadTextureGrey (int width, int height, unsigned char* data) override;
-
-        void bindTexture (unsigned int textureId) override;
-        void reloadTexture(unsigned int textureId, int width, int height, unsigned char *data) override;
-
-        void destroyTexture(unsigned int textureId) override;
-
-        //[[nodiscard]] glm::vec2 getScreenSize() const override;
-        //[[nodiscard]] glm::vec2 getMousePos() const override;
-        void setScreenSize (glm::vec2 screenSize);
-
-
         PipelineBuilder buildPipeline () override;
-        void loadDefaultShaders() override;
+        void loadDefaultShaders () override;
 
-        //std::vector<std::shared_ptr<common::InputSource>> getInputSources () override;
-        //std::vector<std::shared_ptr<common::ProxySource>> getProxySources() override;
+        Viewport& getViewport () override;
+        const Viewport& getViewport () const override;
 
-        Viewport& getViewport() override;
-        const Viewport& getViewport() const override;
-
-        void render() override;
     };
 }

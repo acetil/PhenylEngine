@@ -16,23 +16,18 @@
 #include "pipeline.h"
 #include "graphics/abstract_render_layer.h"
 #include "graphics/detail/loggers.h"
+#include "graphics/image.h"
+#include "graphics/renderers/texture.h"
 
 namespace phenyl::graphics {
-//#ifndef WINDOW_CALLBACKS_H
-    class WindowCallbackContext;
-//#endif
-    class GraphicsTexture;
-    class FrameBuffer {
-    public:
-        virtual void bind () = 0;
-    };
-
     class Renderer : public runtime::IResource {
     private:
         std::vector<std::unique_ptr<AbstractRenderLayer>> layers;
     protected:
         virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) = 0;
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
+        virtual std::unique_ptr<ITexture> makeRendererTexture (const TextureProperties& properties, const Image& image) = 0;
+        virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
 
         void layerRender () {
             for (auto& i : layers) {
@@ -46,16 +41,7 @@ namespace phenyl::graphics {
 
         virtual void clearWindow () = 0;
 
-        virtual FrameBuffer* getWindowBuffer () = 0;
-
         virtual void finishRender () = 0;
-
-        virtual GraphicsTexture loadTexture (int width, int height, unsigned char* data) = 0;
-        virtual GraphicsTexture loadTextureGrey (int width, int height, unsigned char* data) = 0;
-        virtual void reloadTexture (unsigned int textureId, int width, int height, unsigned char* data) = 0;
-
-        virtual void bindTexture (unsigned int textureId) = 0;
-        virtual void destroyTexture (unsigned int textureId) = 0;
 
         virtual PipelineBuilder buildPipeline () = 0;
 
@@ -79,6 +65,14 @@ namespace phenyl::graphics {
             return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
         }
 
+        Texture makeTexture (const TextureProperties& properties, const Image& image) {
+            return Texture{makeRendererTexture(properties, image)};
+        }
+
+        ImageTexture makeImageTexture (const TextureProperties& properties) {
+            return ImageTexture{makeRendererImageTexture(properties)};
+        }
+
         template <std::derived_from<AbstractRenderLayer> T, typename ...Args>
         T& addLayer (Args&&... args) requires std::constructible_from<T, Args&&...> {
             auto* ptr = layers.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get();
@@ -100,47 +94,4 @@ namespace phenyl::graphics {
 
         virtual void render () = 0;
     };
-    class GraphicsTexture {
-        Renderer* renderer;
-        unsigned int textureId;
-    public:
-        GraphicsTexture () : renderer(nullptr), textureId (0) {};
-        GraphicsTexture (Renderer* render, unsigned int id) : renderer(render), textureId(id) {};
-
-        GraphicsTexture (const GraphicsTexture&) = delete;
-        GraphicsTexture (GraphicsTexture&& other) noexcept : renderer{other.renderer}, textureId{other.textureId} {
-            other.renderer = nullptr;
-            other.textureId = 0;
-        }
-
-        GraphicsTexture& operator= (const GraphicsTexture&) = delete;
-        GraphicsTexture& operator= (GraphicsTexture&& other) noexcept {
-            if (renderer && textureId) {
-                renderer->destroyTexture(textureId);
-            }
-
-            renderer = other.renderer;
-            textureId = other.textureId;
-            other.renderer = nullptr;
-            other.textureId = 0;
-            return *this;
-        }
-
-        ~GraphicsTexture () {
-            if (renderer && textureId) {
-                renderer->destroyTexture(textureId);
-            }
-        }
-        void bindTexture () {
-            renderer->bindTexture(textureId);
-        }
-        void reload (int width, int height, unsigned char* data) {
-            renderer->reloadTexture(textureId, width, height, data);
-        }
-
-        [[nodiscard]] unsigned int id () const {
-            return textureId;
-        }
-    };
-
 }

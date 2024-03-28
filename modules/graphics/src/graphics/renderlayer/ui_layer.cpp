@@ -10,7 +10,7 @@ using namespace phenyl::graphics;
 
 #define BUFFER_SIZE (256 * 6)
 
-UIRenderLayer::UIRenderLayer (GraphicsTexture fontTexture) : AbstractRenderLayer{4}, fontTexture{std::move(fontTexture)} {}
+UIRenderLayer::UIRenderLayer (const Texture& fontTexture) : AbstractRenderLayer{4}, fontTexture{fontTexture} {}
 
 std::string_view UIRenderLayer::getName () const {
     return "UIRenderLayer";

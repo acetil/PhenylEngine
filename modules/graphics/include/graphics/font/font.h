@@ -20,9 +20,8 @@ namespace phenyl::graphics {
             face.updateResolution(72, 72);
         };
         RenderedText renderText (const std::string& text, int size, int x, int y, glm::vec3 colour);
-        void bindAtlasTexture ();
         void loadAtlas (Renderer* renderer);
-        GraphicsTexture& getAtlasTexture ();
+        const Texture& getAtlasTexture () const;
 
         Font(Font&& font) noexcept : face(std::move(font.face)), atlas(std::move(font.atlas)) {
             screenX = font.screenX;
