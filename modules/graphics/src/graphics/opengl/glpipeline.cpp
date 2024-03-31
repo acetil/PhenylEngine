@@ -2,7 +2,7 @@
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
 #include "graphics/renderers/renderer.h"
-#include "gltexture.h"
+#include "glimage_texture.h"
 
 using namespace phenyl::graphics;
 
@@ -54,10 +54,10 @@ void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, IUniform
     glBindBufferBase(GL_UNIFORM_BUFFER, binding, glBuffer.id());
 }
 
-void GlPipeline::bindSampler (SamplerBinding binding, const ITexture& texture) {
-    const auto& glTexture = reinterpret_cast<const GlTexture&>(texture);
+void GlPipeline::bindSampler (SamplerBinding binding, const ISampler& sampler) {
+    const auto& glSampler = reinterpret_cast<const GlSampler&>(sampler);
     glActiveTexture(binding);
-    glBindTexture(GL_TEXTURE_2D, glTexture.id());
+    glSampler.bind();
 }
 
 void GlPipeline::render (std::size_t vertices) {

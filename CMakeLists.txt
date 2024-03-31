@@ -6,7 +6,7 @@ enable_language(CXX)
 add_compile_options("-D C_LOGGING")
 set(DEBUG_COMPILE_FLAGS "-Werror=return-type")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address ${DEBUG_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb ${DEBUG_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 find_package(PythonInterp REQUIRED)
@@ -32,7 +32,8 @@ add_library(phenyl
         src/phenyl/plugins/level_plugin.cpp
         src/phenyl/plugins/prefab_plugin.cpp
         src/phenyl/engine.cpp
-        include/phenyl/properties.h)
+        include/phenyl/properties.h
+        include/phenyl/font.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

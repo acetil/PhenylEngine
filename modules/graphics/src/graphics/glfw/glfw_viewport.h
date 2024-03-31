@@ -19,6 +19,7 @@ namespace phenyl::graphics {
         void poll () override;
         [[nodiscard]] glm::ivec2 getResolution() const override;
         [[nodiscard]] glm::vec2 getCursorPos() const override; // TODO
+        glm::vec2 getContentScale() const override;
 
         [[nodiscard]] std::vector<std::shared_ptr<phenyl::common::InputSource>> getInputSources () const override;
         [[nodiscard]] std::vector<std::shared_ptr<phenyl::common::ProxySource>> getProxySources () const override;

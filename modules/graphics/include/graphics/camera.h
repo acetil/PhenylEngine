@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include "graphics_headers.h"
 #include "graphics/maths_headers.h"
 #include "runtime/iresource.h"
 

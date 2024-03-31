@@ -24,6 +24,7 @@ target_copy_resources(action-game
         resources/particles/test_system.json
         resources/themes/alt_theme.json
         resources/audio/blastoff.wav
+        resources/Arial.ttf
 )
 
 target_include_directories(action-game PRIVATE src)

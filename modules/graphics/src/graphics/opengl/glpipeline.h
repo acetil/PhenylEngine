@@ -25,7 +25,7 @@ namespace phenyl::graphics {
 
         void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) override;
         void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) override;
-        void bindSampler (SamplerBinding binding, const ITexture& texture) override;
+        void bindSampler (SamplerBinding binding, const ISampler& sampler) override;
 
         void render (std::size_t vertices) override;
 

@@ -17,7 +17,8 @@
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
 #include "glpipeline.h"
-#include "gltexture.h"
+#include "glimage_texture.h"
+#include "glarray_texture.h"
 
 #include <vector>
 using namespace phenyl::graphics;
@@ -196,13 +197,10 @@ void GLRenderer::render () {
     viewport->swapBuffers();
 }
 
-std::unique_ptr<ITexture> GLRenderer::makeRendererTexture (const TextureProperties& properties, const Image& image) {
-    auto texture = std::make_unique<GlTexture>(properties);
-    texture->upload(image);
-
-    return texture;
+std::unique_ptr<IImageTexture> GLRenderer::makeRendererImageTexture (const TextureProperties& properties) {
+    return std::make_unique<GlImageTexture>(properties);
 }
 
-std::unique_ptr<IImageTexture> GLRenderer::makeRendererImageTexture (const TextureProperties& properties) {
-    return std::make_unique<GlTexture>(properties);
+std::unique_ptr<IImageArrayTexture> GLRenderer::makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
+    return std::make_unique<GlArrayTexture>(properties, width, height);
 }

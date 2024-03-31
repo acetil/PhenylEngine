@@ -2,8 +2,8 @@
 
 #include <utility>
 
+#include "common/assets/asset.h"
 #include "ui_node.h"
-#include "graphics/font/rendered_text.h"
 #include "graphics/font/font.h"
 
 namespace phenyl::graphics::ui {
@@ -14,8 +14,6 @@ namespace phenyl::graphics::ui {
         int textSize = 12;
         glm::vec4 colour = {1.0f, 1.0f, 1.0f, 1.0f};
         glm::vec2 labelSize{0, 0};
-        //RenderedText renderedText{0};
-        bool doTextRender = false;
         bool doDebugRender = false;
     public:
         explicit UILabelNode (const std::string& themeClass);

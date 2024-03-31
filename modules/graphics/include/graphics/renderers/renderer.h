@@ -26,8 +26,8 @@ namespace phenyl::graphics {
     protected:
         virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) = 0;
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
-        virtual std::unique_ptr<ITexture> makeRendererTexture (const TextureProperties& properties, const Image& image) = 0;
         virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
+        virtual std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
 
         void layerRender () {
             for (auto& i : layers) {
@@ -65,12 +65,19 @@ namespace phenyl::graphics {
             return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
         }
 
-        Texture makeTexture (const TextureProperties& properties, const Image& image) {
-            return Texture{makeRendererTexture(properties, image)};
+        ImageTexture makeTexture (const TextureProperties& properties, const Image& image) {
+            auto texture = makeImageTexture(properties);
+            texture.upload(image);
+
+            return texture;
         }
 
         ImageTexture makeImageTexture (const TextureProperties& properties) {
             return ImageTexture{makeRendererImageTexture(properties)};
+        }
+
+        ImageArrayTexture makeArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
+            return ImageArrayTexture{makeRendererArrayTexture(properties, width, height)};
         }
 
         template <std::derived_from<AbstractRenderLayer> T, typename ...Args>

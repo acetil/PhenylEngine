@@ -5,9 +5,10 @@
 #include <memory>
 #include <vector>
 
-#include "graphics/font/font_manager.h"
-#include "graphics/font/font.h"
 #include "graphics/maths_headers.h"
+#include "graphics/font/font.h"
+#include "graphics/font/glyph.h"
+#include "graphics/font/glyph_atlas.h"
 #include "graphics/ui/nodes/ui_node.h"
 #include "graphics/ui/components/ui_component.h"
 #include "graphics/ui/themes/forward.h"
@@ -17,12 +18,11 @@
 #include "runtime/iresource.h"
 
 namespace phenyl::graphics {
-    class Font;
+    class FontManager;
     class Renderer;
 
     class UIRenderLayer;
 
-    class RenderedText;
     namespace ui {
         class UIRootNode;
     }
@@ -42,12 +42,9 @@ namespace phenyl::graphics {
 
     class UIManager : public runtime::IResource {
     private:
-        FontManager fontManager; // TODO
-        common::Asset<Font> defaultFont;
-        std::unordered_map<std::string, Font> fonts;
+        GlyphAtlas glyphAtlas;
+        std::unique_ptr<FontManager> fontManager;
         UIRenderLayer* uiLayer;
-        std::vector<std::pair<glm::vec2, RenderedText>> textBuf;
-        std::vector<std::pair<glm::vec2, RenderedText&>> textBuf2;
         glm::vec2 screenSize = {800, 600};
         glm::vec2 mousePos = {0, 0};
         bool mouseDown = false;
@@ -61,16 +58,18 @@ namespace phenyl::graphics {
         //std::vector<std::shared_ptr<common::ProxySource>> inputSources;
         common::RemappableProxyInput uiInput;
         common::InputAction selectAction;
+
     public:
-        UIManager(Renderer* renderer);
+        UIManager (Renderer& renderer);
         ~UIManager();
-        void renderText(common::Asset<Font> font, const std::string& text, int size, int x, int y);
+        //void renderText(common::Asset<Font> font, const std::string& text, int size, int x, int y);
         //void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        void renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        void renderText (RenderedText text, int x, int y);
+        //void renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y, glm::vec3 colour);
+        //void renderText (RenderedText text, int x, int y);
+        void renderText (common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos);
+        void renderText (common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos, glm::vec3 colour);
         void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
         void renderUI ();
-        void addRenderLayer (Renderer& renderer);
         void setMousePos (glm::vec2 _mousePos);
         bool setMouseDown (bool mouseDown);
 

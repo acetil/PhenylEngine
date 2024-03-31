@@ -15,7 +15,7 @@ namespace phenyl {
     private:
         std::unique_ptr<engine::Engine> internal;
 
-        void exec (engine::ApplicationBase* app);
+        void exec (std::unique_ptr<engine::ApplicationBase> app);
 
     public:
         PhenylEngine ();
@@ -23,10 +23,7 @@ namespace phenyl {
 
         template <std::derived_from<engine::ApplicationBase> T, typename ...Args>
         void run (Args&&... args) {
-            std::unique_ptr<engine::ApplicationBase> app = std::make_unique<T>(std::forward<Args>(args)...);
-
-            exec(app.get());
-            app = nullptr;
+            exec(std::make_unique<T>(std::forward<Args>(args)...));
             ShutdownLogging();
         }
     };

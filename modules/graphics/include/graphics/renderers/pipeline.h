@@ -30,7 +30,7 @@ namespace phenyl::graphics {
 
         virtual void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) = 0;
         virtual void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) = 0;
-        virtual void bindSampler (SamplerBinding binding, const ITexture& texture) = 0;
+        virtual void bindSampler (SamplerBinding binding, const ISampler& sampler) = 0;
         virtual void render (std::size_t vertices) = 0; // TODO: command buffer
     };
 
@@ -63,7 +63,14 @@ namespace phenyl::graphics {
 
         Pipeline& bindSampler (SamplerBinding binding, const Texture& texture) {
             PHENYL_DASSERT(pipeline);
-            pipeline->bindSampler(binding, texture.getUnderlying());
+            pipeline->bindSampler(binding, texture.sampler());
+
+            return *this;
+        }
+
+        Pipeline& bindSampler (SamplerBinding binding, const ISampler& sampler) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindSampler(binding, sampler);
 
             return *this;
         }

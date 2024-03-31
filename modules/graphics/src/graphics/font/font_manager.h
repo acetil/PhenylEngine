@@ -1,0 +1,44 @@
+#pragma once
+
+#include "common/assets/asset_manager.h"
+#include "graphics/font/font.h"
+#include "graphics/font/glyph_atlas.h"
+
+namespace phenyl::graphics {
+    struct TextVertex {
+        glm::vec2 pos;
+        glm::vec3 uv;
+        glm::vec3 colour;
+    };
+
+    class FontManager : public common::AssetManager<Font> {
+    private:
+        const Viewport& viewport;
+        IGlyphRenderer& glyphRenderer;
+        FT_Library library = nullptr;
+        GlyphAtlas& glyphAtlas;
+        std::unordered_map<std::size_t, std::unique_ptr<Font>> fonts;
+        std::size_t nextFontId = 1;
+    public:
+        explicit FontManager (const Viewport& viewport, GlyphAtlas& atlas, IGlyphRenderer& glyphRenderer);
+
+        FontManager (const FontManager&) = delete;
+        FontManager (FontManager&& other) noexcept;
+
+        FontManager& operator= (const FontManager&) = delete;
+        FontManager& operator= (FontManager&& other) noexcept;
+
+        ~FontManager() override;
+
+        const char* getFileType() const override;
+        Font* load (std::istream& data, std::size_t id) override;
+        Font* load (Font&& obj, std::size_t id) override;
+        void queueUnload(std::size_t id) override;
+        bool isBinary() const override {
+            return true;
+        }
+
+        void selfRegister ();
+    };
+
+}

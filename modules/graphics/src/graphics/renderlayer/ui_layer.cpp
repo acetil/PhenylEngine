@@ -1,7 +1,5 @@
 #include "graphics/renderlayer/ui_layer.h"
 
-#include "graphics/font/font.h"
-#include "graphics/font/rendered_text.h"
 #include "common/assets/assets.h"
 
 #include "logging/logging.h"
@@ -10,7 +8,7 @@ using namespace phenyl::graphics;
 
 #define BUFFER_SIZE (256 * 6)
 
-UIRenderLayer::UIRenderLayer (const Texture& fontTexture) : AbstractRenderLayer{4}, fontTexture{fontTexture} {}
+UIRenderLayer::UIRenderLayer (GlyphAtlas& glyphAtlas) : AbstractRenderLayer{4}, glyphAtlas{glyphAtlas} {}
 
 std::string_view UIRenderLayer::getName () const {
     return "UIRenderLayer";
@@ -18,20 +16,22 @@ std::string_view UIRenderLayer::getName () const {
 
 void UIRenderLayer::init (Renderer& renderer) {
     BufferBinding textBinding;
+    auto textShader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/text");
     textPipeline = renderer.buildPipeline()
-                           .withShader(phenyl::common::Assets::Load<Shader>("phenyl/shaders/text"))
+                           .withShader(textShader)
                            .withBuffer<TextVertex>(textBinding)
                            .withAttrib<glm::vec2>(0, textBinding, offsetof(TextVertex, pos))
-                           .withAttrib<glm::vec2>(1, textBinding, offsetof(TextVertex, uv))
+                           .withAttrib<glm::vec3>(1, textBinding, offsetof(TextVertex, uv))
                            .withAttrib<glm::vec3>(2, textBinding, offsetof(TextVertex, colour))
                            .withSampler2D(0, samplerBinding)
+                           .withUniform<Uniform>(textShader->getUniformLocation("Uniform"), textUniformBinding)
                            .build();
 
 
     textBuffer = renderer.makeBuffer<TextVertex>(BUFFER_SIZE);
 
     textPipeline.bindBuffer(textBinding, textBuffer);
-    textPipeline.bindSampler(samplerBinding, fontTexture);
+    textPipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
 
     BufferBinding boxBinding;
     auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/box");
@@ -51,24 +51,6 @@ void UIRenderLayer::init (Renderer& renderer) {
 
     boxPipeline.bindBuffer(boxBinding, boxBuffer);
     boxPipeline.bindUniform(uniformBinding, uniformBuffer);
-}
-
-void UIRenderLayer::bufferText (const RenderedText& text) {
-    auto posIt = text.getPosComp().cbegin();
-    auto uvIt = text.getUvComp().cbegin();
-    auto colourIt = text.getColourComp().cbegin();
-
-    while (posIt != text.getPosComp().cend()) {
-        textBuffer.emplace(TextVertex{
-                .pos = *posIt,
-                .uv = *uvIt,
-                .colour = *colourIt
-        });
-
-        ++posIt;
-        ++uvIt;
-        ++colourIt;
-    }
 }
 
 void UIRenderLayer::bufferRect (const UIRect& rect) {
@@ -91,6 +73,7 @@ void UIRenderLayer::bufferRect (const UIRect& rect) {
 void UIRenderLayer::uploadData () {
     textBuffer.upload();
     boxBuffer.upload();
+    glyphAtlas.upload();
 }
 
 void UIRenderLayer::setScreenSize (glm::vec2 screenSize) {
@@ -98,7 +81,8 @@ void UIRenderLayer::setScreenSize (glm::vec2 screenSize) {
 }
 
 void UIRenderLayer::render () {
-    textPipeline.bindSampler(samplerBinding, fontTexture);
+    textPipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
+    textPipeline.bindUniform(textUniformBinding, uniformBuffer);
     textPipeline.render(textBuffer.size());
 
     boxPipeline.bindUniform(uniformBinding, uniformBuffer);
@@ -106,4 +90,25 @@ void UIRenderLayer::render () {
 
     textBuffer.clear();
     boxBuffer.clear();
+}
+
+Buffer<TextVertex>& UIRenderLayer::getTextBuffer () {
+    return textBuffer;
+}
+
+void UIRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) {
+    static glm::vec2 vertices[] = {
+            {0, 0}, {1, 0}, {0, 1}, {1, 0}, {0, 1}, {1, 1}
+    };
+
+    auto topLeft = pos;
+    auto bottomRight = pos + glyph.size;
+
+    for (auto i : vertices) {
+        textBuffer.emplace(TextVertex{
+                .pos = topLeft * i + bottomRight * (glm::vec2{1, 1} - i),
+                .uv = glm::vec3{glyph.uvStart * i + glyph.uvEnd * (glm::vec2{1, 1} - i), glyph.atlasLayer},
+                .colour = colour
+        });
+    }
 }

@@ -100,6 +100,12 @@ glm::vec2 GLFWViewport::getCursorPos () const {
     return cursorPos;
 }
 
+glm::vec2 GLFWViewport::getContentScale () const {
+    glm::vec2 scale;
+    glfwGetWindowContentScale(window, &scale.x, &scale.y);
+    return scale;
+}
+
 void GLFWViewport::onCursorPosCallback (glm::vec2 pos) {
     cursorPos = pos;
 }

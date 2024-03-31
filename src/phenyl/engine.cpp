@@ -42,10 +42,10 @@ public:
         return runtime;
     }
 
-    void init (ApplicationBase* app) {
+    void init (std::unique_ptr<ApplicationBase> app) {
         runtime.addResource(renderer.get());
 
-        runtime.registerPlugin(std::make_unique<AppPlugin>(app));
+        runtime.registerPlugin(std::make_unique<AppPlugin>(std::move(app)));
 
         runtime.pluginPostInit();
     }
@@ -121,11 +121,12 @@ PhenylEngine::PhenylEngine () = default;
 
 PhenylEngine::~PhenylEngine () = default;
 
-void PhenylEngine::exec (engine::ApplicationBase* app) {
+void PhenylEngine::exec (std::unique_ptr<engine::ApplicationBase> app) {
     InitLogging(app->getProperties().loggingProperties);
 
+    auto* appPtr = app.get();
     internal = std::make_unique<engine::Engine>(app->getProperties());
-    internal->init(app);
-    internal->gameloop(app);
+    internal->init(std::move(app));
+    internal->gameloop(appPtr);
     internal = nullptr;
 }

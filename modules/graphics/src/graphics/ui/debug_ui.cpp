@@ -36,12 +36,9 @@ void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
 
     auto& uiManager = runtime.resource<UIManager>();
 
-    uiManager.renderText(font, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
-                         15);
-    uiManager.renderText(font, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
-                         30);
-    uiManager.renderText(font, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms", 14, 5,
-                         45);
-    uiManager.renderText(font, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps",
-                         14, 700, 15, {0.0f, 1.0f, 0.0f});
+    font->renderText(11, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms",  glm::vec2{5, 15});
+    font->renderText(11, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", glm::vec2{5, 30});
+    font->renderText(11, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms", glm::vec2{5, 45});
+    font->renderText(11, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps", glm::vec2{700, 15}, {0.0f, 1.0f, 0.0f});
+    font->renderText(14, "The quick brown fox jumped over the lazy dog", glm::vec2{5, 60});
 }

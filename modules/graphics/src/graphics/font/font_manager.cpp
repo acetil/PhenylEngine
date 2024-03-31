@@ -1,9 +1,6 @@
 #include <iostream>
 
 #include "common/assets/assets.h"
-#include "logging/logging.h"
-#include "util/exceptions.h"
-#include "graphics/detail/loggers.h"
 #include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_manager.h"
 
@@ -11,68 +8,71 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"FONT_MANAGER", detail::GRAPHICS_LOGGER};
 
-FontManager::FontManager () {
-    auto error = FT_Init_FreeType(&freetypeLib);
-    if (error) {
-        throw util::InitException("Freetype lib init exception");
+FontManager::FontManager (const Viewport& viewport, GlyphAtlas& glyphAtlas, IGlyphRenderer& glyphRenderer) : viewport{viewport}, glyphRenderer{glyphRenderer}, glyphAtlas{glyphAtlas} {
+    FT_Init_FreeType(&library);
+}
+
+FontManager::FontManager (FontManager&& other) noexcept : viewport{other.viewport}, glyphRenderer{other.glyphRenderer}, library{other.library}, glyphAtlas{other.glyphAtlas}, fonts{std::move(other.fonts)} {
+    other.library = nullptr;
+}
+
+FontManager& FontManager::operator= (FontManager&& other) noexcept {
+    if (library) {
+        FT_Done_FreeType(library);
     }
+
+    library = other.library;
+    fonts = std::move(other.fonts);
+
+    other.library = nullptr;
+
+    return *this;
 }
 
 FontManager::~FontManager () {
-    common::Assets::RemoveManager(this);
+    fonts.clear();
 
-    fontFaces.clear();
-    if (freetypeLib) {
-        FT_Done_FreeType(freetypeLib);
+    if (library) {
+        FT_Done_FreeType(library);
     }
 }
 
-void FontManager::addFace (const std::string& face, const std::string& path, int faceNum) {
-    try {
-        fontFaces.insert(std::make_pair(face, FontFace(freetypeLib, path, faceNum)));
-    } catch (util::InitException& e) {
-        PHENYL_LOGW(LOGGER,  "Error creating font \"{}\": {}", face, e.getMsg());
-    }
-}
-
-FontManager::FontManager (FontManager&& manager) noexcept : freetypeLib(std::exchange(manager.freetypeLib, nullptr)),
-                                                            fontFaces(std::move(manager.fontFaces)) {
-
-}
-
-FontFace& FontManager::getFace (const std::string& face) {
-    return fontFaces[face];
-}
 
 const char* FontManager::getFileType () const {
     return ".ttf";
 }
 
-Font* FontManager::load (std::istream& file, std::size_t id) {
-    std::vector<unsigned char> data{std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{}};
+Font* FontManager::load (std::istream& data, std::size_t id) {
+    std::vector<char> bytes{std::istreambuf_iterator<char>{data}, std::istreambuf_iterator<char>{}};
+    auto dataSize = bytes.size();
+    auto fontData = std::make_unique<std::byte[]>(bytes.size());
+    std::memcpy(fontData.get(), bytes.data(), bytes.size());
 
-    FontFace face{freetypeLib, std::move(data)};
-    face.setFontSize(72);
-    face.setGlyphs({AsciiGlyphRange});
-    auto font = std::make_unique<Font>(std::move(face), 128); // TODO
+    FT_Face face;
+    auto error = FT_New_Memory_Face(library, reinterpret_cast<const FT_Byte*>(fontData.get()),
+                                    static_cast<FT_Long>(dataSize), 0, &face);
+    if (error) {
+        PHENYL_LOGE(LOGGER, "FreeType error on FT_New_Memory_Face ({}): {}", error, FT_Error_String(error));
+        return nullptr;
+    }
 
+    auto font = std::make_unique<Font>(glyphAtlas, glyphRenderer, std::move(fontData), face, nextFontId++, viewport.getContentScale() * glm::vec2{96, 96});
     auto* ptr = font.get();
-    fonts[id] = std::move(font);
+    fonts.emplace(id, std::move(font));
 
     return ptr;
 }
 
 Font* FontManager::load (Font&& obj, std::size_t id) {
     auto font = std::make_unique<Font>(std::move(obj));
-
     auto* ptr = font.get();
-    fonts[id] = std::move(font);
+    fonts.emplace(id, std::move(font));
 
     return ptr;
 }
 
 void FontManager::queueUnload (std::size_t id) {
-    fonts.erase(id);
+    // Do nothing
 }
 
 void FontManager::selfRegister () {

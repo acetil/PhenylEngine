@@ -1,7 +1,6 @@
 #include "graphics/ui/ui_manager.h"
 #include "graphics/renderers/renderer.h"
 #include "graphics/renderlayer/ui_layer.h"
-#include "graphics/font/rendered_text.h"
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/themes/theme.h"
 #include "graphics/ui/themes/theme_class.h"
@@ -15,56 +14,37 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (Renderer* renderer) : fontManager{} {
-    fontManager.selfRegister();
+UIManager::UIManager (Renderer& renderer) : glyphAtlas{renderer} {
+    uiLayer = &renderer.addLayer<UIRenderLayer>(glyphAtlas);
+    fontManager = std::make_unique<FontManager>(renderer.getViewport(), glyphAtlas, *uiLayer);
+    fontManager->selfRegister();
 
-    defaultFont = common::Assets::Load<Font>("/usr/share/fonts/noto/NotoSerif-Regular");
-
-    defaultFont->loadAtlas(renderer); // TODO
-    uiLayer = nullptr;
     offsetStack.emplace_back(0,0);
 
     uiRoot = std::make_shared<ui::UIRootNode>();
     themeManager.selfRegister();
     defaultTheme = common::Assets::LoadVirtual("phenyl/themes/default", ui::Theme{util::parseJson(EMBED_DEFAULT_THEME_JSON)});
     setCurrentTheme(defaultTheme);
+
+    addProxyInputSources(renderer.getViewport().getProxySources());
+    setupInputActions();
 }
 
-void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y) {
+/*void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y) {
     renderText(std::move(font), text, size, x, y, {1.0f, 1.0f, 1.0f});
-}
+}*/
 
-void UIManager::addRenderLayer (Renderer& renderer) {
-    uiLayer = &renderer.addLayer<UIRenderLayer>(std::move(defaultFont->getAtlasTexture()));
-}
-
-void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y,
+/*void UIManager::renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y,
                             glm::vec3 colour) {
     auto offVec = offsetStack.back() + glm::vec2{x, y};
     textBuf.emplace_back(offVec, font->renderText(text, size, 0, 0, colour));
-}
+}*/
 
 void UIManager::renderUI () {
     uiLayer->setScreenSize(screenSize);
 
     uiRoot->render(*this);
-
-    for (auto& textPair : textBuf) {
-        auto& text = textPair.second;
-        text.setOffset(textPair.first, screenSize);
-        uiLayer->bufferText(text);
-    }
-
-    for (auto& textPair : textBuf2) {
-        auto& text = textPair.second;
-        text.setOffset(textPair.first, screenSize);
-        uiLayer->bufferText(text);
-    }
-
     uiLayer->uploadData();
-
-    textBuf.clear();
-    textBuf2.clear();
 }
 
 void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius, float borderSize) {
@@ -104,38 +84,16 @@ void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, g
     uiRoot->addChildNode(uiNode, pos);
 }
 
-void UIManager::renderText (RenderedText text, int x, int y) {
-    auto offVec = offsetStack.back() + glm::vec2{x, y};
-    //text.setOffset(offVec, screenSize);
-
-    //uiLayer->bufferText(text);
-    textBuf.emplace_back(offVec, std::move(text));
+void UIManager::renderText (phenyl::common::Asset<Font>& font, std::uint32_t size, const std::string& text,
+                            glm::vec2 pos) {
+    renderText(font, size, text,  pos, glm::vec3{1.0f, 1.0f, 1.0f});
 }
 
-/*void UIManager::addTheme (const std::string& themePath) {
-    auto theme = ui::loadTheme(themePath);
-
-    themeLocations[theme->getThemeName()] = themePath;
-    themes[theme->getThemeName()] = std::move(theme);
+void UIManager::renderText (phenyl::common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos,
+                            glm::vec3 colour) {
+    font->renderText(size, text, offsetStack.back() + pos,  colour);
 }
 
-void UIManager::setCurrentTheme (const std::string& themeName) {
-    if (!themes.contains(themeName)) {
-        logging::log(LEVEL_ERROR, "Theme {} does not exist!", themeName);
-    } else {
-        std::unique_ptr<ui::Theme>& theme = themes.at(themeName);
-        uiRoot->applyTheme(theme.get());
-        currentTheme = themeName;
-    }
-}
-
-void UIManager::reloadCurrentTheme () {
-    if (themes.contains(currentTheme)) {
-        themes.remove(currentTheme);
-        addTheme(themeLocations[currentTheme]);
-        setCurrentTheme(currentTheme);
-    }
-}*/
 void UIManager::setCurrentTheme (common::Asset<ui::Theme> theme) {
     currentTheme = std::move(theme);
     uiRoot->applyTheme(currentTheme.get());

@@ -10,14 +10,7 @@ std::string_view UIPlugin::getName () const noexcept {
 void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
-    auto& renderer = runtime.resource<Renderer>();
-
-    manager = std::make_unique<UIManager>(&renderer);
-
-    manager->addProxyInputSources(renderer.getViewport().getProxySources());
-    manager->setupInputActions();
-
-    manager->addRenderLayer(renderer);
+    manager = std::make_unique<UIManager>(runtime.resource<Renderer>());
 
     runtime.addResource(manager.get());
 }

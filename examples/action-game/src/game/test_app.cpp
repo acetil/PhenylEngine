@@ -42,6 +42,8 @@ void test::TestApp::init () {
 
     stepAction = input.mapInput("debug_step", "key_f7");
     consoleAction = input.mapInput("debug_console", "key_f12");
+
+    arial = phenyl::Assets ::Load<phenyl::graphics::Font>("resources/Arial");
 }
 
 void test::TestApp::fixedUpdate (double deltaTime) {
@@ -94,6 +96,8 @@ void test::TestApp::update (double deltaTime) {
     if (input.isDown(consoleAction)) {
         test::doDebugConsole(this);
     }
+
+    arial->renderText(11, "Hello World!", glm::vec2{200, 300});
 }
 
 void test::TestApp::queueResume () {

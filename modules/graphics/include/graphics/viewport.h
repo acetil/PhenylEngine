@@ -16,6 +16,7 @@ namespace phenyl::graphics {
         virtual void poll () = 0;
         [[nodiscard]] virtual glm::ivec2 getResolution () const = 0;
         [[nodiscard]] virtual glm::vec2 getCursorPos () const = 0;
+        [[nodiscard]] virtual glm::vec2 getContentScale () const = 0;
 
         virtual std::vector<std::shared_ptr<phenyl::common::InputSource>> getInputSources () const = 0;
         virtual std::vector<std::shared_ptr<phenyl::common::ProxySource>> getProxySources () const = 0;

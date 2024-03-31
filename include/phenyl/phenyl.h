@@ -4,6 +4,7 @@
 #include "asset.h"
 #include "component.h"
 #include "engine.h"
+#include "font.h"
 #include "input.h"
 #include "level.h"
 #include "plugin.h"

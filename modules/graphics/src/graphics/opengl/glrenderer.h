@@ -27,8 +27,8 @@ namespace phenyl::graphics {
     protected:
         std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
         std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
-        std::unique_ptr<ITexture> makeRendererTexture (const TextureProperties& properties, const Image& image) override;
         std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) override;
+        std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture(const TextureProperties &properties, std::uint32_t width, std::uint32_t height) override;
 
     public:
         static std::unique_ptr<GLRenderer> Make (const GraphicsProperties& properties);
