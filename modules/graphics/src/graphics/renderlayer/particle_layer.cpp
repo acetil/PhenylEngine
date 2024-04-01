@@ -26,7 +26,7 @@ void ParticleRenderLayer::init (Renderer& renderer) {
                        .withBuffer<glm::vec4>(colourBinding)
                        .withAttrib<glm::vec2>(0, posBinding)
                        .withAttrib<glm::vec4>(1, colourBinding)
-                       .withUniform<Uniform>(shader->getUniformLocation("Camera"), uniformBinding)
+                       .withUniform<Uniform>(*shader->uniformLocation("Camera"), uniformBinding)
                        .build();
 
 

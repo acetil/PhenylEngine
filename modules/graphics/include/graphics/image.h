@@ -15,7 +15,6 @@ namespace phenyl::graphics {
 
     class Image {
     private:
-
         using DataPtr = std::unique_ptr<std::byte[], void (*) (std::byte*)>;
 
         DataPtr imgData;

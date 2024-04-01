@@ -79,7 +79,7 @@ void DebugLayer::init (Renderer& renderer) {
                           .withBuffer<glm::vec4>(colourBinding)
                           .withAttrib<glm::vec3>(0, posBinding)
                           .withAttrib<glm::vec4>(1, colourBinding)
-                          .withUniform<Uniform>(shader->getUniformLocation("Uniform"), uniformBinding)
+                          .withUniform<Uniform>(*shader->uniformLocation("Uniform"), uniformBinding)
                           .build();
     boxPipeline.bindBuffer(posBinding, boxPos);
     boxPipeline.bindBuffer(colourBinding, boxColour);
@@ -92,7 +92,7 @@ void DebugLayer::init (Renderer& renderer) {
                            .withBuffer<glm::vec4>(colourBinding)
                            .withAttrib<glm::vec3>(0, posBinding)
                            .withAttrib<glm::vec4>(1, colourBinding)
-                           .withUniform<Uniform>(shader->getUniformLocation("Uniform"), uniformBinding)
+                           .withUniform<Uniform>(*shader->uniformLocation("Uniform"), uniformBinding)
                            .build();
     linePipeline.bindBuffer(posBinding, linePos);
     linePipeline.bindBuffer(colourBinding, lineColour);

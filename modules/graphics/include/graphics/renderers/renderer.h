@@ -4,11 +4,12 @@
 #include <optional>
 #include <memory>
 
-#include "graphics/shaders/shaders.h"
 #include "common/input/input_source.h"
 #include "runtime/iresource.h"
 #include "buffer.h"
 #include "uniform_buffer.h"
+#include "shader.h"
+#include "texture.h"
 
 #include "util/optional.h"
 #include "common/input/proxy_source.h"

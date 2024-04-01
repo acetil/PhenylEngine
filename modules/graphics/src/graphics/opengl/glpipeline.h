@@ -4,6 +4,8 @@
 
 #include "graphics/renderers/pipeline.h"
 #include "graphics/graphics_headers.h"
+#include "graphics/renderers/shader.h"
+#include "glshader.h"
 
 namespace phenyl::graphics {
     class GlPipeline : public IPipeline {
@@ -13,6 +15,8 @@ namespace phenyl::graphics {
         common::Asset<Shader> shader;
         std::vector<std::size_t> bufferTypes;
         util::Map<UniformBinding, std::size_t> uniformTypes;
+
+        GlShader& getShader ();
     public:
         explicit GlPipeline ();
         GlPipeline (const GlPipeline&) = delete;

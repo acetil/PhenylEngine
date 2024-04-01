@@ -3,10 +3,10 @@
 #include "common/assets/asset.h"
 #include "util/meta.h"
 
-#include "graphics/shaders/shaders.h"
 #include "graphics/renderers/buffer.h"
 #include "graphics/renderers/texture.h"
 #include "graphics/renderers/uniform_buffer.h"
+#include "shader.h"
 
 namespace phenyl::graphics {
     enum class GeometryType {

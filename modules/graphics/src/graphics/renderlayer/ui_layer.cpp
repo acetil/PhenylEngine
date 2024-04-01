@@ -23,8 +23,8 @@ void UIRenderLayer::init (Renderer& renderer) {
                            .withAttrib<glm::vec2>(0, textBinding, offsetof(TextVertex, pos))
                            .withAttrib<glm::vec3>(1, textBinding, offsetof(TextVertex, uv))
                            .withAttrib<glm::vec3>(2, textBinding, offsetof(TextVertex, colour))
-                           .withSampler2D(0, samplerBinding)
-                           .withUniform<Uniform>(textShader->getUniformLocation("Uniform"), textUniformBinding)
+                           .withSampler2D(*textShader->samplerLocation("textureSampler"), samplerBinding)
+                           .withUniform<Uniform>(*textShader->uniformLocation("Uniform"), textUniformBinding)
                            .build();
 
 
@@ -43,7 +43,7 @@ void UIRenderLayer::init (Renderer& renderer) {
                           .withAttrib<glm::vec4>(2, boxBinding, offsetof(BoxVertex, borderColour))
                           .withAttrib<glm::vec4>(3, boxBinding, offsetof(BoxVertex, bgColour))
                           .withAttrib<glm::vec4>(4, boxBinding, offsetof(BoxVertex, details))
-                          .withUniform<Uniform>(shader->getUniformLocation("Uniform"), uniformBinding)
+                          .withUniform<Uniform>(*shader->uniformLocation("Uniform"), uniformBinding)
                           .build();
 
     boxBuffer = renderer.makeBuffer<BoxVertex>(BUFFER_SIZE);

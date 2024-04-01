@@ -1,254 +1,164 @@
 #include <fstream>
-#include <sstream>
+
 #include <nlohmann/json.hpp>
 
-#include "glshader.h"
 #include "common/assets/assets.h"
-#include "logging/logging.h"
+#include "graphics/detail/loggers.h"
+
+#include "glshader.h"
 
 using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_SHADER", detail::GRAPHICS_LOGGER};
 
-static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath);
-static GLuint loadShaderSource (ShaderType shaderType, const std::string& shaderSource);
-static GLuint loadShader (GLuint shaderType, const std::string& shaderPath);
-static GLuint loadShaderSource (GLuint shaderType, const std::string& shaderSource);
+static GLenum GetGlShaderType (ShaderSourceType type);
+static std::optional<GLuint> LoadShader (GLenum type, const std::string& source);
+static std::optional<GLuint> LinkShader (const std::unordered_map<ShaderSourceType, GLuint>& shaders);
+static std::optional<std::string> ReadFromPath (const std::string& path);
 
-GLShaderProgram::GLShaderProgram (ShaderBuilder& builder) {
-    auto spec = builder.build();
+GlShader::Builder& GlShader::Builder::withSource (ShaderSourceType type, std::string source) {
+    PHENYL_DASSERT_MSG(!shaderSources.contains(type), "Attempted to add source to shader of type {} twice!", (unsigned int)type);
 
-    initShaders(spec.shaderPaths);
+    auto shader = LoadShader(GetGlShaderType(type), source);
+    if (shader) {
+        shaderSources.emplace(type, *shader);
+    }
+    return *this;
+}
 
-    for (auto [name, type] : spec.uniforms.kv()) {
-        uniformMap[name] = {glGetUniformLocation(programId, name.c_str()), type};
+GlShader::Builder& GlShader::Builder::withUniformBlock (std::string uniformName) {
+    PHENYL_DASSERT_MSG(!uniformBlocks.contains(uniformName), "Attempted to add uniform \"{}\" to shader twice!", uniformName);
+
+    uniformBlocks.emplace(std::move(uniformName));
+    return *this;
+}
+
+GlShader::Builder& GlShader::Builder::withSampler (std::string samplerName) {
+    PHENYL_DASSERT_MSG(!samplers.contains(samplerName), "Attempted to add sampler \"{}\" to shader twice!", samplerName);
+
+    samplers.emplace(samplerName);
+    return *this;
+}
+
+std::unique_ptr<GlShader> GlShader::Builder::build () {
+    auto programId = LinkShader(shaderSources);
+    if (!programId) {
+        PHENYL_LOGE(LOGGER, "Failed to build shader: link error");
+        return nullptr;
+    }
+
+    auto shader = std::make_unique<GlShader>(*programId);
+    for (const auto& uniform : uniformBlocks) {
+        if (!shader->addUniformBlock(uniform)) {
+            PHENYL_LOGE(LOGGER, "Failed to build shader: missing uniform \"{}\"", uniform);
+            return nullptr;
+        }
+    }
+
+    for (const auto& sampler : samplers) {
+        if (!shader->addSampler(sampler)) {
+            PHENYL_LOGE(LOGGER, "Failed to build shader: missing sampler \"{}\"", sampler);
+            return nullptr;
+        }
+    }
+
+    PHENYL_TRACE(LOGGER, "Successfully built shader");
+    return shader;
+}
+
+GlShader::GlShader (GLuint programId) : programId{programId} {
+    PHENYL_DASSERT(programId);
+}
+
+GlShader::GlShader (GlShader&& other) noexcept : programId{other.programId}, uniformBlocks{std::move(other.uniformBlocks)}, samplers{std::move(other.samplers)} {
+    other.programId = 0;
+}
+
+GlShader& GlShader::operator= (GlShader&& other) noexcept {
+    if (programId) {
+        glDeleteProgram(programId);
+    }
+
+    programId = other.programId;
+    uniformBlocks = std::move(other.uniformBlocks);
+    samplers = std::move(other.samplers);
+
+    other.programId = 0;
+
+    return *this;
+}
+
+GlShader::~GlShader () {
+    if (programId) {
+        glDeleteProgram(programId);
     }
 }
 
-GLShaderProgram::GLShaderProgram (const ShaderSourceSpec& spec) {
-    initShaderSources(spec.shaderSources);
+bool GlShader::addUniformBlock (const std::string& uniform) {
+    PHENYL_ASSERT(!uniformBlocks.contains(uniform));
 
-    for (auto [name, type] : spec.uniforms.kv()) {
-        uniformMap[name] = {glGetUniformLocation(programId, name.c_str()), type};
-    }
-}
+    unsigned int location = uniformBlocks.size();
+    PHENYL_ASSERT_MSG(location < GL_MAX_UNIFORM_BUFFER_BINDINGS, "Attempted to add too many uniform blocks to shader!");
 
-void GLShaderProgram::initShaders (util::Map<ShaderType, std::string>& shaders) {
-    std::vector<GLuint> shaderIds;
-
-    for (auto [type, path] : shaders.kv()) {
-        shaderIds.push_back(loadShader(type, path));
+    PHENYL_TRACE(LOGGER, "Adding uniform block \"{}\" at location={}", uniform, location);
+    auto blockIndex = glGetUniformBlockIndex(programId, uniform.c_str());
+    if (blockIndex == GL_INVALID_INDEX) {
+        PHENYL_LOGE(LOGGER, "Failed to find uniform \"{}\"", uniform);
+        return false;
     }
 
-    PHENYL_LOGD(LOGGER, "Linking shader program.");
-
-    programId = glCreateProgram();
-
-    for (auto& i : shaderIds) {
-        glAttachShader(programId, i);
-    }
-    //glAttachShader(programId, vertexId);
-    //glAttachShader(programId, fragmentId);
-    glLinkProgram(programId);
-    GLint result = GL_FALSE;
-    int infoLength;
-    glGetProgramiv(programId, GL_LINK_STATUS, &result);
-    glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
-    if (infoLength > 0) {
-        char* infoLog = new char[infoLength];
-        glGetProgramInfoLog(programId, infoLength, nullptr, infoLog);
-        PHENYL_LOGE(LOGGER, "Shader link error: {}", infoLog);
-        delete[] infoLog;
-    }
-
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        PHENYL_LOGE(LOGGER, "Shader link error code {}", error);
-    }
-
-    //glDetachShader(programId, vertexId);
-    //glDetachShader(programId, fragmentId);
-
-    for (auto& i : shaderIds) {
-        glDetachShader(programId, i);
-        glDeleteShader(i);
-    }
-}
-
-void GLShaderProgram::initShaderSources (const phenyl::util::Map<ShaderType, std::string>& sources) {
-    std::vector<GLuint> shaderIds;
-
-    for (auto [type, path] : sources.kv()) {
-        shaderIds.push_back(loadShaderSource(type, path));
-    }
-
-    PHENYL_LOGD(LOGGER, "Linking shader program.");
-
-    programId = glCreateProgram();
-
-    for (auto& i : shaderIds) {
-        glAttachShader(programId, i);
-    }
-    //glAttachShader(programId, vertexId);
-    //glAttachShader(programId, fragmentId);
-    glLinkProgram(programId);
-    GLint result = GL_FALSE;
-    int infoLength;
-    glGetProgramiv(programId, GL_LINK_STATUS, &result);
-    glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
-    if (infoLength > 0) {
-        char* infoLog = new char[infoLength];
-        glGetProgramInfoLog(programId, infoLength, nullptr, infoLog);
-        PHENYL_LOGE(LOGGER, "Shader link error: {}", infoLog);
-        delete[] infoLog;
-    }
-
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        PHENYL_LOGE(LOGGER, "Shader link error code {}", error);
-    }
-
-    //glDetachShader(programId, vertexId);
-    //glDetachShader(programId, fragmentId);
-
-    for (auto& i : shaderIds) {
-        glDetachShader(programId, i);
-        glDeleteShader(i);
-    }
-}
-
-void GLShaderProgram::applyUniform (const std::string& uniformName, ShaderDataType uniformType, const unsigned char* uniformPtr) {
-    if (!uniformMap.contains(uniformName) || uniformMap.at(uniformName).uniformType != uniformType) {
-        PHENYL_LOGE(LOGGER, "Wrong uniform type for uniform \"{}\": expected {}, got {}", uniformName,
-                     getUniformTypeName(uniformMap.at(uniformName).uniformType), getUniformTypeName(uniformType));
-        return;
-    }
-
-    applyUniform(uniformMap.at(uniformName), uniformPtr);
-}
-
-void GLShaderProgram::applyUniform (GLUniform uniform, const unsigned char* uniformPtr) {
     bind();
-    switch (uniform.uniformType) {
-        case ShaderDataType::VEC2F:
-            glUniform2fv(uniform.uniformId, 1, (float*)uniformPtr);
-            break;
-        case ShaderDataType::MAT2F:
-            glUniformMatrix2fv(uniform.uniformId, 1, GL_FALSE, (float*)uniformPtr);
-            break;
-        case ShaderDataType::MAT4F:
-            glUniformMatrix4fv(uniform.uniformId, 1, GL_FALSE, (float*)uniformPtr);
-            break;
-        default:
-            PHENYL_LOGE(LOGGER, "Unimplemented uniform type: {}", getUniformTypeName(uniform.uniformType));
-    }
+    glUniformBlockBinding(programId, blockIndex, location);
+    uniformBlocks[uniform] = location;
+    return true;
 }
 
-void GLShaderProgram::bind () {
+bool GlShader::addSampler (const std::string& sampler) {
+    PHENYL_ASSERT(!samplers.contains(sampler));
+
+    unsigned int samplerId = samplers.size();
+
+    PHENYL_TRACE(LOGGER, "Adding sampler \"{}\" at id={}", sampler, samplerId);
+    auto samplerUniform = glGetUniformLocation(programId, sampler.c_str());
+    if (samplerUniform == -1) {
+        PHENYL_LOGE(LOGGER, "Failed to find sampler \"{}\"", sampler);
+        return false;
+    }
+
+    bind();
+    glUniform1i(samplerUniform, static_cast<GLint>(samplerId));
+    samplers[sampler] = samplerId;
+    return true;
+}
+
+std::size_t GlShader::hash () const noexcept {
+    return static_cast<std::size_t>(programId);
+}
+
+std::optional<unsigned int> GlShader::getUniformLocation (const std::string& uniform) const noexcept {
+    auto uniformIt = uniformBlocks.find(uniform);
+    return uniformIt != uniformBlocks.end() ? std::optional{uniformIt->second} : std::nullopt;
+}
+
+std::optional<unsigned int> GlShader::getSamplerLocation (const std::string& sampler) const noexcept {
+    auto samplerIt = samplers.find(sampler);
+    return samplerIt != samplers.end() ? std::optional{samplerIt->second} : std::nullopt;
+}
+
+void GlShader::bind () {
     glUseProgram(programId);
 }
 
-GLShaderProgram::~GLShaderProgram () {
-    glDeleteProgram(programId);
+const char* GlShaderManager::getFileType () const {
+    return ".json";
 }
 
-unsigned int GLShaderProgram::getUniformBlockLocation (const std::string& uniform) {
-    if (blockUniformLocations.contains(uniform)) {
-        return blockUniformLocations.at(uniform);
-    }
-
-    unsigned int nextLocation = blockUniformLocations.size();
-    auto blockIndex = glGetUniformBlockIndex(programId, uniform.c_str());
-    glUniformBlockBinding(programId, blockIndex, nextLocation);
-
-    blockUniformLocations[uniform] = nextLocation;
-    return nextLocation;
-}
-
-
-static GLuint loadShader (ShaderType shaderType, const std::string& shaderPath) {
-    switch (shaderType) {
-        case ShaderType::VERTEX:
-            return loadShader(GL_VERTEX_SHADER, shaderPath);
-        case ShaderType::FRAGMENT:
-            return loadShader(GL_FRAGMENT_SHADER, shaderPath);
-        default:
-            PHENYL_LOGE(LOGGER, "Unimplemented shader type {}!", static_cast<int>(shaderType));
-            return 0;
-    }
-}
-
-static GLuint loadShaderSource (ShaderType shaderType, const std::string& shaderSource) {
-    switch (shaderType) {
-        case ShaderType::VERTEX:
-            return loadShaderSource(GL_VERTEX_SHADER, shaderSource);
-        case ShaderType::FRAGMENT:
-            return loadShaderSource(GL_FRAGMENT_SHADER, shaderSource);
-        default:
-            PHENYL_LOGE(LOGGER, "Unimplemented shader type {}!", static_cast<int>(shaderType));
-            return 0;
-    }
-}
-
-static GLuint loadShader (GLuint shaderType, const std::string& shaderPath) {
-    GLuint shader = glCreateShader(shaderType);
-    std::string shaderCode;
-    std::ifstream shaderStream(shaderPath);
-    //shaderStream.open(shaderType, std::ios::in);
-    if (shaderStream.is_open()) {
-        std::stringstream sstr;
-        sstr << shaderStream.rdbuf();
-        shaderCode = sstr.str();
-        shaderStream.close();
-    } else {
-        PHENYL_LOGE(LOGGER, "Error reading shader file {}", shaderPath);
-        return 0;
-    }
-    GLint result = GL_FALSE;
-    int infolength;
-    PHENYL_LOGD(LOGGER, "Compiling shader file at {}", shaderPath);
-    const char* shaderSourcePtr = shaderCode.c_str();
-    glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
-    glCompileShader(shader);
-
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolength);
-    if (infolength > 0) {
-        char* errorMessage = new char[infolength];
-        glGetShaderInfoLog(shader, infolength, nullptr, errorMessage);
-        PHENYL_LOGE(LOGGER, "Shader compile error: {}", errorMessage);
-        delete[] errorMessage;
-    }
-    return shader;
-}
-
-static GLuint loadShaderSource (GLuint shaderType, const std::string& shaderSource) {
-    GLuint shader = glCreateShader(shaderType);
-    //shaderStream.open(shaderType, std::ios::in);
-    GLint result = GL_FALSE;
-    int infolength;
-    const char* shaderSourcePtr = shaderSource.c_str();
-    glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
-    glCompileShader(shader);
-
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infolength);
-    if (infolength > 0) {
-        char* errorMessage = new char[infolength];
-        glGetShaderInfoLog(shader, infolength, nullptr, errorMessage);
-        PHENYL_LOGE(LOGGER, "Shader compile error: {}", errorMessage);
-        delete[] errorMessage;
-    }
-    return shader;
-}
-
-GLShaderManager::GLShaderManager (GLRenderer* renderer) : renderer{renderer} {}
-
-Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
+Shader* GlShaderManager::load (std::istream& data, std::size_t id) {
+    PHENYL_TRACE(LOGGER, "Loading shader from file");
     nlohmann::json json;
     data >> json;
     if (!json.is_object()) {
-        PHENYL_LOGE(LOGGER, "Expected object for shader, got {}!", json.type_name());
+        PHENYL_LOGE(LOGGER, "Expected object for shader, got {}", json.type_name());
         return nullptr;
     }
 
@@ -256,91 +166,178 @@ Shader* GLShaderManager::load (std::istream& data, std::size_t id) {
         PHENYL_LOGE(LOGGER, "Failed to find member \"shaders\" of shader!");
         return nullptr;
     }
-    const auto& shaderObj = json.at("shaders");
-    if (!shaderObj.is_object()) {
-        PHENYL_LOGE(LOGGER, "Expected object for shaders member, got {}!", shaderObj.type_name());
+    const auto& jsonShaders = json.at("shaders");
+    if (!jsonShaders.is_object()) {
+        PHENYL_LOGE(LOGGER, "Expected object for shaders member, got {}!", jsonShaders.type_name());
         return nullptr;
     }
 
-    const auto& obj = shaderObj.get<nlohmann::json::object_t>();
-
-    std::string fragmentPath{};
-    std::string vertexPath{};
-
-    for (const auto& i : obj) {
-        if (i.first == "fragment") {
-            if (!i.second.is_string()) {
-                PHENYL_LOGE(LOGGER, "Expected string for fragment path, got {}!", i.second.type_name());
-                return nullptr;
-            }
-            fragmentPath = i.second.get<std::string>();
-        } else if (i.first == "vertex") {
-            if (!i.second.is_string()) {
-                PHENYL_LOGE(LOGGER, "Expected string for vertex path, got {}!", i.second.type_name());
-                return nullptr;
-            }
-            vertexPath = i.second.get<std::string>();
+    GlShader::Builder builder;
+    for (const auto& [type, path] : jsonShaders.get<nlohmann::json::object_t>()) {
+        if (!path.is_string()) {
+            PHENYL_LOGE(LOGGER, "Expected string for \"{}\" shader path, got {}", type, path.type_name());
+            return nullptr;
         }
-    }
-
-    ShaderBuilder builder{vertexPath, fragmentPath};
-    if (json.contains("uniforms")) {
-        if (!json["uniforms"].is_object()) {
-            PHENYL_LOGE(LOGGER, "Expected object for uniforms member, got {}!", json["uniforms"].type_name());
+        auto source = ReadFromPath(path.get<std::string>());
+        if (!source) {
+            PHENYL_LOGE(LOGGER, "Failed to read source for \"{}\" shader", type);
             return nullptr;
         }
 
-        const auto& uniforms = json["uniforms"].get<nlohmann::json::object_t>();
-        for (const auto& [key, val] : uniforms) {
-            if (!val.is_string()) {
-                PHENYL_LOGE(LOGGER, "Expected string for uniform type, got {}!", val.type_name());
-                return nullptr;
-            }
-            const auto& type = val.get<std::string>();
-            if (type == "float") {
-                builder.addUniform<float>(key);
-            } else if (type == "int") {
-                builder.addUniform<int>(key);
-            } else if (type == "vec2f") {
-                builder.addUniform<glm::vec2>(key);
-            } else if (type == "vec3f") {
-                builder.addUniform<glm::vec3>(key);
-            } else if (type == "vec4f") {
-                builder.addUniform<glm::vec4>(key);
-            } else if (type == "mat2f") {
-                builder.addUniform<glm::mat2>(key);
-            } else if (type == "mat3f") {
-                builder.addUniform<glm::mat3>(key);
-            } else if (type == "mat4f") {
-                builder.addUniform<glm::mat4>(key);
-            } else {
-                PHENYL_LOGE(LOGGER, "Unknown uniform type: \"{}\"", type);
-                return nullptr;
-            }
+        if (type == "fragment") {
+            PHENYL_TRACE(LOGGER, "Added fragment shader");
+            builder.withSource(ShaderSourceType::FRAGMENT, std::move(*source));
+        } else if (type == "vertex") {
+            PHENYL_TRACE(LOGGER, "Added vertex shader");
+            builder.withSource(ShaderSourceType::VERTEX, std::move(*source));
+        } else {
+            PHENYL_LOGW(LOGGER, "Unsupported shader type \"{}\", ignoring", type);
         }
     }
 
-    auto glshader = std::make_shared<GLShaderProgram>(builder);
-    shaders[id] = std::make_unique<Shader>(std::move(glshader));
+    if (json.contains("uniforms")) {
+        if (!json["uniforms"].is_array()) {
+            PHENYL_LOGE(LOGGER, "Expected array for uniforms, got {}!", json["uniforms"].type_name());
+            return nullptr;
+        }
+        for (const auto& key : json["uniforms"].get<nlohmann::json::array_t>()) {
+            if (!key.is_string()) {
+                PHENYL_LOGE(LOGGER, "Expected string for uniform name, got {}!", key.type_name());
+                return nullptr;
+            }
 
-    return shaders[id].get();
+            PHENYL_TRACE(LOGGER, "Added uniform block \"{}\"", key.get<std::string>());
+            builder.withUniformBlock(key.get<std::string>());
+        }
+    }
+
+    if (json.contains("samplers")) {
+        if (!json["samplers"].is_array()) {
+            PHENYL_LOGE(LOGGER, "Expected array for samplers, got {}!", json["samplers"].type_name());
+            return nullptr;
+        }
+        for (const auto& key : json["samplers"].get<nlohmann::json::array_t>()) {
+            if (!key.is_string()) {
+                PHENYL_LOGE(LOGGER, "Expected string for sampler name, got {}!", key.type_name());
+                return nullptr;
+            }
+            PHENYL_TRACE(LOGGER, "Added sampler \"{}\"", key.get<std::string>());
+            builder.withSampler(key.get<std::string>());
+        }
+    }
+
+    auto shader = builder.build();
+    if (!shader) {
+        PHENYL_LOGE(LOGGER, "Failed to build shader!");
+        return nullptr;
+    }
+
+    PHENYL_TRACE(LOGGER, "Successfully built shader");
+    PHENYL_DASSERT(!shaders.contains(id));
+    shaders[id] = Shader{std::move(shader)};
+    return &shaders[id];
 }
 
-const char* GLShaderManager::getFileType () const {
-    return ".json";
+Shader* GlShaderManager::load (Shader&& obj, std::size_t id) {
+    PHENYL_DASSERT(!shaders.contains(id));
+    shaders[id] = std::move(obj);
+    return &shaders[id];
 }
 
-void GLShaderManager::queueUnload (std::size_t id) {
+void GlShaderManager::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        shaders.remove(id);
+        shaders.erase(id);
     }
 }
 
-void GLShaderManager::selfRegister () {
+void GlShaderManager::selfRegister () {
     common::Assets::AddManager(this);
 }
 
-Shader* GLShaderManager::load (Shader&& obj, std::size_t id) {
-    shaders[id] = std::make_unique<Shader>(std::move(obj));
-    return shaders[id].get();
+static std::optional<GLuint> LoadShader (GLenum type, const std::string& source) {
+    auto shaderId = glCreateShader(type);
+
+    PHENYL_TRACE(LOGGER, "Compiling shader:\n{}", source);
+    const auto* sourcePtr = source.c_str();
+    glShaderSource(shaderId, 1, &sourcePtr, nullptr);
+    glCompileShader(shaderId);
+
+    GLint result = GL_FALSE;
+    GLint infoLength;
+    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &result);
+    glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLength);
+    if (!result) {
+        auto info = std::make_unique<char[]>(infoLength);
+        glGetShaderInfoLog(shaderId, infoLength, nullptr, info.get());
+        PHENYL_LOGE(LOGGER, "Shader compile error: \"{}\"", info.get());
+
+        return std::nullopt;
+    }
+
+    return shaderId;
+}
+
+static std::optional<GLuint> LinkShader (const std::unordered_map<ShaderSourceType, GLuint>& shaders) {
+    if (!shaders.contains(ShaderSourceType::VERTEX)) {
+        PHENYL_LOGE(LOGGER, "Attempted to link program with missing vertex shader!");
+        return std::nullopt;
+    }
+    if (!shaders.contains(ShaderSourceType::FRAGMENT)) {
+        PHENYL_LOGE(LOGGER, "Attempted to link program with missing fragment shader!");
+        return std::nullopt;
+    }
+
+    auto programId = glCreateProgram();
+    PHENYL_TRACE(LOGGER, "Building shader with programId={}", programId);
+
+    PHENYL_TRACE(LOGGER, "Attaching shaders");
+    for (auto [_, shader] : shaders) {
+        glAttachShader(programId, shader);
+    }
+
+    PHENYL_TRACE(LOGGER, "Linking shader program");
+    glLinkProgram(programId);
+
+    GLint result = GL_FALSE;
+    GLint infoLength;
+    glGetProgramiv(programId, GL_LINK_STATUS, &result);
+    glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLength);
+    if (!result) {
+        auto info = std::make_unique<char[]>(infoLength);
+        glGetProgramInfoLog(programId, infoLength, nullptr, info.get());
+        PHENYL_LOGE(LOGGER, "Shader link error: \"{}\"", info.get());
+    }
+
+    for (auto [_, shader] : shaders) {
+        glDetachShader(programId, shader);
+        glDeleteShader(shader);
+    }
+
+    if (result) {
+        PHENYL_TRACE(LOGGER, "Successfully created shader with id={}", programId);
+        return programId;
+    } else {
+        return std::nullopt;
+    }
+}
+
+static std::optional<std::string> ReadFromPath (const std::string& path) {
+    std::ifstream file{path};
+    if (!file) {
+        PHENYL_LOGE(LOGGER, "Failed to open shader source at \"{}\"", path);
+        return std::nullopt;
+    }
+
+    return std::string{std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{}};
+}
+
+static GLenum GetGlShaderType (ShaderSourceType type) {
+    switch (type) {
+        case ShaderSourceType::FRAGMENT:
+            return GL_FRAGMENT_SHADER;
+        case ShaderSourceType::VERTEX:
+            return GL_VERTEX_SHADER;
+    }
+
+    PHENYL_ABORT("Invalid shader type: {}", static_cast<unsigned int>(type));
 }

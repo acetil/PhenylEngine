@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "graphics/renderers/renderer.h"
-#include "graphics/shaders/shaders.h"
 #include "graphics/graphics_headers.h"
 
 #include "glshader.h"
@@ -15,9 +14,8 @@ namespace phenyl::graphics {
     class GLRenderer : public Renderer {
     private:
         std::unique_ptr<GLFWViewport> viewport;
-        util::Map<std::string, Shader> shaderProgramsNew;
 
-        GLShaderManager shaderManager;
+        GlShaderManager shaderManager;
 
         common::Asset<Shader> boxShader;
         common::Asset<Shader> debugShader;

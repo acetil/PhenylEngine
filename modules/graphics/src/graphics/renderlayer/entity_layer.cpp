@@ -29,8 +29,8 @@ void EntityRenderLayer::init (Renderer& renderer) {
                        .withBuffer<glm::vec2>(uvBinding)
                        .withAttrib<glm::vec2>(0, posBinding)
                        .withAttrib<glm::vec2>(1, uvBinding)
-                       .withUniform<Uniform>(shader->getUniformLocation("Camera"), uniformBinding)
-                       .withSampler2D(0, samplerBinding)
+                       .withUniform<Uniform>(*shader->uniformLocation("Camera"), uniformBinding)
+                       .withSampler2D(*shader->samplerLocation("textureSampler"), samplerBinding)
                        .build();
 
     posBuffer = renderer.makeBuffer<glm::vec2>(BUFFER_SIZE);

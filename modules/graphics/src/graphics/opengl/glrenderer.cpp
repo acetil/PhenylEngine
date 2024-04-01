@@ -1,5 +1,4 @@
 #include "graphics/opengl/glrenderer.h"
-#include "graphics/opengl/glshader.h"
 
 #include "util/profiler.h"
 #include "common/assets/assets.h"
@@ -25,7 +24,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
-GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, shaderManager{this} {
+GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)} {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
@@ -134,42 +133,48 @@ std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool read
 }
 
 void GLRenderer::loadDefaultShaders () {
-    PHENYL_LOGD(LOGGER, "Loading virtual box shader!");
-    boxShader = common::Assets::LoadVirtual("phenyl/shaders/box", Shader{std::make_shared<GLShaderProgram>(
-            ShaderSourceBuilder{EMBED_BOX_VERTEX_VERT, EMBED_BOX_FRAGMENT_FRAG}
-                    .addUniform<glm::vec2>("screenSize")
-                    .build()
-    )});
+    PHENYL_TRACE(LOGGER, "Loading virtual box shader!");
+    boxShader = common::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
+            .withUniformBlock("Uniform")
+            .build()
+    });
 
 
-   PHENYL_LOGD(LOGGER, "Loading virtual debug shader!");
-    debugShader = common::Assets::LoadVirtual("phenyl/shaders/debug", Shader{std::make_shared<GLShaderProgram>(
-            ShaderSourceBuilder{EMBED_DEBUG_VERTEX_VERT, EMBED_DEBUG_FRAGMENT_FRAG}
-                    .addUniform<glm::mat4>("camera")
-                    .addUniform<glm::mat4>("screenTransform")
-                    .build()
-    )});
+    PHENYL_TRACE(LOGGER, "Loading virtual debug shader!");
+    debugShader = common::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
+            .withUniformBlock("Uniform")
+            .build()
+    });
 
-    PHENYL_LOGD(LOGGER, "Loading virtual sprite shader!");
-    spriteShader = common::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{std::make_shared<GLShaderProgram>(
-            ShaderSourceBuilder{EMBED_SPRITE_VERTEX_VERT, EMBED_SPRITE_FRAGMENT_FRAG}
-                    .addUniform<glm::mat4>("camera")
-                    .build()
-    )});
+    PHENYL_TRACE(LOGGER, "Loading virtual sprite shader!");
+    spriteShader = common::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
+            .withUniformBlock("Camera")
+            .withSampler("textureSampler")
+            .build()
+    });
 
-    PHENYL_LOGD(LOGGER, "Loading virtual text shader!");
-    textShader = common::Assets::LoadVirtual("phenyl/shaders/text", Shader{std::make_shared<GLShaderProgram>(
-            ShaderSourceBuilder{EMBED_TEXT_VERTEX_VERT, EMBED_TEXT_FRAGMENT_FRAG}
-                    .addUniform<glm::mat4>("camera")
-                    .build()
-    )});
+    PHENYL_TRACE(LOGGER, "Loading virtual text shader!");
+    textShader = common::Assets::LoadVirtual("phenyl/shaders/text", Shader{GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_TEXT_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_TEXT_FRAGMENT_FRAG)
+            .withUniformBlock("Uniform")
+            .withSampler("textureSampler")
+            .build()
+    });
 
-    PHENYL_LOGD(LOGGER, "Loading virtual particle shader!");
-    particleShader = common::Assets::LoadVirtual("phenyl/shaders/particle", Shader{std::make_shared<GLShaderProgram>(
-            ShaderSourceBuilder{EMBED_PARTICLE_VERTEX_VERT, EMBED_PARTICLE_FRAGMENT_FRAG}
-                    .addUniform<glm::mat4>("camera")
-                    .build()
-    )});
+    PHENYL_TRACE(LOGGER, "Loading virtual particle shader!");
+    particleShader = common::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
+            .withUniformBlock("Camera")
+            .build()
+    });
 }
 
 std::string_view GLRenderer::getName () const noexcept {

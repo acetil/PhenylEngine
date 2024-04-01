@@ -63,7 +63,7 @@ void GlPipeline::bindSampler (SamplerBinding binding, const ISampler& sampler) {
 void GlPipeline::render (std::size_t vertices) {
     PHENYL_DASSERT(shader);
 
-    shader->bind();
+    getShader().bind();
     glBindVertexArray(vaoId);
     glDrawArrays(renderMode, 0, static_cast<GLsizei>(vertices));
 }
@@ -113,6 +113,11 @@ GLuint GlPipeline::getCurrDivisor () const {
     } else {
         return 0;
     }
+}
+
+GlShader& GlPipeline::getShader () {
+    PHENYL_ASSERT(shader);
+    return static_cast<GlShader&>(shader->getUnderlying());
 }
 
 GlPipelineBuilder::GlPipelineBuilder () : pipeline(std::make_unique<GlPipeline>()) {}
@@ -175,7 +180,7 @@ void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, 
             pipeline->addAttrib(GL_FLOAT, 4, location + 2, binding, offset + sizeof(glm::vec3) * 3);
             break;
         default:
-            PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", getUniformTypeName(type));
+            PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", static_cast<unsigned int>(type));
             break;
     }
 }
