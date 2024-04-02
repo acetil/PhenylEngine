@@ -6,7 +6,7 @@
 
 using namespace phenyl::graphics;
 
-#define BUFFER_SIZE (256 * 6)
+#define BUFFER_SIZE (256 * 4)
 
 UIRenderLayer::UIRenderLayer (GlyphAtlas& glyphAtlas) : AbstractRenderLayer{4}, glyphAtlas{glyphAtlas} {}
 
@@ -27,10 +27,11 @@ void UIRenderLayer::init (Renderer& renderer) {
                            .withUniform<Uniform>(*textShader->uniformLocation("Uniform"), textUniformBinding)
                            .build();
 
-
     textBuffer = renderer.makeBuffer<TextVertex>(BUFFER_SIZE);
+    textIndices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
 
     textPipeline.bindBuffer(textBinding, textBuffer);
+    textPipeline.bindIndexBuffer(textIndices);
     textPipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
 
     BufferBinding boxBinding;
@@ -72,6 +73,7 @@ void UIRenderLayer::bufferRect (const UIRect& rect) {
 
 void UIRenderLayer::uploadData () {
     textBuffer.upload();
+    textIndices.upload();
     boxBuffer.upload();
     glyphAtlas.upload();
 }
@@ -83,12 +85,13 @@ void UIRenderLayer::setScreenSize (glm::vec2 screenSize) {
 void UIRenderLayer::render () {
     textPipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
     textPipeline.bindUniform(textUniformBinding, uniformBuffer);
-    textPipeline.render(textBuffer.size());
+    textPipeline.render(textIndices.size());
 
     boxPipeline.bindUniform(uniformBinding, uniformBuffer);
     boxPipeline.render(boxBuffer.size());
 
     textBuffer.clear();
+    textIndices.clear();
     boxBuffer.clear();
 }
 
@@ -97,18 +100,35 @@ Buffer<TextVertex>& UIRenderLayer::getTextBuffer () {
 }
 
 void UIRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) {
-    static glm::vec2 vertices[] = {
-            {0, 0}, {1, 0}, {0, 1}, {1, 0}, {0, 1}, {1, 1}
-    };
-
     auto topLeft = pos;
     auto bottomRight = pos + glyph.size;
 
-    for (auto i : vertices) {
-        textBuffer.emplace(TextVertex{
-                .pos = topLeft * i + bottomRight * (glm::vec2{1, 1} - i),
-                .uv = glm::vec3{glyph.uvStart * i + glyph.uvEnd * (glm::vec2{1, 1} - i), glyph.atlasLayer},
-                .colour = colour
-        });
-    }
+    auto startIndex = textBuffer.emplace(TextVertex{
+            .pos = topLeft,
+            .uv = glm::vec3{glyph.uvStart, glyph.atlasLayer},
+            .colour = colour
+    });
+    textBuffer.emplace(TextVertex{
+            .pos = glm::vec2{bottomRight.x, topLeft.y},
+            .uv = glm::vec3{glyph.uvEnd.x, glyph.uvStart.y, glyph.atlasLayer},
+            .colour = colour
+    });
+    textBuffer.emplace(TextVertex{
+            .pos = glm::vec2{topLeft.x, bottomRight.y},
+            .uv = glm::vec3{glyph.uvStart.x, glyph.uvEnd.y, glyph.atlasLayer},
+            .colour = colour
+    });
+    textBuffer.emplace(TextVertex{
+            .pos = bottomRight,
+            .uv = glm::vec3{glyph.uvEnd, glyph.atlasLayer},
+            .colour = colour
+    });
+
+    textIndices.emplace(startIndex + 0);
+    textIndices.emplace(startIndex + 1);
+    textIndices.emplace(startIndex + 2);
+
+    textIndices.emplace(startIndex + 1);
+    textIndices.emplace(startIndex + 2);
+    textIndices.emplace(startIndex + 3);
 }

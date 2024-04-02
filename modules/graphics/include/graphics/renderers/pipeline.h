@@ -19,6 +19,25 @@ namespace phenyl::graphics {
         INSTANCE
     };
 
+    enum class ShaderIndexType {
+        UBYTE,
+        USHORT,
+        UINT
+    };
+
+    template <typename T>
+    concept IndexType = std::unsigned_integral<T> && (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
+
+    template <IndexType T>
+    inline constexpr ShaderIndexType GetIndexType () {
+        if constexpr (sizeof(T) == 1) {
+            return ShaderIndexType::UBYTE;
+        } else if constexpr (sizeof(T) == 2) {
+            return ShaderIndexType::USHORT;
+        } else {
+            return ShaderIndexType::UINT;
+        }
+    }
 
     using BufferBinding = unsigned int;
     using UniformBinding = unsigned int;
@@ -29,8 +48,10 @@ namespace phenyl::graphics {
         virtual ~IPipeline() = default;
 
         virtual void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) = 0;
+        virtual void bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) = 0;
         virtual void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) = 0;
         virtual void bindSampler (SamplerBinding binding, const ISampler& sampler) = 0;
+        virtual void unbindIndexBuffer () = 0;
         virtual void render (std::size_t vertices) = 0; // TODO: command buffer
     };
 
@@ -53,6 +74,14 @@ namespace phenyl::graphics {
             return *this;
         }
 
+        template <IndexType T>
+        Pipeline& bindIndexBuffer (Buffer<T>& buffer) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindIndexBuffer(GetIndexType<T>(), buffer.getUnderlying());
+
+            return *this;
+        }
+
         template <typename T>
         Pipeline& bindUniform (UniformBinding binding, UniformBuffer<T>& buffer) {
             PHENYL_DASSERT(pipeline);
@@ -71,6 +100,13 @@ namespace phenyl::graphics {
         Pipeline& bindSampler (SamplerBinding binding, const ISampler& sampler) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindSampler(binding, sampler);
+
+            return *this;
+        }
+
+        Pipeline& unbindIndexBuffer () {
+            PHENYL_DASSERT(pipeline);
+            pipeline->unbindIndexBuffer();
 
             return *this;
         }

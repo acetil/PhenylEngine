@@ -15,6 +15,7 @@ namespace phenyl::graphics {
         common::Asset<Shader> shader;
         std::vector<std::size_t> bufferTypes;
         util::Map<UniformBinding, std::size_t> uniformTypes;
+        std::optional<GLenum> indexType = std::nullopt;
 
         GlShader& getShader ();
     public:
@@ -28,8 +29,10 @@ namespace phenyl::graphics {
         ~GlPipeline () override;
 
         void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) override;
+        void bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) override;
         void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) override;
         void bindSampler (SamplerBinding binding, const ISampler& sampler) override;
+        void unbindIndexBuffer () override;
 
         void render (std::size_t vertices) override;
 

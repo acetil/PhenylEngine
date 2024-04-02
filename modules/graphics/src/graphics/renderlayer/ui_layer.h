@@ -26,8 +26,8 @@ namespace phenyl::graphics {
         GlyphAtlas& glyphAtlas;
         SamplerBinding samplerBinding{};
         Buffer<TextVertex> textBuffer;
+        Buffer<std::uint16_t> textIndices;
         UniformBinding textUniformBinding;
-        //Buffer<TextVertex> textBuffer;
 
         Pipeline boxPipeline;
         Buffer<BoxVertex> boxBuffer;

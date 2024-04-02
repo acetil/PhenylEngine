@@ -27,13 +27,17 @@ namespace phenyl::graphics {
         }
 
         template <typename ...Args>
-        void emplace (Args&&... args) {
+        std::size_t emplace (Args&&... args) {
+            auto index = size();
             data.emplace_back(std::forward<Args>(args)...);
+            return index;
         }
 
         template <std::input_iterator It>
-        void insertRange (It begin, It end) {
+        std::size_t insertRange (It begin, It end) {
+            auto startIndex = size();
             data.insert(data.end(), begin, end);
+            return startIndex;
         }
 
         void reserve (std::size_t newSize) {

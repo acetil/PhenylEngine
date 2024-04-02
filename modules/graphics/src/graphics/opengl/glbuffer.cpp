@@ -6,7 +6,8 @@ using namespace phenyl::graphics;
 static phenyl::Logger LOGGER{"GL_BUFFER", detail::GRAPHICS_LOGGER};
 
 GlBuffer::GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint) : capacity{0}, elemSize{elemSize}, usageHint{usageHint} {
-    glGenBuffers(1, &bufferId);
+    glCreateBuffers(1, &bufferId);
+    PHENYL_TRACE(LOGGER, "Initialised buffer id={}", bufferId);
 
     ensureCapacity(capacity);
 }
@@ -42,15 +43,17 @@ void GlBuffer::ensureCapacity (std::size_t requiredCapacity) {
         return;
     }
 
+    PHENYL_TRACE(LOGGER, "Resize requested for buffer id={} from {} to {}", bufferId, capacity, requiredCapacity);
     capacity = std::bit_ceil(requiredCapacity);
-    bind();
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(capacity), nullptr, usageHint);
+    glNamedBufferData(bufferId, static_cast<GLsizeiptr>(capacity), nullptr, usageHint);
+    PHENYL_TRACE(LOGGER, "Resized buffer buffer id={} to {}", bufferId, capacity);
 }
 
 void GlBuffer::upload (unsigned char* data, std::size_t size) {
     ensureCapacity(size);
-    bind();
-    glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(size), data);
+
+    PHENYL_TRACE(LOGGER, "Uploading {} bytes to buffer id={}", size, bufferId);
+    glNamedBufferSubData(bufferId, 0, static_cast<GLsizeiptr>(size), data);
 }
 
 void GlBuffer::bind () const {

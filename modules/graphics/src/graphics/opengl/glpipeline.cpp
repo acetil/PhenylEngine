@@ -54,10 +54,34 @@ void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, IUniform
     glBindBufferBase(GL_UNIFORM_BUFFER, binding, glBuffer.id());
 }
 
+void GlPipeline::bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) {
+    switch (type) {
+        case ShaderIndexType::UBYTE:
+            indexType = GL_UNSIGNED_BYTE;
+            break;
+        case ShaderIndexType::USHORT:
+            indexType = GL_UNSIGNED_SHORT;
+            break;
+        case ShaderIndexType::UINT:
+            indexType = GL_UNSIGNED_INT;
+            break;
+        default:
+            PHENYL_ABORT("Invalid shader index type: {}", static_cast<unsigned int>(type));
+    }
+
+    auto& glBuffer = reinterpret_cast<GlBuffer&>(buffer);
+    glVertexArrayElementBuffer(vaoId, glBuffer.id());
+}
+
 void GlPipeline::bindSampler (SamplerBinding binding, const ISampler& sampler) {
     const auto& glSampler = reinterpret_cast<const GlSampler&>(sampler);
     glActiveTexture(binding);
     glSampler.bind();
+}
+
+void GlPipeline::unbindIndexBuffer () {
+    glVertexArrayElementBuffer(vaoId, 0);
+    indexType = std::nullopt;
 }
 
 void GlPipeline::render (std::size_t vertices) {
@@ -65,7 +89,12 @@ void GlPipeline::render (std::size_t vertices) {
 
     getShader().bind();
     glBindVertexArray(vaoId);
-    glDrawArrays(renderMode, 0, static_cast<GLsizei>(vertices));
+
+    if (indexType) {
+        glDrawElements(renderMode, static_cast<GLsizei>(vertices), *indexType, nullptr);
+    } else {
+        glDrawArrays(renderMode, 0, static_cast<GLsizei>(vertices));
+    }
 }
 
 void GlPipeline::setRenderMode (GLenum renderMode) {
