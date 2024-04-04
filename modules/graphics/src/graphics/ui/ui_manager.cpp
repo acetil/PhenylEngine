@@ -48,7 +48,13 @@ void UIManager::renderUI () {
 }
 
 void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius, float borderSize) {
-    uiLayer->bufferRect({topLeftPos + offsetStack.back(), size, borderColour, bgColour, {size, cornerRadius, borderSize}});
+    //uiLayer->bufferRect({topLeftPos + offsetStack.back(), size, borderColour, bgColour, {size, cornerRadius, borderSize}});
+    auto screenPos = topLeftPos + offsetStack.back();
+    glm::vec2 vertices[] {
+            screenPos, glm::vec2{screenPos.x + size.x, screenPos.y}, screenPos + size, glm::vec2{screenPos.x, screenPos.y + size.y}
+    };
+    uiLayer->renderConvexPoly(vertices, bgColour);
+    uiLayer->renderPolyLine(vertices, borderColour, borderSize);
 }
 
 void UIManager::setMousePos (glm::vec2 _mousePos) {

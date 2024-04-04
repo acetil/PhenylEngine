@@ -94,7 +94,7 @@ const Glyph& Font::getGlyph (std::uint32_t size, char32_t charCode) {
     }
 
     auto image = Image::MakeNonOwning(std::span{reinterpret_cast<std::byte*>(slot->bitmap.buffer), slot->bitmap.width * slot->bitmap.rows}, slot->bitmap.width, slot->bitmap.rows, ImageFormat::R);
-    auto placement = atlas.placeGlyph(image);
+    auto placement = atlas.place(image);
 
     return sizeMap[charCode] = Glyph{
             .uvStart = placement.uvStart,

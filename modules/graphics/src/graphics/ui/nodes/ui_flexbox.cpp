@@ -158,8 +158,8 @@ void UIFlexBoxNode::render (graphics::UIManager& uiManager) {
 
     updateLayout(); // TODO: update only when items update
 
-    uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
-    uiManager.renderRect({0,0}, componentMinSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 1.0f);
+    uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 2.0f);
+    uiManager.renderRect({0,0}, componentMinSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 0.0f, 2.0f);
 }
 
 UIAnchor UIFlexBoxNode::getAnchor () {

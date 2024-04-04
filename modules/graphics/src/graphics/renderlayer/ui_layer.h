@@ -3,36 +3,28 @@
 #include "graphics/abstract_render_layer.h"
 #include "graphics/renderers/renderer.h"
 #include "graphics/maths_headers.h"
-#include "graphics/ui/ui_rect.h"
 #include "graphics/font/font.h"
 #include "graphics/font/font_manager.h"
 
 namespace phenyl::graphics {
-    class UIRenderLayer : public AbstractRenderLayer, public IGlyphRenderer{
+    class UIRenderLayer : public AbstractRenderLayer, public IGlyphRenderer {
     private:
         struct Uniform {
             glm::vec2 screenSize;
         };
 
-        struct BoxVertex {
+        struct Vertex {
             glm::vec2 pos;
-            glm::vec2 rectPos;
-            glm::vec4 borderColour;
-            glm::vec4 bgColour;
-            glm::vec4 details;
+            glm::vec3 uv;
+            glm::vec4 colour;
         };
 
-        Pipeline textPipeline;
+        Pipeline pipeline;
         GlyphAtlas& glyphAtlas;
         SamplerBinding samplerBinding{};
-        Buffer<TextVertex> textBuffer;
-        Buffer<std::uint16_t> textIndices;
-        UniformBinding textUniformBinding;
-
-        Pipeline boxPipeline;
-        Buffer<BoxVertex> boxBuffer;
-
-        UniformBinding uniformBinding{};
+        Buffer<Vertex> buffer;
+        Buffer<std::uint16_t> indices;
+        UniformBinding uniformBinding;
         UniformBuffer<Uniform> uniformBuffer;
     public:
         explicit UIRenderLayer (GlyphAtlas& glyphAtlas);
@@ -41,13 +33,12 @@ namespace phenyl::graphics {
         void init (Renderer& renderer) override;
         void render () override;
 
-        void bufferRect (const UIRect& rect);
-
         void uploadData ();
 
         void setScreenSize (glm::vec2 screenSize);
 
-        Buffer<TextVertex>& getTextBuffer ();
         void renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) override;
+        void renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour);
+        void renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width);
     };
 }

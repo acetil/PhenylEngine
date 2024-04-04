@@ -5,12 +5,6 @@
 #include "graphics/font/glyph_atlas.h"
 
 namespace phenyl::graphics {
-    struct TextVertex {
-        glm::vec2 pos;
-        glm::vec3 uv;
-        glm::vec3 colour;
-    };
-
     class FontManager : public common::AssetManager<Font> {
     private:
         const Viewport& viewport;

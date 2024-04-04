@@ -17,64 +17,27 @@ std::string_view UIRenderLayer::getName () const {
 void UIRenderLayer::init (Renderer& renderer) {
     BufferBinding textBinding;
     auto textShader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/text");
-    textPipeline = renderer.buildPipeline()
-                           .withShader(textShader)
-                           .withBuffer<TextVertex>(textBinding)
-                           .withAttrib<glm::vec2>(0, textBinding, offsetof(TextVertex, pos))
-                           .withAttrib<glm::vec3>(1, textBinding, offsetof(TextVertex, uv))
-                           .withAttrib<glm::vec3>(2, textBinding, offsetof(TextVertex, colour))
-                           .withSampler2D(*textShader->samplerLocation("textureSampler"), samplerBinding)
-                           .withUniform<Uniform>(*textShader->uniformLocation("Uniform"), textUniformBinding)
-                           .build();
+    pipeline = renderer.buildPipeline()
+                       .withShader(textShader)
+                       .withBuffer<Vertex>(textBinding)
+                       .withAttrib<glm::vec2>(0, textBinding, offsetof(Vertex, pos))
+                       .withAttrib<glm::vec3>(1, textBinding, offsetof(Vertex, uv))
+                       .withAttrib<glm::vec3>(2, textBinding, offsetof(Vertex, colour))
+                       .withSampler2D(*textShader->samplerLocation("textureSampler"), samplerBinding)
+                       .withUniform<Uniform>(*textShader->uniformLocation("Uniform"), uniformBinding)
+                       .build();
 
-    textBuffer = renderer.makeBuffer<TextVertex>(BUFFER_SIZE);
-    textIndices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
+    buffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);
+    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
 
-    textPipeline.bindBuffer(textBinding, textBuffer);
-    textPipeline.bindIndexBuffer(textIndices);
-    textPipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
-
-    BufferBinding boxBinding;
-    auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/box");
-    boxPipeline = renderer.buildPipeline()
-                          .withShader(shader)
-                          .withBuffer<BoxVertex>(boxBinding)
-                          .withAttrib<glm::vec2>(0, boxBinding, offsetof(BoxVertex, pos))
-                          .withAttrib<glm::vec2>(1, boxBinding, offsetof(BoxVertex, rectPos))
-                          .withAttrib<glm::vec4>(2, boxBinding, offsetof(BoxVertex, borderColour))
-                          .withAttrib<glm::vec4>(3, boxBinding, offsetof(BoxVertex, bgColour))
-                          .withAttrib<glm::vec4>(4, boxBinding, offsetof(BoxVertex, details))
-                          .withUniform<Uniform>(*shader->uniformLocation("Uniform"), uniformBinding)
-                          .build();
-
-    boxBuffer = renderer.makeBuffer<BoxVertex>(BUFFER_SIZE);
-    uniformBuffer = renderer.makeUniformBuffer<Uniform>(glm::vec2{800, 600});
-
-    boxPipeline.bindBuffer(boxBinding, boxBuffer);
-    boxPipeline.bindUniform(uniformBinding, uniformBuffer);
-}
-
-void UIRenderLayer::bufferRect (const UIRect& rect) {
-    for (int i = 0; i < 6; i++) {
-        int vertexNum = i == 3 ? i : i % 3;
-
-        glm::vec2 pos{rect.screenPos.x + (float)(vertexNum % 2 == 1) * rect.size.x, rect.screenPos.y + (float)(vertexNum / 2 == 1) * rect.size.y};
-        glm::vec2 rectPos{-1.0f + (float)(vertexNum % 2 == 1) * 2.0f, -1.0f + (float)(vertexNum / 2 == 1) * 2.0f};
-
-        boxBuffer.emplace(BoxVertex{
-                .pos = pos,
-                .rectPos = rectPos,
-                .borderColour = rect.borderColour,
-                .bgColour = rect.bgColour,
-                .details = rect.details
-        });
-    }
+    pipeline.bindBuffer(textBinding, buffer);
+    pipeline.bindIndexBuffer(indices);
+    pipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
 }
 
 void UIRenderLayer::uploadData () {
-    textBuffer.upload();
-    textIndices.upload();
-    boxBuffer.upload();
+    buffer.upload();
+    indices.upload();
     glyphAtlas.upload();
 }
 
@@ -83,52 +46,123 @@ void UIRenderLayer::setScreenSize (glm::vec2 screenSize) {
 }
 
 void UIRenderLayer::render () {
-    textPipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
-    textPipeline.bindUniform(textUniformBinding, uniformBuffer);
-    textPipeline.render(textIndices.size());
+    pipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
+    pipeline.bindUniform(uniformBinding, uniformBuffer);
+    pipeline.render(indices.size());
 
-    boxPipeline.bindUniform(uniformBinding, uniformBuffer);
-    boxPipeline.render(boxBuffer.size());
-
-    textBuffer.clear();
-    textIndices.clear();
-    boxBuffer.clear();
-}
-
-Buffer<TextVertex>& UIRenderLayer::getTextBuffer () {
-    return textBuffer;
+    buffer.clear();
+    indices.clear();
 }
 
 void UIRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) {
     auto topLeft = pos;
     auto bottomRight = pos + glyph.size;
 
-    auto startIndex = textBuffer.emplace(TextVertex{
+    auto startIndex = buffer.emplace(Vertex{
             .pos = topLeft,
             .uv = glm::vec3{glyph.uvStart, glyph.atlasLayer},
-            .colour = colour
+            .colour = glm::vec4{colour, 1.0f}
     });
-    textBuffer.emplace(TextVertex{
+    buffer.emplace(Vertex{
             .pos = glm::vec2{bottomRight.x, topLeft.y},
             .uv = glm::vec3{glyph.uvEnd.x, glyph.uvStart.y, glyph.atlasLayer},
-            .colour = colour
+            .colour = glm::vec4{colour, 1.0f}
     });
-    textBuffer.emplace(TextVertex{
+    buffer.emplace(Vertex{
             .pos = glm::vec2{topLeft.x, bottomRight.y},
             .uv = glm::vec3{glyph.uvStart.x, glyph.uvEnd.y, glyph.atlasLayer},
-            .colour = colour
+            .colour = glm::vec4{colour, 1.0f}
     });
-    textBuffer.emplace(TextVertex{
+    buffer.emplace(Vertex{
             .pos = bottomRight,
             .uv = glm::vec3{glyph.uvEnd, glyph.atlasLayer},
-            .colour = colour
+            .colour = glm::vec4{colour, 1.0f}
     });
 
-    textIndices.emplace(startIndex + 0);
-    textIndices.emplace(startIndex + 1);
-    textIndices.emplace(startIndex + 2);
+    indices.emplace(startIndex + 0);
+    indices.emplace(startIndex + 1);
+    indices.emplace(startIndex + 2);
 
-    textIndices.emplace(startIndex + 1);
-    textIndices.emplace(startIndex + 2);
-    textIndices.emplace(startIndex + 3);
+    indices.emplace(startIndex + 1);
+    indices.emplace(startIndex + 2);
+    indices.emplace(startIndex + 3);
+}
+
+void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour) {
+    if (points.size() < 3 || colour.a <= 0.0f) {
+        return;
+    }
+
+    const glm::vec3 opaque = glyphAtlas.opaque();
+    std::uint16_t startIndex = buffer.emplace(Vertex{
+        .pos = points[0],
+        .uv = opaque,
+        .colour = colour
+    });
+    std::uint16_t lastIndex = buffer.emplace(Vertex{
+        .pos = points[1],
+        .uv = opaque,
+        .colour = colour
+    });
+
+    for (std::size_t i = 2; i < points.size(); i++) {
+        std::uint16_t index = buffer.emplace(Vertex{
+            .pos = points[i],
+            .uv = opaque,
+            .colour = colour
+        });
+
+        indices.emplace(startIndex);
+        indices.emplace(lastIndex);
+        indices.emplace(index);
+
+        lastIndex = index;
+    }
+}
+
+void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width) {
+    if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
+        return;
+    }
+
+    const auto halfWidth = width / 2.0f;
+    const glm::vec3 opaque = glyphAtlas.opaque();
+    for (std::size_t i = 0; i < points.size(); i++) {
+        auto curr = points[i];
+        auto next = points[(i + 1) % points.size()];
+        if (curr == next) {
+            continue;
+        }
+
+        auto norm = glm::normalize(glm::vec2{-(next.y - curr.y), next.x - curr.x});
+
+        auto startIndex = buffer.emplace(Vertex{
+            .pos = curr - norm * halfWidth,
+            .uv = opaque,
+            .colour = colour
+        });
+        buffer.emplace(Vertex{
+                .pos = curr + norm * halfWidth,
+                .uv = opaque,
+                .colour = colour
+        });
+        buffer.emplace(Vertex{
+                .pos = next - norm * halfWidth,
+                .uv = opaque,
+                .colour = colour
+        });
+        buffer.emplace(Vertex{
+                .pos = next + norm * halfWidth,
+                .uv = opaque,
+                .colour = colour
+        });
+
+        indices.emplace(startIndex + 0);
+        indices.emplace(startIndex + 1);
+        indices.emplace(startIndex + 2);
+
+        indices.emplace(startIndex + 1);
+        indices.emplace(startIndex + 2);
+        indices.emplace(startIndex + 3);
+    }
 }

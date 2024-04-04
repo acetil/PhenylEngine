@@ -28,24 +28,29 @@ namespace phenyl::graphics {
     };
 
     class GlyphAtlas {
-    private:
-        ImageArrayTexture arrayTexture;
-        std::vector<ColumnAtlas> atlases;
-        std::uint32_t size;
-        std::uint32_t padding;
     public:
         struct Placement {
             glm::vec2 uvStart;
             glm::vec2 uvEnd;
             std::uint32_t atlasLayer;
         };
+    private:
+        ImageArrayTexture arrayTexture;
+        std::vector<ColumnAtlas> atlases;
+        std::uint32_t size;
+        std::uint32_t padding;
 
+        glm::vec3 whitePixel;
+    public:
         explicit GlyphAtlas (Renderer& renderer, std::uint32_t size = 1024, std::uint32_t padding=1);
+        Placement place (const Image& image);
 
-        Placement placeGlyph (const Image& image);
-
-        const ISampler& sampler () const;
+        [[nodiscard]] const ISampler& sampler () const;
         void upload ();
+
+        [[nodiscard]] glm::vec3 opaque () const {
+            return whitePixel;
+        }
     };
 }
 

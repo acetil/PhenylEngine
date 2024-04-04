@@ -38,7 +38,12 @@ std::optional<glm::uvec2> ColumnAtlas::place (const Image& image) {
 }
 
 GlyphAtlas::GlyphAtlas (Renderer& renderer, std::uint32_t size, std::uint32_t padding)
-        : arrayTexture{renderer.makeArrayTexture(TextureProperties{.format = ImageFormat::R, .filter = TextureFilter::POINT, .useMipmapping = true}, size, size)}, size{size}, padding{padding} {}
+        : arrayTexture{renderer.makeArrayTexture(TextureProperties{.format = ImageFormat::R, .filter = TextureFilter::POINT, .useMipmapping = true}, size, size)}, size{size}, padding{padding} {
+
+    std::byte white{0xFF};
+    auto [uvStart, _, atlasLayer] = place(Image::MakeNonOwning({&white, 1}, 1, 1, ImageFormat::R));
+    whitePixel = glm::vec3{uvStart, atlasLayer};
+}
 
 const ISampler& GlyphAtlas::sampler () const {
     return arrayTexture.sampler();
@@ -53,7 +58,7 @@ void GlyphAtlas::upload () {
     }
 }
 
-GlyphAtlas::Placement GlyphAtlas::placeGlyph (const Image& image) {
+GlyphAtlas::Placement GlyphAtlas::place (const Image& image) {
     PHENYL_ASSERT_MSG(image.width() <= size && image.height() <= size, "Attempting to add glyph that is too large (size={}, glyphSize={}x{}", size, image.width(), image.height());
 
     for (auto& atlas : atlases) {
