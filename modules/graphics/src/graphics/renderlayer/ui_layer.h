@@ -39,6 +39,6 @@ namespace phenyl::graphics {
 
         void renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) override;
         void renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour);
-        void renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width);
+        void renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed);
     };
 }

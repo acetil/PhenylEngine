@@ -10,6 +10,10 @@
 
 namespace phenyl::util {
     class DataValue;
+
+    constexpr glm::vec2 SafeNormalize (const glm::vec2 inVec) {
+        return inVec.x == 0.0f && inVec.y == 0.0f ? inVec : glm::normalize(inVec);
+    }
 }
 
 namespace glm {

@@ -7,6 +7,7 @@
 using namespace phenyl::graphics;
 
 #define BUFFER_SIZE (256 * 4)
+#define MITER_LIMIT 2.5f
 
 UIRenderLayer::UIRenderLayer (GlyphAtlas& glyphAtlas) : AbstractRenderLayer{4}, glyphAtlas{glyphAtlas} {}
 
@@ -29,6 +30,7 @@ void UIRenderLayer::init (Renderer& renderer) {
 
     buffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);
     indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
+    uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     pipeline.bindBuffer(textBinding, buffer);
     pipeline.bindIndexBuffer(indices);
@@ -93,6 +95,7 @@ void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 col
         return;
     }
 
+    // Render out in fan from start index
     const glm::vec3 opaque = glyphAtlas.opaque();
     std::uint16_t startIndex = buffer.emplace(Vertex{
         .pos = points[0],
@@ -112,6 +115,7 @@ void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 col
             .colour = colour
         });
 
+        // Add next fan triangle
         indices.emplace(startIndex);
         indices.emplace(lastIndex);
         indices.emplace(index);
@@ -120,49 +124,107 @@ void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 col
     }
 }
 
-void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width) {
+void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed) {
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;
     }
 
     const auto halfWidth = width / 2.0f;
     const glm::vec3 opaque = glyphAtlas.opaque();
+    std::uint16_t startLIndex;
+    std::uint16_t startRIndex;
+    std::uint16_t lastLIndex;
+    std::uint16_t lastRIndex;
     for (std::size_t i = 0; i < points.size(); i++) {
         auto curr = points[i];
-        auto next = points[(i + 1) % points.size()];
-        if (curr == next) {
-            continue;
+        auto prev = i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
+        auto next = i != points.size() - 1 ? points[i + 1] : (closed ? points.front() : curr); // wrap around if closed, otherwise use curr
+
+        auto n1 = util::SafeNormalize(glm::vec2{-(curr.y - prev.y), curr.x - prev.x});
+        auto n2 = util::SafeNormalize(glm::vec2{-(next.y - curr.y), next.x - curr.x});
+        auto miter = glm::normalize(n1 + n2); // Average normals
+        auto miterMult = 1.0f / glm::dot(miter, n1);
+        auto miterLen = halfWidth * miterMult;
+
+        std::uint16_t prevLIndex;
+        std::uint16_t prevRIndex;
+        std::uint16_t nextLIndex;
+        std::uint16_t nextRIndex;
+        if (miterMult <= MITER_LIMIT) {
+            // Miter small enough, put in
+            prevLIndex = buffer.emplace(Vertex{
+                   .pos = curr - miter * miterLen,
+                   .uv = opaque,
+                   .colour = colour
+               });
+            prevRIndex = buffer.emplace(Vertex{
+                .pos = curr + miter * miterLen,
+                .uv = opaque,
+                .colour = colour
+            });
+
+            nextLIndex = prevLIndex;
+            nextRIndex = prevRIndex;
+        } else {
+            // Miter too large, use bevel joint
+            prevLIndex = buffer.emplace(Vertex{
+                .pos = curr - n1 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+            prevRIndex = buffer.emplace(Vertex{
+                .pos = curr + n1 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+
+            nextLIndex = buffer.emplace(Vertex{
+                .pos = curr - n2 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+            nextRIndex = buffer.emplace(Vertex{
+                .pos = curr + n2 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+
+            // Add join geometry
+            indices.emplace(prevLIndex);
+            indices.emplace(prevRIndex);
+            indices.emplace(nextLIndex);
+
+            indices.emplace(prevRIndex);
+            indices.emplace(nextLIndex);
+            indices.emplace(nextRIndex);
         }
 
-        auto norm = glm::normalize(glm::vec2{-(next.y - curr.y), next.x - curr.x});
+        if (i == 0) {
+            // No previous vertex
+            startLIndex = prevLIndex;
+            startRIndex = prevRIndex;
+        } else {
+            // Render segment with previous vertex
+            indices.emplace(lastLIndex);
+            indices.emplace(lastRIndex);
+            indices.emplace(prevLIndex);
 
-        auto startIndex = buffer.emplace(Vertex{
-            .pos = curr - norm * halfWidth,
-            .uv = opaque,
-            .colour = colour
-        });
-        buffer.emplace(Vertex{
-                .pos = curr + norm * halfWidth,
-                .uv = opaque,
-                .colour = colour
-        });
-        buffer.emplace(Vertex{
-                .pos = next - norm * halfWidth,
-                .uv = opaque,
-                .colour = colour
-        });
-        buffer.emplace(Vertex{
-                .pos = next + norm * halfWidth,
-                .uv = opaque,
-                .colour = colour
-        });
+            indices.emplace(lastRIndex);
+            indices.emplace(prevLIndex);
+            indices.emplace(prevRIndex);
+        }
+        lastLIndex = nextLIndex;
+        lastRIndex = nextRIndex;
+    }
 
-        indices.emplace(startIndex + 0);
-        indices.emplace(startIndex + 1);
-        indices.emplace(startIndex + 2);
+    if (closed) {
+        // Complete outline
+        indices.emplace(lastLIndex);
+        indices.emplace(lastRIndex);
+        indices.emplace(startLIndex);
 
-        indices.emplace(startIndex + 1);
-        indices.emplace(startIndex + 2);
-        indices.emplace(startIndex + 3);
+        indices.emplace(lastRIndex);
+        indices.emplace(startLIndex);
+        indices.emplace(startRIndex);
     }
 }
