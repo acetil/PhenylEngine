@@ -52,8 +52,8 @@ void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgCo
     glm::vec2 vertices[] {
             screenPos, glm::vec2{screenPos.x + size.x, screenPos.y}, screenPos + size, glm::vec2{screenPos.x, screenPos.y + size.y}
     };
-    uiLayer->renderConvexPoly(vertices, bgColour);
-    uiLayer->renderPolyLine(vertices, borderColour, borderSize, true);
+    uiLayer->renderConvexPolyAA(vertices, bgColour);
+    uiLayer->renderPolyLineAA(vertices, borderColour, borderSize, true);
 }
 
 void UIManager::setMousePos (glm::vec2 _mousePos) {

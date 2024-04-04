@@ -23,7 +23,7 @@ void UIRenderLayer::init (Renderer& renderer) {
                        .withBuffer<Vertex>(textBinding)
                        .withAttrib<glm::vec2>(0, textBinding, offsetof(Vertex, pos))
                        .withAttrib<glm::vec3>(1, textBinding, offsetof(Vertex, uv))
-                       .withAttrib<glm::vec3>(2, textBinding, offsetof(Vertex, colour))
+                       .withAttrib<glm::vec4>(2, textBinding, offsetof(Vertex, colour))
                        .withSampler2D(*textShader->samplerLocation("textureSampler"), samplerBinding)
                        .withUniform<Uniform>(*textShader->uniformLocation("Uniform"), uniformBinding)
                        .build();
@@ -124,6 +124,70 @@ void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 col
     }
 }
 
+void UIRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::vec4 colour, float widthAA) {
+    if (points.size() < 3 || colour.a <= 0.0f) {
+        return;
+    }
+
+    // Render out in fan from start index
+    const glm::vec3 opaque = glyphAtlas.opaque();
+
+    std::uint16_t startIndex = 0;
+    std::uint16_t lastIndex = 0;
+    for (std::size_t i = 0; i < points.size(); i++) {
+        auto prev = points[(i - 1 + points.size()) % points.size()];
+        auto curr = points[i];
+        auto next = points[(i + 1) % points.size()];
+
+        auto n1 = util::SafeNormalize({-(curr.y - prev.y), curr.x - prev.x});
+        auto n2 = util::SafeNormalize({-(next.y - curr.y), next.x - curr.x});
+        auto miter = -util::SafeNormalize(n1 + n2);
+
+        std::uint16_t index = buffer.emplace(Vertex{
+            .pos = curr - miter * widthAA,
+            .uv = opaque,
+            .colour = colour
+        });
+        buffer.emplace(Vertex{
+            .pos = curr + miter * widthAA,
+            .uv = opaque,
+            .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+        });
+
+        if (i == 0) {
+            startIndex = index;
+        } else {
+            // Add AA geometry
+            indices.emplace(lastIndex);
+            indices.emplace(lastIndex + 1);
+            indices.emplace(index);
+
+            indices.emplace(lastIndex + 1);
+            indices.emplace(index);
+            indices.emplace(index + 1);
+        }
+
+        if (i >= 2) {
+            // Add fan triangle
+            indices.emplace(startIndex);
+            indices.emplace(lastIndex);
+            indices.emplace(index);
+        }
+
+        lastIndex = index;
+    }
+
+    // Close AA strip
+    indices.emplace(lastIndex);
+    indices.emplace(lastIndex + 1);
+    indices.emplace(startIndex);
+
+    indices.emplace(lastIndex + 1);
+    indices.emplace(startIndex);
+    indices.emplace(startIndex + 1);
+}
+
+
 void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed) {
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;
@@ -131,10 +195,8 @@ void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colou
 
     const auto halfWidth = width / 2.0f;
     const glm::vec3 opaque = glyphAtlas.opaque();
-    std::uint16_t startLIndex;
-    std::uint16_t startRIndex;
-    std::uint16_t lastLIndex;
-    std::uint16_t lastRIndex;
+    std::uint16_t startIndex;
+    std::uint16_t lastIndex;
     for (std::size_t i = 0; i < points.size(); i++) {
         auto curr = points[i];
         auto prev = i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
@@ -146,85 +208,267 @@ void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colou
         auto miterMult = 1.0f / glm::dot(miter, n1);
         auto miterLen = halfWidth * miterMult;
 
-        std::uint16_t prevLIndex;
-        std::uint16_t prevRIndex;
-        std::uint16_t nextLIndex;
-        std::uint16_t nextRIndex;
+        std::uint16_t prevIndex;
+        std::uint16_t nextIndex;
         if (miterMult <= MITER_LIMIT) {
             // Miter small enough, put in
-            prevLIndex = buffer.emplace(Vertex{
+            prevIndex = buffer.emplace(Vertex{
                    .pos = curr - miter * miterLen,
                    .uv = opaque,
                    .colour = colour
                });
-            prevRIndex = buffer.emplace(Vertex{
+            buffer.emplace(Vertex{
                 .pos = curr + miter * miterLen,
                 .uv = opaque,
                 .colour = colour
             });
 
-            nextLIndex = prevLIndex;
-            nextRIndex = prevRIndex;
+            nextIndex = prevIndex;
         } else {
             // Miter too large, use bevel joint
-            prevLIndex = buffer.emplace(Vertex{
+            prevIndex = buffer.emplace(Vertex{
                 .pos = curr - n1 * halfWidth,
                 .uv = opaque,
                 .colour = colour
             });
-            prevRIndex = buffer.emplace(Vertex{
+            buffer.emplace(Vertex{
                 .pos = curr + n1 * halfWidth,
                 .uv = opaque,
                 .colour = colour
             });
 
-            nextLIndex = buffer.emplace(Vertex{
+            nextIndex = buffer.emplace(Vertex{
                 .pos = curr - n2 * halfWidth,
                 .uv = opaque,
                 .colour = colour
             });
-            nextRIndex = buffer.emplace(Vertex{
+            buffer.emplace(Vertex{
                 .pos = curr + n2 * halfWidth,
                 .uv = opaque,
                 .colour = colour
             });
 
             // Add join geometry
-            indices.emplace(prevLIndex);
-            indices.emplace(prevRIndex);
-            indices.emplace(nextLIndex);
+            indices.emplace(prevIndex);
+            indices.emplace(prevIndex + 1);
+            indices.emplace(nextIndex);
 
-            indices.emplace(prevRIndex);
-            indices.emplace(nextLIndex);
-            indices.emplace(nextRIndex);
+            indices.emplace(prevIndex + 1);
+            indices.emplace(nextIndex);
+            indices.emplace(nextIndex + 1);
         }
 
         if (i == 0) {
             // No previous vertex
-            startLIndex = prevLIndex;
-            startRIndex = prevRIndex;
+            startIndex = prevIndex;
         } else {
             // Render segment with previous vertex
-            indices.emplace(lastLIndex);
-            indices.emplace(lastRIndex);
-            indices.emplace(prevLIndex);
+            indices.emplace(lastIndex);
+            indices.emplace(lastIndex + 1);
+            indices.emplace(prevIndex);
 
-            indices.emplace(lastRIndex);
-            indices.emplace(prevLIndex);
-            indices.emplace(prevRIndex);
+            indices.emplace(lastIndex + 1);
+            indices.emplace(prevIndex);
+            indices.emplace(prevIndex + 1);
         }
-        lastLIndex = nextLIndex;
-        lastRIndex = nextRIndex;
+        lastIndex = nextIndex;
     }
 
     if (closed) {
         // Complete outline
-        indices.emplace(lastLIndex);
-        indices.emplace(lastRIndex);
-        indices.emplace(startLIndex);
+        indices.emplace(lastIndex);
+        indices.emplace(lastIndex + 1);
+        indices.emplace(startIndex);
 
-        indices.emplace(lastRIndex);
-        indices.emplace(startLIndex);
-        indices.emplace(startRIndex);
+        indices.emplace(lastIndex + 1);
+        indices.emplace(startIndex);
+        indices.emplace(startIndex + 1);
     }
 }
+
+void UIRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed, float widthAA) {
+    // Doesnt do AA for non-closed lines properly
+    if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
+        return;
+    }
+
+    const auto halfWidth = width >= widthAA ? width / 2.0f - widthAA * 0.5f : 0.0f;
+    const auto halfWidthAA = width >= widthAA ? width / 2.0f + widthAA * 0.5f : widthAA * 0.5f;
+    const glm::vec3 opaque = glyphAtlas.opaque();
+
+    std::uint16_t startIndex;
+    std::uint16_t lastIndex;
+    for (std::size_t i = 0; i < points.size(); i++) {
+        auto curr = points[i];
+        auto prev = i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
+        auto next = i != points.size() - 1 ? points[i + 1] : (closed ? points.front() : curr); // wrap around if closed, otherwise use curr
+
+        auto n1 = util::SafeNormalize(glm::vec2{-(curr.y - prev.y), curr.x - prev.x});
+        auto n2 = util::SafeNormalize(glm::vec2{-(next.y - curr.y), next.x - curr.x});
+        auto miter = glm::normalize(n1 + n2); // Average normals
+        auto miterMult = 1.0f / glm::dot(miter, n1);
+        auto miterLen = halfWidth * miterMult;
+        auto miterLenAA = halfWidthAA * miterMult;
+
+        std::uint16_t prevIndex;
+        std::uint16_t nextIndex;
+        if (miterMult <= MITER_LIMIT) {
+            // Miter small enough, put in
+            prevIndex = buffer.emplace(Vertex{
+                   .pos = curr - miter * miterLen,
+                   .uv = opaque,
+                   .colour = colour
+               });
+            buffer.emplace(Vertex{
+                   .pos = curr - miter * miterLenAA,
+                   .uv = opaque,
+                   .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+               });
+            buffer.emplace(Vertex{
+                .pos = curr + miter * miterLen,
+                .uv = opaque,
+                .colour = colour
+            });
+            buffer.emplace(Vertex{
+                   .pos = curr + miter * miterLenAA,
+                   .uv = opaque,
+                   .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+               });
+
+            nextIndex = prevIndex;
+        } else {
+            // Miter too large, use bevel joint
+            prevIndex = buffer.emplace(Vertex{
+                .pos = curr - n1 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+            buffer.emplace(Vertex{
+                .pos = curr - n1 * halfWidthAA,
+                .uv = opaque,
+                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+            });
+
+            buffer.emplace(Vertex{
+                .pos = curr + n1 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+            buffer.emplace(Vertex{
+                .pos = curr + n1 * halfWidthAA,
+                .uv = opaque,
+                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+            });
+
+            nextIndex = buffer.emplace(Vertex{
+                .pos = curr - n2 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+            buffer.emplace(Vertex{
+                .pos = curr - n2 * halfWidthAA,
+                .uv = opaque,
+                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+            });
+
+            buffer.emplace(Vertex{
+                .pos = curr + n2 * halfWidth,
+                .uv = opaque,
+                .colour = colour
+            });
+            buffer.emplace(Vertex{
+                .pos = curr + n2 * halfWidthAA,
+                .uv = opaque,
+                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
+            });
+
+            // Add join geometry
+            indices.emplace(prevIndex);
+            indices.emplace(prevIndex + 2);
+            indices.emplace(nextIndex);
+
+            indices.emplace(prevIndex + 2);
+            indices.emplace(nextIndex);
+            indices.emplace(nextIndex + 2);
+
+            // Add join AA
+            indices.emplace(prevIndex);
+            indices.emplace(prevIndex + 1);
+            indices.emplace(nextIndex);
+
+            indices.emplace(prevIndex + 1);
+            indices.emplace(nextIndex);
+            indices.emplace(nextIndex + 1);
+
+            indices.emplace(prevIndex + 2);
+            indices.emplace(prevIndex + 2 + 1);
+            indices.emplace(nextIndex + 2);
+
+            indices.emplace(prevIndex + 2 + 1);
+            indices.emplace(nextIndex + 2);
+            indices.emplace(nextIndex + 2 + 1);
+        }
+
+        if (i == 0) {
+            // No previous vertex
+            startIndex = prevIndex;
+        } else {
+            // Render segment with previous vertex
+            indices.emplace(lastIndex);
+            indices.emplace(lastIndex + 2);
+            indices.emplace(prevIndex);
+
+            indices.emplace(lastIndex + 2);
+            indices.emplace(prevIndex);
+            indices.emplace(prevIndex + 2);
+
+            // Render AA
+            indices.emplace(lastIndex);
+            indices.emplace(lastIndex + 1);
+            indices.emplace(prevIndex);
+
+            indices.emplace(lastIndex + 1);
+            indices.emplace(prevIndex);
+            indices.emplace(prevIndex + 1);
+
+            indices.emplace(lastIndex + 2);
+            indices.emplace(lastIndex + 2 + 1);
+            indices.emplace(prevIndex + 2);
+
+            indices.emplace(lastIndex + 2 + 1);
+            indices.emplace(prevIndex + 2);
+            indices.emplace(prevIndex + 2 + 1);
+
+        }
+        lastIndex = nextIndex;
+    }
+
+    if (closed) {
+        // Complete outline
+        indices.emplace(lastIndex);
+        indices.emplace(lastIndex + 2);
+        indices.emplace(startIndex);
+
+        indices.emplace(lastIndex + 2);
+        indices.emplace(startIndex);
+        indices.emplace(startIndex + 2);
+
+        // Render AA
+        indices.emplace(lastIndex);
+        indices.emplace(lastIndex + 1);
+        indices.emplace(startIndex);
+
+        indices.emplace(lastIndex + 1);
+        indices.emplace(startIndex);
+        indices.emplace(startIndex + 1);
+
+        indices.emplace(lastIndex + 2);
+        indices.emplace(lastIndex + 2 + 1);
+        indices.emplace(startIndex + 2);
+
+        indices.emplace(lastIndex + 2 + 1);
+        indices.emplace(startIndex + 2);
+        indices.emplace(startIndex + 2 + 1);
+    }
+}
+
