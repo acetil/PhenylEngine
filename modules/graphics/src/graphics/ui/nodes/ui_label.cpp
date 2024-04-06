@@ -27,8 +27,7 @@ void UILabelNode::render (UIManager& uiManager) {
     //uiManager.renderText(std::move(renderedText), 0, 0);
     uiManager.renderText(font, textSize, text, {0, 0}, colour);
     if (doDebugRender) {
-        uiManager.renderRect({0, 0}, labelSize, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, 0.0f,
-                             1.0f);
+        uiManager.renderRect({0, 0}, labelSize, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, 1.0f);
     }
 }
 

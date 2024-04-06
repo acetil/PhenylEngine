@@ -16,7 +16,8 @@ void UIButtonNode::render (UIManager& uiManager) {
         colour = bgColour;
     }
 
-    uiManager.renderRect({0, 0}, size, colour, colour);
+    //uiManager.renderRect({0, 0}, size, colour, colour);
+    uiManager.renderRoundedRect({0, 0}, size, colour);
 }
 
 UIAnchor UIButtonNode::getAnchor () {

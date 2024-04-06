@@ -14,6 +14,16 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
+static void addCurve (std::vector<glm::vec2>& points, glm::vec2 start, glm::vec2 end, glm::vec2 centre, unsigned int quanta) {
+    auto d1 = start - centre;
+    auto d2 = end - centre;
+
+    for (int i = 0; i < quanta + 2; i++) {
+        auto theta = static_cast<float>(i) / static_cast<float>(quanta + 1) * glm::pi<float>() / 2;
+        points.emplace_back(centre + d1 * glm::cos(theta) + d2 * glm::sin(theta));
+    }
+}
+
 UIManager::UIManager (Renderer& renderer) : glyphAtlas{renderer} {
     uiLayer = &renderer.addLayer<UIRenderLayer>(glyphAtlas);
     fontManager = std::make_unique<FontManager>(renderer.getViewport(), glyphAtlas, *uiLayer);
@@ -47,13 +57,25 @@ void UIManager::renderUI () {
     uiLayer->uploadData();
 }
 
-void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius, float borderSize) {
+void UIManager::renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float borderSize) {
     auto screenPos = topLeftPos + offsetStack.back();
     glm::vec2 vertices[] {
             screenPos, glm::vec2{screenPos.x + size.x, screenPos.y}, screenPos + size, glm::vec2{screenPos.x, screenPos.y + size.y}
     };
     uiLayer->renderConvexPolyAA(vertices, bgColour);
     uiLayer->renderPolyLineAA(vertices, borderColour, borderSize, true);
+}
+
+void UIManager::renderRoundedRect(glm::vec2 topLeft, glm::vec2 size, glm::vec4 colour, float cornerRadius, unsigned int quanta) {
+    auto screenPos = topLeft + offsetStack.back();
+
+    std::vector<glm::vec2> vertices;
+    addCurve(vertices, screenPos + glm::vec2{0, cornerRadius}, screenPos + glm::vec2{cornerRadius, 0}, screenPos + glm::vec2{cornerRadius, cornerRadius}, quanta);
+    addCurve(vertices, screenPos + glm::vec2{size.x - cornerRadius, 0.0f}, screenPos + glm::vec2{size.x, cornerRadius}, screenPos + glm::vec2{size.x - cornerRadius, cornerRadius}, quanta);
+    addCurve(vertices, screenPos + glm::vec2{size.x, size.y - cornerRadius}, screenPos + glm::vec2{size.x - cornerRadius, size.y}, screenPos + glm::vec2{size.x - cornerRadius, size.y - cornerRadius}, quanta);
+    addCurve(vertices, screenPos + glm::vec2{cornerRadius, size.y}, screenPos + glm::vec2{0.0f, size.y - cornerRadius}, screenPos + glm::vec2{cornerRadius, size.y - cornerRadius}, quanta);
+
+    uiLayer->renderConvexPolyAA(vertices, colour);
 }
 
 void UIManager::setMousePos (glm::vec2 _mousePos) {

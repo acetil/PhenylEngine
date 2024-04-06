@@ -68,7 +68,9 @@ namespace phenyl::graphics {
         //void renderText (RenderedText text, int x, int y);
         void renderText (common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos);
         void renderText (common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos, glm::vec3 colour);
-        void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float cornerRadius = 0.0f, float borderSize = 0.0f);
+        void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float borderSize = 0.0f);
+        void renderRoundedRect (glm::vec2 topLeft, glm::vec2 size, glm::vec4 colour, float cornerRadius = 10.0f, unsigned int quanta=5);
+
         void renderUI ();
         void setMousePos (glm::vec2 _mousePos);
         bool setMouseDown (bool mouseDown);
