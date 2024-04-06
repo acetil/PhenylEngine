@@ -1,4 +1,5 @@
 #include <phenyl/asset.h>
+#include <phenyl/canvas.h>
 #include <phenyl/debug.h>
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
@@ -43,7 +44,7 @@ void test::TestApp::init () {
     stepAction = input.mapInput("debug_step", "key_f7");
     consoleAction = input.mapInput("debug_console", "key_f12");
 
-    arial = phenyl::Assets ::Load<phenyl::graphics::Font>("resources/Arial");
+    arial = phenyl::Assets::Load<phenyl::graphics::Font>("resources/Arial");
 }
 
 void test::TestApp::fixedUpdate (double deltaTime) {
@@ -97,7 +98,8 @@ void test::TestApp::update (double deltaTime) {
         test::doDebugConsole(this);
     }
 
-    arial->renderText(11, "Hello World!", glm::vec2{200, 300});
+    auto& canvas = runtime().resource<phenyl::Canvas>();
+    canvas.renderText(glm::vec2{200, 300}, arial, 11, "Hello World");
 }
 
 void test::TestApp::queueResume () {

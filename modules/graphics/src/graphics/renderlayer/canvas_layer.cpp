@@ -1,4 +1,4 @@
-#include "graphics/renderlayer/ui_layer.h"
+#include "graphics/renderlayer/canvas_layer.h"
 
 #include "common/assets/assets.h"
 
@@ -9,15 +9,15 @@ using namespace phenyl::graphics;
 #define BUFFER_SIZE (256 * 4)
 #define MITER_LIMIT 2.5f
 
-UIRenderLayer::UIRenderLayer (GlyphAtlas& glyphAtlas) : AbstractRenderLayer{4}, glyphAtlas{glyphAtlas} {}
+CanvasRenderLayer::CanvasRenderLayer (GlyphAtlas& glyphAtlas) : AbstractRenderLayer{4}, glyphAtlas{glyphAtlas} {}
 
-std::string_view UIRenderLayer::getName () const {
-    return "UIRenderLayer";
+std::string_view CanvasRenderLayer::getName () const {
+    return "CanvasRenderLayer";
 }
 
-void UIRenderLayer::init (Renderer& renderer) {
+void CanvasRenderLayer::init (Renderer& renderer) {
     BufferBinding textBinding;
-    auto textShader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/text");
+    auto textShader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/canvas");
     pipeline = renderer.buildPipeline()
                        .withShader(textShader)
                        .withBuffer<Vertex>(textBinding)
@@ -37,17 +37,19 @@ void UIRenderLayer::init (Renderer& renderer) {
     pipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
 }
 
-void UIRenderLayer::uploadData () {
+void CanvasRenderLayer::uploadData () {
     buffer.upload();
     indices.upload();
     glyphAtlas.upload();
 }
 
-void UIRenderLayer::setScreenSize (glm::vec2 screenSize) {
+void CanvasRenderLayer::setScreenSize (glm::vec2 screenSize) {
     uniformBuffer->screenSize = screenSize;
 }
 
-void UIRenderLayer::render () {
+void CanvasRenderLayer::render () {
+    uploadData();
+
     pipeline.bindSampler(samplerBinding, glyphAtlas.sampler());
     pipeline.bindUniform(uniformBinding, uniformBuffer);
     pipeline.render(indices.size());
@@ -56,7 +58,7 @@ void UIRenderLayer::render () {
     indices.clear();
 }
 
-void UIRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) {
+void CanvasRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) {
     auto topLeft = pos;
     auto bottomRight = pos + glyph.size;
 
@@ -90,7 +92,7 @@ void UIRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 co
     indices.emplace(startIndex + 3);
 }
 
-void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour) {
+void CanvasRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour) {
     if (points.size() < 3 || colour.a <= 0.0f) {
         return;
     }
@@ -124,7 +126,7 @@ void UIRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 col
     }
 }
 
-void UIRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::vec4 colour, float widthAA) {
+void CanvasRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::vec4 colour, float widthAA) {
     if (points.size() < 3 || colour.a <= 0.0f) {
         return;
     }
@@ -188,7 +190,7 @@ void UIRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::vec4 c
 }
 
 
-void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed) {
+void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed) {
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;
     }
@@ -286,7 +288,7 @@ void UIRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colou
     }
 }
 
-void UIRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed, float widthAA) {
+void CanvasRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed, float widthAA) {
     // Doesnt do AA for non-closed lines properly
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;

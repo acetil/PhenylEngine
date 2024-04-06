@@ -13,7 +13,7 @@ UILabelNode::UILabelNode (const std::string& themeClass) : UIComponentNode(theme
 }
 
 
-void UILabelNode::render (UIManager& uiManager) {
+void UILabelNode::render (Canvas& canvas) {
     if (!font) {
         PHENYL_LOGW(LOGGER, "No font configured for label!");
         return;
@@ -25,9 +25,18 @@ void UILabelNode::render (UIManager& uiManager) {
     }*/
 
     //uiManager.renderText(std::move(renderedText), 0, 0);
-    uiManager.renderText(font, textSize, text, {0, 0}, colour);
+    canvas.renderText({0, 0}, font, textSize, text, colour);
     if (doDebugRender) {
-        uiManager.renderRect({0, 0}, labelSize, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, 1.0f);
+        CanvasRect rect{
+            .size = labelSize
+        };
+
+        //canvas.renderRect({0, 0}, labelSize, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, 1.0f);
+        canvas.render(rect, CanvasStyle{
+            .fill = CanvasFill::OUTLINE,
+            .outlineSize = 1.0f,
+            .colour = {1.0f, 0.0f, 0.0f, 1.0f}
+        });
     }
 }
 

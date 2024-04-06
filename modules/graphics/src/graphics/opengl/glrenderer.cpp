@@ -9,8 +9,8 @@
 #include "resources/shaders/debug_fragment.frag.h"
 #include "resources/shaders/sprite_vertex.vert.h"
 #include "resources/shaders/sprite_fragment.frag.h"
-#include "resources/shaders/text_vertex.vert.h"
-#include "resources/shaders/text_fragment.frag.h"
+#include "resources/shaders/canvas_vertex.vert.h"
+#include "resources/shaders/canvas_fragment.frag.h"
 #include "resources/shaders/particle_vertex.vert.h"
 #include "resources/shaders/particle_fragment.frag.h"
 #include "glbuffer.h"
@@ -159,10 +159,10 @@ void GLRenderer::loadDefaultShaders () {
             .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual text shader!");
-    textShader = common::Assets::LoadVirtual("phenyl/shaders/text", Shader{GlShader::Builder()
-            .withSource(ShaderSourceType::VERTEX, EMBED_TEXT_VERTEX_VERT)
-            .withSource(ShaderSourceType::FRAGMENT, EMBED_TEXT_FRAGMENT_FRAG)
+    PHENYL_TRACE(LOGGER, "Loading virtual canvas shader!");
+    textShader = common::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
             .withUniformBlock("Uniform")
             .withSampler("textureSampler")
             .build()

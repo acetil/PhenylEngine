@@ -15,13 +15,14 @@
 #include "common/input/forward.h"
 #include "common/input/remappable_proxy_input.h"
 #include "common/assets/asset_manager.h"
+#include "graphics/canvas/canvas.h"
 #include "runtime/iresource.h"
 
 namespace phenyl::graphics {
     class FontManager;
     class Renderer;
 
-    class UIRenderLayer;
+    class CanvasRenderLayer;
 
     namespace ui {
         class UIRootNode;
@@ -42,10 +43,6 @@ namespace phenyl::graphics {
 
     class UIManager : public runtime::IResource {
     private:
-        GlyphAtlas glyphAtlas;
-        std::unique_ptr<FontManager> fontManager;
-        UIRenderLayer* uiLayer;
-        glm::vec2 screenSize = {800, 600};
         glm::vec2 mousePos = {0, 0};
         bool mouseDown = false;
         std::vector<glm::vec2> offsetStack;
@@ -62,16 +59,8 @@ namespace phenyl::graphics {
     public:
         UIManager (Renderer& renderer);
         ~UIManager();
-        //void renderText(common::Asset<Font> font, const std::string& text, int size, int x, int y);
-        //void renderText(const std::string& font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        //void renderText (common::Asset<Font> font, const std::string& text, int size, int x, int y, glm::vec3 colour);
-        //void renderText (RenderedText text, int x, int y);
-        void renderText (common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos);
-        void renderText (common::Asset<Font>& font, std::uint32_t size, const std::string& text, glm::vec2 pos, glm::vec3 colour);
-        void renderRect (glm::vec2 topLeftPos, glm::vec2 size, glm::vec4 bgColour, glm::vec4 borderColour, float borderSize = 0.0f);
-        void renderRoundedRect (glm::vec2 topLeft, glm::vec2 size, glm::vec4 colour, float cornerRadius = 10.0f, unsigned int quanta=5);
 
-        void renderUI ();
+        void renderUI (Canvas& canvas);
         void setMousePos (glm::vec2 _mousePos);
         bool setMouseDown (bool mouseDown);
 
@@ -85,8 +74,6 @@ namespace phenyl::graphics {
         //void reloadCurrentTheme ();
         void setCurrentTheme (common::Asset<ui::Theme> theme);
 
-        void pushOffset (glm::vec2 relOffset);
-        void popOffset ();
         void addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources);
         void setupInputActions ();
         void updateUI ();

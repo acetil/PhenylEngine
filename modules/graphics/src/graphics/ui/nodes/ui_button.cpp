@@ -6,18 +6,27 @@ using namespace phenyl::graphics::ui;
 
 static phenyl::Logger LOGGER{"UI_BUTTON", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
-void UIButtonNode::render (UIManager& uiManager) {
-    glm::vec4 colour;
+void UIButtonNode::render (Canvas& canvas) {
+    CanvasRoundedRect rect{
+        .rect = CanvasRect{
+            .size = size
+        },
+        .rounding = 10.0f
+    };
+    CanvasStyle style{
+        .fill = CanvasFill::FILLED,
+        .useAA = true
+    };
+
     if (isPressed) {
-        colour = pressColour;
+        style.colour = pressColour;
     } else if (isHovered) {
-        colour = hoverColour;
+        style.colour = hoverColour;
     } else {
-        colour = bgColour;
+        style.colour = bgColour;
     }
 
-    //uiManager.renderRect({0, 0}, size, colour, colour);
-    uiManager.renderRoundedRect({0, 0}, size, colour);
+    canvas.render(rect, style);
 }
 
 UIAnchor UIButtonNode::getAnchor () {

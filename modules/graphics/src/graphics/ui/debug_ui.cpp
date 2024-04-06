@@ -34,11 +34,13 @@ void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
         return;
     }
 
-    auto& uiManager = runtime.resource<UIManager>();
+    auto& canvas = runtime.resource<Canvas>();
 
-    font->renderText(11, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms",  glm::vec2{5, 15});
-    font->renderText(11, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", glm::vec2{5, 30});
-    font->renderText(11, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms", glm::vec2{5, 45});
-    font->renderText(11, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps", glm::vec2{700, 15}, {0.0f, 1.0f, 0.0f});
-    font->renderText(14, "The quick brown fox jumped over the lazy dog", glm::vec2{5, 60});
+    canvas.renderText(glm::vec2{5, 15}, font, 11, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 30}, font, 11, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 45}, font, 11, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms");
+
+    canvas.renderText(glm::vec2{700, 15}, font, 11, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps", {0.0f, 1.0f, 0.0f});
+
+    canvas.renderText(glm::vec2{5, 60}, font, 14, "The quick brown fox jumped over the lazy dog");
 }

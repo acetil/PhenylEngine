@@ -7,11 +7,11 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"FONT", detail::GRAPHICS_LOGGER};
 
-Font::Font (GlyphAtlas& atlas, IGlyphRenderer& glyphRenderer, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId, glm::ivec2 windowDPI) : atlas{atlas}, glyphRenderer{glyphRenderer}, faceData{std::move(faceData)}, face{face}, fontId{fontId}, windowDPI{windowDPI} {
+Font::Font (GlyphAtlas& atlas, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId, glm::ivec2 windowDPI) : atlas{atlas}, faceData{std::move(faceData)}, face{face}, fontId{fontId}, windowDPI{windowDPI} {
     PHENYL_DASSERT(face);
 }
 
-Font::Font (Font&& other) noexcept : atlas{other.atlas}, glyphRenderer{other.glyphRenderer}, faceData{std::move(other.faceData)}, face{other.face}, fontId{other.fontId}, windowDPI{other.windowDPI}, currSize{other.currSize}, kernCache{std::move(other.kernCache)} {
+Font::Font (Font&& other) noexcept : atlas{other.atlas}, faceData{std::move(other.faceData)}, face{other.face}, fontId{other.fontId}, windowDPI{other.windowDPI}, currSize{other.currSize}, kernCache{std::move(other.kernCache)} {
     other.face = nullptr;
     other.fontId = 0;
 }
@@ -143,7 +143,7 @@ TextBounds Font::getBounds (std::uint32_t size, std::string_view text) {
     };
 }
 
-void Font::renderText (std::uint32_t size, std::string_view text, glm::vec2 pos, glm::vec3 colour) {
+void Font::renderText (IGlyphRenderer& glyphRenderer, std::uint32_t size, std::string_view text, glm::vec2 pos, glm::vec3 colour) {
     auto bounds = getBounds(size, text);
 
     std::optional<char> prev;

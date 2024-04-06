@@ -3,12 +3,12 @@
 
 using namespace phenyl::graphics::ui;
 
-void UIRootNode::render (UIManager& uiManager) {
+void UIRootNode::render (Canvas& canvas) {
     lockChildDestruction();
     for (auto& i : childNodes) {
-        uiManager.pushOffset(std::get<0>(i));
-        std::get<std::shared_ptr<UIComponentNode>>(i)->render(uiManager);
-        uiManager.popOffset();
+        canvas.pushOffset(std::get<0>(i));
+        std::get<std::shared_ptr<UIComponentNode>>(i)->render(canvas);
+        canvas.popOffset();
     }
     unlockChildDestruction();
 }

@@ -8,13 +8,12 @@ namespace phenyl::graphics {
     class FontManager : public common::AssetManager<Font> {
     private:
         const Viewport& viewport;
-        IGlyphRenderer& glyphRenderer;
         FT_Library library = nullptr;
         GlyphAtlas& glyphAtlas;
         std::unordered_map<std::size_t, std::unique_ptr<Font>> fonts;
         std::size_t nextFontId = 1;
     public:
-        explicit FontManager (const Viewport& viewport, GlyphAtlas& atlas, IGlyphRenderer& glyphRenderer);
+        explicit FontManager (const Viewport& viewport, GlyphAtlas& atlas);
 
         FontManager (const FontManager&) = delete;
         FontManager (FontManager&& other) noexcept;

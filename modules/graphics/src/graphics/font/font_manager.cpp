@@ -8,11 +8,11 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"FONT_MANAGER", detail::GRAPHICS_LOGGER};
 
-FontManager::FontManager (const Viewport& viewport, GlyphAtlas& glyphAtlas, IGlyphRenderer& glyphRenderer) : viewport{viewport}, glyphRenderer{glyphRenderer}, glyphAtlas{glyphAtlas} {
+FontManager::FontManager (const Viewport& viewport, GlyphAtlas& glyphAtlas) : viewport{viewport},  glyphAtlas{glyphAtlas} {
     FT_Init_FreeType(&library);
 }
 
-FontManager::FontManager (FontManager&& other) noexcept : viewport{other.viewport}, glyphRenderer{other.glyphRenderer}, library{other.library}, glyphAtlas{other.glyphAtlas}, fonts{std::move(other.fonts)} {
+FontManager::FontManager (FontManager&& other) noexcept : viewport{other.viewport}, library{other.library}, glyphAtlas{other.glyphAtlas}, fonts{std::move(other.fonts)} {
     other.library = nullptr;
 }
 
@@ -37,7 +37,6 @@ FontManager::~FontManager () {
     }
 }
 
-
 const char* FontManager::getFileType () const {
     return ".ttf";
 }
@@ -56,7 +55,7 @@ Font* FontManager::load (std::istream& data, std::size_t id) {
         return nullptr;
     }
 
-    auto font = std::make_unique<Font>(glyphAtlas, glyphRenderer, std::move(fontData), face, nextFontId++, viewport.getContentScale() * glm::vec2{96, 96});
+    auto font = std::make_unique<Font>(glyphAtlas, std::move(fontData), face, nextFontId++, viewport.getContentScale() * glm::vec2{96, 96});
     auto* ptr = font.get();
     fonts.emplace(id, std::move(font));
 

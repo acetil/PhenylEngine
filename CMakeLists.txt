@@ -33,7 +33,8 @@ add_library(phenyl
         src/phenyl/plugins/prefab_plugin.cpp
         src/phenyl/engine.cpp
         include/phenyl/properties.h
-        include/phenyl/font.h)
+        include/phenyl/font.h
+        include/phenyl/canvas.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

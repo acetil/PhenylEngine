@@ -2,6 +2,7 @@
 
 #include "application.h"
 #include "asset.h"
+#include "canvas.h"
 #include "component.h"
 #include "engine.h"
 #include "font.h"

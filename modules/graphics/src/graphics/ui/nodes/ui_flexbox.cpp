@@ -149,17 +149,34 @@ void UIFlexBoxNode::updateLayout () {
 
 }
 
-void UIFlexBoxNode::render (graphics::UIManager& uiManager) {
+void UIFlexBoxNode::render (Canvas& canvas) {
     for (auto& i : items) {
-        uiManager.pushOffset(i.offset);
-        i.node->render(uiManager);
-        uiManager.popOffset();
+        canvas.pushOffset(i.offset);
+        i.node->render(canvas);
+        canvas.popOffset();
     }
 
     updateLayout(); // TODO: update only when items update
 
-    uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 2.0f);
-    uiManager.renderRect({0,0}, componentMinSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 2.0f);
+    //uiManager.renderRect({0, 0}, size, {0.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 2.0f);
+    //uiManager.renderRect({0,0}, componentMinSize, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 1.0f}, 2.0f);
+    CanvasRect sizeRect{
+        .size = size
+    };
+    CanvasRect minSizeRect{
+        .size = componentMinSize
+    };
+
+    canvas.render(sizeRect, CanvasStyle{
+        .fill = CanvasFill::OUTLINE,
+        .outlineSize = 2.0f,
+        .colour = {1.0f, 1.0f, 1.0f, 1.0f}
+    });
+    canvas.render(minSizeRect, CanvasStyle{
+        .fill = CanvasFill::OUTLINE,
+        .outlineSize = 2.0f,
+        .colour = {0.0f, 1.0f, 1.0f, 1.0f}
+    });
 }
 
 UIAnchor UIFlexBoxNode::getAnchor () {

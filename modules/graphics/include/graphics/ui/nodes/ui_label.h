@@ -17,7 +17,7 @@ namespace phenyl::graphics::ui {
         bool doDebugRender = false;
     public:
         explicit UILabelNode (const std::string& themeClass);
-        void render(UIManager &uiManager) override;
+        void render (Canvas& canvas) override;
         UIAnchor getAnchor() override;
 
         void setText (std::string newText);

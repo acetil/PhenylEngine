@@ -7,7 +7,7 @@
 #include "graphics/font/font_manager.h"
 
 namespace phenyl::graphics {
-    class UIRenderLayer : public AbstractRenderLayer, public IGlyphRenderer {
+    class CanvasRenderLayer : public AbstractRenderLayer, public IGlyphRenderer {
     private:
         struct Uniform {
             glm::vec2 screenSize;
@@ -26,14 +26,14 @@ namespace phenyl::graphics {
         Buffer<std::uint16_t> indices;
         UniformBinding uniformBinding;
         UniformBuffer<Uniform> uniformBuffer;
+
+        void uploadData ();
     public:
-        explicit UIRenderLayer (GlyphAtlas& glyphAtlas);
+        explicit CanvasRenderLayer (GlyphAtlas& glyphAtlas);
 
         [[nodiscard]] std::string_view getName () const override;
         void init (Renderer& renderer) override;
         void render () override;
-
-        void uploadData ();
 
         void setScreenSize (glm::vec2 screenSize);
 
