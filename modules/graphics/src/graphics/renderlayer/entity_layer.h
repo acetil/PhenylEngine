@@ -3,7 +3,8 @@
 #include "graphics/abstract_render_layer.h"
 #include "graphics/camera.h"
 #include "component/component.h"
-#include "graphics/textures/sprite_atlas.h"
+#include "../../../include/graphics/buffer.h"
+#include "../../../include/graphics/pipeline.h"
 
 namespace phenyl::graphics {
     class EntityRenderLayer : public AbstractRenderLayer {
@@ -11,17 +12,31 @@ namespace phenyl::graphics {
         struct Uniform {
             glm::mat4 camera;
         };
+        struct Vertex {
+            glm::vec2 pos;
+            glm::vec2 uv;
+        };
+
+        struct SamplerRender {
+            std::uint16_t indexOffset;
+            std::uint16_t size;
+            const ISampler* sampler;
+        };
+
+        std::vector<std::pair<const ISampler*, std::uint16_t>> samplerStartIndices;
+        std::vector<SamplerRender> samplerRenders;
 
         Pipeline pipeline;
 
-        Buffer<glm::vec2> posBuffer;
-        Buffer<glm::vec2> uvBuffer;
+        //Buffer<glm::vec2> posBuffer;
+       // Buffer<glm::vec2> uvBuffer;
+        Buffer<Vertex> vertexBuffer;
+        Buffer<std::uint16_t> indices;
 
         UniformBinding uniformBinding{};
         UniformBuffer<Uniform> uniformBuffer;
 
         SamplerBinding samplerBinding{};
-        std::unique_ptr<SpriteAtlas> atlas;
 
         void bufferData (const component::ComponentManager& manager, const Camera& camera);
     public:

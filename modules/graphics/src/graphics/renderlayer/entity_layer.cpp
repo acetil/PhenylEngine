@@ -1,15 +1,13 @@
 #include "entity_layer.h"
-#include "common/components/2d/global_transform.h"
-#include "graphics/components/2d/sprite.h"
 #include "common/assets/assets.h"
+#include "common/components/2d/global_transform.h"
+#include "graphics/renderer.h"
+#include "graphics/components/2d/sprite.h"
 
 #define MAX_ENTITIES 512
 #define BUFFER_SIZE (MAX_ENTITIES * 2 * 6)
 
 using namespace phenyl::graphics;
-
-static void bufferPosData (const phenyl::component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer);
-static void bufferUvData (const phenyl::component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer);
 
 EntityRenderLayer::EntityRenderLayer () : AbstractRenderLayer{0} {}
 
@@ -18,84 +16,100 @@ std::string_view EntityRenderLayer::getName () const {
 }
 
 void EntityRenderLayer::init (Renderer& renderer) {
-    atlas = std::make_unique<SpriteAtlas>(&renderer);
-
-    BufferBinding posBinding;
-    BufferBinding uvBinding;
+    BufferBinding vertexBinding;
     auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/sprite");
     pipeline = renderer.buildPipeline()
-                       .withShader(shader)
-                       .withBuffer<glm::vec2>(posBinding)
-                       .withBuffer<glm::vec2>(uvBinding)
-                       .withAttrib<glm::vec2>(0, posBinding)
-                       .withAttrib<glm::vec2>(1, uvBinding)
-                       .withUniform<Uniform>(*shader->uniformLocation("Camera"), uniformBinding)
-                       .withSampler2D(*shader->samplerLocation("textureSampler"), samplerBinding)
-                       .build();
+           .withShader(shader)
+           .withBuffer<Vertex>(vertexBinding)
+           .withAttrib<glm::vec2>(0, vertexBinding, offsetof(Vertex, pos))
+           .withAttrib<glm::vec2>(1, vertexBinding, offsetof(Vertex, uv))
+           .withUniform<Uniform>(*shader->uniformLocation("Camera"), uniformBinding)
+           .withSampler2D(*shader->samplerLocation("textureSampler"), samplerBinding)
+           .build();
 
-    posBuffer = renderer.makeBuffer<glm::vec2>(BUFFER_SIZE);
-    uvBuffer = renderer.makeBuffer<glm::vec2>(BUFFER_SIZE);
+    vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);
+    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
-    pipeline.bindBuffer(posBinding, posBuffer);
-    pipeline.bindBuffer(uvBinding, uvBuffer);
+    pipeline.bindIndexBuffer(indices);
+    pipeline.bindBuffer(vertexBinding, vertexBuffer);
 }
 
 void EntityRenderLayer::render () {
     pipeline.bindUniform(uniformBinding, uniformBuffer);
-    pipeline.bindSampler(samplerBinding, atlas->getTexture());
 
-    pipeline.render(posBuffer.size());
+    for (const auto& [off, size, sampler] : samplerRenders) {
+        pipeline.bindSampler(samplerBinding, *sampler);
+        pipeline.render(size, off);
+    }
 }
 
 void EntityRenderLayer::preRender (phenyl::component::ComponentManager& manager, const Camera& camera) {
-    PHENYL_DASSERT(atlas);
-    bool reloadNeeded = atlas->rebuild();
-
-    manager.query<Sprite2D>().each([reloadNeeded] (auto entity, Sprite2D& sprite) {
-        if (reloadNeeded || !sprite.updated) {
-            sprite.update();
-        }
-    });
-
     bufferData(manager, camera);
 }
 
 void EntityRenderLayer::bufferData (const phenyl::component::ComponentManager& manager, const Camera& camera) {
-    posBuffer.clear();
-    uvBuffer.clear();
-
-    bufferPosData(manager, posBuffer);
-    bufferUvData(manager, uvBuffer);
-
-    posBuffer.upload();
-    uvBuffer.upload();
-
-    uniformBuffer->camera = camera.getCamMatrix();
-}
-
-static void bufferPosData (const phenyl::component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer) {
     static glm::vec2 vertices[] =  {
-            {-1.0f, 1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, -1.0f}
+        {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, 1.0f}
     };
 
-    manager.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&buffer] (auto info, const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
-        for (auto i : vertices) {
-            buffer.emplace(transform.transform2D.apply(i));
+    vertexBuffer.clear();
+    indices.clear();
+    samplerStartIndices.clear();
+    samplerRenders.clear();
+
+    manager.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&] (auto _, const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+        if (!sprite.texture) {
+            return;
         }
-    });
-}
 
-static void bufferUvData (const phenyl::component::EntityComponentManager& manager, Buffer<glm::vec2>& buffer) {
-    manager.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&buffer] (auto info, const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
-        auto topLeft = sprite.getTopLeft();
-        auto bottomRight = sprite.getBottomRight();
+        auto startIndex = vertexBuffer.emplace(Vertex{
+            .pos = transform.transform2D.apply({-1.0f, -1.0f}),
+            .uv = sprite.uvStart
+        });
+        vertexBuffer.emplace(Vertex{
+            .pos = transform.transform2D.apply({1.0f, -1.0f}),
+            .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}
+        });
+        vertexBuffer.emplace(Vertex{
+            .pos = transform.transform2D.apply({1.0f, 1.0f}),
+            .uv = sprite.uvEnd
+        });
+        vertexBuffer.emplace(Vertex{
+            .pos = transform.transform2D.apply({-1.0f, 1.0f}),
+            .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}
+        });
 
-        buffer.emplace(topLeft.x, topLeft.y);
-        buffer.emplace(bottomRight.x, topLeft.y);
-        buffer.emplace(topLeft.x, bottomRight.y);
-        buffer.emplace(bottomRight.x, bottomRight.y);
-        buffer.emplace(bottomRight.x, topLeft.y);
-        buffer.emplace(topLeft.x, bottomRight.y);
+        samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
     });
+
+    std::sort(samplerStartIndices.begin(), samplerStartIndices.end());
+    std::uint16_t offset = 0;
+    const ISampler* currSampler = nullptr;
+    for (const auto& [sampler, startIndex] : samplerStartIndices) {
+        if (sampler != currSampler) {
+            samplerRenders.emplace_back(SamplerRender{
+                .indexOffset = offset,
+                .size = 0,
+                .sampler = sampler
+            });
+            currSampler = sampler;
+        }
+
+        indices.emplace(startIndex + 0);
+        indices.emplace(startIndex + 1);
+        indices.emplace(startIndex + 2);
+
+        indices.emplace(startIndex + 0);
+        indices.emplace(startIndex + 2);
+        indices.emplace(startIndex + 3);
+
+        offset += 6;
+        samplerRenders.back().size += 6;
+    }
+
+    vertexBuffer.upload();
+    indices.upload();
+
+    uniformBuffer->camera = camera.getCamMatrix();
 }

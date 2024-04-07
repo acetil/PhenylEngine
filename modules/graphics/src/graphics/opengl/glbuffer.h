@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/graphics_headers.h"
-#include "graphics/renderers/buffer.h"
+#include "../../../include/graphics/buffer.h"
 
 namespace phenyl::graphics {
     class GlBuffer : public IBuffer {

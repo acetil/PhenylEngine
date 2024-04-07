@@ -1,10 +1,12 @@
+#include "common/plugins/core_plugin_2d.h"
 #include "runtime/runtime.h"
 
+#include "graphics/renderer.h"
 #include "graphics/components/2d/sprite_serialization.h"
-#include "graphics/plugins/sprite_2d_plugin.h"
 #include "graphics/plugins/graphics_plugin.h"
-#include "common/plugins/core_plugin_2d.h"
 #include "graphics/renderlayer/entity_layer.h"
+
+#include "graphics/plugins/sprite_2d_plugin.h"
 
 using namespace phenyl::graphics;
 
@@ -22,7 +24,7 @@ void Sprite2DPlugin::init (runtime::PhenylRuntime& runtime) {
     entityLayer = &renderer.addLayer<EntityRenderLayer>();
 }
 
-void Sprite2DPlugin::render (phenyl::runtime::PhenylRuntime& runtime) {
+void Sprite2DPlugin::render (runtime::PhenylRuntime& runtime) {
     const auto& camera = runtime.resource<const Camera>();
 
     PHENYL_DASSERT(entityLayer);

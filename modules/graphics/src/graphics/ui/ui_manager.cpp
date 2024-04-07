@@ -1,9 +1,10 @@
+#include "common/assets/assets.h"
+
 #include "graphics/ui/ui_manager.h"
-#include "graphics/renderers/renderer.h"
+#include "graphics/renderer.h"
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/themes/theme.h"
 #include "graphics/ui/themes/theme_class.h"
-#include "common/assets/assets.h"
 
 #include "resources/themes/default_theme.json.h"
 

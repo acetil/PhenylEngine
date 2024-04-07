@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/renderers/renderer.h"
-#include "graphics/camera.h"
 #include "graphics/abstract_render_layer.h"
+#include "graphics/camera.h"
+#include "graphics/renderer.h"
 
 namespace phenyl::graphics {
     struct DebugBox;

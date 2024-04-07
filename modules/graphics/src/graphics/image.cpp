@@ -4,11 +4,11 @@
 #include <vector>
 #include <cstring>
 
-#include "graphics/image.h"
+#include "../../include/graphics/image.h"
 
-#include "graphics/detail/loggers.h"
-#include "stb/stb_image.h"
-#include "logging/logging.h"
+#include "../../include/graphics/detail/loggers.h"
+#include "../stb/stb_image.h"
+#include "../../../logger/include/logging/logging.h"
 using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"IMAGE", detail::GRAPHICS_LOGGER};

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "graphics/image.h"
+#include "image.h"
 
 namespace phenyl::graphics {
     enum class TextureFilter {
@@ -32,7 +32,7 @@ namespace phenyl::graphics {
         [[nodiscard]] virtual std::uint32_t height () const noexcept = 0;
 
         virtual void upload (const Image& image) = 0;
-        virtual const ISampler& sampler () const noexcept = 0;
+        [[nodiscard]] virtual const ISampler& sampler () const noexcept = 0;
     };
 
     class IImageArrayTexture {
@@ -48,14 +48,23 @@ namespace phenyl::graphics {
         virtual std::uint32_t append () = 0;
 
         virtual void upload (std::uint32_t index, const Image& image) = 0;
-        virtual const ISampler& sampler () const noexcept = 0;
+        [[nodiscard]] virtual const ISampler& sampler () const noexcept = 0;
     };
 
     class Texture {
+    private:
+        std::size_t texHash;
     public:
+        Texture () : texHash{0} {}
+        explicit Texture (std::size_t hash) : texHash{hash} {}
+
         virtual ~Texture() = default;
 
-        virtual const ISampler& sampler () const noexcept = 0;
+        [[nodiscard]] virtual const ISampler& sampler () const noexcept = 0;
+
+        [[nodiscard]] std::size_t hash () const noexcept {
+            return texHash;
+        }
     };
 
     class ImageTexture : public Texture {
@@ -63,7 +72,7 @@ namespace phenyl::graphics {
         std::unique_ptr<IImageTexture> rendererTexture;
     public:
         ImageTexture () = default;
-        explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : rendererTexture{std::move(texture)} {}
+        explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : Texture{texture->sampler().hash()}, rendererTexture{std::move(texture)} {}
 
         explicit operator bool () const noexcept {
             return (bool)rendererTexture;
@@ -91,7 +100,7 @@ namespace phenyl::graphics {
         std::unique_ptr<IImageArrayTexture> rendererTexture;
     public:
         ImageArrayTexture () = default;
-        explicit ImageArrayTexture (std::unique_ptr<IImageArrayTexture> texture) : rendererTexture{std::move(texture)}{}
+        explicit ImageArrayTexture (std::unique_ptr<IImageArrayTexture> texture) : Texture{texture->sampler().hash()}, rendererTexture{std::move(texture)}{}
 
         explicit operator bool () const noexcept {
             return (bool)rendererTexture;

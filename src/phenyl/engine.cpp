@@ -1,19 +1,17 @@
 #include <chrono>
-#include <thread>
 #include <exception>
 #include <fstream>
+#include <thread>
 
 #include "component/component.h"
-
-#include "phenyl/engine.h"
-
+#include "graphics/phenyl_graphics.h"
+#include "graphics/renderer.h"
 #include "logging/logging.h"
+#include "plugins/app_plugin.h"
+#include "runtime/runtime.h"
 #include "util/profiler.h"
 
-#include "runtime/runtime.h"
-#include "plugins/app_plugin.h"
-#include "graphics/renderers/renderer.h"
-#include "graphics/phenyl_graphics.h"
+#include "phenyl/engine.h"
 
 #define FIXED_FPS 60.0
 

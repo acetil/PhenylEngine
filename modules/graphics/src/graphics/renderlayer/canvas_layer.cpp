@@ -1,4 +1,5 @@
 #include "graphics/renderlayer/canvas_layer.h"
+#include "graphics/font/glyph_atlas.h"
 
 #include "common/assets/assets.h"
 

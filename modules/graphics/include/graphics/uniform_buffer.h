@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <memory>
 
-#include "logging/logging.h"
+#include "../../../logger/include/logging/logging.h"
 
 namespace phenyl::graphics {
     class IUniformBuffer {

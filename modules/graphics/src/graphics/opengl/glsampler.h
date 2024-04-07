@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/renderers/texture.h"
+#include "../../../include/graphics/texture.h"
 #include "graphics/graphics_headers.h"
 
 namespace phenyl::graphics {

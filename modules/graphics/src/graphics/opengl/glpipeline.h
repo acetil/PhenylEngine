@@ -2,20 +2,25 @@
 
 #include "util/map.h"
 
-#include "graphics/renderers/pipeline.h"
+#include "../../../include/graphics/pipeline.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/renderers/shader.h"
+#include "../../../include/graphics/shader.h"
 #include "glshader.h"
 
 namespace phenyl::graphics {
     class GlPipeline : public IPipeline {
     private:
+        struct PipelineIndex {
+            GLenum typeEnum;
+            std::size_t typeSize;
+        };
+
         GLuint vaoId;
         GLenum renderMode = GL_TRIANGLES;
         common::Asset<Shader> shader;
         std::vector<std::size_t> bufferTypes;
         util::Map<UniformBinding, std::size_t> uniformTypes;
-        std::optional<GLenum> indexType = std::nullopt;
+        std::optional<PipelineIndex> indexType = std::nullopt;
 
         GlShader& getShader ();
     public:
@@ -34,7 +39,7 @@ namespace phenyl::graphics {
         void bindSampler (SamplerBinding binding, const ISampler& sampler) override;
         void unbindIndexBuffer () override;
 
-        void render (std::size_t vertices) override;
+        void render (std::size_t vertices, std::size_t offset) override;
 
         void setRenderMode (GLenum renderMode);
         void setShader (common::Asset<Shader> shader);

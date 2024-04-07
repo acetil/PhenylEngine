@@ -18,7 +18,7 @@
 #include "graphics/abstract_render_layer.h"
 #include "graphics/detail/loggers.h"
 #include "graphics/image.h"
-#include "graphics/renderers/texture.h"
+#include "graphics/texture.h"
 
 namespace phenyl::graphics {
     class Renderer : public runtime::IResource {

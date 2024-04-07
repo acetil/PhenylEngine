@@ -1,10 +1,9 @@
 #pragma once
 
 #include "graphics/abstract_render_layer.h"
-#include "graphics/renderers/renderer.h"
 #include "graphics/maths_headers.h"
+#include "graphics/renderer.h"
 #include "graphics/font/font.h"
-#include "graphics/font/font_manager.h"
 
 namespace phenyl::graphics {
     class CanvasRenderLayer : public AbstractRenderLayer, public IGlyphRenderer {

@@ -1,10 +1,11 @@
+#include "graphics/renderer.h"
 #include "graphics/components/2d/particle_emitter.h"
 #include "graphics/components/2d/particle_emitter_serialization.h"
-#include "graphics/plugins/particle_plugin.h"
 #include "graphics/particles/particle_manager.h"
-#include "graphics/renderers/renderer.h"
-#include "graphics/renderlayer/particle_layer.h"
 #include "graphics/plugins/graphics_plugin.h"
+#include "graphics/renderlayer/particle_layer.h"
+
+#include "graphics/plugins/particle_plugin.h"
 
 using namespace phenyl::graphics;
 

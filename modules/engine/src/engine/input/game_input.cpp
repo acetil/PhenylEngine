@@ -1,5 +1,5 @@
 #include "engine/input/game_input.h"
-#include "graphics/renderers/renderer.h"
+#include "graphics/renderer.h"
 #include "runtime/runtime.h"
 
 #include <utility>

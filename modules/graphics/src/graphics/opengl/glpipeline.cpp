@@ -1,8 +1,7 @@
 #include "glpipeline.h"
 #include "glbuffer.h"
-#include "gluniform_buffer.h"
-#include "graphics/renderers/renderer.h"
 #include "glimage_texture.h"
+#include "gluniform_buffer.h"
 
 using namespace phenyl::graphics;
 
@@ -57,13 +56,22 @@ void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, IUniform
 void GlPipeline::bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) {
     switch (type) {
         case ShaderIndexType::UBYTE:
-            indexType = GL_UNSIGNED_BYTE;
+            indexType = PipelineIndex{
+                .typeEnum = GL_UNSIGNED_BYTE,
+                .typeSize = sizeof(std::uint8_t)
+            };
             break;
         case ShaderIndexType::USHORT:
-            indexType = GL_UNSIGNED_SHORT;
+            indexType = PipelineIndex{
+                .typeEnum = GL_UNSIGNED_SHORT,
+                .typeSize = sizeof(std::uint16_t)
+            };
             break;
         case ShaderIndexType::UINT:
-            indexType = GL_UNSIGNED_INT;
+            indexType = PipelineIndex{
+                .typeEnum = GL_UNSIGNED_INT,
+                .typeSize = sizeof(std::uint32_t)
+            };
             break;
         default:
             PHENYL_ABORT("Invalid shader index type: {}", static_cast<unsigned int>(type));
@@ -84,16 +92,16 @@ void GlPipeline::unbindIndexBuffer () {
     indexType = std::nullopt;
 }
 
-void GlPipeline::render (std::size_t vertices) {
+void GlPipeline::render (std::size_t vertices, std::size_t offset) {
     PHENYL_DASSERT(shader);
 
     getShader().bind();
     glBindVertexArray(vaoId);
 
     if (indexType) {
-        glDrawElements(renderMode, static_cast<GLsizei>(vertices), *indexType, nullptr);
+        glDrawElements(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize));
     } else {
-        glDrawArrays(renderMode, 0, static_cast<GLsizei>(vertices));
+        glDrawArrays(renderMode, static_cast<GLsizei>(offset), static_cast<GLsizei>(vertices));
     }
 }
 

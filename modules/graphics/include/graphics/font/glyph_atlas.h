@@ -2,10 +2,11 @@
 
 #include <unordered_map>
 
-#include "graphics/image.h"
 #include "util/map.h"
-#include "graphics/renderers/texture.h"
-#include "graphics/renderers/renderer.h"
+
+#include "graphics/image.h"
+#include "graphics/renderer.h"
+#include "graphics/texture.h"
 
 namespace phenyl::graphics {
     struct ColumnAtlas {

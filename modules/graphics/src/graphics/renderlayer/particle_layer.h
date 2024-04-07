@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/abstract_render_layer.h"
-#include "graphics/renderers/renderer.h"
+#include "graphics/renderer.h"
 
 namespace phenyl::graphics {
     class ParticleManager2D;

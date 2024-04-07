@@ -6,7 +6,7 @@
 
 #include "graphics/maths_headers.h"
 #include "util/optional.h"
-#include "graphics/renderers/buffer.h"
+#include "../buffer.h"
 
 namespace phenyl::graphics {
     struct ParticleProperties2D {

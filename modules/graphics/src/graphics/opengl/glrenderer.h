@@ -1,10 +1,10 @@
 #pragma once
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
-#include "graphics/renderers/renderer.h"
 #include "graphics/graphics_headers.h"
+#include "graphics/renderer.h"
 
 #include "glshader.h"
 #include "graphics/glfw/glfw_viewport.h"
@@ -47,6 +47,5 @@ namespace phenyl::graphics {
 
         Viewport& getViewport () override;
         const Viewport& getViewport () const override;
-
     };
 }

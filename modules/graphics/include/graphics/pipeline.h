@@ -3,10 +3,10 @@
 #include "common/assets/asset.h"
 #include "util/meta.h"
 
-#include "graphics/renderers/buffer.h"
-#include "graphics/renderers/texture.h"
-#include "graphics/renderers/uniform_buffer.h"
+#include "buffer.h"
 #include "shader.h"
+#include "texture.h"
+#include "uniform_buffer.h"
 
 namespace phenyl::graphics {
     enum class GeometryType {
@@ -52,7 +52,7 @@ namespace phenyl::graphics {
         virtual void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) = 0;
         virtual void bindSampler (SamplerBinding binding, const ISampler& sampler) = 0;
         virtual void unbindIndexBuffer () = 0;
-        virtual void render (std::size_t vertices) = 0; // TODO: command buffer
+        virtual void render (std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
     };
 
     class Pipeline {
@@ -111,9 +111,9 @@ namespace phenyl::graphics {
             return *this;
         }
 
-        void render (std::size_t vertices) {
+        void render (std::size_t vertices, std::size_t offset=0) {
             PHENYL_DASSERT(pipeline);
-            pipeline->render(vertices);
+            pipeline->render(vertices, offset);
         }
     };
 
