@@ -9,5 +9,5 @@ uniform sampler2DArray textureSampler;
 
 void main() {
     float s = texture(textureSampler, uv).r;
-    color = vec4(color_pass.rgb * s, color_pass.a);
+    color = vec4(color_pass.rgb, color_pass.a * s);
 }

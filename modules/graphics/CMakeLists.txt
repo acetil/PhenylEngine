@@ -86,7 +86,11 @@ target_gen_embedded(graphics
         resources/shaders/canvas_fragment.frag
         resources/shaders/particle_vertex.vert
         resources/shaders/particle_fragment.frag
-        resources/themes/default_theme.json)
+        resources/themes/default_theme.json
+)
+
+add_phenyl_resource(resources/fonts/NotoSerif-Regular.ttf resources/phenyl/fonts/noto-serif.ttf)
+add_phenyl_resource(resources/fonts/OFL.txt resources/phenyl/fonts/OFL.txt)
 
 target_include_directories(graphics PUBLIC include)
 target_include_directories(graphics PRIVATE src)

@@ -76,7 +76,7 @@ void UILabelNode::setDebug (bool isDebug) {
 }
 
 void UILabelNode::onThemeUpdate () {
-    font = common::Assets::Load<Font>(getTheme().getProperty<std::string>("font").orElse("/usr/share/fonts/noto/NotoSerif-Regular"));
+    font = common::Assets::Load<Font>(getTheme().getProperty<std::string>("font").orElse("resources/phenyl/fonts/noto-serif"));
     textSize = getTheme().getProperty<int>("text_size").orElse(12);
     colour = getTheme().getProperty<glm::vec4>("text_color").orElse({0.0f, 0.0f, 0.0f, 0.0f});
 

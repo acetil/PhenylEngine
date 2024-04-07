@@ -30,3 +30,4 @@ target_copy_resources(breakout
         resources/prefabs/floor.json
         resources/audio/fail.wav
 )
+target_copy_phenyl_resources(breakout)

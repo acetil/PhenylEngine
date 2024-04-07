@@ -26,6 +26,9 @@ namespace phenyl::graphics {
         const char* getFileType() const override;
         Font* load (std::istream& data, std::size_t id) override;
         Font* load (Font&& obj, std::size_t id) override;
+
+        common::Asset<Font> loadFromMemory (std::span<std::byte> faceData, const std::string& virtualPath);
+
         void queueUnload(std::size_t id) override;
         bool isBinary() const override {
             return true;

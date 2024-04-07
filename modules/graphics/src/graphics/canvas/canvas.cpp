@@ -2,6 +2,7 @@
 #include "graphics/renderlayer/canvas_layer.h"
 #include "graphics/canvas/canvas.h"
 
+#include "common/assets/assets.h"
 
 using namespace phenyl::graphics;
 
@@ -17,7 +18,7 @@ static void addCurve (std::vector<glm::vec2>& points, glm::vec2 start, glm::vec2
     }
 }
 
-void Canvas::submitVertices(std::span<glm::vec2> vertices, const CanvasStyle& style) {
+void Canvas::submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style) {
     if (style.fill == CanvasFill::FILLED) {
         if (style.useAA) {
             layer.renderConvexPolyAA(vertices, style.colour);
@@ -33,7 +34,7 @@ void Canvas::submitVertices(std::span<glm::vec2> vertices, const CanvasStyle& st
     }
 }
 
-glm::vec2 Canvas::offset() const {
+glm::vec2 Canvas::offset () const {
     PHENYL_DASSERT(!offsetStack.empty());
     return offsetStack.back();
 }
@@ -42,8 +43,10 @@ Canvas::Canvas (Renderer& renderer) : atlas{renderer}, layer{renderer.addLayer<C
     fontManager->selfRegister();
     layer.setScreenSize(screenSize);
     offsetStack.emplace_back(0, 0);
+
+    defaultFontAsset = common::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");
 }
-Canvas::~Canvas() = default;
+Canvas::~Canvas () = default;
 
 void Canvas::render (glm::vec2 pos, const CanvasRect& rect, const CanvasStyle& style) {
     auto offPos = offset() + pos;
@@ -80,7 +83,7 @@ void Canvas::pushOffset (glm::vec2 off) {
     offsetStack.emplace_back(offsetStack.back() + off);
 }
 
-void Canvas::popOffset() {
+void Canvas::popOffset () {
     if (offsetStack.size() == 1) {
         PHENYL_LOGE(LOGGER, "Attempted to pop offset off empty offset stack!");
         return;
@@ -89,7 +92,7 @@ void Canvas::popOffset() {
     offsetStack.pop_back();
 }
 
-std::string_view Canvas::getName() const noexcept {
+std::string_view Canvas::getName () const noexcept {
     return "Canvas";
 }
 

@@ -10,6 +10,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address ${DEBUG_COMPILE
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 find_package(PythonInterp REQUIRED)
+
+set(PHENYL_RESOURCE_LIST "")
+set(PHENYL_RESOURCE_TARGET_LIST "")
+
 include(include.cmake)
 
 add_subdirectory(modules/logger)

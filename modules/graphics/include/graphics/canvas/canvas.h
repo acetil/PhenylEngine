@@ -17,6 +17,7 @@ namespace phenyl::graphics {
         CanvasRenderLayer& layer;
         std::unique_ptr<FontManager> fontManager;
         glm::vec2 screenSize;
+        common::Asset<Font> defaultFontAsset;
 
         std::vector<glm::vec2> offsetStack;
 
@@ -37,6 +38,10 @@ namespace phenyl::graphics {
         }
 
         void renderText (glm::vec2 pos, common::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour = {1.0f, 1.0f, 1.0f});
+
+        common::Asset<Font>& defaultFont () noexcept {
+            return defaultFontAsset;
+        }
 
         void pushOffset (glm::vec2 off);
         void popOffset ();

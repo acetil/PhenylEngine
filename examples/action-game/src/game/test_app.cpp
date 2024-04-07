@@ -44,7 +44,7 @@ void test::TestApp::init () {
     stepAction = input.mapInput("debug_step", "key_f7");
     consoleAction = input.mapInput("debug_console", "key_f12");
 
-    arial = phenyl::Assets::Load<phenyl::graphics::Font>("resources/Arial");
+    testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
 }
 
 void test::TestApp::fixedUpdate (double deltaTime) {
@@ -99,7 +99,7 @@ void test::TestApp::update (double deltaTime) {
     }
 
     auto& canvas = runtime().resource<phenyl::Canvas>();
-    canvas.renderText(glm::vec2{200, 300}, arial, 11, "Hello World");
+    canvas.renderText(glm::vec2{200, 300}, testFont, 11, "Hello World");
 }
 
 void test::TestApp::queueResume () {
