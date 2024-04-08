@@ -111,7 +111,12 @@ void GLFWViewport::onCursorPosCallback (glm::vec2 pos) {
 }
 
 void GLFWViewport::onWindowSizeCallback (glm::ivec2 newRes) {
+    auto oldRes = resolution;
     resolution = newRes;
+
+    for (auto* handler : updateHandlers) {
+        handler->onViewportResize(oldRes, resolution);
+    }
 }
 
 void GLFWViewport::onKeyChange (int scancode, int action, int mods) {
@@ -170,3 +175,9 @@ std::vector<std::shared_ptr<phenyl::common::InputSource>> GLFWViewport::getInput
 std::vector<std::shared_ptr<phenyl::common::ProxySource>> GLFWViewport::getProxySources () const {
     return proxySources;
 }
+
+void GLFWViewport::addUpdateHandler (IViewportUpdateHandler* handler) {
+    PHENYL_DASSERT(handler);
+    updateHandlers.emplace_back(handler);
+}
+

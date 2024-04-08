@@ -39,9 +39,14 @@ glm::vec2 Canvas::offset () const {
     return offsetStack.back();
 }
 
-Canvas::Canvas (Renderer& renderer) : atlas{renderer}, layer{renderer.addLayer<CanvasRenderLayer>(atlas)}, fontManager{std::make_unique<FontManager>(renderer.getViewport(), atlas)}, screenSize{renderer.getViewport().getResolution()} {
+void Canvas::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
+    layer.setScreenSize(newResolution);
+}
+
+Canvas::Canvas (Renderer& renderer) : atlas{renderer}, layer{renderer.addLayer<CanvasRenderLayer>(atlas)}, fontManager{std::make_unique<FontManager>(renderer.getViewport(), atlas)} {
     fontManager->selfRegister();
-    layer.setScreenSize(screenSize);
+    layer.setScreenSize(renderer.getViewport().getResolution());
+    renderer.getViewport().addUpdateHandler(this);
     offsetStack.emplace_back(0, 0);
 
     defaultFontAsset = common::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");

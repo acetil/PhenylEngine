@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "../../../logger/include/logging/logging.h"
+#include "logging/logging.h"
 
 namespace phenyl::graphics {
     class IBuffer {

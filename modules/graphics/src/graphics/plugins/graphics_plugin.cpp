@@ -14,9 +14,12 @@ std::string_view GraphicsPlugin::getName () const noexcept {
 }
 
 void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
-    runtime.addResource<Camera>();
-
     auto& renderer = runtime.resource<Renderer>();
+
+    runtime.addResource<Camera>(renderer.getViewport().getResolution());
+    auto& camera = runtime.resource<Camera>();
+    renderer.getViewport().addUpdateHandler(&camera);
+
     renderer.loadDefaultShaders();
     textureManager = std::make_unique<TextureManager>(renderer);
     textureManager->selfRegister();
@@ -30,8 +33,4 @@ void GraphicsPlugin::render (runtime::PhenylRuntime& runtime) {
 
     PHENYL_DASSERT(debugLayer);
     debugLayer->bufferData(camera, renderer.getViewport().getResolution());
-}
-
-void GraphicsPlugin::shutdown (runtime::PhenylRuntime& runtime) {
-    textureManager = nullptr;
 }

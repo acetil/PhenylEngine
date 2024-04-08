@@ -3,8 +3,8 @@
 #include "graphics/abstract_render_layer.h"
 #include "graphics/camera.h"
 #include "component/component.h"
-#include "../../../include/graphics/buffer.h"
-#include "../../../include/graphics/pipeline.h"
+#include "graphics/buffer.h"
+#include "graphics/pipeline.h"
 
 namespace phenyl::graphics {
     class EntityRenderLayer : public AbstractRenderLayer {

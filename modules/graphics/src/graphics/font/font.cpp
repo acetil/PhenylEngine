@@ -125,7 +125,7 @@ TextBounds Font::getBounds (std::uint32_t size, std::string_view text) {
     float currX = prevGlyph.advance;
 
     for (std::size_t i = 1; i < text.size(); i++) {
-        const auto& currGlyph = getGlyph(size, text[i + 1]);
+        const auto& currGlyph = getGlyph(size, text[i]);
 
         currX += getKerning(size, prev, text[i]);
         minY = std::min(minY, (float)-currGlyph.bearing.y);

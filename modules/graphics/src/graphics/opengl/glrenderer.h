@@ -11,7 +11,7 @@
 
 
 namespace phenyl::graphics {
-    class GLRenderer : public Renderer {
+    class GLRenderer : public Renderer, public IViewportUpdateHandler {
     private:
         std::unique_ptr<GLFWViewport> viewport;
 
@@ -47,5 +47,7 @@ namespace phenyl::graphics {
 
         Viewport& getViewport () override;
         const Viewport& getViewport () const override;
+
+        void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };
 }

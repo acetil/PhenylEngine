@@ -64,19 +64,19 @@ void EntityRenderLayer::bufferData (const phenyl::component::ComponentManager& m
         }
 
         auto startIndex = vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({-1.0f, -1.0f}),
+            .pos = transform.transform2D.apply({-1.0f, 1.0f}),
             .uv = sprite.uvStart
         });
         vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({1.0f, -1.0f}),
+            .pos = transform.transform2D.apply({1.0f, 1.0f}),
             .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}
         });
         vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({1.0f, 1.0f}),
+            .pos = transform.transform2D.apply({1.0f, -1.0f}),
             .uv = sprite.uvEnd
         });
         vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({-1.0f, 1.0f}),
+            .pos = transform.transform2D.apply({-1.0f, -1.0f}),
             .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}
         });
 

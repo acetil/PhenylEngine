@@ -8,6 +8,13 @@
 #include "common/input/proxy_source.h"
 
 namespace phenyl::graphics {
+    class IViewportUpdateHandler {
+    public:
+        virtual ~IViewportUpdateHandler() = default;
+
+        virtual void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) = 0;
+    };
+
     class Viewport {
     public:
         virtual ~Viewport() = default;
@@ -20,5 +27,7 @@ namespace phenyl::graphics {
 
         virtual std::vector<std::shared_ptr<phenyl::common::InputSource>> getInputSources () const = 0;
         virtual std::vector<std::shared_ptr<phenyl::common::ProxySource>> getProxySources () const = 0;
+
+        virtual void addUpdateHandler (IViewportUpdateHandler* handler) = 0;
     };
 }

@@ -30,6 +30,8 @@ GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::
     util::setProfilerTimingFunction(glfwGetTime);
 
     shaderManager.selfRegister();
+
+    this->viewport->addUpdateHandler(this);
 }
 
 double GLRenderer::getCurrentTime () {
@@ -208,4 +210,8 @@ std::unique_ptr<IImageTexture> GLRenderer::makeRendererImageTexture (const Textu
 
 std::unique_ptr<IImageArrayTexture> GLRenderer::makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
     return std::make_unique<GlArrayTexture>(properties, width, height);
+}
+
+void GLRenderer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
+    glViewport(0, 0, newResolution.x, newResolution.y);
 }

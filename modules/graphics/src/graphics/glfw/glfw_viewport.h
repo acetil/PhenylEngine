@@ -23,6 +23,7 @@ namespace phenyl::graphics {
 
         [[nodiscard]] std::vector<std::shared_ptr<phenyl::common::InputSource>> getInputSources () const override;
         [[nodiscard]] std::vector<std::shared_ptr<phenyl::common::ProxySource>> getProxySources () const override;
+        void addUpdateHandler (IViewportUpdateHandler* handler) override;;
 
         [[nodiscard]] double getTime () const;
         void swapBuffers ();
@@ -35,6 +36,7 @@ namespace phenyl::graphics {
         std::shared_ptr<GLFWKeyInput2> keyInput;
         std::shared_ptr<GLFWMouseInput2> mouseInput;
         std::vector<std::shared_ptr<common::ProxySource>> proxySources;
+        std::vector<IViewportUpdateHandler*> updateHandlers;
 
         void onCursorPosCallback (glm::vec2 pos);
         void onWindowSizeCallback (glm::ivec2 newRes);

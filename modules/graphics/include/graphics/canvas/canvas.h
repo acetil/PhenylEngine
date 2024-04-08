@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/viewport.h"
 #include "graphics/font/glyph_atlas.h"
 
 #include "canvas_shapes.h"
@@ -11,21 +12,22 @@ namespace phenyl::graphics {
     class Renderer;
     class CanvasRenderLayer;
 
-    class Canvas : public runtime::IResource {
+    class Canvas : public runtime::IResource, private IViewportUpdateHandler {
     private:
         GlyphAtlas atlas;
         CanvasRenderLayer& layer;
         std::unique_ptr<FontManager> fontManager;
-        glm::vec2 screenSize;
         common::Asset<Font> defaultFontAsset;
 
         std::vector<glm::vec2> offsetStack;
 
         void submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style);
         [[nodiscard]] glm::vec2 offset () const;
+
+        void onViewportResize(glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     public:
         explicit Canvas (Renderer& renderer);
-        ~Canvas();
+        ~Canvas() override;
 
         void render (glm::vec2 pos, const CanvasRect& rect, const CanvasStyle& style);
         void render (glm::vec2 pos, const CanvasRoundedRect& rect, const CanvasStyle& style);

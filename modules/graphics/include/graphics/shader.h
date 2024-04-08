@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 
-#include "../../../maths/include/graphics/maths_headers.h"
-#include "../../../logger/include/logging/logging.h"
+#include "graphics/maths_headers.h"
+#include "logging/logging.h"
 
 namespace phenyl::graphics {
     enum class ShaderSourceType {
