@@ -23,6 +23,6 @@ namespace phenyl::graphics {
 
         void update (float deltaTime);
 
-        void buffer (Buffer<glm::vec2>& posBuffer, Buffer<glm::vec4>& colourBuffer);
+        void buffer (Buffer<glm::vec2>& posBuffer, Buffer<glm::vec4>& colourBuffer) const;
     };
 }

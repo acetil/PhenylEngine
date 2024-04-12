@@ -1,4 +1,5 @@
 #include <phenyl/asset.h>
+#include <phenyl/canvas.h>
 #include <phenyl/debug.h>
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
@@ -42,6 +43,8 @@ void test::TestApp::init () {
 
     stepAction = input.mapInput("debug_step", "key_f7");
     consoleAction = input.mapInput("debug_console", "key_f12");
+
+    testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
 }
 
 void test::TestApp::fixedUpdate (double deltaTime) {
@@ -94,6 +97,9 @@ void test::TestApp::update (double deltaTime) {
     if (input.isDown(consoleAction)) {
         test::doDebugConsole(this);
     }
+
+    auto& canvas = runtime().resource<phenyl::Canvas>();
+    canvas.renderText(glm::vec2{200, 300}, testFont, 11, "Hello World");
 }
 
 void test::TestApp::queueResume () {

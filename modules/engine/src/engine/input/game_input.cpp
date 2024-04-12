@@ -1,7 +1,6 @@
 #include "engine/input/game_input.h"
-#include "graphics/renderers/renderer.h"
+#include "graphics/renderer.h"
 #include "runtime/runtime.h"
-#include "graphics/graphics.h"
 
 #include <utility>
 
@@ -33,11 +32,11 @@ void GameInput::addInputSources (const std::vector<std::shared_ptr<common::Input
 }
 
 glm::vec2 GameInput::cursorPos () const {
-    return renderer->getMousePos();
+    return renderer->getViewport().getCursorPos();
 }
 
 glm::vec2 GameInput::screenSize () const {
-    return renderer->getScreenSize();
+    return renderer->getViewport().getResolution();
 }
 
 void GameInput::setRenderer (graphics::Renderer* renderer) {
@@ -54,9 +53,10 @@ std::string_view GameInputPlugin::getName () const noexcept {
 
 void GameInputPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     runtime.addResource(&input);
+    auto& renderer = runtime.resource<graphics::Renderer>();
 
-    input.setRenderer(&runtime.resource<graphics::Renderer>());
-    input.addInputSources(runtime.resource<graphics::detail::Graphics>().getInputSources());
+    input.setRenderer(&renderer);
+    input.addInputSources(renderer.getViewport().getInputSources());
 }
 
 void GameInputPlugin::frameBegin (phenyl::runtime::PhenylRuntime& runtime) {

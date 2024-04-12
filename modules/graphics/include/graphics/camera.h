@@ -2,16 +2,17 @@
 
 #include <string>
 
-#include "graphics_headers.h"
+#include "viewport.h"
 #include "graphics/maths_headers.h"
 #include "runtime/iresource.h"
 
 namespace phenyl::graphics {
-    class Camera : public runtime::IResource {
+    class Camera : public runtime::IResource, public IViewportUpdateHandler {
     private:
         glm::mat4 camMatrix{};
         glm::mat4 positionMat{};
         glm::mat4 scaleMat{};
+        glm::vec2 resolution;
     public:
         [[maybe_unused]] void translate (float x, float y);
 
@@ -23,10 +24,12 @@ namespace phenyl::graphics {
         [[maybe_unused]] void setScale (float scale);
         [[nodiscard]] glm::mat4 getCamMatrix () const ;
         static std::string getUniformName () ;
-        Camera();
+        explicit Camera (glm::vec2 resolution);
 
-        glm::vec2 getWorldPos2D (glm::vec2 screenPos);
+        glm::vec2 getWorldPos2D (glm::vec2 screenPos) const;
 
         std::string_view getName() const noexcept override;
+
+        void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };
 }

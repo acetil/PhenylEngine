@@ -82,26 +82,24 @@ static glm::vec2 getMovementForce (phenyl::GameInput& input) {
     return forceVec;
 }
 
-static glm::vec2 getCursorDisp (phenyl::GameInput& input, phenyl::Camera camera, glm::vec2 pos) {
-    glm::vec2 pixelPos = input.cursorPos();
-    glm::vec2 cursorPos = pixelPos / input.screenSize() * 2.0f - glm::vec2{1.0f, 1.0f};
-    glm::vec2 worldCursorPos = camera.getWorldPos2D(cursorPos);
+static glm::vec2 getCursorDisp (phenyl::GameInput& input, const phenyl::Camera& camera, glm::vec2 pos) {
+    auto worldPos = camera.getWorldPos2D(input.cursorPos());
 
-    return pos - worldCursorPos;
+    return worldPos - pos;
 }
 
 static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
                           phenyl::Camera& camera) {
     auto forceVec = getMovementForce(input);
-    auto disp = getCursorDisp(input, camera, transform.transform2D.position());
+    auto disp = camera.getWorldPos2D(input.cursorPos()) - transform.transform2D.position();
     bool doShoot = input.isDown(KeyShoot);
 
     body.applyForce(forceVec * body.getMass());
     auto rot = std::atan2(disp.y, disp.x);
-    transform.transform2D.setRotation(-rot);
+    transform.transform2D.setRotation(rot);
 
     if (doShoot && !player.hasShot) {
-        glm::vec2 rotVec = glm::vec2{std::cos(-rot), std::sin(-rot)};
+        glm::vec2 rotVec = glm::vec2{std::cos(rot), std::sin(rot)};
         glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
@@ -111,7 +109,7 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
         bulletView.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel, rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
             transform.transform2D
                      .setPosition(pos)
-                     .setRotation(-rot);
+                     .setRotation(rot);
 
             body.applyImpulse(bulletVel * body.getMass());
         });

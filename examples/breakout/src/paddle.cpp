@@ -6,6 +6,9 @@
 #include <phenyl/signals/physics.h>
 
 #include "paddle.h"
+
+#include <iostream>
+
 #include "breakout.h"
 
 using namespace breakout;
@@ -68,9 +71,7 @@ void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::Globa
         hasBall = false;
         auto pos = transform.transform2D.position() + glm::vec2{0, 0.1};
 
-        auto mousePos = camera.getWorldPos2D(input.cursorPos() / input.screenSize() * 2.0f - glm::vec2{1.0f, 1.0f});
-        mousePos.y *= -1;
-
+        auto mousePos = camera.getWorldPos2D(input.cursorPos());
         auto ballVel = /*vel + */glm::normalize(mousePos - pos) * ballSpeed;
         ballPrefab->instantiate()
             .complete()

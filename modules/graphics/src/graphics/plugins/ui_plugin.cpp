@@ -1,5 +1,4 @@
 #include "graphics/plugins/ui_plugin.h"
-#include "graphics/graphics.h"
 #include "graphics/plugins/graphics_plugin.h"
 
 using namespace phenyl::graphics;
@@ -11,24 +10,18 @@ std::string_view UIPlugin::getName () const noexcept {
 void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
-    auto& graphics = runtime.resource<detail::Graphics>();
     auto& renderer = runtime.resource<Renderer>();
+    manager = std::make_unique<UIManager>(renderer);
 
-    manager = std::make_unique<UIManager>(&renderer, graphics.getFontManager());
-
-    manager->addProxyInputSources(graphics.getProxySources());
-    manager->setupInputActions();
-
-    manager->addRenderLayer(graphics, &renderer);
-
+    runtime.addResource<Canvas>(renderer);
     runtime.addResource(manager.get());
 }
 
 void UIPlugin::frameBegin (runtime::PhenylRuntime& runtime) {
-    manager->setMousePos(runtime.resource<Renderer>().getMousePos());
+    manager->setMousePos(runtime.resource<Renderer>().getViewport().getCursorPos());
     manager->updateUI();
 }
 
 void UIPlugin::render (runtime::PhenylRuntime& runtime) {
-    manager->renderUI();
+    manager->renderUI(runtime.resource<Canvas>());
 }

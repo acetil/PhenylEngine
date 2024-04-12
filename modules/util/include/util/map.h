@@ -954,3 +954,10 @@ namespace phenyl::util {
     template <typename K, typename V, typename HashFunc = std::hash<K>>
     using Map = BasicMap<K, V, HashFunc>;
 }
+
+template <typename T, typename U>
+struct std::hash<std::pair<T, U>> {
+    std::size_t operator() (const std::pair<T, U>& p) const noexcept {
+        return std::hash<T>{}(p.first) ^ (std::hash<U>{}(p.second) << 1);
+    }
+};

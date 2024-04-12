@@ -16,7 +16,7 @@ namespace phenyl::graphics::ui {
     public:
         explicit UIButtonNode (const std::string& themeClass) : UIComponentNode(themeClass) {}
 
-        void render(UIManager &uiManager) override;
+        void render(Canvas& canvas) override;
         UIAnchor getAnchor() override;
         void onMousePosChange(glm::vec2 oldMousePos) override;
         bool onMousePress() override;

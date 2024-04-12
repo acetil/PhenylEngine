@@ -24,7 +24,10 @@ target_copy_resources(action-game
         resources/particles/test_system.json
         resources/themes/alt_theme.json
         resources/audio/blastoff.wav
+        resources/fonts/OpenSans-Regular.ttf
+        resources/fonts/OFL.txt
 )
+target_copy_phenyl_resources(action-game)
 
 target_include_directories(action-game PRIVATE src)
 target_link_libraries(action-game PRIVATE phenyl)

@@ -13,7 +13,7 @@ namespace phenyl::graphics::ui {
     public:
         UIRootNode () : UIContainerNode("default") {}
 
-        void render(UIManager &uiManager) override;
+        void render (Canvas& canvas) override;
         UIAnchor getAnchor() override;
 
         void addChildNode (const std::shared_ptr<UIComponentNode>& child, glm::vec2 pos);

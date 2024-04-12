@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 
+#include "logging/logging.h"
 #include "util/meta.h"
 #include "forward.h"
 

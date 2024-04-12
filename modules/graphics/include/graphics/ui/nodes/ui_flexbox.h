@@ -61,7 +61,7 @@ namespace phenyl::graphics::ui {
         void setJustify (FlexJustify justify);
         void setAlign (FlexAlign align);
 
-        void render(UIManager &uiManager) override;
+        void render(Canvas& canvas) override;
         UIAnchor getAnchor() override;
 
         void onMousePosChange(glm::vec2 oldMousePos) override;

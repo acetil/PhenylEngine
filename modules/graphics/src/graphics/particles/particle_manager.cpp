@@ -39,7 +39,7 @@ void phenyl::graphics::ParticleManager2D::update (float deltaTime) {
     }
 }
 
-void phenyl::graphics::ParticleManager2D::buffer (phenyl::graphics::Buffer<glm::vec2>& posBuffer, phenyl::graphics::Buffer<glm::vec4>& colourBuffer) {
+void phenyl::graphics::ParticleManager2D::buffer (phenyl::graphics::Buffer<glm::vec2>& posBuffer, phenyl::graphics::Buffer<glm::vec4>& colourBuffer) const {
     for (auto [_, system] : systems.kv()) {
         system->bufferPos(posBuffer);
     }

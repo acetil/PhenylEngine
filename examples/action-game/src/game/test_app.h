@@ -4,6 +4,7 @@
 #include <phenyl/application.h>
 #include <phenyl/asset.h>
 #include <phenyl/input.h>
+#include "phenyl/font.h"
 #include <phenyl/ui/ui.h>
 
 namespace test {
@@ -18,6 +19,7 @@ namespace test {
 
         phenyl::InputAction stepAction;
         phenyl::InputAction consoleAction;
+        phenyl::Asset<phenyl::Font> testFont;
 
         int numPresses = 0;
         bool isButtonDown = false;

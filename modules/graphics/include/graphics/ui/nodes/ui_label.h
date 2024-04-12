@@ -2,26 +2,26 @@
 
 #include <utility>
 
+#include "common/assets/asset.h"
 #include "ui_node.h"
-#include "graphics/font/rendered_text.h"
+#include "graphics/font/font.h"
 
 namespace phenyl::graphics::ui {
     class UILabelNode : public UIComponentNode {
     private:
         std::string text;
-        std::string font = "noto-serif";
+        common::Asset<Font> font;
         int textSize = 12;
         glm::vec4 colour = {1.0f, 1.0f, 1.0f, 1.0f};
-        RenderedText renderedText{0};
-        bool doTextRender = false;
+        glm::vec2 labelSize{0, 0};
         bool doDebugRender = false;
     public:
-        explicit UILabelNode (const std::string& themeClass) : UIComponentNode(themeClass) {}
-        void render(UIManager &uiManager) override;
+        explicit UILabelNode (const std::string& themeClass);
+        void render (Canvas& canvas) override;
         UIAnchor getAnchor() override;
 
         void setText (std::string newText);
-        void setFont (std::string newFont);
+        void setFont (const std::string& newFont);
         void setTextSize (int newTextSize);
         void setColour (glm::vec4 newColour);
         void setDebug (bool isDebug);

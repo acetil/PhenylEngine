@@ -1,39 +1,52 @@
 #pragma once
 
-#include "graphics/renderlayer/render_layer.h"
+#include "graphics/abstract_render_layer.h"
+#include "graphics/camera.h"
 #include "component/component.h"
-#include "graphics/pipeline/pipeline.h"
-#include "graphics/textures/sprite_atlas.h"
+#include "graphics/buffer.h"
+#include "graphics/pipeline.h"
 
 namespace phenyl::graphics {
-    class EntityPipeline;
-    class EntityRenderLayer : public RenderLayer {
+    class EntityRenderLayer : public AbstractRenderLayer {
     private:
-        bool active = true;
-        component::EntityComponentManager* componentManager;
+        struct Uniform {
+            glm::mat4 camera;
+        };
+        struct Vertex {
+            glm::vec2 pos;
+            glm::vec2 uv;
+        };
 
-        std::unique_ptr<EntityPipeline> entityPipeline;
-        SpriteAtlas atlas;
+        struct SamplerRender {
+            std::uint16_t indexOffset;
+            std::uint16_t size;
+            const ISampler* sampler;
+        };
+
+        std::vector<std::pair<const ISampler*, std::uint16_t>> samplerStartIndices;
+        std::vector<SamplerRender> samplerRenders;
+
+        Pipeline pipeline;
+
+        //Buffer<glm::vec2> posBuffer;
+       // Buffer<glm::vec2> uvBuffer;
+        Buffer<Vertex> vertexBuffer;
+        Buffer<std::uint16_t> indices;
+
+        UniformBinding uniformBinding{};
+        UniformBuffer<Uniform> uniformBuffer;
+
+        SamplerBinding samplerBinding{};
+
+        void bufferData (const component::ComponentManager& manager, const Camera& camera);
     public:
-        EntityRenderLayer (Renderer* renderer, component::EntityComponentManager* componentManager);
-        ~EntityRenderLayer() override;
+        EntityRenderLayer ();
 
-        std::string getName () override;
+        [[nodiscard]] std::string_view getName () const override;
 
-        int getPriority () override;
+        void init (Renderer& renderer) override;
 
-        bool isActive () override;
-
-        void gatherData () override;
-
-        void preRender (Renderer* renderer) override;
-
-        int getUniformId (std::string uniformName) override;
-
-        void applyUniform (int uniformId, void* data) override;
-
-        void applyCamera (Camera camera) override;
-
-        void render (Renderer* renderer, FrameBuffer* frameBuf) override;
+        void preRender (component::ComponentManager& manager, const Camera& camera);
+        void render () override;
     };
 }

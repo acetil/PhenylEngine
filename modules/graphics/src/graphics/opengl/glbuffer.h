@@ -1,34 +1,38 @@
 #pragma once
 
 #include "graphics/graphics_headers.h"
-
-#include "graphics/renderers/buffer.h"
-#include "graphics/renderers/renderer_buffer.h"
+#include "../../../include/graphics/buffer.h"
 
 namespace phenyl::graphics {
-    //class GLPipelineStage;
-
-    class GlBuffer : public RendererBufferHandle {
+    class GlBuffer : public IBuffer {
     private:
-        GLuint bufferId{};
-        std::unique_ptr<unsigned char[]> data;
-        std::size_t currentSize{};
-        std::size_t elementSize{};
-        std::size_t maxSize{};
+        GLuint bufferId = 0;
+        GLenum usageHint;
+        std::size_t capacity;
+        std::size_t elemSize;
+
+        void ensureCapacity (std::size_t requiredCapacity);
     public:
-        explicit GlBuffer ();
+        GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint = GL_DYNAMIC_DRAW);
+
+        GlBuffer (const GlBuffer&) = delete;
+        GlBuffer (GlBuffer&& other) noexcept;
+
+        GlBuffer& operator= (const GlBuffer&) = delete;
+        GlBuffer& operator= (GlBuffer&& other) noexcept;
+
         ~GlBuffer() override;
 
-        void allocBufferMemory(std::size_t memSize) override;
-        void setElementSize(std::size_t elementSize) override;
-        void bufferItems(const void* _data, std::size_t size) override;
-        void bufferData() override;
-        void clearBuffer() override;
+        void upload(unsigned char* data, std::size_t size) override;
 
-        void bindBuffer () const;
+        void bind () const;
 
-        [[nodiscard]] std::size_t getNumElements () const;
+        [[nodiscard]] GLuint id () const {
+            return bufferId;
+        }
 
-        //[[nodiscard]] GLuint getBufferId () const;
+        std::size_t elementSize () const {
+            return elemSize;
+        }
     };
 }

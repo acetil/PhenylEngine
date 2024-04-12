@@ -2,7 +2,7 @@
 
 using namespace phenyl::engine;
 
-AppPlugin::AppPlugin (ApplicationBase* app) : app{app} {}
+AppPlugin::AppPlugin (std::unique_ptr<ApplicationBase> app) : app{std::move(app)} {}
 
 std::string_view AppPlugin::getName () const noexcept {
     return "AppPlugin";

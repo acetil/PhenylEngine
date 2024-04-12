@@ -5,6 +5,7 @@
 
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
+#include "common/assets/assets.h"
 #include "common/debug.h"
 #include "graphics/plugins/ui_plugin.h"
 
@@ -31,14 +32,13 @@ void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
         return;
     }
 
-    auto& uiManager = runtime.resource<UIManager>();
+    auto& canvas = runtime.resource<Canvas>();
 
-    uiManager.renderText("noto-serif", "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
-                         15);
-    uiManager.renderText("noto-serif", "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms", 14, 5,
-                         30);
-    uiManager.renderText("noto-serif", "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms", 14, 5,
-                         45);
-    uiManager.renderText("noto-serif", std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps",
-                         14, 700, 15, {0.0f, 1.0f, 0.0f});
+    canvas.renderText(glm::vec2{5, 15}, canvas.defaultFont(), 11, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 30}, canvas.defaultFont(), 11, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 45}, canvas.defaultFont(), 11, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms");
+
+    canvas.renderText(glm::vec2{700, 15}, canvas.defaultFont(), 11, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps", {0.0f, 1.0f, 0.0f});
+
+    canvas.renderText(glm::vec2{5, 60}, canvas.defaultFont(), 14, "The quick brown fox jumped over the lazy dog");
 }

@@ -1,52 +1,57 @@
 #pragma once
 
-#include <utility>
-#include <vector>
 #include <unordered_map>
 
-#include "util/span.h"
-#include "glyph_image.h"
-#include "graphics/renderers/renderer.h"
+#include "util/map.h"
+
+#include "graphics/image.h"
+#include "graphics/renderer.h"
+#include "graphics/texture.h"
 
 namespace phenyl::graphics {
-    class GlyphAtlas {
-    private:
-        unsigned char* data = nullptr;
-        float* uvs = nullptr;
-        std::unordered_map<int, util::span<float>> charUvs;
-        float offsetX = 0.0f;
-        float offsetY = 0.0f;
-        int width = 0;
-        int height = 0;
-        GraphicsTexture texture;
-    public:
-        GlyphAtlas () = default;
-        GlyphAtlas (const std::vector<GlyphImage>& glyphs, int targetRes);
-        GlyphAtlas (GlyphAtlas& atlas) = delete;
-        GlyphAtlas (GlyphAtlas&& atlas) noexcept : data(std::exchange(atlas.data, nullptr)),
-                                                   offsetX(atlas.offsetX),
-                                                   offsetY(atlas.offsetY),
-                                                   uvs(std::exchange(atlas.uvs, nullptr)),
-                                                   charUvs(std::move(atlas.charUvs)),
-                                                   width(atlas.width),
-                                                   height(atlas.height) {}
+    struct ColumnAtlas {
+        struct Column {
+            std::uint32_t offset;
+            std::uint32_t width;
+            std::uint32_t currHeight;
+        };
 
-        GlyphAtlas& operator= (GlyphAtlas&& atlas)  noexcept {
-            offsetX = atlas.offsetX;
-            offsetY = atlas.offsetY;
-            width = atlas.width;
-            height = atlas.height;
-            texture = std::move(atlas.texture);
-            data = std::exchange(atlas.data, nullptr);
-            uvs = std::exchange(atlas.uvs, nullptr);
-            charUvs = std::move(atlas.charUvs);
-            return *this;
+        Image atlasImage;
+        std::uint32_t index;
+        std::vector<Column> columns;
+        std::uint32_t currWidth = 0;
+        std::uint32_t padding;
+        bool needsUpload = false;
+
+        explicit ColumnAtlas (std::uint32_t index, std::uint32_t size, std::uint32_t padding = 1);
+
+        std::optional<glm::uvec2> place (const Image& image);
+    };
+
+    class GlyphAtlas {
+    public:
+        struct Placement {
+            glm::vec2 uvStart;
+            glm::vec2 uvEnd;
+            std::uint32_t atlasLayer;
+        };
+    private:
+        ImageArrayTexture arrayTexture;
+        std::vector<ColumnAtlas> atlases;
+        std::uint32_t size;
+        std::uint32_t padding;
+
+        glm::vec3 whitePixel;
+    public:
+        explicit GlyphAtlas (Renderer& renderer, std::uint32_t size = 1024, std::uint32_t padding=1);
+        Placement place (const Image& image);
+
+        [[nodiscard]] const ISampler& sampler () const;
+        void upload ();
+
+        [[nodiscard]] glm::vec3 opaque () const {
+            return whitePixel;
         }
-        void loadAtlas (Renderer* renderer);
-        GraphicsTexture& getTex () {
-            return texture;
-        }
-        util::span<glm::vec2> getCharUvs (int c);
-        ~GlyphAtlas ();
     };
 }
+

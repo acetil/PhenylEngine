@@ -1,52 +1,66 @@
 #pragma once
 
-#include "graphics/shaders/shaders.h"
-#include "graphics/shaders/renderer_shader.h"
-#include "graphics/graphics_headers.h"
-#include "common/assets/asset_manager.h"
+#include <unordered_set>
 
+#include "common/assets/asset_manager.h"
 #include "util/map.h"
-#include "util/smart_help.h"
+
+#include "graphics/graphics_headers.h"
+#include "../../../include/graphics/shader.h"
 
 namespace phenyl::graphics {
-    class GLRenderer;
-
-    struct GLUniform {
-        GLint uniformId;
-        ShaderDataType uniformType;
-    };
-
-    class GLShaderProgram : public RendererShader, public util::SmartHelper<GLShaderProgram> {
+    class GlShader : public IShader {
     private:
         GLuint programId{0};
-        util::Map<std::string, GLUniform> uniformMap;
+        std::unordered_map<std::string, unsigned int> uniformBlocks;
+        std::unordered_map<std::string, unsigned int> samplers;
 
-        void initShaders (util::Map<ShaderType, std::string>& shaders);
-        void initShaderSources (const util::Map<ShaderType, std::string>& sources);
+        bool addUniformBlock (const std::string& uniform);
+        bool addSampler (const std::string& sampler);
 
-        void applyUniform (GLUniform uniform, const unsigned char* uniformPtr);
-
+        friend class Builder;
     public:
-        explicit GLShaderProgram (ShaderBuilder& builder);
-        explicit GLShaderProgram (const ShaderSourceSpec& spec);
-        ~GLShaderProgram() override;
+        class Builder {
+        private:
+            std::unordered_map<ShaderSourceType, GLuint> shaderSources;
+            std::unordered_set<std::string> uniformBlocks;
+            std::unordered_set<std::string> samplers;
 
-        void applyUniform(const std::string &uniformName, ShaderDataType uniformType, const unsigned char *uniformPtr) override;
-        void bind() override;
+            friend class GlShader;
+        public:
+            Builder() = default;
+
+            Builder& withSource (ShaderSourceType type, std::string source);
+            Builder& withUniformBlock (std::string uniformName);
+            Builder& withSampler (std::string samplerName);
+            std::unique_ptr<GlShader> build ();
+        };
+
+        explicit GlShader (GLuint programId);
+        GlShader (const GlShader&) = delete;
+        GlShader (GlShader&& other) noexcept;
+
+        GlShader& operator= (const GlShader&) = delete;
+        GlShader& operator= (GlShader&& other) noexcept;
+
+        ~GlShader() override;
+
+        std::size_t hash () const noexcept override;
+        std::optional<unsigned int> getUniformLocation (const std::string& uniform) const noexcept override;
+        std::optional<unsigned int> getSamplerLocation (const std::string& sampler) const noexcept override;
+
+        void bind ();
     };
 
-    class GLShaderManager : public common::AssetManager<Shader> {
+    class GlShaderManager : public common::AssetManager<Shader> {
     private:
-        util::Map<std::size_t,  std::unique_ptr<Shader>> shaders;
-        GLRenderer* renderer;
-    protected:
-        Shader* load (std::istream &data, std::size_t id) override;
-        Shader* load (phenyl::graphics::Shader &&obj, std::size_t id) override;
-
-        [[nodiscard]] const char* getFileType () const override;
-        void queueUnload (std::size_t id) override;
+        std::unordered_map<std::size_t, Shader> shaders;
     public:
-        explicit GLShaderManager (GLRenderer* renderer);
+        const char* getFileType() const override;
+        Shader* load (std::istream& data, std::size_t id) override;
+        Shader* load (Shader&& obj, std::size_t id) override;
+        void queueUnload(std::size_t id) override;
+
         void selfRegister ();
     };
 }

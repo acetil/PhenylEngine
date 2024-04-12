@@ -1,15 +1,21 @@
 {
-  "name" : "action-game",
-  "version" : "0.0.1",
-  "dependencies" : [
+  "name": "action-game",
+  "version": "0.0.1",
+  "dependencies": [
     "opengl",
     "glew",
     "glfw3",
     "nlohmann-json",
     "glm",
-    "freetype",
+    {
+      "name": "freetype",
+      "features": [
+        "error-strings"
+      ]
+    },
     "harfbuzz",
     "openal-soft",
     "cpptrace"
-  ]
+  ],
+  "builtin-baseline": "ba2298b26ce17b5248685d30b359185485413674"
 }

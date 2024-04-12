@@ -29,7 +29,7 @@
     "parent" : "default",
     "text_size" : 14,
     "text_color" : [1.0, 1.0, 1.0, 1.0],
-    "font" : "noto-serif"
+    "font" : "resources/phenyl/fonts/noto-serif"
   },
   "big_label" : {
     "parent" : "label",

@@ -8,6 +8,7 @@
 #include "graphics/ui/themes/theme_properties.h"
 
 namespace phenyl::graphics {
+    class Canvas;
     class UIManager;
 }
 
@@ -55,7 +56,7 @@ namespace phenyl::graphics::ui {
     public:
         explicit UIComponentNode (const std::string& themeClass, const std::string& fallbackClass = "default", const std::string& classPrefix = "") : themeProperties(themeClass, fallbackClass, classPrefix) {}
         virtual ~UIComponentNode() = default;
-        virtual void render (UIManager& uiManager) = 0;
+        virtual void render (Canvas& canvas) = 0;
         virtual UIAnchor getAnchor () = 0;
         virtual void setSize (glm::vec2 _size) {
             size = _size;

@@ -39,3 +39,36 @@ function(target_copy_resources resource_target)
     add_custom_target(${resource_target}_resources DEPENDS ${res_out})
     add_dependencies(${resource_target} ${resource_target}_resources)
 endfunction()
+
+macro(add_phenyl_resource resource_path target_path)
+    list(APPEND PHENYL_RESOURCE_LIST "${CMAKE_CURRENT_SOURCE_DIR}/${resource_path}")
+    list(APPEND PHENYL_RESOURCE_TARGET_LIST ${target_path})
+
+    set(PHENYL_RESOURCE_LIST ${PHENYL_RESOURCE_LIST} PARENT_SCOPE)
+    set(PHENYL_RESOURCE_TARGET_LIST ${PHENYL_RESOURCE_TARGET_LIST} PARENT_SCOPE)
+endmacro()
+
+function(target_copy_phenyl_resources resource_target)
+    list(LENGTH PHENYL_RESOURCE_LIST LEN)
+    math(EXPR LEN "${LEN} - 1")
+    set(res_out "")
+    foreach (INDEX RANGE ${LEN})
+        list(GET PHENYL_RESOURCE_LIST ${INDEX} path)
+        list(GET PHENYL_RESOURCE_TARGET_LIST ${INDEX} res_target)
+
+        add_custom_command(
+            OUTPUT
+                ${CMAKE_CURRENT_BINARY_DIR}/${res_target}
+            COMMAND
+                cmake -E copy "${path}" "${CMAKE_CURRENT_BINARY_DIR}/${res_target}"
+            DEPENDS
+                ${path}
+            VERBATIM
+        )
+        list(APPEND res_out ${CMAKE_CURRENT_BINARY_DIR}/${res_target})
+        set(res_out ${res_out} PARENT_SCOPE)
+    endforeach ()
+
+    add_custom_target(${resource_target}_phenyl_resources DEPENDS ${res_out})
+    add_dependencies(${resource_target} ${resource_target}_phenyl_resources)
+endfunction()

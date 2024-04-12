@@ -10,6 +10,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb ${DEBUG_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 find_package(PythonInterp REQUIRED)
+
+set(PHENYL_RESOURCE_LIST "")
+set(PHENYL_RESOURCE_TARGET_LIST "")
+
 include(include.cmake)
 
 add_subdirectory(modules/logger)
@@ -32,7 +36,9 @@ add_library(phenyl
         src/phenyl/plugins/level_plugin.cpp
         src/phenyl/plugins/prefab_plugin.cpp
         src/phenyl/engine.cpp
-        include/phenyl/properties.h)
+        include/phenyl/properties.h
+        include/phenyl/font.h
+        include/phenyl/canvas.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

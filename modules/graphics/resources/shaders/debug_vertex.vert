@@ -1,12 +1,14 @@
-#version 330 core
+#version 430
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 colourOut;
 
 out vec4 colour;
 
-uniform mat4 camera;
-uniform mat4 screenTransform;
+layout(std140) uniform Uniform {
+    mat4 camera;
+    mat4 screenTransform;
+};
 
 void main () {
     float z = position.z;
