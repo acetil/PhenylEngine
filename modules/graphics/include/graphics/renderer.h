@@ -4,7 +4,6 @@
 #include <optional>
 #include <memory>
 
-#include "common/input/input_source.h"
 #include "runtime/iresource.h"
 #include "buffer.h"
 #include "uniform_buffer.h"
@@ -12,7 +11,6 @@
 #include "texture.h"
 
 #include "util/optional.h"
-#include "common/input/proxy_source.h"
 #include "graphics/viewport.h"
 #include "pipeline.h"
 #include "graphics/abstract_render_layer.h"

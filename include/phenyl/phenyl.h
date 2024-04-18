@@ -26,5 +26,7 @@
 #include "components/physics/2D/collider.h"
 #include "components/physics/2D/colliders/box_collider.h"
 
+#include "graphics/graphics.h"
+
 #include "signals/lifecycle.h"
 #include "signals/physics.h"

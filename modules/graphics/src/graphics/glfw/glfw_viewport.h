@@ -21,9 +21,8 @@ namespace phenyl::graphics {
         [[nodiscard]] glm::vec2 getCursorPos() const override; // TODO
         glm::vec2 getContentScale() const override;
 
-        [[nodiscard]] std::vector<std::shared_ptr<phenyl::common::InputSource>> getInputSources () const override;
-        [[nodiscard]] std::vector<std::shared_ptr<phenyl::common::ProxySource>> getProxySources () const override;
-        void addUpdateHandler (IViewportUpdateHandler* handler) override;;
+        void addUpdateHandler (IViewportUpdateHandler* handler) override;
+        void addInputDevices (common::GameInput& manager) override;
 
         [[nodiscard]] double getTime () const;
         void swapBuffers ();
@@ -33,14 +32,16 @@ namespace phenyl::graphics {
         glm::ivec2 resolution;
         glm::vec2 cursorPos{0, 0};
 
-        std::shared_ptr<GLFWKeyInput2> keyInput;
-        std::shared_ptr<GLFWMouseInput2> mouseInput;
-        std::vector<std::shared_ptr<common::ProxySource>> proxySources;
+        std::unique_ptr<GLFWKeyInput> keyInput;
+        std::unique_ptr<GLFWMouseInput> mouseInput;
+
         std::vector<IViewportUpdateHandler*> updateHandlers;
 
         void onCursorPosCallback (glm::vec2 pos);
         void onWindowSizeCallback (glm::ivec2 newRes);
         void onKeyChange (int scancode, int action, int mods);
         void onButtonChange (int button, int action, int mods);
+
+        std::string_view getName() const noexcept override;
     };
 }

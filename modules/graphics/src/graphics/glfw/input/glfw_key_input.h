@@ -1,39 +1,20 @@
 #pragma once
 
-#include <string>
-
-#include "common/input/input_source.h"
 #include "util/map.h"
-#include "util/set.h"
-#include "graphics/graphics_headers.h"
-#include "glfw_input.h"
+
+#include "common/input/input_device.h"
 
 namespace phenyl::graphics {
-    class GLFWKeyInput : public common::InputSource {
+    class GLFWKeyInput : public common::IInputDevice {
     private:
-        util::Map<std::string, long> keyMap{};
-        util::Set<long> consumed{};
-        util::Map<long, bool> lastInputStates{};
-        util::Map<long, std::size_t> stateNums{};
         GLFWwindow* window;
-
-        void setupKeys ();
+        util::HashMap<std::string, int> buttonIds;
+        util::HashMap<int, common::ButtonInputSource> sources;
     public:
-        explicit GLFWKeyInput (GLFWwindow* _window) : window{_window} {
-            setupKeys();
-        };
+        GLFWKeyInput (GLFWwindow* window);
 
-        long getInputNum(const std::string &inputStr) override;
-        bool isDown(long inputNum) override;
-        void consume(long inputNum) override;
-
-        std::size_t getStateNum(long inputNum) override;
-
-        void update ();
-    };
-
-    class GLFWKeyInput2 : public GLFWInput {
-    public:
-        GLFWKeyInput2 ();
+        const common::ButtonInputSource* getButtonSource (std::string_view sourcePath) override;
+        std::string_view getDeviceId () const noexcept override;
+        void poll () override;
     };
 }

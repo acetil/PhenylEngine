@@ -953,6 +953,50 @@ namespace phenyl::util {
 
     template <typename K, typename V, typename HashFunc = std::hash<K>>
     using Map = BasicMap<K, V, HashFunc>;
+
+    template <typename T>
+    struct Hasher {
+        using HashFunc = std::hash<T>;
+        using KeyEq = std::equal_to<T>;
+    };
+
+    template <typename T, typename ...Args>
+    struct TransparentHashFunc : public std::hash<T>, public std::hash<Args>... {
+        using is_transparent = void;
+    };
+
+    template <typename T, std::equality_comparable_with<T> U>
+    struct HeterogenousEq {
+        constexpr bool operator() (const U& lhs, const T& rhs) const noexcept {
+            return lhs == rhs;
+        }
+    };
+
+    template <typename T, std::equality_comparable_with<T> ...Args>
+    struct TransparentKeyEq : public std::equal_to<T>, public HeterogenousEq<T, Args>... {
+        using is_transparent = void;
+    };
+
+    template <>
+    struct Hasher<std::string> {
+        struct HashFunc {
+            using is_transparent = void;
+
+            bool operator() (std::string_view str) const noexcept {
+                return std::hash<std::string_view>{}(str);
+            }
+        };
+        struct KeyEq {
+            using is_transparent = void;
+
+            bool operator() (const auto& lhs, const std::string& rhs) const noexcept {
+                return lhs == rhs;
+            }
+        };
+    };
+
+    template <typename Key, typename Value, typename Hash=Hasher<Key>>
+    using HashMap = std::unordered_map<Key, Value, typename Hash::HashFunc, typename Hash::KeyEq>;
 }
 
 template <typename T, typename U>

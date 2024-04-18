@@ -1,46 +1,20 @@
 #pragma once
 
-#include "common/input/input_source.h"
-
+#include "common/input/input_device.h"
 #include "graphics/graphics_headers.h"
-
 #include "util/map.h"
-#include "glfw_input.h"
 
 namespace phenyl::graphics {
-    struct ButtonState {
-        std::size_t stateNum;
-        int scancode;
-        bool currentState;
-        bool isEnabled;
-        bool hasChanged;
-    };
-    class GLFWMouseInput : public common::InputSource {
+    class GLFWMouseInput : public common::IInputDevice {
     private:
-        util::Map<std::string, long> buttonMap{};
-        util::Map<long, bool> consumed{}; // TODO: set?
-        std::vector<ButtonState> buttonStates;
         GLFWwindow* window;
-        void setupButtons ();
+        util::HashMap<std::string, int> buttonIds;
+        util::HashMap<int, common::ButtonInputSource> sources;
     public:
-        explicit GLFWMouseInput (GLFWwindow* _window) : window{_window} {
-            setupButtons();
-        }
+        GLFWMouseInput (GLFWwindow* window);
 
-        long getInputNum(const std::string &inputStr) override;
-        bool isDown(long inputNum) override;
-        void consume(long inputNum) override;
-
-        void update ();
-
-        std::size_t getStateNum(long inputNum) override;
-
-        void onMouseButtonChange (int buttons, int action, int mods);
-    };
-
-    class GLFWMouseInput2 : public GLFWInput {
-    protected:
-    public:
-        GLFWMouseInput2();
+        const common::ButtonInputSource* getButtonSource (std::string_view sourcePath) override;
+        std::string_view getDeviceId () const noexcept override;
+        void poll () override;
     };
 }

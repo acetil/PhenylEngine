@@ -41,8 +41,13 @@ void test::TestApp::init () {
     uiManager.addUIComp(button4, {500, 300});
     uiManager.addUIComp(button5, {500, 385});
 
-    stepAction = input.mapInput("debug_step", "key_f7");
-    consoleAction = input.mapInput("debug_console", "key_f12");
+    //stepAction = input.mapInput("debug_step", "key_f7");
+    stepAction = input.addAction("debug_step");
+    //consoleAction = input.mapInput("debug_console", "key_f12");
+    consoleAction = input.addAction("debug_console");
+
+    input.addActionBinding("debug_step", "keyboard.key_f7");
+    input.addActionBinding("debug_console", "keyboard.key_f12");
 
     testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
 }
@@ -85,16 +90,14 @@ void test::TestApp::update (double deltaTime) {
         }
     }
 
-    auto& input = runtime().resource<phenyl::GameInput>();
-
-    if (input.isDown(stepAction) && !stepDown) {
+    if (stepAction.value() && !stepDown) {
         stepDown = true;
         step();
-    } else if (!input.isDown(stepAction)) {
+    } else if (!stepAction.value()) {
         stepDown = false;
     }
 
-    if (input.isDown(consoleAction)) {
+    if (consoleAction.value()) {
         test::doDebugConsole(this);
     }
 

@@ -2,6 +2,7 @@
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/components/physics/2D/rigid_body.h>
 #include <phenyl/components/2D/particle_emitter.h>
+#include <phenyl/graphics/viewport.h>
 
 #include <phenyl/signals/physics.h>
 
@@ -23,9 +24,16 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
 
     auto& input = runtime.resource<phenyl::GameInput>();
 
-    LeftKey = input.mapInput("move_left", "key_a");
-    RightKey = input.mapInput("move_right", "key_d");
-    BallShoot = input.mapInput("ball_shoot", "mouse_left");
+    //LeftKey = input.mapInput("move_left", "key_a");
+    LeftKey = input.addAction("move_left");
+    //RightKey = input.mapInput("move_right", "key_d");
+    RightKey = input.addAction("move_right");
+    //BallShoot = input.mapInput("ball_shoot", "mouse_left");
+    BallShoot = input.addAction("ball_shoot");
+
+    input.addActionBinding("move_left", "keyboard.key_a");
+    input.addActionBinding("move_right", "keyboard.key_d");
+    input.addActionBinding("ball_shoot", "mouse.button_left");
 
     runtime.manager().handleSignal<phenyl::signals::OnCollision, const Paddle, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Paddle& paddle, phenyl::AudioPlayer& audioPlayer) {
         phenyl::GlobalTransform2D emitterTransform{};
@@ -42,21 +50,21 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
 }
 
 void breakout::updatePaddle (float deltaTime, phenyl::PhenylRuntime& runtime) {
-    auto& input = runtime.resource<phenyl::GameInput>();
+    auto& viewport = runtime.resource<phenyl::Viewport>();
     auto& camera = runtime.resource<phenyl::Camera>();
 
-    runtime.manager().query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, Paddle>().each([&input, &camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, Paddle& paddle) {
-        paddle.update(deltaTime, entity, transform, body, input, camera);
+    runtime.manager().query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, Paddle>().each([&viewport, &camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, Paddle& paddle) {
+        paddle.update(deltaTime, entity, transform, body, viewport, camera);
     });
 }
 
-void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::GameInput& input, phenyl::Camera& camera) {
+void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::Viewport& input, phenyl::Camera& camera) {
     glm::vec2 direction{};
-    if (input.isDown(LeftKey)) {
+    if (LeftKey.value()) {
         direction += glm::vec2{-1.0f, 0.0f};
     }
 
-    if (input.isDown(RightKey)) {
+    if (RightKey.value()) {
         direction += glm::vec2{1.0f, 0.0f};
     }
 
@@ -67,7 +75,7 @@ void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::Globa
 
     body.applyImpulse(vel * body.getMass() - body.getMomentum());
 
-    if (input.isDown(BallShoot) && hasBall) {
+    if (BallShoot.value() && hasBall) {
         hasBall = false;
         auto pos = transform.transform2D.position() + glm::vec2{0, 0.1};
 
@@ -81,7 +89,7 @@ void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::Globa
             .apply<phenyl::RigidBody2D>([ballVel] (phenyl::RigidBody2D& body) {
                 body.applyImpulse(body.getMass() * ballVel);
             });
-    } else if (!input.isDown(BallShoot) && !hasBall) {
+    } else if (!BallShoot.value() && !hasBall) {
         hasBall = true;
     }
 }

@@ -1,5 +1,7 @@
-#include "glfw_viewport.h"
+#include "common/input/game_input.h"
 #include "graphics/detail/loggers.h"
+
+#include "glfw_viewport.h"
 
 using namespace phenyl::graphics;
 
@@ -52,10 +54,9 @@ GLFWViewport::GLFWViewport (const GraphicsProperties& properties) {
     resolution = {properties.getWindowWidth(), properties.getWindowHeight()};
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
-    keyInput = std::make_shared<GLFWKeyInput2>();
-    mouseInput = std::make_shared<GLFWMouseInput2>();
-    proxySources.emplace_back(std::make_shared<common::ProxySource>(keyInput));
-    proxySources.emplace_back(std::make_shared<common::ProxySource>(mouseInput));
+
+    keyInput = std::make_unique<GLFWKeyInput>(window);
+    mouseInput = std::make_unique<GLFWMouseInput>(window);
 
     double cursorX, cursorY;
     glfwGetCursorPos(window, &cursorX, &cursorY);
@@ -120,11 +121,15 @@ void GLFWViewport::onWindowSizeCallback (glm::ivec2 newRes) {
 }
 
 void GLFWViewport::onKeyChange (int scancode, int action, int mods) {
-    keyInput->onButtonChange(scancode, action, mods);
+    //keyInput->onButtonChange(scancode, action, mods);
 }
 
 void GLFWViewport::onButtonChange (int button, int action, int mods) {
-    mouseInput->onButtonChange(button, action, mods);
+    //mouseInput->onButtonChange(button, action, mods);
+}
+
+std::string_view GLFWViewport::getName () const noexcept {
+    return "GLFWViewport";
 }
 
 void GLFWViewport::setupCallbacks () {
@@ -163,21 +168,12 @@ void GLFWViewport::setupCallbacks () {
     });
 }
 
-std::vector<std::shared_ptr<phenyl::common::InputSource>> GLFWViewport::getInputSources () const {
-    std::vector<std::shared_ptr<common::InputSource>> sources;
-    for (auto& i : proxySources) {
-        sources.emplace_back(i->getProxy());
-    }
-
-    return sources;
-}
-
-std::vector<std::shared_ptr<phenyl::common::ProxySource>> GLFWViewport::getProxySources () const {
-    return proxySources;
-}
-
 void GLFWViewport::addUpdateHandler (IViewportUpdateHandler* handler) {
     PHENYL_DASSERT(handler);
     updateHandlers.emplace_back(handler);
 }
 
+void GLFWViewport::addInputDevices (common::GameInput& manager) {
+    manager.addDevice(keyInput.get());
+    manager.addDevice(mouseInput.get());
+}

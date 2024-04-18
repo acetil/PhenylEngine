@@ -1,67 +1,45 @@
-#include <vector>
+#include "graphics/detail/loggers.h"
+#include "logging/logging.h"
 
 #include "glfw_mouse_input.h"
 
 using namespace phenyl::graphics;
 
-long GLFWMouseInput::getInputNum (const std::string& inputStr) {
-    if (buttonMap.contains(inputStr)) {
-        return buttonMap.at(inputStr);
+static phenyl::Logger LOGGER{"GLFW_MOUSE_INPUT", detail::GRAPHICS_LOGGER};
+
+GLFWMouseInput::GLFWMouseInput (GLFWwindow* window) : window{window} {
+    buttonIds["button_left"] = GLFW_MOUSE_BUTTON_LEFT;
+    buttonIds["button_right"] = GLFW_MOUSE_BUTTON_RIGHT;
+    buttonIds["button_middle"] = GLFW_MOUSE_BUTTON_MIDDLE;
+    buttonIds["button_4"] = GLFW_MOUSE_BUTTON_4;
+    buttonIds["button_5"] = GLFW_MOUSE_BUTTON_5;
+    buttonIds["button_6"] = GLFW_MOUSE_BUTTON_6;
+    buttonIds["button_7"] = GLFW_MOUSE_BUTTON_7;
+    buttonIds["button_8"] = GLFW_MOUSE_BUTTON_8;
+}
+
+const phenyl::common::ButtonInputSource* GLFWMouseInput::getButtonSource (std::string_view sourcePath) {
+    auto idIt = buttonIds.find(sourcePath);
+    if (idIt == buttonIds.end()) {
+        PHENYL_LOGE(LOGGER, "Invalid key: \"{}\"", sourcePath);
+        return nullptr;
     }
 
-    return -1;
-}
-
-bool GLFWMouseInput::isDown (long inputNum) {
-    if (consumed.contains(inputNum)) {
-        return false;
-    }
-    return glfwGetMouseButton(window, (int)inputNum) == GLFW_PRESS;
-}
-
-void GLFWMouseInput::consume (long inputNum) {
-    consumed[inputNum] = true;
-}
-
-void GLFWMouseInput::update () {
-    std::vector<long> toRemove;
-    for (auto [k, v] : consumed.kv()) {
-        if (glfwGetMouseButton(window, (int)k) == GLFW_RELEASE) {
-            toRemove.push_back(k);
-        }
+    auto sourceIt = sources.find(idIt->second);
+    if (sourceIt != sources.end()) {
+        return &sourceIt->second;
     }
 
-    for (auto& l : toRemove) {
-        consumed.remove(l);
+    auto it = sources.emplace(idIt->second, common::ButtonInputSource{}).first;
+    return &it->second;
+}
+
+std::string_view GLFWMouseInput::getDeviceId () const noexcept {
+    return "mouse";
+}
+
+void GLFWMouseInput::poll () {
+    for (auto& [id, source] : sources) {
+        source.setState(glfwGetMouseButton(window, id) == GLFW_PRESS);
     }
-}
-
-void GLFWMouseInput::setupButtons () {
-    buttonMap["mouse_left"] = GLFW_MOUSE_BUTTON_LEFT;
-    buttonMap["mouse_right"] = GLFW_MOUSE_BUTTON_RIGHT;
-    buttonMap["mouse_middle"] = GLFW_MOUSE_BUTTON_MIDDLE;
-    buttonMap["mouse_button_4"] = GLFW_MOUSE_BUTTON_4;
-    buttonMap["mouse_button_5"] = GLFW_MOUSE_BUTTON_5;
-    buttonMap["mouse_button_6"] = GLFW_MOUSE_BUTTON_6;
-    buttonMap["mouse_button_7"] = GLFW_MOUSE_BUTTON_7;
-    buttonMap["mouse_button_8"] = GLFW_MOUSE_BUTTON_8;
-}
-
-std::size_t GLFWMouseInput::getStateNum (long inputNum) {
-    return 0;
-}
-
-void GLFWMouseInput::onMouseButtonChange (int button, int action, int mods) {
-
-}
-
-GLFWMouseInput2::GLFWMouseInput2 () {
-    addButton("mouse_left", GLFW_MOUSE_BUTTON_LEFT);
-    addButton("mouse_right", GLFW_MOUSE_BUTTON_RIGHT);
-    addButton("mouse_middle", GLFW_MOUSE_BUTTON_MIDDLE);
-    addButton("mouse_button_4", GLFW_MOUSE_BUTTON_4);
-    addButton("mouse_button_5", GLFW_MOUSE_BUTTON_4);
-    addButton("mouse_button_6", GLFW_MOUSE_BUTTON_4);
-    addButton("mouse_button_7", GLFW_MOUSE_BUTTON_4);
-    addButton("mouse_button_8", GLFW_MOUSE_BUTTON_4);
 }

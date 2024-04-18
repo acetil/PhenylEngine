@@ -38,7 +38,10 @@ add_library(phenyl
         src/phenyl/engine.cpp
         include/phenyl/properties.h
         include/phenyl/font.h
-        include/phenyl/canvas.h)
+        include/phenyl/canvas.h
+        include/phenyl/graphics/renderer.h
+        include/phenyl/graphics/viewport.h
+        include/phenyl/graphics/graphics.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 
