@@ -18,7 +18,6 @@ namespace phenyl::graphics {
         [[nodiscard]] bool shouldClose () const override;
         void poll () override;
         [[nodiscard]] glm::ivec2 getResolution() const override;
-        [[nodiscard]] glm::vec2 getCursorPos() const override; // TODO
         glm::vec2 getContentScale() const override;
 
         void addUpdateHandler (IViewportUpdateHandler* handler) override;

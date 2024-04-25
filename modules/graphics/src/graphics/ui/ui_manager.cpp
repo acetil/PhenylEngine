@@ -16,7 +16,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectAction{input.addAction("ui_select")} {
+UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectAction{input.addAction("ui_select")}, mousePos{input.addAxis2D("ui_mouse")} {
     offsetStack.emplace_back(0,0);
 
     uiRoot = std::make_shared<ui::UIRootNode>();
@@ -25,27 +25,11 @@ UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectActi
     setCurrentTheme(defaultTheme);
 
     input.addActionBinding("ui_select", "mouse.button_left");
+    input.addAxis2DBinding("ui_mouse", "mouse.mouse_pos");
 }
 
 void UIManager::renderUI (Canvas& canvas) {
     uiRoot->render(canvas);
-}
-
-void UIManager::setMousePos (glm::vec2 _mousePos) {
-    mousePos = _mousePos;
-    uiRoot->setMousePos(mousePos);
-}
-
-bool UIManager::setMouseDown (bool _mouseDown) {
-    if (mouseDown != _mouseDown) {
-        mouseDown = _mouseDown;
-        if (mouseDown) {
-            return uiRoot->onMousePress();
-        } else {
-            uiRoot->onMouseRelease();
-        }
-    }
-    return false;
 }
 
 void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos) {
@@ -58,6 +42,8 @@ void UIManager::setCurrentTheme (common::Asset<ui::Theme> theme) {
 }
 
 void UIManager::updateUI () {
+    uiRoot->setMousePos(mousePos.value());
+
     bool newMouse = selectAction.value();
     if (newMouse != mouseDown) {
         if (newMouse) {

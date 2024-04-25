@@ -13,6 +13,7 @@
 #include "graphics/ui/components/ui_component.h"
 #include "graphics/ui/themes/forward.h"
 #include "common/assets/asset_manager.h"
+#include "common/input/axis_action.h"
 #include "common/input/input_action.h"
 #include "graphics/canvas/canvas.h"
 #include "runtime/iresource.h"
@@ -42,7 +43,6 @@ namespace phenyl::graphics {
 
     class UIManager : public runtime::IResource {
     private:
-        glm::vec2 mousePos = {0, 0};
         bool mouseDown = false;
         std::vector<glm::vec2> offsetStack;
         std::shared_ptr<ui::UIRootNode> uiRoot;
@@ -51,13 +51,12 @@ namespace phenyl::graphics {
         common::Asset<ui::Theme> defaultTheme;
         common::Asset<ui::Theme> currentTheme;
         common::InputAction selectAction;
+        common::Axis2DInput mousePos;
     public:
         UIManager (Renderer& renderer, common::GameInput& input);
         ~UIManager() override;
 
         void renderUI (Canvas& canvas);
-        void setMousePos (glm::vec2 _mousePos);
-        bool setMouseDown (bool mouseDown);
 
         void addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos);
         template <typename T>

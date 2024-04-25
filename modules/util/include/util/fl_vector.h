@@ -20,15 +20,17 @@ namespace phenyl::util {
             alignas(T) unsigned char data[sizeof(T)] = {};
             std::size_t next = FREE_LIST_END;
 
-            bool isPresent () {
+            bool isPresent () const {
                 return !next;
             }
 
             T& getUnsafe () {
+                PHENYL_DASSERT(isPresent());
                 return *reinterpret_cast<T*>(&data);
             }
 
             const T& getUnsafe () const {
+                PHENYL_DASSERT(isPresent());
                 return *reinterpret_cast<T*>(&data);
             }
 
@@ -39,7 +41,7 @@ namespace phenyl::util {
                 }*/
                 PHENYL_ASSERT_MSG(!isPresent(), "Attempting to init already present FLVectorItem!");
 
-                new (&getUnsafe()) T(std::forward<Args>(args)...);
+                new (&data) T(std::forward<Args>(args)...);
                 std::size_t oldNext = next;
                 next = PRESENT_INDEX;
 

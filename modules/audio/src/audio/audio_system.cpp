@@ -109,31 +109,35 @@ AudioSource AudioSystem::createSource () {
 }
 
 void AudioSystem::destroySource (std::size_t id) {
-    // TODO find bug where crashes on exit
     PHENYL_DASSERT(id);
     auto virtualIndex = id - 1;
-    for (auto curr = virtualSources[virtualIndex].sourcesStart; curr != EMPTY_INDEX; curr = backendSources[curr].next) {
+    auto curr = virtualSources[virtualIndex].sourcesStart;
+    while (curr != EMPTY_INDEX) {
         auto& source = backendSources[curr];
         PHENYL_DASSERT(source.active);
         backend->stopSource(source.backendId);
 
         if (LRUHead == curr) {
-            LRUHead = source.next;
+            LRUHead = source.nextLRU;
         } else {
-            PHENYL_DASSERT(source.prev != EMPTY_INDEX);
-            backendSources[source.prev].next = source.next;
+            PHENYL_DASSERT(source.prevLRU != EMPTY_INDEX);
+            backendSources[source.prevLRU].nextLRU = source.nextLRU;
         }
 
         if (LRUTail == curr) {
-            LRUTail = source.prev;
+            LRUTail = source.prevLRU;
         } else {
-            PHENYL_DASSERT(source.next != EMPTY_INDEX);
-            backendSources[source.next].prev = source.prev;
+            PHENYL_DASSERT(source.nextLRU != EMPTY_INDEX);
+            backendSources[source.nextLRU].prevLRU = source.prevLRU;
         }
 
+        source.active = false;
+
+        auto next = source.next;
         source.next = sourceFreeList;
         sourceFreeList = curr;
-        source.active = false;
+
+        curr = next;
     }
 
     virtualSources.remove(virtualIndex);

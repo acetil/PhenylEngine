@@ -24,7 +24,6 @@ namespace phenyl::graphics {
         [[nodiscard]] virtual bool shouldClose () const = 0;
         virtual void poll () = 0;
         [[nodiscard]] virtual glm::ivec2 getResolution () const = 0;
-        [[nodiscard]] virtual glm::vec2 getCursorPos () const = 0;
         [[nodiscard]] virtual glm::vec2 getContentScale () const = 0;
 
         virtual void addInputDevices (common::GameInput& manager) = 0;
