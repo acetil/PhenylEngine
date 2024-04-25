@@ -157,6 +157,11 @@ const phenyl::common::ButtonInputSource* GLFWKeyInput::getButtonSource (std::str
     return &it->second;
 }
 
+const phenyl::common::Axis2DInputSource* GLFWKeyInput::getAxis2DSource (std::string_view sourcePath) {
+    PHENYL_LOGE(LOGGER, "Attempted to get Axis2D source, but keyboard input does not support axis sources");
+    return nullptr;
+}
+
 std::string_view GLFWKeyInput::getDeviceId () const noexcept {
     return "keyboard";
 }

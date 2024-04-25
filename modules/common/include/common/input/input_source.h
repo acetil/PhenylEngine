@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/maths_headers.h"
+
 namespace phenyl::common {
     class ButtonInputSource {
     private:
@@ -9,8 +11,21 @@ namespace phenyl::common {
             return currState;
         }
 
-        void setState (bool newState) {
+        void setState (bool newState) noexcept {
             currState = newState;
+        }
+    };
+
+    class Axis2DInputSource {
+    private:
+        glm::vec2 axis{};
+    public:
+        [[nodiscard]] glm::vec2 state () const noexcept {
+            return axis;
+        }
+
+        void setState (glm::vec2 newAxis) noexcept {
+            axis = newAxis;
         }
     };
 }

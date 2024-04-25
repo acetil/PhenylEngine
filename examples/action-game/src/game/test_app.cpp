@@ -41,9 +41,7 @@ void test::TestApp::init () {
     uiManager.addUIComp(button4, {500, 300});
     uiManager.addUIComp(button5, {500, 385});
 
-    //stepAction = input.mapInput("debug_step", "key_f7");
     stepAction = input.addAction("debug_step");
-    //consoleAction = input.mapInput("debug_console", "key_f12");
     consoleAction = input.addAction("debug_console");
 
     input.addActionBinding("debug_step", "keyboard.key_f7");
@@ -53,7 +51,7 @@ void test::TestApp::init () {
 }
 
 void test::TestApp::fixedUpdate (double deltaTime) {
-    playerUpdate(runtime());
+    playerFixedUpdate(runtime());
 
     if (isStepping) {
         pause();
@@ -61,6 +59,8 @@ void test::TestApp::fixedUpdate (double deltaTime) {
 }
 
 void test::TestApp::update (double deltaTime) {
+    playerUpdate(runtime());
+
     if (button4 && !isButtonDown) {
         isButtonDown = true;
         numPresses++;

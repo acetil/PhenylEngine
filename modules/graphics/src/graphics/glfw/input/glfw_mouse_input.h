@@ -10,10 +10,12 @@ namespace phenyl::graphics {
         GLFWwindow* window;
         util::HashMap<std::string, int> buttonIds;
         util::HashMap<int, common::ButtonInputSource> sources;
+        common::Axis2DInputSource mousePosSource;
     public:
         GLFWMouseInput (GLFWwindow* window);
 
         const common::ButtonInputSource* getButtonSource (std::string_view sourcePath) override;
+        const common::Axis2DInputSource* getAxis2DSource (std::string_view sourcePath) override;
         std::string_view getDeviceId () const noexcept override;
         void poll () override;
     };

@@ -24,9 +24,11 @@ add_library(common include/common include/common/scope.h include/common/maths/2d
         include/common/input/input_action.h
         src/common/input/input_action.cpp
         include/common/input/game_input.h
-        src/common/input/input_manager.cpp
+        src/common/input/game_input.cpp
         include/common/plugins/input_plugin.h
         src/common/plugins/input_plugin.cpp
+        include/common/input/axis_action.h
+        src/common/input/axis_input.cpp
 )
 
 find_package(nlohmann_json REQUIRED)

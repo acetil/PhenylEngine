@@ -14,6 +14,7 @@ namespace phenyl::graphics {
         GLFWKeyInput (GLFWwindow* window);
 
         const common::ButtonInputSource* getButtonSource (std::string_view sourcePath) override;
+        const common::Axis2DInputSource* getAxis2DSource (std::string_view sourcePath) override;
         std::string_view getDeviceId () const noexcept override;
         void poll () override;
     };
