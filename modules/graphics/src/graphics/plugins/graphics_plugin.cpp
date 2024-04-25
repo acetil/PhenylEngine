@@ -15,8 +15,10 @@ std::string_view GraphicsPlugin::getName () const noexcept {
 
 void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
     auto& renderer = runtime.resource<Renderer>();
+    runtime.addResource(&renderer.getViewport());
 
     runtime.addResource<Camera>(renderer.getViewport().getResolution());
+
     auto& camera = runtime.resource<Camera>();
     renderer.getViewport().addUpdateHandler(&camera);
 
@@ -28,9 +30,9 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
 }
 
 void GraphicsPlugin::render (runtime::PhenylRuntime& runtime) {
-    auto& renderer = runtime.resource<Renderer>();
+    auto& viewport = runtime.resource<Viewport>();
     const auto& camera = runtime.resource<const Camera>();
 
     PHENYL_DASSERT(debugLayer);
-    debugLayer->bufferData(camera, renderer.getViewport().getResolution());
+    debugLayer->bufferData(camera, viewport.getResolution());
 }

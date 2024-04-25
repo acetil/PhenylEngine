@@ -12,9 +12,8 @@
 #include "graphics/ui/nodes/ui_node.h"
 #include "graphics/ui/components/ui_component.h"
 #include "graphics/ui/themes/forward.h"
-#include "common/input/forward.h"
-#include "common/input/remappable_proxy_input.h"
 #include "common/assets/asset_manager.h"
+#include "common/input/input_action.h"
 #include "graphics/canvas/canvas.h"
 #include "runtime/iresource.h"
 
@@ -51,14 +50,10 @@ namespace phenyl::graphics {
         UIThemeManager themeManager;
         common::Asset<ui::Theme> defaultTheme;
         common::Asset<ui::Theme> currentTheme;
-
-        //std::vector<std::shared_ptr<common::ProxySource>> inputSources;
-        common::RemappableProxyInput uiInput;
         common::InputAction selectAction;
-
     public:
-        UIManager (Renderer& renderer);
-        ~UIManager();
+        UIManager (Renderer& renderer, common::GameInput& input);
+        ~UIManager() override;
 
         void renderUI (Canvas& canvas);
         void setMousePos (glm::vec2 _mousePos);
@@ -73,9 +68,6 @@ namespace phenyl::graphics {
         //void setCurrentTheme (const std::string& themeName);
         //void reloadCurrentTheme ();
         void setCurrentTheme (common::Asset<ui::Theme> theme);
-
-        void addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources);
-        void setupInputActions ();
         void updateUI ();
 
         std::string_view getName() const noexcept override;

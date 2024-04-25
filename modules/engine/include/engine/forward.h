@@ -5,7 +5,5 @@ namespace phenyl::engine {
 }
 
 namespace phenyl::game {
-    class GameCamera;
-    class GameInput;
     class Level;
 }

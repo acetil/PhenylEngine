@@ -1,98 +1,72 @@
 #include <cmath>
 #include <iostream>
 
-#include <phenyl/input.h>
-#include <phenyl/engine.h>
 #include <phenyl/component.h>
-#include <phenyl/components/2D/global_transform.h>
-#include <phenyl/components/physics/2D/rigid_body.h>
+#include <phenyl/engine.h>
+#include <phenyl/input.h>
 #include <phenyl/components/audio_player.h>
+#include <phenyl/components/2D/global_transform.h>
+#include <phenyl/components/2D/sprite.h>
+#include <phenyl/components/physics/2D/rigid_body.h>
 
 #include "player.h"
 #include "serializers.h"
 #include "game/test_app.h"
-#include "phenyl/components/2D/sprite.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
 #define SHOOT_VEL 7.5f
 
-#define FORCE_COMPONENT 6.5
+#define FORCE_COMPONENT 6.5f
 
 using namespace phenyl;
 
-static phenyl::InputAction KeyLeft;
-static phenyl::InputAction KeyRight;
-static phenyl::InputAction KeyUp;
-static phenyl::InputAction KeyDown;
+static phenyl::Axis2DInput PlayerMove;
 
+static phenyl::Axis2DInput CursorPos;
 static phenyl::InputAction KeyShoot;
 
 static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
-static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
-                          phenyl::Camera& camera);
+static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, const phenyl::Camera& camera);
 
 void addPlayerComponents (test::TestApp* app) {
     app->addComponent<test::Player>();
 }
 
 void inputSetup (phenyl::GameInput& input) {
-    KeyLeft = input.mapInput("move_left", "key_a");
-    KeyRight = input.mapInput("move_right", "key_d");
-    KeyUp = input.mapInput("move_up", "key_w");
-    KeyDown = input.mapInput("move_down", "key_s");
+    PlayerMove = input.addAxis2D("player_move", true);
+    CursorPos = input.addAxis2D("cursor_pos");
+    KeyShoot = input.addAction("player_shoot");
 
-    KeyShoot = input.mapInput("player_shoot", "mouse_left");
+    GainUp = input.addAction("gain_up");
+    GainDown = input.addAction("gain_down");
 
-    GainUp = input.mapInput("gain_up", "key_up");
-    GainDown = input.mapInput("gain_down", "key_down");
+    input.addButtonAxis2DBinding("player_move", "keyboard.key_a", glm::vec2{-1, 0});
+    input.addButtonAxis2DBinding("player_move", "keyboard.key_d", glm::vec2{1, 0});
+    input.addButtonAxis2DBinding("player_move", "keyboard.key_w", glm::vec2{0, 1});
+    input.addButtonAxis2DBinding("player_move", "keyboard.key_s", glm::vec2{0, -1});
+
+    input.addAxis2DBinding("cursor_pos", "mouse.mouse_pos");
+    input.addActionBinding("player_shoot", "mouse.button_left");
+
+    input.addActionBinding("gain_up", "keyboard.key_up");
+    input.addActionBinding("gain_down", "keyboard.key_down");
 }
 
-void playerUpdate (phenyl::PhenylRuntime& runtime) {
-    auto& input = runtime.resource<phenyl::GameInput>();
-    auto& camera = runtime.resource<phenyl::Camera>();
+void playerFixedUpdate (phenyl::PhenylRuntime& runtime) {
+    const auto& camera = runtime.resource<phenyl::Camera>();
 
-    runtime.manager().query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera, &input] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
+    runtime.manager().query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
             phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
-        updatePlayer(player, transform, body, audioPlayer, input, camera);
+        updatePlayer(player, transform, body, audioPlayer, camera);
     });
 }
 
-
-static glm::vec2 getMovementForce (phenyl::GameInput& input) {
-    glm::vec2 forceVec{0.0f, 0.0f};
-
-    if (input.isDown(KeyLeft)) {
-        forceVec += glm::vec2{-FORCE_COMPONENT, 0.0f};
-    }
-
-    if (input.isDown(KeyRight)) {
-        forceVec += glm::vec2{FORCE_COMPONENT, 0.0f};
-    }
-
-    if (input.isDown(KeyUp)) {
-        forceVec += glm::vec2{0, FORCE_COMPONENT};
-    }
-
-    if (input.isDown(KeyDown)) {
-        forceVec += glm::vec2{0, -FORCE_COMPONENT};
-    }
-
-    return forceVec;
-}
-
-static glm::vec2 getCursorDisp (phenyl::GameInput& input, const phenyl::Camera& camera, glm::vec2 pos) {
-    auto worldPos = camera.getWorldPos2D(input.cursorPos());
-
-    return worldPos - pos;
-}
-
-static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, phenyl::GameInput& input,
-                          phenyl::Camera& camera) {
-    auto forceVec = getMovementForce(input);
-    auto disp = camera.getWorldPos2D(input.cursorPos()) - transform.transform2D.position();
-    bool doShoot = input.isDown(KeyShoot);
+static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, const phenyl::Camera& camera) {
+    auto forceVec = PlayerMove.value() * FORCE_COMPONENT;
+    auto disp = camera.getWorldPos2D(CursorPos.value()) - transform.transform2D.position();
+    bool doShoot = KeyShoot.value();
 
     body.applyForce(forceVec * body.getMass());
     auto rot = std::atan2(disp.y, disp.x);
@@ -120,18 +94,26 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
     } else if (!doShoot && player.hasShot) {
         player.hasShot = false;
     }
+}
 
-    if (input.isDown(GainUp) && !player.gainPressed) {
-        audioPlayer.setGain(audioPlayer.gain() + 0.1f);
-        player.gainPressed = true;
-        std::cout << "Player gain: " << audioPlayer.gain() << "\n";
-    } else if (input.isDown(GainDown) && !player.gainPressed) {
-        audioPlayer.setGain(audioPlayer.gain() - 0.1f);
-        player.gainPressed = true;
-        std::cout << "Player gain: " << audioPlayer.gain() << "\n";
-    } else if (player.gainPressed && !input.isDown(GainUp) && !input.isDown(GainDown)) {
-        player.gainPressed = false;
-    }
+void playerUpdate (phenyl::PhenylRuntime& runtime) {
+    auto& camera = runtime.resource<phenyl::Camera>();
 
-    camera.setPos2D(transform.transform2D.position());
+    runtime.manager().query<const test::Player, const phenyl::GlobalTransform2D>().each([&camera] (auto entity, const test::Player&, const phenyl::GlobalTransform2D& transform) {
+        camera.setPos2D(transform.transform2D.position());
+    });
+
+    runtime.manager().query<test::Player, phenyl::AudioPlayer>().each([] (auto entity, test::Player& player, phenyl::AudioPlayer& audioPlayer) {
+        if (GainUp.value() && !player.gainPressed) {
+            audioPlayer.setGain(audioPlayer.gain() + 0.1f);
+            player.gainPressed = true;
+            std::cout << "Player gain: " << audioPlayer.gain() << "\n";
+        } else if (GainDown.value() && !player.gainPressed) {
+            audioPlayer.setGain(audioPlayer.gain() - 0.1f);
+            player.gainPressed = true;
+            std::cout << "Player gain: " << audioPlayer.gain() << "\n";
+        } else if (player.gainPressed && !GainUp.value() && !GainDown.value()) {
+            player.gainPressed = false;
+        }
+    });
 }

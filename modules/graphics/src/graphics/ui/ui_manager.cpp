@@ -1,6 +1,8 @@
 #include "common/assets/assets.h"
 
 #include "graphics/ui/ui_manager.h"
+
+#include "common/input/game_input.h"
 #include "graphics/renderer.h"
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/themes/theme.h"
@@ -14,7 +16,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (Renderer& renderer) {
+UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectAction{input.addAction("ui_select")} {
     offsetStack.emplace_back(0,0);
 
     uiRoot = std::make_shared<ui::UIRootNode>();
@@ -22,8 +24,7 @@ UIManager::UIManager (Renderer& renderer) {
     defaultTheme = common::Assets::LoadVirtual("phenyl/themes/default", ui::Theme{util::parseJson(EMBED_DEFAULT_THEME_JSON)});
     setCurrentTheme(defaultTheme);
 
-    addProxyInputSources(renderer.getViewport().getProxySources());
-    setupInputActions();
+    input.addActionBinding("ui_select", "mouse.button_left");
 }
 
 void UIManager::renderUI (Canvas& canvas) {
@@ -56,22 +57,13 @@ void UIManager::setCurrentTheme (common::Asset<ui::Theme> theme) {
     uiRoot->applyTheme(currentTheme.get());
 }
 
-void UIManager::addProxyInputSources (const std::vector<std::shared_ptr<common::ProxySource>>& proxySources) {
-    for (const auto& i : proxySources) {
-        uiInput.addInputSource(i);
-    }
-}
-
-void UIManager::setupInputActions () {
-    selectAction = uiInput.addInputMapping("ui_select", "mouse_left");
-}
-
 void UIManager::updateUI () {
-    bool newMouse = uiInput.isActive(selectAction);
+    bool newMouse = selectAction.value();
     if (newMouse != mouseDown) {
         if (newMouse) {
             if (uiRoot->onMousePress()) {
-                uiInput.consumeProxyInput(selectAction);
+                //uiInput.consumeProxyInput(selectAction);
+                // TODO
             }
         } else {
             uiRoot->onMouseRelease();

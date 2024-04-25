@@ -1,5 +1,5 @@
 #add_library(common)
-add_library(common include/common include/common/input/input_source.h include/common/input/remappable_input.h src/common/input/remappable_input.cpp include/common/scope.h include/common/input/proxy_source.h src/common/input/proxy_source.cpp include/common/input/forward.h include/common/input/remappable_proxy_input.h src/common/input/remappable_proxy_input.cpp include/common/maths/2d/transform.h src/common/maths/2d/transform.cpp include/common/components/2d/global_transform.h include/common/debug.h src/common/debug.cpp
+add_library(common include/common include/common/scope.h include/common/maths/2d/transform.h src/common/maths/2d/transform.cpp include/common/components/2d/global_transform.h include/common/debug.h src/common/debug.cpp
         include/common/serializer.h
         include/common/maths/glm_serializer.h
         include/common/maths/2d/transform_serializer.h
@@ -20,6 +20,15 @@ add_library(common include/common include/common/input/input_source.h include/co
         src/common/plugins/timed_lifetime_plugin.cpp
         include/common/plugins/core_plugin_2d.h
         src/common/plugins/core_plugin_2d.cpp
+        include/common/input/input_device.h
+        include/common/input/input_action.h
+        src/common/input/input_action.cpp
+        include/common/input/game_input.h
+        src/common/input/game_input.cpp
+        include/common/plugins/input_plugin.h
+        src/common/plugins/input_plugin.cpp
+        include/common/input/axis_action.h
+        src/common/input/axis_input.cpp
 )
 
 find_package(nlohmann_json REQUIRED)

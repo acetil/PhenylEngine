@@ -1,4 +1,4 @@
-add_library(engine include src include/engine/input/game_input.h src/engine/input/game_input.cpp
+add_library(engine include src
         include/engine/level/level.h
         src/engine/level/level.cpp
         include/engine/level/level_manager.h
