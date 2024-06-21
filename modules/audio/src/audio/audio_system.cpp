@@ -299,3 +299,7 @@ void AudioSystem::update (float deltaTime) {
         source.active = false;
     }
 }
+
+std::string_view AudioSystem::getName () const noexcept {
+    return "AudioSystem";
+}

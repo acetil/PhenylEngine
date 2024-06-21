@@ -10,7 +10,7 @@ namespace phenyl::graphics {
     class GraphicsPlugin : public runtime::IPlugin {
     private:
         std::unique_ptr<TextureManager> textureManager;
-        DebugLayer* debugLayer = nullptr;
+        //DebugLayer* debugLayer = nullptr;
 
     public:
         GraphicsPlugin ();

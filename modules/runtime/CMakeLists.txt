@@ -2,7 +2,13 @@ add_library(runtime
         include/runtime/runtime.h
         include/runtime/iresource.h
         src/runtime.cpp
-        include/runtime/init_plugin.h)
+        include/runtime/init_plugin.h
+        include/runtime/system.h
+        include/runtime/forward.h
+        include/runtime/resource_manager.h
+        include/runtime/stages.h
+        include/runtime/delta_time.h
+        include/runtime/resources.h)
 
 set_property(TARGET runtime PROPERTY CXX_STANDARD 20)
 

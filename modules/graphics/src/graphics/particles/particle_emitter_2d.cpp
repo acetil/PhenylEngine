@@ -4,10 +4,11 @@
 #include "graphics/components/2d/particle_emitter.h"
 #include "graphics/particles/particle_system_2d.h"
 #include "graphics/components/2d/particle_emitter_serialization.h"
+#include "runtime/runtime.h"
 
 using namespace phenyl::graphics;
 
-inline static void update (const phenyl::common::GlobalTransform2D& transform, ParticleEmitter2D& emitter, float deltaTime) {
+/*inline static void update (const phenyl::common::GlobalTransform2D& transform, ParticleEmitter2D& emitter, float deltaTime) {
     if (!emitter.enabled) {
         return;
     }
@@ -31,13 +32,43 @@ inline static void update (const phenyl::common::GlobalTransform2D& transform, P
         emitter.particlesEmitted = 0;
         update(transform, emitter, deltaTime - timeRemaining);
     }
+}*/
+
+void ParticleEmitter2D::update (const runtime::Resources<const runtime::DeltaTime>& resources, const common::GlobalTransform2D& transform) {
+    updateInternal(resources.get<const runtime::DeltaTime>()(), transform);
 }
 
-void ParticleEmitter2D::Update (float deltaTime, phenyl::component::ComponentManager& componentManager) {
-    componentManager.query<const phenyl::common::GlobalTransform2D, ParticleEmitter2D>().each([deltaTime] (auto entity, const phenyl::common::GlobalTransform2D& transform, ParticleEmitter2D& emitter) {
-        update(transform, emitter, deltaTime);
-    });
+
+void ParticleEmitter2D::updateInternal (double deltaTime, const common::GlobalTransform2D& transform) {
+    if (!enabled) {
+        return;
+    }
+
+    auto timeRemaining = duration - timeInLoop;
+    timeInLoop += std::min(timeRemaining, static_cast<float>(deltaTime));
+
+    while (particlesEmitted < particlesPerLoop && (float)particlesEmitted * (duration / (float)particlesPerLoop) * (1 - explosiveness) <= timeInLoop) {
+        system->emit(transform.transform2D.position(), transform.transform2D.rotMatrix() * direction);
+        particlesEmitted++;
+    }
+
+    if (std::abs(duration - timeInLoop) < std::numeric_limits<float>::epsilon()) {
+        if (oneShot) {
+            timeInLoop = 0.0f;
+            enabled = false;
+            return;
+        }
+
+        timeInLoop = 0.0f;
+        particlesEmitted = 0;
+        updateInternal(deltaTime - timeRemaining, transform);
+    }
 }
+
+void ParticleEmitter2D::AddSystems (runtime::PhenylRuntime& runtime) {
+    runtime.addSystem<runtime::Update>(&ParticleEmitter2D::update);
+}
+
 
 void ParticleEmitter2D::start () {
     particlesEmitted = 0;

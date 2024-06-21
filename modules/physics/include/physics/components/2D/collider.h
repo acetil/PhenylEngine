@@ -37,8 +37,6 @@ namespace phenyl::physics {
             appliedAngularImpulse += angularImpulse;
         }
 
-        void syncUpdates (const RigidBody2D& body, glm::vec2 pos);
-        void updateBody (RigidBody2D& body) const;
 
         friend class Physics2D;
         friend class Constraint2D;
@@ -54,8 +52,6 @@ namespace phenyl::physics {
         [[nodiscard]] glm::vec2 getDisplacement (const Collider2D& other) const {
             return other.currentPos - currentPos;
         }
-
-        [[nodiscard]] bool shouldCollide (const Collider2D& other) const;
     public:
         glm::vec2 currentPos = {0, 0};
         std::uint64_t layers = 0;
@@ -63,5 +59,9 @@ namespace phenyl::physics {
         float elasticity{0.0f};
 
         Collider2D () = default;
+
+        void syncUpdates (const RigidBody2D& body, glm::vec2 pos);
+        void updateBody (RigidBody2D& body) const;
+        [[nodiscard]] bool shouldCollide (const Collider2D& other) const;
     };
 }
