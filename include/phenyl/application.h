@@ -26,7 +26,6 @@ namespace phenyl {
             friend class ::phenyl::Application;
         protected:
             component::ComponentManager& componentManager ();
-            runtime::PhenylRuntime& runtime ();
 
             void setTargetFPS (double fps);
             void setFixedTimeScale (double newTimeScale);
@@ -51,6 +50,8 @@ namespace phenyl {
             void addUnserializedComponent () {
                 runtime().template addUnserializedComponent<T>();
             }
+
+            runtime::PhenylRuntime& runtime ();
 
             const ApplicationProperties& getProperties () const {
                 return properties;

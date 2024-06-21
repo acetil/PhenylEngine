@@ -35,10 +35,10 @@ BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Ap
 void BreakoutApp::init () {
     //componentManager().addComponent<Paddle>();
     //serializer().addSerializer<Paddle>();
-    breakout::initPaddle(this, runtime());
-    breakout::initBall(this, componentManager());
-    breakout::initTile(this, componentManager());
-    breakout::initWall(this, componentManager());
+    breakout::InitPaddle(this, runtime());
+    breakout::InitBall(this, componentManager());
+    breakout::InitTile(this, componentManager());
+    breakout::InitWall(this, componentManager());
 
     tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
 
@@ -73,8 +73,8 @@ void BreakoutApp::update (double deltaTime) {
 }
 
 void BreakoutApp::fixedUpdate (double deltaTime) {
-    updatePaddle((float)deltaTime, runtime());
-    updateBall(componentManager());
+    //updatePaddle((float)deltaTime, runtime());
+    //updateBall(componentManager());
 }
 
 void BreakoutApp::addPoints (int points) {

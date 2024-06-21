@@ -10,7 +10,7 @@
 
 using namespace phenyl;
 
-void test::addBulletSignals (TestApp* app, phenyl::ComponentManager& manager) {
+void test::InitBullet (TestApp* app, phenyl::ComponentManager& manager) {
     app->addComponent<Bullet>();
 
     manager.handleSignal<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D>([] (const physics::OnCollision& signal, phenyl::Entity entity, Bullet& bullet, const phenyl::GlobalTransform2D& transform) {

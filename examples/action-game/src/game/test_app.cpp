@@ -20,11 +20,11 @@ test::TestApp::TestApp () :
         .withVsync(false)) {}
 
 void test::TestApp::init () {
-    addBulletSignals(this, componentManager());
-    addPlayerComponents(this);
+    InitBullet(this, componentManager());
+    InitPlayer(this);
 
     auto& input = runtime().resource<phenyl::GameInput>();
-    inputSetup(input);
+    InputSetup(input);
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
 
@@ -51,16 +51,12 @@ void test::TestApp::init () {
 }
 
 void test::TestApp::fixedUpdate (double deltaTime) {
-    playerFixedUpdate(runtime());
-
     if (isStepping) {
         pause();
     }
 }
 
 void test::TestApp::update (double deltaTime) {
-    playerUpdate(runtime());
-
     if (button4 && !isButtonDown) {
         isButtonDown = true;
         numPresses++;

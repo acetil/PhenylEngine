@@ -19,6 +19,5 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(appliedDrag, "applied_drag");
     })
 
-    void initBall (BreakoutApp* app, phenyl::ComponentManager& manager);
-    void updateBall (phenyl::ComponentManager& manager);
+    void InitBall (BreakoutApp* app, phenyl::ComponentManager& manager);
 }
