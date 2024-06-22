@@ -26,8 +26,4 @@ void AudioPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addSystem<phenyl::runtime::Update>(AudioUpdateSystem);
 }
 
-void AudioPlugin::update (phenyl::runtime::PhenylRuntime& runtime, double deltaTime) {
-    //audioSystem->update((float)deltaTime);
-}
-
 

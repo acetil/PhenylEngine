@@ -16,8 +16,5 @@ namespace phenyl::graphics {
 
         [[nodiscard]] std::string_view getName () const noexcept override;
         void init (runtime::PhenylRuntime& runtime) override;
-
-        void update (runtime::PhenylRuntime& runtime, double deltaTime) override;
-        void render (runtime::PhenylRuntime& runtime) override;
     };
 }

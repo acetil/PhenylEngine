@@ -5,7 +5,7 @@
 namespace phenyl::graphics {
     class EntityRenderLayer;
 
-    class Sprite2DPlugin : public runtime::IPlugin {
+    class Sprite2DPlugin : public runtime::IInitPlugin {
     private:
         EntityRenderLayer* entityLayer = nullptr;
     public:
@@ -13,7 +13,5 @@ namespace phenyl::graphics {
 
         std::string_view getName () const noexcept override;
         void init (runtime::PhenylRuntime& runtime) override;
-
-        void render (runtime::PhenylRuntime& runtime) override;
     };
 }

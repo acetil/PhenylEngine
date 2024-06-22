@@ -23,7 +23,3 @@ void InputPlugin::init (runtime::PhenylRuntime& runtime) {
 
     runtime.addSystem<phenyl::runtime::FrameBegin>(InputUpdateSystem);
 }
-
-void InputPlugin::frameBegin (runtime::PhenylRuntime& runtime) {
-    //runtime.resource<GameInput>().update();
-}

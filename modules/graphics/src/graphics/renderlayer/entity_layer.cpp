@@ -193,6 +193,6 @@ void EntityRenderLayer::bufferData (const phenyl::component::ComponentManager& m
 void EntityRenderLayer::addSystems (runtime::PhenylRuntime& runtime) {
     runtime.addResource<EntityRenderData2D>(*this);
 
-    runtime.addSystem<phenyl::runtime::Render>(PushEntitySystem);
-    runtime.addSystem<phenyl::runtime::Render>(BufferEntitiesSystem);
+    runtime.addSystem<phenyl::runtime::Render>(PushEntitySystem)
+        .runBefore(runtime.addSystem<phenyl::runtime::Render>(BufferEntitiesSystem));
 }

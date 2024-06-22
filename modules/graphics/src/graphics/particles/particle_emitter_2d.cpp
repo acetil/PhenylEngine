@@ -65,8 +65,8 @@ void ParticleEmitter2D::updateInternal (double deltaTime, const common::GlobalTr
     }
 }
 
-void ParticleEmitter2D::AddSystems (runtime::PhenylRuntime& runtime) {
-    runtime.addSystem<runtime::Update>(&ParticleEmitter2D::update);
+void ParticleEmitter2D::AddSystems (runtime::PhenylRuntime& runtime, runtime::System<runtime::Update>& particleUpdateSystem) {
+    runtime.addSystem<runtime::Update>(&ParticleEmitter2D::update).runBefore(particleUpdateSystem);
 }
 
 

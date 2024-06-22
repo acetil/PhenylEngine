@@ -46,11 +46,3 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
 
     runtime.addSystem<runtime::Render>(DebugRenderSystem);
 }
-
-void GraphicsPlugin::render (runtime::PhenylRuntime& runtime) {
-   // auto& viewport = runtime.resource<Viewport>();
-    //const auto& camera = runtime.resource<const Camera>();
-
-    //PHENYL_DASSERT(debugLayer);
-    //debugLayer->bufferData(camera, viewport.getResolution());
-}

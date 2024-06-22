@@ -3,6 +3,6 @@
 namespace phenyl::runtime {
     class IResource;
     class IPlugin;
-    class AbstractSystem;
+    class IRunnableSystem;
     class PhenylRuntime;
 }

@@ -30,7 +30,7 @@ namespace phenyl::graphics {
         bool oneShot = false;
         bool enabled = true;
 
-        static void AddSystems (runtime::PhenylRuntime& runtime);
+        static void AddSystems (runtime::PhenylRuntime& runtime, runtime::System<runtime::Update>& particleUpdateSystem);
 
         void update (const runtime::Resources<const runtime::DeltaTime>& resources, const common::GlobalTransform2D& transform);
         void start ();

@@ -25,16 +25,18 @@ namespace phenyl::runtime {
         util::Set<std::size_t> initPlugins;
         util::Map<std::size_t, std::unique_ptr<IPlugin>> plugins;
 
-        std::vector<std::unique_ptr<AbstractSystem>> postInitSystems;
-        std::vector<std::unique_ptr<AbstractSystem>> frameBeginSystems;
-        std::vector<std::unique_ptr<AbstractSystem>> updateSystems;
-        std::vector<std::unique_ptr<AbstractSystem>> renderSystems;
+        std::vector<std::unique_ptr<IRunnableSystem>> postInitSystems;
+        std::vector<std::unique_ptr<IRunnableSystem>> frameBeginSystems;
+        std::vector<std::unique_ptr<IRunnableSystem>> updateSystems;
+        std::vector<std::unique_ptr<IRunnableSystem>> renderSystems;
 
-        std::vector<std::unique_ptr<AbstractSystem>> fixedUpdateSystems;
-        std::vector<std::unique_ptr<AbstractSystem>> physicsSystems;
+        std::vector<std::unique_ptr<IRunnableSystem>> fixedUpdateSystems;
+        std::vector<std::unique_ptr<IRunnableSystem>> physicsSystems;
 
         void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
+
+        void executeSystems (std::vector<std::unique_ptr<IRunnableSystem>>& systems);
     public:
         explicit PhenylRuntime (component::ComponentManager&& compManager);
         virtual ~PhenylRuntime();
@@ -127,9 +129,9 @@ namespace phenyl::runtime {
         }
 
         template <typename Stage, typename ...Args>
-        void addSystem (void (*systemFunc)(Args...)) {
-            std::unique_ptr<AbstractSystem> system = MakeSystem(systemFunc, manager(), resourceManager);
-            //system->init(manager(), resourceManager);
+        System<Stage>& addSystem (void (*systemFunc)(Args...)) {
+            std::unique_ptr<System<Stage>> system = MakeSystem<Stage>(systemFunc, manager(), resourceManager);
+            auto* ptr = system.get();
 
             if constexpr (std::is_same_v<Stage, PostInit>) {
                 postInitSystems.emplace_back(std::move(system));
@@ -146,12 +148,14 @@ namespace phenyl::runtime {
             } else {
                 static_assert(false);
             }
+
+            return *ptr;
         }
 
         template <typename Stage, typename T, typename ...Args>
-        void addSystem (void (T::*systemFunc)(Args...)) {
-            std::unique_ptr<AbstractSystem> system = MakeSystem(systemFunc, manager(), resourceManager);
-            //system->init(manager(), resourceManager);
+        System<Stage>& addSystem (void (T::*systemFunc)(Args...)) {
+            std::unique_ptr<System<Stage>> system = MakeSystem<Stage>(systemFunc, manager(), resourceManager);
+            auto* ptr = system.get();
 
             if constexpr (std::is_same_v<Stage, PostInit>) {
                 postInitSystems.emplace_back(std::move(system));
@@ -168,6 +172,8 @@ namespace phenyl::runtime {
             } else {
                 static_assert(false);
             }
+
+            return *ptr;
         }
 
         void pluginPostInit ();

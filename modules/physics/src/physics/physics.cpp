@@ -19,10 +19,6 @@ void physics::Physics2DPlugin::init (runtime::PhenylRuntime& runtime) {
     physics->addComponents(runtime);
 }
 
-void physics::Physics2DPlugin::physicsUpdate (runtime::PhenylRuntime& runtime, double deltaTime) {
-    physics->updatePhysics(runtime.manager(), (float)deltaTime);
-}
-
 void physics::Physics2DPlugin::render (runtime::PhenylRuntime& runtime) {
     auto* config = runtime.resourceMaybe<common::DebugRenderConfig>();
     if (config && config->doPhysicsRender) {

@@ -1,4 +1,5 @@
 #include "logging/logging.h"
+#include "util/random.h"
 
 #include "runtime/plugin.h"
 #include "runtime/resource_manager.h"
@@ -37,6 +38,18 @@ void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlug
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", pluginRef.getName());
 }
 
+void PhenylRuntime::executeSystems (std::vector<std::unique_ptr<IRunnableSystem>>& systems) {
+    // TODO: cache topo ordering
+    std::unordered_set<IRunnableSystem*> executedSystems;
+    std::unordered_set<IRunnableSystem*> executingSystems;
+    PHENYL_DEBUG({
+        util::Random::Shuffle(systems.begin(), systems.end());
+    })
+    for (const auto& i : systems) {
+        i->execute(manager(), resourceManager, executedSystems, executingSystems);
+    }
+}
+
 void PhenylRuntime::registerPlugin (std::size_t typeIndex, IInitPlugin& plugin) {
     PHENYL_DASSERT(!initPlugins.contains(typeIndex));
     PHENYL_TRACE(LOGGER, "Starting registration of init plugin \"{}\"", plugin.getName());
@@ -56,9 +69,7 @@ void PhenylRuntime::pluginPostInit () {
     }
 
     manager().defer();
-    for (const auto& system : postInitSystems) {
-        system->run(manager(), resourceManager);
-    }
+    executeSystems(postInitSystems);
     manager().deferEnd();
 
     PHENYL_TRACE(LOGGER, "Finished running plugin postInit()");
@@ -72,9 +83,7 @@ void PhenylRuntime::pluginFrameBegin () {
     }
 
     manager().defer();
-    for (const auto& system : frameBeginSystems) {
-        system->run(manager(), resourceManager);
-    }
+    executeSystems(frameBeginSystems);
     manager().deferEnd();
 
     PHENYL_TRACE(LOGGER, "Finished running plugin frameBegin()");
@@ -90,9 +99,7 @@ void PhenylRuntime::pluginUpdate (double deltaTime) {
     }
 
     manager().defer();
-    for (const auto& system : updateSystems) {
-        system->run(manager(), resourceManager);
-    }
+    executeSystems(updateSystems);
     manager().deferEnd();
 
     PHENYL_TRACE(LOGGER, "Finished running plugin update()");
@@ -108,9 +115,7 @@ void PhenylRuntime::pluginRender (double deltaTime) {
     }
 
     manager().defer();
-    for (const auto& system : renderSystems) {
-        system->run(manager(), resourceManager);
-    }
+    executeSystems(renderSystems);
     manager().deferEnd();
 
     PHENYL_TRACE(LOGGER, "Finished running plugin render()");
@@ -126,9 +131,7 @@ void PhenylRuntime::pluginFixedUpdate (double deltaTime) {
     }
 
     manager().defer();
-    for (const auto& system : fixedUpdateSystems) {
-        system->run(manager(), resourceManager);
-    }
+    executeSystems(fixedUpdateSystems);
     manager().deferEnd();
 
     PHENYL_TRACE(LOGGER, "Finished running plugin fixedUpdate()");
@@ -144,9 +147,7 @@ void PhenylRuntime::pluginPhysicsUpdate (double deltaTime) {
     }
 
     manager().defer();
-    for (const auto& system : physicsSystems) {
-        system->run(manager(), resourceManager);
-    }
+    executeSystems(physicsSystems);
     manager().deferEnd();
 
     PHENYL_TRACE(LOGGER, "Finished running plugin physicsUpdate()");
@@ -169,4 +170,21 @@ void PhenylRuntime::shutdown () {
 
     PHENYL_TRACE(LOGGER, "Destructing plugins");
     plugins.clear();
+}
+
+void IRunnableSystem::execute (component::ComponentManager& manager, ResourceManager& resManager, std::unordered_set<IRunnableSystem*>& executedSystems, std::unordered_set<IRunnableSystem*>& executingSystems) {
+    PHENYL_ASSERT_MSG(!executingSystems.contains(this), "Detected cycle in system run order!");
+
+    if (executedSystems.contains(this)) {
+        return;
+    }
+
+    executingSystems.emplace(this);
+    for (auto* i : parentSystems) {
+        i->execute(manager, resManager, executedSystems, executingSystems);
+    }
+
+    run(manager, resManager);
+    executedSystems.emplace(this);
+    executingSystems.erase(this);
 }
