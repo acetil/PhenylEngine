@@ -19,7 +19,7 @@ void breakout::InitBall (BreakoutApp* app, phenyl::ComponentManager& manager) {
             app->subtractLife();
         }
     });
-    app->runtime().addSystem<phenyl::FixedUpdate>(BallUpdateSystem);
+    app->runtime().addSystem<phenyl::FixedUpdate>("Ball::Update", BallUpdateSystem);
 }
 
 void BallUpdateSystem (const Ball& ball, phenyl::RigidBody2D& body) {

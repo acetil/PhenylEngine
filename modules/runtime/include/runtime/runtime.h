@@ -25,18 +25,94 @@ namespace phenyl::runtime {
         util::Set<std::size_t> initPlugins;
         util::Map<std::size_t, std::unique_ptr<IPlugin>> plugins;
 
-        std::vector<std::unique_ptr<IRunnableSystem>> postInitSystems;
-        std::vector<std::unique_ptr<IRunnableSystem>> frameBeginSystems;
-        std::vector<std::unique_ptr<IRunnableSystem>> updateSystems;
-        std::vector<std::unique_ptr<IRunnableSystem>> renderSystems;
+        std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> systemMap;
+        std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> stageMap;
 
-        std::vector<std::unique_ptr<IRunnableSystem>> fixedUpdateSystems;
-        std::vector<std::unique_ptr<IRunnableSystem>> physicsSystems;
+       /* Stage<PostInit> postInitSystems;
+        Stage<FrameBegin> frameBeginSystems;
+        Stage<Update> updateSystems;
+        Stage<Render> renderSystems;
+
+        Stage<FixedUpdate> fixedUpdateSystems;
+        Stage<PhysicsUpdate> physicsSystems;*/
 
         void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
 
-        void executeSystems (std::vector<std::unique_ptr<IRunnableSystem>>& systems);
+        //void executeSystems (std::vector<IRunnableSystem*>& systems);
+
+        template <typename S, typename ...Args>
+        System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
+            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, manager(), resourceManager);
+            auto* ptr = system.get();
+            systemMap[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S, typename T, typename ...Args>
+        System<S>* makeSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
+            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, manager(), resourceManager);
+            auto* ptr = system.get();
+            systemMap[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S, typename T>
+        System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)(PhenylRuntime&)) {
+            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(runtime); });
+            auto* ptr = system.get();
+            systemMap[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S, typename T>
+        System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)()) {
+            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(); });
+            auto* ptr = system.get();
+            systemMap[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S>
+        Stage<S>* getStage () {
+            auto typeIndex = meta::type_index<S>();
+
+            auto it = stageMap.find(typeIndex);
+            if (it != stageMap.end()) {
+                return static_cast<Stage<S>*>(it->second.get());
+            } else {
+                return nullptr;
+            }
+        }
+
+        template <typename S>
+        const Stage<S>* getStage () const {
+            auto typeIndex = meta::type_index<S>();
+
+            auto it = stageMap.find(typeIndex);
+            if (it != stageMap.end()) {
+                return static_cast<Stage<S>*>(it->second.get());
+            } else {
+                return nullptr;
+            }
+        }
+
+        template <typename S>
+        Stage<S>* initStage (std::string name) {
+            auto stage = std::make_unique<Stage<S>>(std::move(name), *this);
+            auto* ptr = stage.get();
+            stageMap.emplace(ptr->id(), std::move(stage));
+
+            return ptr;
+        }
     public:
         explicit PhenylRuntime (component::ComponentManager&& compManager);
         virtual ~PhenylRuntime();
@@ -87,7 +163,9 @@ namespace phenyl::runtime {
             resourceManager.addResource(resource);
         }
 
-
+        ResourceManager& resources () {
+            return resourceManager;
+        }
 
         template <std::derived_from<IPlugin> T>
         void addPlugin () requires std::is_default_constructible_v<T> {
@@ -128,53 +206,85 @@ namespace phenyl::runtime {
             manager().addComponent<T>();
         }
 
-        template <typename Stage, typename ...Args>
-        System<Stage>& addSystem (void (*systemFunc)(Args...)) {
-            std::unique_ptr<System<Stage>> system = MakeSystem<Stage>(systemFunc, manager(), resourceManager);
+        template <typename S>
+        System<S>& addSystem (std::string systemName, auto systemFunc) {
+            auto* system = makeSystem<S>(std::move(systemName), systemFunc);
+
+            /*if constexpr (std::is_same_v<S, PostInit>) {
+                postInitSystems.addSystem(system);
+            } else if constexpr (std::is_same_v<S, FrameBegin>) {
+                frameBeginSystems.addSystem(system);
+            } else if constexpr (std::is_same_v<S, Update>) {
+                updateSystems.addSystem(system);
+            } else if constexpr (std::is_same_v<S, Render>) {
+                renderSystems.addSystem(system);
+            } else if constexpr (std::is_same_v<S, FixedUpdate>) {
+                fixedUpdateSystems.addSystem(system);
+            } else if constexpr (std::is_same_v<S, PhysicsUpdate>) {
+                physicsSystems.addSystem(system);
+            } else {
+                static_assert(false);
+            }*/
+            auto* stage = getStage<S>();
+            PHENYL_ASSERT(stage);
+            stage->addSystem(system);
+
+            return *system;
+        }
+
+        template <typename S, typename T, typename ...Args>
+        System<S>& addSystem (std::string systemName, T* obj, void (T::*systemFunc)(Args...)) {
+            auto* stage = getStage<S>();
+            PHENYL_ASSERT(stage);
+
+            auto* system = makeSystem<S, T>(std::move(systemName), obj, systemFunc);
+            stage->addSystem(system);
+
+            return *system;
+        }
+
+        template <typename S, typename Parent>
+        void addStage (std::string name) {
+            auto* parent = getStage<Parent>();
+            PHENYL_ASSERT(parent);
+
+            auto stage = initStage<S>(std::move(name));
+            parent->addChildStage(stage);
+        }
+
+        template <typename Before, typename After>
+        void runStageBefore () {
+            auto* before = getStage<Before>();
+            auto* after = getStage<After>();
+            PHENYL_DASSERT(before);
+            PHENYL_DASSERT(after);
+
+            before->runBefore(after);
+        }
+
+        /*template <typename S, typename T, typename ...Args>
+        System<S>& addSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, manager(), resourceManager);
             auto* ptr = system.get();
 
-            if constexpr (std::is_same_v<Stage, PostInit>) {
+            if constexpr (std::is_same_v<S, PostInit>) {
                 postInitSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, FrameBegin>) {
+            } else if constexpr (std::is_same_v<S, FrameBegin>) {
                 frameBeginSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, Update>) {
+            } else if constexpr (std::is_same_v<S, Update>) {
                 updateSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, Render>) {
+            } else if constexpr (std::is_same_v<S, Render>) {
                 renderSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, FixedUpdate>) {
+            } else if constexpr (std::is_same_v<S, FixedUpdate>) {
                 fixedUpdateSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, PhysicsUpdate>) {
+            } else if constexpr (std::is_same_v<S, PhysicsUpdate>) {
                 physicsSystems.emplace_back(std::move(system));
             } else {
                 static_assert(false);
             }
 
             return *ptr;
-        }
-
-        template <typename Stage, typename T, typename ...Args>
-        System<Stage>& addSystem (void (T::*systemFunc)(Args...)) {
-            std::unique_ptr<System<Stage>> system = MakeSystem<Stage>(systemFunc, manager(), resourceManager);
-            auto* ptr = system.get();
-
-            if constexpr (std::is_same_v<Stage, PostInit>) {
-                postInitSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, FrameBegin>) {
-                frameBeginSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, Update>) {
-                updateSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, Render>) {
-                renderSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, FixedUpdate>) {
-                fixedUpdateSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<Stage, PhysicsUpdate>) {
-                physicsSystems.emplace_back(std::move(system));
-            } else {
-                static_assert(false);
-            }
-
-            return *ptr;
-        }
+        }*/
 
         void pluginPostInit ();
 
@@ -186,5 +296,9 @@ namespace phenyl::runtime {
         void pluginPhysicsUpdate (double deltaTime);
 
         void shutdown ();
+
+        template <typename S>
+        friend class Stage;
+        friend class IRunnableSystem;
     };
 }

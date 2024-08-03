@@ -51,8 +51,8 @@ void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
     layer = &renderer.addLayer<ParticleRenderLayer>();
     runtime.addResource<ParticleData>(layer);
 
-    auto& particleUpdateSystem = runtime.addSystem<phenyl::runtime::Update>(UpdateSystem);
+    auto& particleUpdateSystem = runtime.addSystem<phenyl::runtime::Update>("ParticleManager::Update", UpdateSystem);
     ParticleEmitter2D::AddSystems(runtime, particleUpdateSystem);
 
-    runtime.addSystem<phenyl::runtime::Render>(RenderSystem);
+    runtime.addSystem<phenyl::runtime::Render>("ParticleManager::Render", RenderSystem);
 }

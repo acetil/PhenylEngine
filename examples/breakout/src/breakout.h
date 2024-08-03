@@ -15,11 +15,6 @@ namespace breakout {
         phenyl::Asset<phenyl::Prefab> tilePrefab;
 
         void init () override;
-
-        void update (double deltaTime) override;
-
-        void fixedUpdate (double deltaTime) override;
-
     public:
         BreakoutApp (phenyl::ApplicationProperties properties);
 

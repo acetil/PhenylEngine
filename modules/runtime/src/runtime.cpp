@@ -20,6 +20,14 @@ void ResourceManager::registerResource (std::size_t typeIndex, IResource* resour
 
 PhenylRuntime::PhenylRuntime (phenyl::component::ComponentManager&& compManager) : compManager{std::move(compManager)} {
     PHENYL_LOGI(LOGGER, "Initialised Phenyl runtime");
+
+    initStage<PostInit>("PostInit");
+    initStage<FrameBegin>("FrameBegin");
+    initStage<Update>("Update");
+    initStage<Render>("Render");
+    initStage<FixedUpdate>("FixedUpdate");
+    initStage<PhysicsUpdate>("PhysicsUpdate");
+
     addResource<DeltaTime>();
     addResource<FixedDelta>();
 }
@@ -38,17 +46,17 @@ void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlug
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", pluginRef.getName());
 }
 
-void PhenylRuntime::executeSystems (std::vector<std::unique_ptr<IRunnableSystem>>& systems) {
+/*void PhenylRuntime::executeSystems (std::vector<IRunnableSystem*>& systems) {
     // TODO: cache topo ordering
     std::unordered_set<IRunnableSystem*> executedSystems;
     std::unordered_set<IRunnableSystem*> executingSystems;
     PHENYL_DEBUG({
         util::Random::Shuffle(systems.begin(), systems.end());
     })
-    for (const auto& i : systems) {
+    for (auto* i : systems) {
         i->execute(manager(), resourceManager, executedSystems, executingSystems);
     }
-}
+}*/
 
 void PhenylRuntime::registerPlugin (std::size_t typeIndex, IInitPlugin& plugin) {
     PHENYL_DASSERT(!initPlugins.contains(typeIndex));
@@ -62,95 +70,101 @@ void PhenylRuntime::registerPlugin (std::size_t typeIndex, IInitPlugin& plugin) 
 
 
 void PhenylRuntime::pluginPostInit () {
-    PHENYL_TRACE(LOGGER, "Running plugin postInit()");
+    /*PHENYL_TRACE(LOGGER, "Running plugin postInit()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running postInit() for {}", plugin->getName());
         plugin->postInit(*this);
-    }
+    }*/
 
     manager().defer();
-    executeSystems(postInitSystems);
+    //executeSystems(postInitSystems);
+    getStage<PostInit>()->run();
     manager().deferEnd();
 
-    PHENYL_TRACE(LOGGER, "Finished running plugin postInit()");
+    //PHENYL_TRACE(LOGGER, "Finished running plugin postInit()");
 }
 
 void PhenylRuntime::pluginFrameBegin () {
-    PHENYL_TRACE(LOGGER, "Running plugin frameBegin()");
+    /*PHENYL_TRACE(LOGGER, "Running plugin frameBegin()");
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running frameBegin() for {}", plugin->getName());
         plugin->frameBegin(*this);
-    }
+    }*/
 
     manager().defer();
-    executeSystems(frameBeginSystems);
+    //executeSystems(frameBeginSystems);
+    getStage<FrameBegin>()->run();
     manager().deferEnd();
 
-    PHENYL_TRACE(LOGGER, "Finished running plugin frameBegin()");
+    //PHENYL_TRACE(LOGGER, "Finished running plugin frameBegin()");
 }
 
 void PhenylRuntime::pluginUpdate (double deltaTime) {
-    PHENYL_TRACE(LOGGER, "Running plugin update()");
+    /*PHENYL_TRACE(LOGGER, "Running plugin update()");
     resource<DeltaTime>().set(deltaTime);
 
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running update() for {}", plugin->getName());
         plugin->update(*this, deltaTime);
-    }
+    }*/
 
+    resource<DeltaTime>().set(deltaTime);
     manager().defer();
-    executeSystems(updateSystems);
+    getStage<Update>()->run();
     manager().deferEnd();
 
-    PHENYL_TRACE(LOGGER, "Finished running plugin update()");
+    //PHENYL_TRACE(LOGGER, "Finished running plugin update()");
 }
 
 void PhenylRuntime::pluginRender (double deltaTime) {
-    PHENYL_TRACE(LOGGER, "Running plugin render()");
+    /*PHENYL_TRACE(LOGGER, "Running plugin render()");
     resource<DeltaTime>().set(deltaTime);
 
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running render() for {}", plugin->getName());
         plugin->render(*this);
-    }
+    }*/
 
+    resource<DeltaTime>().set(deltaTime);
     manager().defer();
-    executeSystems(renderSystems);
+    getStage<Render>()->run();
     manager().deferEnd();
 
-    PHENYL_TRACE(LOGGER, "Finished running plugin render()");
+    //PHENYL_TRACE(LOGGER, "Finished running plugin render()");
 }
 
 void PhenylRuntime::pluginFixedUpdate (double deltaTime) {
-    PHENYL_TRACE(LOGGER, "Running plugin fixedUpdate()");
+    /*PHENYL_TRACE(LOGGER, "Running plugin fixedUpdate()");
     resource<FixedDelta>().set(deltaTime);
 
     for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running fixedUpdate() for {}", plugin->getName());
         plugin->fixedUpdate(*this, deltaTime);
-    }
+    }*/
 
+    resource<FixedDelta>().set(deltaTime);
     manager().defer();
-    executeSystems(fixedUpdateSystems);
+    getStage<FixedUpdate>()->run();
     manager().deferEnd();
 
-    PHENYL_TRACE(LOGGER, "Finished running plugin fixedUpdate()");
+    //PHENYL_TRACE(LOGGER, "Finished running plugin fixedUpdate()");
 }
 
 void PhenylRuntime::pluginPhysicsUpdate (double deltaTime) {
-    PHENYL_TRACE(LOGGER, "Running plugin physicsUpdate()");
-    resource<FixedDelta>().set(deltaTime);
+    //PHENYL_TRACE(LOGGER, "Running plugin physicsUpdate()");
+    //resource<FixedDelta>().set(deltaTime);
 
-    for (auto [_, plugin] : plugins.kv()) {
+    /*for (auto [_, plugin] : plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running physicsUpdate() for {}", plugin->getName());
         plugin->physicsUpdate(*this, deltaTime);
-    }
+    }*/
 
+    resource<FixedDelta>().set(deltaTime);
     manager().defer();
-    executeSystems(physicsSystems);
+    getStage<PhysicsUpdate>()->run();
     manager().deferEnd();
 
-    PHENYL_TRACE(LOGGER, "Finished running plugin physicsUpdate()");
+    //PHENYL_TRACE(LOGGER, "Finished running plugin physicsUpdate()");
 }
 
 void PhenylRuntime::shutdown () {

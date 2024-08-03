@@ -5,4 +5,8 @@ namespace phenyl::runtime {
     class IPlugin;
     class IRunnableSystem;
     class PhenylRuntime;
+
+    class AbstractStage;
+    template <typename S>
+    class Stage;
 }

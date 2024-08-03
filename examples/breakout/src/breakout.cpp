@@ -68,15 +68,6 @@ void BreakoutApp::init () {
     }
 }
 
-void BreakoutApp::update (double deltaTime) {
-
-}
-
-void BreakoutApp::fixedUpdate (double deltaTime) {
-    //updatePaddle((float)deltaTime, runtime());
-    //updateBall(componentManager());
-}
-
 void BreakoutApp::addPoints (int points) {
     totalPoints += points;
     pointsLabel.text = "Points: " + std::to_string(totalPoints);

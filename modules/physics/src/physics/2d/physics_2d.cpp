@@ -110,12 +110,12 @@ void Physics2D::addComponents (runtime::PhenylRuntime& runtime) {
     runtime.manager().addRequirement<BoxCollider2D, RigidBody2D>();
 
     runtime.addResource<Constraints2D>();
-    auto& motionSystem = runtime.addSystem<runtime::PhysicsUpdate>(RigidBody2DMotionSystem);
-    auto& syncSystem = runtime.addSystem<runtime::PhysicsUpdate>(Collider2DSyncSystem);
-    auto& boxTransformSystem = runtime.addSystem<runtime::PhysicsUpdate>(BoxCollider2DFrameTransformSystem);
-    auto& collCheckSystem = runtime.addSystem<runtime::PhysicsUpdate>(CollisionCheck2DSystem);
-    auto& constraintSolveSystem = runtime.addSystem<runtime::PhysicsUpdate>(Constraints2DSolveSystem);
-    auto& collUpdateSystem = runtime.addSystem<runtime::PhysicsUpdate>(Collider2DUpdateSystem);
+    auto& motionSystem = runtime.addSystem<runtime::PhysicsUpdate>("RigidBody2D::Update", RigidBody2DMotionSystem);
+    auto& syncSystem = runtime.addSystem<runtime::PhysicsUpdate>("Collider2D::Sync", Collider2DSyncSystem);
+    auto& boxTransformSystem = runtime.addSystem<runtime::PhysicsUpdate>("BoxCollider2D::FrameTransform", BoxCollider2DFrameTransformSystem);
+    auto& collCheckSystem = runtime.addSystem<runtime::PhysicsUpdate>("Physics2D::CollisionCheck", CollisionCheck2DSystem);
+    auto& constraintSolveSystem = runtime.addSystem<runtime::PhysicsUpdate>("Physics2D::ConstraintsSolve", Constraints2DSolveSystem);
+    auto& collUpdateSystem = runtime.addSystem<runtime::PhysicsUpdate>("Collider2D::PostCollision", Collider2DUpdateSystem);
 
     motionSystem.runBefore(syncSystem);
     syncSystem.runBefore(boxTransformSystem);

@@ -10,6 +10,9 @@ namespace phenyl {
     class Application;
 
     namespace engine {
+        class AppPlugin;
+
+
         class ApplicationBase {
         private:
             ApplicationProperties properties;
@@ -32,8 +35,6 @@ namespace phenyl {
         public:
             virtual ~ApplicationBase() = default;
 
-            virtual void update (double deltaTime) = 0;
-            virtual void fixedUpdate (double deltaTime) = 0;
             virtual void shutdown () {
 
             }

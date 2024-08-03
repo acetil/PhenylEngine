@@ -8,7 +8,9 @@ add_library(runtime
         include/runtime/resource_manager.h
         include/runtime/stages.h
         include/runtime/delta_time.h
-        include/runtime/resources.h)
+        include/runtime/resources.h
+        src/stages.cpp
+        src/system.cpp)
 
 set_property(TARGET runtime PROPERTY CXX_STANDARD 20)
 

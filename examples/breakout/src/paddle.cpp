@@ -45,7 +45,7 @@ void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
             });
         audioPlayer.play(paddle.bounceSample);
     });
-    runtime.addSystem<phenyl::FixedUpdate>(&Paddle::update);
+    runtime.addSystem<phenyl::FixedUpdate>("Paddle::Update", &Paddle::update);
 }
 
 void Paddle::update (const phenyl::Resources<const phenyl::Camera, const phenyl::FixedDelta>& resources, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {

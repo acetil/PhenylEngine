@@ -44,5 +44,5 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
     auto* debugLayer = &renderer.addLayer<DebugLayer>();
     runtime.addResource<GraphicsData>(debugLayer);
 
-    runtime.addSystem<runtime::Render>(DebugRenderSystem);
+    runtime.addSystem<runtime::Render>("Graphics::DebugRender", DebugRenderSystem);
 }

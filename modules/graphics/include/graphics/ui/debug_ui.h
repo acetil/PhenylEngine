@@ -13,10 +13,10 @@ namespace phenyl::graphics {
         util::SmoothQueue<double, 30> frameQueue;
         util::SmoothQueue<float, 30> deltaTimeQueue;
     public:
-        std::string_view getName() const noexcept override;
+        std::string_view getName () const noexcept override;
 
-        void init(runtime::PhenylRuntime &runtime) override;
-        void update(runtime::PhenylRuntime &runtime, double deltaTime) override;
-        void render(runtime::PhenylRuntime &runtime) override;
+        void init (runtime::PhenylRuntime& runtime) override;
+        void update (runtime::PhenylRuntime& runtime);
+        void render (runtime::PhenylRuntime& runtime);
     };
 }

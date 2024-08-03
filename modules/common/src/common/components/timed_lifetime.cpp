@@ -15,6 +15,6 @@ static void UpdateSystem (component::Entity entity, const runtime::Resources<run
 
 void common::TimedLifetime::Init (runtime::PhenylRuntime& runtime) {
     runtime.addComponent<TimedLifetime>();
-    runtime.addSystem<runtime::Update>(UpdateSystem);
+    runtime.addSystem<runtime::Update>("TimedLifetime::Update", UpdateSystem);
 }
 

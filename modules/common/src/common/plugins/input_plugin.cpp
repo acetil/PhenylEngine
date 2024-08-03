@@ -21,5 +21,5 @@ void InputPlugin::init (runtime::PhenylRuntime& runtime) {
     auto& renderer = runtime.resource<graphics::Renderer>();
     renderer.getViewport().addInputDevices(input);
 
-    runtime.addSystem<phenyl::runtime::FrameBegin>(InputUpdateSystem);
+    runtime.addSystem<phenyl::runtime::FrameBegin>("GameInput::Update", InputUpdateSystem);
 }

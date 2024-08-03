@@ -30,6 +30,6 @@ void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
     runtime.addResource<Canvas>(renderer);
     runtime.addResource(manager.get());
 
-    runtime.addSystem<runtime::FrameBegin>(UIUpdateSystem);
-    runtime.addSystem<runtime::Render>(UIRenderSystem);
+    runtime.addSystem<runtime::FrameBegin>("UIManager::Update", UIUpdateSystem);
+    runtime.addSystem<runtime::Render>("UIManager::Render", UIRenderSystem);
 }

@@ -55,11 +55,12 @@ void InputSetup (phenyl::GameInput& input) {
 void InitPlayer (test::TestApp* app) {
     app->addComponent<test::Player>();
 
-    app->runtime().addSystem<FixedUpdate>(PlayerFixedUpdateSystem);
-    app->runtime().addSystem<Update>(PlayerCameraUpdateSystem);
-    app->runtime().addSystem<Update>(PlayerAudioUpdateSystem);
-
     InputSetup(app->runtime().resource<GameInput>());
+
+    app->runtime().addSystem<FixedUpdate>("Player::FixedUpdate", PlayerFixedUpdateSystem);
+    app->runtime().addSystem<Update>("Player::CameraUpdate", PlayerCameraUpdateSystem);
+    app->runtime().addSystem<Update>("Player::AudioUpdate", PlayerAudioUpdateSystem);
+
 }
 
 static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
