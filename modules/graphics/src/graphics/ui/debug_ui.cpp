@@ -3,6 +3,7 @@
 #include <utility>
 #include <queue>
 
+#include "runtime/delta_time.h"
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
 #include "common/assets/assets.h"
@@ -18,9 +19,14 @@ std::string_view graphics::ProfileUiPlugin::getName () const noexcept {
 void graphics::ProfileUiPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<graphics::UIPlugin>();
     runtime.addResource<common::DebugRenderConfig>();
+
+    runtime.addSystem<runtime::Update>("ProfileUiPlugin::update", this, &ProfileUiPlugin::update);
+    runtime.addSystem<runtime::Render>("ProfileUiPlugin::render", this, &ProfileUiPlugin::render);
 }
 
-void graphics::ProfileUiPlugin::update (runtime::PhenylRuntime& runtime, double deltaTime) {
+void graphics::ProfileUiPlugin::update (runtime::PhenylRuntime& runtime) {
+    auto deltaTime = runtime.resource<runtime::DeltaTime>()();
+
     deltaTimeQueue.pushPop((float)deltaTime);
     frameQueue.pushPop(util::getProfileFrameTime());
     graphicsQueue.pushPop(util::getProfileTime("graphics"));

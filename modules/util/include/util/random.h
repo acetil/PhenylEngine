@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <concepts>
 #include <cstdint>
 
@@ -59,6 +60,11 @@ namespace phenyl::util {
         T rand (const T& min, const T& max) {
             return (max - min) * rand<float>() + min;
         }
+
+        template <std::random_access_iterator It>
+        void shuffle (It begin, It end) {
+            std::shuffle(begin, end, random);
+        }
     public:
         static void Seed (std::uint32_t seed) {
             GetInstance()->seed(seed);
@@ -76,6 +82,11 @@ namespace phenyl::util {
         template <typename T>
         static T Rand (T min, T max) {
             return GetInstance()->rand(min, max);
+        }
+
+        template <std::random_access_iterator It>
+        static void Shuffle (It begin, It end) {
+            GetInstance()->shuffle(begin, end);
         }
     };
 }

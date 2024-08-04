@@ -123,6 +123,8 @@ throw std::logic_error("Program abort");\
 
 #define PHENYL_DASSERT(cond) PHENYL_ASSERT(cond)
 #define PHENYL_DASSERT_MSG(cond, fmt, ...) PHENYL_ASSERT_MSG(cond, fmt __VA_OPT__(,) __VA_ARGS__)
+
+#define PHENYL_DEBUG(...) __VA_ARGS__
 #else
 #define PHENYL_TRACE
 #define PHENYL_TRACE_IF
@@ -138,6 +140,8 @@ throw std::logic_error("Program abort");\
 
 #define PHENYL_DASSERT(cond)
 #define PHENYL_DASSERT_MSG(cond, msg, ...)
+
+#define PHENYL_DEBUG(...)
 #endif
 
 namespace phenyl {

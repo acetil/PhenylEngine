@@ -6,12 +6,19 @@
 #include "graphics/buffer.h"
 #include "graphics/pipeline.h"
 
+namespace phenyl::common {
+    struct GlobalTransform2D;
+}
+
+namespace phenyl::runtime {
+    class PhenylRuntime;
+}
+
 namespace phenyl::graphics {
+    struct Sprite2D;
+
     class EntityRenderLayer : public AbstractRenderLayer {
-    private:
-        struct Uniform {
-            glm::mat4 camera;
-        };
+    public:
         struct Vertex {
             glm::vec2 pos;
             glm::vec2 uv;
@@ -21,6 +28,10 @@ namespace phenyl::graphics {
             std::uint16_t indexOffset;
             std::uint16_t size;
             const ISampler* sampler;
+        };
+    private:
+        struct Uniform {
+            glm::mat4 camera;
         };
 
         std::vector<std::pair<const ISampler*, std::uint16_t>> samplerStartIndices;
@@ -40,6 +51,7 @@ namespace phenyl::graphics {
 
         void bufferData (const component::ComponentManager& manager, const Camera& camera);
     public:
+
         EntityRenderLayer ();
 
         [[nodiscard]] std::string_view getName () const override;
@@ -48,5 +60,10 @@ namespace phenyl::graphics {
 
         void preRender (component::ComponentManager& manager, const Camera& camera);
         void render () override;
+
+        void pushEntity (const common::GlobalTransform2D& transform, const Sprite2D& sprite);
+        void bufferEntities (const Camera& camera);
+
+        void addSystems (runtime::PhenylRuntime& runtime);
     };
 }

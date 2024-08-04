@@ -7,7 +7,7 @@
 #include "wall.h"
 
 
-void breakout::initWall (BreakoutApp* app, phenyl::ComponentManager& manager) {
+void breakout::InitWall (BreakoutApp* app, phenyl::ComponentManager& manager) {
     app->addComponent<Wall>();
 
     manager.handleSignal<phenyl::signals::OnCollision, phenyl::AudioPlayer, const Wall>([] (const phenyl::signals::OnCollision& signal, auto entity, phenyl::AudioPlayer& audioPlayer, const Wall& wall) {

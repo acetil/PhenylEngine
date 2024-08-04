@@ -31,8 +31,8 @@ namespace test {
         TestApp ();
 
         void init () override;
-        void update (double deltaTime) override;
-        void fixedUpdate (double deltaTime) override;
+        void update ();
+        void fixedUpdate ();
 
         void queueResume ();
         void startStepping ();

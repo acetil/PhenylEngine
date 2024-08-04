@@ -6,6 +6,15 @@
 
 using namespace phenyl::graphics;
 
+static void UIUpdateSystem (const phenyl::runtime::Resources<UIManager>& resources) {
+    resources.get<UIManager>().updateUI();
+}
+
+static void UIRenderSystem (const phenyl::runtime::Resources<UIManager, Canvas>& resources) {
+    auto& [manager, canvas] = resources;
+    manager.renderUI(canvas);
+}
+
 std::string_view UIPlugin::getName () const noexcept {
     return "UIPlugin";
 }
@@ -20,12 +29,7 @@ void UIPlugin::init (phenyl::runtime::PhenylRuntime& runtime) {
 
     runtime.addResource<Canvas>(renderer);
     runtime.addResource(manager.get());
-}
 
-void UIPlugin::frameBegin (runtime::PhenylRuntime& runtime) {
-    manager->updateUI();
-}
-
-void UIPlugin::render (runtime::PhenylRuntime& runtime) {
-    manager->renderUI(runtime.resource<Canvas>());
+    runtime.addSystem<runtime::FrameBegin>("UIManager::Update", UIUpdateSystem);
+    runtime.addSystem<runtime::Render>("UIManager::Render", UIRenderSystem);
 }

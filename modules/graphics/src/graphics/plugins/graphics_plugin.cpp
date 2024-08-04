@@ -6,6 +6,21 @@
 
 using namespace phenyl::graphics;
 
+struct GraphicsData : public phenyl::runtime::IResource {
+    DebugLayer* layer;
+
+    [[nodiscard]] std::string_view getName() const noexcept override {
+        return "GraphicsData";
+    }
+
+    GraphicsData (DebugLayer* layer) : layer{layer} {}
+};
+
+static void DebugRenderSystem (const phenyl::runtime::Resources<const Viewport, const Camera, GraphicsData>& resources) {
+    auto& [viewport, camera, data] = resources;
+    data.layer->bufferData(camera, viewport.getResolution());
+}
+
 GraphicsPlugin::GraphicsPlugin () = default;
 GraphicsPlugin::~GraphicsPlugin () = default;
 
@@ -26,13 +41,8 @@ void GraphicsPlugin::init (runtime::PhenylRuntime& runtime) {
     textureManager = std::make_unique<TextureManager>(renderer);
     textureManager->selfRegister();
 
-    debugLayer = &renderer.addLayer<DebugLayer>();
-}
+    auto* debugLayer = &renderer.addLayer<DebugLayer>();
+    runtime.addResource<GraphicsData>(debugLayer);
 
-void GraphicsPlugin::render (runtime::PhenylRuntime& runtime) {
-    auto& viewport = runtime.resource<Viewport>();
-    const auto& camera = runtime.resource<const Camera>();
-
-    PHENYL_DASSERT(debugLayer);
-    debugLayer->bufferData(camera, viewport.getResolution());
+    runtime.addSystem<runtime::Render>("Graphics::DebugRender", DebugRenderSystem);
 }

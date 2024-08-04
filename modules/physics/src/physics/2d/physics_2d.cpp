@@ -12,10 +12,91 @@
 #include "physics/components/2D/rigid_body.h"
 #include "physics/components/2D/rigid_body_serialize.h"
 #include "component/component_serializer.h"
+#include "runtime/delta_time.h"
 
 #define SOLVER_ITERATIONS 10
 
 using namespace phenyl::physics;
+
+struct Constraints2D : public phenyl::runtime::IResource {
+    std::vector<Constraint2D> constraints;
+
+    std::string_view getName() const noexcept override {
+        return "Constraints2D";
+    }
+};
+
+static void RigidBody2DMotionSystem (const phenyl::runtime::Resources<const phenyl::runtime::FixedDelta>& resources, phenyl::common::GlobalTransform2D& transform, RigidBody2D& body) {
+    auto& [delta] = resources;
+
+    body.doMotion(transform, static_cast<float>(delta()));
+}
+
+static void Collider2DSyncSystem (const phenyl::common::GlobalTransform2D& transform, const RigidBody2D& body, Collider2D& collider) {
+    collider.syncUpdates(body, transform.transform2D.position());
+}
+
+static void BoxCollider2DFrameTransformSystem (const phenyl::common::GlobalTransform2D& transform, BoxCollider2D& collider) {
+    collider.applyFrameTransform(transform.transform2D.rotMatrix());
+}
+
+static void CollisionCheck2DSystem (const phenyl::runtime::Resources<Constraints2D, const phenyl::runtime::FixedDelta>& resources,
+    const phenyl::component::QueryBundle<BoxCollider2D>& bundle1, const phenyl::component::QueryBundle<BoxCollider2D>& bundle2) {
+    auto& [constraints, deltaTime] = resources;
+
+    auto entity1 = bundle1.entity();
+    auto entity2 = bundle2.entity();
+    auto& box1 = bundle1.get<BoxCollider2D>();
+    auto& box2 = bundle2.get<BoxCollider2D>();
+    if (!box1.shouldCollide(box2)) {
+        return;
+    }
+
+    box1.collide(box2)
+        .ifPresent([&] (SATResult2D result) {
+            auto face1 = box1.getSignificantFace(result.normal);
+            auto face2 = box2.getSignificantFace(-result.normal);
+
+            auto manifold = buildManifold(face1, face2, result.normal, result.depth);
+            constraints.constraints.emplace_back(manifold.buildConstraint(&box1, &box2, deltaTime()));
+
+            auto contactPoint = manifold.getContactPoint();
+            if (box1.layers & box2.mask) {
+                //manager._signal<OnCollision>(entity2.id(), entity1.id(), (std::uint32_t)(box1.layers & box2.mask));
+                entity2.signal(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask), contactPoint, -result.normal});
+                //events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
+            }
+
+            if (box2.layers & box1.mask) {
+                //manager.signal<OnCollision>(entity1.id(), entity2.id(), (std::uint32_t)(box2.layers & box1.mask));
+                entity1.signal(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask), contactPoint, result.normal});
+                //events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
+            }
+        });
+}
+
+static void Constraints2DSolveSystem (const phenyl::runtime::Resources<Constraints2D>& resources) {
+    auto& [constraints] = resources;
+
+    for (auto i = 0; i < SOLVER_ITERATIONS; i++) {
+        bool shouldContinue = false;
+
+        for (auto& c : constraints.constraints) {
+            auto res = c.solve();
+            shouldContinue = shouldContinue || res;
+        }
+
+        if (!shouldContinue) {
+            break;
+        }
+    }
+
+    constraints.constraints.clear();
+}
+
+static void Collider2DUpdateSystem (RigidBody2D& body, const Collider2D& collider) {
+    collider.updateBody(body);
+}
 
 void Physics2D::addComponents (runtime::PhenylRuntime& runtime) {
     runtime.addComponent<RigidBody2D>();
@@ -27,14 +108,28 @@ void Physics2D::addComponents (runtime::PhenylRuntime& runtime) {
     runtime.manager().addRequirement<RigidBody2D, common::GlobalTransform2D>();
     runtime.manager().addRequirement<BoxCollider2D, common::GlobalTransform2D>();
     runtime.manager().addRequirement<BoxCollider2D, RigidBody2D>();
+
+    runtime.addResource<Constraints2D>();
+    auto& motionSystem = runtime.addSystem<runtime::PhysicsUpdate>("RigidBody2D::Update", RigidBody2DMotionSystem);
+    auto& syncSystem = runtime.addSystem<runtime::PhysicsUpdate>("Collider2D::Sync", Collider2DSyncSystem);
+    auto& boxTransformSystem = runtime.addSystem<runtime::PhysicsUpdate>("BoxCollider2D::FrameTransform", BoxCollider2DFrameTransformSystem);
+    auto& collCheckSystem = runtime.addSystem<runtime::PhysicsUpdate>("Physics2D::CollisionCheck", CollisionCheck2DSystem);
+    auto& constraintSolveSystem = runtime.addSystem<runtime::PhysicsUpdate>("Physics2D::ConstraintsSolve", Constraints2DSolveSystem);
+    auto& collUpdateSystem = runtime.addSystem<runtime::PhysicsUpdate>("Collider2D::PostCollision", Collider2DUpdateSystem);
+
+    motionSystem.runBefore(syncSystem);
+    syncSystem.runBefore(boxTransformSystem);
+    boxTransformSystem.runBefore(collCheckSystem);
+    collCheckSystem.runBefore(constraintSolveSystem);
+    constraintSolveSystem.runBefore(collUpdateSystem);
 }
 
 void Physics2D::updatePhysics (component::EntityComponentManager& componentManager, float deltaTime) {
-    componentManager.query<common::GlobalTransform2D, RigidBody2D>().each([deltaTime] (component::Entity entity, common::GlobalTransform2D& transform, RigidBody2D& body) {
+    /*componentManager.query<common::GlobalTransform2D, RigidBody2D>().each([deltaTime] (component::Entity entity, common::GlobalTransform2D& transform, RigidBody2D& body) {
         body.doMotion(transform, deltaTime);
     });
 
-    checkCollisions(componentManager, deltaTime);
+    checkCollisions(componentManager, deltaTime);*/
 }
 
 void Physics2D::checkCollisions (component::EntityComponentManager& compManager, float deltaTime) {

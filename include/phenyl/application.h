@@ -10,6 +10,9 @@ namespace phenyl {
     class Application;
 
     namespace engine {
+        class AppPlugin;
+
+
         class ApplicationBase {
         private:
             ApplicationProperties properties;
@@ -26,15 +29,12 @@ namespace phenyl {
             friend class ::phenyl::Application;
         protected:
             component::ComponentManager& componentManager ();
-            runtime::PhenylRuntime& runtime ();
 
             void setTargetFPS (double fps);
             void setFixedTimeScale (double newTimeScale);
         public:
             virtual ~ApplicationBase() = default;
 
-            virtual void update (double deltaTime) = 0;
-            virtual void fixedUpdate (double deltaTime) = 0;
             virtual void shutdown () {
 
             }
@@ -51,6 +51,8 @@ namespace phenyl {
             void addUnserializedComponent () {
                 runtime().template addUnserializedComponent<T>();
             }
+
+            runtime::PhenylRuntime& runtime ();
 
             const ApplicationProperties& getProperties () const {
                 return properties;

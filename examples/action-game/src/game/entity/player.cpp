@@ -28,13 +28,11 @@ static phenyl::InputAction KeyShoot;
 static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
-static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, const phenyl::Camera& camera);
+static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer);
+static void PlayerCameraUpdateSystem (const Resources<Camera>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform);
+static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer);
 
-void addPlayerComponents (test::TestApp* app) {
-    app->addComponent<test::Player>();
-}
-
-void inputSetup (phenyl::GameInput& input) {
+void InputSetup (phenyl::GameInput& input) {
     PlayerMove = input.addAxis2D("player_move", true);
     CursorPos = input.addAxis2D("cursor_pos");
     KeyShoot = input.addAction("player_shoot");
@@ -54,16 +52,19 @@ void inputSetup (phenyl::GameInput& input) {
     input.addActionBinding("gain_down", "keyboard.key_down");
 }
 
-void playerFixedUpdate (phenyl::PhenylRuntime& runtime) {
-    const auto& camera = runtime.resource<phenyl::Camera>();
+void InitPlayer (test::TestApp* app) {
+    app->addComponent<test::Player>();
 
-    runtime.manager().query<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>().each([&camera] (phenyl::Entity entity, test::Player& player, phenyl::GlobalTransform2D& transform,
-            phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
-        updatePlayer(player, transform, body, audioPlayer, camera);
-    });
+    InputSetup(app->runtime().resource<GameInput>());
+
+    app->runtime().addSystem<FixedUpdate>("Player::FixedUpdate", PlayerFixedUpdateSystem);
+    app->runtime().addSystem<Update>("Player::CameraUpdate", PlayerCameraUpdateSystem);
+    app->runtime().addSystem<Update>("Player::AudioUpdate", PlayerAudioUpdateSystem);
+
 }
 
-static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer, const phenyl::Camera& camera) {
+static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
+    auto& [camera] = resources;
     auto forceVec = PlayerMove.value() * FORCE_COMPONENT;
     auto disp = camera.getWorldPos2D(CursorPos.value()) - transform.transform2D.position();
     bool doShoot = KeyShoot.value();
@@ -96,24 +97,21 @@ static void updatePlayer (test::Player& player, phenyl::GlobalTransform2D& trans
     }
 }
 
-void playerUpdate (phenyl::PhenylRuntime& runtime) {
-    auto& camera = runtime.resource<phenyl::Camera>();
+static void PlayerCameraUpdateSystem (const Resources<Camera>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform) {
+    auto& [camera] = resources;
+    camera.setPos2D(transform.transform2D.position());
+}
 
-    runtime.manager().query<const test::Player, const phenyl::GlobalTransform2D>().each([&camera] (auto entity, const test::Player&, const phenyl::GlobalTransform2D& transform) {
-        camera.setPos2D(transform.transform2D.position());
-    });
-
-    runtime.manager().query<test::Player, phenyl::AudioPlayer>().each([] (auto entity, test::Player& player, phenyl::AudioPlayer& audioPlayer) {
-        if (GainUp.value() && !player.gainPressed) {
-            audioPlayer.setGain(audioPlayer.gain() + 0.1f);
-            player.gainPressed = true;
-            std::cout << "Player gain: " << audioPlayer.gain() << "\n";
-        } else if (GainDown.value() && !player.gainPressed) {
-            audioPlayer.setGain(audioPlayer.gain() - 0.1f);
-            player.gainPressed = true;
-            std::cout << "Player gain: " << audioPlayer.gain() << "\n";
-        } else if (player.gainPressed && !GainUp.value() && !GainDown.value()) {
-            player.gainPressed = false;
-        }
-    });
+static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer) {
+    if (GainUp.value() && !player.gainPressed) {
+        audioPlayer.setGain(audioPlayer.gain() + 0.1f);
+        player.gainPressed = true;
+        std::cout << "Player gain: " << audioPlayer.gain() << "\n";
+    } else if (GainDown.value() && !player.gainPressed) {
+        audioPlayer.setGain(audioPlayer.gain() - 0.1f);
+        player.gainPressed = true;
+        std::cout << "Player gain: " << audioPlayer.gain() << "\n";
+    } else if (player.gainPressed && !GainUp.value() && !GainDown.value()) {
+        player.gainPressed = false;
+    }
 }

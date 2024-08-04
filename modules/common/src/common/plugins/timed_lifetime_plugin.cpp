@@ -8,14 +8,5 @@ std::string_view TimedLifetimePlugin::getName () const noexcept {
 }
 
 void TimedLifetimePlugin::init (runtime::PhenylRuntime& runtime) {
-    runtime.addComponent<TimedLifetime>();
-}
-
-void TimedLifetimePlugin::update (phenyl::runtime::PhenylRuntime& runtime, double deltaTime) {
-    runtime.manager().query<TimedLifetime>().each([deltaTime] (component::Entity entity, TimedLifetime& comp) {
-        comp.livedTime += deltaTime;
-        if (comp.livedTime >= comp.lifetime) {
-            entity.remove();
-        }
-    });
+    TimedLifetime::Init(runtime);
 }

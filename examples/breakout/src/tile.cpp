@@ -7,7 +7,7 @@
 
 using namespace breakout;
 
-void breakout::initTile (breakout::BreakoutApp* app, phenyl::ComponentManager& componentManager) {
+void breakout::InitTile (breakout::BreakoutApp* app, phenyl::ComponentManager& componentManager) {
     app->addComponent<Tile>();
     app->addComponent<Floor>();
 

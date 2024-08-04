@@ -18,7 +18,7 @@ static phenyl::Axis2DInput CursorPos;
 
 static phenyl::InputAction BallShoot;
 
-void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& runtime) {
+void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& runtime) {
     app->addComponent<Paddle>();
 
     auto& input = runtime.resource<phenyl::GameInput>();
@@ -45,21 +45,16 @@ void breakout::initPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
             });
         audioPlayer.play(paddle.bounceSample);
     });
+    runtime.addSystem<phenyl::FixedUpdate>("Paddle::Update", &Paddle::update);
 }
 
-void breakout::updatePaddle (float deltaTime, phenyl::PhenylRuntime& runtime) {
-    auto& camera = runtime.resource<phenyl::Camera>();
+void Paddle::update (const phenyl::Resources<const phenyl::Camera, const phenyl::FixedDelta>& resources, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
+    auto& [camera, deltaTime] = resources;
 
-    runtime.manager().query<const phenyl::GlobalTransform2D, phenyl::RigidBody2D, Paddle>().each([&camera, deltaTime] (auto entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, Paddle& paddle) {
-        paddle.update(deltaTime, entity, transform, body, camera);
-    });
-}
-
-void Paddle::update (float deltaTime, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::Camera& camera) {
     auto vel = PlayerMove.value() * speed;
-    auto newPos = vel * deltaTime + transform.transform2D.position();
+    auto newPos = vel * static_cast<float>(deltaTime()) + transform.transform2D.position();
 
-    vel.x = (glm::clamp(newPos.x, minX + width / 2, maxX - width / 2) - transform.transform2D.position().x) / deltaTime;
+    vel.x = (glm::clamp(newPos.x, minX + width / 2, maxX - width / 2) - transform.transform2D.position().x) / static_cast<float>(deltaTime());
 
     body.applyImpulse(vel * body.getMass() - body.getMomentum());
 

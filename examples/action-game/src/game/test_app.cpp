@@ -20,11 +20,13 @@ test::TestApp::TestApp () :
         .withVsync(false)) {}
 
 void test::TestApp::init () {
-    addBulletSignals(this, componentManager());
-    addPlayerComponents(this);
+    InitBullet(this, componentManager());
+    InitPlayer(this);
+
+    runtime().addSystem<phenyl::FixedUpdate>("TestApp::fixedUpdate", this, &TestApp::fixedUpdate);
+    runtime().addSystem<phenyl::Update>("TestApp::update", this, &TestApp::update);
 
     auto& input = runtime().resource<phenyl::GameInput>();
-    inputSetup(input);
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
 
@@ -50,17 +52,13 @@ void test::TestApp::init () {
     testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
 }
 
-void test::TestApp::fixedUpdate (double deltaTime) {
-    playerFixedUpdate(runtime());
-
+void test::TestApp::fixedUpdate () {
     if (isStepping) {
         pause();
     }
 }
 
-void test::TestApp::update (double deltaTime) {
-    playerUpdate(runtime());
-
+void test::TestApp::update () {
     if (button4 && !isButtonDown) {
         isButtonDown = true;
         numPresses++;

@@ -9,6 +9,7 @@
 #include "audio_source.h"
 #include "audio/audio_sample.h"
 #include "audio/audio_backend.h"
+#include "runtime/iresource.h"
 
 namespace phenyl::component {
     class ComponentManager;
@@ -18,7 +19,7 @@ namespace phenyl::component {
 namespace phenyl::audio {
     class WAVFile;
 
-    class AudioSystem : public common::AssetManager<AudioSample> {
+    class AudioSystem : public common::AssetManager<AudioSample>, public runtime::IResource {
     private:
         static constexpr std::size_t EMPTY_INDEX = static_cast<std::size_t>(-1);
         struct VirtualSource {
@@ -83,6 +84,8 @@ namespace phenyl::audio {
         void setSourceGain (AudioSource& source, float gain);
 
         void update (float deltaTime);
+
+        std::string_view getName () const noexcept override;
     };
 
     std::unique_ptr<AudioSystem> MakeOpenALSystem ();

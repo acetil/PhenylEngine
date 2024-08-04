@@ -10,5 +10,5 @@ namespace test {
         phenyl::Asset<phenyl::Prefab> particlePrefab;
     };
 
-    void addBulletSignals (TestApp* app, phenyl::ComponentManager& manager);
+    void InitBullet (TestApp* app, phenyl::ComponentManager& manager);
 }

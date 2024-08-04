@@ -12,15 +12,15 @@ namespace phenyl::physics {
         glm::vec2 scale;
         glm::mat2 frameTransform;
 
-        void applyFrameTransform (glm::mat2 transform);
-
-        util::Optional<SATResult2D> collide (const BoxCollider2D& other);
-        Face2D getSignificantFace (glm::vec2 normal);
 
         friend class Physics2D;
 
         PHENYL_SERIALIZE_INTRUSIVE(BoxCollider2D)
     public:
+        util::Optional<SATResult2D> collide (const BoxCollider2D& other);
+        Face2D getSignificantFace (glm::vec2 normal);
+        void applyFrameTransform (glm::mat2 transform);
+
         [[nodiscard]] glm::vec2 getScale () const {
             return scale;
         }

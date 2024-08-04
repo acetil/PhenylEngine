@@ -19,7 +19,5 @@ namespace test {
     };
 }
 
-void addPlayerComponents (test::TestApp* app);
-void inputSetup (phenyl::GameInput& input);
-void playerFixedUpdate (phenyl::PhenylRuntime& runtime);
-void playerUpdate (phenyl::PhenylRuntime& runtime);
+void InitPlayer (test::TestApp* app);
+void InputSetup (phenyl::GameInput& input);

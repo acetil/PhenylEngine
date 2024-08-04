@@ -22,11 +22,6 @@ void Sprite2DPlugin::init (runtime::PhenylRuntime& runtime) {
 
     auto& renderer = runtime.resource<Renderer>();
     entityLayer = &renderer.addLayer<EntityRenderLayer>();
-}
 
-void Sprite2DPlugin::render (runtime::PhenylRuntime& runtime) {
-    const auto& camera = runtime.resource<const Camera>();
-
-    PHENYL_DASSERT(entityLayer);
-    entityLayer->preRender(runtime.manager(), camera);
+    entityLayer->addSystems(runtime);
 }

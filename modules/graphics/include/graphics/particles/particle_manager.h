@@ -4,9 +4,10 @@
 
 #include "graphics/particles/particle_system_2d.h"
 #include "common/assets/asset_manager.h"
+#include "runtime/iresource.h"
 
 namespace phenyl::graphics {
-    class ParticleManager2D : public phenyl::common::AssetManager<ParticleSystem2D> {
+    class ParticleManager2D : public phenyl::common::AssetManager<ParticleSystem2D>, public runtime::IResource {
     private:
         util::Map<std::size_t, std::unique_ptr<ParticleSystem2D>> systems;
         std::size_t systemMaxParticles;
@@ -24,5 +25,7 @@ namespace phenyl::graphics {
         void update (float deltaTime);
 
         void buffer (Buffer<glm::vec2>& posBuffer, Buffer<glm::vec4>& colourBuffer) const;
+
+        [[nodiscard]] std::string_view getName() const noexcept override;
     };
 }

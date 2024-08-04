@@ -49,6 +49,10 @@ void phenyl::graphics::ParticleManager2D::buffer (phenyl::graphics::Buffer<glm::
     }
 }
 
+std::string_view phenyl::graphics::ParticleManager2D::getName () const noexcept {
+    return "ParticleManager2D";
+}
+
 void phenyl::graphics::ParticleManager2D::selfRegister () {
     phenyl::common::Assets::AddManager(this);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "runtime/runtime.h"
 
 namespace phenyl::component {
     class ComponentManager;
@@ -6,9 +7,9 @@ namespace phenyl::component {
 
 namespace phenyl::common {
     struct TimedLifetime {
-        double lifetime;
+        double lifetime = 0.0;
         double livedTime = 0.0;
 
-        static void Update (phenyl::component::ComponentManager& componentManager, double deltaTime);
+        static void Init (phenyl::runtime::PhenylRuntime& runtime);
     };
 }
