@@ -1,6 +1,6 @@
 #include "util/random.h"
 
-#include "runtime/stages.h"
+#include "runtime/stage.h"
 
 #include "runtime/runtime.h"
 #include "runtime/system.h"
@@ -23,9 +23,11 @@ void AbstractStage::run () {
         updated = false;
     }
 
+    runtime.manager().defer();
     for (auto* i : orderedSystems) {
         i->run(runtime);
     }
+    runtime.manager().deferEnd();
 
     for (auto* i : childStages) {
         i->run();
@@ -84,7 +86,7 @@ void AbstractStage::orderSystemsRecursive (IRunnableSystem* system, std::unorder
     }
 
     visiting.emplace(system);
-    for (auto* i : system->parentSystems) {
+    for (auto* i : system->getPrecedingSystems()) {
         orderSystemsRecursive(i, visited, visiting);
     }
 

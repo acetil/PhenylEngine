@@ -9,6 +9,7 @@
 #include "iresource.h"
 #include "init_plugin.h"
 #include "resource_manager.h"
+#include "stage.h"
 #include "stages.h"
 #include "system.h"
 
@@ -28,18 +29,8 @@ namespace phenyl::runtime {
         std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> systemMap;
         std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> stageMap;
 
-       /* Stage<PostInit> postInitSystems;
-        Stage<FrameBegin> frameBeginSystems;
-        Stage<Update> updateSystems;
-        Stage<Render> renderSystems;
-
-        Stage<FixedUpdate> fixedUpdateSystems;
-        Stage<PhysicsUpdate> physicsSystems;*/
-
         void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
-
-        //void executeSystems (std::vector<IRunnableSystem*>& systems);
 
         template <typename S, typename ...Args>
         System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
@@ -209,22 +200,6 @@ namespace phenyl::runtime {
         template <typename S>
         System<S>& addSystem (std::string systemName, auto systemFunc) {
             auto* system = makeSystem<S>(std::move(systemName), systemFunc);
-
-            /*if constexpr (std::is_same_v<S, PostInit>) {
-                postInitSystems.addSystem(system);
-            } else if constexpr (std::is_same_v<S, FrameBegin>) {
-                frameBeginSystems.addSystem(system);
-            } else if constexpr (std::is_same_v<S, Update>) {
-                updateSystems.addSystem(system);
-            } else if constexpr (std::is_same_v<S, Render>) {
-                renderSystems.addSystem(system);
-            } else if constexpr (std::is_same_v<S, FixedUpdate>) {
-                fixedUpdateSystems.addSystem(system);
-            } else if constexpr (std::is_same_v<S, PhysicsUpdate>) {
-                physicsSystems.addSystem(system);
-            } else {
-                static_assert(false);
-            }*/
             auto* stage = getStage<S>();
             PHENYL_ASSERT(stage);
             stage->addSystem(system);
@@ -262,38 +237,11 @@ namespace phenyl::runtime {
             before->runBefore(after);
         }
 
-        /*template <typename S, typename T, typename ...Args>
-        System<S>& addSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, manager(), resourceManager);
-            auto* ptr = system.get();
-
-            if constexpr (std::is_same_v<S, PostInit>) {
-                postInitSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<S, FrameBegin>) {
-                frameBeginSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<S, Update>) {
-                updateSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<S, Render>) {
-                renderSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<S, FixedUpdate>) {
-                fixedUpdateSystems.emplace_back(std::move(system));
-            } else if constexpr (std::is_same_v<S, PhysicsUpdate>) {
-                physicsSystems.emplace_back(std::move(system));
-            } else {
-                static_assert(false);
-            }
-
-            return *ptr;
-        }*/
-
-        void pluginPostInit ();
-
-        void pluginFrameBegin ();
-        void pluginUpdate (double deltaTime);
-        void pluginRender (double deltaTime);
-
-        void pluginFixedUpdate (double deltaTime);
-        void pluginPhysicsUpdate (double deltaTime);
+        void runPostInit ();
+        void runFrameBegin ();
+        void runFixedTimestep (double deltaTime);
+        void runVariableTimestep (double deltaTime);
+        void runRender ();
 
         void shutdown ();
 

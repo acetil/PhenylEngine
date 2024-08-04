@@ -45,7 +45,7 @@ public:
 
         runtime.registerPlugin(std::make_unique<AppPlugin>(std::move(app)));
 
-        runtime.pluginPostInit();
+        runtime.runPostInit();
     }
 
     void gameloop (ApplicationBase* app) {
@@ -55,7 +55,7 @@ public:
             PHENYL_TRACE(LOGGER, "Frame start");
             util::startProfileFrame();
 
-            runtime.pluginFrameBegin();
+            runtime.runFrameBegin();
 
             //double deltaTime = graphics->getDeltaTime();
             fixedTimeSlop += deltaTime * app->getFixedTimeScale();
@@ -84,22 +84,18 @@ public:
 
     void update (double deltaTime) {
         PHENYL_TRACE(LOGGER, "Update start");
-        runtime.pluginUpdate(deltaTime);
+        runtime.runVariableTimestep(deltaTime);
         PHENYL_TRACE(LOGGER, "Update end");
     }
     void fixedUpdate () {
         PHENYL_TRACE(LOGGER, "Fixed update start");
-        runtime.pluginFixedUpdate(1.0 / FIXED_FPS);
-        runtime.pluginPhysicsUpdate(1.0 / FIXED_FPS);
-
+        runtime.runFixedTimestep(1.0 / FIXED_FPS);
         PHENYL_TRACE(LOGGER, "Fixed update end");
     }
 
     void render (double deltaTime) {
         PHENYL_TRACE(LOGGER, "Render start");
-
-        runtime.pluginRender(deltaTime);
-
+        runtime.runRender();
         renderer->render();
         PHENYL_TRACE(LOGGER, "Render end");
     }
