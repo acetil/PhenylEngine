@@ -22,6 +22,7 @@ UntypedComponentVector& UntypedComponentVector::operator= (UntypedComponentVecto
     compSize = other.compSize;
     vecLength = other.vecLength;
     vecCapacity = other.vecCapacity;
+    return *this;
 }
 
 std::byte* UntypedComponentVector::insertUntyped () {

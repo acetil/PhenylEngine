@@ -33,6 +33,18 @@ namespace phenyl::component {
         }
 
         template <typename T>
+        ComponentVector<std::remove_cv_t<T>>* tryGetComponent () {
+            auto it = components.find(meta::type_index<std::remove_cvref_t<T>>());
+            return it != components.end() ? it->second.get() : nullptr;
+        }
+
+        template <typename T>
+        const ComponentVector<std::remove_cv_t<T>>* tryGetComponent () const {
+            auto it = components.find(meta::type_index<std::remove_cvref_t<T>>());
+            return it != components.end() ? it->second.get() : nullptr;
+        }
+
+        template <typename T>
         Archetype& getWith () {
             PHENYL_ASSERT(!has<T>());
 
@@ -128,13 +140,7 @@ namespace phenyl::component {
     protected:
         Archetype (detail::IArchetypeManager& manager);
 
-        std::size_t addEntity (EntityId id) {
-            auto pos = entityIds.size();
-            entityIds.emplace_back(id);
-
-            return pos;
-        }
-
+        void addEntity (EntityId id);
     public:
         bool hasUntyped (std::size_t typeIndex) const noexcept {
             return components.contains(typeIndex);
@@ -170,6 +176,20 @@ namespace phenyl::component {
             return getComponent<T>()[pos];
         }
 
+        template <typename T>
+        T* tryGet (std::size_t pos) {
+            PHENYL_DASSERT(pos < size());
+            auto* comp = tryGetComponent<T>();
+            return comp ? (*comp)[pos] : nullptr;
+        }
+
+        template <typename T>
+        const T* tryGet (std::size_t pos) const {
+            PHENYL_DASSERT(pos < size());
+            auto* comp = tryGetComponent<T>();
+            return comp ? (*comp)[pos] : nullptr;
+        }
+
         void remove (std::size_t pos);
 
         template <typename T, typename ...Args>
@@ -185,6 +205,10 @@ namespace phenyl::component {
         template <typename T>
         void removeComponent (std::size_t pos) {
             PHENYL_DASSERT(pos < size());
+            if (!has<T>()) {
+                return;
+            }
+
             Archetype& dest = getWithout<std::remove_cvref_t<T>>();
 
             dest.moveFrom(*this, pos);
@@ -299,5 +323,14 @@ namespace phenyl::component {
     typename ArchetypeView<Args...>::Iterator operator+ (typename ArchetypeView<Args...>::Iterator::difference_type n, const typename ArchetypeView<Args...>::Iterator& it) noexcept {
         return typename ArchetypeView<Args...>::Iterator{it.view, it.pos + n};
     }
+
+    class EmptyArchetype : public Archetype {
+    public:
+        explicit EmptyArchetype (detail::IArchetypeManager& manager) : Archetype{manager} {}
+
+        void add (EntityId id) {
+            addEntity(id);
+        }
+    };
 }
    

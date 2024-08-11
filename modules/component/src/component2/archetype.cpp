@@ -21,6 +21,13 @@ Archetype::Archetype (const Archetype& other, std::unique_ptr<UntypedComponentVe
 
 Archetype::Archetype (detail::IArchetypeManager& manager) : manager{manager} {}
 
+void Archetype::addEntity(EntityId id) {
+    auto pos = entityIds.size();
+    entityIds.emplace_back(id);
+
+    manager.updateEntityEntry(id, this, pos);
+}
+
 void Archetype::remove (std::size_t pos) {
     PHENYL_DASSERT(pos < size());
 

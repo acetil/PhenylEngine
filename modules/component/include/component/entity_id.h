@@ -22,12 +22,16 @@ namespace phenyl::component {
             return (static_cast<std::size_t>(generation) << 32) | id;
         }
 
-        explicit operator bool () const {
+        explicit operator bool () const noexcept {
             return id != 0;
         }
 
-        bool operator== (const EntityId& other) const {
+        bool operator== (const EntityId& other) const noexcept {
             return generation == other.generation && id == other.id;
+        }
+
+        [[nodiscard]] unsigned int pos () const noexcept {
+            return id - 1;
         }
 
         friend class Archetype;

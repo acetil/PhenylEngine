@@ -6,6 +6,7 @@
 
 #include "component/entity_id.h"
 
+#include "logging/logging.h"
 #include "util/iterable.h"
 
 namespace phenyl::component::detail {

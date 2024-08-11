@@ -34,6 +34,9 @@ add_library(component include/component/forward.h include/component/fixed_compon
         include/component2/archetype.h
         src/component2/archetype.cpp
         include/component2/detail/iarchetype_manager.h
+        src/component2/component.cpp
+        include/component2/entity2.h
+        src/component2/entity2.cpp
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

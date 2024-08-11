@@ -5,62 +5,39 @@
 #include "component/detail/relationships.h"
 #include "component/detail/loggers.h"
 
+#include "archetype.h"
+#include "entity2.h"
+
 namespace phenyl::component {
-    class ComponentManager2 {
+    class ComponentManager2 : private detail::IArchetypeManager {
     private:
         detail::EntityIdList idList;
         detail::RelationshipManager relationships;
 
-        void removeInt (EntityId id, bool updateParent) {
-            if (updateParent) {
-                // TODO: signal remove child
-            }
+        std::vector<std::unique_ptr<Archetype>> archetypes;
+        EmptyArchetype* emptyArchetype;
+        std::vector<detail::EntityEntry> entityEntries;
 
-            auto curr = relationships.entityChildren(id);
-            while (curr) {
-                auto next = relationships.next(curr);
-                removeInt(curr, false);
-                curr = next;
-            }
+        void removeInt (EntityId id, bool updateParent);
 
-            relationships.remove(id, updateParent);
+        void addArchetype (std::unique_ptr<Archetype> archetype) override;
+        Archetype* findArchetype (const std::vector<std::size_t>& comps) override;
+        void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
 
-            // TODO: delete components
-
-            idList.removeId(id);
-        }
+        friend Entity2;
     public:
-        EntityId create (EntityId parent) {
-            auto id = idList.newId();
+        static constexpr std::size_t DEFAULT_CAPACITY = 256;
 
-            relationships.add(id, parent);
-            // TODO: signals
-            return id;
-        }
+        explicit ComponentManager2 (std::size_t capacity=DEFAULT_CAPACITY);
+
+        Entity2 create (EntityId parent);
+        void remove (EntityId id);
+        void reparent (EntityId id, EntityId parent);
 
         [[nodiscard]] bool exists (EntityId id) const noexcept {
             return idList.check(id);
         }
 
-        void remove (EntityId id) {
-            if (!idList.check(id)) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Attempted to delete invalid entity {}!", id.value());
-                return;
-            }
-
-            // TODO: defer
-
-            removeInt(id, true);
-        }
-
-        [[nodiscard]] EntityId parent (EntityId id) const noexcept {
-            return relationships.parent(id);
-        }
-
-        void reparent (EntityId id, EntityId parent) {
-            // TODO: signals
-            relationships.removeFromParent(id);
-            relationships.setParent(id, parent);
-        }
+        [[nodiscard]] Entity2 parent (EntityId id) noexcept;
     };
 }
