@@ -28,6 +28,12 @@ add_library(component include/component/forward.h include/component/fixed_compon
         src/component/prefab_manager.cpp
         include/component/detail/loggers.h
         src/component/detail/loggers.cpp
+        include/component2/component.h
+        include/component2/detail/component_vector.h
+        src/component2/detail/component_vector.cpp
+        include/component2/archetype.h
+        src/component2/archetype.cpp
+        include/component2/detail/iarchetype_manager.h
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

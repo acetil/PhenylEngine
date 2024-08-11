@@ -18,7 +18,7 @@ namespace phenyl::component {
         EntityId () = default;
         EntityId (unsigned int _generation, unsigned int _id) : generation(_generation), id(_id) {}
 
-        [[nodiscard]] std::size_t value () const {
+        [[nodiscard]] std::size_t value () const noexcept {
             return (static_cast<std::size_t>(generation) << 32) | id;
         }
 
@@ -30,6 +30,7 @@ namespace phenyl::component {
             return generation == other.generation && id == other.id;
         }
 
+        friend class Archetype;
         friend class ComponentManager;
         friend class detail::ComponentSet;
         friend class detail::EntityIdList;
