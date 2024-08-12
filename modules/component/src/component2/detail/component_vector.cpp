@@ -58,6 +58,11 @@ std::size_t UntypedComponentVector::remove (std::size_t pos) {
     }
 }
 
+void UntypedComponentVector::clear() {
+    deleteAllComps(memory.get(), memory.get() + vecLength * compSize);
+    vecLength = 0;
+}
+
 void UntypedComponentVector::guaranteeLength (std::size_t newLen) {
     if (newLen <= vecCapacity) {
         return;

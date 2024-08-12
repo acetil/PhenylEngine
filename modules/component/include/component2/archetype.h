@@ -215,114 +215,12 @@ namespace phenyl::component {
             remove(pos);
         }
 
+        void clear ();
+
         const std::vector<std::size_t>& getComponentIds () const noexcept {
             return componentIds;
         }
     };
-
-    template <typename ...Args>
-    class ArchetypeView {
-    private:
-        Archetype& archetype;
-        std::tuple<ComponentVector<Args>*...> components;
-
-    public:
-        class Iterator {
-        private:
-            ArchetypeView<Args...>* view = nullptr;
-            std::size_t pos = 0;
-
-        explicit Iterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
-        public:
-            using value_type = std::tuple<Args&...>;
-            using difference_type = std::ptrdiff_t;
-
-            Iterator () = default;
-
-            value_type operator* () const {
-                return {std::get<Args>(view->components)[pos]...};
-            }
-
-            Iterator& operator++ () {
-                pos++;
-                return *this;
-            }
-            Iterator operator++ (int) {
-                auto copy = *this;
-                ++this;
-                return copy;
-            }
-
-            Iterator& operator-- () {
-                pos--;
-                return *this;
-            }
-            Iterator operator-- (int) {
-                auto copy = *this;
-                --this;
-                return copy;
-            }
-
-            Iterator& operator+= (difference_type n) {
-                pos += n;
-                return *this;
-            }
-            Iterator operator+ (difference_type n) const noexcept {
-                auto copy = *this;
-                copy += n;
-                return copy;
-            }
-
-            Iterator& operator-= (difference_type n) {
-                pos -= n;
-                return *this;
-            }
-            Iterator operator- (difference_type n) const noexcept {
-                auto copy = *this;
-                copy -= n;
-                return copy;
-            }
-
-            difference_type operator- (const Iterator& other) const noexcept {
-                return static_cast<difference_type>(pos) - static_cast<difference_type>(other.pos);
-            }
-
-            value_type operator[] (difference_type n) const {
-                return {std::get<Args>(view->components)[pos + n]...};
-            }
-
-            bool operator== (const Iterator& other) const noexcept {
-                return view == other.view && pos == other.pos;
-            }
-
-            std::strong_ordering operator<=> (const Iterator& other) const noexcept {
-                return pos <=> other.pos;
-            }
-
-            friend Iterator operator+ (difference_type n, const Iterator& it) noexcept;
-        };
-
-        using iterator = Iterator;
-
-        explicit ArchetypeView (Archetype& archetype) : archetype{archetype}, components{archetype.getComponent<Args>()...} {}
-
-        [[nodiscard]] std::size_t size () const noexcept {
-            return archetype.size();
-        }
-
-        iterator begin () {
-            return Iterator{this};
-        }
-
-        iterator end () {
-            return Iterator{this, size()};
-        }
-    };
-
-    template <typename ...Args>
-    typename ArchetypeView<Args...>::Iterator operator+ (typename ArchetypeView<Args...>::Iterator::difference_type n, const typename ArchetypeView<Args...>::Iterator& it) noexcept {
-        return typename ArchetypeView<Args...>::Iterator{it.view, it.pos + n};
-    }
 
     class EmptyArchetype : public Archetype {
     public:

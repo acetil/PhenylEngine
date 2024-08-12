@@ -1,4 +1,5 @@
 #include "component2/archetype.h"
+#include "component2/archetype_view.h"
 
 using namespace phenyl::component;
 
@@ -15,6 +16,13 @@ Archetype::Archetype (const Archetype& other, std::unique_ptr<UntypedComponentVe
 
     componentIds.reserve(other.components.size() + 1);
     std::transform(components.begin(), components.end(), std::back_inserter(componentIds), [] (const auto& p) {
+        return p.first;
+    });
+}
+
+Archetype::Archetype(detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) : manager{manager}, components{std::move(components)} {
+    componentIds.reserve(this->components.size() + 1);
+    std::transform(this->components.begin(), this->components.end(), std::back_inserter(componentIds), [] (const auto& p) {
         return p.first;
     });
 }
@@ -40,6 +48,13 @@ void Archetype::remove (std::size_t pos) {
         manager.updateEntityEntry(entityIds[pos], this, pos);
     }
     entityIds.pop_back();
+}
+
+void Archetype::clear() {
+    for (auto& [_, vec] : components) {
+        vec->clear();
+    }
+    entityIds.clear();
 }
 
 std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {

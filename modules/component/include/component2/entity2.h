@@ -24,6 +24,8 @@ namespace phenyl::component {
 
         [[nodiscard]] const detail::EntityEntry& entry () const;
         friend ComponentManager2;
+        template <typename ...Args>
+        friend class ArchetypeView;
     public:
         Entity2 () = default;
 

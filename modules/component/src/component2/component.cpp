@@ -39,6 +39,12 @@ void ComponentManager2::reparent(EntityId id, EntityId parent)  {
     relationships.setParent(id, parent);
 }
 
+void ComponentManager2::clear() {
+    for (const auto& i : archetypes) {
+        i->clear();
+    }
+}
+
 Entity2 ComponentManager2::parent (EntityId id) noexcept {
     auto parentId = relationships.parent(id);
     return Entity2{parentId, this};
@@ -69,7 +75,13 @@ void ComponentManager2::removeInt (EntityId id, bool updateParent) {
 }
 
 void ComponentManager2::addArchetype (std::unique_ptr<Archetype> archetype) {
+    auto* ptr = archetype.get();
     archetypes.emplace_back(std::move(archetype));
+
+    cleanupQueryArchetypes();
+    for (const auto& i : queryArchetypes) {
+        i.lock()->onNewArchetype(ptr);
+    }
 }
 
 Archetype* ComponentManager2::findArchetype (const std::vector<std::size_t>& comps) {
@@ -85,4 +97,24 @@ void ComponentManager2::updateEntityEntry (EntityId id, Archetype* archetype, st
     auto& entry = entityEntries[id.pos()];
     entry.archetype = archetype;
     entry.pos = pos;
+}
+
+std::shared_ptr<QueryArchetypes> ComponentManager2::makeQueryArchetypes (std::vector<std::size_t> components) {
+    cleanupQueryArchetypes();
+
+    for (const auto& weakArch : queryArchetypes) {
+        if (auto ptr = weakArch.lock(); ptr->components() == components) {
+            return ptr;
+        }
+    }
+
+    auto newArch = std::make_shared<QueryArchetypes>(std::move(components));
+    queryArchetypes.emplace_back(newArch);
+    return newArch;
+}
+
+void ComponentManager2::cleanupQueryArchetypes () {
+    std::erase_if(queryArchetypes, [] (const auto& x) {
+        return x.expired();
+    });
 }
