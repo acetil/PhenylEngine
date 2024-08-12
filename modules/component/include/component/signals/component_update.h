@@ -14,10 +14,10 @@ namespace phenyl::component {
     struct OnInsert {
     private:
         T* comp;
-        OnInsert (T* comp) : comp{comp} {}
         friend detail::OnInsertUntyped;
     public:
         static constexpr bool PreOrder = true;
+        OnInsert (T* comp) : comp{comp} {}
         using Type = T;
 
         T& get () const {

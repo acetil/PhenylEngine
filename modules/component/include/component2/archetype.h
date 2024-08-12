@@ -68,18 +68,6 @@ namespace phenyl::component {
             }
 
             auto* archetype = manager.findArchetype(newComps);
-            if (!archetype) {
-                std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> newComponents;
-                for (const auto& [index, vec] : components) {
-                    newComponents.emplace(index, vec->makeNew());
-                }
-                newComponents.emplace(typeIndex, std::make_unique<ComponentVector<T>>());
-
-                auto newArch = std::make_unique<Archetype>(manager, std::move(newComponents));
-                archetype = newArch.get();
-                manager.addArchetype(std::move(newArch));
-            }
-
             addArchetypes.emplace(typeIndex, archetype);
             archetype->removeArchetypes.emplace(typeIndex, this);
             return *archetype;
@@ -106,19 +94,6 @@ namespace phenyl::component {
             }
 
             auto* archetype = manager.findArchetype(newComps);
-            if (!archetype) {
-                std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> newComponents;
-                for (const auto& [index, vec] : components) {
-                    if (index != typeIndex) {
-                        newComponents.emplace(index, vec->makeNew());
-                    }
-                }
-
-                auto newArch = std::make_unique<Archetype>(manager, std::move(newComponents));
-                archetype = newArch.get();
-                manager.addArchetype(std::move(newArch));
-            }
-
             removeArchetypes.emplace(typeIndex, archetype);
             archetype->addArchetypes.emplace(typeIndex, this);
             return *archetype;
@@ -127,21 +102,25 @@ namespace phenyl::component {
         template <typename T, typename ...Args>
         void initComp (Args&&... args) {
             ComponentVector<T>& comp = getComponent<T>();
-            comp.emplace(std::forward<Args>(args)...);
+            auto* ptr = comp.emplace(std::forward<Args>(args)...);
+
+            manager.onComponentInsert(entityIds.back(), meta::type_index<T>(), static_cast<std::byte*>(ptr));
         }
 
         std::size_t moveFrom (Archetype& other, std::size_t pos);
 
-        Archetype (detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components);
         Archetype (const Archetype& other, std::unique_ptr<UntypedComponentVector> compVec);
 
         template <typename ...Args>
         friend class ArchetypeView;
+        friend class ComponentManager2;
     protected:
         Archetype (detail::IArchetypeManager& manager);
 
         void addEntity (EntityId id);
     public:
+        Archetype (detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components);
+
         bool hasUntyped (std::size_t typeIndex) const noexcept {
             return components.contains(typeIndex);
         }
@@ -198,8 +177,8 @@ namespace phenyl::component {
             Archetype& dest = getWith<std::remove_cvref_t<T>>();
 
             auto newPos = dest.moveFrom(*this, pos);
-            dest.initComp<std::remove_cvref_t<T>>(newPos, std::forward<Args>(args)...);
             remove(pos);
+            dest.initComp<std::remove_cvref_t<T>>(newPos, std::forward<Args>(args)...);
         }
 
         template <typename T>
@@ -209,6 +188,7 @@ namespace phenyl::component {
                 return;
             }
 
+            manager.onComponentRemove(entityIds[pos], meta::type_index<T>(), static_cast<std::byte*>(&getComponent<T>()[pos]));
             Archetype& dest = getWithout<std::remove_cvref_t<T>>();
 
             dest.moveFrom(*this, pos);

@@ -21,7 +21,10 @@ Entity2 Entity2::parent () const {
     return compManager->parent(id());
 }
 
+ChildrenView2 Entity2::children() const noexcept {
+    return ChildrenView2{entityId, compManager};
+}
+
 void Entity2::remove () {
     compManager->remove(entityId);
 }
-

@@ -108,7 +108,9 @@ namespace phenyl::component {
                 return pos <=> other.pos;
             }
 
-            friend Iterator operator+ (difference_type n, const Iterator& it) noexcept;
+            friend Iterator operator+ (std::ptrdiff_t n, const Iterator& it) noexcept {
+                return Iterator{it.view, it.pos + n};
+            }
         };
 
         class BundleIterator {
@@ -183,7 +185,9 @@ namespace phenyl::component {
                 return pos <=> other.pos;
             }
 
-            friend BundleIterator operator+ (difference_type n, const BundleIterator& it) noexcept;
+            friend BundleIterator operator+ (std::ptrdiff_t n, const BundleIterator& it) noexcept {
+                return BundleIterator{it.view, it.pos + n};
+            }
         };
 
         using iterator = Iterator;
@@ -207,13 +211,13 @@ namespace phenyl::component {
         }
     };
 
-    template <typename ...Args>
-    typename ArchetypeView<Args...>::Iterator operator+ (typename ArchetypeView<Args...>::Iterator::difference_type n, const typename ArchetypeView<Args...>::Iterator& it) noexcept {
-        return typename ArchetypeView<Args...>::Iterator{it.view, it.pos + n};
-    }
+    // template <typename ...Args>
+    // typename ArchetypeView<Args...>::Iterator operator+ (std::ptrdiff_t n, const typename ArchetypeView<Args...>::Iterator& it) noexcept {
+    //     return typename ArchetypeView<Args...>::Iterator{it.view, it.pos + n};
+    // }
 
-    template <typename ...Args>
-    typename ArchetypeView<Args...>::BundleIterator operator+ (typename ArchetypeView<Args...>::BundleIterator::difference_type n, const typename ArchetypeView<Args...>::BundleIterator& it) noexcept {
-        return typename ArchetypeView<Args...>::BundleIterator{it.view, it.pos + n};
-    }
+    // template <typename ...Args>
+    // typename ArchetypeView<Args...>::BundleIterator operator+ (std::ptrdiff_t n, const typename ArchetypeView<Args...>::BundleIterator& it) noexcept {
+    //     return typename ArchetypeView<Args...>::BundleIterator{it.view, it.pos + n};
+    // }
 }

@@ -48,7 +48,7 @@ QueryArchetypes::Iterator& QueryArchetypes::Iterator::operator-- () {
     return *this;
 }
 
-QueryArchetypes::Iterator& QueryArchetypes::Iterator::operator-- (int) {
+QueryArchetypes::Iterator QueryArchetypes::Iterator::operator-- (int) {
     auto copy = *this;
     --*this;
     return copy;

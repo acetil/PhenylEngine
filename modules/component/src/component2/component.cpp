@@ -45,6 +45,14 @@ void ComponentManager2::clear() {
     }
 }
 
+Entity2 ComponentManager2::entity (EntityId id) noexcept {
+    return Entity2{id, this};
+}
+
+ChildrenView2 ComponentManager2::root () noexcept {
+    return ChildrenView2{EntityId{}, this};
+}
+
 Entity2 ComponentManager2::parent (EntityId id) noexcept {
     auto parentId = relationships.parent(id);
     return Entity2{parentId, this};
@@ -74,7 +82,24 @@ void ComponentManager2::removeInt (EntityId id, bool updateParent) {
     idList.removeId(id);
 }
 
-void ComponentManager2::addArchetype (std::unique_ptr<Archetype> archetype) {
+Archetype* ComponentManager2::findArchetype (const std::vector<std::size_t>& comps) {
+    auto it = std::ranges::find_if(archetypes, [&] (const auto& arch) {
+        return arch->getComponentIds() == comps;
+    });
+
+    if (it != archetypes.end()) {
+        return it->get();
+    }
+
+    std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> compVecs;
+    for (auto i : comps) {
+        auto compIt = components.find(i);
+        PHENYL_ASSERT_MSG(compIt != components.end(), "Failed to find component in findArchetype()");
+
+        compVecs.emplace(i, compIt->second->makeVector());
+    }
+
+    auto archetype = std::make_unique<Archetype>(static_cast<detail::IArchetypeManager&>(*this), std::move(compVecs));
     auto* ptr = archetype.get();
     archetypes.emplace_back(std::move(archetype));
 
@@ -82,14 +107,8 @@ void ComponentManager2::addArchetype (std::unique_ptr<Archetype> archetype) {
     for (const auto& i : queryArchetypes) {
         i.lock()->onNewArchetype(ptr);
     }
-}
 
-Archetype* ComponentManager2::findArchetype (const std::vector<std::size_t>& comps) {
-    auto it = std::ranges::find_if(archetypes, [&] (const auto& arch) {
-        return arch->getComponentIds() == comps;
-    });
-
-    return it != archetypes.end() ? it->get() : nullptr;
+    return ptr;
 }
 
 void ComponentManager2::updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) {
@@ -97,6 +116,20 @@ void ComponentManager2::updateEntityEntry (EntityId id, Archetype* archetype, st
     auto& entry = entityEntries[id.pos()];
     entry.archetype = archetype;
     entry.pos = pos;
+}
+
+void ComponentManager2::onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) {
+    PHENYL_DASSERT(components.contains(compType));
+
+    auto& comp = components[compType];
+    comp->onInsert(id, ptr);
+}
+
+void ComponentManager2::onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) {
+    PHENYL_DASSERT(components.contains(compType));
+
+    auto& comp = components[compType];
+    comp->onRemove(id, ptr);
 }
 
 std::shared_ptr<QueryArchetypes> ComponentManager2::makeQueryArchetypes (std::vector<std::size_t> components) {

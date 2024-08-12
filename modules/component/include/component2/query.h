@@ -33,7 +33,7 @@ namespace phenyl::component {
             Iterator operator++ (int);
 
             Iterator& operator-- ();
-            Iterator& operator-- (int);
+            Iterator operator-- (int);
 
             bool operator== (const Iterator&) const noexcept;
         };

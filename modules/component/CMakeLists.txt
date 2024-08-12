@@ -40,6 +40,9 @@ add_library(component include/component/forward.h include/component/fixed_compon
         include/component2/query.h
         src/component2/query.cpp
         include/component2/archetype_view.h
+        include/component2/children_view.h
+        src/component2/children_view.cpp
+        include/component2/detail/component_instance.h
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

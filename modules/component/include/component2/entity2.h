@@ -12,6 +12,7 @@ namespace phenyl::component {
         };
     }
     class ComponentManager2;
+    class ChildrenView2;
 
     class Entity2 {
     private:
@@ -20,17 +21,17 @@ namespace phenyl::component {
         EntityId entityId;
         ComponentManager2* compManager = nullptr;
 
-        Entity2 (EntityId id, ComponentManager2* compManager);
-
         [[nodiscard]] const detail::EntityEntry& entry () const;
         friend ComponentManager2;
         template <typename ...Args>
         friend class ArchetypeView;
     public:
         Entity2 () = default;
+        Entity2 (EntityId id, ComponentManager2* compManager);
 
         [[nodiscard]] bool exists () const noexcept;
         [[nodiscard]] Entity2 parent () const;
+        [[nodiscard]] ChildrenView2 children () const noexcept;
         void remove ();
 
         template <typename T>

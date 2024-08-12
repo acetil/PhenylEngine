@@ -80,4 +80,10 @@ std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
     return newPos;
 }
 
+void test () {
+    ArchetypeView<int, float>::iterator it{};
+
+    auto it2 = 4 + it;
+}
+
 static_assert(std::random_access_iterator<ArchetypeView<int, float>::Iterator>);

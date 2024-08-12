@@ -137,10 +137,11 @@ namespace phenyl::component {
         }
 
         template <typename ...Args>
-        void emplace (Args&... args) requires std::constructible_from<T, Args&&...> {
+        T* emplace (Args&... args) requires std::constructible_from<T, Args&&...> {
             T* ptr = reinterpret_cast<T*>(insertUntyped());
 
             new (ptr) T(std::forward<Args>(args)...);
+            return ptr;
         }
 
         [[nodiscard]] std::unique_ptr<UntypedComponentVector> makeNew (std::size_t startCapacity) const override {
