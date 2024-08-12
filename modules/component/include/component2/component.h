@@ -10,6 +10,7 @@
 #include "entity2.h"
 #include "query.h"
 #include "detail/component_instance.h"
+#include "detail/signal_handler.h"
 
 namespace phenyl::component {
     class ComponentManager2 : private detail::IArchetypeManager {
@@ -25,6 +26,8 @@ namespace phenyl::component {
 
         std::vector<std::weak_ptr<QueryArchetypes>> queryArchetypes;
 
+        std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> signalHandlerVectors;
+
         void removeInt (EntityId id, bool updateParent);
 
         std::shared_ptr<QueryArchetypes> makeQueryArchetypes (std::vector<std::size_t> components);
@@ -35,6 +38,8 @@ namespace phenyl::component {
 
         void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
         void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
+
+        void raiseSignal (Entity2 entity, std::size_t signalType, const std::byte* ptr);
 
         friend Entity2;
         friend ChildrenView2;
@@ -73,7 +78,7 @@ namespace phenyl::component {
         }
 
         template <typename T>
-        void addHandler (std::function<void(const OnInsert<T>&, Entity2)> handler) {
+        void addHandler (std::function<void(const OnInsert2<T>&, Entity2)> handler) {
             auto it = components.find(meta::type_index<T>());
             PHENYL_ASSERT_MSG(it != components.end(), "Failed to find component in addHandler()");
 
@@ -82,12 +87,34 @@ namespace phenyl::component {
         }
 
         template <typename T>
-        void addHandler (std::function<void(const OnRemove<T>&, Entity2)> handler) {
+        void addHandler (std::function<void(const OnRemove2<T>&, Entity2)> handler) {
             auto it = components.find(meta::type_index<T>());
             PHENYL_ASSERT_MSG(it != components.end(), "Failed to find component in addHandler()");
 
             auto& component = static_cast<detail::Component<T>&>(*it->second);
             component.addHandler(std::move(handler));
+        }
+
+        template <typename Signal, typename ...Args>
+        void addHandler (std::function<void(const Signal&, const Bundle<Args...>& bundle)> handler) {
+            detail::SignalHandlerVector<Signal>* handlerVec;
+            auto vecIt = signalHandlerVectors.find(meta::type_index<Signal>());
+            if (vecIt != signalHandlerVectors.end()) {
+                handlerVec = static_cast<detail::SignalHandlerVector<Signal>*>(vecIt->second.get());
+            } else {
+                auto newVec = std::make_unique<detail::SignalHandlerVector<Signal>>();
+                handlerVec = newVec.get();
+                signalHandlerVectors.emplace(meta::type_index<Signal>(), std::move(newVec));
+            }
+
+            handlerVec->addHandler(std::make_unique<detail::SignalHandler<Signal, Args...>>(query<Args...>(), std::move(handler)));
+        }
+
+        template <typename Signal, typename ...Args>
+        void addHandler (std::function<void(const Signal&, std::remove_reference_t<Args>&... args)> handler) {
+            addHandler(std::function<void(const Signal&, const Bundle<Args...>& bundle)>{[handler = std::move(handler)] (const Signal& signal, const Bundle<Args...>& bundle) {
+                handler(signal, std::get<Args>(bundle.comps())...);
+            }});
         }
     };
 }

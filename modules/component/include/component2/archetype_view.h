@@ -174,7 +174,7 @@ namespace phenyl::component {
             }
 
             value_type operator[] (difference_type n) const {
-                return {std::get<Args>(view->components)[pos + n]...};
+                return {Entity2{view->archetype.entityIds[pos + n], view->manager}, std::get<Args>(view->components)[pos + n]...};
             }
 
             bool operator== (const BundleIterator& other) const noexcept {
@@ -196,6 +196,10 @@ namespace phenyl::component {
 
         [[nodiscard]] std::size_t size () const noexcept {
             return archetype.size();
+        }
+
+        Bundle<Args...> bundle (std::size_t pos) {
+            return {Entity2{archetype.entityIds[pos], manager}, std::get<Args>(components)[pos]...};
         }
 
         iterator begin () {

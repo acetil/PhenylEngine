@@ -13,6 +13,10 @@ const detail::EntityEntry& Entity2::entry () const {
     return compManager->entityEntries[id().pos()];
 }
 
+void Entity2::raiseUntyped (std::size_t signalType, const std::byte* ptr) {
+    compManager->raiseSignal(*this, signalType, ptr);
+}
+
 bool Entity2::exists () const noexcept {
     return (bool)entityId && compManager && compManager->exists(entityId);
 }

@@ -1,3 +1,4 @@
+#include "component2/signals/children_update.h"
 #include "component2/component.h"
 
 using namespace phenyl::component;
@@ -18,6 +19,9 @@ Entity2 ComponentManager2::create (EntityId parent)  {
     emptyArchetype->add(id);
 
     relationships.add(id, parent);
+    if (parent) {
+        entity(parent).raise(OnAddChild2{entity(id)});
+    }
 
     return Entity2{id, this};
 }
@@ -35,8 +39,18 @@ void ComponentManager2::remove (EntityId id)  {
 
 void ComponentManager2::reparent(EntityId id, EntityId parent)  {
     // TODO: signals
+
+    auto oldParent = relationships.parent(id);
+    if (oldParent) {
+        entity(oldParent).raise(OnRemoveChild2{entity(id)});
+    }
+
     relationships.removeFromParent(id);
     relationships.setParent(id, parent);
+
+    if (parent) {
+        entity(parent).raise(OnAddChild2{entity(id)});
+    }
 }
 
 void ComponentManager2::clear() {
@@ -60,7 +74,10 @@ Entity2 ComponentManager2::parent (EntityId id) noexcept {
 
 void ComponentManager2::removeInt (EntityId id, bool updateParent) {
     if (updateParent) {
-        // TODO: signal remove child
+        auto parentId = relationships.parent(id);
+        if (parentId) {
+            entity(parentId).raise(OnRemoveChild2{entity(id)});
+        }
     }
 
     auto curr = relationships.entityChildren(id);
@@ -130,6 +147,15 @@ void ComponentManager2::onComponentRemove (EntityId id, std::size_t compType, st
 
     auto& comp = components[compType];
     comp->onRemove(id, ptr);
+}
+
+void ComponentManager2::raiseSignal (Entity2 entity, std::size_t signalType, const std::byte* ptr) {
+    auto vecIt = signalHandlerVectors.find(signalType);
+    if (vecIt == signalHandlerVectors.end()) {
+        return;
+    }
+
+    vecIt->second->handle(entity, ptr);
 }
 
 std::shared_ptr<QueryArchetypes> ComponentManager2::makeQueryArchetypes (std::vector<std::size_t> components) {

@@ -22,9 +22,13 @@ namespace phenyl::component {
         ComponentManager2* compManager = nullptr;
 
         [[nodiscard]] const detail::EntityEntry& entry () const;
+        void raiseUntyped (std::size_t signalType, const std::byte* ptr);
+
         friend ComponentManager2;
         template <typename ...Args>
         friend class ArchetypeView;
+        template <typename ...Args>
+        friend class Query2;
     public:
         Entity2 () = default;
         Entity2 (EntityId id, ComponentManager2* compManager);
@@ -95,6 +99,11 @@ namespace phenyl::component {
             }
 
             return entry().archetype->has<T>();
+        }
+
+        template <typename Signal>
+        void raise (const Signal& signal) {
+            raiseUntyped(meta::type_index<Signal>(), static_cast<std::byte*>(&signal));
         }
 
         EntityId id () const noexcept {

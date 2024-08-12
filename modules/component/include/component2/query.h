@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include "archetype.h"
@@ -10,15 +11,15 @@ namespace phenyl::component {
     class QueryArchetypes {
     private:
         std::vector<std::size_t> componentIds;
-        std::vector<Archetype*> archetypes;
+        std::unordered_set<Archetype*> archetypes;
 
     public:
         explicit QueryArchetypes (std::vector<std::size_t> componentIds);
         class Iterator {
         private:
-            std::vector<Archetype*>::const_iterator it;
+            std::unordered_set<Archetype*>::const_iterator it;
 
-            Iterator (std::vector<Archetype*>::const_iterator it);
+            Iterator (std::unordered_set<Archetype*>::const_iterator it);
             friend QueryArchetypes;
         public:
             using value_type = Archetype;
@@ -68,6 +69,10 @@ namespace phenyl::component {
         const_iterator cend () const {
             return const_iterator{archetypes.end()};
         }
+
+        bool contains (Archetype* archetype) const noexcept {
+            return archetypes.contains(archetype);
+        }
     };
 
     template <typename F, typename ...Args>
@@ -75,6 +80,9 @@ namespace phenyl::component {
 
     template <typename F, typename ...Args>
     concept Query2PairCallback = meta::callable<F, void, const Bundle<Args...>&, const Bundle<Args...>&>;
+
+    template <typename F, typename ...Args>
+    concept Query2BundleCallback = meta::callable<F, void, const Bundle<Args...>&>;
 
     template <typename ...Args>
     class Query2 {
@@ -118,6 +126,17 @@ namespace phenyl::component {
                     fn(std::get<std::remove_cvref_t<Args>&>(comps)...);
                 }
             }
+        }
+
+        void entity (Entity2 entity, const Query2BundleCallback<Args...> auto& fn) const {
+            const auto& entry = entity.entry();
+
+            if (!archetypes->contains(entry.archetype)) {
+                return;
+            }
+
+            ArchetypeView<Args...> view{entry.archetype, manager};
+            fn(view.bundle(entry.pos));
         }
 
         void pairs (const Query2PairCallback<Args...> auto& fn) const {
