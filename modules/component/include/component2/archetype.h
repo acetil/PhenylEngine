@@ -9,16 +9,22 @@
 #include "component/entity_id.h"
 #include "detail/component_vector.h"
 #include "detail/iarchetype_manager.h"
+#include "detail/prefab_factory.h"
 
 namespace phenyl::component {
     class Archetype {
     private:
         detail::IArchetypeManager& manager;
+
         std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components;
         std::vector<std::size_t> componentIds;
         std::vector<EntityId> entityIds;
+
         std::unordered_map<std::size_t, Archetype*> addArchetypes;
         std::unordered_map<std::size_t, Archetype*> removeArchetypes;
+
+        std::unordered_map<std::size_t, std::map<std::size_t, std::unique_ptr<detail::IPrefabFactory>>> prefabs;
+        std::size_t nextPrefabId = 1;
 
         template <typename T>
         ComponentVector<std::remove_cvref_t<T>>& getComponent () {
@@ -200,6 +206,10 @@ namespace phenyl::component {
         const std::vector<std::size_t>& getComponentIds () const noexcept {
             return componentIds;
         }
+
+        std::size_t addArchetypePrefab (std::map<std::size_t, std::unique_ptr<detail::IPrefabFactory>> factories);
+        void addWithPrefab (EntityId id, std::size_t prefabId);
+        void removePrefab (std::size_t prefabId);
     };
 
     class EmptyArchetype : public Archetype {

@@ -4,7 +4,7 @@
 using namespace phenyl::component;
 
 
-ComponentManager2::ComponentManager2 (std::size_t capacity) : idList{capacity}, relationships{capacity} {
+ComponentManager2::ComponentManager2 (std::size_t capacity) : idList{capacity}, relationships{capacity}, prefabManager{std::make_shared<PrefabManager2>(*this)} {
     auto empty = std::make_unique<EmptyArchetype>(static_cast<detail::IArchetypeManager&>(*this));
     emptyArchetype = empty.get();
     archetypes.emplace_back(std::move(empty));
@@ -16,9 +16,10 @@ Entity2 ComponentManager2::create (EntityId parent)  {
     if (id.pos() == entityEntries.size()) {
         entityEntries.emplace_back(nullptr, 0);
     }
+    relationships.add(id, parent);
+
     emptyArchetype->add(id);
 
-    relationships.add(id, parent);
     if (parent) {
         entity(parent).raise(OnAddChild2{entity(id)});
     }
@@ -38,8 +39,6 @@ void ComponentManager2::remove (EntityId id)  {
 }
 
 void ComponentManager2::reparent(EntityId id, EntityId parent)  {
-    // TODO: signals
-
     auto oldParent = relationships.parent(id);
     if (oldParent) {
         entity(oldParent).raise(OnRemoveChild2{entity(id)});
@@ -70,6 +69,10 @@ ChildrenView2 ComponentManager2::root () noexcept {
 Entity2 ComponentManager2::parent (EntityId id) noexcept {
     auto parentId = relationships.parent(id);
     return Entity2{parentId, this};
+}
+
+PrefabBuilder2 ComponentManager2::buildPrefab () {
+    return prefabManager->makeBuilder();
 }
 
 void ComponentManager2::removeInt (EntityId id, bool updateParent) {
@@ -148,6 +151,24 @@ void ComponentManager2::onComponentRemove (EntityId id, std::size_t compType, st
     auto& comp = components[compType];
     comp->onRemove(id, ptr);
 }
+
+Entity2 ComponentManager2::makeWithPrefab (EntityId parent, Archetype* archetype, std::size_t prefabId) {
+    auto id = idList.newId();
+
+    if (id.pos() == entityEntries.size()) {
+        entityEntries.emplace_back(nullptr, 0);
+    }
+    relationships.add(id, parent);
+
+    archetype->addWithPrefab(id, prefabId);
+
+    if (parent) {
+        entity(parent).raise(OnAddChild2{entity(id)});
+    }
+
+    return entity(id);
+}
+
 
 void ComponentManager2::raiseSignal (Entity2 entity, std::size_t signalType, const std::byte* ptr) {
     auto vecIt = signalHandlerVectors.find(signalType);

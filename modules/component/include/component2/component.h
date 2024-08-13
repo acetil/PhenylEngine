@@ -11,6 +11,7 @@
 #include "query.h"
 #include "detail/component_instance.h"
 #include "detail/signal_handler.h"
+#include "component2/prefab.h"
 
 namespace phenyl::component {
     class ComponentManager2 : private detail::IArchetypeManager {
@@ -28,6 +29,8 @@ namespace phenyl::component {
 
         std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> signalHandlerVectors;
 
+        std::shared_ptr<PrefabManager2> prefabManager;
+
         void removeInt (EntityId id, bool updateParent);
 
         std::shared_ptr<QueryArchetypes> makeQueryArchetypes (std::vector<std::size_t> components);
@@ -39,10 +42,13 @@ namespace phenyl::component {
         void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
         void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
 
+        Entity2 makeWithPrefab (EntityId parent, Archetype* archetype, std::size_t prefabId);
+
         void raiseSignal (Entity2 entity, std::size_t signalType, const std::byte* ptr);
 
         friend Entity2;
         friend ChildrenView2;
+        friend PrefabManager2;
     public:
         static constexpr std::size_t DEFAULT_CAPACITY = 256;
 
@@ -116,5 +122,7 @@ namespace phenyl::component {
                 handler(signal, std::get<Args>(bundle.comps())...);
             }});
         }
+
+        PrefabBuilder2 buildPrefab ();
     };
 }

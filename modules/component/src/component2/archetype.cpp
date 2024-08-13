@@ -57,6 +57,41 @@ void Archetype::clear() {
     entityIds.clear();
 }
 
+std::size_t Archetype::addArchetypePrefab (std::map<std::size_t, std::unique_ptr<detail::IPrefabFactory>> factories) {
+    PHENYL_DASSERT(factories.size() == componentIds.size());
+
+    auto id = nextPrefabId++;
+    prefabs.emplace(id, std::move(factories));
+    return id;
+}
+
+void Archetype::addWithPrefab (EntityId id, std::size_t prefabId) {
+    PHENYL_DASSERT(prefabs.contains(prefabId));
+
+    auto index = entityIds.size();
+    entityIds.emplace_back(id);
+
+    auto& prefab = prefabs[prefabId];
+    auto prefabIt = prefab.begin();
+    for (const auto& [typeIndex, vec] : components) {
+        PHENYL_DASSERT(typeIndex == prefabIt->first);
+
+        auto* ptr = vec->insertUntyped();
+        prefabIt->second->make(ptr);
+        ++prefabIt;
+    }
+
+    manager.updateEntityEntry(id, this, index);
+    for (const auto& [typeIndex, vec] : components) {
+        manager.onComponentInsert(id, typeIndex, vec->getUntyped(index));
+    }
+}
+
+void Archetype::removePrefab (std::size_t prefabId) {
+    PHENYL_DASSERT(prefabs.contains(prefabId));
+    prefabs.erase(prefabId);
+}
+
 std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
     auto newPos = entityIds.size();
     entityIds.emplace_back(other.entityIds[pos]);
@@ -78,12 +113,6 @@ std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
     }
 
     return newPos;
-}
-
-void test () {
-    ArchetypeView<int, float>::iterator it{};
-
-    auto it2 = 4 + it;
 }
 
 static_assert(std::random_access_iterator<ArchetypeView<int, float>::Iterator>);

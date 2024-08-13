@@ -45,6 +45,9 @@ add_library(component include/component/forward.h include/component/fixed_compon
         include/component2/detail/component_instance.h
         include/component2/detail/signal_handler.h
         include/component2/signals/component_update.h
+        include/component2/prefab.h
+        include/component2/detail/prefab_factory.h
+        src/component2/prefab.cpp
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)
