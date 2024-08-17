@@ -18,7 +18,7 @@ namespace phenyl::runtime {
 
     class PhenylRuntime {
     private:
-        component::ComponentManager compManager;
+        component::EntityComponentManager compManager;
         component::EntitySerializer serializationManager;
 
         ResourceManager resourceManager;
@@ -105,13 +105,13 @@ namespace phenyl::runtime {
             return ptr;
         }
     public:
-        explicit PhenylRuntime (component::ComponentManager&& compManager);
+        explicit PhenylRuntime ();
         virtual ~PhenylRuntime();
 
-        component::ComponentManager& manager () {
+        component::EntityComponentManager& manager () {
             return compManager;
         }
-        [[nodiscard]] const component::ComponentManager& manager () const {
+        [[nodiscard]] const component::EntityComponentManager& manager () const {
             return compManager;
         }
 
@@ -187,14 +187,14 @@ namespace phenyl::runtime {
         }
 
         template <common::CustomSerializable T>
-        void addComponent () {
-            addUnserializedComponent<T>();
+        void addComponent (std::string name) {
+            addUnserializedComponent<T>(std::move(name));
             serializer().addSerializer<T>();
         }
 
         template <typename T>
-        void addUnserializedComponent () {
-            manager().addComponent<T>();
+        void addUnserializedComponent (std::string name) {
+            manager().addComponent<T>(std::move(name));
         }
 
         template <typename S>

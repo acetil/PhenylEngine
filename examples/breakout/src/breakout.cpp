@@ -54,11 +54,16 @@ void BreakoutApp::init () {
 
     for (std::size_t i = 0; i < TileRows; i++) {
         for (std::size_t j = 0; j < TileCols; j++) {
-            tilePrefab->instantiate()
+            /*tilePrefab->instantiate()
                 .complete()
                 .apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
                     transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});
-                });
+                });*/
+            auto tileEntity = componentManager().create();
+            tilePrefab->instantiate(tileEntity);
+            tileEntity.apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
+                transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});
+            });
         }
     }
 

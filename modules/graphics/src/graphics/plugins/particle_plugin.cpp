@@ -41,7 +41,7 @@ void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
 
     auto& renderer = runtime.resource<Renderer>();
 
-    runtime.addComponent<ParticleEmitter2D>();
+    runtime.addComponent<ParticleEmitter2D>("ParticleEmitter2D");
 
     //manager = std::make_unique<ParticleManager2D>(256);
     //manager->selfRegister();

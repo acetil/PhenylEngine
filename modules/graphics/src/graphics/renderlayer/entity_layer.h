@@ -1,8 +1,9 @@
 #pragma once
 
+#include "component/component.h"
+
 #include "graphics/abstract_render_layer.h"
 #include "graphics/camera.h"
-#include "component/component.h"
 #include "graphics/buffer.h"
 #include "graphics/pipeline.h"
 
@@ -49,7 +50,7 @@ namespace phenyl::graphics {
 
         SamplerBinding samplerBinding{};
 
-        void bufferData (const component::ComponentManager& manager, const Camera& camera);
+        void bufferData (component::ComponentManager& manager, const Camera& camera);
     public:
 
         EntityRenderLayer ();

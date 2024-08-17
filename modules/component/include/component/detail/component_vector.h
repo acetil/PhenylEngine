@@ -86,7 +86,7 @@ namespace phenyl::component {
             auto* fromTyped = reinterpret_cast<T*>(from);
             auto* toTyped = reinterpret_cast<T*>(to);
 
-            *toTyped = std::move(fromTyped);
+            *toTyped = std::move(*fromTyped);
         }
 
         void moveConstructComp(std::byte* from, std::byte* to) override {
@@ -108,7 +108,7 @@ namespace phenyl::component {
             auto* newStartTyped = reinterpret_cast<T*>(newStart);
 
             for (auto* i = startTyped; i < endTyped; i++) {
-                *(newStart++) = std::move(*i);
+                *(newStartTyped++) = std::move(*i);
                 i->~T();
             }
         }
@@ -137,7 +137,7 @@ namespace phenyl::component {
         }
 
         template <typename ...Args>
-        T* emplace (Args&... args) requires std::constructible_from<T, Args&&...> {
+        T* emplace (Args&&... args) requires std::constructible_from<T, Args&&...> {
             T* ptr = reinterpret_cast<T*>(insertUntyped());
 
             new (ptr) T(std::forward<Args>(args)...);

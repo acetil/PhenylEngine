@@ -1,7 +1,6 @@
 #include "common/assets/assets.h"
 #include "component/component.h"
 #include "component/component_serializer.h"
-#include "component/signals/component_update.h"
 
 #include "audio/audio_system.h"
 #include "filetypes/wav.h"
@@ -91,11 +90,11 @@ bool AudioSystem::isBinary () const {
     return true;
 }
 
-void AudioSystem::addComponents (component::ComponentManager& manager, component::EntitySerializer& serializer) {
-    manager.addComponent<AudioPlayer>();
+void AudioSystem::addComponents (component::EntityComponentManager& manager, component::EntitySerializer& serializer) {
+    manager.addComponent<AudioPlayer>("AudioPlayer");
     serializer.addSerializer<AudioPlayer>();
 
-    manager.handleSignal<component::OnInsert<AudioPlayer>>([this] (auto entity, const component::OnInsert<AudioPlayer>& signal) {
+    manager.addHandler<AudioPlayer>([this] (const component::OnInsert<AudioPlayer>& signal, component::Entity entity) {
         auto& comp = signal.get();
         comp.source = this->createSource();
         comp.setGain(comp.sourceGain);

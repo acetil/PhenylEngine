@@ -14,6 +14,6 @@ namespace phenyl::physics {
         void addComponents(runtime::PhenylRuntime& runtime);
         void updatePhysics(component::EntityComponentManager& componentManager, float deltaTime);
 
-        void debugRender (const component::EntityComponentManager& componentManager);
+        void debugRender (component::EntityComponentManager& componentManager);
     };
 }

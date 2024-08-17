@@ -1,4 +1,4 @@
-#include "component2/query.h"
+#include "component/query.h"
 
 using namespace phenyl::component;
 
@@ -20,13 +20,16 @@ void QueryArchetypes::onNewArchetype (Archetype* archetype) {
             ++archIt;
         }
     }
-    // If gotten here all components are in archetype
-    archetypes.emplace_back(archetype);
+
+    if (it == componentIds.end()) {
+        // All components found
+        archetypes.emplace(archetype);
+    }
 }
 
 QueryArchetypes::Iterator::Iterator() = default;
 
-QueryArchetypes::Iterator::Iterator (std::vector<Archetype*>::const_iterator it) : it{it} {}
+QueryArchetypes::Iterator::Iterator (std::unordered_set<Archetype*>::const_iterator it) : it{it} {}
 
 QueryArchetypes::Iterator::reference QueryArchetypes::Iterator::operator* () const {
     return **it;
@@ -43,7 +46,7 @@ QueryArchetypes::Iterator QueryArchetypes::Iterator::operator++ (int) {
     return copy;
 }
 
-QueryArchetypes::Iterator& QueryArchetypes::Iterator::operator-- () {
+/*QueryArchetypes::Iterator& QueryArchetypes::Iterator::operator-- () {
     --it;
     return *this;
 }
@@ -52,7 +55,7 @@ QueryArchetypes::Iterator QueryArchetypes::Iterator::operator-- (int) {
     auto copy = *this;
     --*this;
     return copy;
-}
+}*/
 
 bool QueryArchetypes::Iterator::operator== (const Iterator& other) const noexcept {
     return it == other.it;

@@ -1,4 +1,4 @@
-#include "component2/detail/component_vector.h"
+#include "component/detail/component_vector.h"
 
 using namespace phenyl::component;
 
@@ -37,7 +37,6 @@ void UntypedComponentVector::moveFrom (UntypedComponentVector& other, std::size_
 
     auto* ptr = insertUntyped();
     moveConstructComp(other.getUntyped(pos), ptr);
-    other.remove(pos);
 }
 
 std::size_t UntypedComponentVector::remove (std::size_t pos) {

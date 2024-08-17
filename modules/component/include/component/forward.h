@@ -10,7 +10,6 @@ namespace phenyl::component {
     using EntityComponentManager = ComponentManager;
 
     class Entity;
-    class ConstEntity;
     class ChildrenView;
     class Prefab;
 }

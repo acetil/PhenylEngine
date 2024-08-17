@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../include/graphics/uniform_buffer.h"
+#include "graphics/uniform_buffer.h"
 #include "graphics/graphics_headers.h"
 
 namespace phenyl::graphics {

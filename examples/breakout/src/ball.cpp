@@ -11,11 +11,11 @@ using namespace breakout;
 static void BallUpdateSystem (const Ball& ball, phenyl::RigidBody2D& body);
 
 void breakout::InitBall (BreakoutApp* app, phenyl::ComponentManager& manager) {
-    app->addComponent<Ball>();
+    app->addComponent<Ball>("Ball");
 
-    manager.handleSignal<phenyl::signals::OnCollision, const Ball>([app] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const Ball&) {
+    manager.addHandler<phenyl::signals::OnCollision, const Ball>([app] (const phenyl::signals::OnCollision& signal, const phenyl::Bundle<const Ball>& bundle) {
         if (signal.collisionLayers & FLOOR_LAYER) {
-            entity.remove();
+            bundle.entity().remove();
             app->subtractLife();
         }
     });

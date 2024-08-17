@@ -18,7 +18,7 @@ void Sprite2DPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
     runtime.addPlugin<common::Core2DPlugin>();
 
-    runtime.addComponent<Sprite2D>();
+    runtime.addComponent<Sprite2D>("Sprite2D");
 
     auto& renderer = runtime.resource<Renderer>();
     entityLayer = &renderer.addLayer<EntityRenderLayer>();

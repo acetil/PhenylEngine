@@ -35,10 +35,7 @@ namespace phenyl::component {
         }
 
         friend class Archetype;
-        friend class ComponentManager;
-        friend class detail::ComponentSet;
         friend class detail::EntityIdList;
-        friend class detail::BasicManager;
         friend class detail::RelationshipManager;
     };
 

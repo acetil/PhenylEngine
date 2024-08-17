@@ -1,22 +1,22 @@
 #pragma once
-#include "entity2.h"
-#include "component/entity_id.h"
-#include "component/detail/relationships.h"
+#include "entity.h"
+#include "entity_id.h"
+#include "detail/relationships.h"
 
 namespace phenyl::component {
-    class ComponentManager2;
+    class ComponentManager;
 
-    class ChildrenView2 {
+    class ChildrenView {
     private:
         class Iterator {
         private:
             detail::RelationshipManager::ChildIterator it;
-            ComponentManager2* manager = nullptr;
+            ComponentManager* manager = nullptr;
 
-            Iterator (detail::RelationshipManager::ChildIterator it, ComponentManager2* manager);
-            friend ChildrenView2;
+            Iterator (detail::RelationshipManager::ChildIterator it, ComponentManager* manager);
+            friend ChildrenView;
         public:
-            using value_type = Entity2;
+            using value_type = Entity;
             using difference_type = std::ptrdiff_t;
             Iterator ();
 
@@ -29,13 +29,13 @@ namespace phenyl::component {
         };
 
         EntityId parentId;
-        ComponentManager2* manager = nullptr;
+        ComponentManager* manager = nullptr;
 
     public:
         using const_iterator = Iterator;
         using iterator = const_iterator;
 
-        ChildrenView2 (EntityId parentId, ComponentManager2* manager);
+        ChildrenView (EntityId parentId, ComponentManager* manager);
 
         iterator begin ();
         iterator end ();

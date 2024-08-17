@@ -1,27 +1,27 @@
 #pragma once
 
-#include "component2/archetype_view.h"
-#include "component2/entity2.h"
-#include "component2/query.h"
+#include "component/archetype_view.h"
+#include "component/entity.h"
+#include "component/query.h"
 
 namespace phenyl::component::detail {
     template <typename Signal>
     class ISignalHandler {
     public:
         virtual ~ISignalHandler () = default;
-        virtual void handle (Entity2 entity, const Signal& signal) const = 0;
+        virtual void handle (Entity entity, const Signal& signal) const = 0;
     };
 
     template <typename Signal, typename ...Args>
-    class SignalHandler : public ISignalHandler<Signal> {
+    class SignalHandler2 : public ISignalHandler<Signal> {
     private:
-        Query2<Args...> query{};
+        Query<Args...> query{};
         std::function<void(const Signal&, const Bundle<Args...>&)> func;
 
     public:
-        SignalHandler (Query2<Args...> query, std::function<void(const Signal&, const Bundle<Args...>&)> func) : query{std::move(query)}, func{std::move(func)} {}
+        SignalHandler2 (Query<Args...> query, std::function<void(const Signal&, const Bundle<Args...>&)> func) : query{std::move(query)}, func{std::move(func)} {}
 
-        void handle (Entity2 entity, const Signal& signal) const override {
+        void handle (Entity entity, const Signal& signal) const override {
             query.entity(entity, [&] (const Bundle<Args...>& bundle) {
                 func(signal, bundle);
             });
@@ -33,7 +33,7 @@ namespace phenyl::component::detail {
     public:
         virtual ~IHandlerVector() = default;
 
-        virtual void handle (Entity2 entity, const std::byte* ptr) const;
+        virtual void handle (Entity entity, const std::byte* ptr) const = 0;
     };
 
     template <typename Signal>
@@ -46,8 +46,8 @@ namespace phenyl::component::detail {
             handlers.emplace_back(std::move(handler));
         }
 
-        void handle(Entity2 entity, const std::byte* signal) const override {
-            auto* typedSignal = static_cast<const Signal*>(signal);
+        void handle(Entity entity, const std::byte* signal) const override {
+            auto* typedSignal = reinterpret_cast<const Signal*>(signal);
             for (const auto& i : handlers) {
                 i->handle(entity, *typedSignal);
             }

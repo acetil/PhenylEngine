@@ -35,11 +35,19 @@ namespace phenyl::runtime {
         struct is_resources<Resources<Args...>> : std::true_type {};
 
         template <typename T>
+        struct is_bundle : std::false_type {};
+        template <typename ...Args>
+        struct is_bundle<component::Bundle<Args...>> : std::true_type {};
+
+        template <typename T>
         static constexpr bool is_resources_v = is_resources<T>::value;
+
+        template <typename T>
+        static constexpr bool is_bundle_v = is_bundle<T>::value;
     }
 
     template <typename T>
-    concept ComponentType = !std::derived_from<std::remove_cvref_t<T>, IResource> && !detail::is_resources_v<T>;
+    concept ComponentType = !std::derived_from<std::remove_cvref_t<T>, IResource> && !detail::is_resources_v<std::remove_cvref_t<T>> && !detail::is_bundle_v<std::remove_cvref_t<T>> && !std::same_as<std::remove_cvref_t<T>, component::Entity>;
 }
 
 template <typename ...Args>

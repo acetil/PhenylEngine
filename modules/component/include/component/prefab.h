@@ -1,157 +1,89 @@
 #pragma once
+#include <map>
+#include <memory>
+#include <unordered_set>
 
-#include "component.h"
+#include "util/meta.h"
+
+#include "entity.h"
+#include "detail/prefab_factory.h"
 
 namespace phenyl::component {
+    class Archetype;
+    class ComponentManager;
+    class PrefabManager;
+    class PrefabBuilder;
+
     class Prefab {
     private:
-        std::size_t id{0};
-        ComponentManager* manager{nullptr};
+        std::size_t prefabId;
+        std::weak_ptr<PrefabManager> manager{};
 
-        void decRefCount () {
-            if (manager && id) {
-                manager->prefabs.decRefCount(id);
-            }
-        }
-
-        Prefab (ComponentManager* manager, std::size_t id) : manager{manager}, id{id} {}
-        friend class ComponentManager;
         friend class PrefabBuilder;
+        friend class PrefabManager;
+        Prefab (std::size_t prefabId, std::weak_ptr<PrefabManager> manager);
     public:
-        class Instantiator {
-        private:
-            Entity entity;
-            std::size_t prefabId;
+        Prefab ();
+        ~Prefab();
 
-            Instantiator (Entity entity, std::size_t prefabId) : entity{entity}, prefabId{prefabId} {
+        Prefab (const Prefab& other);
+        Prefab (Prefab&& other) noexcept;
 
-            }
-            friend class Prefab;
-        public:
-            // TODO
-            EntityId getId () const {
-                return entity.id();
-            }
-            template <typename T>
-            Instantiator& with (T comp) {
-                entity.insert(std::move(comp));
+        Prefab& operator= (const Prefab&);
+        Prefab& operator= (Prefab&& other) noexcept;
 
-                return *this;
-            }
+        void instantiate (Entity entity) const;
 
-            Instantiator& withChild (Entity child) {
-                entity.addChild(child);
-
-                return *this;
-            }
-
-            Entity complete () {
-                if (prefabId) {
-                    entity.manager().prefabs.instantiate(entity, prefabId);
-                }
-                //entity.manager().deferSignalsEnd();
-                return entity;
-            }
-        };
-
-        Prefab () = default;
-
-        Prefab (const Prefab& other) : manager{other.manager}, id{other.id} {
-            if (manager && id) {
-                manager->prefabs.incRefCount(id);
-            }
+        explicit operator bool () const noexcept {
+            return prefabId;
         }
-        Prefab (Prefab&& other) noexcept : manager{other.manager}, id{other.id} {
-            other.manager = nullptr;
-            other.id = 0;
-        }
+    };
 
-        Prefab& operator= (const Prefab& other) {
-            if (&other == this) {
-                return *this;
-            }
+    struct PrefabEntry {
+        detail::PrefabFactories factories;
+        std::vector<std::size_t> childEntries;
+        std::size_t refCount;
+    };
 
-            decRefCount();
-            manager = other.manager;
-            id = other.id;
+    class PrefabManager : public std::enable_shared_from_this<PrefabManager> {
+    private:
+        ComponentManager& manager;
+        std::unordered_map<std::size_t, PrefabEntry> entries;
+        std::size_t nextPrefabId = 1;
 
-            if (manager && id) {
-                manager->prefabs.incRefCount(id);
-            }
+    public:
+        explicit PrefabManager (ComponentManager& manager);
 
-            return *this;
-        }
-        Prefab& operator= (Prefab&& other) noexcept {
-            decRefCount();
-            manager = other.manager;
-            id = other.id;
+        Prefab makePrefab (detail::PrefabFactories factories, std::vector<std::size_t> children);
+        PrefabBuilder makeBuilder ();
 
-            other.manager = nullptr;
-            other.id = 0;
-
-            return *this;
-        }
-
-        explicit operator bool () const {
-            return manager && id;
-        }
-
-        [[nodiscard]] Instantiator instantiate (Entity parent) const {
-            //manager->deferSignals();
-            return Instantiator{parent.createChild(), id};
-        }
-
-        [[nodiscard]] Instantiator instantiate () const {
-            //manager->deferSignals();
-            return Instantiator{manager->create(), id};
-        }
-
-        static Prefab NullPrefab (ComponentManager* manager) {
-            return Prefab{manager, 0};
-        }
-
-        ~Prefab() {
-            decRefCount();
-        }
+        void incrementRefCount (std::size_t prefabId);
+        void decrementRefCount (std::size_t prefabId);
+        void instantiate (std::size_t prefabId, Entity entity);
     };
 
     class PrefabBuilder {
     private:
-        ComponentManager* manager;
-        std::size_t prefabId;
-        PrefabBuilder (ComponentManager* manager, std::size_t prefabId) : manager{manager}, prefabId{prefabId} {}
+        PrefabManager& manager;
+        detail::PrefabFactories factories;
+        std::vector<std::size_t> children;
 
-        friend class ComponentManager;
+        friend PrefabManager;
+        explicit PrefabBuilder (PrefabManager& manager);
     public:
         template <typename T>
-        PrefabBuilder& with (T comp) {
-            auto* set = (detail::TypedComponentSet<T>*)manager->getComponent<T>();
-            if (!set) {
-                PHENYL_LOGE(detail::PREFAB_LOGGER, "Attempted to add component that doesn't exist to prefab!");
-                return *this;
-            }
-
-            auto index = set->addPrefab(std::move(comp));
-            manager->prefabs.addComponent(prefabId, set, index);
-
+        PrefabBuilder& with (T&& comp) {
+            factories.emplace(meta::type_index<T>(), std::make_unique<detail::CopyPrefabFactory<T>>(std::forward<T>(comp)));
             return *this;
         }
 
-        PrefabBuilder& inherits (const Prefab& inherits) {
-            manager->prefabs.setInherits(prefabId, inherits.id);
+        template <typename T>
+        PrefabBuilder& with (std::function<T()> func) {
+            factories.emplace(meta::type_index<T>(), std::make_unique<detail::FuncPrefabFactory<T>>(std::move(func)));
             return *this;
         }
 
-        PrefabBuilder& withChild (const Prefab& child) {
-            manager->prefabs.addChild(prefabId, child.id);
-            return *this;
-        }
-
-        Prefab build () {
-            auto prefab = Prefab{manager, prefabId};
-            prefabId = 0;
-
-            return prefab;
-        }
+        PrefabBuilder& withChild (const Prefab& child);
+        Prefab build ();
     };
 }

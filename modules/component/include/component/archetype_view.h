@@ -3,18 +3,18 @@
 #include "util/iterable.h"
 
 #include "archetype.h"
-#include "entity2.h"
+#include "entity.h"
 
 namespace phenyl::component {
     template <typename ...Args>
     class Bundle {
     private:
-        Entity2 bundleEntity;
+        Entity bundleEntity;
         std::tuple<Args&...> bundleComps;
     public:
-        Bundle (Entity2 bundleEntity, std::tuple<Args&...> bundleComps) : bundleEntity{bundleEntity}, bundleComps{bundleComps} {}
+        Bundle (Entity bundleEntity, std::tuple<Args&...> bundleComps) : bundleEntity{bundleEntity}, bundleComps{bundleComps} {}
 
-        Entity2 entity () const noexcept {
+        Entity entity () const noexcept {
             return bundleEntity;
         }
 
@@ -26,14 +26,19 @@ namespace phenyl::component {
         T& get () const noexcept {
             return std::get<T&>(bundleComps);
         }
+
+        template <typename ...Args2>
+        Bundle<Args2...> subset () const noexcept {
+            return Bundle<Args2...>{bundleEntity, std::tuple<Args2&...>{get<Args2&>()...}};
+        }
     };
 
     template <typename ...Args>
     class ArchetypeView {
     private:
         Archetype& archetype;
-        ComponentManager2* manager;
-        std::tuple<ComponentVector<Args>*...> components;
+        ComponentManager* manager;
+        std::tuple<ComponentVector<std::remove_cvref_t<Args>>*...> components;
 
     public:
         class Iterator {
@@ -41,7 +46,8 @@ namespace phenyl::component {
             ArchetypeView<Args...>* view = nullptr;
             std::size_t pos = 0;
 
-        explicit Iterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
+            explicit Iterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
+            friend ArchetypeView<Args...>;
         public:
             using value_type = std::tuple<Args&...>;
             using difference_type = std::ptrdiff_t;
@@ -49,7 +55,7 @@ namespace phenyl::component {
             Iterator () = default;
 
             value_type operator* () const {
-                return {std::get<Args>(view->components)[pos]...};
+                return {(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos]...};
             }
 
             Iterator& operator++ () {
@@ -97,7 +103,7 @@ namespace phenyl::component {
             }
 
             value_type operator[] (difference_type n) const {
-                return {std::get<Args>(view->components)[pos + n]...};
+                return value_type{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos + n]...};
             }
 
             bool operator== (const Iterator& other) const noexcept {
@@ -118,7 +124,8 @@ namespace phenyl::component {
             ArchetypeView<Args...>* view = nullptr;
             std::size_t pos = 0;
 
-        explicit BundleIterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
+            explicit BundleIterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
+            friend ArchetypeView<Args...>;
         public:
             using value_type = Bundle<Args...>;
             using difference_type = std::ptrdiff_t;
@@ -126,7 +133,7 @@ namespace phenyl::component {
             BundleIterator () = default;
 
             value_type operator* () const {
-                return {Entity2{view->archetype.entityIds[pos], view->manager}, std::get<Args>(view->components)[pos]...};
+                return value_type{Entity{view->archetype.entityIds[pos], view->manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos]...}};
             }
 
             BundleIterator& operator++ () {
@@ -174,7 +181,7 @@ namespace phenyl::component {
             }
 
             value_type operator[] (difference_type n) const {
-                return {Entity2{view->archetype.entityIds[pos + n], view->manager}, std::get<Args>(view->components)[pos + n]...};
+                return value_type{Entity{view->archetype.entityIds[pos + n], view->manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos + n]...}};
             }
 
             bool operator== (const BundleIterator& other) const noexcept {
@@ -192,14 +199,14 @@ namespace phenyl::component {
 
         using iterator = Iterator;
 
-        explicit ArchetypeView (Archetype& archetype, ComponentManager2* manager) : archetype{archetype}, manager{manager}, components{archetype.getComponent<Args>()...} {}
+        explicit ArchetypeView (Archetype& archetype, ComponentManager* manager) : archetype{archetype}, manager{manager}, components{&archetype.getComponent<std::remove_cvref_t<Args>>()...} {}
 
         [[nodiscard]] std::size_t size () const noexcept {
             return archetype.size();
         }
 
         Bundle<Args...> bundle (std::size_t pos) {
-            return {Entity2{archetype.entityIds[pos], manager}, std::get<Args>(components)[pos]...};
+            return {Entity{archetype.entityIds[pos], manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(components))[pos]...}};
         }
 
         iterator begin () {

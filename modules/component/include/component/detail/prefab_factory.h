@@ -19,7 +19,7 @@ namespace phenyl::component::detail {
         explicit CopyPrefabFactory (T&& obj) : obj{std::move(obj)} {}
 
         void make (std::byte* ptr) const override {
-            T* tPtr = static_cast<T*>(ptr);
+            T* tPtr = reinterpret_cast<T*>(ptr);
 
             new (tPtr) T(obj);
         }
@@ -33,9 +33,11 @@ namespace phenyl::component::detail {
         explicit FuncPrefabFactory (std::function<T()> factory) : factory{std::move(factory)} {}
 
         void make (std::byte* ptr) const override {
-            T* tPtr = static_cast<T*>(ptr);
+            T* tPtr = reinterpret_cast<T*>(ptr);
 
             new (tPtr) T(factory());
         }
     };
+
+    using PrefabFactories = std::map<std::size_t, std::unique_ptr<IPrefabFactory>>;
 }

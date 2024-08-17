@@ -4,7 +4,7 @@ add_library(audio src/audio/audio_system.cpp
         src/audio/openal/openal_headers.h
         src/audio/filetypes/wav.h
         src/audio/filetypes/wav.cpp
-        src/audio/audio_source.h
+        include/audio/audio_source.h
         src/audio/audio_source.cpp
         src/audio/openal/openal_source.h
         src/audio/openal/openal_source.cpp

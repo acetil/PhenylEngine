@@ -6,7 +6,7 @@
 
 #include "util/meta.h"
 
-#include "component/entity_id.h"
+#include "entity_id.h"
 #include "detail/component_vector.h"
 #include "detail/iarchetype_manager.h"
 #include "detail/prefab_factory.h"
@@ -23,31 +23,28 @@ namespace phenyl::component {
         std::unordered_map<std::size_t, Archetype*> addArchetypes;
         std::unordered_map<std::size_t, Archetype*> removeArchetypes;
 
-        std::unordered_map<std::size_t, std::map<std::size_t, std::unique_ptr<detail::IPrefabFactory>>> prefabs;
-        std::size_t nextPrefabId = 1;
-
         template <typename T>
         ComponentVector<std::remove_cvref_t<T>>& getComponent () {
             PHENYL_DASSERT(components.contains(meta::type_index<std::remove_cvref_t<T>>()));
-            return *components[meta::type_index<std::remove_cvref_t<T>>()];
+            return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*components[meta::type_index<std::remove_cvref_t<T>>()]);
         }
 
         template <typename T>
         const ComponentVector<std::remove_cvref_t<T>>& getComponent () const {
             PHENYL_DASSERT(components.contains(meta::type_index<std::remove_cvref_t<T>>()));
-            return *components.at(meta::type_index<std::remove_cvref_t<T>>());
+            return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*components.at(meta::type_index<std::remove_cvref_t<T>>()));
         }
 
         template <typename T>
-        ComponentVector<std::remove_cv_t<T>>* tryGetComponent () {
+        ComponentVector<std::remove_cvref_t<T>>* tryGetComponent () {
             auto it = components.find(meta::type_index<std::remove_cvref_t<T>>());
-            return it != components.end() ? it->second.get() : nullptr;
+            return it != components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) : nullptr;
         }
 
         template <typename T>
         const ComponentVector<std::remove_cv_t<T>>* tryGetComponent () const {
             auto it = components.find(meta::type_index<std::remove_cvref_t<T>>());
-            return it != components.end() ? it->second.get() : nullptr;
+            return it != components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) : nullptr;
         }
 
         template <typename T>
@@ -62,13 +59,13 @@ namespace phenyl::component {
 
             std::vector<std::size_t> newComps;
             newComps.reserve(componentIds.size() + 1);
-            auto cIt = newComps.begin();
-            while (cIt != newComps.end() && *cIt < typeIndex) {
+            auto cIt = componentIds.begin();
+            while (cIt != componentIds.end() && *cIt < typeIndex) {
                 newComps.emplace_back(*cIt);
                 ++cIt;
             }
             newComps.emplace_back(typeIndex);
-            while (cIt != newComps.end()) {
+            while (cIt != componentIds.end()) {
                 newComps.emplace_back(*cIt);
                 ++cIt;
             }
@@ -92,7 +89,7 @@ namespace phenyl::component {
             std::vector<std::size_t> newComps;
             newComps.reserve(componentIds.size() + 1);
             auto cIt = newComps.begin();
-            while (cIt != newComps.end()) {
+            while (cIt != componentIds.end()) {
                 if (*cIt != typeIndex) {
                     newComps.emplace_back(*cIt);
                 }
@@ -110,16 +107,17 @@ namespace phenyl::component {
             ComponentVector<T>& comp = getComponent<T>();
             auto* ptr = comp.emplace(std::forward<Args>(args)...);
 
-            manager.onComponentInsert(entityIds.back(), meta::type_index<T>(), static_cast<std::byte*>(ptr));
+            manager.onComponentInsert(entityIds.back(), meta::type_index<T>(), reinterpret_cast<std::byte*>(ptr));
         }
 
         std::size_t moveFrom (Archetype& other, std::size_t pos);
+        void instantiateInto (const detail::PrefabFactories& factories, std::size_t pos);
 
         Archetype (const Archetype& other, std::unique_ptr<UntypedComponentVector> compVec);
 
         template <typename ...Args>
         friend class ArchetypeView;
-        friend class ComponentManager2;
+        friend class ComponentManager;
     protected:
         Archetype (detail::IArchetypeManager& manager);
 
@@ -181,10 +179,9 @@ namespace phenyl::component {
         void addComponent (std::size_t pos, Args&&... args) {
             PHENYL_DASSERT(pos < size());
             Archetype& dest = getWith<std::remove_cvref_t<T>>();
-
-            auto newPos = dest.moveFrom(*this, pos);
+            dest.moveFrom(*this, pos);
             remove(pos);
-            dest.initComp<std::remove_cvref_t<T>>(newPos, std::forward<Args>(args)...);
+            dest.initComp<std::remove_cvref_t<T>>(std::forward<Args>(args)...);
         }
 
         template <typename T>
@@ -207,9 +204,7 @@ namespace phenyl::component {
             return componentIds;
         }
 
-        std::size_t addArchetypePrefab (std::map<std::size_t, std::unique_ptr<detail::IPrefabFactory>> factories);
-        void addWithPrefab (EntityId id, std::size_t prefabId);
-        void removePrefab (std::size_t prefabId);
+        void instantiatePrefab (const detail::PrefabFactories& factories, std::size_t pos);
     };
 
     class EmptyArchetype : public Archetype {

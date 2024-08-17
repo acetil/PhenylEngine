@@ -1,15 +1,15 @@
-#include "component2/prefab.h"
+#include "component/prefab.h"
 
-#include "component2/component.h"
+#include "component/component.h"
 
 using namespace phenyl::component;
 
-Prefab2::Prefab2 () : prefabId{0} {}
-Prefab2::Prefab2 (std::size_t prefabId, std::weak_ptr<PrefabManager2> manager) : prefabId{prefabId}, manager{std::move(manager)} {
-    PHENYL_DASSERT(manager.lock());
+Prefab::Prefab () : prefabId{0} {}
+Prefab::Prefab (std::size_t prefabId, std::weak_ptr<PrefabManager> manager) : prefabId{prefabId}, manager{std::move(manager)} {
+    PHENYL_DASSERT(this->manager.lock());
 }
 
-Prefab2::~Prefab2 () {
+Prefab::~Prefab () {
     if (prefabId) {
         if (const auto ptr = manager.lock(); ptr) {
             ptr->decrementRefCount(prefabId);
@@ -17,7 +17,7 @@ Prefab2::~Prefab2 () {
     }
 }
 
-Prefab2::Prefab2 (const Prefab2& other) : prefabId{other.prefabId}, manager{other.manager} {
+Prefab::Prefab (const Prefab& other) : prefabId{other.prefabId}, manager{other.manager} {
     if (other.prefabId) {
         if (const auto ptr = manager.lock(); ptr) {
             ptr->incrementRefCount(other.prefabId);
@@ -25,11 +25,11 @@ Prefab2::Prefab2 (const Prefab2& other) : prefabId{other.prefabId}, manager{othe
     }
 }
 
-Prefab2::Prefab2 (Prefab2&& other) noexcept : prefabId{other.prefabId}, manager{std::move(other.manager)} {
+Prefab::Prefab (Prefab&& other) noexcept : prefabId{other.prefabId}, manager{std::move(other.manager)} {
     other.prefabId = 0;
 }
 
-Prefab2& Prefab2::operator= (const Prefab2& other) {
+Prefab& Prefab::operator= (const Prefab& other) {
     if (&other == this) {
         return *this;
     }
@@ -52,7 +52,7 @@ Prefab2& Prefab2::operator= (const Prefab2& other) {
     return *this;
 }
 
-Prefab2& Prefab2::operator= (Prefab2&& other) noexcept {
+Prefab& Prefab::operator= (Prefab&& other) noexcept {
     if (prefabId) {
         if (const auto ptr = manager.lock(); ptr) {
             ptr->decrementRefCount(prefabId);
@@ -67,53 +67,45 @@ Prefab2& Prefab2::operator= (Prefab2&& other) noexcept {
     return *this;
 }
 
-Entity2 Prefab2::create (Entity2 parent) const {
+void Prefab::instantiate (Entity entity) const {
     auto ptr = manager.lock();
     PHENYL_ASSERT_MSG(ptr, "Attempted to create entity with prefab from already deleted PrefabManager!");
 
-    return ptr->instantiate(prefabId, parent);
+    ptr->instantiate(prefabId, entity);
 }
 
-PrefabManager2::PrefabManager2 (ComponentManager2& manager) : manager{manager} {}
+PrefabManager::PrefabManager (ComponentManager& manager) : manager{manager} {}
 
-Prefab2 PrefabManager2::makePrefab (std::map<std::size_t, std::unique_ptr<detail::IPrefabFactory>> factories, std::vector<std::size_t> children) {
+Prefab PrefabManager::makePrefab (detail::PrefabFactories factories, std::vector<std::size_t> children) {
     for (auto i : children) {
         PHENYL_DASSERT(entries.contains(i));
     }
 
-    std::vector<std::size_t> compIds(factories.size());
-    std::transform(factories.begin(), factories.end(), compIds, [] (const auto& x) { return x.first; });
-    auto* archetype = manager.findArchetype(compIds);
-    auto prefabIndex = archetype->addArchetypePrefab(std::move(factories));
-
     auto id = nextPrefabId++;
     entries.emplace(id, PrefabEntry{
-        .archetype = archetype,
-        .archPrefabId = prefabIndex,
+        .factories = std::move(factories),
+        .childEntries = std::move(children),
         .refCount = 1,
-        .childEntries = std::move(children)
     });
 
-    return Prefab2{id, weak_from_this()};
+    return Prefab{id, weak_from_this()};
 }
 
-PrefabBuilder2 PrefabManager2::makeBuilder () {
-    return PrefabBuilder2{*this};
+PrefabBuilder PrefabManager::makeBuilder () {
+    return PrefabBuilder{*this};
 }
 
-void PrefabManager2::incrementRefCount (std::size_t prefabId) {
+void PrefabManager::incrementRefCount (std::size_t prefabId) {
     PHENYL_DASSERT(entries.contains(prefabId));
     entries[prefabId].refCount++;
 }
 
-void PrefabManager2::decrementRefCount (std::size_t prefabId) {
+void PrefabManager::decrementRefCount (std::size_t prefabId) {
     auto entryIt = entries.find(prefabId);
     PHENYL_DASSERT(entryIt != entries.end());
 
     auto& entry = entryIt->second;
     if (!(--entry.refCount)) {
-        entry.archetype->removePrefab(entry.archPrefabId);
-
         for (auto i : entry.childEntries) {
             decrementRefCount(i);
         }
@@ -122,16 +114,20 @@ void PrefabManager2::decrementRefCount (std::size_t prefabId) {
     }
 }
 
-Entity2 PrefabManager2::instantiate (std::size_t prefabId, Entity2 parent) {
+void PrefabManager::instantiate (std::size_t prefabId, Entity entity) {
     PHENYL_DASSERT(entries.contains(prefabId));
 
     const auto& entry = entries[prefabId];
-    return manager.makeWithPrefab(parent.id(), entry.archetype, entry.archPrefabId);
+    manager.instantiatePrefab(entity.id(), entry.factories);
+
+    for (auto i : entry.childEntries) {
+        instantiate(i, manager.create(entity.id()));
+    }
 }
 
-PrefabBuilder2::PrefabBuilder2 (PrefabManager2& manager) : manager{manager} {}
+PrefabBuilder::PrefabBuilder (PrefabManager& manager) : manager{manager} {}
 
-PrefabBuilder2& PrefabBuilder2::withChild (const Prefab2& child) {
+PrefabBuilder& PrefabBuilder::withChild (const Prefab& child) {
     if (child) {
         manager.incrementRefCount(child.prefabId);
         children.emplace_back(child.prefabId);
@@ -140,6 +136,6 @@ PrefabBuilder2& PrefabBuilder2::withChild (const Prefab2& child) {
     return *this;
 }
 
-Prefab2 PrefabBuilder2::build () {
+Prefab PrefabBuilder::build () {
     return manager.makePrefab(std::move(factories), std::move(children));
 }

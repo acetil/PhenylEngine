@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "graphics/maths_headers.h"
-#include "../../texture.h"
+#include "graphics/texture.h"
 #include "common/assets/asset.h"
 
 namespace phenyl::graphics {

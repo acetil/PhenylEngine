@@ -32,7 +32,7 @@ static void RigidBody2DMotionSystem (const phenyl::runtime::Resources<const phen
     body.doMotion(transform, static_cast<float>(delta()));
 }
 
-static void Collider2DSyncSystem (const phenyl::common::GlobalTransform2D& transform, const RigidBody2D& body, Collider2D& collider) {
+static void Collider2DSyncSystem (const phenyl::common::GlobalTransform2D& transform, const RigidBody2D& body, BoxCollider2D& collider) {
     collider.syncUpdates(body, transform.transform2D.position());
 }
 
@@ -41,7 +41,7 @@ static void BoxCollider2DFrameTransformSystem (const phenyl::common::GlobalTrans
 }
 
 static void CollisionCheck2DSystem (const phenyl::runtime::Resources<Constraints2D, const phenyl::runtime::FixedDelta>& resources,
-    const phenyl::component::QueryBundle<BoxCollider2D>& bundle1, const phenyl::component::QueryBundle<BoxCollider2D>& bundle2) {
+    const phenyl::component::Bundle<BoxCollider2D>& bundle1, const phenyl::component::Bundle<BoxCollider2D>& bundle2) {
     auto& [constraints, deltaTime] = resources;
 
     auto entity1 = bundle1.entity();
@@ -63,13 +63,13 @@ static void CollisionCheck2DSystem (const phenyl::runtime::Resources<Constraints
             auto contactPoint = manifold.getContactPoint();
             if (box1.layers & box2.mask) {
                 //manager._signal<OnCollision>(entity2.id(), entity1.id(), (std::uint32_t)(box1.layers & box2.mask));
-                entity2.signal(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask), contactPoint, -result.normal});
+                entity2.raise(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask), contactPoint, -result.normal});
                 //events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
             }
 
             if (box2.layers & box1.mask) {
                 //manager.signal<OnCollision>(entity1.id(), entity2.id(), (std::uint32_t)(box2.layers & box1.mask));
-                entity1.signal(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask), contactPoint, result.normal});
+                entity1.raise(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask), contactPoint, result.normal});
                 //events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
             }
         });
@@ -94,20 +94,20 @@ static void Constraints2DSolveSystem (const phenyl::runtime::Resources<Constrain
     constraints.constraints.clear();
 }
 
-static void Collider2DUpdateSystem (RigidBody2D& body, const Collider2D& collider) {
+static void Collider2DUpdateSystem (RigidBody2D& body, const BoxCollider2D& collider) {
     collider.updateBody(body);
 }
 
 void Physics2D::addComponents (runtime::PhenylRuntime& runtime) {
-    runtime.addComponent<RigidBody2D>();
-    runtime.addUnserializedComponent<Collider2D>();
-    runtime.addComponent<BoxCollider2D>();
+    runtime.addComponent<RigidBody2D>("RigidBody2D");
+    //runtime.addUnserializedComponent<Collider2D>("Collider2D");
+    runtime.addComponent<BoxCollider2D>("BoxCollider2D");
 
-    runtime.manager().inherits<BoxCollider2D, Collider2D>();
+    //runtime.manager().inherits<BoxCollider2D, Collider2D>();
 
-    runtime.manager().addRequirement<RigidBody2D, common::GlobalTransform2D>();
-    runtime.manager().addRequirement<BoxCollider2D, common::GlobalTransform2D>();
-    runtime.manager().addRequirement<BoxCollider2D, RigidBody2D>();
+    //runtime.manager().addRequirement<RigidBody2D, common::GlobalTransform2D>();
+    //runtime.manager().addRequirement<BoxCollider2D, common::GlobalTransform2D>();
+    //runtime.manager().addRequirement<BoxCollider2D, RigidBody2D>();
 
     runtime.addResource<Constraints2D>();
     auto& motionSystem = runtime.addSystem<runtime::PhysicsUpdate>("RigidBody2D::Update", RigidBody2DMotionSystem);
@@ -133,18 +133,18 @@ void Physics2D::updatePhysics (component::EntityComponentManager& componentManag
 }
 
 void Physics2D::checkCollisions (component::EntityComponentManager& compManager, float deltaTime) {
-    compManager.query<common::GlobalTransform2D, RigidBody2D, Collider2D>().each([] (auto info, const common::GlobalTransform2D& transform, const RigidBody2D& body, Collider2D& collider) {
+    compManager.query<common::GlobalTransform2D, RigidBody2D, BoxCollider2D>().each([] (const common::GlobalTransform2D& transform, const RigidBody2D& body, BoxCollider2D& collider) {
         collider.syncUpdates(body, transform.transform2D.position());
     });
 
-    compManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (auto info, const common::GlobalTransform2D& transform, BoxCollider2D& collider) {
+    compManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (const common::GlobalTransform2D& transform, BoxCollider2D& collider) {
         collider.applyFrameTransform(transform.transform2D.rotMatrix());
     });
 
     std::vector<std::tuple<component::EntityId, component::EntityId, std::uint32_t>> events;
     std::vector<Constraint2D> constraints;
     compManager.deferSignals();
-    compManager.query<BoxCollider2D>().pairs([&constraints, &events, deltaTime] (component::QueryBundle<BoxCollider2D> boxBundle1, component::QueryBundle<BoxCollider2D> boxBundle2) {
+    compManager.query<BoxCollider2D>().pairs([&constraints, &events, deltaTime] (component::Bundle<BoxCollider2D> boxBundle1, component::Bundle<BoxCollider2D> boxBundle2) {
         //auto [info1, box1] = boxBundle1;
         //auto [info2, box2] = boxBundle2;
         auto entity1 = boxBundle1.entity();
@@ -167,13 +167,13 @@ void Physics2D::checkCollisions (component::EntityComponentManager& compManager,
                 auto contactPoint = manifold.getContactPoint();
                 if (box1.layers & box2.mask) {
                     //manager._signal<OnCollision>(entity2.id(), entity1.id(), (std::uint32_t)(box1.layers & box2.mask));
-                    entity2.signal(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask), contactPoint, -result.normal});
+                    entity2.raise(OnCollision{entity1.id(), (std::uint32_t)(box1.layers & box2.mask), contactPoint, -result.normal});
                     //events.emplace_back(info2.id(), info1.id(), box1.layers & box2.mask);
                 }
 
                 if (box2.layers & box1.mask) {
                     //manager.signal<OnCollision>(entity1.id(), entity2.id(), (std::uint32_t)(box2.layers & box1.mask));
-                    entity1.signal(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask), contactPoint, result.normal});
+                    entity1.raise(OnCollision{entity2.id(), (std::uint32_t)(box2.layers & box1.mask), contactPoint, result.normal});
                     //events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
                 }
             });
@@ -203,14 +203,14 @@ void Physics2D::solveConstraints (std::vector<Constraint2D>& constraints, compon
         }
     }
 
-    compManager.query<RigidBody2D, Collider2D>().each([] (auto info, RigidBody2D& body, const Collider2D& collider) {
+    compManager.query<RigidBody2D, BoxCollider2D>().each([] (RigidBody2D& body, const BoxCollider2D& collider) {
         collider.updateBody(body);
     });
 }
 
-void Physics2D::debugRender (const component::EntityComponentManager& componentManager) {
+void Physics2D::debugRender (component::EntityComponentManager& componentManager) {
     // Debug render
-    componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (component::ConstEntity entity, const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
+    componentManager.query<common::GlobalTransform2D, BoxCollider2D>().each([] (const common::GlobalTransform2D& transform, const BoxCollider2D& box) {
         auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
         auto pos2 = box.frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
         auto pos3 = box.frameTransform * glm::vec2{1, 1} + transform.transform2D.position();

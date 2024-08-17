@@ -12,7 +12,7 @@ runtime::PhenylRuntime& engine::ApplicationBase::runtime () {
     return *engineRuntime;
 }
 
-component::ComponentManager& engine::ApplicationBase::componentManager () {
+component::EntityComponentManager& engine::ApplicationBase::componentManager () {
     return runtime().manager();
 }
 

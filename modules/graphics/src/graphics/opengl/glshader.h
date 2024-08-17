@@ -6,7 +6,7 @@
 #include "util/map.h"
 
 #include "graphics/graphics_headers.h"
-#include "../../../include/graphics/shader.h"
+#include "graphics/shader.h"
 
 namespace phenyl::graphics {
     class GlShader : public IShader {

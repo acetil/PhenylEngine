@@ -14,10 +14,10 @@ namespace phenyl::game {
     class Level {
     private:
         std::vector<detail::LevelEntity> entities;
-        component::ComponentManager* manager;
+        component::EntityComponentManager* manager;
         component::EntitySerializer* serializer;
 
-        Level (component::ComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities);
+        Level (component::EntityComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities);
 
         component::Entity loadEntity (std::size_t index);
         friend LevelManager;

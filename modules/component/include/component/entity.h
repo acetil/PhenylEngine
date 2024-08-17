@@ -1,311 +1,133 @@
 #pragma once
 
-#include "entity_id.h"
-#include "component/detail/managers/basic_manager.h"
+#include "util/optional.h"
+
+#include "archetype.h"
 
 namespace phenyl::component {
-    class Entity;
-    class ConstEntity;
-    inline bool operator== (const Entity& entity1, const Entity& entity2);
-    inline bool operator== (const Entity& entity1, const ConstEntity& entity2);
-    inline bool operator== (const ConstEntity& entity1, const ConstEntity& entity2);
-
-    class ConstEntity {
-    private:
-        EntityId entityId;
-        const detail::BasicManager* compManager;
-        ConstEntity (EntityId id, const detail::BasicManager* compManager) : entityId{id}, compManager{compManager} {}
-        friend class detail::BasicManager;
-        friend class Entity;
-    public:
-        [[nodiscard]] EntityId id () const {
-            return entityId;
-        }
-
-        [[nodiscard]] const ComponentManager& manager () const {
-            return *compManager->asManager();
-        }
-
-        [[nodiscard]] ConstEntity parent () const {
-            return compManager->_entity(compManager->_parent(entityId));
-        }
-
-        template <typename T>
-        util::Optional<const T&> get () const {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to get component of invalid entity {}!", entityId.value());
-                return util::NullOpt;
-            }
-
-            detail::ComponentSet* compSet;
-            if (!((compSet = compManager->getComponent<T>()))) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to get component for entity {}!", entityId.value());
-                return util::NullOpt;
-            }
-
-            T* comp = compSet->getComponent<T>(entityId);
-            return comp ? util::Optional<const T&>{*comp} : util::Optional<const T&>{};
+    namespace detail {
+        struct EntityEntry {
+            Archetype* archetype;
+            std::size_t pos;
         };
-
-        template <typename T>
-        [[nodiscard]] bool has () const {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to check component for invalid entity {}!", entityId.value());
-                return false;
-            }
-
-            detail::ComponentSet* compSet = compManager->getComponent<T>();
-            return compSet && compSet->hasComp(entityId);
-        }
-
-        [[nodiscard]] bool exists () const {
-            return compManager->_exists(entityId);
-        }
-
-        explicit operator bool () const {
-            return (bool)entityId;
-        }
-    };
+    }
+    class ComponentManager;
+    class ChildrenView;
 
     class Entity {
     private:
+        static Logger LOGGER;
+
         EntityId entityId;
-        detail::BasicManager* compManager;
-        Entity (EntityId id, detail::BasicManager* compManager) : entityId{id}, compManager{compManager} {}
-        friend class detail::BasicManager;
+        ComponentManager* compManager = nullptr;
+
+        [[nodiscard]] const detail::EntityEntry& entry () const;
+        void raiseUntyped (std::size_t signalType, const std::byte* ptr);
+
+        friend ComponentManager;
+        template <typename ...Args>
+        friend class ArchetypeView;
+        template <typename ...Args>
+        friend class Query;
     public:
-        Entity () : entityId{}, compManager{nullptr} {}
+        Entity () = default;
+        Entity (EntityId id, ComponentManager* compManager);
 
-        [[nodiscard]] EntityId id () const {
-            return entityId;
-        }
+        [[nodiscard]] bool exists () const noexcept;
+        [[nodiscard]] Entity parent () const;
+        [[nodiscard]] ChildrenView children () const noexcept;
+        void remove ();
 
-        ComponentManager& manager () {
-            return *compManager->asManager();
-        }
+        template <typename T>
+        T* get () {
+            if (!exists()) {
+                PHENYL_LOGE(LOGGER, "Attempted to get component from non-existent entity {}", id().value());
+                return nullptr;
+            }
 
-        [[nodiscard]] const ComponentManager& manager () const {
-            return *compManager->asManager();
-        }
-
-        Entity parent () {
-            return compManager->_entity(compManager->_parent(entityId));
-        }
-
-        [[nodiscard]] ConstEntity parent () const {
-            return compManager->_entity(compManager->_parent(entityId));
+            auto& e = entry();
+            return &e.archetype->get<T>(e.pos);
         }
 
         template <typename T>
-        util::Optional<T&> get () {
+        const T* get () const {
             if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to get component of invalid entity {}!", entityId.value());
-                return util::NullOpt;
+                PHENYL_LOGE(LOGGER, "Attempted to get component from non-existent entity {}", id().value());
+                return nullptr;
             }
 
-            detail::ComponentSet* compSet;
-            if (!((compSet = compManager->getComponent<T>()))) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to get component for entity {}!", entityId.value());
-                return util::NullOpt;
-            }
-
-            T* comp = compSet->getComponent<T>(entityId);
-            return comp ? util::Optional<T&>{*comp} : util::Optional<T&>{};
+            auto& e = entry();
+            return &e.archetype->get<T>(e.pos);
         }
 
         template <typename T>
-        util::Optional<const T&> get () const {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to get component of invalid entity {}!", entityId.value());
-                return util::NullOpt;
-            }
-
-            detail::ComponentSet* compSet;
-            if (!((compSet = compManager->getComponent<T>()))) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to get component for entity {}!", entityId.value());
-                return util::NullOpt;
-            }
-
-            T* comp = compSet->getComponent<T>(entityId);
-            return comp ? util::Optional<const T&>{*comp} : util::Optional<const T&>{};
-        };
-
-        template <typename T>
-        void insert (T comp) {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to insert component in invalid entity {}!", entityId.value());
-                return;
-            }
-
-            detail::ComponentSet* compSet;
-            if ((compSet = compManager->getComponent<T>())) {
-                compSet->insertComp<T>(entityId, std::move(comp));
-            } else {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to insert component in entity {}!", entityId.value());
-            }
+        void insert (T&& comp) {
+            emplace<T>(std::forward<T>(comp));
         }
 
         template <typename T, typename ...Args>
         void emplace (Args&&... args) {
             if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to emplace component in invalid entity {}!", entityId.value());
+                PHENYL_LOGE(LOGGER, "Attempted to add component to non-existent entity {}", id().value());
                 return;
             }
 
-            detail::ComponentSet* compSet;
-            if ((compSet = compManager->getComponent<T>())) {
-                compSet->insertComp<T>(entityId, std::forward<Args>(args)...);
-            } else {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to emplace component in entity {}!", entityId.value());
+            auto& e = entry();
+            if (e.archetype->has<T>()) {
+                PHENYL_LOGE(LOGGER, "Attempted to add component to entity {} which already has it", id().value());
+                return;
             }
-        }
-
-        template <typename T>
-        bool set (T comp) {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to set component in invalid entity {}!", entityId.value());
-                return false;
-            }
-
-            detail::ComponentSet* compSet;
-            if ((compSet = compManager->getComponent<T>())) {
-                return compSet->setComp(entityId, std::move(comp));
-            } else {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to set component in entity {}!", entityId.value());
-                return false;
-            }
+            e.archetype->addComponent<T>(e.pos, std::forward<Args>(args)...);
         }
 
         template <typename T>
         void erase () {
             if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to erase component in invalid entity {}!", entityId.value());
+                PHENYL_LOGE(LOGGER, "Attempted to erase component from non-existent entity {}", id().value());
                 return;
             }
 
-            detail::ComponentSet* compSet;
-            if ((compSet = compManager->getComponent<T>())) {
-                compSet->deleteComp(entityId);
-            } else {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Failed to erase component in entity {}!", entityId.value());
-            }
+            auto& e = entry();
+            e.archetype->removeComponent<T>(e.pos);
         }
 
         template <typename T>
-        [[nodiscard]] bool has () const {
+        bool has () const {
             if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to check component for invalid entity {}!", entityId.value());
+                PHENYL_LOGE(LOGGER, "Attempted to check component existence of non-existent entity {}", id().value());
                 return false;
             }
 
-            detail::ComponentSet* compSet = compManager->getComponent<T>();
-            return compSet && compSet->hasComp(entityId);
-        }
-
-        template <typename ...Args, meta::callable<void, Args&...> F>
-        Entity& apply (F fn) {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to apply on invalid entity {}!", entityId.value());
-                return *this;
-            }
-
-            compManager->_apply<Args...>(fn, entityId);
-            return *this;
+            return entry().archetype->has<T>();
         }
 
         template <typename Signal>
-        void signal (Signal signal) requires (!ComponentSignal<Signal>) {
-            compManager->_signal(entityId, std::move(signal));
+        void raise (const Signal& signal) {
+            raiseUntyped(meta::type_index<Signal>(), reinterpret_cast<const std::byte*>(&signal));
         }
 
-        template <typename Signal, typename ...Args>
-        void signal (Args&&... args) requires (!ComponentSignal<Signal>) {
-            compManager->_signal(entityId, Signal{std::forward<Args>(args)...});
-        }
-
-        void remove () {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to remove invalid entity {}!", entityId.value());
-                return;
+        template <typename T>
+        void apply (std::function<void(T&)> applyFunc) {
+            auto* comp = get<T>();
+            if (comp) {
+                applyFunc(*comp);
             }
-
-            compManager->_remove(entityId);
         }
 
-        Entity createChild () {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to create child for invalid entity {}!", entityId.value());
-                return {};
-            }
-
-            return Entity{compManager->_create(entityId), compManager};
+        EntityId id () const noexcept {
+            return entityId;
         }
 
-        void addChild (Entity child) {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to add child to invalid entity {}!", entityId.value());
-                return;
-            }
-
-            compManager->_reparent(child.id(), entityId);
+        ComponentManager& manager () noexcept {
+            PHENYL_DASSERT(compManager);
+            return *compManager;
         }
 
-        void detach () {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach invalid entity {}!", entityId.value());
-                return;
-            }
-
-            if (!compManager->_parent(entityId)) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach root entity {}!", entityId.value());
-                return;
-            }
-
-            compManager->_reparent(entityId, EntityId{});
+        const ComponentManager& manager () const noexcept {
+            PHENYL_DASSERT(compManager);
+            return *compManager;
         }
 
-        void detachChild (Entity child) {
-            if (!exists()) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach {} from invalid {}!", child.id().value(), entityId.value());
-                return;
-            }
-
-            if (child.parent() != *this) {
-                PHENYL_LOGE(detail::ENTITY_LOGGER, "Attempted to detach {} from non-parent {}! (parent: {})", child.id().value(), entityId.value(), child.parent().id().value());
-                return;
-            }
-
-            compManager->_reparent(child.id(), EntityId{});
-        }
-
-        ChildrenView children ();
-
-        [[nodiscard]] bool exists () const {
-            return compManager->_exists(entityId);
-        }
-
-        explicit operator bool () const {
-            return (bool)entityId;
-        }
-
-        operator ConstEntity () const {
-            return ConstEntity{entityId, compManager};
-        };
-
-        friend class ComponentManager;
+        void addChild (Entity child);
     };
-
-    static Entity Null = Entity{};
-
-    inline bool operator== (const Entity& entity1, const Entity& entity2) {
-        return &entity1.manager() == &entity2.manager() && entity1.id() == entity2.id();
-    }
-
-    inline bool operator== (const Entity& entity1, const ConstEntity& entity2) {
-        return &entity1.manager() == &entity2.manager() && entity1.id() == entity2.id();
-    }
-
-    inline bool operator== (const ConstEntity& entity1, const ConstEntity& entity2) {
-        return &entity1.manager() == &entity2.manager() && entity1.id() == entity2.id();
-    }
 }

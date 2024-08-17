@@ -2,9 +2,9 @@
 
 #include "util/map.h"
 
-#include "../../../include/graphics/pipeline.h"
+#include "graphics/pipeline.h"
 #include "graphics/graphics_headers.h"
-#include "../../../include/graphics/shader.h"
+#include "graphics/shader.h"
 #include "glshader.h"
 
 namespace phenyl::graphics {

@@ -24,10 +24,9 @@ namespace phenyl::game::detail {
 
 namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities);
-    phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager);
 }
 
-LevelManager::LevelManager (component::ComponentManager& manager, component::EntitySerializer& serializer) : manager{manager}, serializer{serializer} {}
+LevelManager::LevelManager (component::EntityComponentManager& manager, component::EntitySerializer& serializer) : manager{manager}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::istream& data, std::size_t id) {
@@ -119,7 +118,7 @@ std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (component::ComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : manager{manager}, serializer{serializer}, entities{std::move(entities)} {}
+Level::Level (component::EntityComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : manager{manager}, serializer{serializer}, entities{std::move(entities)} {}
 
 void Level::load (bool additive) {
     if (!additive) {
@@ -139,17 +138,21 @@ void Level::load (bool additive) {
 
 phenyl::component::Entity Level::loadEntity (std::size_t index) {
     PHENYL_ASSERT(index < entities.size());
-    const auto& entity = entities[index];
+    const auto& levelEntity = entities[index];
 
-    auto instantatior = getInstantatior(entity.prefab, manager);
-    serializer->deserializeEntity(instantatior, entity.components);
+    //serializer->deserializeEntity(instantatior, entity.components);
+    auto entity = manager->create();
+    serializer->deserializeEntity(entity, levelEntity.components);
+    levelEntity.prefab->instantiate(entity);
     auto childIndex = index + 1;
-    while (childIndex < index + entity.numChildren + 1) {
-        instantatior.withChild(loadEntity(childIndex));
+    while (childIndex < index + levelEntity.numChildren + 1) {
+        //instantatior.withChild(loadEntity(childIndex));
+        auto child = loadEntity(childIndex);
+        entity.addChild(child);
         childIndex += entities[childIndex].numChildren;
     }
 
-    return instantatior.complete();
+    return entity;
 }
 
 namespace {
@@ -196,13 +199,5 @@ namespace {
         }
 
         return entity.numChildren + 1;
-    }
-
-    phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager) {
-        if (prefab) {
-            return prefab->instantiate();
-        } else {
-            return phenyl::component::Prefab::NullPrefab(manager).instantiate();
-        }
     }
 }
