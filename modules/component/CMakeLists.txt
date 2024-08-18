@@ -23,10 +23,10 @@ add_library(component include/component/forward.h src/component/detail/entity_id
         src/component/children_view.cpp
         include/component/detail/component_instance.h
         include/component/detail/signal_handler.h
-        include/component/signals/component_update.h
         include/component/prefab.h
         include/component/detail/prefab_factory.h
         src/component/prefab.cpp
+        include/component/detail/archetype_key.h
 )
 
 set_property(TARGET component PROPERTY CXX_STANDARD 20)

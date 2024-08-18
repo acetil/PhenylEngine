@@ -7,6 +7,7 @@
 #include "util/meta.h"
 
 #include "entity_id.h"
+#include "detail/archetype_key.h"
 #include "detail/component_vector.h"
 #include "detail/iarchetype_manager.h"
 #include "detail/prefab_factory.h"
@@ -15,9 +16,9 @@ namespace phenyl::component {
     class Archetype {
     private:
         detail::IArchetypeManager& manager;
+        detail::ArchetypeKey key;
 
         std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components;
-        std::vector<std::size_t> componentIds;
         std::vector<EntityId> entityIds;
 
         std::unordered_map<std::size_t, Archetype*> addArchetypes;
@@ -57,20 +58,7 @@ namespace phenyl::component {
                 return *it->second;
             }
 
-            std::vector<std::size_t> newComps;
-            newComps.reserve(componentIds.size() + 1);
-            auto cIt = componentIds.begin();
-            while (cIt != componentIds.end() && *cIt < typeIndex) {
-                newComps.emplace_back(*cIt);
-                ++cIt;
-            }
-            newComps.emplace_back(typeIndex);
-            while (cIt != componentIds.end()) {
-                newComps.emplace_back(*cIt);
-                ++cIt;
-            }
-
-            auto* archetype = manager.findArchetype(newComps);
+            auto* archetype = manager.findArchetype(key.with<T>());
             addArchetypes.emplace(typeIndex, archetype);
             archetype->removeArchetypes.emplace(typeIndex, this);
             return *archetype;
@@ -86,17 +74,7 @@ namespace phenyl::component {
                 return *it->second;
             }
 
-            std::vector<std::size_t> newComps;
-            newComps.reserve(componentIds.size() + 1);
-            auto cIt = newComps.begin();
-            while (cIt != componentIds.end()) {
-                if (*cIt != typeIndex) {
-                    newComps.emplace_back(*cIt);
-                }
-                ++cIt;
-            }
-
-            auto* archetype = manager.findArchetype(newComps);
+            auto* archetype = manager.findArchetype(key.without<T>());
             removeArchetypes.emplace(typeIndex, archetype);
             archetype->addArchetypes.emplace(typeIndex, this);
             return *archetype;
@@ -112,8 +90,6 @@ namespace phenyl::component {
 
         std::size_t moveFrom (Archetype& other, std::size_t pos);
         void instantiateInto (const detail::PrefabFactories& factories, std::size_t pos);
-
-        Archetype (const Archetype& other, std::unique_ptr<UntypedComponentVector> compVec);
 
         template <typename ...Args>
         friend class ArchetypeView;
@@ -200,8 +176,8 @@ namespace phenyl::component {
 
         void clear ();
 
-        const std::vector<std::size_t>& getComponentIds () const noexcept {
-            return componentIds;
+        const detail::ArchetypeKey& getKey () const noexcept {
+            return key;
         }
 
         void instantiatePrefab (const detail::PrefabFactories& factories, std::size_t pos);

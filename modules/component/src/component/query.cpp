@@ -4,26 +4,10 @@
 
 using namespace phenyl::component;
 
-QueryArchetypes::QueryArchetypes (World& world, std::vector<std::size_t> componentIds) : world{world}, componentIds{std::move(componentIds)} {}
+QueryArchetypes::QueryArchetypes (World& world, detail::ArchetypeKey key) : world{world}, key{std::move(key)} {}
 
 void QueryArchetypes::onNewArchetype (Archetype* archetype) {
-    auto it = componentIds.begin();
-    auto archIt = archetype->getComponentIds().begin();
-
-    while (it != componentIds.end() && archIt != archetype->getComponentIds().end()) {
-        if (*it < *archIt) {
-            // Component doesnt exist in archetype
-            return;
-        } else if (*it > *archIt) {
-            // Extra component in archetype
-            ++archIt;
-        } else {
-            ++it;
-            ++archIt;
-        }
-    }
-
-    if (it == componentIds.end()) {
+    if (archetype->getKey().subsetOf(key)) {
         // All components found
         archetypes.emplace(archetype);
     }

@@ -5,7 +5,8 @@ add_library(util src/data.cpp src/profiler.cpp src/string_help.cpp src/test_data
         include/util/istream_help.h
         include/util/detail/loggers.h
         src/loggers.cpp
-        include/util/hash.h)
+        include/util/hash.h
+        include/util/range_utils.h)
 
 find_package(nlohmann_json REQUIRED)
 

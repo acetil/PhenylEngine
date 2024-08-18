@@ -64,7 +64,6 @@ GlyphAtlas::Placement GlyphAtlas::place (const Image& image) {
     for (auto& atlas : atlases) {
         auto off = atlas.place(image);
         if (off) {
-            arrayTexture.upload(atlas.index, atlas.atlasImage);
             return Placement{
                     .uvStart = glm::vec2{(float) off->x / (float) size, (float) off->y / (float) size},
                     .uvEnd = glm::vec2{(float) (off->x + image.width()) / (float) size,

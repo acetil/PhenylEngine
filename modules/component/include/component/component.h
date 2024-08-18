@@ -43,10 +43,10 @@ namespace phenyl::component {
         void completeCreation (EntityId id, EntityId parent);
         void removeInt (EntityId id, bool updateParent);
 
-        std::shared_ptr<QueryArchetypes> makeQueryArchetypes (std::vector<std::size_t> components);
+        std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::ArchetypeKey key);
         void cleanupQueryArchetypes ();
 
-        Archetype* findArchetype (const std::vector<std::size_t>& comps) override;
+        Archetype* findArchetype (const detail::ArchetypeKey& key) override;
         void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
 
         void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
@@ -103,7 +103,7 @@ namespace phenyl::component {
 
         template <typename ...Args>
         Query<Args...> query () {
-            return Query<Args...>{makeQueryArchetypes(std::vector{meta::type_index<Args>()...}), this};
+            return Query<Args...>{makeQueryArchetypes(detail::ArchetypeKey::Make<Args...>()), this};
         }
 
         template <typename T>
@@ -156,7 +156,6 @@ namespace phenyl::component {
             addHandler<Signal, Args...>(std::function<void(const Signal&, std::remove_reference_t<Args>&...)>{std::forward<decltype(fn)>(fn)});
         }
 
-        // TODO
         void defer ();
         void deferEnd ();
         void deferSignals ();

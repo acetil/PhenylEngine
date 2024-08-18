@@ -207,9 +207,9 @@ void World::removeInt (EntityId id, bool updateParent) {
     idList.removeId(id);
 }
 
-Archetype* World::findArchetype (const std::vector<std::size_t>& comps) {
+Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
     auto it = std::ranges::find_if(archetypes, [&] (const auto& arch) {
-        return arch->getComponentIds() == comps;
+        return arch->getKey() == key;
     });
 
     if (it != archetypes.end()) {
@@ -217,7 +217,7 @@ Archetype* World::findArchetype (const std::vector<std::size_t>& comps) {
     }
 
     std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> compVecs;
-    for (auto i : comps) {
+    for (auto i : key) {
         auto compIt = components.find(i);
         PHENYL_ASSERT_MSG(compIt != components.end(), "Failed to find component in findArchetype()");
 
@@ -289,17 +289,16 @@ void World::raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr) {
     deferRemoveEnd();
 }
 
-std::shared_ptr<QueryArchetypes> World::makeQueryArchetypes (std::vector<std::size_t> components) {
+std::shared_ptr<QueryArchetypes> World::makeQueryArchetypes (detail::ArchetypeKey key) {
     cleanupQueryArchetypes();
-    std::sort(components.begin(), components.end());
 
     for (const auto& weakArch : queryArchetypes) {
-        if (auto ptr = weakArch.lock(); ptr->components() == components) {
+        if (auto ptr = weakArch.lock(); ptr->getKey() == key) {
             return ptr;
         }
     }
 
-    auto newArch = std::make_shared<QueryArchetypes>(*this, std::move(components));
+    auto newArch = std::make_shared<QueryArchetypes>(*this, std::move(key));
     queryArchetypes.emplace_back(newArch);
     return newArch;
 }

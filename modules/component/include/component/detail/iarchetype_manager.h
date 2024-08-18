@@ -7,12 +7,13 @@ namespace phenyl::component {
 }
 
 namespace phenyl::component::detail {
+    class ArchetypeKey;
 
     class IArchetypeManager {
     public:
         virtual ~IArchetypeManager() = default;
 
-        virtual Archetype* findArchetype (const std::vector<std::size_t>& comps) = 0;
+        virtual Archetype* findArchetype (const ArchetypeKey& key) = 0;
         virtual void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) = 0;
 
         virtual void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) = 0;

@@ -3,29 +3,7 @@
 
 using namespace phenyl::component;
 
-Archetype::Archetype (const Archetype& other, std::unique_ptr<UntypedComponentVector> compVec) : manager{other.manager} {
-    PHENYL_DASSERT(!other.hasUntyped(compVec->type()));
-
-    for (const auto& [type, vec] : other.components) {
-        components.emplace(type, vec->makeNew());
-        componentIds.emplace_back(type);
-    }
-
-    auto vecType = compVec->type();
-    components.emplace(vecType, std::move(compVec));
-
-    componentIds.reserve(other.components.size() + 1);
-    std::transform(components.begin(), components.end(), std::back_inserter(componentIds), [] (const auto& p) {
-        return p.first;
-    });
-}
-
-Archetype::Archetype(detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) : manager{manager}, components{std::move(components)} {
-    componentIds.reserve(this->components.size() + 1);
-    std::transform(this->components.begin(), this->components.end(), std::back_inserter(componentIds), [] (const auto& p) {
-        return p.first;
-    });
-}
+Archetype::Archetype(detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) : manager{manager}, key{components | std::ranges::views::keys}, components{std::move(components)} {}
 
 Archetype::Archetype (detail::IArchetypeManager& manager) : manager{manager} {}
 
@@ -60,7 +38,7 @@ void Archetype::clear() {
 void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std::size_t pos) {
     PHENYL_DASSERT(pos < size());
 
-    std::vector<std::size_t> compIds;
+    /*std::vector<std::size_t> compIds;
     compIds.reserve(componentIds.size() + factories.size());
     auto compIt = componentIds.begin();
     auto factIt = factories.begin();
@@ -84,9 +62,9 @@ void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std
 
     while (factIt != factories.end()) {
         compIds.emplace_back((factIt++)->first);
-    }
+    }*/
 
-    auto* archetype = manager.findArchetype(compIds);
+    auto* archetype = manager.findArchetype(key.with(factories | std::ranges::views::keys));
     PHENYL_DASSERT(archetype);
     auto newPos = archetype->moveFrom(*this, pos);
     remove(pos);

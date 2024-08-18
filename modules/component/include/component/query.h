@@ -11,11 +11,11 @@ namespace phenyl::component {
     class QueryArchetypes {
     private:
         World& world;
-        std::vector<std::size_t> componentIds;
+        detail::ArchetypeKey key;
         std::unordered_set<Archetype*> archetypes;
 
     public:
-        explicit QueryArchetypes (World& world, std::vector<std::size_t> componentIds);
+        explicit QueryArchetypes (World& world, detail::ArchetypeKey key);
         class Iterator {
         private:
             std::unordered_set<Archetype*>::const_iterator it;
@@ -43,8 +43,8 @@ namespace phenyl::component {
         using const_iterator = Iterator;
         using iterator = Iterator;
 
-        const std::vector<std::size_t>& components () const noexcept {
-            return componentIds;
+        const detail::ArchetypeKey& getKey () const noexcept {
+            return key;
         }
 
         void onNewArchetype (Archetype* archetype);
