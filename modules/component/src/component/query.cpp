@@ -1,8 +1,10 @@
 #include "component/query.h"
 
+#include "component/component.h"
+
 using namespace phenyl::component;
 
-QueryArchetypes::QueryArchetypes (std::vector<std::size_t> componentIds) : componentIds{std::move(componentIds)} {}
+QueryArchetypes::QueryArchetypes (ComponentManager& manager, std::vector<std::size_t> componentIds) : manager{manager}, componentIds{std::move(componentIds)} {}
 
 void QueryArchetypes::onNewArchetype (Archetype* archetype) {
     auto it = componentIds.begin();
@@ -25,6 +27,14 @@ void QueryArchetypes::onNewArchetype (Archetype* archetype) {
         // All components found
         archetypes.emplace(archetype);
     }
+}
+
+void QueryArchetypes::lock() {
+    manager.defer();
+}
+
+void QueryArchetypes::unlock() {
+    manager.deferEnd();
 }
 
 QueryArchetypes::Iterator::Iterator() = default;

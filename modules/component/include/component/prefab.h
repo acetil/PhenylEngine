@@ -50,6 +50,8 @@ namespace phenyl::component {
         ComponentManager& manager;
         std::unordered_map<std::size_t, PrefabEntry> entries;
         std::size_t nextPrefabId = 1;
+        std::vector<std::pair<EntityId, std::size_t>> deferredInstantiations;
+        bool deferring = false;
 
     public:
         explicit PrefabManager (ComponentManager& manager);
@@ -60,6 +62,9 @@ namespace phenyl::component {
         void incrementRefCount (std::size_t prefabId);
         void decrementRefCount (std::size_t prefabId);
         void instantiate (std::size_t prefabId, Entity entity);
+
+        void defer ();
+        void deferEnd ();
     };
 
     class PrefabBuilder {

@@ -131,7 +131,7 @@ namespace phenyl::component {
             auto* start = reinterpret_cast<T*>(beginUntyped());
             auto* end = reinterpret_cast<T*>(endUntyped());
 
-            for (auto* i = start; i <= end; i++) {
+            for (auto* i = start; i < end; i++) {
                 i->~T();
             }
         }

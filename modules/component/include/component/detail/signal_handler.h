@@ -4,6 +4,10 @@
 #include "component/entity.h"
 #include "component/query.h"
 
+namespace phenyl::component {
+    class ComponentManager;
+}
+
 namespace phenyl::component::detail {
     template <typename Signal>
     class ISignalHandler {
@@ -29,28 +33,61 @@ namespace phenyl::component::detail {
     };
 
     class IHandlerVector {
-    private:
+    protected:
     public:
         virtual ~IHandlerVector() = default;
 
-        virtual void handle (Entity entity, const std::byte* ptr) const = 0;
+        virtual void handle (EntityId id, std::byte* ptr) = 0;
+        virtual void defer () = 0;
+        virtual void deferEnd () = 0;
     };
 
     template <typename Signal>
     class SignalHandlerVector : public IHandlerVector {
     private:
+        ComponentManager& manager;
         std::vector<std::unique_ptr<ISignalHandler<Signal>>> handlers;
+        std::vector<std::pair<EntityId, Signal>> deferredSignals;
+        bool isDeferred = false;
 
+        void handleSignal (Entity entity, const Signal& signal) {
+            PHENYL_DASSERT(entity.exists());
+            for (const auto& i : handlers) {
+                i->handle(entity, signal);
+            }
+        }
     public:
+        explicit SignalHandlerVector (ComponentManager& manager) : manager{manager} {}
+
         void addHandler (std::unique_ptr<ISignalHandler<Signal>> handler) {
             handlers.emplace_back(std::move(handler));
         }
 
-        void handle(Entity entity, const std::byte* signal) const override {
-            auto* typedSignal = reinterpret_cast<const Signal*>(signal);
-            for (const auto& i : handlers) {
-                i->handle(entity, *typedSignal);
+        void handle (EntityId id, std::byte* signal) override {
+            auto* typedSignal = reinterpret_cast<Signal*>(signal);
+            if (isDeferred) {
+                deferredSignals.emplace_back(id, std::move(*typedSignal));
+            } else {
+                handleSignal(Entity{id, &manager}, *typedSignal);
             }
+        }
+
+        void defer () override {
+            PHENYL_DASSERT(deferredSignals.empty());
+            isDeferred = true;
+        }
+
+        void deferEnd () override {
+            PHENYL_DASSERT(isDeferred);
+            isDeferred = false;
+
+            for (auto& [id, signal] : deferredSignals) {
+                Entity entity{id, &manager};
+                if (entity.exists()) {
+                    handleSignal(entity, signal);
+                }
+            }
+            deferredSignals.clear();
         }
     };
 }

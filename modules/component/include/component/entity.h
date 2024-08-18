@@ -22,7 +22,10 @@ namespace phenyl::component {
         ComponentManager* compManager = nullptr;
 
         [[nodiscard]] const detail::EntityEntry& entry () const;
-        void raiseUntyped (std::size_t signalType, const std::byte* ptr);
+        void raiseUntyped (std::size_t signalType, std::byte* ptr);
+        bool shouldDefer ();
+        void deferInsert (std::size_t compType, std::byte* ptr);
+        void deferApply (std::function<void(Entity)> applyFunc);
 
         friend ComponentManager;
         template <typename ...Args>
@@ -46,7 +49,7 @@ namespace phenyl::component {
             }
 
             auto& e = entry();
-            return &e.archetype->get<T>(e.pos);
+            return e.archetype->tryGet<T>(e.pos);
         }
 
         template <typename T>
@@ -57,7 +60,7 @@ namespace phenyl::component {
             }
 
             auto& e = entry();
-            return &e.archetype->get<T>(e.pos);
+            return e.archetype->tryGet<T>(e.pos);
         }
 
         template <typename T>
@@ -77,7 +80,13 @@ namespace phenyl::component {
                 PHENYL_LOGE(LOGGER, "Attempted to add component to entity {} which already has it", id().value());
                 return;
             }
-            e.archetype->addComponent<T>(e.pos, std::forward<Args>(args)...);
+
+            if (shouldDefer()) {
+                T comp{std::forward<Args>(args)...};
+                deferInsert(meta::type_index<T>(), reinterpret_cast<std::byte*>(&comp));
+            } else {
+                e.archetype->addComponent<T>(e.pos, std::forward<Args>(args)...);
+            }
         }
 
         template <typename T>
@@ -102,12 +111,19 @@ namespace phenyl::component {
         }
 
         template <typename Signal>
-        void raise (const Signal& signal) {
-            raiseUntyped(meta::type_index<Signal>(), reinterpret_cast<const std::byte*>(&signal));
+        void raise (Signal signal) {
+            raiseUntyped(meta::type_index<Signal>(), reinterpret_cast<std::byte*>(&signal));
         }
 
         template <typename T>
         void apply (std::function<void(T&)> applyFunc) {
+            if (shouldDefer()) {
+                deferApply([func = std::move(applyFunc)] (Entity entity) {
+                    entity.apply(std::move(func));
+                });
+                return;
+            }
+
             auto* comp = get<T>();
             if (comp) {
                 applyFunc(*comp);

@@ -117,12 +117,40 @@ void PrefabManager::decrementRefCount (std::size_t prefabId) {
 void PrefabManager::instantiate (std::size_t prefabId, Entity entity) {
     PHENYL_DASSERT(entries.contains(prefabId));
 
+    if (deferring) {
+        deferredInstantiations.emplace_back(entity.id(), prefabId);
+        incrementRefCount(prefabId);
+        return;
+    }
+
     const auto& entry = entries[prefabId];
     manager.instantiatePrefab(entity.id(), entry.factories);
 
     for (auto i : entry.childEntries) {
         instantiate(i, manager.create(entity.id()));
     }
+}
+
+void PrefabManager::defer () {
+    PHENYL_DASSERT(!deferring);
+    PHENYL_DASSERT(deferredInstantiations.empty());
+
+    deferring = true;
+}
+
+void PrefabManager::deferEnd() {
+    PHENYL_DASSERT(deferring);
+    deferring = false;
+
+    for (auto [id, prefabId] : deferredInstantiations) {
+        Entity entity = manager.entity(id);
+
+        if (entity.exists()) {
+            instantiate(prefabId, entity);
+            decrementRefCount(prefabId);
+        }
+    }
+    deferredInstantiations.clear();
 }
 
 PrefabBuilder::PrefabBuilder (PrefabManager& manager) : manager{manager} {}

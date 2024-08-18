@@ -32,6 +32,15 @@ namespace phenyl::component {
 
         std::shared_ptr<PrefabManager> prefabManager;
 
+        std::vector<std::pair<EntityId, EntityId>> deferredCreations;
+        std::vector<std::pair<EntityId, std::function<void(Entity)>>> deferredApplys;
+        std::vector<EntityId> deferredRemovals;
+
+        std::uint32_t deferCount = 0;
+        std::uint32_t removeDeferCount = 0;
+        std::uint32_t signalDeferCount = 0;
+
+        void completeCreation (EntityId id, EntityId parent);
         void removeInt (EntityId id, bool updateParent);
 
         std::shared_ptr<QueryArchetypes> makeQueryArchetypes (std::vector<std::size_t> components);
@@ -43,10 +52,15 @@ namespace phenyl::component {
         void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
         void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
 
-        //Entity2 makeWithPrefab (EntityId parent, Archetype* archetype, std::size_t prefabId);
+        void deferInsert (EntityId id, std::size_t compType, std::byte* ptr);
+        void deferApply (EntityId id, std::function<void(Entity)> applyFunc);
+
         void instantiatePrefab (EntityId id, const detail::PrefabFactories& factories);
 
-        void raiseSignal (Entity entity, std::size_t signalType, const std::byte* ptr);
+        void raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr);
+
+        void deferRemove ();
+        void deferRemoveEnd ();
 
         friend Entity;
         friend ChildrenView;
@@ -117,7 +131,7 @@ namespace phenyl::component {
             if (vecIt != signalHandlerVectors.end()) {
                 handlerVec = static_cast<detail::SignalHandlerVector<Signal>*>(vecIt->second.get());
             } else {
-                auto newVec = std::make_unique<detail::SignalHandlerVector<Signal>>();
+                auto newVec = std::make_unique<detail::SignalHandlerVector<Signal>>(*this);
                 handlerVec = newVec.get();
                 signalHandlerVectors.emplace(meta::type_index<Signal>(), std::move(newVec));
             }

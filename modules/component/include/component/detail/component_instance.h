@@ -37,6 +37,9 @@ namespace phenyl::component::detail {
         virtual std::unique_ptr<UntypedComponentVector> makeVector () = 0;
         virtual void onInsert (EntityId id, std::byte* comp) = 0;
         virtual void onRemove (EntityId id, std::byte* comp) = 0;
+
+        virtual void deferComp (EntityId id, std::byte* comp) = 0;
+        virtual void deferEnd () = 0;
     };
 
     template <typename T>
@@ -44,6 +47,8 @@ namespace phenyl::component::detail {
     private:
         std::vector<std::function<void(const OnInsert<T>&, Entity)>> insertHandlers;
         std::vector<std::function<void(const OnRemove<T>&, Entity)>> removeHandlers;
+
+        std::vector<std::pair<EntityId, T>> deferredInserts;
     public:
         Component (ComponentManager* manager, std::string name) : UntypedComponent(manager, std::move(name), meta::type_index<T>()) {}
 
@@ -73,6 +78,19 @@ namespace phenyl::component::detail {
             for (const auto& f : removeHandlers) {
                 f(signal, e);
             }
+        }
+
+        void deferComp (EntityId id, std::byte* comp) override {
+            auto* typedComp = reinterpret_cast<T*>(comp);
+            deferredInserts.emplace_back(id, std::move(*typedComp));
+        }
+
+        void deferEnd () override {
+            for (auto& [id, comp] : deferredInserts) {
+                entity(id).insert(std::move(comp));
+            }
+
+            deferredInserts.clear();
         }
     };
 }

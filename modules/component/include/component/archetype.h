@@ -163,14 +163,14 @@ namespace phenyl::component {
         T* tryGet (std::size_t pos) {
             PHENYL_DASSERT(pos < size());
             auto* comp = tryGetComponent<T>();
-            return comp ? (*comp)[pos] : nullptr;
+            return comp ? &(*comp)[pos] : nullptr;
         }
 
         template <typename T>
         const T* tryGet (std::size_t pos) const {
             PHENYL_DASSERT(pos < size());
             auto* comp = tryGetComponent<T>();
-            return comp ? (*comp)[pos] : nullptr;
+            return comp ? &(*comp)[pos] : nullptr;
         }
 
         void remove (std::size_t pos);

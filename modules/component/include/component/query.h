@@ -10,11 +10,12 @@
 namespace phenyl::component {
     class QueryArchetypes {
     private:
+        ComponentManager& manager;
         std::vector<std::size_t> componentIds;
         std::unordered_set<Archetype*> archetypes;
 
     public:
-        explicit QueryArchetypes (std::vector<std::size_t> componentIds);
+        explicit QueryArchetypes (ComponentManager& manager, std::vector<std::size_t> componentIds);
         class Iterator {
         private:
             std::unordered_set<Archetype*>::const_iterator it;
@@ -73,6 +74,9 @@ namespace phenyl::component {
         bool contains (Archetype* archetype) const noexcept {
             return archetypes.contains(archetype);
         }
+
+        void lock ();
+        void unlock ();
     };
 
     template <typename F, typename ...Args>
@@ -121,23 +125,30 @@ namespace phenyl::component {
         }
 
         void each (const Query2Callback<Args...> auto& fn) const {
+            PHENYL_DASSERT(*this);
+            archetypes->lock();
             for (auto& archetype : *archetypes) {
                 for (auto comps : ArchetypeView<Args...>{archetype, manager}) {
                     fn(std::get<std::remove_reference_t<Args>&>(comps)...);
                 }
             }
+            archetypes->unlock();
         }
 
         void each (const Query2BundleCallback<Args...> auto& fn) const {
+            PHENYL_DASSERT(*this);
+            archetypes->lock();
             for (auto& archetype : *archetypes) {
                 ArchetypeView<Args...> view{archetype, manager};
                 for (const auto& bundle : view.bundles()) {
                     fn(bundle);
                 }
             }
+            archetypes->unlock();
         }
 
         void entity (Entity entity, const Query2BundleCallback<Args...> auto& fn) const {
+            PHENYL_DASSERT(*this);
             const auto& entry = entity.entry();
 
             if (!archetypes->contains(entry.archetype)) {
@@ -149,6 +160,9 @@ namespace phenyl::component {
         }
 
         void pairs (const Query2PairCallback<Args...> auto& fn) const {
+            PHENYL_DASSERT(*this);
+
+            archetypes->lock();
             for (auto a1It = archetypes->begin(); a1It != archetypes->end(); ++a1It) {
                 ArchetypeView<Args...> view1{*a1It, manager};
                 pairsIter(fn, view1);
@@ -158,6 +172,7 @@ namespace phenyl::component {
                     pairsIter2(fn, view1, view2);
                 }
             }
+            archetypes->unlock();
         }
     };
 }

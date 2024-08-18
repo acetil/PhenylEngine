@@ -11,9 +11,7 @@ ComponentManager::ComponentManager (std::size_t capacity) : idList{capacity}, re
     archetypes.emplace_back(std::move(empty));
 }
 
-ComponentManager::~ComponentManager() {
-    clear();
-}
+ComponentManager::~ComponentManager() = default;
 
 Entity ComponentManager::create (EntityId parent)  {
     auto id = idList.newId();
@@ -21,12 +19,11 @@ Entity ComponentManager::create (EntityId parent)  {
     if (id.pos() == entityEntries.size()) {
         entityEntries.emplace_back(nullptr, 0);
     }
-    relationships.add(id, parent);
 
-    emptyArchetype->add(id);
-
-    if (parent) {
-        entity(parent).raise(OnAddChild{entity(id)});
+    if (deferCount) {
+        deferredCreations.emplace_back(id, parent);
+    } else {
+        completeCreation(id, parent);
     }
 
     return Entity{id, this};
@@ -38,9 +35,11 @@ void ComponentManager::remove (EntityId id)  {
         return;
     }
 
-    // TODO: defer
-
-    removeInt(id, true);
+    if (removeDeferCount) {
+        deferredRemovals.emplace_back(id);
+    } else {
+        removeInt(id, true);
+    }
 }
 
 void ComponentManager::reparent(EntityId id, EntityId parent)  {
@@ -58,6 +57,9 @@ void ComponentManager::reparent(EntityId id, EntityId parent)  {
 }
 
 void ComponentManager::clear() {
+    PHENYL_ASSERT(!deferCount);
+    PHENYL_ASSERT(!removeDeferCount);
+
     for (const auto& i : archetypes) {
         i->clear();
     }
@@ -84,23 +86,98 @@ Entity ComponentManager::parent (EntityId id) noexcept {
 }
 
 void ComponentManager::defer () {
+    if (deferCount++) {
+        // Already deferred
+        return;
+    }
 
+    deferRemove();
+    prefabManager->defer();
+    deferSignals();
 }
 
 void ComponentManager::deferEnd () {
+    if (--deferCount) {
+        // Still deferring
+        return;
+    }
 
+    for (auto [id, parent] : deferredCreations) {
+        completeCreation(id, parent);
+    }
+    deferredCreations.clear();
+
+    for (auto& [_, comp] : components) {
+        comp->deferEnd();
+    }
+
+    prefabManager->deferEnd();
+
+    for (auto& [id, func] : deferredApplys) {
+        if (exists(id)) {
+            func(entity(id));
+        }
+    }
+    deferredApplys.clear();
+
+    deferSignalsEnd();
+    deferRemoveEnd();
 }
 
 void ComponentManager::deferSignals () {
+    if (signalDeferCount++) {
+        // Already deferred
+        return;
+    }
 
+    for (auto& [_, vec] : signalHandlerVectors) {
+        vec->defer();
+    }
 }
 
 void ComponentManager::deferSignalsEnd () {
+    if (--signalDeferCount) {
+        // Still deferring
+        return;
+    }
 
+    deferRemove();
+    for (auto& [_, vec] : signalHandlerVectors) {
+        vec->deferEnd();
+    }
+    deferRemoveEnd();
+}
+
+void ComponentManager::deferRemove() {
+    removeDeferCount++;
+}
+
+void ComponentManager::deferRemoveEnd() {
+    if (--removeDeferCount) {
+        return;
+    }
+
+    // In case removal happens while removing deferred entities
+    for (std::size_t i = 0; i < deferredRemovals.size(); i++) {
+        if (exists(deferredRemovals[i])) {
+            removeInt(deferredRemovals[i], true);
+        }
+    }
+    deferredRemovals.clear();
 }
 
 PrefabBuilder ComponentManager::buildPrefab () {
     return prefabManager->makeBuilder();
+}
+
+void ComponentManager::completeCreation(EntityId id, EntityId parent) {
+    relationships.add(id, parent);
+
+    emptyArchetype->add(id);
+
+    if (parent) {
+        entity(parent).raise(OnAddChild{entity(id)});
+    }
 }
 
 void ComponentManager::removeInt (EntityId id, bool updateParent) {
@@ -180,23 +257,36 @@ void ComponentManager::onComponentRemove (EntityId id, std::size_t compType, std
     comp->onRemove(id, ptr);
 }
 
+void ComponentManager::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
+    PHENYL_DASSERT(deferCount);
+    PHENYL_DASSERT(components.contains(compType));
+
+    auto& comp = components[compType];
+    comp->deferComp(id, ptr);
+}
+
+void ComponentManager::deferApply (EntityId id, std::function<void(Entity)> applyFunc) {
+    PHENYL_DASSERT(deferCount);
+    deferredApplys.emplace_back(id, std::move(applyFunc));
+}
+
 void ComponentManager::instantiatePrefab (EntityId id, const detail::PrefabFactories& factories) {
-    if (!exists(id)) {
-        PHENYL_LOGE(LOGGER, "Attempted to instantiate prefab into entity {} that does not exist!", id.value());
-        return;
-    }
+    PHENYL_DASSERT(exists(id));
 
     auto& entry = entityEntries[id.pos()];
     entry.archetype->instantiatePrefab(factories, entry.pos);
 }
 
-void ComponentManager::raiseSignal (Entity entity, std::size_t signalType, const std::byte* ptr) {
+void ComponentManager::raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr) {
     auto vecIt = signalHandlerVectors.find(signalType);
     if (vecIt == signalHandlerVectors.end()) {
+        PHENYL_LOGD(LOGGER, "Ignored signal type {} for entity {} that has no handlers", signalType, id.value());
         return;
     }
 
-    vecIt->second->handle(entity, ptr);
+    deferRemove();
+    vecIt->second->handle(id, ptr);
+    deferRemoveEnd();
 }
 
 std::shared_ptr<QueryArchetypes> ComponentManager::makeQueryArchetypes (std::vector<std::size_t> components) {
@@ -209,7 +299,7 @@ std::shared_ptr<QueryArchetypes> ComponentManager::makeQueryArchetypes (std::vec
         }
     }
 
-    auto newArch = std::make_shared<QueryArchetypes>(std::move(components));
+    auto newArch = std::make_shared<QueryArchetypes>(*this, std::move(components));
     queryArchetypes.emplace_back(newArch);
     return newArch;
 }

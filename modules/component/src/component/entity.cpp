@@ -12,8 +12,20 @@ const detail::EntityEntry& Entity::entry () const {
     return compManager->entityEntries[id().pos()];
 }
 
-void Entity::raiseUntyped (std::size_t signalType, const std::byte* ptr) {
-    compManager->raiseSignal(*this, signalType, ptr);
+void Entity::raiseUntyped (std::size_t signalType, std::byte* ptr) {
+    compManager->raiseSignal(id(), signalType, ptr);
+}
+
+bool Entity::shouldDefer () {
+    return compManager->deferCount;
+}
+
+void Entity::deferInsert(std::size_t compType, std::byte* ptr) {
+    compManager->deferInsert(id(), compType, ptr);
+}
+
+void Entity::deferApply(std::function<void(Entity)> applyFunc) {
+    compManager->deferApply(id(), std::move(applyFunc));
 }
 
 bool Entity::exists () const noexcept {
