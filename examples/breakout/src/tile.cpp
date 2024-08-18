@@ -7,17 +7,19 @@
 
 using namespace breakout;
 
-void breakout::InitTile (breakout::BreakoutApp* app, phenyl::ComponentManager& componentManager) {
-    app->addComponent<Tile>();
-    app->addComponent<Floor>();
+void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
+    app->addComponent<Tile>("Tile");
+    app->addComponent<Floor>("Floor");
 
-    componentManager.handleSignal<phenyl::signals::OnCollision, const phenyl::GlobalTransform2D, Tile>([app] (const phenyl::signals::OnCollision& signal, phenyl::Entity entity, const phenyl::GlobalTransform2D& transform, Tile& tile) {
+    world.addHandler<phenyl::signals::OnCollision, const phenyl::GlobalTransform2D, Tile>([app] (const phenyl::signals::OnCollision& signal, const phenyl::Bundle<const phenyl::GlobalTransform2D, Tile>& bundle) {
+        auto& [transform, tile] = bundle.comps();
+        auto entity = bundle.entity();
         if (!--tile.health) {
             app->addPoints(tile.points);
 
             phenyl::GlobalTransform2D emitterTransform{};
             emitterTransform.transform2D.setPosition(transform.transform2D.position());
-            tile.emitter->instantiate()
+            /*tile.emitter->instantiate()
                 .with(emitterTransform)
                 .complete()
                 .apply<phenyl::ParticleEmitter2D>([normal=signal.normal] (phenyl::ParticleEmitter2D& emitter) {
@@ -25,13 +27,24 @@ void breakout::InitTile (breakout::BreakoutApp* app, phenyl::ComponentManager& c
                 })
                 .apply<phenyl::AudioPlayer>([sample=tile.breakSample] (phenyl::AudioPlayer& player) {
                     player.play(sample);
-                });
+                });*/
+            auto emitterEntity = entity.world().create();
+            emitterEntity.insert(emitterTransform);
+            tile.emitter->instantiate(emitterEntity);
+            emitterEntity.apply<phenyl::ParticleEmitter2D>([normal=signal.normal] (phenyl::ParticleEmitter2D& emitter) {
+                emitter.direction = -normal;
+            });
+            emitterEntity.apply<phenyl::AudioPlayer>([sample=tile.breakSample] (phenyl::AudioPlayer& player) {
+                player.play(sample);
+            });
+
+
 
             entity.remove();
         }
     });
 
-    componentManager.handleSignal<phenyl::signals::OnCollision, const Floor, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, auto entity, const Floor& floor, phenyl::AudioPlayer& player) {
+    world.addHandler<phenyl::signals::OnCollision, const Floor, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, const Floor& floor, phenyl::AudioPlayer& player) {
         player.play(floor.sample);
     });
 }

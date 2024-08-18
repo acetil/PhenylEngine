@@ -6,13 +6,13 @@
 #include "util/map.h"
 #include "util/fl_vector.h"
 
-#include "audio_source.h"
+#include "audio/audio_source.h"
 #include "audio/audio_sample.h"
 #include "audio/audio_backend.h"
 #include "runtime/iresource.h"
 
 namespace phenyl::component {
-    class ComponentManager;
+    class World;
     class EntitySerializer;
 }
 
@@ -76,7 +76,7 @@ namespace phenyl::audio {
         AudioSource createSource ();
 
         void selfRegister ();
-        void addComponents (component::ComponentManager& manager, component::EntitySerializer& serializer);
+        void addComponents (component::World& world, component::EntitySerializer& serializer);
 
         void playSample (AudioSource& source, const AudioSample& sample);
 

@@ -4,13 +4,9 @@
 
 namespace phenyl::component {
     class EntityId;
-    class ComponentManager;
+    class World;
     class EntitySerializer;
-
-    using EntityComponentManager = ComponentManager;
-
     class Entity;
-    class ConstEntity;
     class ChildrenView;
     class Prefab;
 }

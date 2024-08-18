@@ -1,4 +1,4 @@
-#include "component/prefab_manager.h"
+#include "component/prefab_asset_manager.h"
 #include "phenyl/plugins/prefab_plugin.h"
 
 using namespace phenyl;
@@ -11,7 +11,7 @@ std::string_view PrefabPlugin::getName () const noexcept {
 }
 
 void PrefabPlugin::init (PhenylRuntime& runtime) {
-    manager = std::make_unique<component::PrefabManager>(runtime.manager(), runtime.serializer());
+    manager = std::make_unique<component::PrefabAssetManager>(runtime.world(), runtime.serializer());
     manager->selfRegister();
 }
 

@@ -7,6 +7,7 @@
 
 #include "util/map.h"
 #include "common/assets/asset_manager.h"
+#include "component/entity.h"
 #include "runtime/iresource.h"
 
 #include "engine/level/level.h"
@@ -16,7 +17,7 @@ namespace phenyl::game {
     class LevelManager : public common::AssetManager<Level>, public runtime::IResource {
     private:
         util::Map<std::size_t, std::unique_ptr<Level>> levels;
-        component::ComponentManager& manager;
+        component::World& world;
         component::EntitySerializer& serializer;
 
         void queueUnload(std::size_t id) override;
@@ -27,7 +28,7 @@ namespace phenyl::game {
 
         [[nodiscard]] nlohmann::json dumpEntity (component::Entity entity) const;
     public:
-        LevelManager (component::ComponentManager& manager, component::EntitySerializer& serializer);
+        LevelManager (component::World& manager, component::EntitySerializer& serializer);
         ~LevelManager() override;
 
         [[nodiscard]] std::string_view getName() const noexcept override;

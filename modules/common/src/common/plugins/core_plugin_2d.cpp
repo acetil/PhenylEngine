@@ -10,5 +10,5 @@ std::string_view Core2DPlugin::getName () const noexcept {
 }
 
 void Core2DPlugin::init (runtime::PhenylRuntime& runtime) {
-    runtime.addComponent<GlobalTransform2D>();
+    runtime.addComponent<GlobalTransform2D>("GlobalTransform2D");
 }

@@ -4,7 +4,7 @@
 
 #include "common/assets/asset.h"
 
-#include "audio/audio_sample.h"
+#include "audio_sample.h"
 
 namespace phenyl::audio {
     class AudioSystem;

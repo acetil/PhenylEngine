@@ -28,7 +28,7 @@ namespace phenyl {
             template <PluginType ...Plugins>
             friend class ::phenyl::Application;
         protected:
-            component::ComponentManager& componentManager ();
+            component::World& world ();
 
             void setTargetFPS (double fps);
             void setFixedTimeScale (double newTimeScale);
@@ -43,8 +43,8 @@ namespace phenyl {
             void resume ();
 
             template <phenyl::common::CustomSerializable T>
-            void addComponent () {
-                runtime().template addComponent<T>();
+            void addComponent (std::string name) {
+                runtime().template addComponent<T>(std::move(name));
             };
 
             template <typename T>

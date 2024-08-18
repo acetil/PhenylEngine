@@ -6,6 +6,7 @@
 
 #include "component/entity_id.h"
 
+#include "logging/logging.h"
 #include "util/iterable.h"
 
 namespace phenyl::component::detail {
@@ -14,6 +15,8 @@ namespace phenyl::component::detail {
         struct Relationship {
             EntityId parent{};
             EntityId children{};
+
+            // Intrusive doubly linked list
             EntityId next{};
             EntityId prev{};
 
@@ -91,10 +94,11 @@ namespace phenyl::component::detail {
 
         void setParent (EntityId id, EntityId parent) {
             getRelationship(id).parent = parent;
+
+            // Add to start of linked list
             auto oldStart = getRelationship(parent).children;
 
             getRelationship(id).next = oldStart;
-
             if (oldStart) {
                 getRelationship(oldStart).prev = id;
             }
@@ -104,6 +108,7 @@ namespace phenyl::component::detail {
         void removeFromParent (EntityId id) {
             auto& rel = getRelationship(id);
 
+            // Remove from doubly linked list
             if (rel.prev) {
                 getRelationship(rel.prev).next = rel.next;
             } else {

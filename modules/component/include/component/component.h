@@ -1,360 +1,167 @@
 #pragma once
 
-#include <cassert>
-#include <cstddef>
-#include <limits>
-#include <functional>
-#include <iterator>
-
-#include "forward.h"
-#include "entity_id.h"
-#include "detail/component_set.h"
-#include "detail/typed_set.h"
 #include "detail/entity_id_list.h"
-#include "detail/prefab_list.h"
-#include "component/detail/signals/signal_handler.h"
-#include "detail/component_utils.h"
-#include "component/detail/managers/basic_manager.h"
-#include "component/detail/managers/query_manager.h"
-#include "detail/children_view.h"
+#include "entity_id.h"
+#include "detail/relationships.h"
+#include "detail/loggers.h"
+
+#include "archetype.h"
+#include "children_view.h"
+#include "entity.h"
 #include "query.h"
-
-#include "component/entity.h"
-
-#include "util/map.h"
-#include "util/meta.h"
-#include "util/optional.h"
+#include "detail/component_instance.h"
+#include "detail/signal_handler.h"
+#include "prefab.h"
+#include "forward.h"
 
 namespace phenyl::component {
-    class Prefab;
-    class PrefabBuilder;
-
-    class ComponentManager : protected detail::QueryableManager {
+    class World : private detail::IArchetypeManager {
     private:
-        class EntityIterator {
-        private:
-            detail::EntityIdList::const_iterator it;
-            ComponentManager* compManager;
-            EntityIterator (ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
-        public:
-            using value_type = Entity;
-            using reference = void;
-            using pointer = void;
-            using difference_type = detail::EntityIdList::const_iterator::difference_type;
+        std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> components;
 
-            EntityIterator () : compManager{nullptr}, it{} {};
+        detail::EntityIdList idList;
+        detail::RelationshipManager relationships;
 
-            value_type operator* () const {
-                return compManager->entity(*it);
-            }
+        std::vector<std::unique_ptr<Archetype>> archetypes;
+        EmptyArchetype* emptyArchetype;
+        std::vector<detail::EntityEntry> entityEntries;
 
-            EntityIterator& operator++ () {
-                ++it;
-                return *this;
-            }
-            EntityIterator operator++ (int) {
-                auto copy = *this;
-                ++*this;
+        std::vector<std::weak_ptr<QueryArchetypes>> queryArchetypes;
 
-                return copy;
-            }
+        std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> signalHandlerVectors;
 
-            EntityIterator& operator-- () {
-                --it;
-                return *this;
-            }
-            EntityIterator operator-- (int) {
-                auto copy = *this;
-                --*this;
+        std::shared_ptr<PrefabManager> prefabManager;
 
-                return copy;
-            }
+        std::vector<std::pair<EntityId, EntityId>> deferredCreations;
+        std::vector<std::pair<EntityId, std::function<void(Entity)>>> deferredApplys;
+        std::vector<EntityId> deferredRemovals;
 
-            bool operator== (const EntityIterator& other) const {
-                return it == other.it;
-            }
+        std::uint32_t deferCount = 0;
+        std::uint32_t removeDeferCount = 0;
+        std::uint32_t signalDeferCount = 0;
 
-            friend class ComponentManager;
-        };
+        void completeCreation (EntityId id, EntityId parent);
+        void removeInt (EntityId id, bool updateParent);
 
-        class ConstEntityView {
-        private:
-            detail::EntityIdList::const_iterator it;
-            const ComponentManager* compManager;
-            ConstEntityView (const ComponentManager* compManager, detail::EntityIdList::const_iterator it) : it{it}, compManager{compManager} {}
-        public:
-            using value_type = ConstEntity;
-            using reference = void;
-            using pointer = void;
-            using difference_type = detail::EntityIdList::const_iterator::difference_type;
+        std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::ArchetypeKey key);
+        void cleanupQueryArchetypes ();
 
-            ConstEntityView () : compManager{nullptr}, it{} {};
+        Archetype* findArchetype (const detail::ArchetypeKey& key) override;
+        void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
 
-            value_type operator* () const {
-                return compManager->entity(*it);
-            }
+        void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
+        void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
 
-            ConstEntityView& operator++ () {
-                ++it;
-                return *this;
-            }
-            ConstEntityView operator++ (int) {
-                auto copy = *this;
-                ++*this;
+        void deferInsert (EntityId id, std::size_t compType, std::byte* ptr);
+        void deferErase (EntityId id, std::size_t compType);
+        void deferApply (EntityId id, std::function<void(Entity)> applyFunc);
 
-                return copy;
-            }
+        void instantiatePrefab (EntityId id, const detail::PrefabFactories& factories);
 
-            ConstEntityView& operator-- () {
-                --it;
-                return *this;
-            }
-            ConstEntityView operator-- (int) {
-                auto copy = *this;
-                --*this;
+        void raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr);
 
-                return copy;
-            }
+        void deferRemove ();
+        void deferRemoveEnd ();
 
-            bool operator== (const ConstEntityView& other) const {
-                return it == other.it;
-            }
-
-            friend class ComponentManager;
-        };
-
-        std::size_t currStartCapacity;
-        detail::PrefabList prefabs;
-
-        template <typename T>
-        std::unique_ptr<detail::ComponentSet> createComponent () requires (!std::is_abstract_v<T>) {
-            auto component = std::make_unique<detail::ConcreteComponentSet<T>>(static_cast<detail::BasicManager*>(this), currStartCapacity);
-            component->guaranteeEntityIndex(idList.maxIndex());
-
-            if (deferCount) {
-                component->defer();
-            }
-
-            return component;
-        }
-
-        template <typename T>
-        std::unique_ptr<detail::ComponentSet> createComponent () requires (std::is_abstract_v<T>) {
-            auto component = std::make_unique<detail::AbstractComponentSet<T>>(static_cast<detail::BasicManager*>(this), currStartCapacity);
-            component->guaranteeEntityIndex(idList.maxIndex());
-
-            if (deferCount) {
-                component->defer();
-            }
-
-            return component;
-        }
-
-        template <typename T>
-        detail::SignalHandlerList<T>* getOrCreateHandlerList () {
-            auto typeIndex = meta::type_index<T>();
-            if (signalHandlers.contains(typeIndex)) {
-                return (detail::SignalHandlerList<T>*)signalHandlers[typeIndex].get();
-            }
-
-            auto handlerList = std::make_unique<detail::SignalHandlerList<T>>();
-            detail::SignalHandlerList<T>* ptr = handlerList.get();
-            signalHandlers[typeIndex] = std::move(handlerList);
-
-            if (deferCount || signalDeferCount) {
-                ptr->defer();
-            }
-
-            return ptr;
-        }
-
-        friend class PrefabBuilder;
-        friend class Prefab;
-        friend class ChildrenView;
+        friend Entity;
+        friend ChildrenView;
+        friend PrefabManager;
     public:
-        using iterator = EntityIterator;
-        using const_iterator = ConstEntityView;
+        static constexpr std::size_t DEFAULT_CAPACITY = 256;
 
-        static constexpr std::size_t START_CAPACITY = 256;
-        static_assert(std::bidirectional_iterator<iterator>);
-        static_assert(std::bidirectional_iterator<const_iterator>);
+        explicit World (std::size_t capacity=DEFAULT_CAPACITY);
+        ~World () override;
 
-        explicit ComponentManager (std::size_t startCapacity=START_CAPACITY) : detail::QueryableManager{startCapacity}, currStartCapacity{startCapacity} {}
+        World (const World&) = delete;
+        World (World&& other) = default;
 
-        ComponentManager (const ComponentManager&) = delete;
-        ComponentManager (ComponentManager&&) = default;
-
-        ComponentManager& operator= (const ComponentManager&) = delete;
-        ComponentManager& operator= (ComponentManager&&) = default;
-
-        ~ComponentManager () {
-            clearAll();
-        }
+        World& operator= (const World&) = delete;
+        World& operator= (World&&) = default;
 
         template <typename T>
-        void addComponent () {
-            auto typeIndex = meta::type_index<T>();
-            if (components.contains(typeIndex)) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Attempted to insert component type of index {} that already exists!", typeIndex);
-                return;
-            }
+        void addComponent (std::string name) {
+            PHENYL_ASSERT_MSG(!components.contains(meta::type_index<T>()), "Attempted to add component \"{}\" twice", name);
 
-            auto component = createComponent<T>();
-
-            components.emplace(typeIndex, std::move(component));
+            auto comp = std::make_unique<detail::Component<T>>(this, std::move(name));
+            auto index = comp->type();
+            components.emplace(index, std::move(comp));
         }
 
-        Entity create () {
-            return entity(_create(EntityId{}));
+        Entity create (EntityId parent = EntityId{});
+        void remove (EntityId id);
+        void reparent (EntityId id, EntityId parent);
+
+        void clear ();
+
+        [[nodiscard]] bool exists (EntityId id) const noexcept {
+            return idList.check(id);
         }
 
-        ChildrenView root () {
-            return _children(EntityId{});
-        }
+        Entity entity (EntityId id) noexcept;
+        ChildrenView root () noexcept;
 
-        [[nodiscard]] std::size_t size () const {
-            return idList.size();
-        }
-
-        void clear () {
-            PHENYL_LOGD(detail::MANAGER_LOGGER, "Clearing entities!");
-            for (auto [i, comp] : components.kv()) {
-                comp->clear();
-            }
-            idList.clear();
-            relationships.reset();
-        }
-
-        void clearAll () {
-            PHENYL_LOGD(detail::MANAGER_LOGGER, "Clearing all!");
-            clear();
-            prefabs.clear();
-        }
-
-        template <typename Derived, typename Base>
-        void inherits () requires std::derived_from<Derived, Base> {
-            detail::ComponentSet* derived = getComponent<Derived>();
-            detail::ComponentSet* base = getComponent<Base>();
-
-            if (!derived) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get derived component!");
-                return;
-            }
-
-            if (!base) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get base component!");
-                return;
-            }
-
-            if (derived->setParent(base)) {
-                base->addChild(derived);
-            }
-        }
-
-        template <typename Dependent, typename Dependency>
-        void addRequirement () {
-            detail::ComponentSet* dependent = getComponent<Dependent>();
-            detail::ComponentSet* dependency = getComponent<Dependency>();
-
-            if (!dependent) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get dependent component!");
-                return;
-            }
-
-            if (!dependency) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get dependency component!");
-                return;
-            }
-
-            dependency->addDependent(dependent);
-        }
-
-        template <typename Signal, typename ...Args, meta::callable<void, const Signal&, Entity, std::remove_reference_t<Args>&...> F>
-        void handleSignal (F fn) requires (!ComponentSignal<Signal>) {
-            auto comps = std::array{getComponent<std::remove_reference_t<Args>>()...};
-            for (auto i : comps) {
-                if (!i) {
-                    PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get all components for signal handler!");
-                    return;
-                }
-            }
-
-            detail::SignalHandlerList<Signal>* handlerList = getOrCreateHandlerList<Signal>();
-
-            auto handler = std::make_unique<detail::TypedSignalHandler<Signal, F, std::remove_reference_t<Args>...>>(std::move(fn), std::move(comps));
-            handlerList->addHandler(std::move(handler));
-        }
-
-        template <ComponentSignal Signal>
-        void handleSignal (std::function<void(Entity, const Signal&)> handler) {
-            auto* comp = (detail::TypedComponentSet<typename Signal::Type>*)getComponent<typename Signal::Type>();
-            if (!comp) {
-                PHENYL_LOGE(detail::MANAGER_LOGGER, "Failed to get component for component signal handler!");
-                return;
-            }
-
-            comp->addHandler(handler);
-        }
-
-        void defer () {
-            _defer();
-        }
-
-        void deferSignals () {
-            _deferSignals();
-        }
-
-        void deferEnd () {
-            _deferEnd();
-        }
-
-        void deferSignalsEnd () {
-            _deferSignalsEnd();
-        }
-
-
-        // TODO: merge Entity/ConstEntity and EntityComponentView/ConstEntityComponentView
-        Entity entity (EntityId id) {
-            return _entity(id);
-        }
-
-        [[nodiscard]] ConstEntity entity (EntityId id) const {
-            return _entity(id);
-        }
+        [[nodiscard]] Entity parent (EntityId id) noexcept;
 
         template <typename ...Args>
         Query<Args...> query () {
-            return _query<Args...>();
+            return Query<Args...>{makeQueryArchetypes(detail::ArchetypeKey::Make<Args...>()), this};
         }
 
-        template <typename ...Args>
-        ConstQuery<Args...> query () const {
-            return _query<Args...>();
+        template <typename T>
+        void addHandler (std::function<void(const OnInsert<T>&, Entity)> handler) {
+            auto it = components.find(meta::type_index<T>());
+            PHENYL_ASSERT_MSG(it != components.end(), "Failed to find component in addHandler()");
+
+            auto& component = static_cast<detail::Component<T>&>(*it->second);
+            component.addHandler(std::move(handler));
         }
+
+        template <typename T>
+        void addHandler (std::function<void(const OnRemove<T>&, Entity)> handler) {
+            auto it = components.find(meta::type_index<T>());
+            PHENYL_ASSERT_MSG(it != components.end(), "Failed to find component in addHandler()");
+
+            auto& component = static_cast<detail::Component<T>&>(*it->second);
+            component.addHandler(std::move(handler));
+        }
+
+        template <typename Signal, typename ...Args>
+        void addHandler (std::function<void(const Signal&, const Bundle<Args...>& bundle)> handler) {
+            detail::SignalHandlerVector<Signal>* handlerVec;
+            auto vecIt = signalHandlerVectors.find(meta::type_index<Signal>());
+            if (vecIt != signalHandlerVectors.end()) {
+                handlerVec = static_cast<detail::SignalHandlerVector<Signal>*>(vecIt->second.get());
+            } else {
+                auto newVec = std::make_unique<detail::SignalHandlerVector<Signal>>(*this);
+                handlerVec = newVec.get();
+                signalHandlerVectors.emplace(meta::type_index<Signal>(), std::move(newVec));
+            }
+
+            handlerVec->addHandler(std::make_unique<detail::SignalHandler2<Signal, Args...>>(query<Args...>(), std::move(handler)));
+        }
+
+        template <typename Signal, typename ...Args>
+        void addHandler (auto&& fn) requires meta::callable<decltype(fn), void, const Signal&, const Bundle<Args...>&> {
+            addHandler<Signal, Args...>(std::function<void(const Signal&, const Bundle<Args...>&)>{std::forward<decltype(fn)>(fn)});
+        }
+
+        template <typename Signal, typename ...Args>
+        void addHandler (std::function<void(const Signal&, std::remove_reference_t<Args>&... args)> handler) {
+            addHandler(std::function<void(const Signal&, const Bundle<Args...>&)>{[handler = std::move(handler)] (const Signal& signal, const Bundle<Args...>& bundle) {
+                handler(signal, bundle.template get<Args>()...);
+            }});
+        }
+
+        template <typename Signal, typename ...Args>
+        void addHandler (auto&& fn) requires meta::callable<decltype(fn), void, const Signal&, std::remove_reference_t<Args>&...> {
+            addHandler<Signal, Args...>(std::function<void(const Signal&, std::remove_reference_t<Args>&...)>{std::forward<decltype(fn)>(fn)});
+        }
+
+        void defer ();
+        void deferEnd ();
+        void deferSignals ();
+        void deferSignalsEnd ();
 
         PrefabBuilder buildPrefab ();
-
-        iterator begin () {
-            return iterator{this, idList.begin()};
-        }
-        iterator end () {
-            return iterator{this, idList.end()};
-        }
-
-        const_iterator begin () const {
-            return cbegin();
-        }
-        const_iterator cbegin () const {
-            return const_iterator{this, idList.begin()};
-        }
-
-        const_iterator end () const {
-            return cend();
-        }
-        const_iterator cend () const {
-            return const_iterator{this, idList.end()};
-        }
     };
-
-    using EntityComponentManager = ComponentManager;
 }

@@ -19,7 +19,7 @@ void ResourceManager::registerResource (std::size_t typeIndex, IResource* resour
     PHENYL_LOGI(LOGGER, "Registered resource \"{}\"", resource->getName());
 }
 
-PhenylRuntime::PhenylRuntime (phenyl::component::ComponentManager&& compManager) : compManager{std::move(compManager)} {
+PhenylRuntime::PhenylRuntime () : runtimeWorld{} {
     PHENYL_LOGI(LOGGER, "Initialised Phenyl runtime");
     initStage<PostInit>("PostInit");
     initStage<FrameBegin>("FrameBegin");
@@ -92,7 +92,7 @@ void PhenylRuntime::shutdown () {
     PHENYL_LOGI(LOGGER, "Shutting down runtime!");
 
     PHENYL_TRACE(LOGGER, "Clearing entities");
-    manager().clear();
+    world().clear();
 
     PHENYL_TRACE(LOGGER, "Running plugin shutdown()");
     for (auto [_, plugin] : plugins.kv()) {
@@ -100,8 +100,8 @@ void PhenylRuntime::shutdown () {
         plugin->shutdown(*this);
     }
 
-    PHENYL_TRACE(LOGGER, "Clearing rest of component manager");
-    manager().clearAll(); // TODO: try to get rid of this
+    //PHENYL_TRACE(LOGGER, "Clearing rest of component manager");
+    //manager().clearAll(); // TODO: try to get rid of this
 
     PHENYL_TRACE(LOGGER, "Destructing plugins");
     plugins.clear();

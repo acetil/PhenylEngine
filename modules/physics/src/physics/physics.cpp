@@ -23,6 +23,6 @@ void physics::Physics2DPlugin::init (runtime::PhenylRuntime& runtime) {
 void physics::Physics2DPlugin::render (runtime::PhenylRuntime& runtime) {
     auto* config = runtime.resourceMaybe<common::DebugRenderConfig>();
     if (config && config->doPhysicsRender) {
-        physics->debugRender(runtime.manager());
+        physics->debugRender(runtime.world());
     }
 }

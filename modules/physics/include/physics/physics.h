@@ -1,7 +1,5 @@
 #pragma once
 
-#include "component/component.h"
-#include "component/forward.h"
 #include "runtime/plugin.h"
 
 namespace phenyl::physics {

@@ -2,7 +2,7 @@
 #include "runtime/runtime.h"
 
 namespace phenyl::component {
-    class ComponentManager;
+    class World;
 }
 
 namespace phenyl::common {

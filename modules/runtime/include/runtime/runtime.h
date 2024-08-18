@@ -18,7 +18,7 @@ namespace phenyl::runtime {
 
     class PhenylRuntime {
     private:
-        component::ComponentManager compManager;
+        component::World runtimeWorld;
         component::EntitySerializer serializationManager;
 
         ResourceManager resourceManager;
@@ -35,7 +35,7 @@ namespace phenyl::runtime {
         template <typename S, typename ...Args>
         System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
             PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, manager(), resourceManager);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), resourceManager);
             auto* ptr = system.get();
             systemMap[ptr->getName()] = std::move(system);
 
@@ -45,7 +45,7 @@ namespace phenyl::runtime {
         template <typename S, typename T, typename ...Args>
         System<S>* makeSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
             PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, manager(), resourceManager);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), resourceManager);
             auto* ptr = system.get();
             systemMap[ptr->getName()] = std::move(system);
 
@@ -105,14 +105,14 @@ namespace phenyl::runtime {
             return ptr;
         }
     public:
-        explicit PhenylRuntime (component::ComponentManager&& compManager);
+        explicit PhenylRuntime ();
         virtual ~PhenylRuntime();
 
-        component::ComponentManager& manager () {
-            return compManager;
+        component::World& world () {
+            return runtimeWorld;
         }
-        [[nodiscard]] const component::ComponentManager& manager () const {
-            return compManager;
+        [[nodiscard]] const component::World& world () const {
+            return runtimeWorld;
         }
 
         component::EntitySerializer& serializer () {
@@ -187,14 +187,14 @@ namespace phenyl::runtime {
         }
 
         template <common::CustomSerializable T>
-        void addComponent () {
-            addUnserializedComponent<T>();
+        void addComponent (std::string name) {
+            addUnserializedComponent<T>(std::move(name));
             serializer().addSerializer<T>();
         }
 
         template <typename T>
-        void addUnserializedComponent () {
-            manager().addComponent<T>();
+        void addUnserializedComponent (std::string name) {
+            world().addComponent<T>(std::move(name));
         }
 
         template <typename S>

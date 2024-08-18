@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <exception>
 #include <source_location>
 #include <string>
 
@@ -83,7 +84,7 @@ PRINT_STACKTRACE(); \
         auto sourceLoc = std::source_location::current(); \
         ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond); \
         PRINT_STACKTRACE(); \
-        throw std::logic_error("Assertion failure: \"" #cond "\""); \
+        std::terminate(); \
     } \
 } while (0)
 
@@ -92,7 +93,7 @@ if (!(cond)) { \
 auto sourceLoc = std::source_location::current(); \
 ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond, std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
 PRINT_STACKTRACE(); \
-throw std::logic_error("Assertion failure: \"" #cond "\""); \
+std::terminate(); \
 } \
 } while (0)
 
@@ -100,7 +101,7 @@ throw std::logic_error("Assertion failure: \"" #cond "\""); \
 auto sourceLoc = std::source_location::current(); \
 ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): runtime abort: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
 PRINT_STACKTRACE(); \
-throw std::logic_error("Program abort");\
+std::terminate();\
 } while (0)
 
 #ifndef NDEBUG

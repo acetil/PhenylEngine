@@ -8,12 +8,9 @@
 namespace phenyl::physics {
     class Physics2D {
     private:
-        void checkCollisions(component::EntityComponentManager& componentManager, float deltaTime);
-        void solveConstraints (std::vector<Constraint2D>& constraints, component::EntityComponentManager& compManager);
     public:
         void addComponents(runtime::PhenylRuntime& runtime);
-        void updatePhysics(component::EntityComponentManager& componentManager, float deltaTime);
 
-        void debugRender (const component::EntityComponentManager& componentManager);
+        void debugRender (component::World& world);
     };
 }

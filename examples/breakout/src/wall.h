@@ -18,5 +18,5 @@ namespace breakout {
         PHENYL_MEMBER_NAMED(bounceSample, "bounce_sample");
     })
 
-    void InitWall (BreakoutApp* app, phenyl::ComponentManager& manager);
+    void InitWall (BreakoutApp* app, phenyl::World& world);
 }

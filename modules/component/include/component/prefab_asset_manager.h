@@ -1,18 +1,20 @@
 #pragma once
 
+#include "util/map.h"
+
 #include "common/assets/asset_manager.h"
 #include "component/prefab.h"
 #include "forward.h"
 
 namespace phenyl::component {
-    class PrefabManager : public common::AssetManager<Prefab> {
+    class PrefabAssetManager : public common::AssetManager<Prefab> {
     private:
         util::Map<std::size_t, std::unique_ptr<Prefab>> prefabs;
         EntitySerializer& serializer;
-        ComponentManager& manager;
+        World& world;
     public:
-        explicit PrefabManager (ComponentManager& manager, EntitySerializer& serializer) : serializer{serializer}, manager{manager} {}
-        ~PrefabManager() override;
+        explicit PrefabAssetManager (World& world, EntitySerializer& serializer) : serializer{serializer}, world{world} {}
+        ~PrefabAssetManager() override;
 
         Prefab* load (std::istream& data, std::size_t id) override;
         Prefab* load (phenyl::component::Prefab&& obj, std::size_t id) override;

@@ -28,7 +28,7 @@ static phenyl::InputAction KeyShoot;
 static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
-static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer);
+static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle);
 static void PlayerCameraUpdateSystem (const Resources<Camera>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform);
 static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer);
 
@@ -53,7 +53,7 @@ void InputSetup (phenyl::GameInput& input) {
 }
 
 void InitPlayer (test::TestApp* app) {
-    app->addComponent<test::Player>();
+    app->addComponent<test::Player>("Player");
 
     InputSetup(app->runtime().resource<GameInput>());
 
@@ -63,8 +63,10 @@ void InitPlayer (test::TestApp* app) {
 
 }
 
-static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, test::Player& player, phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body, phenyl::AudioPlayer& audioPlayer) {
+static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle) {
     auto& [camera] = resources;
+    auto& [player, transform, body, audioPlayer] = bundle.comps();
+
     auto forceVec = PlayerMove.value() * FORCE_COMPONENT;
     auto disp = camera.getWorldPos2D(CursorPos.value()) - transform.transform2D.position();
     bool doShoot = KeyShoot.value();
@@ -78,16 +80,25 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, t
         glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
-        auto bulletView = player.bulletPrefab->instantiate()
-                                .complete();
+        auto bulletEntity = bundle.entity().world().create();
+        player.bulletPrefab->instantiate(bulletEntity);
 
-        bulletView.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel, rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
+        bulletEntity.apply<phenyl::GlobalTransform2D>([pos, rot] (auto& transform) {
             transform.transform2D
                      .setPosition(pos)
                      .setRotation(rot);
-
+        });
+        bulletEntity.apply<phenyl::RigidBody2D>([bulletVel] (auto& body) {
             body.applyImpulse(bulletVel * body.getMass());
         });
+
+        // bulletEntity.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel, rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
+        //     transform.transform2D
+        //              .setPosition(pos)
+        //              .setRotation(rot);
+        //
+        //     body.applyImpulse(bulletVel * body.getMass());
+        // });
 
         audioPlayer.play(player.gunshotSample);
 

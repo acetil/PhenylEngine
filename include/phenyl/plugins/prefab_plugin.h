@@ -4,16 +4,16 @@
 #include "phenyl/runtime.h"
 
 namespace phenyl::component {
-    class PrefabManager;
+    class PrefabAssetManager;
 }
 
 namespace phenyl {
     class PrefabPlugin : public IPlugin {
     private:
-        std::unique_ptr<component::PrefabManager> manager;
+        std::unique_ptr<component::PrefabAssetManager> manager;
     public:
         PrefabPlugin ();
-        ~PrefabPlugin();
+        ~PrefabPlugin() override;
 
         [[nodiscard]] std::string_view getName () const noexcept override;
         void init (PhenylRuntime& runtime) override;

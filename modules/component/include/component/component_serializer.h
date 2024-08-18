@@ -1,18 +1,20 @@
 #pragma once
 
+#include "util/map.h"
+
 #include "common/serializer.h"
-#include "component.h"
-#include "prefab.h"
+#include "component/component.h"
+#include "component/prefab.h"
 
 namespace phenyl::component {
     class ComponentSerializer {
     public:
         virtual ~ComponentSerializer() = default;
 
-        virtual bool deserialize (component::Prefab::Instantiator& instantiator, const common::JsonDeserializer& deserializer) = 0;
+        virtual bool deserialize (component::Entity entity, const common::JsonDeserializer& deserializer) = 0;
         virtual bool deserialize (component::PrefabBuilder& builder, const common::JsonDeserializer& deserializer) = 0;
 
-        virtual util::Optional<nlohmann::json> serialize (const ConstEntity& entity) = 0;
+        virtual util::Optional<nlohmann::json> serialize (const Entity& entity) = 0;
     };
 
     namespace detail {
@@ -22,7 +24,7 @@ namespace phenyl::component {
         public:
             ~TypedComponentSerializer() override = default;
 
-            bool deserialize (component::Prefab::Instantiator& instantiator, const common::JsonDeserializer& deserializer) override {
+            bool deserialize (component::Entity entity, const common::JsonDeserializer& deserializer) override {
                 /*return deserializer.deserialize<T>()
                     .ifPresent([&instantiator] (T& comp) {
                         instantiator.with(std::move(comp));
@@ -31,7 +33,7 @@ namespace phenyl::component {
                     .orElse(false);*/
                 util::Optional<T> compOpt = deserializer.deserialize<T>();
                 if (compOpt) {
-                    instantiator.with(std::move(compOpt.getUnsafe()));
+                    entity.emplace<T>(std::move(compOpt.getUnsafe()));
                     return true;
                 } else {
                     return false;
@@ -54,10 +56,9 @@ namespace phenyl::component {
                 }
             }
 
-            util::Optional<nlohmann::json> serialize (const component::ConstEntity& entity) override {
-                return entity.get<T>().thenMap([] (const T& comp) {
-                    return common::JsonSerializer::Serialize(comp);
-                });
+            util::Optional<nlohmann::json> serialize (const component::Entity& entity) override {
+                auto* ptr = entity.get<T>();
+                return ptr ? util::Optional<nlohmann::json>{common::JsonSerializer::Serialize(*ptr)} : util::NullOpt;
             }
         };
     }
@@ -76,7 +77,7 @@ namespace phenyl::component {
             serializers[common::CustomSerializer<T>::Name] = std::make_unique<detail::TypedComponentSerializer<T>>();
         }
 
-        nlohmann::json serializeEntity (const component::ConstEntity& entity) {
+        nlohmann::json serializeEntity (const component::Entity& entity) {
             auto obj = nlohmann::json::object_t{};
 
             for (auto [compId, serializer] : serializers.kv()) {
@@ -88,7 +89,7 @@ namespace phenyl::component {
             return obj;
         }
 
-        void deserializeEntity (component::Prefab::Instantiator& instantiator, const nlohmann::json& data) {
+        void deserializeEntity (component::Entity entity, const nlohmann::json& data) {
             if (!data.is_object()) {
                 PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Entity component data is not an object!");
                 return;
@@ -98,7 +99,7 @@ namespace phenyl::component {
 
             for (const auto& [k, v] : obj) {
                 if (serializers.contains(k)) {
-                    serializers.at(k)->deserialize(instantiator, v);
+                    serializers.at(k)->deserialize(entity, v);
                 } else {
                     PHENYL_LOGW(detail::SERIALIZER_LOGGER, "Component serializer not available for component \"{}\"!", k);
                 }

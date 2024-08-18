@@ -7,19 +7,31 @@
 #include "wall.h"
 
 
-void breakout::InitWall (BreakoutApp* app, phenyl::ComponentManager& manager) {
-    app->addComponent<Wall>();
+void breakout::InitWall (BreakoutApp* app, phenyl::World& world) {
+    app->addComponent<Wall>("Wall");
 
-    manager.handleSignal<phenyl::signals::OnCollision, phenyl::AudioPlayer, const Wall>([] (const phenyl::signals::OnCollision& signal, auto entity, phenyl::AudioPlayer& audioPlayer, const Wall& wall) {
+    world.addHandler<phenyl::signals::OnCollision, phenyl::AudioPlayer, const Wall>([] (const phenyl::signals::OnCollision& signal, const phenyl::Bundle<phenyl::AudioPlayer, const Wall>& bundle) {
         phenyl::GlobalTransform2D emitterTransform{};
         emitterTransform.transform2D.setPosition(signal.worldContactPoint);
 
-        wall.emitter->instantiate()
+        auto& [audioPlayer, wall] = bundle.comps();
+        auto& world = bundle.entity().world();
+
+        auto emitterEntity = world.create();
+        emitterEntity.insert(emitterTransform);
+        wall.emitter->instantiate(emitterEntity);
+        emitterEntity.apply<phenyl::ParticleEmitter2D>([normal=signal.normal] (phenyl::ParticleEmitter2D& emitter) {
+            emitter.direction = normal;
+        });
+
+        audioPlayer.play(wall.bounceSample);
+        /*wall.emitter->instantiate()
             .with(emitterTransform)
             .complete()
             .apply<phenyl::ParticleEmitter2D>([normal=signal.normal] (phenyl::ParticleEmitter2D& emitter) {
                 emitter.direction = normal;
             });
-        audioPlayer.play(wall.bounceSample);
+        audioPlayer.play(wall.bounceSample);*/
+
     });
 }

@@ -20,7 +20,7 @@ test::TestApp::TestApp () :
         .withVsync(false)) {}
 
 void test::TestApp::init () {
-    InitBullet(this, componentManager());
+    InitBullet(this, world());
     InitPlayer(this);
 
     runtime().addSystem<phenyl::FixedUpdate>("TestApp::fixedUpdate", this, &TestApp::fixedUpdate);

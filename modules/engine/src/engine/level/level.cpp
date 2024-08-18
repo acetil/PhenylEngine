@@ -24,10 +24,9 @@ namespace phenyl::game::detail {
 
 namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities);
-    phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager);
 }
 
-LevelManager::LevelManager (component::ComponentManager& manager, component::EntitySerializer& serializer) : manager{manager}, serializer{serializer} {}
+LevelManager::LevelManager (component::World& world, component::EntitySerializer& serializer) : world{world}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::istream& data, std::size_t id) {
@@ -60,7 +59,7 @@ Level* LevelManager::load (std::istream& data, std::size_t id) {
         }
     }
 
-    levels[id] = std::make_unique<Level>(Level{&manager, &serializer, std::move(entities)});
+    levels[id] = std::make_unique<Level>(Level{&world, &serializer, std::move(entities)});
 
     return levels[id].get();
 }
@@ -82,7 +81,7 @@ void LevelManager::selfRegister () {
 void LevelManager::dump (std::ostream& file) const {
     PHENYL_LOGI(LOGGER, "Dumping level");
     auto entities = nlohmann::json::array_t{};
-    for (auto i : manager.root()) {
+    for (auto i : world.root()) {
         entities.emplace_back(dumpEntity(i));
     }
 
@@ -119,37 +118,41 @@ std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (component::ComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : manager{manager}, serializer{serializer}, entities{std::move(entities)} {}
+Level::Level (component::World* world, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : world{world}, serializer{serializer}, entities{std::move(entities)} {}
 
 void Level::load (bool additive) {
     if (!additive) {
         PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
-        manager->clear();
+        world->clear();
     }
 
-    manager->deferSignals();
+    world->deferSignals();
     std::size_t index = 0;
     while (index < entities.size()) {
         loadEntity(index);
         index += entities[index].numChildren + 1;
     }
 
-    manager->deferSignalsEnd();
+    world->deferSignalsEnd();
 }
 
 phenyl::component::Entity Level::loadEntity (std::size_t index) {
     PHENYL_ASSERT(index < entities.size());
-    const auto& entity = entities[index];
+    const auto& levelEntity = entities[index];
 
-    auto instantatior = getInstantatior(entity.prefab, manager);
-    serializer->deserializeEntity(instantatior, entity.components);
+    //serializer->deserializeEntity(instantatior, entity.components);
+    auto entity = world->create();
+    serializer->deserializeEntity(entity, levelEntity.components);
+    levelEntity.prefab->instantiate(entity);
     auto childIndex = index + 1;
-    while (childIndex < index + entity.numChildren + 1) {
-        instantatior.withChild(loadEntity(childIndex));
+    while (childIndex < index + levelEntity.numChildren + 1) {
+        //instantatior.withChild(loadEntity(childIndex));
+        auto child = loadEntity(childIndex);
+        entity.addChild(child);
         childIndex += entities[childIndex].numChildren;
     }
 
-    return instantatior.complete();
+    return entity;
 }
 
 namespace {
@@ -196,13 +199,5 @@ namespace {
         }
 
         return entity.numChildren + 1;
-    }
-
-    phenyl::component::Prefab::Instantiator getInstantatior (const phenyl::common::Asset<phenyl::component::Prefab>& prefab, phenyl::component::ComponentManager* manager) {
-        if (prefab) {
-            return prefab->instantiate();
-        } else {
-            return phenyl::component::Prefab::NullPrefab(manager).instantiate();
-        }
     }
 }
