@@ -24,6 +24,10 @@ void Entity::deferInsert(std::size_t compType, std::byte* ptr) {
     entityWorld->deferInsert(id(), compType, ptr);
 }
 
+void Entity::deferErase(std::size_t compType) {
+    entityWorld
+}
+
 void Entity::deferApply(std::function<void(Entity)> applyFunc) {
     entityWorld->deferApply(id(), std::move(applyFunc));
 }

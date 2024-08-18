@@ -97,7 +97,7 @@ namespace phenyl::component {
     protected:
         Archetype (detail::IArchetypeManager& manager);
 
-        void addEntity (EntityId id);
+        std::size_t addEntity (EntityId id);
     public:
         Archetype (detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components);
 

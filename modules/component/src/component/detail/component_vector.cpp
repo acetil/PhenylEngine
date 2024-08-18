@@ -39,22 +39,19 @@ void UntypedComponentVector::moveFrom (UntypedComponentVector& other, std::size_
     moveConstructComp(other.getUntyped(pos), ptr);
 }
 
-std::size_t UntypedComponentVector::remove (std::size_t pos) {
+void UntypedComponentVector::remove (std::size_t pos) {
     PHENYL_DASSERT(pos < size());
 
     if (pos == size() - 1) {
+        // Delete from back
         deleteComp(getUntyped(pos));
-        vecLength--;
-
-        return pos;
     } else {
+        // Swap from back
         auto oldPos = size() - 1;
         moveComp(getUntyped(oldPos), getUntyped(pos));
         deleteComp(getUntyped(oldPos));
-        vecLength--;
-
-        return pos;
     }
+    vecLength--;
 }
 
 void UntypedComponentVector::clear() {

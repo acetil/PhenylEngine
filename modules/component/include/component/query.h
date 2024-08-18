@@ -98,7 +98,8 @@ namespace phenyl::component {
         friend class World;
 
         void pairsIter (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view) const {
-            util::Iterable<typename ArchetypeView<Args...>::BundleIterator> bundles = view.bundles();
+            // Iterate though pairs within archetype
+            auto bundles = view.bundles();
             for (auto b1It = bundles.begin(); b1It != bundles.end(); ++b1It) {
                 const auto& b1 = *b1It;
                 for (auto b2It = std::next(b1It); b2It != bundles.end(); ++b2It) {
@@ -108,8 +109,9 @@ namespace phenyl::component {
         }
 
         void pairsIter2 (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view1, ArchetypeView<Args...>& view2) const {
-            util::Iterable<typename ArchetypeView<Args...>::BundleIterator> bundles1 = view1.bundles();
-            util::Iterable<typename ArchetypeView<Args...>::BundleIterator> bundles2 = view2.bundles();
+            // Iterate through pairs in different archetypes
+            auto bundles1 = view1.bundles();
+            auto bundles2 = view2.bundles();
 
             for (const auto& b1 : bundles1) {
                 for (const auto& b2 : bundles2) {

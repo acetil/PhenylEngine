@@ -7,11 +7,12 @@ Archetype::Archetype(detail::IArchetypeManager& manager, std::map<std::size_t, s
 
 Archetype::Archetype (detail::IArchetypeManager& manager) : manager{manager} {}
 
-void Archetype::addEntity(EntityId id) {
+std::size_t Archetype::addEntity(EntityId id) {
     auto pos = entityIds.size();
     entityIds.emplace_back(id);
 
     manager.updateEntityEntry(id, this, pos);
+    return pos;
 }
 
 void Archetype::remove (std::size_t pos) {
@@ -38,32 +39,6 @@ void Archetype::clear() {
 void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std::size_t pos) {
     PHENYL_DASSERT(pos < size());
 
-    /*std::vector<std::size_t> compIds;
-    compIds.reserve(componentIds.size() + factories.size());
-    auto compIt = componentIds.begin();
-    auto factIt = factories.begin();
-    while (compIt != componentIds.end() && factIt != factories.end()) {
-        if (*compIt < factIt->first) {
-            compIds.emplace_back(*compIt);
-            ++compIt;
-        } else if (*compIt > factIt->first) {
-            compIds.emplace_back(factIt->first);
-            ++factIt;
-        } else {
-            compIds.emplace_back(*compIt);
-            ++compIt;
-            ++factIt;
-        }
-    }
-
-    while (compIt != componentIds.end()) {
-        compIds.emplace_back(*(compIt++));
-    }
-
-    while (factIt != factories.end()) {
-        compIds.emplace_back((factIt++)->first);
-    }*/
-
     auto* archetype = manager.findArchetype(key.with(factories | std::ranges::views::keys));
     PHENYL_DASSERT(archetype);
     auto newPos = archetype->moveFrom(*this, pos);
@@ -72,15 +47,16 @@ void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std
 }
 
 std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
-    auto newPos = entityIds.size();
-    entityIds.emplace_back(other.entityIds[pos]);
+    auto newPos = addEntity(other.entityIds[pos]);
 
     auto it = components.begin();
     auto otherIt = other.components.begin();
     while (it != components.end() && otherIt != other.components.end()) {
         if (it->first < otherIt->first) {
+            // Not in other archetype, skip
             ++it;
         } else if (it->first > otherIt->first) {
+            // Not in this archetype, skip
             ++otherIt;
         } else {
             it->second->moveFrom(*otherIt->second, pos);
@@ -91,22 +67,24 @@ std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
         }
     }
 
-    manager.updateEntityEntry(entityIds.back(), this, newPos);
+   // manager.updateEntityEntry(entityIds.back(), this, newPos);
     return newPos;
 }
 
 void Archetype::instantiateInto (const detail::PrefabFactories& factories, std::size_t pos) {
     PHENYL_DASSERT(pos == size() - 1);
-    std::vector<std::size_t> newComps; // TODO
+    std::vector<std::size_t> newComps;
 
     auto compIt = components.begin();
     auto facIt = factories.begin();
     while (compIt != components.end() && facIt != factories.end()) {
         if (compIt->first < facIt->first) {
+            // Component not in factories, skip
             ++compIt;
         } else {
             PHENYL_DASSERT(compIt->first == facIt->first);
             if (compIt->second->size() != size()) {
+                // Component doesnt exist yet, make new component
                 auto* ptr = compIt->second->insertUntyped();
                 facIt->second->make(ptr);
                 newComps.emplace_back(compIt->first);
@@ -117,6 +95,7 @@ void Archetype::instantiateInto (const detail::PrefabFactories& factories, std::
         }
     }
 
+    // Raise insert signals for only new components
     for (auto c : newComps) {
         manager.onComponentInsert(entityIds.back(), c, components[c]->getUntyped(pos));
     }

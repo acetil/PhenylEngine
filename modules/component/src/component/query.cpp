@@ -40,17 +40,6 @@ QueryArchetypes::Iterator QueryArchetypes::Iterator::operator++ (int) {
     return copy;
 }
 
-/*QueryArchetypes::Iterator& QueryArchetypes::Iterator::operator-- () {
-    --it;
-    return *this;
-}
-
-QueryArchetypes::Iterator QueryArchetypes::Iterator::operator-- (int) {
-    auto copy = *this;
-    --*this;
-    return copy;
-}*/
-
 bool QueryArchetypes::Iterator::operator== (const Iterator& other) const noexcept {
     return it == other.it;
 }

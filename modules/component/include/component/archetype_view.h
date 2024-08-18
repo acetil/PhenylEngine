@@ -221,14 +221,4 @@ namespace phenyl::component {
             return {BundleIterator{this}, BundleIterator{this, size()}};
         }
     };
-
-    // template <typename ...Args>
-    // typename ArchetypeView<Args...>::Iterator operator+ (std::ptrdiff_t n, const typename ArchetypeView<Args...>::Iterator& it) noexcept {
-    //     return typename ArchetypeView<Args...>::Iterator{it.view, it.pos + n};
-    // }
-
-    // template <typename ...Args>
-    // typename ArchetypeView<Args...>::BundleIterator operator+ (std::ptrdiff_t n, const typename ArchetypeView<Args...>::BundleIterator& it) noexcept {
-    //     return typename ArchetypeView<Args...>::BundleIterator{it.view, it.pos + n};
-    // }
 }

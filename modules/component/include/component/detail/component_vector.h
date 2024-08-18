@@ -60,7 +60,7 @@ namespace phenyl::component {
 
         std::byte* insertUntyped ();
         void moveFrom (UntypedComponentVector& other, std::size_t pos);
-        std::size_t remove (std::size_t pos);
+        void remove (std::size_t pos);
         void clear ();
 
 

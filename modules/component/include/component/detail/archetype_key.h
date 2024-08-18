@@ -10,6 +10,7 @@
 namespace phenyl::component::detail {
     class ArchetypeKey {
     private:
+        // Sorted vector of component type ids
         std::vector<std::size_t> compIds;
 
     public:
@@ -41,58 +42,60 @@ namespace phenyl::component::detail {
         [[nodiscard]] ArchetypeKey with (std::size_t id) const {
             std::vector<std::size_t> newIds;
             newIds.reserve(compIds.size() + 1);
-            auto it = compIds.begin();
-            while (it != compIds.end() && *it < id) {
-                newIds.emplace_back(*it);
-                ++it;
-            }
-
-            if (it == compIds.end() || *it > id) {
-                newIds.emplace_back(id);
-            }
-
-            while (it != compIds.end()) {
-                newIds.emplace_back(*it);
-                ++it;
-            }
-
+            // auto it = compIds.begin();
+            // while (it != compIds.end() && *it < id) {
+            //     newIds.emplace_back(*it);
+            //     ++it;
+            // }
+            //
+            // if (it == compIds.end() || *it > id) {
+            //     newIds.emplace_back(id);
+            // }
+            //
+            // while (it != compIds.end()) {
+            //     newIds.emplace_back(*it);
+            //     ++it;
+            // }
+            std::ranges::set_union(compIds, std::array{id}, std::back_inserter(newIds));
             return ArchetypeKey{std::move(newIds)};
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> S>
         ArchetypeKey with (It it, S last) {
             std::vector<std::size_t> newIds;
-            auto cIt = compIds.begin();
-            while (cIt != compIds.end() && it != last) {
-                if (*cIt < *it) {
-                    newIds.emplace_back(*cIt);
-                    ++cIt;
-                } else if (*it < *cIt) {
-                    newIds.emplace_back(*it);
-                    ++it;
-                } else {
-                    newIds.emplace_back(*cIt);
-                    ++cIt;
-                    ++it;
-                }
-            }
-
-            while (cIt != compIds.end()) {
-                newIds.emplace_back(*cIt);
-                ++cIt;
-            }
-
-            while (it != last) {
-                newIds.emplace_back(*it);
-                ++it;
-            }
-
+            // auto cIt = compIds.begin();
+            // while (cIt != compIds.end() && it != last) {
+            //     if (*cIt < *it) {
+            //         newIds.emplace_back(*cIt);
+            //         ++cIt;
+            //     } else if (*it < *cIt) {
+            //         newIds.emplace_back(*it);
+            //         ++it;
+            //     } else {
+            //         newIds.emplace_back(*cIt);
+            //         ++cIt;
+            //         ++it;
+            //     }
+            // }
+            //
+            // while (cIt != compIds.end()) {
+            //     newIds.emplace_back(*cIt);
+            //     ++cIt;
+            // }
+            //
+            // while (it != last) {
+            //     newIds.emplace_back(*it);
+            //     ++it;
+            // }
+            std::set_union(compIds.begin(), compIds.end(), it, last, std::back_inserter(newIds));
             return ArchetypeKey{std::move(newIds)};
         }
 
         template <std::ranges::forward_range R>
         ArchetypeKey with (R&& range) {
-            return with(range.begin(), range.end());
+            std::vector<std::size_t> newIds;
+            std::ranges::set_union(compIds, range, std::back_inserter(newIds));
+            return ArchetypeKey{std::move(newIds)};
         }
 
         template <typename T>

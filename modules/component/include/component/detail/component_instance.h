@@ -30,7 +30,7 @@ namespace phenyl::component::detail {
             return typeIndex;
         }
 
-        const std::string& name () const noexcept {
+        [[nodiscard]] const std::string& name () const noexcept {
             return compName;
         }
 
@@ -39,6 +39,7 @@ namespace phenyl::component::detail {
         virtual void onRemove (EntityId id, std::byte* comp) = 0;
 
         virtual void deferComp (EntityId id, std::byte* comp) = 0;
+        virtual void deferErase (EntityId id) = 0;
         virtual void deferEnd () = 0;
     };
 
@@ -49,6 +50,7 @@ namespace phenyl::component::detail {
         std::vector<std::function<void(const OnRemove<T>&, Entity)>> removeHandlers;
 
         std::vector<std::pair<EntityId, T>> deferredInserts;
+        std::vector<EntityId> deferredErases;
     public:
         Component (World* world, std::string name) : UntypedComponent(world, std::move(name), meta::type_index<T>()) {}
 
@@ -85,12 +87,21 @@ namespace phenyl::component::detail {
             deferredInserts.emplace_back(id, std::move(*typedComp));
         }
 
+        void deferErase (EntityId id) override {
+            deferredErases.emplace_back(id);
+        }
+
         void deferEnd () override {
             for (auto& [id, comp] : deferredInserts) {
                 entity(id).insert(std::move(comp));
             }
 
+            for (auto id : deferredErases) {
+                entity(id).erase<T>();
+            }
+
             deferredInserts.clear();
+            deferredErases.clear();
         }
     };
 }

@@ -4,6 +4,8 @@
 
 using namespace phenyl::component;
 
+static phenyl::Logger LOGGER{"PREFAB", detail::COMPONENT_LOGGER};
+
 Prefab::Prefab () : prefabId{0} {}
 Prefab::Prefab (std::size_t prefabId, std::weak_ptr<PrefabManager> manager) : prefabId{prefabId}, manager{std::move(manager)} {
     PHENYL_DASSERT(this->manager.lock());
@@ -106,6 +108,7 @@ void PrefabManager::decrementRefCount (std::size_t prefabId) {
 
     auto& entry = entryIt->second;
     if (!(--entry.refCount)) {
+        // Delete prefab
         for (auto i : entry.childEntries) {
             decrementRefCount(i);
         }
@@ -119,7 +122,7 @@ void PrefabManager::instantiate (std::size_t prefabId, Entity entity) {
 
     if (deferring) {
         deferredInstantiations.emplace_back(entity.id(), prefabId);
-        incrementRefCount(prefabId);
+        incrementRefCount(prefabId); // So prefab doesnt get deleted while deferring
         return;
     }
 
@@ -138,7 +141,7 @@ void PrefabManager::defer () {
     deferring = true;
 }
 
-void PrefabManager::deferEnd() {
+void PrefabManager::deferEnd () {
     PHENYL_DASSERT(deferring);
     deferring = false;
 
@@ -159,6 +162,8 @@ PrefabBuilder& PrefabBuilder::withChild (const Prefab& child) {
     if (child) {
         manager.incrementRefCount(child.prefabId);
         children.emplace_back(child.prefabId);
+    } else {
+        PHENYL_LOGE(LOGGER, "Attempted to add invalid prefab as child!");
     }
 
     return *this;

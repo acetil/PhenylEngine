@@ -53,6 +53,7 @@ namespace phenyl::component {
         void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
 
         void deferInsert (EntityId id, std::size_t compType, std::byte* ptr);
+        void deferErase (EntityId id, std::size_t compType);
         void deferApply (EntityId id, std::function<void(Entity)> applyFunc);
 
         void instantiatePrefab (EntityId id, const detail::PrefabFactories& factories);

@@ -25,6 +25,7 @@ namespace phenyl::component {
         void raiseUntyped (std::size_t signalType, std::byte* ptr);
         bool shouldDefer ();
         void deferInsert (std::size_t compType, std::byte* ptr);
+        void deferErase (std::size_t compType);
         void deferApply (std::function<void(Entity)> applyFunc);
 
         friend World;
@@ -96,8 +97,12 @@ namespace phenyl::component {
                 return;
             }
 
-            auto& e = entry();
-            e.archetype->removeComponent<T>(e.pos);
+            if (shouldDefer()) {
+                deferErase(meta::type_index<T>());
+            } else {
+                auto& e = entry();
+                e.archetype->removeComponent<T>(e.pos);
+            }
         }
 
         template <typename T>

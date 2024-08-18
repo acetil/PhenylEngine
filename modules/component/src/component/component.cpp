@@ -42,7 +42,7 @@ void World::remove (EntityId id)  {
     }
 }
 
-void World::reparent(EntityId id, EntityId parent)  {
+void World::reparent (EntityId id, EntityId parent)  {
     auto oldParent = relationships.parent(id);
     if (oldParent) {
         entity(oldParent).raise(OnRemoveChild{entity(id)});
@@ -102,17 +102,21 @@ void World::deferEnd () {
         return;
     }
 
+    // Create deferred entities
     for (auto [id, parent] : deferredCreations) {
         completeCreation(id, parent);
     }
     deferredCreations.clear();
 
+    // Insert / Erase deferred components
     for (auto& [_, comp] : components) {
         comp->deferEnd();
     }
 
+    // Do deferred instantiations
     prefabManager->deferEnd();
 
+    // Apply deferred functions
     for (auto& [id, func] : deferredApplys) {
         if (exists(id)) {
             func(entity(id));
@@ -173,6 +177,7 @@ PrefabBuilder World::buildPrefab () {
 void World::completeCreation(EntityId id, EntityId parent) {
     relationships.add(id, parent);
 
+    // Entities start out in empty archetype
     emptyArchetype->add(id);
 
     if (parent) {
@@ -188,6 +193,7 @@ void World::removeInt (EntityId id, bool updateParent) {
         }
     }
 
+    // Recursively delete children
     auto curr = relationships.entityChildren(id);
     while (curr) {
         auto next = relationships.next(curr);
@@ -197,6 +203,7 @@ void World::removeInt (EntityId id, bool updateParent) {
 
     relationships.remove(id, updateParent);
 
+    // Clear entry
     PHENYL_DASSERT(id.pos() < entityEntries.size());
     auto& entry = entityEntries[id.pos()];
     PHENYL_DASSERT(entry.archetype);
@@ -216,6 +223,9 @@ Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
         return it->get();
     }
 
+    // Build new archetype
+
+    // Create component vectors
     std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> compVecs;
     for (auto i : key) {
         auto compIt = components.find(i);
@@ -228,6 +238,7 @@ Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
     auto* ptr = archetype.get();
     archetypes.emplace_back(std::move(archetype));
 
+    // Update queries
     cleanupQueryArchetypes();
     for (const auto& i : queryArchetypes) {
         i.lock()->onNewArchetype(ptr);
@@ -263,6 +274,13 @@ void World::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
 
     auto& comp = components[compType];
     comp->deferComp(id, ptr);
+}
+
+void World::deferErase(EntityId id, std::size_t compType) {
+    PHENYL_DASSERT(deferCount);
+    PHENYL_DASSERT(components.contains(compType));
+    auto& comp = components[compType];
+    comp->deferErase(id);
 }
 
 void World::deferApply (EntityId id, std::function<void(Entity)> applyFunc) {

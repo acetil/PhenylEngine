@@ -64,6 +64,8 @@ namespace phenyl::component::detail {
         }
 
         void handle (EntityId id, std::byte* signal) override {
+            // Assumes creation/update/deletion of components is deferred
+
             auto* typedSignal = reinterpret_cast<Signal*>(signal);
             if (isDeferred) {
                 deferredSignals.emplace_back(id, std::move(*typedSignal));
@@ -78,6 +80,7 @@ namespace phenyl::component::detail {
         }
 
         void deferEnd () override {
+            // Assumes creation/update/deletion of components/entities is deferred
             PHENYL_DASSERT(isDeferred);
             isDeferred = false;
 
