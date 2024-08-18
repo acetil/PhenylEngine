@@ -5,7 +5,7 @@
 #include "component/query.h"
 
 namespace phenyl::component {
-    class ComponentManager;
+    class World;
 }
 
 namespace phenyl::component::detail {
@@ -45,7 +45,7 @@ namespace phenyl::component::detail {
     template <typename Signal>
     class SignalHandlerVector : public IHandlerVector {
     private:
-        ComponentManager& manager;
+        World& manager;
         std::vector<std::unique_ptr<ISignalHandler<Signal>>> handlers;
         std::vector<std::pair<EntityId, Signal>> deferredSignals;
         bool isDeferred = false;
@@ -57,7 +57,7 @@ namespace phenyl::component::detail {
             }
         }
     public:
-        explicit SignalHandlerVector (ComponentManager& manager) : manager{manager} {}
+        explicit SignalHandlerVector (World& manager) : manager{manager} {}
 
         void addHandler (std::unique_ptr<ISignalHandler<Signal>> handler) {
             handlers.emplace_back(std::move(handler));

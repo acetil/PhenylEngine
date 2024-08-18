@@ -74,7 +74,7 @@ void Prefab::instantiate (Entity entity) const {
     ptr->instantiate(prefabId, entity);
 }
 
-PrefabManager::PrefabManager (ComponentManager& manager) : manager{manager} {}
+PrefabManager::PrefabManager (World& world) : world{world} {}
 
 Prefab PrefabManager::makePrefab (detail::PrefabFactories factories, std::vector<std::size_t> children) {
     for (auto i : children) {
@@ -124,10 +124,10 @@ void PrefabManager::instantiate (std::size_t prefabId, Entity entity) {
     }
 
     const auto& entry = entries[prefabId];
-    manager.instantiatePrefab(entity.id(), entry.factories);
+    world.instantiatePrefab(entity.id(), entry.factories);
 
     for (auto i : entry.childEntries) {
-        instantiate(i, manager.create(entity.id()));
+        instantiate(i, world.create(entity.id()));
     }
 }
 
@@ -143,7 +143,7 @@ void PrefabManager::deferEnd() {
     deferring = false;
 
     for (auto [id, prefabId] : deferredInstantiations) {
-        Entity entity = manager.entity(id);
+        Entity entity = world.entity(id);
 
         if (entity.exists()) {
             instantiate(prefabId, entity);

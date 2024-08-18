@@ -117,7 +117,7 @@ namespace phenyl::component {
 
         template <typename ...Args>
         friend class ArchetypeView;
-        friend class ComponentManager;
+        friend class World;
     protected:
         Archetype (detail::IArchetypeManager& manager);
 

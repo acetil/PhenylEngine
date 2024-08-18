@@ -11,7 +11,7 @@ namespace phenyl::component {
             std::size_t pos;
         };
     }
-    class ComponentManager;
+    class World;
     class ChildrenView;
 
     class Entity {
@@ -19,7 +19,7 @@ namespace phenyl::component {
         static Logger LOGGER;
 
         EntityId entityId;
-        ComponentManager* compManager = nullptr;
+        World* entityWorld = nullptr;
 
         [[nodiscard]] const detail::EntityEntry& entry () const;
         void raiseUntyped (std::size_t signalType, std::byte* ptr);
@@ -27,14 +27,14 @@ namespace phenyl::component {
         void deferInsert (std::size_t compType, std::byte* ptr);
         void deferApply (std::function<void(Entity)> applyFunc);
 
-        friend ComponentManager;
+        friend World;
         template <typename ...Args>
         friend class ArchetypeView;
         template <typename ...Args>
         friend class Query;
     public:
         Entity () = default;
-        Entity (EntityId id, ComponentManager* compManager);
+        Entity (EntityId id, World* entityWorld);
 
         [[nodiscard]] bool exists () const noexcept;
         [[nodiscard]] Entity parent () const;
@@ -134,14 +134,14 @@ namespace phenyl::component {
             return entityId;
         }
 
-        ComponentManager& manager () noexcept {
-            PHENYL_DASSERT(compManager);
-            return *compManager;
+        World& world () noexcept {
+            PHENYL_DASSERT(entityWorld);
+            return *entityWorld;
         }
 
-        const ComponentManager& manager () const noexcept {
-            PHENYL_DASSERT(compManager);
-            return *compManager;
+        const World& world () const noexcept {
+            PHENYL_DASSERT(entityWorld);
+            return *entityWorld;
         }
 
         void addChild (Entity child);

@@ -11,9 +11,9 @@ namespace phenyl::component {
     private:
         util::Map<std::size_t, std::unique_ptr<Prefab>> prefabs;
         EntitySerializer& serializer;
-        EntityComponentManager& manager;
+        World& world;
     public:
-        explicit PrefabAssetManager (EntityComponentManager& manager, EntitySerializer& serializer) : serializer{serializer}, manager{manager} {}
+        explicit PrefabAssetManager (World& world, EntitySerializer& serializer) : serializer{serializer}, world{world} {}
         ~PrefabAssetManager() override;
 
         Prefab* load (std::istream& data, std::size_t id) override;

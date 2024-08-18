@@ -12,8 +12,8 @@ runtime::PhenylRuntime& engine::ApplicationBase::runtime () {
     return *engineRuntime;
 }
 
-component::EntityComponentManager& engine::ApplicationBase::componentManager () {
-    return runtime().manager();
+component::World& engine::ApplicationBase::world () {
+    return runtime().world();
 }
 
 void engine::ApplicationBase::setTargetFPS (double fps) {

@@ -8,7 +8,7 @@
 namespace phenyl {
     using EntityId = phenyl::component::EntityId;
 
-    using ComponentManager = phenyl::component::EntityComponentManager;
+    using World = phenyl::component::World;
     using ComponentSerializer = phenyl::component::EntitySerializer;
 
     using Entity = phenyl::component::Entity;

@@ -21,7 +21,7 @@ void AudioPlugin::init (runtime::PhenylRuntime& runtime) {
     runtime.addResource<AudioSystem>(audioSystem.get());
 
     audioSystem->selfRegister();
-    audioSystem->addComponents(runtime.manager(), runtime.serializer());
+    audioSystem->addComponents(runtime.world(), runtime.serializer());
 
     runtime.addSystem<phenyl::runtime::Update>("AudioSystem::Update", AudioUpdateSystem);
 }

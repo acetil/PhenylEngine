@@ -15,7 +15,7 @@
 #include "forward.h"
 
 namespace phenyl::component {
-    class ComponentManager : private detail::IArchetypeManager {
+    class World : private detail::IArchetypeManager {
     private:
         std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> components;
 
@@ -68,14 +68,14 @@ namespace phenyl::component {
     public:
         static constexpr std::size_t DEFAULT_CAPACITY = 256;
 
-        explicit ComponentManager (std::size_t capacity=DEFAULT_CAPACITY);
-        ~ComponentManager () override;
+        explicit World (std::size_t capacity=DEFAULT_CAPACITY);
+        ~World () override;
 
-        ComponentManager (const ComponentManager&) = delete;
-        ComponentManager (ComponentManager&& other) = default;
+        World (const World&) = delete;
+        World (World&& other) = default;
 
-        ComponentManager& operator= (const ComponentManager&) = delete;
-        ComponentManager& operator= (ComponentManager&&) = default;
+        World& operator= (const World&) = delete;
+        World& operator= (World&&) = default;
 
         template <typename T>
         void addComponent (std::string name) {

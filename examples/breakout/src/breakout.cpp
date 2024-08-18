@@ -33,12 +33,10 @@ BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Ap
 }
 
 void BreakoutApp::init () {
-    //componentManager().addComponent<Paddle>();
-    //serializer().addSerializer<Paddle>();
     breakout::InitPaddle(this, runtime());
-    breakout::InitBall(this, componentManager());
-    breakout::InitTile(this, componentManager());
-    breakout::InitWall(this, componentManager());
+    breakout::InitBall(this, world());
+    breakout::InitTile(this, world());
+    breakout::InitWall(this, world());
 
     tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
 
@@ -59,7 +57,7 @@ void BreakoutApp::init () {
                 .apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
                     transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});
                 });*/
-            auto tileEntity = componentManager().create();
+            auto tileEntity = world().create();
             tilePrefab->instantiate(tileEntity);
             tileEntity.apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
                 transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});

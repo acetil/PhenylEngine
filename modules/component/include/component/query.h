@@ -10,12 +10,12 @@
 namespace phenyl::component {
     class QueryArchetypes {
     private:
-        ComponentManager& manager;
+        World& world;
         std::vector<std::size_t> componentIds;
         std::unordered_set<Archetype*> archetypes;
 
     public:
-        explicit QueryArchetypes (ComponentManager& manager, std::vector<std::size_t> componentIds);
+        explicit QueryArchetypes (World& world, std::vector<std::size_t> componentIds);
         class Iterator {
         private:
             std::unordered_set<Archetype*>::const_iterator it;
@@ -92,10 +92,10 @@ namespace phenyl::component {
     class Query {
     private:
         std::shared_ptr<QueryArchetypes> archetypes;
-        ComponentManager* manager;
+        World* manager;
 
-        explicit Query (std::shared_ptr<QueryArchetypes> archetypes, ComponentManager* manager) : archetypes{std::move(archetypes)}, manager{manager} {}
-        friend class ComponentManager;
+        explicit Query (std::shared_ptr<QueryArchetypes> archetypes, World* manager) : archetypes{std::move(archetypes)}, manager{manager} {}
+        friend class World;
 
         void pairsIter (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view) const {
             util::Iterable<typename ArchetypeView<Args...>::BundleIterator> bundles = view.bundles();

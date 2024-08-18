@@ -27,7 +27,7 @@ component::Prefab* component::PrefabAssetManager::load (std::istream& data, std:
         return nullptr;
     }
 
-    auto builder = manager.buildPrefab();
+    auto builder = world.buildPrefab();
     serializer.deserializePrefab(builder, json.at("components"));
 
     auto prefab = std::make_unique<Prefab>(builder.build());

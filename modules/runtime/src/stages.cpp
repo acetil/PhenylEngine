@@ -23,11 +23,11 @@ void AbstractStage::run () {
         updated = false;
     }
 
-    runtime.manager().defer();
+    runtime.world().defer();
     for (auto* i : orderedSystems) {
         i->run(runtime);
     }
-    runtime.manager().deferEnd();
+    runtime.world().deferEnd();
 
     for (auto* i : childStages) {
         i->run();

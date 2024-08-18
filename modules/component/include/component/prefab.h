@@ -10,7 +10,7 @@
 
 namespace phenyl::component {
     class Archetype;
-    class ComponentManager;
+    class World;
     class PrefabManager;
     class PrefabBuilder;
 
@@ -47,14 +47,14 @@ namespace phenyl::component {
 
     class PrefabManager : public std::enable_shared_from_this<PrefabManager> {
     private:
-        ComponentManager& manager;
+        World& world;
         std::unordered_map<std::size_t, PrefabEntry> entries;
         std::size_t nextPrefabId = 1;
         std::vector<std::pair<EntityId, std::size_t>> deferredInstantiations;
         bool deferring = false;
 
     public:
-        explicit PrefabManager (ComponentManager& manager);
+        explicit PrefabManager (World& world);
 
         Prefab makePrefab (detail::PrefabFactories factories, std::vector<std::size_t> children);
         PrefabBuilder makeBuilder ();

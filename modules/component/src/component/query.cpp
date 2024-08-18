@@ -4,7 +4,7 @@
 
 using namespace phenyl::component;
 
-QueryArchetypes::QueryArchetypes (ComponentManager& manager, std::vector<std::size_t> componentIds) : manager{manager}, componentIds{std::move(componentIds)} {}
+QueryArchetypes::QueryArchetypes (World& world, std::vector<std::size_t> componentIds) : world{world}, componentIds{std::move(componentIds)} {}
 
 void QueryArchetypes::onNewArchetype (Archetype* archetype) {
     auto it = componentIds.begin();
@@ -30,11 +30,11 @@ void QueryArchetypes::onNewArchetype (Archetype* archetype) {
 }
 
 void QueryArchetypes::lock() {
-    manager.defer();
+    world.defer();
 }
 
 void QueryArchetypes::unlock() {
-    manager.deferEnd();
+    world.deferEnd();
 }
 
 QueryArchetypes::Iterator::Iterator() = default;

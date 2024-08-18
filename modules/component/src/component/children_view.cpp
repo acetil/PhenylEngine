@@ -3,14 +3,14 @@
 
 using namespace phenyl::component;
 
-ChildrenView::ChildrenView (EntityId parentId, ComponentManager* manager) : parentId{parentId}, manager{manager} {}
+ChildrenView::ChildrenView (EntityId parentId, World* world) : parentId{parentId}, world{world} {}
 
 ChildrenView::iterator ChildrenView::begin () {
-    return iterator{manager->relationships.childrenBegin(parentId), manager};
+    return iterator{world->relationships.childrenBegin(parentId), world};
 }
 
 ChildrenView::iterator ChildrenView::end () {
-    return iterator{manager->relationships.childrenEnd(parentId), manager};
+    return iterator{world->relationships.childrenEnd(parentId), world};
 }
 
 ChildrenView::const_iterator ChildrenView::begin () const {
@@ -18,7 +18,7 @@ ChildrenView::const_iterator ChildrenView::begin () const {
 }
 
 ChildrenView::const_iterator ChildrenView::cbegin () const {
-    return const_iterator{manager->relationships.childrenBegin(parentId), manager};
+    return const_iterator{world->relationships.childrenBegin(parentId), world};
 }
 
 ChildrenView::const_iterator ChildrenView::end () const {
@@ -26,14 +26,14 @@ ChildrenView::const_iterator ChildrenView::end () const {
 }
 
 ChildrenView::const_iterator ChildrenView::cend () const {
-    return const_iterator{manager->relationships.childrenEnd(parentId), manager};
+    return const_iterator{world->relationships.childrenEnd(parentId), world};
 }
 
 ChildrenView::Iterator::Iterator () = default;
-ChildrenView::Iterator::Iterator (detail::RelationshipManager::ChildIterator it, ComponentManager* manager) : it{it}, manager{manager} {}
+ChildrenView::Iterator::Iterator (detail::RelationshipManager::ChildIterator it, World* world) : it{it}, world{world} {}
 
 ChildrenView::Iterator::value_type ChildrenView::Iterator::operator* () const noexcept {
-    return manager->entity(*it);
+    return world->entity(*it);
 }
 
 ChildrenView::Iterator& ChildrenView::Iterator::operator++ () {

@@ -37,7 +37,7 @@ namespace phenyl::component {
     class ArchetypeView {
     private:
         Archetype& archetype;
-        ComponentManager* manager;
+        World* manager;
         std::tuple<ComponentVector<std::remove_cvref_t<Args>>*...> components;
 
     public:
@@ -199,7 +199,7 @@ namespace phenyl::component {
 
         using iterator = Iterator;
 
-        explicit ArchetypeView (Archetype& archetype, ComponentManager* manager) : archetype{archetype}, manager{manager}, components{&archetype.getComponent<std::remove_cvref_t<Args>>()...} {}
+        explicit ArchetypeView (Archetype& archetype, World* manager) : archetype{archetype}, manager{manager}, components{&archetype.getComponent<std::remove_cvref_t<Args>>()...} {}
 
         [[nodiscard]] std::size_t size () const noexcept {
             return archetype.size();

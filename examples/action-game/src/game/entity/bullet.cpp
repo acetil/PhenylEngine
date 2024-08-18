@@ -10,10 +10,10 @@
 
 using namespace phenyl;
 
-void test::InitBullet (TestApp* app, phenyl::ComponentManager& manager) {
+void test::InitBullet (TestApp* app, phenyl::World& world) {
     app->addComponent<Bullet>("Bullet");
 
-    manager.addHandler<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D>([] (const physics::OnCollision& signal, const phenyl::Bundle<Bullet, const phenyl::GlobalTransform2D>& bundle) {
+    world.addHandler<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D>([] (const physics::OnCollision& signal, const phenyl::Bundle<Bullet, const phenyl::GlobalTransform2D>& bundle) {
         auto& [bullet, transform] = bundle.comps();
 
         GlobalTransform2D particleTransform{};
@@ -21,7 +21,7 @@ void test::InitBullet (TestApp* app, phenyl::ComponentManager& manager) {
             .setPosition(transform.transform2D.position())
             .setRotation(transform.transform2D.rotationAngle());
 
-        auto particleEntity = bundle.entity().manager().create();
+        auto particleEntity = bundle.entity().world().create();
         particleEntity.insert(particleTransform);
         bullet.particlePrefab->instantiate(particleEntity);
 

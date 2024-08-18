@@ -4,16 +4,16 @@
 #include "detail/relationships.h"
 
 namespace phenyl::component {
-    class ComponentManager;
+    class World;
 
     class ChildrenView {
     private:
         class Iterator {
         private:
             detail::RelationshipManager::ChildIterator it;
-            ComponentManager* manager = nullptr;
+            World* world = nullptr;
 
-            Iterator (detail::RelationshipManager::ChildIterator it, ComponentManager* manager);
+            Iterator (detail::RelationshipManager::ChildIterator it, World* world);
             friend ChildrenView;
         public:
             using value_type = Entity;
@@ -29,13 +29,13 @@ namespace phenyl::component {
         };
 
         EntityId parentId;
-        ComponentManager* manager = nullptr;
+        World* world = nullptr;
 
     public:
         using const_iterator = Iterator;
         using iterator = const_iterator;
 
-        ChildrenView (EntityId parentId, ComponentManager* manager);
+        ChildrenView (EntityId parentId, World* manager);
 
         iterator begin ();
         iterator end ();

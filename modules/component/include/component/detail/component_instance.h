@@ -9,21 +9,21 @@
 #include "component/signals/component_update.h"
 
 namespace phenyl::component {
-    class ComponentManager;
+    class World;
 }
 
 namespace phenyl::component::detail {
     class UntypedComponent {
     private:
-        ComponentManager* manager;
+        World* world;
         std::string compName;
         std::size_t typeIndex;
     protected:
         [[nodiscard]] Entity entity (EntityId id) const noexcept {
-            return Entity{id, manager};
+            return Entity{id, world};
         }
     public:
-        explicit UntypedComponent (ComponentManager* manager, std::string compName, std::size_t typeIndex) : manager{manager}, compName{std::move(compName)}, typeIndex{typeIndex} {}
+        explicit UntypedComponent (World* world, std::string compName, std::size_t typeIndex) : world{world}, compName{std::move(compName)}, typeIndex{typeIndex} {}
         virtual ~UntypedComponent() = default;
 
         [[nodiscard]] std::size_t type () const noexcept {
@@ -50,7 +50,7 @@ namespace phenyl::component::detail {
 
         std::vector<std::pair<EntityId, T>> deferredInserts;
     public:
-        Component (ComponentManager* manager, std::string name) : UntypedComponent(manager, std::move(name), meta::type_index<T>()) {}
+        Component (World* world, std::string name) : UntypedComponent(world, std::move(name), meta::type_index<T>()) {}
 
         std::unique_ptr<UntypedComponentVector> makeVector () override {
             return std::make_unique<ComponentVector<T>>();

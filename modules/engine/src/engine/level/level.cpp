@@ -26,7 +26,7 @@ namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities);
 }
 
-LevelManager::LevelManager (component::EntityComponentManager& manager, component::EntitySerializer& serializer) : manager{manager}, serializer{serializer} {}
+LevelManager::LevelManager (component::World& world, component::EntitySerializer& serializer) : world{world}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::istream& data, std::size_t id) {
@@ -59,7 +59,7 @@ Level* LevelManager::load (std::istream& data, std::size_t id) {
         }
     }
 
-    levels[id] = std::make_unique<Level>(Level{&manager, &serializer, std::move(entities)});
+    levels[id] = std::make_unique<Level>(Level{&world, &serializer, std::move(entities)});
 
     return levels[id].get();
 }
@@ -81,7 +81,7 @@ void LevelManager::selfRegister () {
 void LevelManager::dump (std::ostream& file) const {
     PHENYL_LOGI(LOGGER, "Dumping level");
     auto entities = nlohmann::json::array_t{};
-    for (auto i : manager.root()) {
+    for (auto i : world.root()) {
         entities.emplace_back(dumpEntity(i));
     }
 
@@ -118,22 +118,22 @@ std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (component::EntityComponentManager* manager, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : manager{manager}, serializer{serializer}, entities{std::move(entities)} {}
+Level::Level (component::World* world, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : world{world}, serializer{serializer}, entities{std::move(entities)} {}
 
 void Level::load (bool additive) {
     if (!additive) {
         PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
-        manager->clear();
+        world->clear();
     }
 
-    manager->deferSignals();
+    world->deferSignals();
     std::size_t index = 0;
     while (index < entities.size()) {
         loadEntity(index);
         index += entities[index].numChildren + 1;
     }
 
-    manager->deferSignalsEnd();
+    world->deferSignalsEnd();
 }
 
 phenyl::component::Entity Level::loadEntity (std::size_t index) {
@@ -141,7 +141,7 @@ phenyl::component::Entity Level::loadEntity (std::size_t index) {
     const auto& levelEntity = entities[index];
 
     //serializer->deserializeEntity(instantatior, entity.components);
-    auto entity = manager->create();
+    auto entity = world->create();
     serializer->deserializeEntity(entity, levelEntity.components);
     levelEntity.prefab->instantiate(entity);
     auto childIndex = index + 1;

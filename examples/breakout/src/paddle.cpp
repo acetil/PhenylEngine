@@ -33,14 +33,14 @@ void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
     input.addAxis2DBinding("cursor_pos", "mouse.mouse_pos");
     input.addActionBinding("ball_shoot", "mouse.button_left");
 
-    runtime.manager().addHandler<phenyl::signals::OnCollision, const Paddle, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, const phenyl::Bundle<const Paddle, phenyl::AudioPlayer>& bundle) {
+    runtime.world().addHandler<phenyl::signals::OnCollision, const Paddle, phenyl::AudioPlayer>([] (const phenyl::signals::OnCollision& signal, const phenyl::Bundle<const Paddle, phenyl::AudioPlayer>& bundle) {
         auto& [paddle, audioPlayer] = bundle.comps();
-        auto& manager = bundle.entity().manager();
+        auto& world = bundle.entity().world();
 
         phenyl::GlobalTransform2D emitterTransform{};
         emitterTransform.transform2D.setPosition(signal.worldContactPoint);
 
-        auto emitterEntity = manager.create();
+        auto emitterEntity = world.create();
         emitterEntity.insert(emitterTransform);
         paddle.emitterPrefab->instantiate(emitterEntity);
         emitterEntity.apply<phenyl::ParticleEmitter2D>([normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) {
@@ -84,7 +84,7 @@ void Paddle::update (const phenyl::Resources<const phenyl::Camera, const phenyl:
                 body.applyImpulse(body.getMass() * ballVel);
             });*/
 
-        auto ballEntity = bundle.entity().manager().create();
+        auto ballEntity = bundle.entity().world().create();
         ballPrefab->instantiate(ballEntity);
         ballEntity.apply<phenyl::GlobalTransform2D>([pos] (phenyl::GlobalTransform2D& transform) {
             transform.transform2D.setPosition(pos);

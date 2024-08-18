@@ -80,7 +80,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, c
         glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
-        auto bulletEntity = bundle.entity().manager().create();
+        auto bulletEntity = bundle.entity().world().create();
         player.bulletPrefab->instantiate(bulletEntity);
 
         bulletEntity.apply<phenyl::GlobalTransform2D>([pos, rot] (auto& transform) {

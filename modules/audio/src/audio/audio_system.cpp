@@ -90,11 +90,11 @@ bool AudioSystem::isBinary () const {
     return true;
 }
 
-void AudioSystem::addComponents (component::EntityComponentManager& manager, component::EntitySerializer& serializer) {
-    manager.addComponent<AudioPlayer>("AudioPlayer");
+void AudioSystem::addComponents (component::World& world, component::EntitySerializer& serializer) {
+    world.addComponent<AudioPlayer>("AudioPlayer");
     serializer.addSerializer<AudioPlayer>();
 
-    manager.addHandler<AudioPlayer>([this] (const component::OnInsert<AudioPlayer>& signal, component::Entity entity) {
+    world.addHandler<AudioPlayer>([this] (const component::OnInsert<AudioPlayer>& signal, component::Entity entity) {
         auto& comp = signal.get();
         comp.source = this->createSource();
         comp.setGain(comp.sourceGain);

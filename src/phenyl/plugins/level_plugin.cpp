@@ -15,6 +15,6 @@ std::string_view LevelPlugin::getName () const noexcept {
 void LevelPlugin::init (PhenylRuntime& runtime) {
     runtime.addPlugin<PrefabPlugin>();
 
-    runtime.addResource<game::LevelManager>(runtime.manager(), runtime.serializer());
+    runtime.addResource<game::LevelManager>(runtime.world(), runtime.serializer());
     runtime.resource<game::LevelManager>().selfRegister();
 }

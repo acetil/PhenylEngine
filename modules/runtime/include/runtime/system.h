@@ -77,8 +77,8 @@ namespace phenyl::runtime {
     };
 
     template <typename Stage, ResourceType ...ResourceTypes, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, component::Entity> && ... && true))
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&, Components&...), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&, Components&...), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), &resManager, func] () {
             Resources<ResourceTypes...> resources{resManager};
 
@@ -91,8 +91,8 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, component::Entity> && ... && true))
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (Components...), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (Components...), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func] () {
             query.each([&] (Components&... components) {
                 func(components...);
@@ -103,8 +103,8 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ResourceType ...ResourceTypes, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, component::Entity> && ... && true))
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&, const component::Bundle<Components...>& bundle), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&, const component::Bundle<Components...>& bundle), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func, &resManager] () {
             Resources<ResourceTypes...> resources{resManager};
 
@@ -117,8 +117,8 @@ namespace phenyl::runtime {
     }
 
     /*template <typename Stage, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, component::Entity2> && ... && true))
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (component::Entity2, Components...), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (component::Entity2, Components...), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func] () {
             query.each([&] (component::Entity2 entity, Components&... components) {
                 func(entity, components...);
@@ -130,8 +130,8 @@ namespace phenyl::runtime {
 
     template <typename Stage, ResourceType ...ResourceTypes, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, component::Entity> && ... && true))
     std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&, const component::Bundle<Components...>&, const component::Bundle<Components...>&),
-        component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<std::remove_reference_t<Components>...>();
+        component::World& world, ResourceManager& resManager) {
+        auto query = world.query<std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func, &resManager] () {
             Resources<ResourceTypes...> resources{resManager};
 
@@ -145,10 +145,10 @@ namespace phenyl::runtime {
 
     template <typename Stage, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, component::Entity> && ... && true))
     std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const component::Bundle<Components...>&, const component::Bundle<Components...>&),
-        component::EntityComponentManager& manager, ResourceManager& resManager) {
+        component::World& world, ResourceManager& resManager) {
         //return std::make_unique<ComponentDoubleSystem<Resources..., Components...>>(func);
 
-        auto query = manager.query<std::remove_reference_t<Components>...>();
+        auto query = world.query<std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func] () {
             query.pairs([&] (const component::Bundle<Components...>& bundle1, const component::Bundle<Components...>& bundle2) {
                 func(bundle1, bundle2);
@@ -159,8 +159,8 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ComponentType T, ResourceType ...ResourceTypes, ComponentType ...Components>
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (const Resources<ResourceTypes...>& resources, Components...), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        component::Query<T, std::remove_reference_t<Components>...> query = manager.query<T, std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (const Resources<ResourceTypes...>& resources, Components...), component::World& world, ResourceManager& resManager) {
+        component::Query<T, std::remove_reference_t<Components>...> query = world.query<T, std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func, &resManager] () {
             Resources<ResourceTypes...> resources{resManager};
 
@@ -173,8 +173,8 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ComponentType T, ComponentType ...Components>
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (Components...), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<T, std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (Components...), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<T, std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func] () {
             query.each([&] (T& obj, Components&... components) {
                 (obj.*func)(components...);
@@ -185,8 +185,8 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ComponentType T, ResourceType ...ResourceTypes, ComponentType ...Components>
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (const Resources<ResourceTypes...>& resources, const phenyl::component::Bundle<Components...>& bundle), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<T, std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (const Resources<ResourceTypes...>& resources, const phenyl::component::Bundle<Components...>& bundle), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<T, std::remove_reference_t<Components>...>();
         std::function<void()>func1 = [query = std::move(query), func, &resManager] () {
             Resources<ResourceTypes...> resources{resManager};
 
@@ -200,8 +200,8 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ComponentType T, ComponentType ...Components>
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (const phenyl::component::Bundle<Components...>& bundle), component::EntityComponentManager& manager, ResourceManager& resManager) {
-        auto query = manager.query<T, std::remove_reference_t<Components>...>();
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (T::*func) (const phenyl::component::Bundle<Components...>& bundle), component::World& world, ResourceManager& resManager) {
+        auto query = world.query<T, std::remove_reference_t<Components>...>();
         std::function<void()> func1 = [query = std::move(query), func] () {
             query.each([&] (const phenyl::component::Bundle<T, Components...>& bundle) {
                 T& obj = bundle.template get<T>();
@@ -213,7 +213,7 @@ namespace phenyl::runtime {
     }
 
     template <typename Stage, ResourceType ...ResourceTypes>
-    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&), component::EntityComponentManager& manager, ResourceManager& resManager) {
+    std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func) (const Resources<ResourceTypes...>&), component::World& world, ResourceManager& resManager) {
         //return std::make_unique<ResourceSystem<Resources...>>(func);
 
         std::function<void()> func1 = [func, &resManager] () {

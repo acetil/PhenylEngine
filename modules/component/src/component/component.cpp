@@ -5,15 +5,15 @@ using namespace phenyl::component;
 
 static phenyl::Logger LOGGER{"MANAGER", detail::COMPONENT_LOGGER};
 
-ComponentManager::ComponentManager (std::size_t capacity) : idList{capacity}, relationships{capacity}, prefabManager{std::make_shared<PrefabManager>(*this)} {
+World::World (std::size_t capacity) : idList{capacity}, relationships{capacity}, prefabManager{std::make_shared<PrefabManager>(*this)} {
     auto empty = std::make_unique<EmptyArchetype>(static_cast<detail::IArchetypeManager&>(*this));
     emptyArchetype = empty.get();
     archetypes.emplace_back(std::move(empty));
 }
 
-ComponentManager::~ComponentManager() = default;
+World::~World() = default;
 
-Entity ComponentManager::create (EntityId parent)  {
+Entity World::create (EntityId parent)  {
     auto id = idList.newId();
 
     if (id.pos() == entityEntries.size()) {
@@ -29,7 +29,7 @@ Entity ComponentManager::create (EntityId parent)  {
     return Entity{id, this};
 }
 
-void ComponentManager::remove (EntityId id)  {
+void World::remove (EntityId id)  {
     if (!idList.check(id)) {
         PHENYL_LOGE(LOGGER, "Attempted to delete invalid entity {}!", id.value());
         return;
@@ -42,7 +42,7 @@ void ComponentManager::remove (EntityId id)  {
     }
 }
 
-void ComponentManager::reparent(EntityId id, EntityId parent)  {
+void World::reparent(EntityId id, EntityId parent)  {
     auto oldParent = relationships.parent(id);
     if (oldParent) {
         entity(oldParent).raise(OnRemoveChild{entity(id)});
@@ -56,7 +56,7 @@ void ComponentManager::reparent(EntityId id, EntityId parent)  {
     }
 }
 
-void ComponentManager::clear() {
+void World::clear() {
     PHENYL_ASSERT(!deferCount);
     PHENYL_ASSERT(!removeDeferCount);
 
@@ -72,20 +72,20 @@ void ComponentManager::clear() {
     idList.clear();
 }
 
-Entity ComponentManager::entity (EntityId id) noexcept {
+Entity World::entity (EntityId id) noexcept {
     return Entity{id, this};
 }
 
-ChildrenView ComponentManager::root () noexcept {
+ChildrenView World::root () noexcept {
     return ChildrenView{EntityId{}, this};
 }
 
-Entity ComponentManager::parent (EntityId id) noexcept {
+Entity World::parent (EntityId id) noexcept {
     auto parentId = relationships.parent(id);
     return Entity{parentId, this};
 }
 
-void ComponentManager::defer () {
+void World::defer () {
     if (deferCount++) {
         // Already deferred
         return;
@@ -96,7 +96,7 @@ void ComponentManager::defer () {
     deferSignals();
 }
 
-void ComponentManager::deferEnd () {
+void World::deferEnd () {
     if (--deferCount) {
         // Still deferring
         return;
@@ -124,7 +124,7 @@ void ComponentManager::deferEnd () {
     deferRemoveEnd();
 }
 
-void ComponentManager::deferSignals () {
+void World::deferSignals () {
     if (signalDeferCount++) {
         // Already deferred
         return;
@@ -135,7 +135,7 @@ void ComponentManager::deferSignals () {
     }
 }
 
-void ComponentManager::deferSignalsEnd () {
+void World::deferSignalsEnd () {
     if (--signalDeferCount) {
         // Still deferring
         return;
@@ -148,11 +148,11 @@ void ComponentManager::deferSignalsEnd () {
     deferRemoveEnd();
 }
 
-void ComponentManager::deferRemove() {
+void World::deferRemove() {
     removeDeferCount++;
 }
 
-void ComponentManager::deferRemoveEnd() {
+void World::deferRemoveEnd() {
     if (--removeDeferCount) {
         return;
     }
@@ -166,11 +166,11 @@ void ComponentManager::deferRemoveEnd() {
     deferredRemovals.clear();
 }
 
-PrefabBuilder ComponentManager::buildPrefab () {
+PrefabBuilder World::buildPrefab () {
     return prefabManager->makeBuilder();
 }
 
-void ComponentManager::completeCreation(EntityId id, EntityId parent) {
+void World::completeCreation(EntityId id, EntityId parent) {
     relationships.add(id, parent);
 
     emptyArchetype->add(id);
@@ -180,7 +180,7 @@ void ComponentManager::completeCreation(EntityId id, EntityId parent) {
     }
 }
 
-void ComponentManager::removeInt (EntityId id, bool updateParent) {
+void World::removeInt (EntityId id, bool updateParent) {
     if (updateParent) {
         auto parentId = relationships.parent(id);
         if (parentId) {
@@ -207,7 +207,7 @@ void ComponentManager::removeInt (EntityId id, bool updateParent) {
     idList.removeId(id);
 }
 
-Archetype* ComponentManager::findArchetype (const std::vector<std::size_t>& comps) {
+Archetype* World::findArchetype (const std::vector<std::size_t>& comps) {
     auto it = std::ranges::find_if(archetypes, [&] (const auto& arch) {
         return arch->getComponentIds() == comps;
     });
@@ -236,28 +236,28 @@ Archetype* ComponentManager::findArchetype (const std::vector<std::size_t>& comp
     return ptr;
 }
 
-void ComponentManager::updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) {
+void World::updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) {
     PHENYL_DASSERT(id.pos() < entityEntries.size());
     auto& entry = entityEntries[id.pos()];
     entry.archetype = archetype;
     entry.pos = pos;
 }
 
-void ComponentManager::onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) {
+void World::onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) {
     PHENYL_DASSERT(components.contains(compType));
 
     auto& comp = components[compType];
     comp->onInsert(id, ptr);
 }
 
-void ComponentManager::onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) {
+void World::onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) {
     PHENYL_DASSERT(components.contains(compType));
 
     auto& comp = components[compType];
     comp->onRemove(id, ptr);
 }
 
-void ComponentManager::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
+void World::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
     PHENYL_DASSERT(deferCount);
     PHENYL_DASSERT(components.contains(compType));
 
@@ -265,19 +265,19 @@ void ComponentManager::deferInsert (EntityId id, std::size_t compType, std::byte
     comp->deferComp(id, ptr);
 }
 
-void ComponentManager::deferApply (EntityId id, std::function<void(Entity)> applyFunc) {
+void World::deferApply (EntityId id, std::function<void(Entity)> applyFunc) {
     PHENYL_DASSERT(deferCount);
     deferredApplys.emplace_back(id, std::move(applyFunc));
 }
 
-void ComponentManager::instantiatePrefab (EntityId id, const detail::PrefabFactories& factories) {
+void World::instantiatePrefab (EntityId id, const detail::PrefabFactories& factories) {
     PHENYL_DASSERT(exists(id));
 
     auto& entry = entityEntries[id.pos()];
     entry.archetype->instantiatePrefab(factories, entry.pos);
 }
 
-void ComponentManager::raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr) {
+void World::raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr) {
     auto vecIt = signalHandlerVectors.find(signalType);
     if (vecIt == signalHandlerVectors.end()) {
         PHENYL_LOGD(LOGGER, "Ignored signal type {} for entity {} that has no handlers", signalType, id.value());
@@ -289,7 +289,7 @@ void ComponentManager::raiseSignal (EntityId id, std::size_t signalType, std::by
     deferRemoveEnd();
 }
 
-std::shared_ptr<QueryArchetypes> ComponentManager::makeQueryArchetypes (std::vector<std::size_t> components) {
+std::shared_ptr<QueryArchetypes> World::makeQueryArchetypes (std::vector<std::size_t> components) {
     cleanupQueryArchetypes();
     std::sort(components.begin(), components.end());
 
@@ -304,7 +304,7 @@ std::shared_ptr<QueryArchetypes> ComponentManager::makeQueryArchetypes (std::vec
     return newArch;
 }
 
-void ComponentManager::cleanupQueryArchetypes () {
+void World::cleanupQueryArchetypes () {
     std::erase_if(queryArchetypes, [] (const auto& x) {
         return x.expired();
     });

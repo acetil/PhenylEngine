@@ -29,5 +29,5 @@ namespace breakout {
         PHENYL_MEMBER(sample);
     })
 
-    void InitTile (breakout::BreakoutApp* app, phenyl::ComponentManager& componentManager);
+    void InitTile (breakout::BreakoutApp* app, phenyl::World& world);
 }

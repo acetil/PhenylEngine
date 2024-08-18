@@ -28,7 +28,7 @@ namespace phenyl {
             template <PluginType ...Plugins>
             friend class ::phenyl::Application;
         protected:
-            component::EntityComponentManager& componentManager ();
+            component::World& world ();
 
             void setTargetFPS (double fps);
             void setFixedTimeScale (double newTimeScale);

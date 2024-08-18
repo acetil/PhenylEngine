@@ -70,8 +70,8 @@ void EntityRenderLayer::render () {
     samplerRenders.clear();
 }
 
-void EntityRenderLayer::preRender (phenyl::component::ComponentManager& manager, const Camera& camera) {
-    bufferData(manager, camera);
+void EntityRenderLayer::preRender (phenyl::component::World& world, const Camera& camera) {
+    bufferData(world, camera);
 }
 
 void EntityRenderLayer::pushEntity (const common::GlobalTransform2D& transform, const Sprite2D& sprite) {
@@ -132,9 +132,9 @@ void EntityRenderLayer::bufferEntities (const Camera& camera) {
 }
 
 
-void EntityRenderLayer::bufferData (phenyl::component::ComponentManager& manager, const Camera& camera) {
+void EntityRenderLayer::bufferData (phenyl::component::World& world, const Camera& camera) {
 
-    manager.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+    world.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
         if (!sprite.texture) {
             return;
         }

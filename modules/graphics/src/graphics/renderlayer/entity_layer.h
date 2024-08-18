@@ -50,7 +50,7 @@ namespace phenyl::graphics {
 
         SamplerBinding samplerBinding{};
 
-        void bufferData (component::ComponentManager& manager, const Camera& camera);
+        void bufferData (component::World& world, const Camera& camera);
     public:
 
         EntityRenderLayer ();
@@ -59,7 +59,7 @@ namespace phenyl::graphics {
 
         void init (Renderer& renderer) override;
 
-        void preRender (component::ComponentManager& manager, const Camera& camera);
+        void preRender (component::World& world, const Camera& camera);
         void render () override;
 
         void pushEntity (const common::GlobalTransform2D& transform, const Sprite2D& sprite);

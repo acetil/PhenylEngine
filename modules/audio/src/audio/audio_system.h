@@ -12,8 +12,7 @@
 #include "runtime/iresource.h"
 
 namespace phenyl::component {
-    class ComponentManager;
-    using EntityComponentManager = ComponentManager;
+    class World;
     class EntitySerializer;
 }
 
@@ -77,7 +76,7 @@ namespace phenyl::audio {
         AudioSource createSource ();
 
         void selfRegister ();
-        void addComponents (component::EntityComponentManager& manager, component::EntitySerializer& serializer);
+        void addComponents (component::World& world, component::EntitySerializer& serializer);
 
         void playSample (AudioSource& source, const AudioSample& sample);
 
