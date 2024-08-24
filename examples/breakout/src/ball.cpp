@@ -8,6 +8,13 @@ static constexpr std::uint32_t FLOOR_LAYER = 1 << 2;
 
 using namespace breakout;
 
+namespace breakout {
+    PHENYL_SERIALIZABLE(Ball,
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(maxSpeed, "max_speed"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(appliedDrag, "applied_drag")
+    )
+}
+
 static void BallUpdateSystem (const Ball& ball, phenyl::RigidBody2D& body);
 
 void breakout::InitBall (BreakoutApp* app, phenyl::World& world) {

@@ -1,32 +1,30 @@
 #include <nlohmann/json.hpp>
 
-#include "common/serializer.h"
-#include "common/maths/glm_serializer.h"
+#include "common/serializer_impl.h"
 #include "util/random.h"
 
 #include "graphics/particles/particle_system_2d.h"
 
 namespace phenyl::graphics {
-    PHENYL_SERIALIZE(ParticleProperties2D, {
-        PHENYL_MEMBER_NAMED(lifetimeMin, "lifetime_min");
-        PHENYL_MEMBER_NAMED(lifetimeMax, "lifetime_max");
-        PHENYL_MEMBER_NAMED(velocityMin, "velocity_min");
-        PHENYL_MEMBER_NAMED(velocityMax, "velocity_max");
-        PHENYL_MEMBER_NAMED(gravity, "gravity");
-        PHENYL_MEMBER_NAMED(sizeStartMin, "size_start_min");
-        PHENYL_MEMBER_NAMED(sizeStartMax, "size_start_max");
-        PHENYL_MEMBER_NAMED(sizeEndMin, "size_end_min");
-        PHENYL_MEMBER_NAMED(sizeEndMax, "size_end_max");
-        PHENYL_MEMBER_NAMED(colourStartMin, "color_start_min");
-        PHENYL_MEMBER_NAMED(colourStartMax, "color_start_max");
-        PHENYL_MEMBER_NAMED(colourEndMin, "color_end_min");
-        PHENYL_MEMBER_NAMED(colourEndMax, "color_end_max");
-        PHENYL_MEMBER_NAMED(directionSpread, "spread");
-        PHENYL_MEMBER_NAMED(angleMin, "angle_min");
-        PHENYL_MEMBER_NAMED(angleMax, "angle_max");
-        PHENYL_MEMBER_NAMED(angularVelMin, "angular_vel_min");
-        PHENYL_MEMBER_NAMED(angularVelMax, "angular_vel_max");
-    })
+    PHENYL_SERIALIZABLE(ParticleProperties2D,
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(lifetimeMin, "lifetime_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(lifetimeMax, "lifetime_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(velocityMin, "velocity_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(velocityMax, "velocity_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(gravity, "gravity"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeStartMin, "size_start_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeStartMax, "size_start_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeEndMin, "size_end_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeEndMax, "size_end_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourStartMin, "color_start_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourStartMax, "color_start_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourEndMin, "color_end_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourEndMax, "color_end_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(directionSpread, "spread"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(angleMin, "angle_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(angleMax, "angle_max"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularVelMin, "angular_vel_min"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularVelMax, "angular_vel_max"))
 }
 
 using namespace phenyl::graphics;
@@ -164,9 +162,10 @@ void ParticleSystem2D::bufferColour (Buffer<glm::vec4>& buffer) const {
 }
 
 phenyl::util::Optional<ParticleProperties2D> phenyl::graphics::LoadParticleProperties2D (std::istream& file) {
-    nlohmann::json json;
+    /*nlohmann::json json;
     file >> json;
     phenyl::common::JsonDeserializer deserializer{json};
 
-    return deserializer.deserialize<ParticleProperties2D>();
+    return deserializer.deserialize<ParticleProperties2D>();*/
+    return util::NullOpt;
 }

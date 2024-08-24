@@ -7,10 +7,7 @@
 #include "physics/components/2D/colliders/box_collider.h"
 #include "physics/signals/collision.h"
 
-#include "common/components/2d/global_transform_serialize.h"
-#include "physics/components/2D/colliders/box_collider_serialize.h"
 #include "physics/components/2D/rigid_body.h"
-#include "physics/components/2D/rigid_body_serialize.h"
 #include "component/component_serializer.h"
 #include "runtime/delta_time.h"
 

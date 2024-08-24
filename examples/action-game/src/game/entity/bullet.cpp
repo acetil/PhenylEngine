@@ -3,12 +3,17 @@
 #include <phenyl/signals/physics.h>
 
 #include "bullet.h"
-#include "serializers.h"
 #include "game/test_app.h"
 
 
 
 using namespace phenyl;
+
+namespace test {
+    PHENYL_SERIALIZABLE(Bullet,
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(particlePrefab, "particle_prefab")
+    )
+}
 
 void test::InitBullet (TestApp* app, phenyl::World& world) {
     app->addComponent<Bullet>("Bullet");

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/serializer_forward.h"
 #include "graphics/maths_headers.h"
 #include "util/data.h"
 
@@ -64,4 +65,6 @@ namespace phenyl::physics {
         void updateBody (RigidBody2D& body) const;
         [[nodiscard]] bool shouldCollide (const Collider2D& other) const;
     };
+
+    PHENYL_DECLARE_SERIALIZABLE(Collider2D)
 }

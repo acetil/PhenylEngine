@@ -1,5 +1,6 @@
 #pragma once
 #include "runtime/runtime.h"
+#include "common/serializer_forward.h"
 
 namespace phenyl::component {
     class World;
@@ -12,4 +13,5 @@ namespace phenyl::common {
 
         static void Init (phenyl::runtime::PhenylRuntime& runtime);
     };
+    PHENYL_DECLARE_SERIALIZABLE(TimedLifetime);
 }

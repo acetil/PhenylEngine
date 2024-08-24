@@ -1,454 +1,429 @@
 #pragma once
 
 #include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <optional>
 #include <string>
-#include <type_traits>
-#include <vector>
+#include <unordered_map>
+#include <utility>
 
-#include <nlohmann/json.hpp>
+#include "logging/logging.h"
+#include "util/exceptions.h"
 
-#include "graphics/maths_headers.h"
-#include "serializer_intrusive.h"
-#include "detail/loggers.h"
-#include "util/optional.h"
+#include "serializer_forward.h"
 
-namespace phenyl::common {
-    class JsonSerializer;
-    class JsonDeserializer;
-
-    template <typename C, typename T>
-    concept CustomSerializerType = requires (T& t, JsonSerializer& sv, const JsonDeserializer& dv) {
-        { C::Name } -> std::convertible_to<const std::string&>;
-        { C::Factory() } -> std::same_as<T>;
-        { C::Accept(sv, (const T&)t) } -> std::same_as<bool>;
-        { C::Accept(dv, t) } -> std::same_as<bool>;
-    };
-
-    namespace detail {
-        template <typename T>
-        concept SerializableFloat = std::same_as<std::remove_cvref_t<T>, float> || std::same_as<std::remove_cvref_t<T>, double>;
-
-        template <typename T>
-        concept SerializableInt = std::same_as<std::remove_cvref_t<T>, std::int8_t> || std::same_as<std::remove_cvref_t<T>, std::int16_t> || std::same_as<std::remove_cvref_t<T>, std::int32_t> || std::same_as<std::remove_cvref_t<T>, std::int64_t>;
-
-        template <typename T>
-        concept SerializableUInt = std::same_as<std::remove_cvref_t<T>, std::uint8_t> || std::same_as<std::remove_cvref_t<T>, std::uint16_t> || std::same_as<std::remove_cvref_t<T>, std::uint32_t> || std::same_as<std::remove_cvref_t<T>, std::uint64_t>;
-    }
-
-    template <typename T>
-    concept DefaultSerializable = std::same_as<std::remove_cvref_t<T>, bool> || std::same_as<std::remove_cvref_t<T>, std::string> || detail::SerializableInt<std::remove_cvref_t<T>> || detail::SerializableUInt<std::remove_cvref_t<T>> || detail::SerializableFloat<std::remove_cvref_t<T>>;
-
-
-    template <typename T>
-    concept CustomSerializable = requires (std::remove_cvref_t<T> t) {
-        { phenyl_serialization_obj(&t) } -> CustomSerializerType<std::remove_cvref_t<T>>;
-    };
-
-    namespace detail {
-        template <typename T>
-        struct ContainerSerializable {
-        public:
-            static constexpr bool val = false;
-        };
-
-        template <typename T>
-        struct ContainerSerializable<std::vector<T>> {
-        public:
-            static constexpr bool val = DefaultSerializable<T> || CustomSerializable<T> || ContainerSerializable<T>::val;
-        };
-    };
-
-    template <typename T>
-    concept Serializable = DefaultSerializable<T> || CustomSerializable<T> || detail::ContainerSerializable<T>::val;
-
-    template <CustomSerializable T>
-    using CustomSerializer = decltype(phenyl_serialization_obj((T*) nullptr));
-
-    namespace detail {
-        template <CustomSerializable T>
-        T SerializerFactory () {
-            return CustomSerializer<T>::Factory();
-        }
-
-        template <DefaultSerializable T>
-        T SerializerFactory () {
-            return T{};
-        }
-
-        template <Serializable T>
-        std::vector<T> SerializerFactory () {
-            return std::vector<T>{};
-        }
-    }
-
-    class JsonSerializer {
-    private:
-        nlohmann::json json;
+namespace phenyl {
+    class DeserializeException : public PhenylException {
     public:
-        JsonSerializer () : json{} {}
-
-        bool asObject () {
-            json = nlohmann::json::object();
-            return true;
-        }
-
-        template <CustomSerializable T>
-        bool visit (const T& val) {
-            return CustomSerializer<T>::Accept(*this, val);
-        }
-
-        template <DefaultSerializable T>
-        bool visit (const T& val) {
-            json = val;
-            return true;
-        }
-
-        template <Serializable T>
-        bool visit (const std::vector<T>& val) {
-            auto arr = nlohmann::json::array_t{};
-            for (auto& i : val) {
-                JsonSerializer serializer{};
-                if (!serializer.visit(serializer, i)) {
-                    return false;
-                }
-
-                arr.push_back(std::move(serializer.get()));
-            }
-
-            json = std::move(arr);
-
-            return true;
-        }
-
-        template <std::size_t N, Serializable T>
-        bool visitArray (const T* vals) {
-            auto arr = nlohmann::json::array_t{};
-            for (std::size_t i = 0; i < N; i++) {
-                JsonSerializer serializer{};
-                if (!serializer.visit(vals[i])) {
-                    return false;
-                }
-
-                arr.push_back(std::move(serializer.get()));
-            }
-
-            json = std::move(arr);
-
-            return true;
-        }
-
-        template <Serializable T>
-        bool visitMember (T& member, const std::string& memberName) {
-            if (!json.is_object()) {
-                return false;
-            }
-
-            JsonSerializer serializer;
-            if (!serializer.visit(member)) {
-                return false;
-            }
-
-            json[memberName] = std::move(serializer.get());
-
-            return true;
-        }
-
-        nlohmann::json& get () {
-            return json;
-        }
-
-        template <Serializable T>
-        static nlohmann::json Serialize (const T& val) {
-            JsonSerializer serializer{};
-            if (!serializer.visit(val)) {
-                return nlohmann::json{};
-            }
-
-            return std::move(serializer.get());
-        }
-    };
-
-    class JsonDeserializer {
-    private:
-        const nlohmann::json& json;
-    public:
-        JsonDeserializer (const nlohmann::json& json) : json{json} {}
-
-        [[nodiscard]] bool asObject () const {
-            if (json.is_object()) {
-                return true;
-            } else {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected object, got \"{}\"", json.type_name());
-                return false;
-            }
-        }
-
-        template <CustomSerializable T>
-        bool visit (T& val) const {
-            if (CustomSerializer<T>::Accept(*this, val)) {
-                return true;
-            } else {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to parse {}", CustomSerializer<T>::Name);
-                return false;
-            }
-        }
-
-        template <Serializable T>
-        bool visit (std::vector<T>& val) const {
-            if (!json.is_array()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected list, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            const auto& arr = json.get<nlohmann::json::array_t>();
-            std::vector<T> vec{};
-            for (const auto& i : arr) {
-                vec.emplace_back(detail::SerializerFactory<T>());
-                if (!JsonDeserializer{i}.visit(vec.back())) {
-                    return false;
-                }
-            }
-
-            val = std::move(vec);
-
-            return true;
-        }
-
-        template <std::size_t N, Serializable T>
-        bool visitArray (T* vals) const {
-            if (!json.is_array()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected array, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            const auto& arr = json.get<nlohmann::json::array_t>();
-            if (arr.size() != N) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Array size is incorrect, expected {} got {}", N, arr.size());
-                return false;
-            }
-
-            std::array<T, N> newVals{};
-            for (std::size_t i = 0; i < N; i++) {
-                if (!JsonDeserializer{arr.at(i)}.visit(newVals[i])) {
-                    return false;
-                }
-            }
-
-            for (std::size_t i = 0; i < N; i++) {
-                vals[i] = std::move(newVals[i]);
-            }
-
-            return true;
-        }
-
-        template <Serializable T>
-        bool visitMember (T& member, const std::string& memberName) const {
-            if (!json.is_object()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected object, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            const auto& obj = json.get<nlohmann::json::object_t>();
-            if (!obj.contains(memberName)) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to find member \"{}\"", memberName);
-                return false;
-            }
-
-            if (JsonDeserializer{obj.at(memberName)}.visit(member)) {
-                return true;
-            } else {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to parse member \"{}\"", memberName);
-                return false;
-            }
-        }
-
-        [[nodiscard]] const nlohmann::json& get () const {
-            return json;
-        }
-
-        bool visit (bool& val) const {
-            if (!json.is_boolean()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected bool, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            val = json.get<bool>();
-            return true;
-        }
-
-        bool visit (std::string& val) const {
-            if (!json.is_string()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected string, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            val = json.get<std::string>();
-            return true;
-        }
-
-        template <detail::SerializableFloat T>
-        bool visit (T& val) const {
-            if (!json.is_number()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected float, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            val = json.get<T>();
-            return true;
-        }
-
-        template <detail::SerializableInt T>
-        bool visit (T& val) const {
-            if (!json.is_number_integer()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected int, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            val = json.get<T>();
-            return true;
-        }
-
-        template <detail::SerializableUInt T>
-        bool visit (T& val) const {
-            if (!json.is_number_unsigned()) {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Expected uint, got \"{}\"", json.type_name());
-                return false;
-            }
-
-            val = json.get<T>();
-            return true;
-        }
-
-        template <typename T>
-        util::Optional<T> deserialize () const {
-            T val{detail::SerializerFactory<T>()};
-
-            if (visit(val)) {
-                return util::Optional<T>{std::move(val)};
-            } else {
-                PHENYL_LOGE(detail::SERIALIZER_LOGGER, "Failed to deserialize {}!", CustomSerializer<T>::Name);
-                return util::NullOpt;
-            }
-        }
-
-        template <typename T>
-        static util::Optional<T> Deserialize (const nlohmann::json& json) {
-            return JsonDeserializer{json}.deserialize<T>();
-        }
+        explicit DeserializeException (std::string message) : PhenylException{std::move(message)} {}
     };
 }
 
-#define PHENYL_SERIALIZE_NAMED_INT(T, name, details, preVisit, postVisit)                         \
-    struct phenyl_##T##_SerializerType {                                 \
-        static constexpr const char* Name = name;                        \
-                                                                         \
-        static T Factory () {                                    \
-            return T{};                                                  \
-        }                                                                                         \
-        \
-        static bool Accept (::phenyl::common::JsonSerializer& visitor, const T& val) {   \
-            constexpr bool IN_SERIALIZE = std::is_same_v<std::void_t<T>, void>;                          \
-            constexpr bool IN_DESERIALIZE = !std::is_same_v<std::void_t<T>, void>;                       \
-            using Type = T;                                              \
-                                                                         \
-            preVisit                                                                          \
-                                        \
-            details                                                                          \
-            \
-            postVisit\
-            return true;                                                 \
-        }                                                                                         \
-        \
-        static bool Accept (const ::phenyl::common::JsonDeserializer& visitor, T& val) { \
-            constexpr bool IN_SERIALIZE = !std::is_same_v<std::void_t<T>, void>;                         \
-            constexpr bool IN_DESERIALIZE = std::is_same_v<std::void_t<T>, void>;                        \
-            using Type = T;                                              \
-                                                                                                  \
-            preVisit                                                                                      \
-            \
-            details                                                                               \
-                                                                                                  \
-            postVisit\
-                                                                         \
-            return true;                                                 \
-        }                                                                \
-    };                                                                   \
-                                                                         \
-                                                                         \
-    phenyl_##T##_SerializerType phenyl_serialization_obj (T*);\
+namespace phenyl::common {
+    class ISerializableBase;
+    template <typename T>
+    class ISerializable;
 
-#define PHENYL_SERIALIZE_NAMED(T, name, details) PHENYL_SERIALIZE_NAMED_INT(T, name, details, { \
-        if constexpr (IN_SERIALIZE || IN_DESERIALIZE) {                                                                                        \
-            if (!visitor.asObject()) {                                                            \
-                return false;                                                                                     \
-            }                                                                                       \
-        }                                                                                               \
-    }, {})
+    class ISerializer;
+    class IObjectSerializer;
+    class IArraySerializer;
 
-#define PHENYL_SERIALIZE(T, details) PHENYL_SERIALIZE_NAMED(T, #T, details)
+    class IDeserializer;
+    class IObjectDeserializer;
+    class IArrayDeserializer;
 
-#define PHENYL_SERIALIZE_ARRAY_FUNC_NAMED(T, name, func, size) PHENYL_SERIALIZE_NAMED_INT(T, name, { \
-        if constexpr (IN_SERIALIZE || IN_DESERIALIZE) {                                                                    \
-            visitor.template visitArray<size>((func)(val));\
-        }                                                                                                     \
-    }, {}, {})
+    class ISerializableBase {
+    public:
+        virtual ~ISerializableBase () = default;
 
-#define PHENYL_SERIALIZE_ARRAY_NAMED(T, name, size) PHENYL_SERIALIZE_ARRAY_FUNC_NAMED(T, name, , size)
-#define PHENYL_SERIALIZE_ARRAY_FUNC(T, func, size) PHENYL_SERIALIZE_ARRAY_FUNC_NAMED(T, #T, func, size)
+        [[nodiscard]] virtual std::string_view name () const noexcept = 0;
 
-#define PHENYL_MEMBER_NAMED(member, name) \
-    do {                                  \
-        if constexpr (IN_SERIALIZE || IN_DESERIALIZE) {                                  \
-            if (!visitor.visitMember(val.member, name)) {              \
-                return false;             \
-            }\
-        }                                 \
-    } while (0)
+        virtual void serialize (ISerializer& serializer, const std::byte* ptr) = 0;
 
-#define PHENYL_MEMBER(member) PHENYL_MEMBER_NAMED(member, #member)
+        virtual void deserialize (IDeserializer& deserializer, std::byte* ptr) = 0;
 
-#define PHENYL_MEMBER_METHOD(name, getMethod, setMethod)  \
-    do {                                                  \
-        if constexpr (IN_SERIALIZE) {                     \
-            auto v = val.getMethod();\
-            if (!visitor.visitMember(v, name)) { \
-                return false;                                              \
-            }   \
-        }                                                 \
-                                                          \
-        if constexpr (IN_DESERIALIZE) {                \
-            using ValType = std::remove_cvref_t<decltype(val.getMethod())>; \
-            ValType newVal = ::phenyl::common::detail::SerializerFactory<ValType>();   \
-            if (!visitor.visitMember(newVal, name)) {     \
-                return false;                                              \
-            }                                             \
-            const_cast<Type&>(val).setMethod(std::move(newVal));                                              \
-            \
-        }                                         \
-    } while (0)                                           \
+        virtual void deserializeBool (std::byte* ptr, bool val) = 0;
 
-#define PHENYL_INHERITS_NAMED(Base, name)  \
-    do {                                   \
-        static_assert(std::derived_from<Type, Base>);\
-        if constexpr (IN_SERIALIZE) {      \
-            if (!visitor.visitMember(static_cast<const Base&>(val), name)) { \
-                return false;                               \
-            }                                   \
-        }                                  \
-                                           \
-        if constexpr (IN_DESERIALIZE) {       \
-            if (!visitor.visitMember(static_cast<Base&>(const_cast<Type&>(val)), name)) {       \
-                return false;                               \
-            }                                   \
-        }\
-    } while (0)
+        virtual void deserializeInt8 (std::byte* ptr, std::int8_t val) = 0;
+        virtual void deserializeInt16 (std::byte* ptr, std::int16_t val) = 0;
+        virtual void deserializeInt32 (std::byte* ptr, std::int32_t val) = 0;
+        virtual void deserializeInt64 (std::byte* ptr, std::int64_t val) = 0;
 
-#define PHENYL_INHERITS(Base) PHENYL_INHERITS_NAMED(Base, (::common::CustomSerializer<Base>::Name))
+        virtual void deserializeUint8 (std::byte* ptr, std::uint8_t val) = 0;
+        virtual void deserializeUint16 (std::byte* ptr, std::uint16_t val) = 0;
+        virtual void deserializeUint32 (std::byte* ptr, std::uint32_t val) = 0;
+        virtual void deserializeUint64 (std::byte* ptr, std::uint64_t val) = 0;
 
-#define PHENYL_MEMBER_ARRAY_NAMED(member, name, size) \
-    do { \
-        if constexpr (IN_SERIALIZE) {                 \
-            if (!visitor.visitArray<size>(val.member, name))                                              \
-        }                                                       \
-    }
+        virtual void deserializeFloat (std::byte* ptr, float val) = 0;
+        virtual void deserializeDouble (std::byte* ptr, double val) = 0;
 
+        virtual void deserializeString (std::byte* ptr, std::string_view val) = 0;
+
+        virtual void deserializeArray (std::byte* ptr, IArrayDeserializer& deserializer) = 0;
+        virtual void deserializeObject (std::byte* ptr, IObjectDeserializer& deserializer) = 0;
+    };
+
+    template <typename T>
+    class ISerializable : private ISerializableBase {
+    private:
+        void serialize (ISerializer& serializer, const std::byte* ptr) final {
+            PHENYL_DASSERT(ptr);
+            serialize(serializer, *reinterpret_cast<const T*>(ptr));
+        }
+
+        void deserialize (IDeserializer& deserializer, std::byte* ptr) final {
+            PHENYL_DASSERT(ptr);
+            deserialize(deserializer, *reinterpret_cast<T*>(ptr));
+        }
+
+        void deserializeBool (std::byte* ptr, bool val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeBool(*reinterpret_cast<T*>(ptr), val);
+        }
+
+        void deserializeInt8 (std::byte* ptr, std::int8_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeInt8(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeInt16 (std::byte* ptr, std::int16_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeInt16(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeInt32 (std::byte* ptr, std::int32_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeInt32(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeInt64 (std::byte* ptr, std::int64_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeInt64(*reinterpret_cast<T*>(ptr), val);
+        }
+
+        void deserializeUint8 (std::byte* ptr, std::uint8_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeUint8(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeUint16 (std::byte* ptr, std::uint16_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeUint16(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeUint32 (std::byte* ptr, std::uint32_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeUint32(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeUint64 (std::byte* ptr, std::uint64_t val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeUint64(*reinterpret_cast<T*>(ptr), val);
+        }
+
+        void deserializeFloat (std::byte* ptr, float val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeFloat(*reinterpret_cast<T*>(ptr), val);
+        }
+        void deserializeDouble (std::byte* ptr, double val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeDouble(*reinterpret_cast<T*>(ptr), val);
+        }
+
+        void deserializeString (std::byte* ptr, std::string_view val) final {
+            PHENYL_DASSERT(ptr);
+            deserializeString(*reinterpret_cast<T*>(ptr), val);
+        }
+
+        void deserializeArray (std::byte* ptr, IArrayDeserializer& deserializer) final {
+            PHENYL_DASSERT(ptr);
+            deserializeArray(*reinterpret_cast<T*>(ptr), deserializer);
+        }
+
+        void deserializeObject(std::byte* ptr, IObjectDeserializer& deserializer) final {
+            PHENYL_DASSERT(ptr);
+            deserializeObject(*reinterpret_cast<T*>(ptr), deserializer);
+        }
+
+        friend class ISerializer;
+        friend class IObjectSerializer;
+        friend class IArraySerializer;
+
+        friend class IDeserializer;
+        friend class IObjectDeserializer;
+        friend class IArrayDeserializer;
+    public:
+        virtual T make () const {
+            return T{};
+        }
+
+        virtual void serialize (ISerializer& serializer, const T& obj) = 0;
+
+        virtual void deserialize (IDeserializer& deserializer, T& obj) = 0;
+
+        virtual void deserializeBool (T& obj, bool val) {
+            throw DeserializeException("Attempted to deserialize bool to type that doesn't support it!");
+        }
+
+        virtual void deserializeInt8 (T& obj, std::int8_t val) {
+            deserializeInt16(obj, val);
+        }
+        virtual void deserializeInt16 (T& obj, std::int16_t val) {
+            deserializeInt32(obj, val);
+        }
+        virtual void deserializeInt32 (T& obj, std::int32_t val) {
+            deserializeInt64(obj, val);
+        }
+        virtual void deserializeInt64 (T& obj, std::int64_t val) {
+            throw DeserializeException("Attempted to deserialize int64 to type that doesn't support it!");
+        }
+
+        virtual void deserializeUint8 (T& obj, std::uint8_t val) {
+            deserializeUint16(obj, val);
+        }
+        virtual void deserializeUint16 (T& obj, std::uint16_t val) {
+            deserializeUint32(obj, val);
+        }
+        virtual void deserializeUint32 (T& obj, std::uint32_t val) {
+            deserializeUint64(obj, val);
+        }
+        virtual void deserializeUint64 (T& obj, std::uint64_t val) {
+            throw DeserializeException("Attempted to deserialize uint64 to type that doesn't support it!");
+        }
+
+        virtual void deserializeFloat (T& obj, float val) {
+            deserializeDouble(obj, static_cast<double>(val));
+        }
+        virtual void deserializeDouble (T& obj, double val) {
+            throw DeserializeException("Attempted to deserialize double to type that doesn't support it!");
+        }
+
+        virtual void deserializeString (T& obj, std::string_view val) {
+            throw DeserializeException("Attempted to deserialize string to type that doesn't support it!");
+        }
+
+        virtual void deserializeArray (T& obj, IArrayDeserializer& deserializer) {
+            throw DeserializeException("Attempted to deserialize array to type that doesn't support it!");
+        }
+        virtual void deserializeObject (T& obj, IObjectDeserializer& deserializer) {
+            throw DeserializeException("Attempted to deserialize object to type that doesn't support it!");
+        }
+    };
+
+    class ISerializer {
+    public:
+        virtual ~ISerializer () = default;
+
+        virtual void serialize (bool val) = 0;
+
+        virtual void serialize (std::int8_t val) {
+            serialize(static_cast<std::int64_t>(val));
+        }
+        virtual void serialize (std::int16_t val) {
+            serialize(static_cast<std::int64_t>(val));
+        }
+        virtual void serialize (std::int32_t val) {
+            serialize(static_cast<std::int64_t>(val));
+        }
+        virtual void serialize (std::int64_t val) = 0;
+
+        virtual void serialize (std::uint8_t val) {
+            serialize(static_cast<std::uint64_t>(val));
+        }
+        virtual void serialize (std::uint16_t val) {
+            serialize(static_cast<std::uint64_t>(val));
+        }
+        virtual void serialize (std::uint32_t val) {
+            serialize(static_cast<std::uint64_t>(val));
+        }
+        virtual void serialize (std::uint64_t val) = 0;
+
+        virtual void serialize (float val) {
+            serialize(static_cast<double>(val));
+        }
+        virtual void serialize (double val) = 0;
+
+        virtual void serialize (const std::string& val) {
+            serialize(std::string_view{val});
+        }
+        virtual void serialize (std::string_view val) = 0;
+
+        template <SerializableType T>
+        void serialize (const T& obj) {
+            ISerializable<T>& serializable = detail::GetSerializable<T>();
+            serializable.serialize(*this, obj);
+        }
+
+        virtual IObjectSerializer& serializeObj () = 0;
+        virtual IArraySerializer& serializeArr () = 0;
+    };
+
+    class IObjectSerializer {
+    protected:
+        virtual void serializeMember (std::string_view memberName, ISerializableBase& serializable, const std::byte* ptr) = 0;
+    public:
+        virtual ~IObjectSerializer () = default;
+
+        template <SerializableType T>
+        void serializeMember (std::string_view memberName, const T& obj) {
+            serializeMember(memberName, detail::GetSerializable<T>(), reinterpret_cast<const std::byte*>(&obj));
+        }
+        virtual void end () = 0;
+    };
+
+    class IArraySerializer {
+    protected:
+        virtual void serializeElement (ISerializableBase& serializable, const std::byte* ptr) = 0;
+    public:
+        virtual ~IArraySerializer () = default;
+
+        template <SerializableType T>
+        void serializeElement (const T& obj) {
+            serializeElement(detail::GetSerializable<T>(), reinterpret_cast<const std::byte*>(&obj));
+        }
+        virtual void end () = 0;
+    };
+
+    class IDeserializer {
+    protected:
+        virtual void deserializeBool (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeInt8 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeInt16 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeInt32 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeInt64 (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeUint8 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeUint16 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeUint32 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeUint64 (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeFloat (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeDouble (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeString (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeObject (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeArray (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeInfer (ISerializableBase& serializable, std::byte* ptr) = 0;
+    public:
+        virtual ~IDeserializer () = default;
+
+        template <SerializableType T>
+        void deserializeBool (ISerializable<T>& serializable, T& obj) {
+            deserializeBool(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        void deserializeInt8 (ISerializable<T>& serializable, T& obj) {
+            deserializeInt8(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeInt16 (ISerializable<T>& serializable, T& obj) {
+            deserializeInt16(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeInt32 (ISerializable<T>& serializable, T& obj) {
+            deserializeInt32(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeInt64 (ISerializable<T>& serializable, T& obj) {
+            deserializeInt64(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        void deserializeUint8 (ISerializable<T>& serializable, T& obj) {
+            deserializeUint8(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeUint16 (ISerializable<T>& serializable, T& obj) {
+            deserializeUint16(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeUint32 (ISerializable<T>& serializable, T& obj) {
+            deserializeUint32(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeUint64 (ISerializable<T>& serializable, T& obj) {
+            deserializeUint64(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        void deserializeFloat (ISerializable<T>& serializable, T& obj) {
+            deserializeFloat(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeDouble (ISerializable<T>& serializable, T& obj) {
+            deserializeDouble(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        void deserializeString (ISerializable<T>& serializable, T& obj) {
+            deserializeString(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        void deserializeObject (ISerializable<T>& serializable, T& obj) {
+            deserializeObject(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+        template <SerializableType T>
+        void deserializeArray (ISerializable<T>& serializable, T& obj) {
+            deserializeArray(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        void deserializeInfer (ISerializable<T>& serializable, T& obj) {
+            deserializeInfer(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <SerializableType T>
+        T deserialize () {
+            ISerializable<T>& serializable = detail::GetSerializable<T>();
+            T obj{serializable.make()};
+            serializable.deserialize(*this, obj);
+
+            return obj;
+        }
+    };
+
+    class IArrayDeserializer {
+    protected:
+        virtual void next (ISerializableBase& serializable, std::byte* obj);
+    public:
+        virtual ~IArrayDeserializer () = default;
+
+        [[nodiscard]] virtual std::optional<std::size_t> tryGetSize () const {
+            return std::nullopt;
+        }
+        [[nodiscard]] virtual bool hasNext () const = 0;
+
+        template <typename T>
+        T next () {
+            ISerializable<T>& serializable = detail::GetSerializable<T>();
+            T obj{serializable.make()};
+            next(serializable, reinterpret_cast<std::byte*>(&obj));
+
+            return obj;
+        }
+    };
+
+    class IObjectDeserializer {
+    protected:
+        virtual void nextValue (ISerializableBase& serializable, std::byte* obj);
+    public:
+        virtual ~IObjectDeserializer () = default;
+
+        [[nodiscard]] virtual bool hasNext () const = 0;
+
+        virtual std::string_view nextKey () = 0;
+        template <typename T>
+        T nextValue () {
+            ISerializable<T>& serializable = detail::GetSerializable<T>();
+            T obj{serializable.make()};
+            nextValue(serializable, reinterpret_cast<std::byte*>(&obj));
+
+            return obj;
+        }
+
+        template <typename T>
+        void nextValue (T& obj) {
+            nextValue(detail::GetSerializable<T>(), reinterpret_cast<std::byte*>(&obj));
+        }
+    };
+}

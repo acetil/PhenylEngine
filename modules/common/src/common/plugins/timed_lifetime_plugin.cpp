@@ -1,5 +1,5 @@
-#include "common/components/timed_lifetime_serialize.h"
 #include "common/plugins/timed_lifetime_plugin.h"
+#include "common/components/timed_lifetime.h"
 
 using namespace phenyl::common;
 

@@ -186,7 +186,7 @@ namespace phenyl::runtime {
             registerPlugin(meta::type_index<T>(), std::move(plugin));
         }
 
-        template <common::CustomSerializable T>
+        template <common::SerializableType T>
         void addComponent (std::string name) {
             addUnserializedComponent<T>(std::move(name));
             serializer().addSerializer<T>();

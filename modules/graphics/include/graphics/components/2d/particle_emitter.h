@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/assets/asset.h"
+#include "common/serializer_forward.h"
 #include "component/forward.h"
 #include "graphics/maths_headers.h"
 #include "runtime/delta_time.h"
@@ -35,4 +36,6 @@ namespace phenyl::graphics {
         void update (const runtime::Resources<const runtime::DeltaTime>& resources, const common::GlobalTransform2D& transform);
         void start ();
     };
+
+    PHENYL_DECLARE_SERIALIZABLE(ParticleEmitter2D)
 }

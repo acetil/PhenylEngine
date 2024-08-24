@@ -1,7 +1,7 @@
 #pragma once
 
+#include "common/serializer_impl.h"
 #include "graphics/maths_headers.h"
-#include "common/serializer_intrusive.h"
 
 namespace phenyl::common {
     class Transform2D {
@@ -12,7 +12,7 @@ namespace phenyl::common {
 
         Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec);
 
-        PHENYL_SERIALIZE_INTRUSIVE(Transform2D);
+        PHENYL_SERIALIZABLE_INTRUSIVE(Transform2D)
     public:
         Transform2D () = default;
 

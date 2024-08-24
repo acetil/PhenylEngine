@@ -1,6 +1,6 @@
 #include "runtime/runtime.h"
 
-#include "common/components/2d/global_transform_serialize.h"
+#include "common/components/2d/global_transform.h"
 #include "common/plugins/core_plugin_2d.h"
 
 using namespace phenyl::common;

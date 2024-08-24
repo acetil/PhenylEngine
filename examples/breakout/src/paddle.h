@@ -26,18 +26,7 @@ namespace breakout {
 
         void update (const phenyl::Resources<const phenyl::Camera, const phenyl::FixedDelta>& resources, const phenyl::Bundle<const phenyl::GlobalTransform2D, phenyl::RigidBody2D>& bundle);
     };
-
-    PHENYL_SERIALIZE(Paddle, {
-        PHENYL_MEMBER_NAMED(hasBall, "has_ball");
-        PHENYL_MEMBER(speed);
-        PHENYL_MEMBER(width);
-        PHENYL_MEMBER_NAMED(minX, "min_x");
-        PHENYL_MEMBER_NAMED(maxX, "max_x");
-        PHENYL_MEMBER_NAMED(ballPrefab, "ball_prefab");
-        PHENYL_MEMBER_NAMED(ballSpeed, "ball_speed");
-        PHENYL_MEMBER_NAMED(emitterPrefab, "emitter_prefab");
-        PHENYL_MEMBER_NAMED(bounceSample, "bounce_sample");
-    })
+    PHENYL_DECLARE_SERIALIZABLE(Paddle)
 
     void InitPaddle (BreakoutApp* app, phenyl::PhenylRuntime& runtime);
 }

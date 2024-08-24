@@ -1,7 +1,6 @@
 add_executable(action-game src/main.cpp src/util/debug_console.cpp
         src/game/entity/bullet.h
         src/game/entity/player.h
-        src/game/entity/serializers.h
         src/game/entity/bullet.cpp
         src/game/entity/player.cpp
         src/game/test_app.h

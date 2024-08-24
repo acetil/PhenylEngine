@@ -13,21 +13,12 @@ namespace breakout {
         phenyl::Asset<phenyl::Prefab> emitter;
         phenyl::Asset<phenyl::AudioSample> breakSample;
     };
-
-    PHENYL_SERIALIZE(Tile, {
-        PHENYL_MEMBER(points);
-        PHENYL_MEMBER(health);
-        PHENYL_MEMBER(emitter);
-        PHENYL_MEMBER_NAMED(breakSample, "break_sample");
-    })
+    PHENYL_DECLARE_SERIALIZABLE(Tile)
 
     struct Floor {
         phenyl::Asset<phenyl::AudioSample> sample;
     };
-
-    PHENYL_SERIALIZE(Floor, {
-        PHENYL_MEMBER(sample);
-    })
+    PHENYL_DECLARE_SERIALIZABLE(Floor)
 
     void InitTile (breakout::BreakoutApp* app, phenyl::World& world);
 }

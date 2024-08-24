@@ -6,6 +6,12 @@
 #include "breakout.h"
 #include "wall.h"
 
+namespace breakout {
+    PHENYL_SERIALIZABLE(Wall,
+        PHENYL_SERIALIZABLE_MEMBER(emitter),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(bounceSample, "bounce_sample")
+    )
+}
 
 void breakout::InitWall (BreakoutApp* app, phenyl::World& world) {
     app->addComponent<Wall>("Wall");

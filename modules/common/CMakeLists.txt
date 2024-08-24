@@ -1,18 +1,11 @@
 #add_library(common)
 add_library(common include/common include/common/scope.h include/common/maths/2d/transform.h src/common/maths/2d/transform.cpp include/common/components/2d/global_transform.h include/common/debug.h src/common/debug.cpp
-        include/common/serializer.h
-        include/common/maths/glm_serializer.h
-        include/common/maths/2d/transform_serializer.h
-        include/common/components/2d/global_transform_serialize.h
-        include/common/serializer_intrusive.h
         include/common/assets/assets.h
         include/common/assets/asset_manager.h
         include/common/assets/asset.h
         include/common/assets/forward.h
         src/common/assets/assets.cpp
-        include/common/assets/asset_serializer.h
         include/common/components/timed_lifetime.h
-        include/common/components/timed_lifetime_serialize.h
         src/common/components/timed_lifetime.cpp
         include/common/detail/loggers.h
         src/common/loggers.cpp
@@ -29,6 +22,11 @@ add_library(common include/common include/common/scope.h include/common/maths/2d
         src/common/plugins/input_plugin.cpp
         include/common/input/axis_action.h
         src/common/input/axis_input.cpp
+        include/common/serializer.h
+        src/common/serializer.cpp
+        include/common/serializer_impl.h
+        src/common/components/global_transform.cpp
+        include/common/serializer_forward.h
 )
 
 find_package(nlohmann_json REQUIRED)

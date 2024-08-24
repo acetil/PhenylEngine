@@ -2,7 +2,6 @@
 #include "graphics/renderlayer/debug_layer.h"
 
 #include "texture_manager.h"
-#include "graphics/components/2d/sprite_serialization.h"
 
 using namespace phenyl::graphics;
 

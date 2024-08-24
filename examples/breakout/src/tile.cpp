@@ -6,6 +6,18 @@
 #include "tile.h"
 
 using namespace breakout;
+namespace breakout {
+    PHENYL_SERIALIZABLE(Tile,
+        PHENYL_SERIALIZABLE_MEMBER(points),
+        PHENYL_SERIALIZABLE_MEMBER(health),
+        PHENYL_SERIALIZABLE_MEMBER(emitter),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(breakSample, "break_sample")
+    )
+
+    PHENYL_SERIALIZABLE(Floor,
+        PHENYL_SERIALIZABLE_MEMBER(sample)
+    )
+}
 
 void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
     app->addComponent<Tile>("Tile");

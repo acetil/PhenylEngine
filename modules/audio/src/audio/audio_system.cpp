@@ -1,6 +1,7 @@
 #include "common/assets/assets.h"
 #include "component/component.h"
 #include "component/component_serializer.h"
+#include "common/serializer_impl.h"
 
 #include "audio/audio_system.h"
 #include "filetypes/wav.h"
@@ -9,9 +10,7 @@
 #include "audio/detail/loggers.h"
 
 namespace phenyl::audio {
-    PHENYL_SERIALIZE(AudioPlayer, {
-        PHENYL_MEMBER_NAMED(sourceGain, "gain");
-    });
+    PHENYL_SERIALIZABLE(AudioPlayer, PHENYL_SERIALIZABLE_MEMBER_NAMED(sourceGain, "gain"))
 }
 
 using namespace phenyl::audio;

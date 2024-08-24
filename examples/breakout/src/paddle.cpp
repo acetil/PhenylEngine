@@ -13,6 +13,20 @@
 
 using namespace breakout;
 
+namespace breakout {
+    PHENYL_SERIALIZABLE(Paddle,
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(hasBall, "has_ball"),
+        PHENYL_SERIALIZABLE_MEMBER(speed),
+        PHENYL_SERIALIZABLE_MEMBER(width),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(minX, "min_x"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(maxX, "max_x"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(ballPrefab, "ball_prefab"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(ballSpeed, "ball_speed"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(emitterPrefab, "emitter_prefab"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(bounceSample, "bounce_sample")
+    );
+}
+
 static phenyl::Axis2DInput PlayerMove;
 static phenyl::Axis2DInput CursorPos;
 

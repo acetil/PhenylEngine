@@ -2,10 +2,10 @@
 #include "runtime/runtime.h"
 
 #include "graphics/renderer.h"
-#include "graphics/components/2d/sprite_serialization.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/entity_layer.h"
 
+#include "graphics/components/2d/sprite.h"
 #include "graphics/plugins/sprite_2d_plugin.h"
 
 using namespace phenyl::graphics;

@@ -7,6 +7,18 @@
 
 using namespace phenyl::physics;
 
+namespace phenyl::physics {
+    PHENYL_SERIALIZABLE(RigidBody2D,
+        PHENYL_SERIALIZABLE_MEMBER(momentum),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularMomentum, "angular_momentum"),
+        PHENYL_SERIALIZABLE_METHOD("mass", &RigidBody2D::getMass, &RigidBody2D::setMass),
+        PHENYL_SERIALIZABLE_METHOD("inertial_moment", &RigidBody2D::getInertia, &RigidBody2D::setInertia),
+        PHENYL_SERIALIZABLE_MEMBER(drag),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularDrag, "angular_drag"),
+        PHENYL_SERIALIZABLE_MEMBER(gravity)
+    )
+}
+
 inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
     return vec1.x * vec2.y - vec1.y * vec2.x;
 }

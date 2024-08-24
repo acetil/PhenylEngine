@@ -7,9 +7,7 @@ add_library(physics src/physics/physics.cpp include/physics/components/2D/rigid_
         include/physics/components/2D/colliders/box_collider.h
         src/physics/components/2D/colliders/box_collider.cpp
         include/physics/signals/collision.h
-        include/physics/components/2D/collider_serialize.h
-        include/physics/components/2D/colliders/box_collider_serialize.h
-        include/physics/components/2D/rigid_body_serialize.h)
+)
 
 set_property(TARGET physics PROPERTY CXX_STANDARD 20)
 

@@ -10,7 +10,6 @@
 #include <phenyl/components/physics/2D/rigid_body.h>
 
 #include "player.h"
-#include "serializers.h"
 #include "game/test_app.h"
 
 #define SHOOT_DIST (1.1f * 0.1f)
@@ -19,6 +18,13 @@
 #define FORCE_COMPONENT 6.5f
 
 using namespace phenyl;
+
+namespace test {
+    PHENYL_SERIALIZABLE(Player,
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(bulletPrefab, "bullet_prefab"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(gunshotSample, "gunshot_sample")
+    )
+}
 
 static phenyl::Axis2DInput PlayerMove;
 
