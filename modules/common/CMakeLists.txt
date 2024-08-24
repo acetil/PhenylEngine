@@ -22,11 +22,13 @@ add_library(common include/common include/common/scope.h include/common/maths/2d
         src/common/plugins/input_plugin.cpp
         include/common/input/axis_action.h
         src/common/input/axis_input.cpp
-        include/common/serializer.h
-        src/common/serializer.cpp
-        include/common/serializer_impl.h
+        include/common/serialization/serializer.h
+        src/common/serialization/serializer.cpp
+        include/common/serialization/serializer_impl.h
         src/common/components/global_transform.cpp
-        include/common/serializer_forward.h
+        include/common/serialization/serializer_forward.h
+        include/common/serialization/backends.h
+        src/common/serialization/json_backend.cpp
 )
 
 find_package(nlohmann_json REQUIRED)

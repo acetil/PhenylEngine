@@ -1,6 +1,6 @@
 #include <nlohmann/json.hpp>
 
-#include "common/serializer_impl.h"
+#include "common/serialization/serializer_impl.h"
 #include "util/random.h"
 
 #include "graphics/particles/particle_system_2d.h"

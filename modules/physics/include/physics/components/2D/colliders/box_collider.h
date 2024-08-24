@@ -1,7 +1,7 @@
 #pragma once
 
 #include "physics/components/2D/collider.h"
-#include "common/serializer_forward.h"
+#include "common/serialization/serializer_forward.h"
 #include "util/optional.h"
 
 namespace phenyl::physics {

@@ -1,7 +1,7 @@
 #include "common/assets/assets.h"
 #include "component/component.h"
 #include "component/component_serializer.h"
-#include "common/serializer_impl.h"
+#include "common/serialization/serializer_impl.h"
 
 #include "audio/audio_system.h"
 #include "filetypes/wav.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/maths/2d/transform.h"
-#include "common/serializer_forward.h"
+#include "common/serialization/serializer_forward.h"
 
 namespace phenyl::common {
     struct GlobalTransform2D {

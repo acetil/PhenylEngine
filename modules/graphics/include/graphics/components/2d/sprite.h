@@ -5,7 +5,7 @@
 #include "graphics/maths_headers.h"
 #include "graphics/texture.h"
 #include "common/assets/asset.h"
-#include "common/serializer_forward.h"
+#include "common/serialization/serializer_forward.h"
 
 namespace phenyl::graphics {
     struct Sprite2D {

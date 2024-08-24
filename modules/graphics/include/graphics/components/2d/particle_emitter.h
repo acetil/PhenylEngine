@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/assets/asset.h"
-#include "common/serializer_forward.h"
+#include "common/serialization/serializer_forward.h"
 #include "component/forward.h"
 #include "graphics/maths_headers.h"
 #include "runtime/delta_time.h"

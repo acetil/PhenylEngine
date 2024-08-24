@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/serializer_impl.h"
+#include "common/serialization/serializer_impl.h"
 #include "graphics/maths_headers.h"
 
 namespace phenyl::common {

@@ -4,7 +4,7 @@
 
 #include "util/map.h"
 
-#include "common/serializer.h"
+#include "common/serialization/serializer.h"
 #include "component/component.h"
 #include "component/prefab.h"
 

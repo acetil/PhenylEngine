@@ -1,6 +1,6 @@
 #pragma once
 #include "runtime/runtime.h"
-#include "common/serializer_forward.h"
+#include "common/serialization/serializer_forward.h"
 
 namespace phenyl::component {
     class World;

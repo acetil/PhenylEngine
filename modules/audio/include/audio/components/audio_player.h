@@ -1,7 +1,7 @@
 #pragma once
 
 #include "audio/audio_source.h"
-#include "common/serializer_impl.h"
+#include "common/serialization/serializer_impl.h"
 
 namespace phenyl::audio {
     class AudioPlayer {

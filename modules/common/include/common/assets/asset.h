@@ -7,7 +7,7 @@
 #include "logging/logging.h"
 #include "util/meta.h"
 #include "forward.h"
-#include "common/serializer.h"
+#include "common/serialization/serializer.h"
 
 namespace phenyl::common {
     namespace detail {

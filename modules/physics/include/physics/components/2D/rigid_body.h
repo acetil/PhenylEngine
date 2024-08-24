@@ -2,7 +2,7 @@
 
 #include "graphics/maths_headers.h"
 #include "physics/physics.h"
-#include "common/serializer_impl.h"
+#include "common/serialization/serializer_impl.h"
 
 namespace phenyl::common {
     class GlobalTransform2D;

@@ -1,4 +1,4 @@
-#include "common/serializer_impl.h"
+#include "common/serialization/serializer_impl.h"
 
 #include "physics/components/2D/colliders/box_collider.h"
 #include "physics/2d/collisions_2d.h"

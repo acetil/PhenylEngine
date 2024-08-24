@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/serializer_forward.h"
+#include "common/serialization/serializer_forward.h"
 #include "graphics/maths_headers.h"
 #include "util/data.h"
 
