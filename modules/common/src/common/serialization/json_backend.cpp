@@ -163,6 +163,39 @@ private:
         }
     };
 
+    class Struct : public IStructDeserializer {
+    private:
+        using ObjectType = nlohmann::json::object_t;
+        const ObjectType& jsonObj;
+        std::span<const std::string> members;
+        std::span<const std::string>::iterator memberIt;
+
+        void advanceToNext () {
+            while (memberIt != members.end() && !jsonObj.contains(*memberIt)) {
+                ++memberIt;
+            }
+        }
+    public:
+        Struct (const ObjectType& obj, std::span<const std::string> members) : jsonObj{obj}, members{members}, memberIt{members.begin()} {
+            advanceToNext();
+        }
+
+        bool isNext (std::string_view member) override {
+            return memberIt != members.end() && member == *memberIt;
+        }
+
+        void next (ISerializableBase& serializable, std::byte* obj) override {
+            PHENYL_DASSERT(memberIt != members.end());
+            const auto& jsonMember = jsonObj.at(*memberIt);
+
+            JsonDeserializer deserializer{jsonMember};
+            serializable.deserialize(deserializer, obj);
+
+            ++memberIt;
+            advanceToNext();
+        }
+    };
+
     const nlohmann::json& json;
 
     template <std::integral T>
@@ -274,6 +307,15 @@ public:
         if (json.is_object()) {
             Object obj{*json.get<const nlohmann::json::object_t*>()};
             serializable.deserializeObject(ptr, obj);
+        } else {
+            throw JsonException(std::format("Failed to deserialize json: expected object, got {}", json.type_name()));
+        }
+    }
+
+    void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members, std::byte* ptr) override {
+        if (json.is_object()) {
+            Struct obj{*json.get<const nlohmann::json::object_t*>(), members};
+            serializable.deserializeStruct(ptr, obj);
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected object, got {}", json.type_name()));
         }

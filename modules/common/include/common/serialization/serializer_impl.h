@@ -184,6 +184,7 @@ namespace phenyl::common::detail {
 
         virtual void serialize (IObjectSerializer& serializer, const T* obj) = 0;
         virtual void deserialize (IObjectDeserializer& deserializer, T* obj) = 0;
+        virtual bool deserialize (IStructDeserializer& deserializer, T* obj) = 0;
     };
 
     template <typename T, SerializableType M>
@@ -204,6 +205,10 @@ namespace phenyl::common::detail {
 
         void deserialize (IObjectDeserializer& deserializer, T* obj) override {
             obj->*member = deserializer.nextValue<M>();
+        }
+
+        bool deserialize (IStructDeserializer& deserializer, T* obj) override {
+            return deserializer.next(name, obj->*member);
         }
     };
 
@@ -227,6 +232,16 @@ namespace phenyl::common::detail {
         void deserialize (IObjectDeserializer& deserializer, T* obj) override {
             std::invoke(setter, obj, deserializer.nextValue<M>());
         }
+
+        bool deserialize (IStructDeserializer& deserializer, T* obj) override {
+            std::optional<M> valOpt = deserializer.next<M>(name);
+            if (valOpt) {
+                std::invoke(setter, obj, std::move(*valOpt));
+                return true;
+            } else {
+                return false;
+            }
+        }
     };
 
     template <typename T, SerializableType B> requires std::derived_from<T, B>
@@ -247,25 +262,34 @@ namespace phenyl::common::detail {
         void deserialize (IObjectDeserializer& deserializer, T* obj) override {
             deserializer.nextValue(*static_cast<B*>(obj));
         }
+
+        bool deserialize (IStructDeserializer& deserializer, T* obj) override {
+            return deserializer.next(name, *static_cast<B*>(obj));
+        }
     };
 
     template <typename T>
     class ClassSerializable : public ISerializable<T> {
     private:
         std::string_view className;
-        std::unordered_map<std::string_view, std::unique_ptr<IMemberSerializable<T>>> members;
+        //std::unordered_map<std::string_view, std::unique_ptr<IMemberSerializable<T>>> members;
+        std::vector<std::unique_ptr<IMemberSerializable<T>>> members;
+        std::vector<std::string> memberNames;
 
         template <typename ...Args>
         void addAll (std::unique_ptr<Args>... args) {
+            members.reserve(sizeof...(Args));
             ([&] {
-                std::string_view name = args->getKey();
-                members.emplace(name, std::move(args));
+                members.emplace_back(std::move(args));
             } (), ...);
         }
     public:
         template <typename ...Args>
         explicit ClassSerializable (std::string_view className, std::unique_ptr<Args>... args) : className{className} {
             addAll(std::move(args)...);
+            for (auto& member : members) {
+                memberNames.emplace_back(std::string{member->getKey()});
+            }
         }
 
         [[nodiscard]] std::string_view name () const noexcept override {
@@ -275,17 +299,21 @@ namespace phenyl::common::detail {
         void serialize (ISerializer& serializer, const T& obj) override {
             IObjectSerializer& objSerializer = serializer.serializeObj();
 
-            for (auto& [_, member] : members) {
+            /*for (auto& [_, member] : members) {
+                member->serialize(objSerializer, &obj);
+            }*/
+            for (auto& member : members) {
                 member->serialize(objSerializer, &obj);
             }
             objSerializer.end();
         }
 
         void deserialize (IDeserializer& deserializer, T& obj) override {
-            deserializer.deserializeObject(*this, obj);
+            //deserializer.deserializeObject(*this, obj);
+            deserializer.deserializeStruct(*this, std::span{memberNames}, obj);
         }
 
-        void deserializeObject (T& obj, IObjectDeserializer& deserializer) override {
+        /*void deserializeObject (T& obj, IObjectDeserializer& deserializer) override {
             std::size_t deserializedMembers = 0;
             while (deserializer.hasNext()) {
                 auto key = deserializer.nextKey();
@@ -301,6 +329,14 @@ namespace phenyl::common::detail {
 
             if (deserializedMembers != members.size()) {
                 throw DeserializeException(std::format("Failed to deserialize all members of class {}", className));
+            }
+        }*/
+
+        void deserializeStruct (T& obj, IStructDeserializer& deserializer) override {
+            for (auto& member : members) {
+                if (!member->deserialize(deserializer, &obj)) {
+                    throw DeserializeException(std::format("Failed to deserialize member \"{}\" of class {}", member->getKey(), name()));
+                }
             }
         }
     };

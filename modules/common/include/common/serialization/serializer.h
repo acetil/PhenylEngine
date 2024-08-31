@@ -31,6 +31,7 @@ namespace phenyl::common {
     class IArraySerializer;
 
     class IDeserializer;
+    class IStructDeserializer;
     class IObjectDeserializer;
     class IArrayDeserializer;
 
@@ -63,6 +64,7 @@ namespace phenyl::common {
 
         virtual void deserializeArray (std::byte* ptr, IArrayDeserializer& deserializer) = 0;
         virtual void deserializeObject (std::byte* ptr, IObjectDeserializer& deserializer) = 0;
+        virtual void deserializeStruct (std::byte* ptr, IStructDeserializer& deserializer) = 0;
     };
 
     template <typename T>
@@ -141,6 +143,11 @@ namespace phenyl::common {
             deserializeObject(*reinterpret_cast<T*>(ptr), deserializer);
         }
 
+        void deserializeStruct (std::byte* ptr, IStructDeserializer& deserializer) override {
+            PHENYL_DASSERT(ptr);
+            deserializeStruct(*reinterpret_cast<T*>(ptr), deserializer);
+        }
+
         friend class ISerializer;
         friend class IObjectSerializer;
         friend class IArraySerializer;
@@ -164,7 +171,7 @@ namespace phenyl::common {
         virtual void deserialize (IDeserializer& deserializer, T& obj) = 0;
 
         virtual void deserializeBool (T& obj, bool val) {
-            throw DeserializeException("Attempted to deserialize bool to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize bool to type {} that doesn't support it!", name()));
         }
 
         virtual void deserializeInt8 (T& obj, std::int8_t val) {
@@ -177,7 +184,7 @@ namespace phenyl::common {
             deserializeInt64(obj, val);
         }
         virtual void deserializeInt64 (T& obj, std::int64_t val) {
-            throw DeserializeException("Attempted to deserialize int64 to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize int64 to type {} that doesn't support it!", name()));
         }
 
         virtual void deserializeUint8 (T& obj, std::uint8_t val) {
@@ -190,25 +197,28 @@ namespace phenyl::common {
             deserializeUint64(obj, val);
         }
         virtual void deserializeUint64 (T& obj, std::uint64_t val) {
-            throw DeserializeException("Attempted to deserialize uint64 to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize uint64 to type {} that doesn't support it!", name()));
         }
 
         virtual void deserializeFloat (T& obj, float val) {
             deserializeDouble(obj, static_cast<double>(val));
         }
         virtual void deserializeDouble (T& obj, double val) {
-            throw DeserializeException("Attempted to deserialize double to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize double to type {} that doesn't support it!", name()));
         }
 
         virtual void deserializeString (T& obj, std::string_view val) {
-            throw DeserializeException("Attempted to deserialize string to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize string to type {} that doesn't support it!", name()));
         }
 
         virtual void deserializeArray (T& obj, IArrayDeserializer& deserializer) {
-            throw DeserializeException("Attempted to deserialize array to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize array to type {} that doesn't support it!", name()));
         }
         virtual void deserializeObject (T& obj, IObjectDeserializer& deserializer) {
-            throw DeserializeException("Attempted to deserialize object to type that doesn't support it!");
+            throw DeserializeException(std::format("Attempted to deserialize object to type {} that doesn't support it!", name()));
+        }
+        virtual void deserializeStruct (T& obj, IStructDeserializer& deserializer) {
+            throw DeserializeException(std::format("Attempted to deserialize struct to type {} that doesn't support it!", name()));
         }
     };
 
@@ -318,6 +328,7 @@ namespace phenyl::common {
 
         virtual void deserializeObject (ISerializableBase& serializable, std::byte* ptr) = 0;
         virtual void deserializeArray (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members, std::byte* ptr) = 0;
 
         virtual void deserializeInfer (ISerializableBase& serializable, std::byte* ptr) = 0;
     public:
@@ -383,6 +394,11 @@ namespace phenyl::common {
         template <typename T>
         void deserializeArray (ISerializable<T>& serializable, T& obj) {
             deserializeArray(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        template <typename T>
+        void deserializeStruct (ISerializable<T>& serializable, std::span<const std::string> members, T& obj) {
+            deserializeStruct(serializable, members, reinterpret_cast<std::byte*>(&obj));
         }
 
         template <typename T>
@@ -460,5 +476,41 @@ namespace phenyl::common {
         }
 
         virtual void ignoreNextValue () = 0;
+    };
+
+    class IStructDeserializer {
+    protected:
+        virtual void next (ISerializableBase& serializable, std::byte* obj) = 0;
+    public:
+        virtual ~IStructDeserializer() = default;
+
+        virtual bool isNext (std::string_view member) = 0;
+
+        template <SerializableType T>
+        std::optional<T> next (std::string_view member) {
+            if (!isNext(member)) {
+                return std::nullopt;
+            }
+
+            auto& serializable = detail::GetSerializable<T>();
+            T obj{serializable.make()};
+            next(serializable, reinterpret_cast<std::byte*>(&obj));
+            return obj;
+        }
+
+        template <typename T>
+        bool next (std::string_view member, ISerializable<T>& serializable, T& obj) {
+            if (!isNext(member)) {
+                return false;
+            }
+
+            next(serializable, reinterpret_cast<std::byte*>(&obj));
+            return true;
+        }
+
+        template <SerializableType T>
+        bool next (std::string_view member, T& obj) {
+            return next(member, detail::GetSerializable<T>(), obj);
+        }
     };
 }

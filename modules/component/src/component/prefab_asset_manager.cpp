@@ -15,6 +15,8 @@ static Logger LOGGER{"PREFAB_ASSET_MANAGER", component::detail::COMPONENT_LOGGER
 
 class PrefabSerializable : public common::ISerializable<component::Prefab> {
 private:
+    static constexpr std::string MEMBERS[] = {"children", "components"};
+
     component::World& world;
     component::EntityComponentSerializer& compSerializer;
 
@@ -56,47 +58,22 @@ public:
     }
 
     void deserialize (common::IDeserializer& deserializer, component::Prefab& obj) override {
-        deserializer.deserializeObject(*this, obj);
+        deserializer.deserializeStruct(*this, MEMBERS, obj);
     }
 
-    void deserializeObject (component::Prefab& obj, common::IObjectDeserializer& deserializer) override {
+    void deserializeStruct (component::Prefab& obj, common::IStructDeserializer& deserializer) override {
         auto builder = world.buildPrefab();
 
-        while (deserializer.hasNext()) {
-            auto key = deserializer.nextKey();
-            if (key == "children") {
-                ChildrenSerializable serializable{*this};
-                deserializer.nextValue(serializable, builder);
-            } else if (key == "components") {
-                auto serializable = compSerializer.prefab();
-                deserializer.nextValue(serializable, builder);
-            } else {
-                PHENYL_LOGE(LOGGER, "Unexpected key in prefab deserialization: \"{}\"", key);
-                deserializer.ignoreNextValue();
-            }
-        }
+        ChildrenSerializable childrenSerializable{*this};
+        deserializer.next("children", childrenSerializable, builder);
+        auto compSerializable = compSerializer.prefab();
+        deserializer.next("components", compSerializable, builder);
 
         obj = builder.build();
     }
 };
 
 component::Prefab* component::PrefabAssetManager::load (std::ifstream& data, std::size_t id) {
-    /*PHENYL_DASSERT(!prefabs.contains(id));
-    nlohmann::json json;
-    data >> json;
-
-    if (!json.is_object()) {
-        PHENYL_LOGE(LOGGER, "Expected object for prefab, got {}!", json.type_name());
-        return nullptr;
-    }
-
-    if (!json.contains("components")) {
-        PHENYL_LOGE(LOGGER, "Failed to find components member of prefab!");
-        return nullptr;
-    }
-
-    auto builder = world.buildPrefab();
-    serializer.deserializePrefab(builder, json.at("components"));*/
     PrefabSerializable serializable{world, serializer};
 
     auto prefab = std::make_unique<Prefab>();

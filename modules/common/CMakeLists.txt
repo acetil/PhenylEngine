@@ -41,5 +41,5 @@ target_include_directories(common PRIVATE src)
 
 #target_link_libraries(common PRIVATE logger maths eventbus)
 #target_link_libraries(common PUBLIC util)
-target_link_libraries(common PUBLIC maths util runtime nlohmann_json::nlohmann_json)
-target_link_libraries(common PRIVATE logger graphics component)
+target_link_libraries(common PUBLIC maths util runtime)
+target_link_libraries(common PRIVATE logger graphics component nlohmann_json::nlohmann_json)

@@ -16,6 +16,8 @@ static phenyl::Logger LOGGER{"LEVEL_MANAGER"};
 
 class LevelEntitySerializable : public phenyl::common::ISerializable<phenyl::component::Entity> {
 private:
+    static constexpr std::string MEMBERS[] = {"components", "children", "prefab"};
+
     phenyl::component::EntityComponentSerializer& compSerializer;
 
     class ChildrenSerializable : public phenyl::common::ISerializable<phenyl::component::Entity> {
@@ -64,30 +66,20 @@ public:
     }
 
     void deserialize (phenyl::common::IDeserializer& deserializer, phenyl::component::Entity& obj) override {
-        deserializer.deserializeObject(*this, obj);
+        deserializer.deserializeStruct(*this, MEMBERS, obj);
     }
 
-    void deserializeObject (phenyl::component::Entity& obj, phenyl::common::IObjectDeserializer& deserializer) override {
-        phenyl::common::Asset<phenyl::component::Prefab> prefab{};
-
-        while (deserializer.hasNext()) {
-            auto key = deserializer.nextKey();
-            if (key == "prefab") {
-                prefab = phenyl::common::Assets::Load<phenyl::component::Prefab>(deserializer.nextValue<std::string>());
-            } else if (key == "components") {
-                auto serializable = compSerializer.entity();
-                deserializer.nextValue(serializable, obj);
-            } else if (key == "children") {
-                ChildrenSerializable serializable{*this};
-                deserializer.nextValue(serializable, obj);
-            } else {
-                PHENYL_LOGE(LOGGER, "Encountered unexpected member of level entity: {}", key);
-                deserializer.ignoreNextValue();
-            }
+    void deserializeStruct(phenyl::component::Entity& obj, phenyl::common::IStructDeserializer& deserializer) override {
+        auto entitySerializable = compSerializer.entity();
+        if (!deserializer.next("components", entitySerializable, obj)) {
+            throw phenyl::DeserializeException("Failed to deserialize entity components");
         }
 
-        if (prefab) {
-            prefab->instantiate(obj);
+        ChildrenSerializable serializable{*this};
+        deserializer.next("children", serializable, obj);
+
+        if (auto prefabOpt = deserializer.next<phenyl::common::Asset<phenyl::component::Prefab>>("prefab")) {
+            (*prefabOpt)->instantiate(obj);
         }
     }
 };
@@ -96,6 +88,8 @@ struct LevelMarker {};
 
 class LevelSerializable : public phenyl::common::ISerializable<LevelMarker> {
 private:
+    static constexpr std::string MEMBERS[] = {"entities"};
+
     class EntitiesSerializable : public phenyl::common::ISerializable<LevelMarker> {
     private:
         phenyl::component::World& world;
@@ -140,59 +134,20 @@ public:
     }
 
     void deserialize (phenyl::common::IDeserializer& deserializer, LevelMarker& obj) override {
-        deserializer.deserializeObject(*this, obj);
+        deserializer.deserializeStruct(*this, MEMBERS, obj);
     }
 
-    void deserializeObject(LevelMarker& obj, phenyl::common::IObjectDeserializer& deserializer) override {
-        while (deserializer.hasNext()) {
-            auto key = deserializer.nextKey();
-            if (key == "entities") {
-                deserializer.nextValue(entitiesSerializable, obj);
-            } else {
-                PHENYL_LOGE(LOGGER, "Unexpected member in serialized level: {}", key);
-                deserializer.ignoreNextValue();
-            }
+    void deserializeStruct (LevelMarker& obj, phenyl::common::IStructDeserializer& deserializer) override {
+        if (!deserializer.next("entities", entitiesSerializable, obj)) {
+            throw phenyl::DeserializeException("Failed to deserialize entities in level!");
         }
     }
 };
-
-namespace {
-    std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities);
-}
 
 LevelManager::LevelManager (component::World& world, component::EntityComponentSerializer& serializer) : world{world}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::ifstream& data, std::size_t id) {
-    /*PHENYL_LOGI(LOGGER, "Loading level with id={}", id);
-    PHENYL_ASSERT(!levels.contains(id));
-    nlohmann::json json;
-    data >> json;
-
-    PHENYL_TRACE(LOGGER, "Level json: {}", json.dump(4));
-
-    if (!json.contains("entities")) {
-        PHENYL_LOGE(LOGGER, "Failed to find \"entities\" field in level!");
-        return nullptr;
-    }
-
-    auto& entitiesJson = json.at("entities");
-    if (!entitiesJson.is_array()) {
-        PHENYL_LOGE(LOGGER, "Expected array for entities, got {}!", entitiesJson.type_name());
-        return nullptr;
-    }
-
-    std::vector<detail::LevelEntity> entities;
-    entities.reserve(entitiesJson.size());
-
-    for (const auto& i : entitiesJson.get<nlohmann::json::array_t>()) {
-        if (!parseEntity(i, entities)) {
-            PHENYL_LOGE(LOGGER, "Failed to parse entity");
-
-            return nullptr;
-        }
-    }*/
-
     levels[id] = std::make_unique<Level>(Level{std::move(data), world, serializer});
 
     return levels[id].get();
@@ -242,9 +197,10 @@ void Level::load (bool additive) {
 
     world.deferSignals();
 
-    LevelSerializable serializable{world, serializer};
     file.seekg(startPos);
+    LevelSerializable serializable{world, serializer};
     LevelMarker marker{};
     common::DeserializeFromJson(file, serializable, marker);
+
     world.deferSignalsEnd();
 }
