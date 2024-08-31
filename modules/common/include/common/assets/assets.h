@@ -275,4 +275,35 @@ namespace phenyl::common {
             GetInstance()->removeManager(manager);
         }
     };
+
+    namespace detail {
+        template <typename T>
+        class AssetSerializable : public common::ISerializable<Asset<T>> {
+        public:
+            std::string_view name () const noexcept override {
+                return "Asset";
+            }
+
+            void serialize (ISerializer& serializer, const Asset<T>& obj) override {
+                serializer.serialize(obj.id());
+            }
+
+            void deserialize (IDeserializer& deserializer, Asset<T>& obj) override {
+                deserializer.deserializeString(*this, obj);
+            }
+
+            void deserializeString (Asset<T>& obj, std::string_view string) override {
+                obj = Assets::Load<T>(std::string{string}); // TODO
+                if (!obj) {
+                    throw DeserializeException(std::format("Failed to load asset at \"{}\"", string));
+                }
+            }
+        };
+    }
+
+    template <typename T>
+    ISerializable<Asset<T>>& phenyl_GetSerializable (detail::SerializableMarker<Asset<T>>) {
+        static detail::AssetSerializable<T> serializable;
+        return serializable;
+    }
 }

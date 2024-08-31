@@ -13,7 +13,7 @@
 
 namespace phenyl::component {
     class World;
-    class EntitySerializer;
+    class EntityComponentSerializer;
 }
 
 namespace phenyl::audio {
@@ -66,7 +66,7 @@ namespace phenyl::audio {
         explicit AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources=32);
         ~AudioSystem() override;
 
-        AudioSample* load (std::istream &data, std::size_t id) override;
+        AudioSample* load (std::ifstream &data, std::size_t id) override;
         AudioSample* load (phenyl::audio::AudioSample &&obj, std::size_t id) override;
         void queueUnload(std::size_t id) override;
         [[nodiscard]] const char* getFileType() const override;
@@ -76,7 +76,7 @@ namespace phenyl::audio {
         AudioSource createSource ();
 
         void selfRegister ();
-        void addComponents (component::World& world, component::EntitySerializer& serializer);
+        void addComponents (component::World& world, component::EntityComponentSerializer& serializer);
 
         void playSample (AudioSource& source, const AudioSample& sample);
 

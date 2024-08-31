@@ -1,7 +1,15 @@
+#include "common/serialization/serializer_impl.h"
+
 #include "physics/components/2D/colliders/box_collider.h"
 #include "physics/2d/collisions_2d.h"
 
 using namespace phenyl;
+
+namespace phenyl::physics {
+    PHENYL_SERIALIZABLE(BoxCollider2D,
+        PHENYL_SERIALIZABLE_INHERITS_NAMED(Collider2D, "Collider2D"),
+        PHENYL_SERIALIZABLE_MEMBER(scale))
+}
 
 static float calculateRadius (glm::mat2 scaleMatrix) {
     auto vec = scaleMatrix * glm::vec2{1, 1};

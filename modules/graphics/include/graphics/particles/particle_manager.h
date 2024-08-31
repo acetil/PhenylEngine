@@ -14,7 +14,7 @@ namespace phenyl::graphics {
     protected:
         [[nodiscard]] const char* getFileType () const override;
 
-        ParticleSystem2D* load (std::istream& data, std::size_t id) override;
+        ParticleSystem2D* load (std::ifstream& data, std::size_t id) override;
         ParticleSystem2D* load (phenyl::graphics::ParticleSystem2D&& obj, std::size_t id) override;
         void queueUnload (std::size_t id) override;
     public:

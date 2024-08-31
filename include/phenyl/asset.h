@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/assets/assets.h"
-#include "common/assets/asset_serializer.h"
 
 namespace phenyl {
     template <typename T>

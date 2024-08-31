@@ -1,8 +1,9 @@
 #pragma once
 
+#include <fstream>
 #include <vector>
 
-#include "component/forward.h"
+#include "component/component_serializer.h"
 
 namespace phenyl::game {
     namespace detail {
@@ -13,13 +14,13 @@ namespace phenyl::game {
 
     class Level {
     private:
-        std::vector<detail::LevelEntity> entities;
-        component::World* world;
-        component::EntitySerializer* serializer;
+        //std::vector<detail::LevelEntity> entities;
+        std::ifstream file;
+        std::ifstream::pos_type startPos;
+        component::World& world;
+        component::EntityComponentSerializer& serializer;
 
-        Level (component::World* world, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities);
-
-        component::Entity loadEntity (std::size_t index);
+        Level (std::ifstream file, component::World& world, component::EntityComponentSerializer& serializer);
         friend LevelManager;
     public:
         void load (bool additive=false);

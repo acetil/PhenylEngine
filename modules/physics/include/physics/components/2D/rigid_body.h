@@ -2,7 +2,7 @@
 
 #include "graphics/maths_headers.h"
 #include "physics/physics.h"
-#include "common/serializer_intrusive.h"
+#include "common/serialization/serializer_impl.h"
 
 namespace phenyl::common {
     class GlobalTransform2D;
@@ -23,7 +23,7 @@ namespace phenyl::physics {
 
         void applyFriction ();
 
-        PHENYL_SERIALIZE_INTRUSIVE(RigidBody2D);
+        PHENYL_SERIALIZABLE_INTRUSIVE(RigidBody2D);
     public:
         glm::vec2 gravity{0, 0};
 

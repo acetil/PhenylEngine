@@ -17,6 +17,28 @@
 namespace phenyl::component {
     class World : private detail::IArchetypeManager {
     private:
+        class EntityIterator {
+        private:
+            World* world = nullptr;;
+            detail::EntityIdList::const_iterator it;
+
+        public:
+            using value_type = Entity;
+
+            EntityIterator () = default;
+            explicit EntityIterator (World* world, detail::EntityIdList::const_iterator it) : world{world}, it{it} {}
+
+            value_type operator* () const;
+
+            EntityIterator& operator++ ();
+            EntityIterator operator++ (int);
+
+            EntityIterator& operator-- ();
+            EntityIterator operator-- (int);
+
+            bool operator== (const EntityIterator&) const;
+        };
+
         std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> components;
 
         detail::EntityIdList idList;
@@ -67,6 +89,8 @@ namespace phenyl::component {
         friend ChildrenView;
         friend PrefabManager;
     public:
+        using iterator = EntityIterator;
+
         static constexpr std::size_t DEFAULT_CAPACITY = 256;
 
         explicit World (std::size_t capacity=DEFAULT_CAPACITY);
@@ -163,5 +187,8 @@ namespace phenyl::component {
         void deferSignalsEnd ();
 
         PrefabBuilder buildPrefab ();
+
+        iterator begin ();
+        iterator end ();
     };
 }

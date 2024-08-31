@@ -3,13 +3,20 @@
 #include <exception>
 #include <memory>
 
-namespace phenyl::util {
-    class InitException : std::runtime_error {
+#ifndef NDEBUG
+#include <cpptrace/cpptrace.hpp>
+#endif
+
+namespace phenyl {
+#ifndef NDEBUG
+    class PhenylException : public cpptrace::exception_with_message {
     public:
-        explicit InitException (const std::string& error) noexcept :
-            std::runtime_error("Initialisation exception: " + error) {};
-        const char* getMsg () {
-            return what();
-        }
+        explicit PhenylException (std::string message) : cpptrace::exception_with_message{std::move(message)} {}
     };
+#else
+    class PhenylException : public std::runtime_error {
+    public:
+        explicit PhenylException (std::string message) : std::runtime_error{message} {}
+    };
+#endif
 }

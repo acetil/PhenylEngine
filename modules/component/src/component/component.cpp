@@ -174,6 +174,14 @@ PrefabBuilder World::buildPrefab () {
     return prefabManager->makeBuilder();
 }
 
+World::iterator World::begin () {
+    return iterator{this, idList.cbegin()};
+}
+
+World::iterator World::end () {
+    return iterator{this, idList.cend()};
+}
+
 void World::completeCreation(EntityId id, EntityId parent) {
     relationships.add(id, parent);
 
@@ -325,4 +333,36 @@ void World::cleanupQueryArchetypes () {
     std::erase_if(queryArchetypes, [] (const auto& x) {
         return x.expired();
     });
+}
+
+World::EntityIterator::value_type World::EntityIterator::operator* () const {
+    PHENYL_DASSERT(world);
+    return world->entity(*it);
+}
+
+World::EntityIterator& World::EntityIterator::operator++ () {
+    ++it;
+    return *this;
+}
+
+
+World::EntityIterator World::EntityIterator::operator++ (int) {
+    auto copy = *this;
+    ++*this;
+    return copy;
+}
+
+World::EntityIterator& World::EntityIterator::operator-- () {
+    --it;
+    return *this;
+}
+
+World::EntityIterator World::EntityIterator::operator-- (int) {
+    auto copy = *this;
+    --*this;
+    return copy;
+}
+
+bool World::EntityIterator::operator== (const EntityIterator& other) const {
+    return it == other.it;
 }

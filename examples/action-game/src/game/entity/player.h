@@ -7,6 +7,7 @@
 #include <phenyl/input.h>
 #include <phenyl/prefab.h>
 #include <phenyl/runtime.h>
+#include <phenyl/serialization.h>
 
 namespace test {
     class TestApp;
@@ -17,6 +18,8 @@ namespace test {
         bool hasShot{false};
         bool gainPressed{false};
     };
+
+    PHENYL_DECLARE_SERIALIZABLE(Player)
 }
 
 void InitPlayer (test::TestApp* app);

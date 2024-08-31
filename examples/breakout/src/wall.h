@@ -12,11 +12,7 @@ namespace breakout {
         phenyl::Asset<phenyl::Prefab> emitter;
         phenyl::Asset<phenyl::AudioSample> bounceSample;
     };
-
-    PHENYL_SERIALIZE(Wall, {
-        PHENYL_MEMBER(emitter);
-        PHENYL_MEMBER_NAMED(bounceSample, "bounce_sample");
-    })
+    PHENYL_DECLARE_SERIALIZABLE(Wall)
 
     void InitWall (BreakoutApp* app, phenyl::World& world);
 }

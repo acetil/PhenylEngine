@@ -32,7 +32,7 @@ namespace phenyl::graphics {
     private:
         util::Map<std::size_t, std::unique_ptr<ui::Theme>> themes;
     public:
-        ui::Theme* load(std::istream &data, std::size_t id) override;
+        ui::Theme* load(std::ifstream &data, std::size_t id) override;
         ui::Theme* load(phenyl::graphics::ui::Theme&& obj, std::size_t id) override;
 
         [[nodiscard]] const char* getFileType() const override;

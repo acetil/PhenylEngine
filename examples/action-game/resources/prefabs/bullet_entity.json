@@ -5,52 +5,34 @@
     },
     "GlobalTransform2D": {
       "transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "scale": {
-          "x": 0.03,
-          "y": 0.03
-        },
+        "position": [0.0, 0.0],
+        "scale": [0.03, 0.03],
         "rotation": 0.0
       }
     },
     "RigidBody2D": {
-      "momentum": {
-        "x": 0.0,
-        "y": 0.0
-      },
-      "angular_momentum" : 0,
+      "momentum": [
+        0.0,
+        0.0
+      ],
+      "angular_momentum": 0,
       "inertial_moment": 0,
       "drag": 0,
-      "mass" : 1,
+      "mass": 1,
       "angular_drag": 0,
-      "gravity": {
-        "x": 0.0,
-        "y": 0.0
-      }
+      "gravity": [
+        0.0,
+        0.0
+      ]
     },
+
     "BoxCollider2D": {
       "Collider2D": {
-        "layers": 1,
-        "mask": 3,
+        "layers": 4,
+        "mask": 2,
         "elasticity": 1.0
       },
-      "scale_matrix": [
-        {
-          "x": 0.03,
-          "y": 0.0
-        },
-        {
-          "x": 0.0,
-          "y": 0.03
-        }
-      ],
-      "scale" : {
-        "x" : 0.03,
-        "y" : 0.03
-      }
+      "scale" : [0.03, 0.03]
     },
     "Sprite2D": {
       "texture" : "resources/images/test/bullet2.png"

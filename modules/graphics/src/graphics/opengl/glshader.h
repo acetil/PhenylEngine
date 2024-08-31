@@ -57,7 +57,7 @@ namespace phenyl::graphics {
         std::unordered_map<std::size_t, Shader> shaders;
     public:
         const char* getFileType() const override;
-        Shader* load (std::istream& data, std::size_t id) override;
+        Shader* load (std::ifstream& data, std::size_t id) override;
         Shader* load (Shader&& obj, std::size_t id) override;
         void queueUnload(std::size_t id) override;
 

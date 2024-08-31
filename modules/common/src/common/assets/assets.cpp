@@ -1,7 +1,6 @@
 #include "common/assets/asset.h"
 #include "common/assets/assets.h"
 #include "common/assets/asset_manager.h"
-#include "common/assets/asset_serializer.h"
 
 using namespace phenyl::common;
 

@@ -1,12 +1,23 @@
+#include "common/assets/assets.h"
 #include "common/components/2d/global_transform.h"
 
 #include "graphics/components/2d/particle_emitter.h"
 #include "graphics/particles/particle_system_2d.h"
-#include "graphics/components/2d/particle_emitter_serialization.h"
+#include "common/serialization/serializer_impl.h"
 #include "runtime/runtime.h"
 
 using namespace phenyl::graphics;
 
+namespace phenyl::graphics {
+    PHENYL_SERIALIZABLE(ParticleEmitter2D,
+        PHENYL_SERIALIZABLE_MEMBER(system),
+        PHENYL_SERIALIZABLE_MEMBER(direction),
+        PHENYL_SERIALIZABLE_MEMBER(duration),
+        PHENYL_SERIALIZABLE_MEMBER(explosiveness),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(particlesPerLoop, "num_particles"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(oneShot, "one_shot"),
+        PHENYL_SERIALIZABLE_MEMBER(enabled))
+}
 
 void ParticleEmitter2D::update (const runtime::Resources<const runtime::DeltaTime>& resources, const common::GlobalTransform2D& transform) {
     updateInternal(resources.get<const runtime::DeltaTime>()(), transform);

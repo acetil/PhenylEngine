@@ -2,14 +2,8 @@
   "components" : {
     "GlobalTransform2D" : {
       "transform": {
-        "position": {
-          "x": 0.7,
-          "y": -0.9
-        },
-        "scale": {
-          "x": 0.189453125,
-          "y": 0.05
-        },
+        "position": [0.7, -0.9],
+        "scale" : [0.189453125, 0.05],
         "rotation": 0.0
       }
     },
@@ -17,14 +11,8 @@
       "texture" : "resources/images/paddle.png"
     },
     "RigidBody2D" : {
-      "momentum": {
-        "x": 0.0,
-        "y": 0.0
-      },
-      "gravity": {
-        "x": 0.0,
-        "y": 0.0
-      },
+      "momentum": [0.0, 0.0],
+      "gravity": [0.0, 0.0],
       "mass": 1.0,
       "inertial_moment": 0.0,
       "drag": 0,
@@ -37,10 +25,7 @@
         "mask": 1,
         "elasticity": 1.0
       },
-      "scale" : {
-        "x" : 0.189453125,
-        "y" : 0.05
-      }
+      "scale" : [0.189453125, 0.05]
     },
     "Paddle" : {
       "has_ball" : true,

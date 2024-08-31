@@ -1,8 +1,8 @@
-#include "physics/components/2D/collider.h"
-#include "util/optional.h"
-#include "common/serializer_intrusive.h"
-
 #pragma once
+
+#include "physics/components/2D/collider.h"
+#include "common/serialization/serializer_forward.h"
+#include "util/optional.h"
 
 namespace phenyl::physics {
     class SATResult2D;
@@ -12,10 +12,8 @@ namespace phenyl::physics {
         glm::vec2 scale;
         glm::mat2 frameTransform;
 
-
         friend class Physics2D;
-
-        PHENYL_SERIALIZE_INTRUSIVE(BoxCollider2D)
+        PHENYL_SERIALIZABLE_INTRUSIVE(BoxCollider2D)
     public:
         util::Optional<SATResult2D> collide (const BoxCollider2D& other);
         Face2D getSignificantFace (glm::vec2 normal);
@@ -29,4 +27,6 @@ namespace phenyl::physics {
             scale = newScale;
         }
     };
+
+    PHENYL_DECLARE_SERIALIZABLE(BoxCollider2D)
 }

@@ -7,16 +7,18 @@
 #include "forward.h"
 
 namespace phenyl::component {
+    class EntityComponentSerializer;
+
     class PrefabAssetManager : public common::AssetManager<Prefab> {
     private:
         util::Map<std::size_t, std::unique_ptr<Prefab>> prefabs;
-        EntitySerializer& serializer;
+        EntityComponentSerializer& serializer;
         World& world;
     public:
-        explicit PrefabAssetManager (World& world, EntitySerializer& serializer) : serializer{serializer}, world{world} {}
+        explicit PrefabAssetManager (World& world, EntityComponentSerializer& serializer) : serializer{serializer}, world{world} {}
         ~PrefabAssetManager() override;
 
-        Prefab* load (std::istream& data, std::size_t id) override;
+        Prefab* load (std::ifstream& data, std::size_t id) override;
         Prefab* load (phenyl::component::Prefab&& obj, std::size_t id) override;
 
         void queueUnload(std::size_t id) override;

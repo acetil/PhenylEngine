@@ -1,6 +1,7 @@
 #include "common/assets/assets.h"
 #include "component/component.h"
 #include "component/component_serializer.h"
+#include "common/serialization/serializer_impl.h"
 
 #include "audio/audio_system.h"
 #include "filetypes/wav.h"
@@ -9,9 +10,7 @@
 #include "audio/detail/loggers.h"
 
 namespace phenyl::audio {
-    PHENYL_SERIALIZE(AudioPlayer, {
-        PHENYL_MEMBER_NAMED(sourceGain, "gain");
-    });
+    PHENYL_SERIALIZABLE(AudioPlayer, PHENYL_SERIALIZABLE_MEMBER_NAMED(sourceGain, "gain"))
 }
 
 using namespace phenyl::audio;
@@ -54,7 +53,7 @@ std::unique_ptr<AudioSystem> phenyl::audio::MakeOpenALSystem () {
     return std::make_unique<AudioSystem>(std::make_unique<OpenALSystem>());
 }
 
-AudioSample* AudioSystem::load (std::istream& data, std::size_t id) {
+AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
     // Assume is wav format
     auto wavOpt = WAVFile::Load(data);
     if (!wavOpt) {
@@ -90,7 +89,7 @@ bool AudioSystem::isBinary () const {
     return true;
 }
 
-void AudioSystem::addComponents (component::World& world, component::EntitySerializer& serializer) {
+void AudioSystem::addComponents (component::World& world, component::EntityComponentSerializer& serializer) {
     world.addComponent<AudioPlayer>("AudioPlayer");
     serializer.addSerializer<AudioPlayer>();
 

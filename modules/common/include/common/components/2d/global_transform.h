@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/maths/2d/transform.h"
+#include "common/serialization/serializer_forward.h"
 
 namespace phenyl::common {
     struct GlobalTransform2D {
@@ -13,4 +14,6 @@ namespace phenyl::common {
         glm::mat2 rotTransform;*/
         common::Transform2D transform2D;
     };
+
+    PHENYL_DECLARE_SERIALIZABLE(GlobalTransform2D)
 }

@@ -1,21 +1,11 @@
 {
-    "dimensions": {
-        "height": 4,
-        "width": 4
-    },
     "entities": [
         {
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": -0.7,
-                            "y": 0.0
-                        },
-                        "scale": {
-                            "x": 0.1,
-                            "y": 0.1
-                        },
+                        "position": [-0.7, 0.0],
+                        "scale": [0.1, 0.1],
                         "rotation": 0.0
                     }
                 }
@@ -26,14 +16,8 @@
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": -0.4,
-                            "y": 0.0
-                        },
-                        "scale": {
-                            "x": 0.08,
-                            "y": 0.5
-                        },
+                        "position": [-0.4, 0.0],
+                        "scale": [0.08, 0.5],
                         "rotation": 0.0
                     }
                 },
@@ -43,20 +27,7 @@
                         "mask": 0,
                         "elasticity": 1.0
                     },
-                    "scale_matrix": [
-                        {
-                            "x": 0.08000000566244125,
-                            "y": 0.0
-                        },
-                        {
-                            "x": 0.0,
-                            "y": 0.5
-                        }
-                    ],
-                    "scale" : {
-                        "x" : 0.08,
-                        "y" : 0.5
-                    }
+                    "scale" : [0.08, 0.5]
                 }
             },
             "prefab" : "resources/prefabs/wall_entity"
@@ -65,14 +36,8 @@
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": 0.4,
-                            "y": 0.0
-                        },
-                        "scale": {
-                            "x": 0.08,
-                            "y": 0.5
-                        },
+                        "position": [0.4, 0.0],
+                        "scale": [0.08, 0.5],
                         "rotation": 0.0
                     }
                 },
@@ -82,20 +47,7 @@
                         "mask": 0,
                         "elasticity": 1.0
                     },
-                    "scale_matrix": [
-                        {
-                            "x": 0.08000000566244125,
-                            "y": 0.0
-                        },
-                        {
-                            "x": 0.0,
-                            "y": 0.5
-                        }
-                    ],
-                    "scale" : {
-                        "x" : 0.08,
-                        "y" : 0.5
-                    }
+                    "scale" : [0.08, 0.5]
                 }
             },
             "prefab" : "resources/prefabs/wall_entity"
@@ -104,14 +56,8 @@
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": 0.0,
-                            "y": -0.5
-                        },
-                        "scale": {
-                            "x": 0.48,
-                            "y": 0.08
-                        },
+                        "position": [0.0, -0.5],
+                        "scale": [0.48, 0.08],
                         "rotation": 0.0
                     }
                 },
@@ -121,20 +67,7 @@
                         "mask": 0,
                         "elasticity": 1.0
                     },
-                    "scale_matrix": [
-                        {
-                            "x": 0.48000001907348633,
-                            "y": 0.0
-                        },
-                        {
-                            "x": 0.0,
-                            "y": 0.08000000566244125
-                        }
-                    ],
-                    "scale" : {
-                        "x" : 0.48,
-                        "y" : 0.08
-                    }
+                    "scale" : [0.48, 0.08]
                 }
             },
             "prefab" : "resources/prefabs/wall_entity"
@@ -143,14 +76,8 @@
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": -0.2,
-                            "y": 0.0
-                        },
-                        "scale": {
-                            "x": 0.1,
-                            "y": 0.1
-                        },
+                        "position": [-0.2, 0.0],
+                        "scale": [0.1, 0.1],
                         "rotation": 0.0
                     }
                 }
@@ -161,14 +88,8 @@
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": -0.2,
-                            "y": 0.5
-                        },
-                        "scale": {
-                            "x": 0.1,
-                            "y": 0.1
-                        },
+                        "position": [-0.2, 0.5],
+                        "scale": [0.1, 0.1],
                         "rotation": 0.0
                     }
                 }
@@ -179,47 +100,13 @@
             "components" : {
                 "GlobalTransform2D": {
                     "transform": {
-                        "position": {
-                            "x": -0.2,
-                            "y": 1
-                        },
-                        "scale": {
-                            "x": 0.1,
-                            "y": 0.1
-                        },
+                        "position": [-0.2, 1],
+                        "scale": [0.1, 0.1],
                         "rotation": 0.0
                     }
                 }
             },
             "prefab" : "resources/prefabs/block_entity"
         }
-    ],
-    "tile_ids": [
-        {
-            "id": 0,
-            "tile": "test_tile2"
-        },
-        {
-            "id": 1,
-            "tile": "test_tile1"
-        }
-    ],
-    "tiles": [
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        1
     ]
 }

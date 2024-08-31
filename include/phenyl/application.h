@@ -42,7 +42,7 @@ namespace phenyl {
             void pause ();
             void resume ();
 
-            template <phenyl::common::CustomSerializable T>
+            template <phenyl::common::SerializableType T>
             void addComponent (std::string name) {
                 runtime().template addComponent<T>(std::move(name));
             };

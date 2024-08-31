@@ -1,7 +1,7 @@
 #pragma once
 
 #include "audio/audio_source.h"
-#include "common/serializer_intrusive.h"
+#include "common/serialization/serializer_impl.h"
 
 namespace phenyl::audio {
     class AudioPlayer {
@@ -9,7 +9,7 @@ namespace phenyl::audio {
         AudioSource source;
         float sourceGain{1.0f};
 
-        PHENYL_SERIALIZE_INTRUSIVE(AudioPlayer)
+        PHENYL_SERIALIZABLE_INTRUSIVE(AudioPlayer)
         friend class AudioSystem;
     public:
         AudioPlayer () = default;

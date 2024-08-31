@@ -3,6 +3,13 @@
 
 using namespace phenyl;
 
+namespace phenyl::physics {
+    PHENYL_SERIALIZABLE(Collider2D,
+        PHENYL_SERIALIZABLE_MEMBER(layers),
+        PHENYL_SERIALIZABLE_MEMBER(mask),
+        PHENYL_SERIALIZABLE_MEMBER(elasticity))
+}
+
 bool physics::Collider2D::shouldCollide (const physics::Collider2D& other) const {
     if (!(layers & other.mask || other.layers & mask)) {
         return false;

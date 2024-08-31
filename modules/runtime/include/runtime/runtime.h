@@ -19,7 +19,7 @@ namespace phenyl::runtime {
     class PhenylRuntime {
     private:
         component::World runtimeWorld;
-        component::EntitySerializer serializationManager;
+        component::EntityComponentSerializer entitySerializer;
 
         ResourceManager resourceManager;
 
@@ -115,8 +115,8 @@ namespace phenyl::runtime {
             return runtimeWorld;
         }
 
-        component::EntitySerializer& serializer () {
-            return serializationManager;
+        component::EntityComponentSerializer& serializer () {
+            return entitySerializer;
         }
 
         template <std::derived_from<IResource> T>
@@ -186,7 +186,7 @@ namespace phenyl::runtime {
             registerPlugin(meta::type_index<T>(), std::move(plugin));
         }
 
-        template <common::CustomSerializable T>
+        template <common::SerializableType T>
         void addComponent (std::string name) {
             addUnserializedComponent<T>(std::move(name));
             serializer().addSerializer<T>();

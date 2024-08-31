@@ -64,7 +64,7 @@ std::string_view UIManager::getName () const noexcept {
 
 UIManager::~UIManager () = default;
 
-ui::Theme* UIThemeManager::load (std::istream& data, std::size_t id) {
+ui::Theme* UIThemeManager::load (std::ifstream& data, std::size_t id) {
     auto theme = ui::loadTheme(data);
     if (!theme) {
         return nullptr;

@@ -12,7 +12,7 @@ static phenyl::Logger LOGGER{"TEXTURE_MANAGER", detail::GRAPHICS_LOGGER};
 
 TextureManager::TextureManager (Renderer& renderer) : renderer{renderer} {}
 
-Texture* TextureManager::load (std::istream& data, std::size_t id) {
+Texture* TextureManager::load (std::ifstream& data, std::size_t id) {
     PHENYL_DASSERT(!textures.contains(id));
 
     auto image = Image::Load(data);

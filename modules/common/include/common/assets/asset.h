@@ -7,6 +7,7 @@
 #include "logging/logging.h"
 #include "util/meta.h"
 #include "forward.h"
+#include "common/serialization/serializer.h"
 
 namespace phenyl::common {
     namespace detail {
@@ -114,4 +115,7 @@ namespace phenyl::common {
             return detail::AssetBase::GetPath(meta::type_index<T>(), rId);
         }
     };
+
+    template <typename T>
+    ISerializable<Asset<T>>& phenyl_GetSerializable (detail::SerializableMarker<Asset<T>>);
 }
