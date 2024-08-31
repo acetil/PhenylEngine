@@ -7,7 +7,8 @@ using namespace phenyl::common;
 namespace phenyl::common {
     PHENYL_SERIALIZABLE(Transform2D,
         PHENYL_SERIALIZABLE_MEMBER_NAMED(positionVec, "position"),
-        PHENYL_SERIALIZABLE_METHOD("rotation", &Transform2D::rotationAngle, &Transform2D::setRotation))
+        PHENYL_SERIALIZABLE_METHOD("rotation", &Transform2D::rotationAngle, &Transform2D::setRotation),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(scaleVec, "scale"));
 }
 
 static inline glm::vec2 rotationCompose (glm::vec2 cRot1, glm::vec2 cRot2) {

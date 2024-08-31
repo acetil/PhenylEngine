@@ -3,11 +3,7 @@
   "lifetime_max" : 1.8,
   "velocity_min" : 0.5,
   "velocity_max" : 0.8,
-  "gravity" :
-  {
-    "x" : 0.0,
-    "y" : -1
-  },
+  "gravity" : [0.0, -1.0],
   "size_start_min" : 0.02,
   "size_start_max" : 0.04,
   "size_end_min" : 0.008,
@@ -17,32 +13,8 @@
   "angular_vel_min" : -100,
   "angular_vel_max" : 100,
   "spread" : 130,
-  "color_start_min" :
-  {
-    "x" : 0.0,
-    "y" : 0.0,
-    "z" : 1.0,
-    "a" : 1.0
-  },
-  "color_start_max" :
-  {
-    "x" : 0.6,
-    "y" : 0.6,
-    "z" : 1.0,
-    "a" : 1.0
-  },
-  "color_end_min" :
-  {
-    "x" : 0.1,
-    "y" : 0.1,
-    "z" : 0.3,
-    "a" : 0.0
-  },
-  "color_end_max" :
-  {
-    "x" : 0.0,
-    "y" : 0.0,
-    "z" : 0.0,
-    "a" : 0.0
-  }
+  "color_start_min" : [0.0, 0.0, 1.0, 1.0],
+  "color_start_max" : [0.6, 0.6, 1.0, 1.0],
+  "color_end_min" : [0.1, 0.1, 0.3, 0.0],
+  "color_end_max" : [0.0, 0.0, 0.0, 0.0]
 }

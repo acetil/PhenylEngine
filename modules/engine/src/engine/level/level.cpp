@@ -1,5 +1,3 @@
-#include <nlohmann/json.hpp>
-
 #include "component/component.h"
 #include "component/component_serializer.h"
 
@@ -8,29 +6,165 @@
 #include "common/assets/assets.h"
 
 #include "engine/level/level.h"
+
+#include "common/serialization/backends.h"
 #include "engine/level/level_manager.h"
 
 using namespace phenyl::game;
 
 static phenyl::Logger LOGGER{"LEVEL_MANAGER"};
 
-namespace phenyl::game::detail {
-    struct LevelEntity {
-        nlohmann::json components;
-        common::Asset<component::Prefab> prefab;
-        std::size_t numChildren;
+class LevelEntitySerializable : public phenyl::common::ISerializable<phenyl::component::Entity> {
+private:
+    phenyl::component::EntityComponentSerializer& compSerializer;
+
+    class ChildrenSerializable : public phenyl::common::ISerializable<phenyl::component::Entity> {
+    private:
+        LevelEntitySerializable& serializable;
+    public:
+        ChildrenSerializable (LevelEntitySerializable& serializable) : serializable{serializable} {}
+
+        std::string_view name () const noexcept override {
+            return "phenyl::Entity::Children";
+        }
+
+        void serialize (phenyl::common::ISerializer& serializer, const phenyl::component::Entity& obj) override {
+            auto& arrSerializer = serializer.serializeArr();
+
+            for (auto i : obj.children()) {
+                arrSerializer.serializeElement(serializable, i);
+            }
+        }
+
+        void deserialize (phenyl::common::IDeserializer& deserializer, phenyl::component::Entity& obj) override {
+            deserializer.deserializeArray(*this, obj);
+        }
+
+        void deserializeArray (phenyl::component::Entity& obj, phenyl::common::IArrayDeserializer& deserializer) override {
+            while (deserializer.hasNext()) {
+                phenyl::component::Entity child;
+                deserializer.next(serializable, child);
+                obj.addChild(child);
+            }
+        }
     };
-}
+public:
+    explicit LevelEntitySerializable (phenyl::component::EntityComponentSerializer& compSerializer) : compSerializer{compSerializer} {}
+
+    std::string_view name () const noexcept override {
+        return "phenyl::Entity";
+    }
+
+    void serialize (phenyl::common::ISerializer& serializer, const phenyl::component::Entity& obj) override {
+        auto compSerializable = compSerializer.entity();
+        auto& objSerializer = serializer.serializeObj();
+
+        objSerializer.serializeMember("components", compSerializable, obj);
+
+    }
+
+    void deserialize (phenyl::common::IDeserializer& deserializer, phenyl::component::Entity& obj) override {
+        deserializer.deserializeObject(*this, obj);
+    }
+
+    void deserializeObject (phenyl::component::Entity& obj, phenyl::common::IObjectDeserializer& deserializer) override {
+        phenyl::common::Asset<phenyl::component::Prefab> prefab{};
+
+        while (deserializer.hasNext()) {
+            auto key = deserializer.nextKey();
+            if (key == "prefab") {
+                prefab = phenyl::common::Assets::Load<phenyl::component::Prefab>(deserializer.nextValue<std::string>());
+            } else if (key == "components") {
+                auto serializable = compSerializer.entity();
+                deserializer.nextValue(serializable, obj);
+            } else if (key == "children") {
+                ChildrenSerializable serializable{*this};
+                deserializer.nextValue(serializable, obj);
+            } else {
+                PHENYL_LOGE(LOGGER, "Encountered unexpected member of level entity: {}", key);
+                deserializer.ignoreNextValue();
+            }
+        }
+
+        if (prefab) {
+            prefab->instantiate(obj);
+        }
+    }
+};
+
+struct LevelMarker {};
+
+class LevelSerializable : public phenyl::common::ISerializable<LevelMarker> {
+private:
+    class EntitiesSerializable : public phenyl::common::ISerializable<LevelMarker> {
+    private:
+        phenyl::component::World& world;
+        LevelEntitySerializable& serializable;
+    public:
+        EntitiesSerializable (phenyl::component::World& world, LevelEntitySerializable& serializable) : world{world}, serializable{serializable} {}
+
+        std::string_view name () const noexcept override {
+            return "phenyl::Level::Entities";
+        }
+
+        void serialize (phenyl::common::ISerializer& serializer, const LevelMarker& obj) override {
+            auto& arrSerializer = serializer.serializeArr();
+            for (auto entity : world.root()) {
+                arrSerializer.serializeElement(serializable, entity);
+            }
+        }
+
+        void deserialize (phenyl::common::IDeserializer& deserializer, LevelMarker& obj) override {
+            deserializer.deserializeArray(*this, obj);
+        }
+
+        void deserializeArray (LevelMarker& obj, phenyl::common::IArrayDeserializer& deserializer) override {
+            while (deserializer.hasNext()) {
+                auto entity = world.create();
+                deserializer.next(serializable, entity);
+            }
+        }
+    };
+    LevelEntitySerializable entitySerializable;
+    EntitiesSerializable entitiesSerializable;
+public:
+    LevelSerializable (phenyl::component::World& world, phenyl::component::EntityComponentSerializer& compSerializer) : entitySerializable{compSerializer}, entitiesSerializable{world, entitySerializable} {}
+
+    std::string_view name () const noexcept override {
+        return "phenyl::Level";
+    }
+
+    void serialize (phenyl::common::ISerializer& serializer, const LevelMarker& obj) override {
+        auto& objSerializer = serializer.serializeObj();
+        objSerializer.serializeMember("entities", entitiesSerializable, obj);
+    }
+
+    void deserialize (phenyl::common::IDeserializer& deserializer, LevelMarker& obj) override {
+        deserializer.deserializeObject(*this, obj);
+    }
+
+    void deserializeObject(LevelMarker& obj, phenyl::common::IObjectDeserializer& deserializer) override {
+        while (deserializer.hasNext()) {
+            auto key = deserializer.nextKey();
+            if (key == "entities") {
+                deserializer.nextValue(entitiesSerializable, obj);
+            } else {
+                PHENYL_LOGE(LOGGER, "Unexpected member in serialized level: {}", key);
+                deserializer.ignoreNextValue();
+            }
+        }
+    }
+};
 
 namespace {
     std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities);
 }
 
-LevelManager::LevelManager (component::World& world, component::EntitySerializer& serializer) : world{world}, serializer{serializer} {}
+LevelManager::LevelManager (component::World& world, component::EntityComponentSerializer& serializer) : world{world}, serializer{serializer} {}
 LevelManager::~LevelManager () = default;
 
-Level* LevelManager::load (std::istream& data, std::size_t id) {
-    PHENYL_LOGI(LOGGER, "Loading level with id={}", id);
+Level* LevelManager::load (std::ifstream& data, std::size_t id) {
+    /*PHENYL_LOGI(LOGGER, "Loading level with id={}", id);
     PHENYL_ASSERT(!levels.contains(id));
     nlohmann::json json;
     data >> json;
@@ -57,9 +191,9 @@ Level* LevelManager::load (std::istream& data, std::size_t id) {
 
             return nullptr;
         }
-    }
+    }*/
 
-    levels[id] = std::make_unique<Level>(Level{&world, &serializer, std::move(entities)});
+    levels[id] = std::make_unique<Level>(Level{std::move(data), world, serializer});
 
     return levels[id].get();
 }
@@ -80,32 +214,9 @@ void LevelManager::selfRegister () {
 
 void LevelManager::dump (std::ostream& file) const {
     PHENYL_LOGI(LOGGER, "Dumping level");
-    auto entities = nlohmann::json::array_t{};
-    for (auto i : world.root()) {
-        entities.emplace_back(dumpEntity(i));
-    }
-
-    nlohmann::json level;
-    level["entities"] = std::move(entities);
-    file << std::setw(4) << level << "\n";
-}
-
-nlohmann::json LevelManager::dumpEntity (component::Entity entity) const {
-    PHENYL_LOGD(LOGGER, "Dumping entity id={}", entity.id().value());
-
-    nlohmann::json json;
-    json["components"] = serializer.serializeEntity(entity);
-
-    nlohmann::json::array_t children;
-    for (auto i : entity.children()) {
-        children.emplace_back(dumpEntity(i));
-    }
-
-    json["children"] = std::move(children);
-
-    PHENYL_TRACE(LOGGER, "Entity json: {}", json.dump(4));
-
-    return json;
+    LevelSerializable serializable{world, serializer};
+    LevelMarker marker{};
+    common::SerializeToJson(file, serializable, marker, true);
 }
 
 Level* LevelManager::load (Level&& obj, std::size_t id) {
@@ -118,86 +229,22 @@ std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (component::World* world, component::EntitySerializer* serializer, std::vector<detail::LevelEntity> entities) : world{world}, serializer{serializer}, entities{std::move(entities)} {}
+Level::Level (std::ifstream file, component::World& world, component::EntityComponentSerializer& serializer) : file{std::move(file)}, world{world}, serializer{serializer} {
+    PHENYL_DASSERT(!this->file.bad());
+    startPos = this->file.tellg();
+}
 
 void Level::load (bool additive) {
     if (!additive) {
         PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
-        world->clear();
+        world.clear();
     }
 
-    world->deferSignals();
-    std::size_t index = 0;
-    while (index < entities.size()) {
-        loadEntity(index);
-        index += entities[index].numChildren + 1;
-    }
+    world.deferSignals();
 
-    world->deferSignalsEnd();
-}
-
-phenyl::component::Entity Level::loadEntity (std::size_t index) {
-    PHENYL_ASSERT(index < entities.size());
-    const auto& levelEntity = entities[index];
-
-    //serializer->deserializeEntity(instantatior, entity.components);
-    auto entity = world->create();
-    serializer->deserializeEntity(entity, levelEntity.components);
-    levelEntity.prefab->instantiate(entity);
-    auto childIndex = index + 1;
-    while (childIndex < index + levelEntity.numChildren + 1) {
-        //instantatior.withChild(loadEntity(childIndex));
-        auto child = loadEntity(childIndex);
-        entity.addChild(child);
-        childIndex += entities[childIndex].numChildren;
-    }
-
-    return entity;
-}
-
-namespace {
-    std::size_t parseEntity (const nlohmann::json& json, std::vector<detail::LevelEntity>& entities) {
-        PHENYL_TRACE(LOGGER, "Parsing entity json={}", json.dump(4));
-        if (!json.is_object()) {
-            PHENYL_LOGE(LOGGER, "Expected object for entity, got {}!", json.type_name());
-            return 0;
-        }
-
-        if (!json.contains("components")) {
-            PHENYL_LOGE(LOGGER, "Failed to find components field in entity!");
-            return 0;
-        }
-
-        phenyl::common::Asset<phenyl::component::Prefab> prefab;
-        if (json.contains("prefab")) {
-            if (!json.at("prefab").is_string()) {
-                PHENYL_LOGE(LOGGER, "Expected string for prefab field, got {}!", json.at("prefab").type_name());
-                return 0;
-            }
-
-            prefab = phenyl::common::Assets::Load<phenyl::component::Prefab>(json.at("prefab").get<std::string>());
-            PHENYL_LOGE_IF(!prefab, LOGGER, "Failed to load prefab {} for entity!", json.at("prefab").get<std::string>());
-        }
-
-        entities.emplace_back(json.at("components"), std::move(prefab), 0);
-        auto& entity = entities.back();
-
-        if (json.contains("children")) {
-            if (!json.at("children").is_array()) {
-                PHENYL_LOGE(LOGGER, "Expected array for children field, got {}!", json.at("children").type_name());
-                return 0;
-            }
-
-            for (auto& i : json.at("children").get<nlohmann::json::array_t>()) {
-                auto n = parseEntity(i, entities);
-                if (!n) {
-                    return 0;
-                }
-
-                entity.numChildren += n;
-            }
-        }
-
-        return entity.numChildren + 1;
-    }
+    LevelSerializable serializable{world, serializer};
+    file.seekg(startPos);
+    LevelMarker marker{};
+    common::DeserializeFromJson(file, serializable, marker);
+    world.deferSignalsEnd();
 }

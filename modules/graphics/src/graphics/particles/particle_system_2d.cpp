@@ -1,9 +1,10 @@
-#include <nlohmann/json.hpp>
-
 #include "common/serialization/serializer_impl.h"
 #include "util/random.h"
 
 #include "graphics/particles/particle_system_2d.h"
+
+#include "common/serialization/backends.h"
+#include "graphics/detail/loggers.h"
 
 namespace phenyl::graphics {
     PHENYL_SERIALIZABLE(ParticleProperties2D,
@@ -28,6 +29,8 @@ namespace phenyl::graphics {
 }
 
 using namespace phenyl::graphics;
+
+static phenyl::Logger LOGGER{"PARTICLE_SYSTEM2D", detail::GRAPHICS_LOGGER};
 
 ParticleSystem2D::ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles) : properties{properties}, particles{maxParticles}, startIndex{0}, size{0}, activeNum{0} {}
 
@@ -167,5 +170,10 @@ phenyl::util::Optional<ParticleProperties2D> phenyl::graphics::LoadParticlePrope
     phenyl::common::JsonDeserializer deserializer{json};
 
     return deserializer.deserialize<ParticleProperties2D>();*/
-    return util::NullOpt;
+    try {
+        return phenyl::common::DeserializeFromJson<ParticleProperties2D>(file);
+    } catch (const DeserializeException& e) {
+        PHENYL_LOGE(LOGGER, "Failed to deserialize particle properties: {}", e.what());
+        return util::NullOpt;
+    }
 }

@@ -11,7 +11,7 @@ std::string_view PrefabPlugin::getName () const noexcept {
 }
 
 void PrefabPlugin::init (PhenylRuntime& runtime) {
-    manager = std::make_unique<component::PrefabAssetManager>(runtime.world(), runtime.serializer());
+    manager = std::make_unique<component::PrefabAssetManager>(runtime.world(), runtime.serializer2());
     manager->selfRegister();
 }
 

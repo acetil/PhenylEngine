@@ -34,7 +34,7 @@ namespace phenyl::common {
     private:
         friend class Assets;
     protected:
-        virtual T* load (std::istream& data, std::size_t id) = 0;
+        virtual T* load (std::ifstream& data, std::size_t id) = 0;
         virtual T* load (T&& obj, std::size_t id) = 0;
         bool onUnload (std::size_t id) {
             return detail::AssetManagerBase::OnUnloadUntyped(meta::type_index<T>(), id);

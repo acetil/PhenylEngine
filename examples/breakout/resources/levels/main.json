@@ -12,14 +12,8 @@
       {
         "GlobalTransform2D" : {
           "transform": {
-            "position": {
-              "x": 1.0,
-              "y": 0.0
-            },
-            "scale": {
-              "x": 0.05,
-              "y": 1.0
-            },
+            "position": [1.0, 0.0],
+            "scale": [0.05, 1.0],
             "rotation": 0.0
           }
         },
@@ -29,10 +23,7 @@
             "mask": 1,
             "elasticity": 1.0
           },
-          "scale" : {
-            "x" : 0.05,
-            "y" : 1.0
-          }
+          "scale" : [0.05, 1.0]
         }
       },
       "prefab" : "resources/prefabs/wall"
@@ -42,14 +33,8 @@
       {
         "GlobalTransform2D" : {
           "transform": {
-            "position": {
-              "x": -1.0,
-              "y": 0.0
-            },
-            "scale": {
-              "x": 0.05,
-              "y": 1.0
-            },
+            "position": [-1.0, 0.0],
+            "scale": [0.05, 1.0],
             "rotation": 0.0
           }
         },
@@ -59,10 +44,7 @@
             "mask": 1,
             "elasticity": 1.0
           },
-          "scale" : {
-            "x" : 0.05,
-            "y" : 1.0
-          }
+          "scale" : [0.05, 1.0]
         }
       },
       "prefab" : "resources/prefabs/wall"
@@ -72,14 +54,8 @@
       {
         "GlobalTransform2D" : {
           "transform": {
-            "position": {
-              "x": 0.0,
-              "y": 1.0
-            },
-            "scale": {
-              "x": 1.0,
-              "y": 0.05
-            },
+            "position": [0.0, 1.0],
+            "scale": [1.0, 0.05],
             "rotation": 0.0
           }
         },
@@ -89,10 +65,7 @@
             "mask": 1,
             "elasticity": 1.0
           },
-          "scale" : {
-            "x" : 1.0,
-            "y" : 0.05
-          }
+          "scale" : [1.0, 0.05]
         }
       },
       "prefab" : "resources/prefabs/wall"
@@ -102,14 +75,8 @@
       {
         "GlobalTransform2D" : {
           "transform": {
-            "position": {
-              "x": 0.0,
-              "y": -1.0
-            },
-            "scale": {
-              "x": 1.0,
-              "y": 1.0
-            },
+            "position": [0.0, -1.0],
+            "scale": [1.0, 1.0],
             "rotation": 0.0
           }
         },
@@ -119,10 +86,7 @@
             "mask": 4,
             "elasticity": 1.0
           },
-          "scale" : {
-            "x" : 1.0,
-            "y" : 0.025
-          }
+          "scale" : [1.0, 0.025]
         }
       },
       "prefab" : "resources/prefabs/floor"

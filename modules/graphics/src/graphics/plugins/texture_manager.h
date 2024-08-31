@@ -13,7 +13,7 @@ namespace phenyl::graphics {
     public:
         TextureManager (Renderer& renderer);
 
-        Texture* load (std::istream& data, std::size_t id) override;
+        Texture* load (std::ifstream& data, std::size_t id) override;
         Texture* load (Texture&& obj, std::size_t id) override;
 
         const char* getFileType () const override;

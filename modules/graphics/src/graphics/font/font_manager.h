@@ -24,7 +24,7 @@ namespace phenyl::graphics {
         ~FontManager() override;
 
         const char* getFileType() const override;
-        Font* load (std::istream& data, std::size_t id) override;
+        Font* load (std::ifstream& data, std::size_t id) override;
         Font* load (Font&& obj, std::size_t id) override;
 
         common::Asset<Font> loadFromMemory (std::span<std::byte> faceData, const std::string& virtualPath);

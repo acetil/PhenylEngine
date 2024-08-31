@@ -53,7 +53,7 @@ std::unique_ptr<AudioSystem> phenyl::audio::MakeOpenALSystem () {
     return std::make_unique<AudioSystem>(std::make_unique<OpenALSystem>());
 }
 
-AudioSample* AudioSystem::load (std::istream& data, std::size_t id) {
+AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
     // Assume is wav format
     auto wavOpt = WAVFile::Load(data);
     if (!wavOpt) {
@@ -89,7 +89,7 @@ bool AudioSystem::isBinary () const {
     return true;
 }
 
-void AudioSystem::addComponents (component::World& world, component::EntitySerializer& serializer) {
+void AudioSystem::addComponents (component::World& world, component::EntityComponentSerializer& serializer) {
     world.addComponent<AudioPlayer>("AudioPlayer");
     serializer.addSerializer<AudioPlayer>();
 

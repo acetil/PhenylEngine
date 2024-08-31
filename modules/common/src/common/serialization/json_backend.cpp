@@ -127,6 +127,7 @@ private:
             PHENYL_DASSERT(it != jsonArr.end());
             JsonDeserializer deserializer{*it};
             serializable.deserialize(deserializer, obj);
+            ++it;
         }
     };
 
@@ -153,6 +154,11 @@ private:
             JsonDeserializer deserializer{it->second};
             serializable.deserialize(deserializer, obj);
 
+            ++it;
+        }
+
+        void ignoreNextValue () override {
+            PHENYL_DASSERT(it != jsonObj.end());
             ++it;
         }
     };
@@ -232,7 +238,7 @@ public:
     }
 
     void deserializeFloat(ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_number_float()) {
+        if (json.is_number()) {
             serializable.deserializeFloat(ptr, json.get<float>());
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected float, got {}", json.type_name()));
@@ -240,7 +246,7 @@ public:
     }
 
     void deserializeDouble (ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_number_float()) {
+        if (json.is_number()) {
             serializable.deserializeDouble(ptr, json.get<double>());
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected double, got {}", json.type_name()));
@@ -257,7 +263,7 @@ public:
 
     void deserializeArray (ISerializableBase& serializable, std::byte* ptr) override {
         if (json.is_array()) {
-            Array arr{json.get<nlohmann::json::array_t>()};
+            Array arr{*json.get<const nlohmann::json::array_t*>()};
             serializable.deserializeArray(ptr, arr);
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected array, got {}", json.type_name()));
@@ -266,7 +272,7 @@ public:
 
     void deserializeObject (ISerializableBase& serializable, std::byte* ptr) override {
         if (json.is_object()) {
-            Object obj{json.get<nlohmann::json::object_t>()};
+            Object obj{*json.get<const nlohmann::json::object_t*>()};
             serializable.deserializeObject(ptr, obj);
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected object, got {}", json.type_name()));
@@ -324,13 +330,21 @@ std::string phenyl::common::SerializeToJson (ISerializableBase& serializable, co
 }
 
 void phenyl::common::DeserializeFromJson (std::istream& stream, ISerializableBase& serializable, std::byte* ptr) {
-    auto json = nlohmann::json::parse(stream);
-    JsonDeserializer deserializer{json};
-    serializable.deserialize(deserializer, ptr);
+    try {
+        auto json = nlohmann::json::parse(stream);
+        JsonDeserializer deserializer{json};
+        serializable.deserialize(deserializer, ptr);
+    } catch (const nlohmann::json::exception& e) {
+        throw DeserializeException(std::format("Failed to deserialize from json: {}", e.what()));
+    }
 }
 
-void DeserializeFromJson (std::string_view str, ISerializableBase& serializable, std::byte* ptr) {
-    auto json = nlohmann::json::parse(str);
-    JsonDeserializer deserializer{json};
-    serializable.deserialize(deserializer, ptr);
+void phenyl::common::DeserializeFromJson (std::string_view str, ISerializableBase& serializable, std::byte* ptr) {
+    try {
+        auto json = nlohmann::json::parse(str);
+        JsonDeserializer deserializer{json};
+        serializable.deserialize(deserializer, ptr);
+    } catch (const nlohmann::json::exception& e) {
+        throw DeserializeException(std::format("Failed to deserialize from json: {}", e.what()));
+    }
 }

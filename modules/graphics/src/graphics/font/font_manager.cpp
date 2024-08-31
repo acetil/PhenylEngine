@@ -41,7 +41,7 @@ const char* FontManager::getFileType () const {
     return ".ttf";
 }
 
-Font* FontManager::load (std::istream& data, std::size_t id) {
+Font* FontManager::load (std::ifstream& data, std::size_t id) {
     std::vector<char> bytes{std::istreambuf_iterator<char>{data}, std::istreambuf_iterator<char>{}};
     auto dataSize = bytes.size();
     auto fontData = std::make_unique<std::byte[]>(bytes.size());

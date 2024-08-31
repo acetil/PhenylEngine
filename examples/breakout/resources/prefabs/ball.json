@@ -3,14 +3,8 @@
   {
     "GlobalTransform2D" : {
       "transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "scale": {
-          "x": 0.03125,
-          "y": 0.03125
-        },
+        "position": [0.0, 0.0],
+        "scale": [0.03125, 0.03125],
         "rotation": 0.0
       }
     },
@@ -18,14 +12,8 @@
       "texture" : "resources/images/ball.png"
     },
     "RigidBody2D" : {
-      "momentum": {
-        "x": 0.0,
-        "y": 0.0
-      },
-      "gravity": {
-        "x": 0.0,
-        "y": 0.0
-      },
+      "momentum": [0.0, 0.0],
+      "gravity": [0.0, 0.0],
       "mass": 0.001,
       "inertial_moment": 0.0,
       "drag": 0,
@@ -38,10 +26,7 @@
         "mask": 15,
         "elasticity": 0.95
       },
-      "scale" : {
-        "x" : 0.03125,
-        "y" : 0.03125
-      }
+      "scale" : [0.03125, 0.03125]
     },
     "Ball" : {
       "max_speed" : 3.5,

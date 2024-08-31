@@ -66,7 +66,7 @@ namespace phenyl::common {
     };
 
     template <typename T>
-    class ISerializable : private ISerializableBase {
+    class ISerializable : public ISerializableBase {
     private:
         void serialize (ISerializer& serializer, const std::byte* ptr) final {
             PHENYL_DASSERT(ptr);
@@ -150,8 +150,14 @@ namespace phenyl::common {
         friend class IArrayDeserializer;
     public:
         virtual T make () const {
-            return T{};
+            if constexpr (std::is_default_constructible_v<T>) {
+                return T{};
+            } else {
+                throw DeserializeException(std::format("Cannot initialize object of type {}", name()));
+            }
         }
+
+        [[nodiscard]] std::string_view name () const noexcept override = 0;
 
         virtual void serialize (ISerializer& serializer, const T& obj) = 0;
 
@@ -262,8 +268,14 @@ namespace phenyl::common {
 
         template <SerializableType T>
         void serializeMember (std::string_view memberName, const T& obj) {
-            serializeMember(memberName, detail::GetSerializable<T>(), reinterpret_cast<const std::byte*>(&obj));
+            serializeMember(memberName, detail::GetSerializable<T>(), obj);
         }
+
+        template <SerializableType T>
+        void serializeMember (std::string_view memberName, ISerializable<T>& serializable, const T& obj) {
+            serializeMember(memberName, serializable, reinterpret_cast<const std::byte*>(&obj));
+        }
+
         virtual void end () = 0;
     };
 
@@ -275,7 +287,12 @@ namespace phenyl::common {
 
         template <SerializableType T>
         void serializeElement (const T& obj) {
-            serializeElement(detail::GetSerializable<T>(), reinterpret_cast<const std::byte*>(&obj));
+            serializeElement(detail::GetSerializable<T>(), obj);
+        }
+
+        template <SerializableType T>
+        void serializeElement (ISerializable<T>& serializable, const T& obj) {
+            serializeElement(serializable, reinterpret_cast<const std::byte*>(&obj));
         }
         virtual void end () = 0;
     };
@@ -306,69 +323,69 @@ namespace phenyl::common {
     public:
         virtual ~IDeserializer () = default;
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeBool (ISerializable<T>& serializable, T& obj) {
             deserializeBool(serializable, reinterpret_cast<std::byte*>(&obj));
         }
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeInt8 (ISerializable<T>& serializable, T& obj) {
             deserializeInt8(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeInt16 (ISerializable<T>& serializable, T& obj) {
             deserializeInt16(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeInt32 (ISerializable<T>& serializable, T& obj) {
             deserializeInt32(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeInt64 (ISerializable<T>& serializable, T& obj) {
             deserializeInt64(serializable, reinterpret_cast<std::byte*>(&obj));
         }
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeUint8 (ISerializable<T>& serializable, T& obj) {
             deserializeUint8(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeUint16 (ISerializable<T>& serializable, T& obj) {
             deserializeUint16(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeUint32 (ISerializable<T>& serializable, T& obj) {
             deserializeUint32(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeUint64 (ISerializable<T>& serializable, T& obj) {
             deserializeUint64(serializable, reinterpret_cast<std::byte*>(&obj));
         }
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeFloat (ISerializable<T>& serializable, T& obj) {
             deserializeFloat(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeDouble (ISerializable<T>& serializable, T& obj) {
             deserializeDouble(serializable, reinterpret_cast<std::byte*>(&obj));
         }
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeString (ISerializable<T>& serializable, T& obj) {
             deserializeString(serializable, reinterpret_cast<std::byte*>(&obj));
         }
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeObject (ISerializable<T>& serializable, T& obj) {
             deserializeObject(serializable, reinterpret_cast<std::byte*>(&obj));
         }
-        template <SerializableType T>
+        template <typename T>
         void deserializeArray (ISerializable<T>& serializable, T& obj) {
             deserializeArray(serializable, reinterpret_cast<std::byte*>(&obj));
         }
 
-        template <SerializableType T>
+        template <typename T>
         void deserializeInfer (ISerializable<T>& serializable, T& obj) {
             deserializeInfer(serializable, reinterpret_cast<std::byte*>(&obj));
         }
@@ -385,7 +402,7 @@ namespace phenyl::common {
 
     class IArrayDeserializer {
     protected:
-        virtual void next (ISerializableBase& serializable, std::byte* obj);
+        virtual void next (ISerializableBase& serializable, std::byte* obj) = 0;
     public:
         virtual ~IArrayDeserializer () = default;
 
@@ -394,7 +411,7 @@ namespace phenyl::common {
         }
         [[nodiscard]] virtual bool hasNext () const = 0;
 
-        template <typename T>
+        template <SerializableType T>
         T next () {
             ISerializable<T>& serializable = detail::GetSerializable<T>();
             T obj{serializable.make()};
@@ -402,18 +419,28 @@ namespace phenyl::common {
 
             return obj;
         }
+
+        template <SerializableType T>
+        void next (T& obj) {
+            next(detail::GetSerializable<T>(), obj);
+        }
+
+        template <typename T>
+        void next (ISerializable<T>& serializable, T& obj) {
+            next(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
     };
 
     class IObjectDeserializer {
     protected:
-        virtual void nextValue (ISerializableBase& serializable, std::byte* obj);
+        virtual void nextValue (ISerializableBase& serializable, std::byte* obj) = 0;
     public:
         virtual ~IObjectDeserializer () = default;
 
         [[nodiscard]] virtual bool hasNext () const = 0;
 
         virtual std::string_view nextKey () = 0;
-        template <typename T>
+        template <SerializableType T>
         T nextValue () {
             ISerializable<T>& serializable = detail::GetSerializable<T>();
             T obj{serializable.make()};
@@ -422,9 +449,16 @@ namespace phenyl::common {
             return obj;
         }
 
-        template <typename T>
+        template <SerializableType T>
         void nextValue (T& obj) {
-            nextValue(detail::GetSerializable<T>(), reinterpret_cast<std::byte*>(&obj));
+            nextValue(detail::GetSerializable<T>(), obj);
         }
+
+        template <typename T>
+        void nextValue (ISerializable<T>& serializable, T& obj) {
+            nextValue(serializable, reinterpret_cast<std::byte*>(&obj));
+        }
+
+        virtual void ignoreNextValue () = 0;
     };
 }

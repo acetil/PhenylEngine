@@ -153,7 +153,7 @@ const char* GlShaderManager::getFileType () const {
     return ".json";
 }
 
-Shader* GlShaderManager::load (std::istream& data, std::size_t id) {
+Shader* GlShaderManager::load (std::ifstream& data, std::size_t id) {
     PHENYL_TRACE(LOGGER, "Loading shader from file");
     nlohmann::json json;
     data >> json;

@@ -6,7 +6,7 @@ const char* phenyl::graphics::ParticleManager2D::getFileType () const {
     return ".json";
 }
 
-phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (std::istream& data, std::size_t id) {
+phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (std::ifstream& data, std::size_t id) {
     auto propOpt = LoadParticleProperties2D(data);
     if (!propOpt) {
         return nullptr;

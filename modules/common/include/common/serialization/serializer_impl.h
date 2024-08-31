@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "common/detail/loggers.h"
 #include "graphics/maths_headers.h"
 #include "serializer.h"
 
@@ -292,6 +293,9 @@ namespace phenyl::common::detail {
                 if (it != members.end()) {
                     it->second->deserialize(deserializer, &obj);
                     deserializedMembers++;
+                } else {
+                    PHENYL_LOGE(SERIALIZER_LOGGER, "Ignoring member \"{}\" in class {}", key, name());
+                    deserializer.ignoreNextValue();
                 }
             }
 
