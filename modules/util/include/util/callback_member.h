@@ -14,17 +14,17 @@ namespace phenyl::util {
     private:
         SetCallback_t setCallback;
         GetCallback_t getCallback;
-        C& classRef;
+        C* classRef;
     public:
-        CallbackMember (C& _classRef, GetCallback_t _getCallback, SetCallback_t _setCallback) : classRef{_classRef}, setCallback{_setCallback}, getCallback{_getCallback} {}
+        CallbackMember (C& _classRef, GetCallback_t _getCallback, SetCallback_t _setCallback) : classRef{&_classRef}, setCallback{_setCallback}, getCallback{_getCallback} {}
 
         CallbackMember& operator= (T&& obj) {
-            std::invoke(setCallback, classRef, std::forward<T&&>(obj));
+            std::invoke(setCallback, *classRef, std::forward<T&&>(obj));
             return *this;
         }
 
         operator T () {
-            return std::invoke(getCallback, classRef);
+            return std::invoke(getCallback, *classRef);
         }
     };
 }

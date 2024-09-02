@@ -51,3 +51,7 @@ void Entity::remove () {
 void Entity::addChild (Entity child) {
     entityWorld->reparent(child.id(), id());
 }
+
+Entity Entity::createChild () {
+    return entityWorld->create(id());
+}

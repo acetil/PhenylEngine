@@ -3,7 +3,9 @@ add_executable(breakout src/main.cpp src/breakout.cpp
         src/ball.cpp
         src/tile.cpp
         src/wall.h
-        src/wall.cpp)
+        src/wall.cpp
+        src/controller.h
+        src/controller.cpp)
 
 set_property(TARGET breakout PROPERTY CXX_STANDARD 20)
 

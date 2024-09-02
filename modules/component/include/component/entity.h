@@ -150,5 +150,6 @@ namespace phenyl::component {
         }
 
         void addChild (Entity child);
+        Entity createChild ();
     };
 }

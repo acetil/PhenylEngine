@@ -90,6 +90,19 @@
         }
       },
       "prefab" : "resources/prefabs/floor"
+    },
+    {
+      "components" :
+      {
+        "TileController" : {
+          "rows" : 8,
+          "columns" : 7,
+          "start_offset" : [-0.755, 0.885],
+          "end_offset" : [0.985, 0.175],
+          "tile" : "resources/prefabs/tile",
+          "label_pos" : [180, 30]
+        }
+      }
     }
   ]
 }

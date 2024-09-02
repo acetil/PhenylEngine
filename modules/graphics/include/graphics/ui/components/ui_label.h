@@ -11,9 +11,9 @@ namespace phenyl::graphics::ui {
         const std::string& getText ();
 
     public:
-        explicit UILabel (const std::string& themeClass) : UIComponent<UILabelNode>(std::make_shared<UILabelNode>(themeClass)), text{*this, &UILabel::getText, &UILabel::setText} {}
+        explicit UILabel (const std::string& themeClass) : UIComponent<UILabelNode>(std::make_shared<UILabelNode>(themeClass)), text{*getNode(), &UILabelNode::getCurrentText, &UILabelNode::setText} {}
 
-        util::CallbackMember<std::string, UILabel> text;
+        util::CallbackMember<std::string, UILabelNode> text;
 
         const std::string& tempGetText () {
             return getText();

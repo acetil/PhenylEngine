@@ -20,7 +20,7 @@ namespace phenyl::graphics::ui {
         void render (Canvas& canvas) override;
         UIAnchor getAnchor() override;
 
-        void setText (std::string newText);
+        void setText (std::string&& newText);
         void setFont (const std::string& newFont);
         void setTextSize (int newTextSize);
         void setColour (glm::vec4 newColour);

@@ -41,7 +41,9 @@ add_library(phenyl
         include/phenyl/canvas.h
         include/phenyl/graphics/renderer.h
         include/phenyl/graphics/viewport.h
-        include/phenyl/graphics/graphics.h)
+        include/phenyl/graphics/graphics.h
+        include/phenyl/maths.h
+        include/phenyl/serialization_fwd.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

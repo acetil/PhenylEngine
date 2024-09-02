@@ -5,6 +5,8 @@
 
 #include "tile.h"
 
+#include "controller.h"
+
 using namespace breakout;
 namespace breakout {
     PHENYL_SERIALIZABLE(Tile,
@@ -27,7 +29,8 @@ void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
         auto& [transform, tile] = bundle.comps();
         auto entity = bundle.entity();
         if (!--tile.health) {
-            app->addPoints(tile.points);
+            //app->addPoints(tile.points);
+            entity.parent().raise(OnTileBreak{tile.points});
 
             phenyl::GlobalTransform2D emitterTransform{};
             emitterTransform.transform2D.setPosition(transform.transform2D.position());

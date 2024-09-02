@@ -44,7 +44,7 @@ UIAnchor UILabelNode::getAnchor () {
     return UIAnchor().withFixedSize(labelSize);
 }
 
-void UILabelNode::setText (std::string newText) {
+void UILabelNode::setText (std::string&& newText) {
     text = std::move(newText);
 
     if (font) {

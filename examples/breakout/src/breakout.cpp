@@ -11,6 +11,8 @@
 
 #include "ball.h"
 #include "breakout.h"
+
+#include "controller.h"
 #include "paddle.h"
 #include "tile.h"
 #include "wall.h"
@@ -37,33 +39,29 @@ void BreakoutApp::init () {
     breakout::InitBall(this, world());
     breakout::InitTile(this, world());
     breakout::InitWall(this, world());
+    TileController::Init(this, runtime());
 
-    tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
+    //tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
 
-    pointsLabel.text = "Points: 0";
+    //pointsLabel.text = "Points: 0";
     livesLabel.text = "Lives: " + std::to_string(lives);
 
     auto& uiManager = runtime().resource<phenyl::UIManager>();
 
-    uiManager.addUIComp(pointsLabel, {180, 30});
+    //uiManager.addUIComp(pointsLabel, {180, 30});
     uiManager.addUIComp(livesLabel, {280, 30});
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
 
-    for (std::size_t i = 0; i < TileRows; i++) {
+    /*for (std::size_t i = 0; i < TileRows; i++) {
         for (std::size_t j = 0; j < TileCols; j++) {
-            /*tilePrefab->instantiate()
-                .complete()
-                .apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
-                    transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});
-                });*/
             auto tileEntity = world().create();
             tilePrefab->instantiate(tileEntity);
             tileEntity.apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
                 transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});
             });
         }
-    }
+    }*/
 
     auto* renderConfig = runtime().resourceMaybe<phenyl::DebugRenderConfig>();
     if (renderConfig) {
@@ -92,3 +90,11 @@ void BreakoutApp::subtractLife () {
         pause();
     }
 }
+
+void BreakoutApp::onWin() {
+    phenyl::ui::Label winLabel{"big_label"};
+    winLabel.text = "You Win!";
+    runtime().resource<phenyl::UIManager>().addUIComp(winLabel.detach(), {240, 250});
+    pause();
+}
+

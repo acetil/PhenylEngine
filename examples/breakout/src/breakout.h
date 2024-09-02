@@ -20,5 +20,7 @@ namespace breakout {
 
         void addPoints (int points);
         void subtractLife ();
+
+        void onWin ();
     };
 }
