@@ -58,6 +58,14 @@ add_library(graphics src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer
         src/graphics/glfw/input/glfw_mouse_input.cpp
         src/graphics/glfw/input/glfw_mouse_input.h
         src/graphics/components/2d/sprite.cpp
+        include/graphics/ui/widgets/widget.h
+        src/graphics/ui/widgets/widget.cpp
+        include/graphics/ui/widgets/label.h
+        src/graphics/ui/widgets/label.cpp
+        include/graphics/ui/widgets/layout.h
+        src/graphics/ui/widgets/layout.cpp
+        include/graphics/ui/widgets/root.h
+        src/graphics/ui/widgets/root.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL

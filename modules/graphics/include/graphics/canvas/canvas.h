@@ -20,6 +20,7 @@ namespace phenyl::graphics {
         common::Asset<Font> defaultFontAsset;
 
         std::vector<glm::vec2> offsetStack;
+        glm::ivec2 canvasResolution;
 
         void submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style);
         [[nodiscard]] glm::vec2 offset () const;
@@ -48,6 +49,10 @@ namespace phenyl::graphics {
         void pushOffset (glm::vec2 off);
         void popOffset ();
 
-        std::string_view getName () const noexcept override;;
+        std::string_view getName () const noexcept override;
+
+        glm::ivec2 resolution () const noexcept {
+            return canvasResolution;
+        }
     };
 }

@@ -20,6 +20,7 @@ UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectActi
     offsetStack.emplace_back(0,0);
 
     uiRoot = std::make_shared<ui::UIRootNode>();
+    rootWidget = std::make_unique<RootWidget>();
     themeManager.selfRegister();
     defaultTheme = common::Assets::LoadVirtual("phenyl/themes/default", ui::Theme{util::parseJson(EMBED_DEFAULT_THEME_JSON)});
     setCurrentTheme(defaultTheme);
@@ -30,6 +31,11 @@ UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectActi
 
 void UIManager::renderUI (Canvas& canvas) {
     uiRoot->render(canvas);
+
+    rootWidget->measure(WidgetConstraints{
+        .maxSize = canvas.resolution()
+    });
+    rootWidget->render(canvas);
 }
 
 void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos) {
@@ -56,6 +62,8 @@ void UIManager::updateUI () {
         }
     }
     mouseDown = newMouse;
+
+    rootWidget->update();
 }
 
 std::string_view UIManager::getName () const noexcept {

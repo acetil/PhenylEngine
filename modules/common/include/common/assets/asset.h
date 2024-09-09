@@ -91,11 +91,11 @@ namespace phenyl::common {
             return *ptr;
         }
 
-        T* operator-> () {
+        /*T* operator-> () {
             return ptr;
-        }
+        }*/
 
-        const T* operator-> () const {
+        T* operator-> () const {
             return ptr;
         }
 

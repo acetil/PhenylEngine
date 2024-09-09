@@ -17,6 +17,8 @@
 #include "common/input/input_action.h"
 #include "graphics/canvas/canvas.h"
 #include "runtime/iresource.h"
+#include "widgets/root.h"
+#include "widgets/widget.h"
 
 namespace phenyl::graphics {
     class FontManager;
@@ -46,6 +48,7 @@ namespace phenyl::graphics {
         bool mouseDown = false;
         std::vector<glm::vec2> offsetStack;
         std::shared_ptr<ui::UIRootNode> uiRoot;
+        std::unique_ptr<RootWidget> rootWidget;
 
         UIThemeManager themeManager;
         common::Asset<ui::Theme> defaultTheme;
@@ -70,5 +73,9 @@ namespace phenyl::graphics {
         void updateUI ();
 
         std::string_view getName() const noexcept override;
+
+        [[nodiscard]] RootWidget& root () const noexcept {
+            return *rootWidget;
+        }
     };
 }

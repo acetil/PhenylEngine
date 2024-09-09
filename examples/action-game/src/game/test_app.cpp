@@ -7,6 +7,7 @@
 #include "test_app.h"
 #include "entity/bullet.h"
 #include "entity/player.h"
+#include "phenyl/ui/widget.h"
 #include "util/debug_console.h"
 
 static phenyl::Logger LOGGER{"TEST_APP"};
@@ -43,6 +44,12 @@ void test::TestApp::init () {
     uiManager.addUIComp(button4, {500, 300});
     uiManager.addUIComp(button5, {500, 385});
 
+    column = uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN, phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{}
+        .withSize({0, 0}, {200, 300})
+        .withOffset({200, 100}));
+    auto* labelWidget = column->emplaceBack<phenyl::ui::LabelWidget>("Hello World 2!");
+    labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
+
     stepAction = input.addAction("debug_step");
     consoleAction = input.addAction("debug_console");
 
@@ -67,6 +74,10 @@ void test::TestApp::update () {
         newLabel.text = "Label " + std::to_string(extraLabels.size());
         flexBoxC.add(newLabel);
         extraLabels.emplace_back(std::move(newLabel));
+
+        auto* widget = column->emplaceBack<phenyl::ui::LabelWidget>(std::format("Pressed {} times!", numPresses));
+        widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
+        extraWidgets.emplace_back(widget);
     } else if (!button4 && isButtonDown) {
         isButtonDown = false;
     }
@@ -76,6 +87,11 @@ void test::TestApp::update () {
 
         if (!extraLabels.empty()) {
             extraLabels.pop_back();
+        }
+
+        if (!extraWidgets.empty()) {
+            extraWidgets.back()->queueDestroy();
+            extraWidgets.pop_back();
         }
     } else if (!button5 && isButtonDown2) {
         isButtonDown2 = false;

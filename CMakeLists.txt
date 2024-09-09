@@ -43,7 +43,9 @@ add_library(phenyl
         include/phenyl/graphics/viewport.h
         include/phenyl/graphics/graphics.h
         include/phenyl/maths.h
-        include/phenyl/serialization_fwd.h)
+        include/phenyl/serialization_fwd.h
+        include/phenyl/ui/layout.h
+        include/phenyl/ui/widget.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 
