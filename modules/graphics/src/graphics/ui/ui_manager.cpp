@@ -4,9 +4,6 @@
 
 #include "common/input/game_input.h"
 #include "graphics/renderer.h"
-#include "graphics/ui/nodes/ui_root.h"
-#include "graphics/ui/themes/theme.h"
-#include "graphics/ui/themes/theme_class.h"
 #include "graphics/ui/widgets/event.h"
 
 #include "resources/themes/default_theme.json.h"
@@ -17,55 +14,35 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (Renderer& renderer, common::GameInput& input) : selectAction{input.addAction("ui_select")}, mousePos{input.addAxis2D("ui_mouse")} {
-    offsetStack.emplace_back(0,0);
-
-    uiRoot = std::make_shared<ui::UIRootNode>();
+UIManager::UIManager (common::GameInput& input) : selectAction{input.addAction("ui_select")}, mousePos{input.addAxis2D("ui_mouse")} {
     rootWidget = std::make_unique<RootWidget>();
-    themeManager.selfRegister();
-    defaultTheme = common::Assets::LoadVirtual("phenyl/themes/default", ui::Theme{util::parseJson(EMBED_DEFAULT_THEME_JSON)});
-    setCurrentTheme(defaultTheme);
 
     input.addActionBinding("ui_select", "mouse.button_left");
     input.addAxis2DBinding("ui_mouse", "mouse.mouse_pos");
 }
 
 void UIManager::renderUI (Canvas& canvas) {
-    uiRoot->render(canvas);
-
     rootWidget->measure(WidgetConstraints{
         .maxSize = canvas.resolution()
     });
     rootWidget->render(canvas);
 }
 
-void UIManager::addUINode (const std::shared_ptr<ui::UIComponentNode>& uiNode, glm::vec2 pos) {
-    uiRoot->addChildNode(uiNode, pos);
-}
-
-void UIManager::setCurrentTheme (common::Asset<ui::Theme> theme) {
-    currentTheme = std::move(theme);
-    uiRoot->applyTheme(currentTheme.get());
-}
-
 void UIManager::updateUI () {
-    uiRoot->setMousePos(mousePos.value());
+    PHENYL_TRACE(LOGGER, "Updating UI");
     rootWidget->pointerUpdate(mousePos.value());
 
     bool newMouse = selectAction.value();
     if (newMouse != mouseDown) {
         if (newMouse) {
-            if (uiRoot->onMousePress()) {
-                //uiInput.consumeProxyInput(selectAction);
-                // TODO
-            }
             focusedWidget = rootWidget->pick(mousePos.value());
             if (focusedWidget) {
+                PHENYL_LOGD(LOGGER, "Received mouse press");
                 focusedWidget->raise(UIEvent{MousePressEvent{}});
             }
         } else {
-            uiRoot->onMouseRelease();
             if (focusedWidget) {
+                PHENYL_LOGD(LOGGER, "Received mouse release");
                 focusedWidget->raise(UIEvent{MouseReleaseEvent{}});
             }
         }
@@ -77,36 +54,4 @@ void UIManager::updateUI () {
 
 std::string_view UIManager::getName () const noexcept {
     return "UIManager";
-}
-
-UIManager::~UIManager () = default;
-
-ui::Theme* UIThemeManager::load (std::ifstream& data, std::size_t id) {
-    auto theme = ui::loadTheme(data);
-    if (!theme) {
-        return nullptr;
-    }
-
-    themes[id] = std::move(theme);
-    return themes[id].get();
-}
-
-const char* UIThemeManager::getFileType () const {
-    return ".json";
-}
-
-void UIThemeManager::queueUnload (std::size_t id) {
-    if (onUnload(id)) {
-        themes.remove(id);
-    }
-}
-
-void UIThemeManager::selfRegister () {
-    common::Assets::AddManager(this);
-}
-
-ui::Theme* UIThemeManager::load (ui::Theme&& obj, std::size_t id) {
-    themes[id] = std::make_unique<ui::Theme>(std::move(obj));
-
-    return themes[id].get();
 }

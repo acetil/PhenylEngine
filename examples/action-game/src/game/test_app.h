@@ -48,7 +48,6 @@ namespace test {
         void stopStepping ();
         void step ();
 
-        void changeTheme (phenyl::Asset<phenyl::ui::Theme> theme);
         void updateDebugRender (bool doRender);
         void updateProfileRender (bool doRender);
         void dumpLevel (const std::string& path);

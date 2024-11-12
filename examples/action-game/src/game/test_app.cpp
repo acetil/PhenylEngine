@@ -148,10 +148,6 @@ void test::TestApp::step () {
     }
 }
 
-void test::TestApp::changeTheme (phenyl::Asset<phenyl::ui::Theme> theme) {
-    runtime().resource<phenyl::UIManager>().setCurrentTheme(std::move(theme));
-}
-
 void test::TestApp::updateDebugRender (bool doRender) {
     runtime().resource<phenyl::DebugRenderConfig>().doPhysicsRender = doRender;
 }
