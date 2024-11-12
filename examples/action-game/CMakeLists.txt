@@ -21,7 +21,6 @@ target_copy_resources(action-game
         resources/prefabs/wall_entity.json
         resources/prefabs/bullet_particle_entity.json
         resources/particles/test_system.json
-        resources/themes/alt_theme.json
         resources/audio/blastoff.wav
         resources/fonts/OpenSans-Regular.ttf
         resources/fonts/OFL.txt

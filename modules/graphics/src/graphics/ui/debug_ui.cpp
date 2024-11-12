@@ -45,6 +45,4 @@ void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
     canvas.renderText(glm::vec2{5, 45}, canvas.defaultFont(), 11, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms");
 
     canvas.renderText(glm::vec2{700, 15}, canvas.defaultFont(), 11, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps", {0.0f, 1.0f, 0.0f});
-
-    canvas.renderText(glm::vec2{5, 60}, canvas.defaultFont(), 14, "The quick brown fox jumped over the lazy dog");
 }

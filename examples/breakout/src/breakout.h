@@ -10,8 +10,10 @@ namespace breakout {
     private:
         int totalPoints = 0;
         int lives;
-        phenyl::ui::Label pointsLabel;
-        phenyl::ui::Label livesLabel;
+        // phenyl::ui::Label pointsLabel;
+        // phenyl::ui::Label livesLabel;
+        phenyl::ui::LabelWidget* pointsLabel = nullptr;
+        phenyl::ui::LabelWidget* livesLabel = nullptr;
         phenyl::Asset<phenyl::Prefab> tilePrefab;
 
         void init () override;

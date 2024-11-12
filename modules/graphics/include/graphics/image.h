@@ -5,7 +5,6 @@
 
 #include "graphics/maths_headers.h"
 #include "util/optional.h"
-#include "util/smart_help.h"
 
 namespace phenyl::graphics {
     enum class ImageFormat {

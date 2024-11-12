@@ -28,15 +28,10 @@ namespace breakout {
         BreakoutApp* app = nullptr;
         std::size_t tilesRemaining = 0;
         int points = 0;
-        phenyl::ui::Label pointsLabel{"label"};
+        //phenyl::ui::Label pointsLabel{"label"};
+        phenyl::ui::LabelWidget* pointsLabel = nullptr;
 
         TileController () = default;
-        TileController (const TileController&);
-        TileController (TileController&&) = default;
-
-        TileController& operator= (const TileController&);
-        TileController& operator= (TileController&&) noexcept;
-
         static void Init (BreakoutApp* app, phenyl::PhenylRuntime& runtime);
 
         void onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::UIManager& uiManager);

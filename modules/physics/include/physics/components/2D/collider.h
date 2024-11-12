@@ -2,7 +2,6 @@
 
 #include "common/serialization/serializer_forward.h"
 #include "graphics/maths_headers.h"
-#include "util/data.h"
 
 namespace phenyl::physics {
     class RigidBody2D;

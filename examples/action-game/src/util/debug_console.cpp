@@ -29,23 +29,23 @@ static void handleProfiler (test::TestApp* app, const std::vector<std::string>& 
     }
 }
 
-static void handleThemes (test::TestApp* app, std::vector<std::string>& args) {
-    if (args.empty()) {
-        PHENYL_LOGW(LOGGER, "Missing argument after \"theme\"!");
-    } else if (args[0] == "load") {
-        if (args.size() != 2) {
-            PHENYL_LOGW(LOGGER, R"(Unknown argument after "theme".)");
-        } else {
-            //bus->raise(event::ChangeThemeEvent{args[1]});
-            auto theme = phenyl::Assets::Load<phenyl::ui::Theme>(args[1]);
-            if (!theme) {
-                PHENYL_LOGE(LOGGER, "Failed to load theme \"{}\"!", args[1]);
-            } else {
-                app->changeTheme(theme);
-            }
-        }
-    }
-}
+// static void handleThemes (test::TestApp* app, std::vector<std::string>& args) {
+//     if (args.empty()) {
+//         PHENYL_LOGW(LOGGER, "Missing argument after \"theme\"!");
+//     } else if (args[0] == "load") {
+//         if (args.size() != 2) {
+//             PHENYL_LOGW(LOGGER, R"(Unknown argument after "theme".)");
+//         } else {
+//             //bus->raise(event::ChangeThemeEvent{args[1]});
+//             auto theme = phenyl::Assets::Load<phenyl::ui::Theme>(args[1]);
+//             if (!theme) {
+//                 PHENYL_LOGE(LOGGER, "Failed to load theme \"{}\"!", args[1]);
+//             } else {
+//                 app->changeTheme(theme);
+//             }
+//         }
+//     }
+// }
 
 static void doDebugConsole (test::TestApp* app) {
     std::cout << ">";
@@ -74,8 +74,8 @@ static void doDebugConsole (test::TestApp* app) {
         } else {
             PHENYL_LOGW(LOGGER, "Unknown arguments for level command: \"{}\"", util::joinStrings(" ", args));
         }
-    } else if (command == "theme") {
-        handleThemes(app, args);
+    // } else if (command == "theme") {
+    //     handleThemes(app, args);
     } else if (command == "debug_render") {
         if (args.size() == 1) {
             if (args[0] == "true") {

@@ -40,12 +40,14 @@ glm::vec2 Canvas::offset () const {
 }
 
 void Canvas::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
+    canvasResolution = newResolution;
     layer.setScreenSize(newResolution);
 }
 
 Canvas::Canvas (Renderer& renderer) : atlas{renderer}, layer{renderer.addLayer<CanvasRenderLayer>(atlas)}, fontManager{std::make_unique<FontManager>(renderer.getViewport(), atlas)} {
     fontManager->selfRegister();
-    layer.setScreenSize(renderer.getViewport().getResolution());
+    canvasResolution = renderer.getViewport().getResolution();
+    layer.setScreenSize(canvasResolution);
     renderer.getViewport().addUpdateHandler(this);
     offsetStack.emplace_back(0, 0);
 
