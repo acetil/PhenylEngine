@@ -49,6 +49,7 @@ namespace phenyl::graphics {
         std::vector<glm::vec2> offsetStack;
         std::shared_ptr<ui::UIRootNode> uiRoot;
         std::unique_ptr<RootWidget> rootWidget;
+        Widget* focusedWidget = nullptr;
 
         UIThemeManager themeManager;
         common::Asset<ui::Theme> defaultTheme;

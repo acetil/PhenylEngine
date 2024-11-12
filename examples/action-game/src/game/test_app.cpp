@@ -7,6 +7,7 @@
 #include "test_app.h"
 #include "entity/bullet.h"
 #include "entity/player.h"
+#include "phenyl/ui/container.h"
 #include "phenyl/ui/widget.h"
 #include "util/debug_console.h"
 
@@ -31,22 +32,37 @@ void test::TestApp::init () {
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
 
-    phenyl::ui::Button buttonC{"button"};
-    phenyl::ui::Button buttonC2{"button2"};
-    label.text = "Hello World!";
-
-    flexBoxC.add(buttonC.detach());
-    flexBoxC.add(buttonC2.detach());
-    flexBoxC.add(label);
-
     auto& uiManager = runtime().resource<phenyl::UIManager>();
-    uiManager.addUIComp(flexBoxC.detach(), {0, 100});
-    uiManager.addUIComp(button4, {500, 300});
-    uiManager.addUIComp(button5, {500, 385});
+    // uiManager.addUIComp(button4, {500, 300});
+    // uiManager.addUIComp(button5, {500, 385});
+    button1 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(phenyl::ui::Modifier{}
+            .withSize({100, 80})
+            .withOffset({500, 300}));
+    button1->setDefaultBgColor({1.0, 0.0, 0.0, 1.0});
+    button1->setHoverBgColor({0.0, 1.0, 0.0, 1.0});
+    button1->setPressBgColor({0.0, 0.0, 1.0, 1.0});
+    button1->addListener([&] (const phenyl::ui::ButtonPressEvent&) {
+        addLabel();
+    });
 
-    column = uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN, phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{}
+    button2 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(phenyl::ui::Modifier{}
+            .withSize({100, 80})
+            .withOffset({500, 385}));
+    button2->setDefaultBgColor({1.0, 0.0, 0.0, 1.0});
+    button2->setHoverBgColor({0.0, 1.0, 0.0, 1.0});
+    button2->setPressBgColor({0.0, 0.0, 1.0, 1.0});
+    button2->addListener([&] (const phenyl::ui::ButtonPressEvent&) {
+        removeLabel();
+    });
+
+    auto* container = uiManager.root().emplace<phenyl::ui::ContainerWidget>(phenyl::ui::Modifier{}.withSize({200, 300}).withOffset({0, 100}));
+    container->setBorderColor({1.0f, 1.0f, 1.0f, 1.0f});
+    container->setBorderSize(2);
+    column = container->emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN, phenyl::ui::LayoutArrangement::START, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{});
+
+    /*column = uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN, phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{}
         .withSize({0, 0}, {200, 300})
-        .withOffset({200, 100}));
+        .withOffset({200, 100}));*/
     auto* labelWidget = column->emplaceBack<phenyl::ui::LabelWidget>("Hello World 2!");
     labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
 
@@ -66,37 +82,6 @@ void test::TestApp::fixedUpdate () {
 }
 
 void test::TestApp::update () {
-    if (button4 && !isButtonDown) {
-        isButtonDown = true;
-        numPresses++;
-        label.text = "Pressed " + std::to_string(numPresses) + " times!";
-        auto newLabel = phenyl::ui::Label("label");
-        newLabel.text = "Label " + std::to_string(extraLabels.size());
-        flexBoxC.add(newLabel);
-        extraLabels.emplace_back(std::move(newLabel));
-
-        auto* widget = column->emplaceBack<phenyl::ui::LabelWidget>(std::format("Pressed {} times!", numPresses));
-        widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
-        extraWidgets.emplace_back(widget);
-    } else if (!button4 && isButtonDown) {
-        isButtonDown = false;
-    }
-
-    if (button5 && !isButtonDown2) {
-        isButtonDown2 = true;
-
-        if (!extraLabels.empty()) {
-            extraLabels.pop_back();
-        }
-
-        if (!extraWidgets.empty()) {
-            extraWidgets.back()->queueDestroy();
-            extraWidgets.pop_back();
-        }
-    } else if (!button5 && isButtonDown2) {
-        isButtonDown2 = false;
-    }
-
     if (resumeFrames > 0) {
         resumeFrames--;
         if (!resumeFrames) {
@@ -117,6 +102,30 @@ void test::TestApp::update () {
 
     auto& canvas = runtime().resource<phenyl::Canvas>();
     canvas.renderText(glm::vec2{200, 300}, testFont, 11, "Hello World");
+}
+
+void test::TestApp::addLabel () {
+    numPresses++;
+    // label.text = "Pressed " + std::to_string(numPresses) + " times!";
+    // auto newLabel = phenyl::ui::Label("label");
+    // newLabel.text = "Label " + std::to_string(extraLabels.size());
+    // flexBoxC.add(newLabel);
+    // extraLabels.emplace_back(std::move(newLabel));
+
+    auto* widget = column->emplaceBack<phenyl::ui::LabelWidget>(std::format("Pressed {} times!", numPresses));
+    widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
+    extraWidgets.emplace_back(widget);
+}
+
+void test::TestApp::removeLabel () {
+    // if (!extraLabels.empty()) {
+    //     extraLabels.pop_back();
+    // }
+
+    if (!extraWidgets.empty()) {
+        extraWidgets.back()->queueDestroy();
+        extraWidgets.pop_back();
+    }
 }
 
 void test::TestApp::queueResume () {

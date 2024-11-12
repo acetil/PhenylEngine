@@ -10,7 +10,17 @@ Widget* RootWidget::insert (std::unique_ptr<Widget> widget) {
     auto* ptr = widget.get();
     children.emplace_back(std::move(widget));
     ptr->setParent(this);
+    ptr->setOffset({0, 0});
     return ptr;
+}
+
+Widget* RootWidget::pick (glm::vec2 pointer) noexcept {
+    for (auto it = children.rbegin(); it != children.rend(); ++it) {
+        if (auto* ptr = (*it)->pick(pointer - (*it)->modifier().offset)) {
+            return ptr;
+        }
+    }
+    return nullptr;
 }
 
 void RootWidget::measure (const WidgetConstraints& constraints) {
@@ -42,4 +52,29 @@ void RootWidget::render (Canvas& canvas) {
 
 void RootWidget::queueChildDestroy (Widget* child) {
     widgetsToDelete.emplace(child);
+}
+
+bool RootWidget::pointerUpdate (glm::vec2 pointer) {
+    auto it = children.rbegin();
+    while (it != children.rend()) {
+        bool childResult = (*it)->pointerUpdate(pointer - (*it)->modifier().offset);
+        ++it;
+        if (childResult) {
+            break;
+        }
+    }
+
+    for ( ; it != children.rend(); ++it) {
+        (*it)->pointerLeave();
+    }
+
+    return Widget::pointerUpdate(pointer);
+}
+
+void RootWidget::pointerLeave () {
+    // Should never occur
+    for (auto& i : children) {
+        i->pointerLeave();
+    }
+    Widget::pointerLeave();
 }

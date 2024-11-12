@@ -66,6 +66,11 @@ add_library(graphics src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer
         src/graphics/ui/widgets/layout.cpp
         include/graphics/ui/widgets/root.h
         src/graphics/ui/widgets/root.cpp
+        include/graphics/ui/widgets/container.h
+        src/graphics/ui/widgets/container.cpp
+        include/graphics/ui/widgets/event.h
+        include/graphics/ui/widgets/button.h
+        src/graphics/ui/widgets/button.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL

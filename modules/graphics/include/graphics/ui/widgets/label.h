@@ -20,7 +20,13 @@ namespace phenyl::graphics {
 
         void updateModifier ();
     public:
-        explicit LabelWidget (std::string text = "", unsigned int textSize = 12, common::Asset<Font> font = {});
+        explicit LabelWidget (std::string text = "", unsigned int textSize = 12, common::Asset<Font> font = {}, const Modifier& modifier = {});
+        LabelWidget (const LabelWidget&) = delete;
+        LabelWidget (LabelWidget&&) = default;
+
+        LabelWidget& operator= (const LabelWidget&) = delete;
+        LabelWidget& operator= (LabelWidget&&) = default;
+
         ~LabelWidget () override;
 
         void render (Canvas& canvas) override;

@@ -26,9 +26,12 @@ namespace phenyl::graphics {
             return static_cast<T*>(insert(std::make_unique<T>(std::forward<Args>(args)...)));
         }
 
+        Widget* pick (glm::vec2 pointer) noexcept override;
         void measure (const WidgetConstraints& constraints) override;
         void update () override;
         void render (Canvas& canvas) override;
         void queueChildDestroy (Widget* child) override;
+        bool pointerUpdate (glm::vec2 pointer) override;
+        void pointerLeave () override;
     };
 }

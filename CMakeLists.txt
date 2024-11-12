@@ -4,7 +4,7 @@ project(phenyl_engine)
 enable_language(CXX)
 
 add_compile_options("-D C_LOGGING")
-set(DEBUG_COMPILE_FLAGS "-Werror=return-type")
+set(DEBUG_COMPILE_FLAGS "-Werror=return-type -ftime-trace")
 
 set(CMAKE_CXX_FLAGS_DEBUG "-D DEBUG_LOG -ggdb -fsanitize=address  ${DEBUG_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -45,7 +45,9 @@ add_library(phenyl
         include/phenyl/maths.h
         include/phenyl/serialization_fwd.h
         include/phenyl/ui/layout.h
-        include/phenyl/ui/widget.h)
+        include/phenyl/ui/widget.h
+        include/phenyl/ui/container.h
+        include/phenyl/ui/event.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

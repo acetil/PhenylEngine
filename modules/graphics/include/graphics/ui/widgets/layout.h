@@ -66,10 +66,14 @@ namespace phenyl::graphics {
 
         void clear ();
 
+        Widget* pick (glm::vec2 pointer) noexcept override;
+        void setOffset (glm::vec2 newOffset) override;
         void update () override;
         void measure (const WidgetConstraints& constraints) override;
         void render (Canvas& canvas) override;
-        void queueChildDestroy(Widget* child) override;
+        void queueChildDestroy (Widget* child) override;
+        bool pointerUpdate (glm::vec2 pointer) override;
+        void pointerLeave () override;
     };
 
     enum class ColumnDirection {

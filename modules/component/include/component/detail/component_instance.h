@@ -97,7 +97,7 @@ namespace phenyl::component::detail {
             }
 
             for (auto id : deferredErases) {
-                entity(id).erase<T>();
+                entity(id).template erase<T>();
             }
 
             deferredInserts.clear();

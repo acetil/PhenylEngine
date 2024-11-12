@@ -7,6 +7,7 @@
 #include "graphics/ui/nodes/ui_root.h"
 #include "graphics/ui/themes/theme.h"
 #include "graphics/ui/themes/theme_class.h"
+#include "graphics/ui/widgets/event.h"
 
 #include "resources/themes/default_theme.json.h"
 
@@ -49,6 +50,7 @@ void UIManager::setCurrentTheme (common::Asset<ui::Theme> theme) {
 
 void UIManager::updateUI () {
     uiRoot->setMousePos(mousePos.value());
+    rootWidget->pointerUpdate(mousePos.value());
 
     bool newMouse = selectAction.value();
     if (newMouse != mouseDown) {
@@ -57,8 +59,15 @@ void UIManager::updateUI () {
                 //uiInput.consumeProxyInput(selectAction);
                 // TODO
             }
+            focusedWidget = rootWidget->pick(mousePos.value());
+            if (focusedWidget) {
+                focusedWidget->raise(UIEvent{MousePressEvent{}});
+            }
         } else {
             uiRoot->onMouseRelease();
+            if (focusedWidget) {
+                focusedWidget->raise(UIEvent{MouseReleaseEvent{}});
+            }
         }
     }
     mouseDown = newMouse;

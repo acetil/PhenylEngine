@@ -11,6 +11,7 @@ Widget* LayoutWidget::insert (std::size_t pos, std::unique_ptr<Widget> child) {
     PHENYL_ASSERT(pos <= size());
     auto* ptr = child.get();
     children.emplace(children.begin() + pos, std::move(child));
+    childOff.emplace(childOff.begin() + pos, std::numeric_limits<float>::signaling_NaN(), std::numeric_limits<float>::signaling_NaN());
     ptr->setParent(this);
     return ptr;
 }
@@ -18,6 +19,7 @@ Widget* LayoutWidget::insert (std::size_t pos, std::unique_ptr<Widget> child) {
 Widget* LayoutWidget::pushBack (std::unique_ptr<Widget> child) {
     auto* ptr = child.get();
     children.emplace_back(std::move(child));
+    childOff.emplace_back(std::numeric_limits<float>::signaling_NaN(), std::numeric_limits<float>::signaling_NaN());
     ptr->setParent(this);
     return ptr;
 }
@@ -36,6 +38,37 @@ bool LayoutWidget::empty () const noexcept {
 
 void LayoutWidget::clear () {
     children.clear();
+}
+
+Widget* LayoutWidget::pick (glm::vec2 pointer) noexcept {
+    if (pointer.x < 0.0f || pointer.x >= dimensions().x || pointer.y < 0.0f || pointer.y >= dimensions().y) {
+        return nullptr;
+    }
+
+    for (std::size_t i = 0; i < size(); i++) {
+        if (std::isnan(childOff[i].x) || std::isnan(childOff[i].y)) {
+            continue;
+        }
+
+        if (auto* ptr = children[i]->pick(pointer - childOff[i])) {
+            return ptr;
+        }
+    }
+
+    return this;
+}
+
+void LayoutWidget::setOffset (glm::vec2 newOffset) {
+    Widget::setOffset(newOffset);
+
+    if (childOff.empty()) {
+        return;
+    }
+
+    assert(childOff.size() == children.size());
+    for (std::size_t i = 0; i < children.size(); i++) {
+        children[i]->setOffset(offset() + childOff[i]);
+    }
 }
 
 void LayoutWidget::update () {
@@ -82,7 +115,6 @@ void LayoutWidget::measure (const WidgetConstraints& constraints) {
     }
 
     childOff.clear();
-    childOff.reserve(children.size());
     for (auto& i : children) {
         auto childDims = i->dimensions();
         float remainingSecond = std::max(0.0f, secondLength - glm::dot(childDims, secondAxis) - i->modifier().padding * 2 - glm::dot(secondAxis, i->modifier().offset));
@@ -97,6 +129,7 @@ void LayoutWidget::measure (const WidgetConstraints& constraints) {
                 childOff.emplace_back(currOff + secondAxis * (remainingSecond / 2 + i->modifier().padding) + i->modifier().offset);
                 break;
         }
+        i->setOffset(offset() + childOff.back());
 
         currOff += mainAxis * (glm::dot(mainAxis, childDims + i->modifier().offset) + i->modifier().padding * 2 + spacing);
     }
@@ -122,6 +155,35 @@ void LayoutWidget::render (Canvas& canvas) {
 
 void LayoutWidget::queueChildDestroy (Widget* child) {
     widgetsToDelete.emplace(child);
+}
+
+bool LayoutWidget::pointerUpdate (glm::vec2 pointer) {
+    assert(children.size() == childOff.size());
+
+    auto it = children.rbegin();
+    auto offIt = childOff.rbegin();
+    while (it != children.rend()) {
+        bool childResult = (*it)->pointerUpdate(pointer - *offIt);
+        ++it;
+        ++offIt;
+        if (childResult) {
+            break;
+        }
+    }
+
+    for ( ; it != children.rend(); ++it) {
+        (*it)->pointerLeave();
+        ++offIt;
+    }
+
+    return Widget::pointerUpdate(pointer);
+}
+
+void LayoutWidget::pointerLeave () {
+    for (auto& i : children) {
+        i->pointerLeave();
+    }
+    Widget::pointerLeave();
 }
 
 float LayoutWidget::measureChildren (glm::vec2 dims, glm::vec2 mainAxis, glm::vec2 secondAxis) {

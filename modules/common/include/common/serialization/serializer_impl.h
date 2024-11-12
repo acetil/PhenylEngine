@@ -89,7 +89,7 @@ namespace phenyl::common::detail {
             return vecName;
         }
 
-        void serialize (ISerializer& serializer, const Vec& obj) {
+        void serialize (ISerializer& serializer, const Vec& obj) override {
             auto& arrSerializer = serializer.serializeArr();
 
             for (auto i = 0; i < N; i++) {
@@ -132,7 +132,7 @@ namespace phenyl::common::detail {
             return matName;
         }
 
-        void serialize (ISerializer& serializer, const Mat& obj) {
+        void serialize (ISerializer& serializer, const Mat& obj) override {
             auto& arrSerializer = serializer.serializeArr();
 
             for (auto i = 0; i < H; i++) {

@@ -13,15 +13,15 @@
 namespace test {
     class TestApp : public phenyl::Application2D {
     private:
-        std::vector<phenyl::ui::Label> extraLabels;
+        // std::vector<phenyl::ui::Label> extraLabels;
         std::vector<phenyl::ui::Widget*> extraWidgets;
-        phenyl::ui::Label label{"label"};
-        phenyl::ui::Flexbox flexBoxC{"flex_box"};
+        // phenyl::ui::Label label{"label"};
+        // phenyl::ui::Flexbox flexBoxC{"flex_box"};
 
         phenyl::ui::ColumnWidget* column = nullptr;
 
-        phenyl::ui::Button button4{"button"};
-        phenyl::ui::Button button5{"button"};
+        phenyl::ui::ButtonWidget* button1 = nullptr;
+        phenyl::ui::ButtonWidget* button2 = nullptr;
 
         phenyl::InputAction stepAction;
         phenyl::InputAction consoleAction;
@@ -33,6 +33,9 @@ namespace test {
         int resumeFrames = 0;
         bool isStepping = false;
         bool stepDown = false;
+
+        void addLabel ();
+        void removeLabel ();
     public:
         TestApp ();
 

@@ -7,6 +7,8 @@
 #include <phenyl/signals/lifecycle.h>
 
 #include "breakout.h"
+#include "phenyl/font.h"
+#include "phenyl/ui/widget.h"
 
 namespace breakout {
     PHENYL_SERIALIZABLE(TileController,
@@ -20,39 +22,6 @@ namespace breakout {
 }
 
 using namespace breakout;
-
-TileController::TileController (const TileController& other) : rows{other.rows}, columns(other.columns), startOffset(other.startOffset), endOffset(other.endOffset), labelPos(other.labelPos), tile(other.tile), tilesRemaining(other.tilesRemaining), points(other.points) {}
-
-TileController& TileController::operator= (const TileController& other) {
-    if (&other == this) {
-        return *this;
-    }
-
-    rows = other.rows;
-    columns = other.columns;
-    startOffset = other.startOffset;
-    endOffset = other.endOffset;
-    labelPos = other.labelPos;
-    tile = other.tile;
-    tilesRemaining = other.tilesRemaining;
-
-    return *this;
-}
-
-TileController& TileController::operator= (TileController&& other) noexcept {
-    rows = other.rows;
-    columns = other.columns;
-    startOffset = other.startOffset;
-    endOffset = other.endOffset;
-    labelPos = other.labelPos;
-    tile = std::move(other.tile);
-    app = other.app;
-    tilesRemaining = other.tilesRemaining;
-    points = other.points;
-    pointsLabel = std::move(other.pointsLabel);
-
-    return *this;
-}
 
 void TileController::Init (BreakoutApp* app, phenyl::PhenylRuntime& runtime) {
     app->addComponent<TileController>("TileController");
@@ -87,13 +56,14 @@ void TileController::onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::
     }
 
     tilesRemaining = rows * columns;
-    pointsLabel.text = std::format("Points: {}", points);
-    uiManager.addUIComp(pointsLabel, labelPos);
+    //pointsLabel->setText(std::format("Points: {}", points);
+    pointsLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Points: {}", points), 14, phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"), phenyl::ui::Modifier{}.withOffset({180, 30}));
+    //uiManager.addUIComp(pointsLabel, labelPos);
 }
 
 void TileController::onTileBreak (int tilePoints) {
     points += tilePoints;
-    pointsLabel.text = std::format("Points: {}", points);
+    pointsLabel->setText(std::format("Points: {}", points));
 
     if (!(--tilesRemaining)) {
         app->onWin();
