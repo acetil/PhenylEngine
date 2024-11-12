@@ -1,5 +1,4 @@
 #include "physics/components/2D/rigid_body.h"
-#include "util/data.h"
 #include "common/components/2d/global_transform.h"
 
 #define MIN_ANGULAR_VEL 0.01f
