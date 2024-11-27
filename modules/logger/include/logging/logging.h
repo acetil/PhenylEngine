@@ -5,16 +5,13 @@
 #include <source_location>
 #include <string>
 
-#ifndef NDEBUG
-#include <cpptrace/cpptrace.hpp>
-#endif
-
 #include "logger.h"
 
 
 namespace phenyl {
     using Logger = logging::Logger;
     extern Logger PHENYL_LOGGER;
+    void PrintStackTrace ();
 }
 
 #ifndef PHENYL_MIN_LOG_LEVEL
@@ -34,12 +31,6 @@ namespace phenyl {
 #endif
 
 static_assert(PHENYL_MIN_LOG_LEVEL <= LEVEL_FATAL);
-
-#ifndef NDEBUG
-#define PRINT_STACKTRACE() cpptrace::generate_trace().print()
-#else
-#define PRINT_STACKTRACE()
-#endif
 
 #if LEVEL_DEBUG >= PHENYL_MIN_LOG_LEVEL
 #define PHENYL_LOGD(logger, fmt, ...) logger.debug(std::source_location::current(), fmt __VA_OPT__(,) __VA_ARGS__)
@@ -75,7 +66,7 @@ static_assert(PHENYL_MIN_LOG_LEVEL <= LEVEL_FATAL);
 
 #define PHENYL_LOGF(logger, fmt, ...) do { \
     logger.fatal(std::source_location::current(), fmt __VA_OPT__(,) __VA_ARGS__); \
-PRINT_STACKTRACE(); \
+::phenyl::PrintStackTrace(); \
 } while (0)
 #define PHENYL_LOGF_IF(cond, logger, fmt, ...) if (cond) PHENYL_LOGF(logger, fmt __VA_OPT__(,) __VA_ARGS__)
 
@@ -83,7 +74,7 @@ PRINT_STACKTRACE(); \
     if (!(cond)) { \
         auto sourceLoc = std::source_location::current(); \
         ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond); \
-        PRINT_STACKTRACE(); \
+        ::phenyl::PrintStackTrace(); \
         std::terminate(); \
     } \
 } while (0)
@@ -92,7 +83,7 @@ PRINT_STACKTRACE(); \
 if (!(cond)) { \
 auto sourceLoc = std::source_location::current(); \
 ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): assertion failed: {}: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), #cond, std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
-PRINT_STACKTRACE(); \
+::phenyl::PrintStackTrace(); \
 std::terminate(); \
 } \
 } while (0)
@@ -100,7 +91,7 @@ std::terminate(); \
 #define PHENYL_ABORT(fmt, ...) do { \
 auto sourceLoc = std::source_location::current(); \
 ::phenyl::PHENYL_LOGGER.fatal(sourceLoc, "{}({}:{}): runtime abort: {}", sourceLoc.file_name(), sourceLoc.line(), sourceLoc.column(), std::format(fmt __VA_OPT__(,) __VA_ARGS__)); \
-PRINT_STACKTRACE(); \
+::phenyl::PrintStackTrace(); \
 std::terminate();\
 } while (0)
 

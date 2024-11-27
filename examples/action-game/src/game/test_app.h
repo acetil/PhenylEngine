@@ -37,7 +37,7 @@ namespace test {
         void addLabel ();
         void removeLabel ();
     public:
-        TestApp ();
+        TestApp (phenyl::ApplicationProperties properties);
 
         void init () override;
         void update ();

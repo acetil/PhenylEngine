@@ -10,7 +10,7 @@ function(target_gen_embedded embed_target)
             OUTPUT
                 ${CMAKE_CURRENT_BINARY_DIR}/generated/${EMBED_FILE}.h
             COMMAND
-                ${PYTHON_EXECUTABLE} ${EMBED_EXEC} ${EMBED_FILE} ${CMAKE_CURRENT_BINARY_DIR}/generated/${EMBED_FILE}.h
+                ${Python3_EXECUTABLE} ${EMBED_EXEC} ${EMBED_FILE} ${CMAKE_CURRENT_BINARY_DIR}/generated/${EMBED_FILE}.h
             WORKING_DIRECTORY
                 ${CMAKE_CURRENT_SOURCE_DIR}
             DEPENDS
@@ -71,4 +71,10 @@ function(target_copy_phenyl_resources resource_target)
 
     add_custom_target(${resource_target}_phenyl_resources DEPENDS ${res_out})
     add_dependencies(${resource_target} ${resource_target}_phenyl_resources)
+endfunction()
+
+function(phenyl_executable shared_target)
+    add_executable(${shared_target}_exec ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/src/main/main.cpp)
+    target_link_libraries(${shared_target}_exec ${shared_target} phenyl)
+    set_property(TARGET ${shared_target}_exec PROPERTY CXX_STANDARD 20)
 endfunction()

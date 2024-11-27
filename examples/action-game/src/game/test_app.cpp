@@ -1,6 +1,7 @@
 #include <phenyl/asset.h>
 #include <phenyl/canvas.h>
 #include <phenyl/debug.h>
+#include <phenyl/entrypoint.h>
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
 
@@ -13,8 +14,8 @@
 
 static phenyl::Logger LOGGER{"TEST_APP"};
 
-test::TestApp::TestApp () :
-    phenyl::Application2D(phenyl::ApplicationProperties{}
+test::TestApp::TestApp (phenyl::ApplicationProperties properties) :
+    phenyl::Application2D(properties
         .withResolution(800, 600)
         .withLogFile("debug.log")
         .withRootLogLevel(LEVEL_DEBUG)
@@ -164,3 +165,5 @@ void test::TestApp::dumpLevel (const std::string& path) {
         PHENYL_LOGE(LOGGER, "Failed to open path \"{}\"!", path);
     }
 }
+
+PHENYL_ENTRYPOINT(test::TestApp)

@@ -1,10 +1,11 @@
-add_executable(action-game src/main.cpp src/util/debug_console.cpp
+add_library(action-game SHARED src/util/debug_console.cpp
         src/game/entity/bullet.h
         src/game/entity/player.h
         src/game/entity/bullet.cpp
         src/game/entity/player.cpp
         src/game/test_app.h
         src/game/test_app.cpp)
+phenyl_executable(action-game)
 
 set_property(TARGET action-game PROPERTY CXX_STANDARD 20)
 target_compile_options(action-game PRIVATE "-g")

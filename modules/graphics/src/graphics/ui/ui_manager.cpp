@@ -6,8 +6,6 @@
 #include "graphics/renderer.h"
 #include "graphics/ui/widgets/event.h"
 
-#include "resources/themes/default_theme.json.h"
-
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;

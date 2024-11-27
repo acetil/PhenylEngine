@@ -1,4 +1,9 @@
+#ifndef NDEBUG
+#include <cpptrace/cpptrace.hpp>
+#endif
+
 #include "logging/logger.h"
+#include "logging/logging.h"
 
 #include "log_manager.h"
 
@@ -20,3 +25,9 @@ void Logger::setMinLevel (const int level) {
     logSink->setMinLogLevel(level);
 }
 
+void phenyl::PrintStackTrace () {
+#ifndef NDEBUG
+    cpptrace::generate_trace(1).print();
+#else
+#endif
+}

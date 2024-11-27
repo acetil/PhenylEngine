@@ -15,7 +15,8 @@
     },
     "harfbuzz",
     "openal-soft",
-    "cpptrace"
+    "cpptrace",
+    "python3"
   ],
-  "builtin-baseline": "ba2298b26ce17b5248685d30b359185485413674"
+  "builtin-baseline": "6e1219d080fc0525f55bf8c8ba57d8ab2ce35422"
 }

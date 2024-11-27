@@ -1,4 +1,4 @@
-add_executable(breakout src/main.cpp src/breakout.cpp
+add_library(breakout SHARED src/breakout.cpp
         src/paddle.cpp
         src/ball.cpp
         src/tile.cpp
@@ -6,7 +6,7 @@ add_executable(breakout src/main.cpp src/breakout.cpp
         src/wall.cpp
         src/controller.h
         src/controller.cpp)
-
+phenyl_executable(breakout)
 set_property(TARGET breakout PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(breakout PRIVATE phenyl)

@@ -6,6 +6,7 @@
 #include <phenyl/components/physics/2D/colliders/box_collider.h>
 #include <phenyl/components/physics/2D/collider.h>
 #include <phenyl/debug.h>
+#include <phenyl/entrypoint.h>
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
 
@@ -34,7 +35,11 @@ static constexpr float YStart = 1.0f - 0.075f - TileHeight / 2;
 
 using namespace breakout;
 
-BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Application2D(std::move(properties)) {
+BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Application2D(std::move(properties.withLogFile("debug.log")
+        .withRootLogLevel(LEVEL_DEBUG)
+        .withResolution(800, 600)
+        .withWindowTitle("Breakout!")
+        .withVsync(false))) {
     lives = Lives;
 }
 
@@ -105,3 +110,4 @@ void BreakoutApp::onWin () {
     pause();
 }
 
+PHENYL_ENTRYPOINT(BreakoutApp)
