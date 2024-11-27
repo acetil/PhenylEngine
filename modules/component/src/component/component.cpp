@@ -306,7 +306,7 @@ void World::instantiatePrefab (EntityId id, const detail::PrefabFactories& facto
 void World::raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr) {
     auto vecIt = signalHandlerVectors.find(signalType);
     if (vecIt == signalHandlerVectors.end()) {
-        PHENYL_LOGD(LOGGER, "Ignored signal type {} for entity {} that has no handlers", signalType, id.value());
+        PHENYL_TRACE(LOGGER, "Ignored signal type {} for entity {} that has no handlers", signalType, id.value());
         return;
     }
 

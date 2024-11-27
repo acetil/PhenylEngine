@@ -148,7 +148,7 @@ LevelManager::LevelManager (component::World& world, component::EntityComponentS
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::ifstream& data, std::size_t id) {
-    levels[id] = std::make_unique<Level>(Level{std::move(data), world, serializer});
+    levels[id] = std::make_unique<Level>(Level{std::move(data), *this});
 
     return levels[id].get();
 }
@@ -165,6 +165,36 @@ const char* LevelManager::getFileType () const {
 
 void LevelManager::selfRegister () {
     common::Assets::AddManager(this);
+}
+
+void LevelManager::queueLoad (common::Asset<Level> level, bool additive) {
+    if (!additive) {
+        PHENYL_LOGI_IF((!queuedLoads.empty()), LOGGER, "Dropping {} queued loads because of non-additive load", queuedLoads.size());
+        queuedLoads.clear();
+        queuedClear = true;
+    }
+
+    queuedLoads.emplace_back(std::move(level));
+}
+
+void LevelManager::loadLevels () {
+    if (queuedClear) {
+        PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
+        world.clear();
+        queuedClear = false;
+    }
+
+    if (queuedLoads.empty()) {
+        return;
+    }
+
+    PHENYL_LOGD(LOGGER, "Loading {} queued levels", queuedLoads.size());
+    world.deferSignals();
+    for (auto& i : queuedLoads) {
+        i->loadImmediate(world, serializer);
+    }
+    queuedLoads.clear();
+    world.deferSignalsEnd();
 }
 
 void LevelManager::dump (std::ostream& file) const {
@@ -184,23 +214,31 @@ std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (std::ifstream file, component::World& world, component::EntityComponentSerializer& serializer) : file{std::move(file)}, world{world}, serializer{serializer} {
+Level::Level (std::ifstream file, LevelManager& manager) : file{std::move(file)}, manager{manager} {
     PHENYL_DASSERT(!this->file.bad());
     startPos = this->file.tellg();
 }
 
-void Level::load (bool additive) {
-    if (!additive) {
-        PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
-        world.clear();
-    }
-
-    world.deferSignals();
-
+void Level::loadImmediate (component::World& world, component::EntityComponentSerializer& serializer) {
     file.seekg(startPos);
     LevelSerializable serializable{world, serializer};
     LevelMarker marker{};
     common::DeserializeFromJson(file, serializable, marker);
+}
 
-    world.deferSignalsEnd();
+void Level::load (bool additive) {
+    // if (!additive) {
+    //     PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
+    //     world.clear();
+    // }
+    //
+    // world.deferSignals();
+    //
+    // file.seekg(startPos);
+    // LevelSerializable serializable{world, serializer};
+    // LevelMarker marker{};
+    // common::DeserializeFromJson(file, serializable, marker);
+    //
+    // world.deferSignalsEnd();
+    manager.queueLoad(assetFromThis(), additive);
 }

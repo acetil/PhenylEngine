@@ -17,6 +17,7 @@ namespace breakout {
         phenyl::Asset<phenyl::Prefab> tilePrefab;
 
         void init () override;
+        void postInit() override;
     public:
         BreakoutApp (phenyl::ApplicationProperties properties);
 

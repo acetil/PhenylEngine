@@ -26,11 +26,18 @@ void test::TestApp::init () {
     InitBullet(this, world());
     InitPlayer(this);
 
+    auto& input = runtime().resource<phenyl::GameInput>();
+    stepAction = input.addAction("debug_step");
+    consoleAction = input.addAction("debug_console");
+
+    input.addActionBinding("debug_step", "keyboard.key_f7");
+    input.addActionBinding("debug_console", "keyboard.key_f12");
+
     runtime().addSystem<phenyl::FixedUpdate>("TestApp::fixedUpdate", this, &TestApp::fixedUpdate);
     runtime().addSystem<phenyl::Update>("TestApp::update", this, &TestApp::update);
+}
 
-    auto& input = runtime().resource<phenyl::GameInput>();
-
+void test::TestApp::postInit () {
     phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
 
     auto& uiManager = runtime().resource<phenyl::UIManager>();
@@ -66,12 +73,6 @@ void test::TestApp::init () {
         .withOffset({200, 100}));*/
     auto* labelWidget = column->emplaceBack<phenyl::ui::LabelWidget>("Hello World 2!");
     labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
-
-    stepAction = input.addAction("debug_step");
-    consoleAction = input.addAction("debug_console");
-
-    input.addActionBinding("debug_step", "keyboard.key_f7");
-    input.addActionBinding("debug_console", "keyboard.key_f12");
 
     testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
 }

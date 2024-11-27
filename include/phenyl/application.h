@@ -35,6 +35,7 @@ namespace phenyl {
         public:
             virtual ~ApplicationBase() = default;
 
+            virtual void postInit () {}
             virtual void shutdown () {
 
             }

@@ -10,6 +10,9 @@
 #include "common/serialization/serializer.h"
 
 namespace phenyl::common {
+    template <typename T>
+    class IAssetType;
+
     namespace detail {
         template <typename T>
         class AssetCache;
@@ -23,8 +26,12 @@ namespace phenyl::common {
 
             template <typename T>
             friend class common::Asset;
+
+            template <typename T>
+            friend class common::IAssetType;
         };
     }
+
     template <typename T>
     class Asset {
     private:
@@ -32,6 +39,7 @@ namespace phenyl::common {
         T* ptr;
 
         friend class Assets;
+        friend class IAssetType<T>;
         friend class detail::AssetCache<T>;
         Asset (std::size_t id, T* ptr) : rId{id}, ptr{ptr} {}
     public:
@@ -114,6 +122,26 @@ namespace phenyl::common {
         [[nodiscard]] std::string_view path () const {
             return detail::AssetBase::GetPath(meta::type_index<T>(), rId);
         }
+    };
+
+    template <typename T>
+    class IAssetType {
+    private:
+        std::optional<std::size_t> rId = 0;
+    public:
+        virtual ~IAssetType () = default;
+
+        Asset<T> assetFromThis () {
+            if (!rId) {
+                return Asset<T>{};
+            }
+
+            detail::AssetBase::IncRefCount(meta::type_index<T>(), *rId);
+
+            return Asset<T>{*rId, static_cast<T*>(this)};
+        }
+
+        friend class Assets;
     };
 
     template <typename T>

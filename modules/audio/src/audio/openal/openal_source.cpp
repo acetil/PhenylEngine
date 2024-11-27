@@ -47,7 +47,7 @@ OpenALSource& OpenALSource::operator= (OpenALSource&& other) noexcept {
 }
 
 void OpenALSource::playBuffer (const OpenALBuffer& buffer) {
-    PHENYL_LOGD(LOGGER, "Source id={} playing buffer id={}", sourceId, buffer.id());
+    PHENYL_TRACE(LOGGER, "Source id={} playing buffer id={}", sourceId, buffer.id());
 
     alGetError();
     alSourcei(sourceId, AL_BUFFER, (ALint)buffer.id());

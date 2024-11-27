@@ -27,6 +27,9 @@ namespace phenyl::runtime {
         }
 
         virtual void run (PhenylRuntime& runtime) = 0;
+        virtual bool exclusive () const noexcept {
+            return false;
+        }
 
         const std::unordered_set<IRunnableSystem*>& getPrecedingSystems () const {
             return parentSystems;
@@ -62,6 +65,10 @@ namespace phenyl::runtime {
         void run (PhenylRuntime& runtime) override {
             func();
         }
+
+        bool exclusive () const noexcept override {
+            return true;
+        }
     };
 
     template <typename Stage, typename T>
@@ -73,6 +80,10 @@ namespace phenyl::runtime {
 
         void run (PhenylRuntime& runtime) override {
             func(runtime);
+        }
+
+        bool exclusive () const noexcept override {
+            return true;
         }
     };
 

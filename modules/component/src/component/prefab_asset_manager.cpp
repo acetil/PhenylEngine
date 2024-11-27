@@ -87,13 +87,13 @@ component::Prefab* component::PrefabAssetManager::load (std::ifstream& data, std
     auto* ptr = prefab.get();
     prefabs[id] = std::move(prefab);
 
-    PHENYL_LOGD(LOGGER, "Loaded prefab {}!", id);
+    PHENYL_TRACE(LOGGER, "Loaded prefab {}!", id);
 
     return ptr;
 }
 
 void component::PrefabAssetManager::queueUnload (std::size_t id) {
-    PHENYL_LOGD(LOGGER, "Unload requested for prefab {}!", id);
+    PHENYL_TRACE(LOGGER, "Unload requested for prefab {}!", id);
 }
 
 void component::PrefabAssetManager::selfRegister () {

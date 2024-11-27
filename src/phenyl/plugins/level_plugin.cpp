@@ -16,5 +16,8 @@ void LevelPlugin::init (PhenylRuntime& runtime) {
     runtime.addPlugin<PrefabPlugin>();
 
     runtime.addResource<game::LevelManager>(runtime.world(), runtime.serializer());
-    runtime.resource<game::LevelManager>().selfRegister();
+    auto& levelManager = runtime.resource<game::LevelManager>();
+
+    levelManager.selfRegister();
+    runtime.addSystem<FrameBegin>("LevelManager::loadLevels", &levelManager, &game::LevelManager::loadLevels);
 }

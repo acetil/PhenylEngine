@@ -54,7 +54,7 @@ const std::byte* audio::WAVFile::getData () const {
 }
 
 util::Optional<audio::WAVFile> audio::WAVFile::Load (std::istream& file) {
-    PHENYL_LOGD(LOGGER, "Loading WAV file");
+    PHENYL_TRACE(LOGGER, "Loading WAV file");
     auto headerOpt = readHeader(file);
     if (!headerOpt) {
         return util::NullOpt;

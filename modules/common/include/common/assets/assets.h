@@ -184,6 +184,10 @@ namespace phenyl::common {
             }
             cache->putData(id, ptr);
 
+            if constexpr (std::derived_from<T, IAssetType<T>>) {
+                static_cast<IAssetType<T>*>(ptr)->rId = id;
+            }
+
             return Asset<T>{id, ptr};
         }
 

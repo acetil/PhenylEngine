@@ -49,37 +49,21 @@ void BreakoutApp::init () {
     breakout::InitTile(this, world());
     breakout::InitWall(this, world());
     TileController::Init(this, runtime());
-
-    //tilePrefab = phenyl::Assets::Load<phenyl::Prefab>("resources/prefabs/tile");
-
-    //pointsLabel.text = "Points: 0";
-    //livesLabel.text = "Lives: " + std::to_string(lives);
-
+}
+void BreakoutApp::postInit () {
     auto& uiManager = runtime().resource<phenyl::UIManager>();
 
-    //uiManager.addUIComp(pointsLabel, {180, 30});
-    //uiManager.addUIComp(livesLabel, {280, 30});
-    //auto* textBox = uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::Modifier{}.withOffset({180, 30}));
-    //pointsLabel = textBox->emplaceBack<phenyl::ui::LabelWidget>("Points: 0", 14, phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
-    livesLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Lives: {}", lives), 14, phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"), phenyl::ui::Modifier{}.withOffset({280, 30}));
+    livesLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Lives: {}", lives), 14,
+        phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"), phenyl::ui::Modifier{}.withOffset({280, 30}));
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
-
-    /*for (std::size_t i = 0; i < TileRows; i++) {
-        for (std::size_t j = 0; j < TileCols; j++) {
-            auto tileEntity = world().create();
-            tilePrefab->instantiate(tileEntity);
-            tileEntity.apply<phenyl::GlobalTransform2D>([i, j] (phenyl::GlobalTransform2D& transform) {
-                transform.transform2D.setPosition(glm::vec2{XStart + (float)j * (TileWidth + Padding), YStart - (float)i * (TileHeight + Padding)});
-            });
-        }
-    }*/
 
     auto* renderConfig = runtime().resourceMaybe<phenyl::DebugRenderConfig>();
     if (renderConfig) {
         renderConfig->doPhysicsRender = true;
     }
 }
+
 
 void BreakoutApp::addPoints (int points) {
     totalPoints += points;

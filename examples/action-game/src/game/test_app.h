@@ -40,6 +40,7 @@ namespace test {
         TestApp (phenyl::ApplicationProperties properties);
 
         void init () override;
+        void postInit() override;
         void update ();
         void fixedUpdate ();
 

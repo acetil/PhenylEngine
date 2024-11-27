@@ -25,7 +25,15 @@ void AbstractStage::run () {
 
     runtime.world().defer();
     for (auto* i : orderedSystems) {
+        if (i->exclusive()) {
+            runtime.world().deferEnd();
+        }
+
         i->run(runtime);
+
+        if (i->exclusive()) {
+            runtime.world().defer();
+        }
     }
     runtime.world().deferEnd();
 

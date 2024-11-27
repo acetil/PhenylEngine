@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "util/map.h"
+#include "common/assets/asset.h"
 #include "common/assets/asset_manager.h"
 #include "component/entity.h"
 #include "runtime/iresource.h"
@@ -18,6 +19,9 @@ namespace phenyl::game {
         component::World& world;
         component::EntityComponentSerializer& serializer;
 
+        std::vector<common::Asset<Level>> queuedLoads;
+        bool queuedClear = false;
+
         void queueUnload(std::size_t id) override;
         [[nodiscard]] const char* getFileType() const override;
     protected:
@@ -30,6 +34,9 @@ namespace phenyl::game {
         [[nodiscard]] std::string_view getName() const noexcept override;
 
         void selfRegister ();
+
+        void queueLoad (common::Asset<Level> level, bool additive);
+        void loadLevels ();
 
         void dump (std::ostream& file) const;
     };

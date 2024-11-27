@@ -12,15 +12,16 @@ namespace phenyl::game {
 
     class LevelManager;
 
-    class Level {
+    class Level : public common::IAssetType<Level> {
     private:
         //std::vector<detail::LevelEntity> entities;
         std::ifstream file;
         std::ifstream::pos_type startPos;
-        component::World& world;
-        component::EntityComponentSerializer& serializer;
+        LevelManager& manager;
 
-        Level (std::ifstream file, component::World& world, component::EntityComponentSerializer& serializer);
+        Level (std::ifstream file, LevelManager& manager);
+
+        void loadImmediate (component::World& world, component::EntityComponentSerializer& serializer);
         friend LevelManager;
     public:
         void load (bool additive=false);

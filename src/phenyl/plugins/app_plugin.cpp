@@ -15,15 +15,8 @@ void AppPlugin::init (runtime::PhenylRuntime& runtime) {
     app->engineRuntime = &runtime;
 
     app->_init();
+    runtime.addSystem<PostInit>("Application::postInit", app.get(), &ApplicationBase::postInit);
 }
-
-/*void AppPlugin::update (runtime::PhenylRuntime& runtime, double deltaTime) {
-    app->update(deltaTime);
-}
-
-void AppPlugin::fixedUpdate (runtime::PhenylRuntime& runtime, double deltaTime) {
-    app->fixedUpdate(deltaTime);
-}*/
 
 void AppPlugin::shutdown (phenyl::runtime::PhenylRuntime& runtime) {
     app->shutdown();
