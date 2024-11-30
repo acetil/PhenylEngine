@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 
-#include "component/component_serializer.h"
+#include "core/serialization/component_serializer.h"
 
 namespace phenyl::game {
     namespace detail {
@@ -12,7 +12,7 @@ namespace phenyl::game {
 
     class LevelManager;
 
-    class Level : public common::IAssetType<Level> {
+    class Level : public core::IAssetType<Level> {
     private:
         //std::vector<detail::LevelEntity> entities;
         std::ifstream file;
@@ -21,7 +21,7 @@ namespace phenyl::game {
 
         Level (std::ifstream file, LevelManager& manager);
 
-        void loadImmediate (component::World& world, component::EntityComponentSerializer& serializer);
+        void loadImmediate (core::World& world, core::EntityComponentSerializer& serializer);
         friend LevelManager;
     public:
         void load (bool additive=false);

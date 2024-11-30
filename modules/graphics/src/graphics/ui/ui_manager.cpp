@@ -1,8 +1,8 @@
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #include "graphics/ui/ui_manager.h"
 
-#include "common/input/game_input.h"
+#include "core/input/game_input.h"
 #include "graphics/renderer.h"
 #include "graphics/ui/widgets/event.h"
 
@@ -12,7 +12,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (common::GameInput& input) : selectAction{input.addAction("ui_select")}, mousePos{input.addAxis2D("ui_mouse")} {
+UIManager::UIManager (core::GameInput& input) : selectAction{input.addAction("ui_select")}, mousePos{input.addAxis2D("ui_mouse")} {
     rootWidget = std::make_unique<RootWidget>();
 
     input.addActionBinding("ui_select", "mouse.button_left");

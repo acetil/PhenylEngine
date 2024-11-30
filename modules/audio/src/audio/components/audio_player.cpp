@@ -2,7 +2,7 @@
 
 using namespace phenyl::audio;
 
-void AudioPlayer::play (const common::Asset<AudioSample>& sample) {
+void AudioPlayer::play (const core::Asset<AudioSample>& sample) {
     source.play(sample);
 }
 

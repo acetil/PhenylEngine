@@ -1,3 +1,3 @@
 #pragma once
 
-#include "common/serialization/serializer_forward.h"
+#include "core/serialization/serializer_forward.h"

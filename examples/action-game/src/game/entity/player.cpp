@@ -1,7 +1,7 @@
 #include <cmath>
 #include <iostream>
 
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/engine.h>
 #include <phenyl/input.h>
 #include <phenyl/components/audio_player.h>

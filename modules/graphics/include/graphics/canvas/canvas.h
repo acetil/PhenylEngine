@@ -12,12 +12,12 @@ namespace phenyl::graphics {
     class Renderer;
     class CanvasRenderLayer;
 
-    class Canvas : public runtime::IResource, private IViewportUpdateHandler {
+    class Canvas : public core::IResource, private IViewportUpdateHandler {
     private:
         GlyphAtlas atlas;
         CanvasRenderLayer& layer;
         std::unique_ptr<FontManager> fontManager;
-        common::Asset<Font> defaultFontAsset;
+        core::Asset<Font> defaultFontAsset;
 
         std::vector<glm::vec2> offsetStack;
         glm::ivec2 canvasResolution;
@@ -40,9 +40,9 @@ namespace phenyl::graphics {
             render({0, 0}, rect, style);
         }
 
-        void renderText (glm::vec2 pos, common::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour = {1.0f, 1.0f, 1.0f});
+        void renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour = {1.0f, 1.0f, 1.0f});
 
-        common::Asset<Font>& defaultFont () noexcept {
+        core::Asset<Font>& defaultFont () noexcept {
             return defaultFontAsset;
         }
 

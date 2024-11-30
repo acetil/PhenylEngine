@@ -1,9 +1,9 @@
-#include "common/serialization/serializer_impl.h"
+#include "core/serialization/serializer_impl.h"
 #include "util/random.h"
 
 #include "graphics/particles/particle_system_2d.h"
 
-#include "common/serialization/backends.h"
+#include "core/serialization/backends.h"
 #include "graphics/detail/loggers.h"
 
 namespace phenyl::graphics {
@@ -171,7 +171,7 @@ phenyl::util::Optional<ParticleProperties2D> phenyl::graphics::LoadParticlePrope
 
     return deserializer.deserialize<ParticleProperties2D>();*/
     try {
-        return phenyl::common::DeserializeFromJson<ParticleProperties2D>(file);
+        return phenyl::core::DeserializeFromJson<ParticleProperties2D>(file);
     } catch (const DeserializeException& e) {
         PHENYL_LOGE(LOGGER, "Failed to deserialize particle properties: {}", e.what());
         return util::NullOpt;

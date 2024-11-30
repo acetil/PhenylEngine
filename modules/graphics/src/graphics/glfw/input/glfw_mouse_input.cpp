@@ -18,7 +18,7 @@ GLFWMouseInput::GLFWMouseInput (GLFWwindow* window) : window{window} {
     buttonIds["button_8"] = GLFW_MOUSE_BUTTON_8;
 }
 
-const phenyl::common::ButtonInputSource* GLFWMouseInput::getButtonSource (std::string_view sourcePath) {
+const phenyl::core::ButtonInputSource* GLFWMouseInput::getButtonSource (std::string_view sourcePath) {
     auto idIt = buttonIds.find(sourcePath);
     if (idIt == buttonIds.end()) {
         PHENYL_LOGE(LOGGER, "Invalid button: \"{}\"", sourcePath);
@@ -30,11 +30,11 @@ const phenyl::common::ButtonInputSource* GLFWMouseInput::getButtonSource (std::s
         return &sourceIt->second;
     }
 
-    auto it = sources.emplace(idIt->second, common::ButtonInputSource{}).first;
+    auto it = sources.emplace(idIt->second, core::ButtonInputSource{}).first;
     return &it->second;
 }
 
-const phenyl::common::Axis2DInputSource* GLFWMouseInput::getAxis2DSource (std::string_view sourcePath) {
+const phenyl::core::Axis2DInputSource* GLFWMouseInput::getAxis2DSource (std::string_view sourcePath) {
     if (sourcePath != "mouse_pos") {
         PHENYL_LOGE(LOGGER, "Invalid Axis2D source: \"{}\"", sourcePath);
         return nullptr;

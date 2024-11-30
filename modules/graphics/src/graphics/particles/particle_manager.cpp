@@ -1,4 +1,4 @@
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #include "graphics/particles/particle_manager.h"
 
@@ -54,5 +54,5 @@ std::string_view phenyl::graphics::ParticleManager2D::getName () const noexcept 
 }
 
 void phenyl::graphics::ParticleManager2D::selfRegister () {
-    phenyl::common::Assets::AddManager(this);
+    phenyl::core::Assets::AddManager(this);
 }

@@ -4,7 +4,7 @@
 #include <optional>
 #include <memory>
 
-#include "runtime/iresource.h"
+#include "core/iresource.h"
 #include "buffer.h"
 #include "uniform_buffer.h"
 #include "shader.h"
@@ -19,7 +19,7 @@
 #include "graphics/texture.h"
 
 namespace phenyl::graphics {
-    class Renderer : public runtime::IResource {
+    class Renderer : public core::IResource {
     private:
         std::vector<std::unique_ptr<AbstractRenderLayer>> layers;
     protected:

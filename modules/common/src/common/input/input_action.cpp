@@ -1,10 +1,10 @@
 #include <numeric>
 
-#include "common/input/input_action.h"
-#include "common/input/input_source.h"
+#include "core/input/input_action.h"
+#include "core/input/input_source.h"
 #include "logging/logging.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 void ButtonInputBinding::addSource (const ButtonInputSource* source) {
     PHENYL_DASSERT(source);

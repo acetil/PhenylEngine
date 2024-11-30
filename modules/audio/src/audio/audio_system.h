@@ -2,16 +2,16 @@
 
 #include <memory>
 
-#include "common/assets/asset_manager.h"
+#include "core/assets/asset_manager.h"
 #include "util/map.h"
 #include "util/fl_vector.h"
 
 #include "audio/audio_source.h"
 #include "audio/audio_sample.h"
 #include "audio/audio_backend.h"
-#include "runtime/iresource.h"
+#include "core/iresource.h"
 
-namespace phenyl::component {
+namespace phenyl::core {
     class World;
     class EntityComponentSerializer;
 }
@@ -19,7 +19,7 @@ namespace phenyl::component {
 namespace phenyl::audio {
     class WAVFile;
 
-    class AudioSystem : public common::AssetManager<AudioSample>, public runtime::IResource {
+    class AudioSystem : public core::AssetManager<AudioSample>, public core::IResource {
     private:
         static constexpr std::size_t EMPTY_INDEX = static_cast<std::size_t>(-1);
         struct VirtualSource {
@@ -76,7 +76,7 @@ namespace phenyl::audio {
         AudioSource createSource ();
 
         void selfRegister ();
-        void addComponents (component::World& world, component::EntityComponentSerializer& serializer);
+        void addComponents (core::World& world, core::EntityComponentSerializer& serializer);
 
         void playSample (AudioSource& source, const AudioSample& sample);
 

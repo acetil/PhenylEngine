@@ -3,14 +3,14 @@
 #include "phenyl/plugin.h"
 #include "phenyl/runtime.h"
 
-namespace phenyl::component {
+namespace phenyl::core {
     class PrefabAssetManager;
 }
 
 namespace phenyl {
     class PrefabPlugin : public IPlugin {
     private:
-        std::unique_ptr<component::PrefabAssetManager> manager;
+        std::unique_ptr<core::PrefabAssetManager> manager;
     public:
         PrefabPlugin ();
         ~PrefabPlugin() override;

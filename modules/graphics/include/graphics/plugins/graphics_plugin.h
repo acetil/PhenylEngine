@@ -1,13 +1,15 @@
 #pragma once
 
+#include <memory>
+
 #include "graphics/viewport.h"
-#include "runtime/plugin.h"
+#include "core/plugin.h"
 
 namespace phenyl::graphics {
     class DebugLayer;
     class TextureManager;
 
-    class GraphicsPlugin : public runtime::IPlugin {
+    class GraphicsPlugin : public core::IPlugin {
     private:
         std::unique_ptr<TextureManager> textureManager;
         //DebugLayer* debugLayer = nullptr;
@@ -16,6 +18,6 @@ namespace phenyl::graphics {
         GraphicsPlugin ();
         ~GraphicsPlugin () override;
         [[nodiscard]] std::string_view getName() const noexcept override;
-        void init (runtime::PhenylRuntime& runtime) override;
+        void init (core::PhenylRuntime& runtime) override;
     };
 }

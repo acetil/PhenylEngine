@@ -6,24 +6,24 @@
 #include <vector>
 
 #include "graphics/font/glyph_atlas.h"
-#include "common/input/axis_action.h"
-#include "common/input/input_action.h"
+#include "core/input/axis_action.h"
+#include "core/input/input_action.h"
 #include "graphics/canvas/canvas.h"
-#include "runtime/iresource.h"
+#include "core/iresource.h"
 #include "widgets/root.h"
 #include "widgets/widget.h"
 
 namespace phenyl::graphics {
-    class UIManager : public runtime::IResource {
+    class UIManager : public core::IResource {
     private:
         bool mouseDown = false;
         std::unique_ptr<RootWidget> rootWidget;
         Widget* focusedWidget = nullptr;
 
-        common::InputAction selectAction;
-        common::Axis2DInput mousePos;
+        core::InputAction selectAction;
+        core::Axis2DInput mousePos;
     public:
-        UIManager (common::GameInput& input);
+        UIManager (core::GameInput& input);
 
         void renderUI (Canvas& canvas);
         void updateUI ();

@@ -8,7 +8,7 @@
 
 using namespace phenyl::graphics;
 
-struct ParticleData : public phenyl::runtime::IResource {
+struct ParticleData : public phenyl::core::IResource {
     ParticleRenderLayer* layer;
 
     ParticleData (ParticleRenderLayer* layer) : layer{layer} {}
@@ -18,12 +18,12 @@ struct ParticleData : public phenyl::runtime::IResource {
     }
 };
 
-static void UpdateSystem (const phenyl::runtime::Resources<const phenyl::runtime::DeltaTime, ParticleManager2D>& resources) {
+static void UpdateSystem (const phenyl::core::Resources<const phenyl::core::DeltaTime, ParticleManager2D>& resources) {
     auto& [deltaTime, manager] = resources;
     manager.update(static_cast<float>(deltaTime()));
 }
 
-static void RenderSystem (const phenyl::runtime::Resources<ParticleData, ParticleManager2D>& resources) {
+static void RenderSystem (const phenyl::core::Resources<ParticleData, ParticleManager2D>& resources) {
     auto& [data, manager] = resources;
     data.layer->bufferData(manager);
 }
@@ -35,7 +35,7 @@ std::string_view Particle2DPlugin::getName () const noexcept {
     return "Particle2DPlugin";
 }
 
-void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
+void Particle2DPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
     auto& renderer = runtime.resource<Renderer>();
@@ -50,8 +50,8 @@ void Particle2DPlugin::init (runtime::PhenylRuntime& runtime) {
     layer = &renderer.addLayer<ParticleRenderLayer>();
     runtime.addResource<ParticleData>(layer);
 
-    auto& particleUpdateSystem = runtime.addSystem<phenyl::runtime::Update>("ParticleManager::Update", UpdateSystem);
+    auto& particleUpdateSystem = runtime.addSystem<phenyl::core::Update>("ParticleManager::Update", UpdateSystem);
     ParticleEmitter2D::AddSystems(runtime, particleUpdateSystem);
 
-    runtime.addSystem<phenyl::runtime::Render>("ParticleManager::Render", RenderSystem);
+    runtime.addSystem<phenyl::core::Render>("ParticleManager::Render", RenderSystem);
 }

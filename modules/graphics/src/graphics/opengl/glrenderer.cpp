@@ -1,7 +1,7 @@
 #include "graphics/opengl/glrenderer.h"
 
 #include "util/profiler.h"
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #include "resources/shaders/box_vertex.vert.h"
 #include "resources/shaders/box_fragment.frag.h"
@@ -136,7 +136,7 @@ std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool read
 
 void GLRenderer::loadDefaultShaders () {
     PHENYL_TRACE(LOGGER, "Loading virtual box shader!");
-    boxShader = common::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
+    boxShader = core::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
             .withUniformBlock("Uniform")
@@ -145,7 +145,7 @@ void GLRenderer::loadDefaultShaders () {
 
 
     PHENYL_TRACE(LOGGER, "Loading virtual debug shader!");
-    debugShader = common::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
+    debugShader = core::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
             .withUniformBlock("Uniform")
@@ -153,7 +153,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(LOGGER, "Loading virtual sprite shader!");
-    spriteShader = common::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
+    spriteShader = core::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
             .withUniformBlock("Camera")
@@ -162,7 +162,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(LOGGER, "Loading virtual canvas shader!");
-    textShader = common::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
+    textShader = core::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
             .withUniformBlock("Uniform")
@@ -171,7 +171,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(LOGGER, "Loading virtual particle shader!");
-    particleShader = common::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
+    particleShader = core::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
             .withUniformBlock("Camera")

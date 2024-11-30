@@ -1,16 +1,16 @@
 #include "entity_layer.h"
-#include "common/assets/assets.h"
-#include "common/components/2d/global_transform.h"
+#include "core/assets/assets.h"
+#include "core/components/2d/global_transform.h"
 #include "graphics/renderer.h"
 #include "graphics/components/2d/sprite.h"
-#include "runtime/runtime.h"
+#include "core/runtime.h"
 
 #define MAX_ENTITIES 512
 #define BUFFER_SIZE (MAX_ENTITIES * 2 * 6)
 
 using namespace phenyl::graphics;
 
-struct EntityRenderData2D : public phenyl::runtime::IResource {
+struct EntityRenderData2D : public phenyl::core::IResource {
     explicit EntityRenderData2D (EntityRenderLayer& layer) : layer{layer} {}
 
     EntityRenderLayer& layer;
@@ -20,12 +20,12 @@ struct EntityRenderData2D : public phenyl::runtime::IResource {
     }
 };
 
-static void PushEntitySystem (const phenyl::runtime::Resources<EntityRenderData2D>& resources, const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+static void PushEntitySystem (const phenyl::core::Resources<EntityRenderData2D>& resources, const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
     auto& [data] = resources;
     data.layer.pushEntity(transform, sprite);
 }
 
-static void BufferEntitiesSystem (const phenyl::runtime::Resources<EntityRenderData2D, const Camera>& resources) {
+static void BufferEntitiesSystem (const phenyl::core::Resources<EntityRenderData2D, const Camera>& resources) {
     auto& [data, camera] = resources;
     data.layer.bufferEntities(camera);
 }
@@ -38,7 +38,7 @@ std::string_view EntityRenderLayer::getName () const {
 
 void EntityRenderLayer::init (Renderer& renderer) {
     BufferBinding vertexBinding;
-    auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/sprite");
+    auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/sprite");
     pipeline = renderer.buildPipeline()
            .withShader(shader)
            .withBuffer<Vertex>(vertexBinding)
@@ -70,11 +70,11 @@ void EntityRenderLayer::render () {
     samplerRenders.clear();
 }
 
-void EntityRenderLayer::preRender (phenyl::component::World& world, const Camera& camera) {
+void EntityRenderLayer::preRender (phenyl::core::World& world, const Camera& camera) {
     bufferData(world, camera);
 }
 
-void EntityRenderLayer::pushEntity (const common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite) {
     if (!sprite.texture) {
         return;
     }
@@ -132,9 +132,9 @@ void EntityRenderLayer::bufferEntities (const Camera& camera) {
 }
 
 
-void EntityRenderLayer::bufferData (phenyl::component::World& world, const Camera& camera) {
+void EntityRenderLayer::bufferData (phenyl::core::World& world, const Camera& camera) {
 
-    world.query<phenyl::common::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::common::GlobalTransform2D& transform, const Sprite2D& sprite) {
+    world.query<phenyl::core::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
         if (!sprite.texture) {
             return;
         }
@@ -190,9 +190,9 @@ void EntityRenderLayer::bufferData (phenyl::component::World& world, const Camer
     uniformBuffer->camera = camera.getCamMatrix();
 }
 
-void EntityRenderLayer::addSystems (runtime::PhenylRuntime& runtime) {
+void EntityRenderLayer::addSystems (core::PhenylRuntime& runtime) {
     runtime.addResource<EntityRenderData2D>(*this);
 
-    runtime.addSystem<phenyl::runtime::Render>("EntityRender::PushEntity", PushEntitySystem)
-        .runBefore(runtime.addSystem<phenyl::runtime::Render>("EntityRender::BufferEntities", BufferEntitiesSystem));
+    runtime.addSystem<phenyl::core::Render>("EntityRender::PushEntity", PushEntitySystem)
+        .runBefore(runtime.addSystem<phenyl::core::Render>("EntityRender::BufferEntities", BufferEntitiesSystem));
 }

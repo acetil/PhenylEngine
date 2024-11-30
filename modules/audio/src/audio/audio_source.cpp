@@ -38,7 +38,7 @@ void audio::AudioSource::play (const audio::AudioSample& sample) {
     audioSystem->playSample(*this, sample);
 }
 
-void audio::AudioSource::play (const common::Asset<AudioSample>& sample) {
+void audio::AudioSource::play (const core::Asset<AudioSample>& sample) {
     PHENYL_ASSERT_MSG(sample, "Attempted to play empty sample");
 
     play(*sample);

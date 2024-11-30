@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/assets/asset.h"
+#include "core/assets/asset.h"
 #include "util/meta.h"
 
 #include "buffer.h"
@@ -122,7 +122,7 @@ namespace phenyl::graphics {
         virtual ~IPipelineBuilder() = default;
 
         virtual void withGeometryType (GeometryType type) = 0;
-        virtual void withShader (common::Asset<Shader> shader) = 0;
+        virtual void withShader (core::Asset<Shader> shader) = 0;
 
         virtual BufferBinding withBuffer (std::size_t type, std::size_t size, BufferInputRate inputRate) = 0;
         virtual void withAttrib (ShaderDataType type, unsigned int location, BufferBinding binding, std::size_t offset) = 0;
@@ -146,7 +146,7 @@ namespace phenyl::graphics {
             return *this;
         }
 
-        PipelineBuilder& withShader (common::Asset<Shader> shader) {
+        PipelineBuilder& withShader (core::Asset<Shader> shader) {
             PHENYL_DASSERT(builder);
             builder->withShader(std::move(shader));
 

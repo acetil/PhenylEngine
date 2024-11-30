@@ -1,12 +1,13 @@
 #include "graphics/renderer.h"
 
-#include "common/input/game_input.h"
-#include "common/plugins/input_plugin.h"
+#include "core/input/game_input.h"
+#include "core/plugins/input_plugin.h"
+#include "core/runtime.h"
 
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
-static void InputUpdateSystem (const phenyl::runtime::Resources<GameInput>& resources) {
+static void InputUpdateSystem (const Resources<GameInput>& resources) {
     resources.get<GameInput>().update();
 }
 
@@ -14,12 +15,12 @@ std::string_view InputPlugin::getName () const noexcept {
     return "InputPlugin";
 }
 
-void InputPlugin::init (runtime::PhenylRuntime& runtime) {
+void InputPlugin::init (PhenylRuntime& runtime) {
     runtime.addResource<GameInput>();
 
     auto& input = runtime.resource<GameInput>();
     auto& renderer = runtime.resource<graphics::Renderer>();
     renderer.getViewport().addInputDevices(input);
 
-    runtime.addSystem<phenyl::runtime::FrameBegin>("GameInput::Update", InputUpdateSystem);
+    runtime.addSystem<FrameBegin>("GameInput::Update", InputUpdateSystem);
 }

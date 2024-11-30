@@ -1,11 +1,11 @@
 #pragma once
 
-#include "runtime/plugin.h"
+#include "core/plugin.h"
 
 namespace phenyl::audio {
     class AudioSystem;
 
-    class AudioPlugin : public runtime::IPlugin {
+    class AudioPlugin : public core::IPlugin {
     private:
         std::unique_ptr<AudioSystem> audioSystem;
     public:
@@ -14,6 +14,6 @@ namespace phenyl::audio {
 
         std::string_view getName() const noexcept override;
 
-        void init (runtime::PhenylRuntime& runtime) override;
+        void init (core::PhenylRuntime& runtime) override;
     };
 }

@@ -3,11 +3,11 @@
 #include "util/map.h"
 
 #include "graphics/particles/particle_system_2d.h"
-#include "common/assets/asset_manager.h"
-#include "runtime/iresource.h"
+#include "core/assets/asset_manager.h"
+#include "core/iresource.h"
 
 namespace phenyl::graphics {
-    class ParticleManager2D : public phenyl::common::AssetManager<ParticleSystem2D>, public runtime::IResource {
+    class ParticleManager2D : public phenyl::core::AssetManager<ParticleSystem2D>, public core::IResource {
     private:
         util::Map<std::size_t, std::unique_ptr<ParticleSystem2D>> systems;
         std::size_t systemMaxParticles;

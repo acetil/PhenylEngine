@@ -1,7 +1,7 @@
 #include "graphics/renderlayer/canvas_layer.h"
 #include "graphics/font/glyph_atlas.h"
 
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #include "logging/logging.h"
 
@@ -18,7 +18,7 @@ std::string_view CanvasRenderLayer::getName () const {
 
 void CanvasRenderLayer::init (Renderer& renderer) {
     BufferBinding textBinding;
-    auto textShader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/canvas");
+    auto textShader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/canvas");
     pipeline = renderer.buildPipeline()
                        .withShader(textShader)
                        .withBuffer<Vertex>(textBinding)

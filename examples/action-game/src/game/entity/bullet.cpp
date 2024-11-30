@@ -1,4 +1,4 @@
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/signals/physics.h>
 

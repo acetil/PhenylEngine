@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 
-#include "common/assets/asset_manager.h"
+#include "core/assets/asset_manager.h"
 #include "util/map.h"
 
 #include "graphics/graphics_headers.h"
@@ -52,7 +52,7 @@ namespace phenyl::graphics {
         void bind ();
     };
 
-    class GlShaderManager : public common::AssetManager<Shader> {
+    class GlShaderManager : public core::AssetManager<Shader> {
     private:
         std::unordered_map<std::size_t, Shader> shaders;
     public:

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/serialization/serializer.h"
-#include "common/serialization/serializer_impl.h"
-#include "common/serialization/backends.h"
+#include "core/serialization/serializer.h"
+#include "core/serialization/serializer_impl.h"
+#include "core/serialization/backends.h"
 
 #include "serialization_fwd.h"

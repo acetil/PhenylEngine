@@ -1,6 +1,6 @@
 #pragma once
 
-#include "runtime/iresource.h"
+#include "core/iresource.h"
 
 namespace phenyl {
     using IResource = runtime::IResource;

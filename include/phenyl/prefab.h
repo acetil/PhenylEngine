@@ -1,8 +1,8 @@
 #pragma once
 
-#include "component/prefab.h"
+#include "core/prefab.h"
 
 namespace phenyl {
-    using Prefab = phenyl::component::Prefab;
+    using Prefab = phenyl::core::Prefab;
 }
 

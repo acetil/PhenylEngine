@@ -1,8 +1,8 @@
 #include <nlohmann/json.hpp>
 
-#include "common/serialization/backends.h"
+#include "core/serialization/backends.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 class JsonSerializer : public ISerializer {
 private:
@@ -357,21 +357,21 @@ public:
     }
 };
 
-void phenyl::common::SerializeToJson (std::ostream& stream, ISerializableBase& serializable, const std::byte* ptr, bool pretty) {
+void phenyl::core::SerializeToJson (std::ostream& stream, ISerializableBase& serializable, const std::byte* ptr, bool pretty) {
     JsonSerializer serializer{};
     serializable.serialize(serializer, ptr);
 
     stream << serializer.getJson().dump(pretty ? 4 : -1);
 }
 
-std::string phenyl::common::SerializeToJson (ISerializableBase& serializable, const std::byte* ptr, bool pretty) {
+std::string phenyl::core::SerializeToJson (ISerializableBase& serializable, const std::byte* ptr, bool pretty) {
     JsonSerializer serializer;
     serializable.serialize(serializer, ptr);
 
     return serializer.getJson().dump(pretty ? 4 : -1);
 }
 
-void phenyl::common::DeserializeFromJson (std::istream& stream, ISerializableBase& serializable, std::byte* ptr) {
+void phenyl::core::DeserializeFromJson (std::istream& stream, ISerializableBase& serializable, std::byte* ptr) {
     try {
         auto json = nlohmann::json::parse(stream);
         JsonDeserializer deserializer{json};
@@ -381,7 +381,7 @@ void phenyl::common::DeserializeFromJson (std::istream& stream, ISerializableBas
     }
 }
 
-void phenyl::common::DeserializeFromJson (std::string_view str, ISerializableBase& serializable, std::byte* ptr) {
+void phenyl::core::DeserializeFromJson (std::string_view str, ISerializableBase& serializable, std::byte* ptr) {
     try {
         auto json = nlohmann::json::parse(str);
         JsonDeserializer deserializer{json};

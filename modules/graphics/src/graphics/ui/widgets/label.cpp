@@ -7,11 +7,11 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"LABEL", detail::GRAPHICS_LOGGER};
 
-LabelWidget::LabelWidget (std::string text, unsigned int textSize, common::Asset<Font> font, const Modifier& modifier) : Widget{modifier}, labelText{std::move(text)}, labelTextSize{textSize} {
+LabelWidget::LabelWidget (std::string text, unsigned int textSize, core::Asset<Font> font, const Modifier& modifier) : Widget{modifier}, labelText{std::move(text)}, labelTextSize{textSize} {
     labelFont = std::move(font);
     updateModifier();
 }
-LabelWidget::~LabelWidget () = default;
+// LabelWidget::~LabelWidget () = default;
 
 void LabelWidget::render (Canvas& canvas) {
     if (!labelFont) {
@@ -35,7 +35,7 @@ void LabelWidget::setTextColour (glm::vec4 newColour) {
     labelColour = newColour;
 }
 
-void LabelWidget::setFont (common::Asset<Font> newFont) {
+void LabelWidget::setFont (core::Asset<Font> newFont) {
     labelFont = std::move(newFont);
     updateModifier();
 }

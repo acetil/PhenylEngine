@@ -1,7 +1,7 @@
-#include "common/serialization/serializer.h"
-#include "common/serialization/serializer_impl.h"
+#include "core/serialization/serializer.h"
+#include "core/serialization/serializer_impl.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 namespace {
     class BoolSerializable : public ISerializable<bool> {

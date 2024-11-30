@@ -1,13 +1,13 @@
 #pragma once
 
-#include "common/assets/asset.h"
-#include "common/serialization/serializer_forward.h"
-#include "component/forward.h"
+#include "core/assets/asset.h"
+#include "core/serialization/serializer_forward.h"
+#include "core/component/forward.h"
 #include "graphics/maths_headers.h"
-#include "runtime/delta_time.h"
-#include "runtime/runtime.h"
+#include "core/delta_time.h"
+#include "core/runtime.h"
 
-namespace phenyl::common {
+namespace phenyl::core {
     class GlobalTransform2D;
 }
 
@@ -16,9 +16,9 @@ namespace phenyl::graphics {
 
     struct ParticleEmitter2D {
     private:
-        void updateInternal (double deltaTime, const common::GlobalTransform2D& transform);
+        void updateInternal (double deltaTime, const core::GlobalTransform2D& transform);
     public:
-        phenyl::common::Asset<ParticleSystem2D> system;
+        phenyl::core::Asset<ParticleSystem2D> system;
         glm::vec2 direction{1.0f, 0.0f};
 
         float duration;
@@ -31,9 +31,9 @@ namespace phenyl::graphics {
         bool oneShot = false;
         bool enabled = true;
 
-        static void AddSystems (runtime::PhenylRuntime& runtime, runtime::System<runtime::Update>& particleUpdateSystem);
+        static void AddSystems (core::PhenylRuntime& runtime, core::System<core::Update>& particleUpdateSystem);
 
-        void update (const runtime::Resources<const runtime::DeltaTime>& resources, const common::GlobalTransform2D& transform);
+        void update (const core::Resources<const core::DeltaTime>& resources, const core::GlobalTransform2D& transform);
         void start ();
     };
 

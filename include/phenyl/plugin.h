@@ -1,12 +1,11 @@
 #pragma once
 
-#include "runtime/init_plugin.h"
-#include "runtime/plugin.h"
+#include "core/plugin.h"
 
 namespace phenyl {
-    using IInitPlugin = runtime::IInitPlugin;
-    using IPlugin = runtime::IPlugin;
+    using IInitPlugin = core::IInitPlugin;
+    using IPlugin = core::IPlugin;
 
     template <typename T>
-    concept PluginType = std::derived_from<T, runtime::IPlugin> || std::derived_from<T, runtime::IInitPlugin>;
+    concept PluginType = std::derived_from<T, core::IPlugin> || std::derived_from<T, core::IInitPlugin>;
 }

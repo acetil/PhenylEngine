@@ -1,9 +1,9 @@
 #include "logging/logging.h"
 
-#include "common/detail/loggers.h"
-#include "common/input/game_input.h"
+#include "core/detail/loggers.h"
+#include "core/input/game_input.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 static phenyl::Logger LOGGER{"GAME_INPUT", detail::COMMON_LOGGER};
 

@@ -2,7 +2,7 @@
 
 #include <phenyl/audio.h>
 #include <phenyl/asset.h>
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/engine.h>
 #include <phenyl/input.h>
 #include <phenyl/prefab.h>

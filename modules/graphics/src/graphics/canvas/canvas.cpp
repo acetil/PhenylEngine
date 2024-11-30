@@ -2,7 +2,7 @@
 #include "graphics/renderlayer/canvas_layer.h"
 #include "graphics/canvas/canvas.h"
 
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 using namespace phenyl::graphics;
 
@@ -51,7 +51,7 @@ Canvas::Canvas (Renderer& renderer) : atlas{renderer}, layer{renderer.addLayer<C
     renderer.getViewport().addUpdateHandler(this);
     offsetStack.emplace_back(0, 0);
 
-    defaultFontAsset = common::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");
+    defaultFontAsset = core::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");
 }
 Canvas::~Canvas () = default;
 
@@ -81,7 +81,7 @@ void Canvas::render (glm::vec2 pos, const CanvasRoundedRect& rect, const CanvasS
     submitVertices(vertices, style);
 }
 
-void Canvas::renderText (glm::vec2 pos, common::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour) {
+void Canvas::renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour) {
     font->renderText(layer, size, text, offset() + pos, colour);
 }
 

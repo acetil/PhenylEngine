@@ -1,4 +1,4 @@
-#include "common/input/game_input.h"
+#include "core/input/game_input.h"
 #include "graphics/detail/loggers.h"
 
 #include "glfw_viewport.h"
@@ -169,7 +169,7 @@ void GLFWViewport::addUpdateHandler (IViewportUpdateHandler* handler) {
     updateHandlers.emplace_back(handler);
 }
 
-void GLFWViewport::addInputDevices (common::GameInput& manager) {
+void GLFWViewport::addInputDevices (core::GameInput& manager) {
     manager.addDevice(keyInput.get());
     manager.addDevice(mouseInput.get());
 }

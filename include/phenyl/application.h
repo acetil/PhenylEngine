@@ -16,7 +16,7 @@ namespace phenyl {
         class ApplicationBase {
         private:
             ApplicationProperties properties;
-            runtime::PhenylRuntime* engineRuntime = nullptr;
+            core::PhenylRuntime* engineRuntime = nullptr;
             double targetFrameTime{1.0 / 60};
             double targetFps{60};
             double fixedTimeScale{1.0};
@@ -28,7 +28,7 @@ namespace phenyl {
             template <PluginType ...Plugins>
             friend class ::phenyl::Application;
         protected:
-            component::World& world ();
+            core::World& world ();
 
             void setTargetFPS (double fps);
             void setFixedTimeScale (double newTimeScale);
@@ -43,7 +43,7 @@ namespace phenyl {
             void pause ();
             void resume ();
 
-            template <phenyl::common::SerializableType T>
+            template <phenyl::core::SerializableType T>
             void addComponent (std::string name) {
                 runtime().template addComponent<T>(std::move(name));
             };
@@ -53,7 +53,7 @@ namespace phenyl {
                 runtime().template addUnserializedComponent<T>();
             }
 
-            runtime::PhenylRuntime& runtime ();
+            core::PhenylRuntime& runtime ();
 
             const ApplicationProperties& getProperties () const {
                 return properties;
@@ -73,7 +73,7 @@ namespace phenyl {
     class Application : public engine::ApplicationBase {
     private:
         template <PluginType T, PluginType ...Args>
-        static void InitPlugins (runtime::PhenylRuntime& runtime) {
+        static void InitPlugins (core::PhenylRuntime& runtime) {
             runtime.addPlugin<T>();
 
             if constexpr (sizeof...(Args) > 0) {

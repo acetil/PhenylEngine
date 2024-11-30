@@ -1,11 +1,11 @@
 #pragma once
 
-#include "common/assets/asset_manager.h"
+#include "core/assets/asset_manager.h"
 #include "graphics/font/font.h"
 #include "graphics/font/glyph_atlas.h"
 
 namespace phenyl::graphics {
-    class FontManager : public common::AssetManager<Font> {
+    class FontManager : public core::AssetManager<Font> {
     private:
         const Viewport& viewport;
         FT_Library library = nullptr;
@@ -27,7 +27,7 @@ namespace phenyl::graphics {
         Font* load (std::ifstream& data, std::size_t id) override;
         Font* load (Font&& obj, std::size_t id) override;
 
-        common::Asset<Font> loadFromMemory (std::span<std::byte> faceData, const std::string& virtualPath);
+        core::Asset<Font> loadFromMemory (std::span<std::byte> faceData, const std::string& virtualPath);
 
         void queueUnload(std::size_t id) override;
         bool isBinary() const override {

@@ -1,24 +1,24 @@
-#include "common/serialization/serializer_impl.h"
+#include "core/serialization/serializer_impl.h"
 
-#include "common/components/timed_lifetime.h"
-#include "runtime/delta_time.h"
+#include "core/components/timed_lifetime.h"
+#include "core/delta_time.h"
 
 using namespace phenyl;
 
-namespace phenyl::common {
+namespace phenyl::core {
     PHENYL_SERIALIZABLE(TimedLifetime, PHENYL_SERIALIZABLE_MEMBER(lifetime))
 }
 
-static void UpdateSystem (const runtime::Resources<runtime::DeltaTime>& resources, const component::Bundle<common::TimedLifetime>& bundle) {
+static void UpdateSystem (const core::Resources<core::DeltaTime>& resources, const core::Bundle<core::TimedLifetime>& bundle) {
     auto& [comp] = bundle.comps();
-    comp.livedTime += resources.get<runtime::DeltaTime>()();
+    comp.livedTime += resources.get<core::DeltaTime>()();
     if (comp.livedTime >= comp.lifetime) {
         bundle.entity().remove();
     }
 }
 
-void common::TimedLifetime::Init (runtime::PhenylRuntime& runtime) {
+void core::TimedLifetime::Init (PhenylRuntime& runtime) {
     runtime.addComponent<TimedLifetime>("TimedLifetime");
-    runtime.addSystem<runtime::Update>("TimedLifetime::Update", UpdateSystem);
+    runtime.addSystem<core::Update>("TimedLifetime::Update", UpdateSystem);
 }
 

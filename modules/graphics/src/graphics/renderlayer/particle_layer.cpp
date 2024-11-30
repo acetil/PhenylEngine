@@ -1,4 +1,4 @@
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #include "particle_layer.h"
 #include "graphics/particles/particle_manager.h"
@@ -19,7 +19,7 @@ void ParticleRenderLayer::init (Renderer& renderer) {
     BufferBinding posBinding;
     BufferBinding colourBinding;
     UniformBinding uniformBinding;
-    auto shader = phenyl::common::Assets::Load<Shader>("phenyl/shaders/particle");
+    auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/particle");
     pipeline = renderer.buildPipeline()
                        .withShader(shader)
                        .withBuffer<glm::vec2>(posBinding)

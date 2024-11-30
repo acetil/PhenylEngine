@@ -1,8 +1,8 @@
 #include "logging/logging.h"
 
-#include "common/input/axis_action.h"
+#include "core/input/axis_action.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 Axis2DBinding::Axis2DBinding (bool normalised) : normalised{normalised} {}
 

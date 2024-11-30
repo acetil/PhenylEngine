@@ -1,7 +1,8 @@
 #include "physics/physics.h"
 #include "2d/physics_2d.h"
-#include "common/debug.h"
-#include "common/plugins/core_plugin_2d.h"
+#include "core/debug.h"
+#include "core/plugins/core_plugin_2d.h"
+#include "core/runtime.h"
 
 using namespace phenyl;
 
@@ -13,15 +14,15 @@ std::string_view physics::Physics2DPlugin::getName () const noexcept {
     return "PhysicsPlugin";
 }
 
-void physics::Physics2DPlugin::init (runtime::PhenylRuntime& runtime) {
-    runtime.addPlugin<common::Core2DPlugin>();
+void physics::Physics2DPlugin::init (core::PhenylRuntime& runtime) {
+    runtime.addPlugin<core::Core2DPlugin>();
 
     physics->addComponents(runtime);
-    runtime.addSystem<runtime::Render>("Physics2d::DebugRender", this, &Physics2DPlugin::render);
+    runtime.addSystem<core::Render>("Physics2d::DebugRender", this, &Physics2DPlugin::render);
 }
 
-void physics::Physics2DPlugin::render (runtime::PhenylRuntime& runtime) {
-    auto* config = runtime.resourceMaybe<common::DebugRenderConfig>();
+void physics::Physics2DPlugin::render (core::PhenylRuntime& runtime) {
+    auto* config = runtime.resourceMaybe<core::DebugRenderConfig>();
     if (config && config->doPhysicsRender) {
         physics->debugRender(runtime.world());
     }

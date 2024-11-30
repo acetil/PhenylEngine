@@ -1,7 +1,7 @@
 #pragma once
 
-#include "runtime/init_plugin.h"
-#include "runtime/runtime.h"
+#include "core/plugin.h"
+#include "core/runtime.h"
 
 #include "graphics_plugin.h"
 #include "particle_plugin.h"
@@ -9,13 +9,13 @@
 #include "ui_plugin.h"
 
 namespace phenyl::graphics {
-    class Graphics2DPlugin : public runtime::IInitPlugin {
+    class Graphics2DPlugin : public core::IInitPlugin {
     public:
         std::string_view getName () const noexcept override {
             return "Graphics2DPlugin";
         }
 
-        void init (runtime::PhenylRuntime& runtime) override {
+        void init (core::PhenylRuntime& runtime) override {
             runtime.addPlugin<GraphicsPlugin>();
             runtime.addPlugin<Particle2DPlugin>();
             runtime.addPlugin<Sprite2DPlugin>();

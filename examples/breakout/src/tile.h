@@ -1,7 +1,7 @@
 #pragma once
 
 #include <phenyl/audio.h>
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/serialization.h>
 
 #include "breakout.h"

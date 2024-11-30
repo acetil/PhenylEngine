@@ -11,14 +11,14 @@ std::string_view AppPlugin::getName () const noexcept {
     return "AppPlugin";
 }
 
-void AppPlugin::init (runtime::PhenylRuntime& runtime) {
+void AppPlugin::init (core::PhenylRuntime& runtime) {
     app->engineRuntime = &runtime;
 
     app->_init();
     runtime.addSystem<PostInit>("Application::postInit", app.get(), &ApplicationBase::postInit);
 }
 
-void AppPlugin::shutdown (phenyl::runtime::PhenylRuntime& runtime) {
+void AppPlugin::shutdown (phenyl::core::PhenylRuntime& runtime) {
     app->shutdown();
 }
 

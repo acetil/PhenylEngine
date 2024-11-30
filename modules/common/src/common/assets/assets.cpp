@@ -1,8 +1,8 @@
-#include "common/assets/asset.h"
-#include "common/assets/assets.h"
-#include "common/assets/asset_manager.h"
+#include "core/assets/asset.h"
+#include "core/assets/assets.h"
+#include "core/assets/asset_manager.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 Assets* Assets::INSTANCE = nullptr;
 

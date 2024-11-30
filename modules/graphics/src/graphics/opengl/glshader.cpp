@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 #include "graphics/detail/loggers.h"
 
 #include "glshader.h"
@@ -251,7 +251,7 @@ void GlShaderManager::queueUnload (std::size_t id) {
 }
 
 void GlShaderManager::selfRegister () {
-    common::Assets::AddManager(this);
+    core::Assets::AddManager(this);
 }
 
 static std::optional<GLuint> LoadShader (GLenum type, const std::string& source) {

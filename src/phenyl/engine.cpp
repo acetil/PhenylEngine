@@ -7,7 +7,7 @@
 #include "graphics/renderer.h"
 #include "logging/logging.h"
 #include "plugins/app_plugin.h"
-#include "runtime/runtime.h"
+#include "core/runtime.h"
 #include "util/profiler.h"
 
 #include "phenyl/engine.h"
@@ -21,7 +21,7 @@ static Logger LOGGER{"ENGINE", PHENYL_LOGGER};
 class engine::Engine {
 private:
     std::unique_ptr<graphics::Renderer> renderer;
-    runtime::PhenylRuntime runtime;
+    core::PhenylRuntime runtime;
 
     double lastTime;
     double deltaTime{0.0};
@@ -35,7 +35,7 @@ public:
         renderer->clearLayers();
     }
 
-    runtime::PhenylRuntime& getRuntime () {
+    core::PhenylRuntime& getRuntime () {
         return runtime;
     }
 

@@ -26,5 +26,5 @@ set_property(TARGET audio PROPERTY CXX_STANDARD 20)
 target_include_directories(audio PUBLIC include)
 target_include_directories(audio PRIVATE src)
 
-target_link_libraries(audio PRIVATE OpenAL::OpenAL logger util common component)
-target_link_libraries(audio PUBLIC runtime)
+target_link_libraries(audio PRIVATE OpenAL::OpenAL logger util)
+target_link_libraries(audio PUBLIC core)

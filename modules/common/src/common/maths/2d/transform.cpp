@@ -1,9 +1,9 @@
-#include "common/maths/2d/transform.h"
-#include "common/serialization/serializer_impl.h"
+#include "core/maths/2d/transform.h"
+#include "core/serialization/serializer_impl.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
-namespace phenyl::common {
+namespace phenyl::core {
     PHENYL_SERIALIZABLE(Transform2D,
         PHENYL_SERIALIZABLE_MEMBER_NAMED(positionVec, "position"),
         PHENYL_SERIALIZABLE_METHOD("rotation", &Transform2D::rotationAngle, &Transform2D::setRotation),

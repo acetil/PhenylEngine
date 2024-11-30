@@ -1,7 +1,7 @@
-#include "common/assets/assets.h"
-#include "component/component.h"
-#include "component/component_serializer.h"
-#include "common/serialization/serializer_impl.h"
+#include "core/assets/assets.h"
+#include "core/world.h"
+#include "core/serialization/component_serializer.h"
+#include "core/serialization/serializer_impl.h"
 
 #include "audio/audio_system.h"
 #include "filetypes/wav.h"
@@ -82,18 +82,18 @@ const char* AudioSystem::getFileType () const {
 }
 
 void AudioSystem::selfRegister () {
-    common::Assets::AddManager(this);
+    core::Assets::AddManager(this);
 }
 
 bool AudioSystem::isBinary () const {
     return true;
 }
 
-void AudioSystem::addComponents (component::World& world, component::EntityComponentSerializer& serializer) {
+void AudioSystem::addComponents (core::World& world, core::EntityComponentSerializer& serializer) {
     world.addComponent<AudioPlayer>("AudioPlayer");
     serializer.addSerializer<AudioPlayer>();
 
-    world.addHandler<AudioPlayer>([this] (const component::OnInsert<AudioPlayer>& signal, component::Entity entity) {
+    world.addHandler<AudioPlayer>([this] (const core::OnInsert<AudioPlayer>& signal, core::Entity entity) {
         auto& comp = signal.get();
         comp.source = this->createSource();
         comp.setGain(comp.sourceGain);

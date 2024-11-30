@@ -17,11 +17,11 @@ namespace phenyl::graphics {
 
         GlShaderManager shaderManager;
 
-        common::Asset<Shader> boxShader;
-        common::Asset<Shader> debugShader;
-        common::Asset<Shader> spriteShader;
-        common::Asset<Shader> textShader;
-        common::Asset<Shader> particleShader;
+        core::Asset<Shader> boxShader;
+        core::Asset<Shader> debugShader;
+        core::Asset<Shader> spriteShader;
+        core::Asset<Shader> textShader;
+        core::Asset<Shader> particleShader;
     protected:
         std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
         std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;

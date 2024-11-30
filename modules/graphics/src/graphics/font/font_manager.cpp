@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 #include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_manager.h"
 
@@ -75,5 +75,5 @@ void FontManager::queueUnload (std::size_t id) {
 }
 
 void FontManager::selfRegister () {
-    common::Assets::AddManager(this);
+    core::Assets::AddManager(this);
 }

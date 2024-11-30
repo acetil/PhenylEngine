@@ -4,10 +4,10 @@
 
 #include "viewport.h"
 #include "graphics/maths_headers.h"
-#include "runtime/iresource.h"
+#include "core/iresource.h"
 
 namespace phenyl::graphics {
-    class Camera : public runtime::IResource, public IViewportUpdateHandler {
+    class Camera : public core::IResource, public IViewportUpdateHandler {
     private:
         glm::mat4 camMatrix{};
         glm::mat4 positionMat{};

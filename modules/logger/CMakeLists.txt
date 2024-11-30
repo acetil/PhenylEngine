@@ -19,5 +19,4 @@ set_property(TARGET logger PROPERTY CXX_STANDARD 20)
 target_include_directories(logger PUBLIC include)
 target_include_directories(logger PRIVATE src)
 
-target_link_libraries(logger PUBLIC cpptrace::cpptrace)
-
+target_link_libraries(logger PRIVATE cpptrace::cpptrace)

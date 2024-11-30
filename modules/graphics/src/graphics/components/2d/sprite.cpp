@@ -1,6 +1,6 @@
 #include "graphics/components/2d/sprite.h"
-#include "common/serialization/serializer_impl.h"
-#include "common/assets/assets.h"
+#include "core/serialization/serializer_impl.h"
+#include "core/assets/assets.h"
 
 using namespace phenyl::graphics;
 

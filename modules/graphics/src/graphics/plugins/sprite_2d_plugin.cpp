@@ -1,5 +1,5 @@
-#include "common/plugins/core_plugin_2d.h"
-#include "runtime/runtime.h"
+#include "core/plugins/core_plugin_2d.h"
+#include "core/runtime.h"
 
 #include "graphics/renderer.h"
 #include "graphics/plugins/graphics_plugin.h"
@@ -14,9 +14,9 @@ std::string_view Sprite2DPlugin::getName () const noexcept {
     return "Sprite2DPlugin";
 }
 
-void Sprite2DPlugin::init (runtime::PhenylRuntime& runtime) {
+void Sprite2DPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
-    runtime.addPlugin<common::Core2DPlugin>();
+    runtime.addPlugin<core::Core2DPlugin>();
 
     runtime.addComponent<Sprite2D>("Sprite2D");
 

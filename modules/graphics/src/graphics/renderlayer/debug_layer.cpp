@@ -1,6 +1,6 @@
 #include "debug_layer.h"
 #include "graphics/debug_graphics.h"
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #define STARTING_BUFFER_SIZE 2048
 
@@ -63,7 +63,7 @@ std::string_view DebugLayer::getName () const {
 }
 
 void DebugLayer::init (Renderer& renderer) {
-    auto shader = common::Assets::Load<Shader>("phenyl/shaders/debug");
+    auto shader = core::Assets::Load<Shader>("phenyl/shaders/debug");
     boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
     boxColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
     linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);

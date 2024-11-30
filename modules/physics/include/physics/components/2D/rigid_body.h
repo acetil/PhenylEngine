@@ -2,9 +2,9 @@
 
 #include "graphics/maths_headers.h"
 #include "physics/physics.h"
-#include "common/serialization/serializer_impl.h"
+#include "core/serialization/serializer_impl.h"
 
-namespace phenyl::common {
+namespace phenyl::core {
     class GlobalTransform2D;
 }
 namespace phenyl::physics {
@@ -52,7 +52,7 @@ namespace phenyl::physics {
             invInertialMoment = inertia != 0 ? 1 / inertia : 0.0f;
         }
 
-        void doMotion (common::GlobalTransform2D& transform2D, float deltaTime);
+        void doMotion (core::GlobalTransform2D& transform2D, float deltaTime);
 
         void applyForce (glm::vec2 force);
         void applyForce (glm::vec2 force, glm::vec2 worldDisplacement);

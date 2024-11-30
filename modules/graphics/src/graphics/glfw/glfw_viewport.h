@@ -21,7 +21,7 @@ namespace phenyl::graphics {
         glm::vec2 getContentScale() const override;
 
         void addUpdateHandler (IViewportUpdateHandler* handler) override;
-        void addInputDevices (common::GameInput& manager) override;
+        void addInputDevices (core::GameInput& manager) override;
 
         [[nodiscard]] double getTime () const;
         void swapBuffers ();

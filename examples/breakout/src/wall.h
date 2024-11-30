@@ -3,7 +3,7 @@
 #include <phenyl/audio.h>
 #include <phenyl/asset.h>
 #include <phenyl/prefab.h>
-#include "phenyl/component.h"
+#include "phenyl/world.h"
 
 namespace breakout {
     class BreakoutApp;

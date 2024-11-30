@@ -1,5 +1,5 @@
 #include "physics/components/2D/rigid_body.h"
-#include "common/components/2d/global_transform.h"
+#include "core/components/2d/global_transform.h"
 
 #define MIN_ANGULAR_VEL 0.01f
 #define MAX_ANGULAR_VEL (3.14f * 2.0f)
@@ -22,7 +22,7 @@ inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
     return vec1.x * vec2.y - vec1.y * vec2.x;
 }
 
-void RigidBody2D::doMotion (common::GlobalTransform2D& transform2D, float deltaTime) {
+void RigidBody2D::doMotion (core::GlobalTransform2D& transform2D, float deltaTime) {
     applyFriction();
     netForce += gravity * mass;
 

@@ -1,21 +1,21 @@
 #pragma once
 
-#include "common/input/input_device.h"
+#include "core/input/input_device.h"
 #include "graphics/graphics_headers.h"
 #include "util/map.h"
 
 namespace phenyl::graphics {
-    class GLFWMouseInput : public common::IInputDevice {
+    class GLFWMouseInput : public core::IInputDevice {
     private:
         GLFWwindow* window;
         util::HashMap<std::string, int> buttonIds;
-        util::HashMap<int, common::ButtonInputSource> sources;
-        common::Axis2DInputSource mousePosSource;
+        util::HashMap<int, core::ButtonInputSource> sources;
+        core::Axis2DInputSource mousePosSource;
     public:
         GLFWMouseInput (GLFWwindow* window);
 
-        const common::ButtonInputSource* getButtonSource (std::string_view sourcePath) override;
-        const common::Axis2DInputSource* getAxis2DSource (std::string_view sourcePath) override;
+        const core::ButtonInputSource* getButtonSource (std::string_view sourcePath) override;
+        const core::Axis2DInputSource* getAxis2DSource (std::string_view sourcePath) override;
         std::string_view getDeviceId () const noexcept override;
         void poll () override;
     };

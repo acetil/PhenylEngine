@@ -1,12 +1,12 @@
 #pragma once
 
-#include "runtime/plugin.h"
+#include "core/plugin.h"
 
 #include "ui_manager.h"
 #include "util/smooth_queue.h"
 
 namespace phenyl::graphics {
-    class ProfileUiPlugin : public runtime::IPlugin {
+    class ProfileUiPlugin : public core::IPlugin {
     private:
         util::SmoothQueue<double, 30> graphicsQueue;
         util::SmoothQueue<double, 30> physicsQueue;
@@ -15,8 +15,8 @@ namespace phenyl::graphics {
     public:
         std::string_view getName () const noexcept override;
 
-        void init (runtime::PhenylRuntime& runtime) override;
-        void update (runtime::PhenylRuntime& runtime);
-        void render (runtime::PhenylRuntime& runtime);
+        void init (core::PhenylRuntime& runtime) override;
+        void update (core::PhenylRuntime& runtime);
+        void render (core::PhenylRuntime& runtime);
     };
 }

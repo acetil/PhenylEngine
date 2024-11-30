@@ -141,7 +141,7 @@ GLFWKeyInput::GLFWKeyInput (GLFWwindow* window) : window{window} {
     buttonIds["key_menu"] = GLFW_KEY_MENU;
 }
 
-const phenyl::common::ButtonInputSource* GLFWKeyInput::getButtonSource (std::string_view sourcePath) {
+const phenyl::core::ButtonInputSource* GLFWKeyInput::getButtonSource (std::string_view sourcePath) {
     auto idIt = buttonIds.find(sourcePath);
     if (idIt == buttonIds.end()) {
         PHENYL_LOGE(LOGGER, "Invalid key: \"{}\"", sourcePath);
@@ -153,11 +153,11 @@ const phenyl::common::ButtonInputSource* GLFWKeyInput::getButtonSource (std::str
         return &sourceIt->second;
     }
 
-    auto it = sources.emplace(idIt->second, common::ButtonInputSource{}).first;
+    auto it = sources.emplace(idIt->second, core::ButtonInputSource{}).first;
     return &it->second;
 }
 
-const phenyl::common::Axis2DInputSource* GLFWKeyInput::getAxis2DSource (std::string_view sourcePath) {
+const phenyl::core::Axis2DInputSource* GLFWKeyInput::getAxis2DSource (std::string_view sourcePath) {
     PHENYL_LOGE(LOGGER, "Attempted to get Axis2D source, but keyboard input does not support axis sources");
     return nullptr;
 }

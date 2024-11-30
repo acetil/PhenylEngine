@@ -1,16 +1,15 @@
 #pragma once
 
 #include "physics/physics.h"
-#include "util/fl_vector.h"
-#include "collisions_2d.h"
+#include "core/world.h"
 
 
 namespace phenyl::physics {
     class Physics2D {
     private:
     public:
-        void addComponents(runtime::PhenylRuntime& runtime);
+        void addComponents(core::PhenylRuntime& runtime);
 
-        void debugRender (component::World& world);
+        void debugRender (core::World& world);
     };
 }

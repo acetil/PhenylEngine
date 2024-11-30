@@ -3,9 +3,9 @@
 #include <vector>
 
 #include "graphics/maths_headers.h"
-#include "runtime/iresource.h"
+#include "core/iresource.h"
 
-namespace phenyl::common {
+namespace phenyl::core {
     class GameInput;
 }
 
@@ -17,7 +17,7 @@ namespace phenyl::graphics {
         virtual void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) = 0;
     };
 
-    class Viewport : public runtime::IResource {
+    class Viewport : public core::IResource {
     public:
         ~Viewport() override = default;
 
@@ -26,7 +26,7 @@ namespace phenyl::graphics {
         [[nodiscard]] virtual glm::ivec2 getResolution () const = 0;
         [[nodiscard]] virtual glm::vec2 getContentScale () const = 0;
 
-        virtual void addInputDevices (common::GameInput& manager) = 0;
+        virtual void addInputDevices (core::GameInput& manager) = 0;
 
         virtual void addUpdateHandler (IViewportUpdateHandler* handler) = 0;
     };

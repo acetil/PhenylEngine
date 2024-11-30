@@ -2,7 +2,7 @@
 #include <utility>
 
 #include <phenyl/asset.h>
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/components/physics/2D/colliders/box_collider.h>
 #include <phenyl/components/physics/2D/collider.h>
 #include <phenyl/debug.h>

@@ -6,7 +6,7 @@ enable_language(CXX)
 add_compile_options("-D C_LOGGING")
 set(DEBUG_COMPILE_FLAGS "-Werror=return-type -ftime-trace")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -D DEBUG_LOG -ggdb -fsanitize=address  ${DEBUG_COMPILE_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -D DEBUG_LOG -fvisibility=default -ggdb -fsanitize=address  ${DEBUG_COMPILE_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O3")
 
 set(Python3_FIND_STRATEGY VERSION)
@@ -20,17 +20,17 @@ include(include.cmake)
 add_subdirectory(modules/logger)
 add_subdirectory(modules/util)
 add_subdirectory(modules/common)
-add_subdirectory(modules/component)
+#add_subdirectory(modules/component)
 add_subdirectory(modules/physics)
 add_subdirectory(modules/maths)
 add_subdirectory(modules/graphics)
 add_subdirectory(modules/engine)
 add_subdirectory(modules/audio)
-add_subdirectory(modules/runtime)
+#add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
 
-add_library(phenyl SHARED
+add_library(phenyl
         src/phenyl/application.cpp
         src/phenyl/plugins/app_plugin.cpp
         src/phenyl/plugins/default_2d_plugin.cpp
@@ -55,5 +55,5 @@ target_include_directories(phenyl PRIVATE src)
 
 set_property(TARGET phenyl PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(phenyl PRIVATE audio common component engine graphics logger maths physics runtime util)
-target_link_libraries(phenyl PUBLIC audio common component engine graphics logger maths physics runtime util)
+#target_link_libraries(phenyl PRIVATE audio core engine graphics logger maths physics util)
+target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util)

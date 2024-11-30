@@ -1,17 +1,17 @@
 #pragma once
 
-#include "component/component.h"
+#include "core/world.h"
 
 #include "graphics/abstract_render_layer.h"
 #include "graphics/camera.h"
 #include "graphics/buffer.h"
 #include "graphics/pipeline.h"
 
-namespace phenyl::common {
+namespace phenyl::core {
     struct GlobalTransform2D;
 }
 
-namespace phenyl::runtime {
+namespace phenyl::core {
     class PhenylRuntime;
 }
 
@@ -50,7 +50,7 @@ namespace phenyl::graphics {
 
         SamplerBinding samplerBinding{};
 
-        void bufferData (component::World& world, const Camera& camera);
+        void bufferData (core::World& world, const Camera& camera);
     public:
 
         EntityRenderLayer ();
@@ -59,12 +59,12 @@ namespace phenyl::graphics {
 
         void init (Renderer& renderer) override;
 
-        void preRender (component::World& world, const Camera& camera);
+        void preRender (core::World& world, const Camera& camera);
         void render () override;
 
-        void pushEntity (const common::GlobalTransform2D& transform, const Sprite2D& sprite);
+        void pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite);
         void bufferEntities (const Camera& camera);
 
-        void addSystems (runtime::PhenylRuntime& runtime);
+        void addSystems (core::PhenylRuntime& runtime);
     };
 }

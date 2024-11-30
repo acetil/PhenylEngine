@@ -3,11 +3,12 @@
 #include <utility>
 #include <queue>
 
-#include "runtime/delta_time.h"
+#include "core/delta_time.h"
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
-#include "common/assets/assets.h"
-#include "common/debug.h"
+#include "core/assets/assets.h"
+#include "core/debug.h"
+#include "core/runtime.h"
 #include "graphics/plugins/ui_plugin.h"
 
 using namespace phenyl;
@@ -16,16 +17,16 @@ std::string_view graphics::ProfileUiPlugin::getName () const noexcept {
     return "ProfileUiPlugin";
 }
 
-void graphics::ProfileUiPlugin::init (runtime::PhenylRuntime& runtime) {
+void graphics::ProfileUiPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<graphics::UIPlugin>();
-    runtime.addResource<common::DebugRenderConfig>();
+    runtime.addResource<core::DebugRenderConfig>();
 
-    runtime.addSystem<runtime::Update>("ProfileUiPlugin::update", this, &ProfileUiPlugin::update);
-    runtime.addSystem<runtime::Render>("ProfileUiPlugin::render", this, &ProfileUiPlugin::render);
+    runtime.addSystem<core::Update>("ProfileUiPlugin::update", this, &ProfileUiPlugin::update);
+    runtime.addSystem<core::Render>("ProfileUiPlugin::render", this, &ProfileUiPlugin::render);
 }
 
-void graphics::ProfileUiPlugin::update (runtime::PhenylRuntime& runtime) {
-    auto deltaTime = runtime.resource<runtime::DeltaTime>()();
+void graphics::ProfileUiPlugin::update (core::PhenylRuntime& runtime) {
+    auto deltaTime = runtime.resource<core::DeltaTime>()();
 
     deltaTimeQueue.pushPop((float)deltaTime);
     frameQueue.pushPop(util::getProfileFrameTime());
@@ -33,8 +34,8 @@ void graphics::ProfileUiPlugin::update (runtime::PhenylRuntime& runtime) {
     physicsQueue.pushPop(util::getProfileTime("physics"));
 }
 
-void graphics::ProfileUiPlugin::render (runtime::PhenylRuntime& runtime) {
-    if (!runtime.resource<common::DebugRenderConfig>().doProfileRender) {
+void graphics::ProfileUiPlugin::render (core::PhenylRuntime& runtime) {
+    if (!runtime.resource<core::DebugRenderConfig>().doProfileRender) {
         return;
     }
 

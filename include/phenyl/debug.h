@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/debug.h"
+#include "core/debug.h"
 
 namespace phenyl {
-    using DebugRenderConfig = common::DebugRenderConfig;
+    using DebugRenderConfig = core::DebugRenderConfig;
 }

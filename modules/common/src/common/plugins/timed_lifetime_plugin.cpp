@@ -1,12 +1,12 @@
-#include "common/plugins/timed_lifetime_plugin.h"
-#include "common/components/timed_lifetime.h"
+#include "core/plugins/timed_lifetime_plugin.h"
+#include "core/components/timed_lifetime.h"
 
-using namespace phenyl::common;
+using namespace phenyl::core;
 
 std::string_view TimedLifetimePlugin::getName () const noexcept {
     return "TimedLifetimePlugin";
 }
 
-void TimedLifetimePlugin::init (runtime::PhenylRuntime& runtime) {
+void TimedLifetimePlugin::init (PhenylRuntime& runtime) {
     TimedLifetime::Init(runtime);
 }

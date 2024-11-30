@@ -17,7 +17,7 @@ namespace phenyl::graphics {
 
         GLuint vaoId;
         GLenum renderMode = GL_TRIANGLES;
-        common::Asset<Shader> shader;
+        core::Asset<Shader> shader;
         std::vector<std::size_t> bufferTypes;
         util::Map<UniformBinding, std::size_t> uniformTypes;
         std::optional<PipelineIndex> indexType = std::nullopt;
@@ -42,7 +42,7 @@ namespace phenyl::graphics {
         void render (std::size_t vertices, std::size_t offset) override;
 
         void setRenderMode (GLenum renderMode);
-        void setShader (common::Asset<Shader> shader);
+        void setShader (core::Asset<Shader> shader);
 
         BufferBinding addBuffer (std::size_t type, GLuint divisor);
         void addAttrib (GLenum type, GLint size, GLuint location, BufferBinding binding, std::size_t offset);
@@ -60,7 +60,7 @@ namespace phenyl::graphics {
         GlPipelineBuilder ();
 
         void withGeometryType (GeometryType type) override;
-        void withShader (common::Asset<Shader> shader) override;
+        void withShader (core::Asset<Shader> shader) override;
 
         BufferBinding withBuffer(std::size_t type, std::size_t size, BufferInputRate inputRate) override;
         void withAttrib(ShaderDataType type, unsigned int location, BufferBinding binding, std::size_t offset) override;

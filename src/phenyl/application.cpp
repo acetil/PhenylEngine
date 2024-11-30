@@ -7,12 +7,12 @@ using namespace phenyl;
 
 engine::ApplicationBase::ApplicationBase (phenyl::ApplicationProperties properties) : properties{std::move(properties)} {}
 
-runtime::PhenylRuntime& engine::ApplicationBase::runtime () {
+core::PhenylRuntime& engine::ApplicationBase::runtime () {
     PHENYL_DASSERT(engineRuntime);
     return *engineRuntime;
 }
 
-component::World& engine::ApplicationBase::world () {
+core::World& engine::ApplicationBase::world () {
     return runtime().world();
 }
 

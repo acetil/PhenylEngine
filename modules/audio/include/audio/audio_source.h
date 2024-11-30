@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "common/assets/asset.h"
+#include "core/assets/asset.h"
 
 #include "audio_sample.h"
 
@@ -28,7 +28,7 @@ namespace phenyl::audio {
         AudioSource& operator= (const AudioSource&) = delete;
         AudioSource& operator= (AudioSource&& other) noexcept;
 
-        void play (const common::Asset<AudioSample>& sample);
+        void play (const core::Asset<AudioSample>& sample);
         void play (const AudioSample& sample);
 
         [[nodiscard]] float getGain () const;

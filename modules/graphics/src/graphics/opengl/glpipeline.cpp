@@ -109,7 +109,7 @@ void GlPipeline::setRenderMode (GLenum renderMode) {
     this->renderMode = renderMode;
 }
 
-void GlPipeline::setShader (phenyl::common::Asset<Shader> shader) {
+void GlPipeline::setShader (phenyl::core::Asset<Shader> shader) {
     this->shader = std::move(shader);
 }
 
@@ -172,7 +172,7 @@ void GlPipelineBuilder::withGeometryType (GeometryType type) {
     }
 }
 
-void GlPipelineBuilder::withShader (common::Asset<Shader> shader) {
+void GlPipelineBuilder::withShader (core::Asset<Shader> shader) {
     PHENYL_DASSERT(pipeline);
     pipeline->setShader(std::move(shader));
 }

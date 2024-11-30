@@ -4,22 +4,22 @@
 #include <memory>
 
 #include "util/map.h"
-#include "common/assets/asset.h"
-#include "common/assets/asset_manager.h"
-#include "component/entity.h"
-#include "runtime/iresource.h"
+#include "core/assets/asset.h"
+#include "core/assets/asset_manager.h"
+#include "core/entity.h"
+#include "core/iresource.h"
 
 #include "engine/level/level.h"
 
 namespace phenyl::game {
     // TODO: manager interface
-    class LevelManager : public common::AssetManager<Level>, public runtime::IResource {
+    class LevelManager : public core::AssetManager<Level>, public core::IResource {
     private:
         util::Map<std::size_t, std::unique_ptr<Level>> levels;
-        component::World& world;
-        component::EntityComponentSerializer& serializer;
+        core::World& world;
+        core::EntityComponentSerializer& serializer;
 
-        std::vector<common::Asset<Level>> queuedLoads;
+        std::vector<core::Asset<Level>> queuedLoads;
         bool queuedClear = false;
 
         void queueUnload(std::size_t id) override;
@@ -28,14 +28,14 @@ namespace phenyl::game {
         Level* load(std::ifstream& data, std::size_t id) override;
         Level* load (phenyl::game::Level&& obj, std::size_t id) override;
     public:
-        LevelManager (component::World& manager, component::EntityComponentSerializer& serializer);
+        LevelManager (core::World& manager, core::EntityComponentSerializer& serializer);
         ~LevelManager() override;
 
         [[nodiscard]] std::string_view getName() const noexcept override;
 
         void selfRegister ();
 
-        void queueLoad (common::Asset<Level> level, bool additive);
+        void queueLoad (core::Asset<Level> level, bool additive);
         void loadLevels ();
 
         void dump (std::ostream& file) const;

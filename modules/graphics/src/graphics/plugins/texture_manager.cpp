@@ -1,4 +1,4 @@
-#include "common/assets/assets.h"
+#include "core/assets/assets.h"
 
 #include "graphics/detail/loggers.h"
 #include "graphics/renderer.h"
@@ -52,7 +52,7 @@ void TextureManager::queueUnload (std::size_t id) {
 }
 
 void TextureManager::selfRegister () {
-    common::Assets::AddManager(this);
+    core::Assets::AddManager(this);
 }
 
 

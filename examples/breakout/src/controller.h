@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include <phenyl/asset.h>
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/maths.h>
 #include <phenyl/prefab.h>
 #include <phenyl/runtime.h>

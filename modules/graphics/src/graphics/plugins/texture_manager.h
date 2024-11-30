@@ -1,12 +1,12 @@
 #pragma once
 
 #include "graphics/texture.h"
-#include "common/assets/asset_manager.h"
+#include "core/assets/asset_manager.h"
 
 namespace phenyl::graphics {
     class Renderer;
 
-    class TextureManager : public common::AssetManager<Texture> {
+    class TextureManager : public core::AssetManager<Texture> {
     private:
         Renderer& renderer;
         std::unordered_map<std::size_t, std::unique_ptr<Texture>> textures;

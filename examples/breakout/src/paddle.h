@@ -2,7 +2,7 @@
 
 #include <phenyl/asset.h>
 #include <phenyl/audio.h>
-#include <phenyl/component.h>
+#include <phenyl/world.h>
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/components/physics/2D/rigid_body.h>
 #include <phenyl/engine.h>
