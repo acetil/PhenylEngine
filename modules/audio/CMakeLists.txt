@@ -1,4 +1,4 @@
-add_library(audio src/audio/audio_system.cpp
+add_library(audio OBJECT src/audio/audio_system.cpp
         src/audio/openal/openal_system.h
         src/audio/openal/openal_system.cpp
         src/audio/openal/openal_headers.h

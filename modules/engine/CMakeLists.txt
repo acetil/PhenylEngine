@@ -1,4 +1,4 @@
-add_library(engine include src
+add_library(engine OBJECT include src
         include/engine/level/level.h
         src/engine/level/level.cpp
         include/engine/level/level_manager.h

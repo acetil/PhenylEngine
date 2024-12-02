@@ -1,4 +1,4 @@
-add_library(logger
+add_library(logger OBJECT
         include/logging/logger.h
         include/logging/logging.h
         src/logger.cpp

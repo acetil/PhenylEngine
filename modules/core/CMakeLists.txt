@@ -1,5 +1,5 @@
 #add_library(common)
-add_library(core include/core/maths/2d/transform.h src/common/maths/2d/transform.cpp include/core/components/2d/global_transform.h src/common/debug.cpp
+add_library(core OBJECT include/core/maths/2d/transform.h src/common/maths/2d/transform.cpp include/core/components/2d/global_transform.h src/common/debug.cpp
         include/core/assets/assets.h
         include/core/assets/asset_manager.h
         include/core/assets/asset.h
@@ -53,4 +53,4 @@ target_include_directories(core PRIVATE src)
 #target_link_libraries(common PRIVATE logger maths eventbus)
 #target_link_libraries(common PUBLIC util)
 target_link_libraries(core PUBLIC maths util)
-target_link_libraries(core PRIVATE logger graphics nlohmann_json::nlohmann_json)
+target_link_libraries(core PRIVATE logger nlohmann_json::nlohmann_json)

@@ -1,4 +1,4 @@
-add_library(physics src/physics/physics.cpp include/physics/components/2D/rigid_body.h src/physics/components/2D/rigid_body.cpp src/physics/2d/physics_2d.h src/physics/2d/physics_2d.cpp
+add_library(physics OBJECT src/physics/physics.cpp include/physics/components/2D/rigid_body.h src/physics/components/2D/rigid_body.cpp src/physics/2d/physics_2d.h src/physics/2d/physics_2d.cpp
         src/physics/2d/collisions_2d.h
         src/physics/2d/collisions_2d.cpp
         include/physics/components/2D/collider.h
