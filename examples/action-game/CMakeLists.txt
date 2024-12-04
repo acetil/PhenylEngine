@@ -8,7 +8,7 @@ add_library(action-game SHARED src/util/debug_console.cpp
 phenyl_executable(action-game)
 
 set_property(TARGET action-game PROPERTY CXX_STANDARD 20)
-target_compile_options(action-game PRIVATE "-g")
+#target_compile_options(action-game PRIVATE "-g")
 
 target_copy_resources(action-game
         resources/images/test/bullet2.png

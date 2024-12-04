@@ -18,7 +18,7 @@ namespace phenyl {
         void exec (std::unique_ptr<engine::ApplicationBase> app);
 
     public:
-        PhenylEngine ();
+        PhenylEngine (const logging::LoggingProperties& = {});
         ~PhenylEngine();
 
         template <std::derived_from<engine::ApplicationBase> T, typename ...Args>

@@ -7,8 +7,8 @@
 #include "phenyl/font.h"
 #include <phenyl/ui/ui.h>
 
-#include "phenyl/ui/layout.h"
-#include "phenyl/ui/widget.h"
+#include <phenyl/ui/layout.h>
+#include <phenyl/ui/widget.h>
 
 namespace test {
     class TestApp : public phenyl::Application2D {

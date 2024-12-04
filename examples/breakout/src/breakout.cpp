@@ -35,8 +35,7 @@ static constexpr float YStart = 1.0f - 0.075f - TileHeight / 2;
 
 using namespace breakout;
 
-BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Application2D(std::move(properties.withLogFile("debug.log")
-        .withRootLogLevel(LEVEL_DEBUG)
+BreakoutApp::BreakoutApp (phenyl::ApplicationProperties properties) : phenyl::Application2D(std::move(properties
         .withResolution(800, 600)
         .withWindowTitle("Breakout!")
         .withVsync(false))) {

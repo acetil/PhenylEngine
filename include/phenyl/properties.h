@@ -55,5 +55,10 @@ namespace phenyl {
 
             return *this;
         }
+
+        // TODO: nicer design
+        const logging::LoggingProperties& logging () const noexcept {
+            return loggingProperties;
+        }
     };
 }

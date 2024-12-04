@@ -17,8 +17,6 @@ static phenyl::Logger LOGGER{"TEST_APP"};
 test::TestApp::TestApp (phenyl::ApplicationProperties properties) :
     phenyl::Application2D(properties
         .withResolution(800, 600)
-        .withLogFile("debug.log")
-        .withRootLogLevel(LEVEL_DEBUG)
         .withWindowTitle("Action Game")
         .withVsync(false)) {}
 

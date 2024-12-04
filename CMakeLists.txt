@@ -29,6 +29,7 @@ add_subdirectory(modules/maths)
 add_subdirectory(modules/graphics)
 add_subdirectory(modules/engine)
 add_subdirectory(modules/audio)
+add_subdirectory(modules/platform)
 #add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
@@ -52,12 +53,13 @@ add_library(phenyl SHARED
         include/phenyl/ui/widget.h
         include/phenyl/ui/container.h
         include/phenyl/ui/event.h
-        include/phenyl/entrypoint.h)
+        include/phenyl/entrypoint.h
+        include/phenyl/platform.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 
 set_property(TARGET phenyl PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util)
+target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util platform)
 #target_link_libraries(phenyl PUBLIC cpptrace::cpptrace)
 #target_link_libraries(phenyl PUBLIC $<COMPILE_ONLY:audio core engine graphics logger maths physics util>)

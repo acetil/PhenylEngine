@@ -110,12 +110,14 @@ public:
 };
 
 
-PhenylEngine::PhenylEngine () = default;
+PhenylEngine::PhenylEngine (const logging::LoggingProperties& properties) {
+    InitLogging(properties);
+}
 
 PhenylEngine::~PhenylEngine () = default;
 
 void PhenylEngine::exec (std::unique_ptr<engine::ApplicationBase> app) {
-    InitLogging(app->getProperties().loggingProperties);
+    //InitLogging(app->getProperties().loggingProperties);
 
     auto* appPtr = app.get();
     internal = std::make_unique<engine::Engine>(app->getProperties());
