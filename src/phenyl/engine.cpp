@@ -114,9 +114,11 @@ PhenylEngine::PhenylEngine (const logging::LoggingProperties& properties) {
     InitLogging(properties);
 }
 
-PhenylEngine::~PhenylEngine () = default;
+PhenylEngine::~PhenylEngine () {
+    ShutdownLogging();
+}
 
-void PhenylEngine::exec (std::unique_ptr<engine::ApplicationBase> app) {
+void PhenylEngine::run (std::unique_ptr<engine::ApplicationBase> app) {
     //InitLogging(app->getProperties().loggingProperties);
 
     auto* appPtr = app.get();

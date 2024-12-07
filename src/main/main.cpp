@@ -17,10 +17,15 @@ int main (int argc, char* argv[]) {
         std::cerr << "Failed to load application library \"" << PHENYL_APP_LIB << "\"\n";
         return EXIT_FAILURE;
     }
+
     auto entrypoint = library.function<void, void*, void*>("phenyl_app_entrypoint");
     if (!entrypoint) {
         std::cerr << "Failed to load application entrypoint\n";
         return EXIT_FAILURE;
     }
-    (*entrypoint)(&engine, &properties);
+    std::unique_ptr<phenyl::engine::ApplicationBase> app;
+    (*entrypoint)(&props, &app);
+
+    PHENYL_ASSERT(app);
+    engine.run(std::move(app));
 }
