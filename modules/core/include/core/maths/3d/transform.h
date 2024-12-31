@@ -79,27 +79,28 @@ namespace phenyl::core {
             return Transform3D{transformPos, transformScale, q};
         }
 
-        glm::mat3 scaleMatrix () const noexcept {
+        glm::mat4 scaleMatrix () const noexcept {
             return {
-                {transformScale.x, 0, 0},
-                {0, transformScale.y, 0},
-                {0, 0, transformScale.z}
+                {transformScale.x, 0, 0, 0},
+                {0, transformScale.y, 0, 0},
+                {0, 0, transformScale.z, 0},
+                {0, 0, 0, 1}
             };
         }
 
         glm::mat4 transformMatrx () const noexcept {
-            glm::mat4 translateScale = {
-                {transformScale.x, 0, 0, transformPos.x},
-                {0, transformScale.y, 0, transformPos.y},
-                {0, 0, transformScale.z, transformPos.z},
+            glm::mat4 translationMat = {
+                {0, 0, 0, transformPos.x},
+                {0, 0, 0, transformPos.y},
+                {0, 0, 0, transformPos.z},
                 {0, 0, 0, 1}
             };
 
-            return translateScale * static_cast<glm::mat4>(transformRot);
+            return translationMat * static_cast<glm::mat4>(rotation()) * scaleMatrix();
         }
 
         glm::vec3 apply (glm::vec3 v) const noexcept {
-            return (rotation() * v) * scale() + position();
+            return rotation() * (v * scale()) + position();
         }
     };
 }

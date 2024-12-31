@@ -2,14 +2,16 @@
 
 #include "application.h"
 
-#include "graphics/camera.h"
+#include "graphics/camera_2d.h"
+#include "graphics/camera_3d.h"
 
 namespace phenyl {
     namespace engine {
         class Engine;
     }
 
-    using Camera = graphics::Camera;
+    using Camera2D = graphics::Camera2D;
+    using Camera3D = graphics::Camera3D;
 
     class PhenylEngine {
     private:

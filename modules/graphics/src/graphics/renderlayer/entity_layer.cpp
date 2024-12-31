@@ -25,7 +25,7 @@ static void PushEntitySystem (const phenyl::core::Resources<EntityRenderData2D>&
     data.layer.pushEntity(transform, sprite);
 }
 
-static void BufferEntitiesSystem (const phenyl::core::Resources<EntityRenderData2D, const Camera>& resources) {
+static void BufferEntitiesSystem (const phenyl::core::Resources<EntityRenderData2D, const Camera2D>& resources) {
     auto& [data, camera] = resources;
     data.layer.bufferEntities(camera);
 }
@@ -70,7 +70,7 @@ void EntityRenderLayer::render () {
     samplerRenders.clear();
 }
 
-void EntityRenderLayer::preRender (phenyl::core::World& world, const Camera& camera) {
+void EntityRenderLayer::preRender (phenyl::core::World& world, const Camera2D& camera) {
     bufferData(world, camera);
 }
 
@@ -99,7 +99,7 @@ void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, co
     samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
 }
 
-void EntityRenderLayer::bufferEntities (const Camera& camera) {
+void EntityRenderLayer::bufferEntities (const Camera2D& camera) {
     std::sort(samplerStartIndices.begin(), samplerStartIndices.end());
     std::uint16_t offset = 0;
     const ISampler* currSampler = nullptr;
@@ -132,7 +132,7 @@ void EntityRenderLayer::bufferEntities (const Camera& camera) {
 }
 
 
-void EntityRenderLayer::bufferData (phenyl::core::World& world, const Camera& camera) {
+void EntityRenderLayer::bufferData (phenyl::core::World& world, const Camera2D& camera) {
 
     world.query<phenyl::core::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
         if (!sprite.texture) {

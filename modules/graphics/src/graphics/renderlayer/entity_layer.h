@@ -3,7 +3,7 @@
 #include "core/world.h"
 
 #include "graphics/abstract_render_layer.h"
-#include "graphics/camera.h"
+#include "graphics/camera_2d.h"
 #include "graphics/buffer.h"
 #include "graphics/pipeline.h"
 
@@ -50,7 +50,7 @@ namespace phenyl::graphics {
 
         SamplerBinding samplerBinding{};
 
-        void bufferData (core::World& world, const Camera& camera);
+        void bufferData (core::World& world, const Camera2D& camera);
     public:
 
         EntityRenderLayer ();
@@ -59,11 +59,11 @@ namespace phenyl::graphics {
 
         void init (Renderer& renderer) override;
 
-        void preRender (core::World& world, const Camera& camera);
+        void preRender (core::World& world, const Camera2D& camera);
         void render () override;
 
         void pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite);
-        void bufferEntities (const Camera& camera);
+        void bufferEntities (const Camera2D& camera);
 
         void addSystems (core::PhenylRuntime& runtime);
     };

@@ -34,8 +34,8 @@ static phenyl::InputAction KeyShoot;
 static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
-static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle);
-static void PlayerCameraUpdateSystem (const Resources<Camera>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform);
+static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle);
+static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform);
 static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer);
 
 void InputSetup (phenyl::GameInput& input) {
@@ -69,7 +69,7 @@ void InitPlayer (test::TestApp* app) {
 
 }
 
-static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle) {
+static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle) {
     auto& [camera] = resources;
     auto& [player, transform, body, audioPlayer] = bundle.comps();
 
@@ -114,7 +114,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera>& resources, c
     }
 }
 
-static void PlayerCameraUpdateSystem (const Resources<Camera>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform) {
+static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform) {
     auto& [camera] = resources;
     camera.setPos2D(transform.transform2D.position());
 }

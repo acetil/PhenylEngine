@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/abstract_render_layer.h"
-#include "graphics/camera.h"
+#include "graphics/camera_2d.h"
 #include "graphics/renderer.h"
 
 namespace phenyl::graphics {
@@ -33,7 +33,7 @@ namespace phenyl::graphics {
         [[nodiscard]] std::string_view getName () const override;
         void init (Renderer& renderer) override;
 
-        void bufferData (const Camera& camera, glm::vec2 screenSize);
+        void bufferData (const Camera2D& camera, glm::vec2 screenSize);
 
         void render () override;
     };

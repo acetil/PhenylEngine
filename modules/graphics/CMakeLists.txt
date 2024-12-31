@@ -1,4 +1,4 @@
-add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera.cpp src/stb/stb_image.cpp include/graphics/phenyl_graphics.h src/graphics/phenyl_graphics.cpp  include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
+add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/phenyl_graphics.h src/graphics/phenyl_graphics.cpp  include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
         include/graphics/components/2d/sprite.h
         include/graphics/ui/forward.h
         include/graphics/particles/particle_system_2d.h
@@ -71,6 +71,8 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         include/graphics/ui/widgets/event.h
         include/graphics/ui/widgets/button.h
         src/graphics/ui/widgets/button.cpp
+        include/graphics/camera_3d.h
+        src/graphics/camera_3d.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
