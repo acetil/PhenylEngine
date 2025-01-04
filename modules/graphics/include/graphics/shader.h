@@ -14,8 +14,9 @@ namespace phenyl::graphics {
     };
 
     enum class ShaderDataType {
-        FLOAT,
-        INT,
+        FLOAT32,
+        INT16,
+        INT32,
         VEC2F,
         VEC3F,
         VEC4F,
@@ -28,9 +29,11 @@ namespace phenyl::graphics {
     template <typename T>
     consteval ShaderDataType GetShaderDataType () {
         if constexpr (std::is_same_v<T, float>) {
-            return ShaderDataType::FLOAT;
-        } else if constexpr (std::is_same_v<T, int>) {
-            return ShaderDataType::INT;
+            return ShaderDataType::FLOAT32;
+        } else if constexpr (std::is_same_v<T, int16_t>) {
+            return ShaderDataType::INT16;
+        } else if constexpr (std::is_same_v<T, int32_t>) {
+            return ShaderDataType::INT32;
         } else if constexpr (std::is_same_v<T, glm::vec2>) {
             return ShaderDataType::VEC2F;
         } else if constexpr (std::is_same_v<T, glm::vec3>) {

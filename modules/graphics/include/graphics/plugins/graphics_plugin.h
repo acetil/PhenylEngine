@@ -7,10 +7,12 @@
 
 namespace phenyl::graphics {
     class DebugLayer;
+    class MeshManager;
     class TextureManager;
 
     class GraphicsPlugin : public core::IPlugin {
     private:
+        std::unique_ptr<MeshManager> meshManager;
         std::unique_ptr<TextureManager> textureManager;
         //DebugLayer* debugLayer = nullptr;
 

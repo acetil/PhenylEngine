@@ -54,6 +54,10 @@ namespace phenyl::graphics {
             return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity, sizeof(T)));
         }
 
+        RawBuffer makeRawBuffer (std::size_t stride, std::size_t capacity) {
+            return RawBuffer{makeRendererBuffer(capacity * stride, stride)};
+        }
+
         template <typename T, typename ...Args>
         UniformBuffer<T> makeUniformBuffer (bool readable, Args&&...args) {
             return UniformBuffer<T>(makeRendererUniformBuffer(readable), std::forward<Args>(args)...);

@@ -187,10 +187,10 @@ BufferBinding GlPipelineBuilder::withBuffer (std::size_t type, std::size_t size,
 void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, BufferBinding binding, std::size_t offset) {
     PHENYL_DASSERT(pipeline);
     switch (type) {
-        case ShaderDataType::FLOAT:
+        case ShaderDataType::FLOAT32:
             pipeline->addAttrib(GL_FLOAT, 1, location, binding, offset);
             break;
-        case ShaderDataType::INT:
+        case ShaderDataType::INT32:
             pipeline->addAttrib(GL_INT, 1, location, binding, offset);
             break;
         case ShaderDataType::VEC2F:

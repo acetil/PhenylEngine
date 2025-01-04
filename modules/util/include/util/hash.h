@@ -3,6 +3,7 @@
 #include <concepts>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace phenyl::util {
     template <typename T>
@@ -46,11 +47,43 @@ namespace phenyl::util {
         };
     };
 
+
+    constexpr std::size_t CombineHashes (std::size_t lhs, std::size_t rhs) noexcept {
+        // https://stackoverflow.com/questions/5889238/why-is-xor-the-default-way-to-combine-hashes
+        return lhs ^ (rhs + 0x517cc1b727220a95 + (lhs << 6) + (lhs >> 2));
+    }
+
+    constexpr std::size_t HashAllInternal (std::size_t seed) noexcept {
+        return seed;
+    }
+
+    template <typename T, typename ...Args>
+    constexpr std::size_t HashAllInternal (std::size_t seed, const T& obj, const Args&... args) noexcept {
+        auto newVal = CombineHashes(seed, (typename Hasher<T>::HashFunc){}(obj));
+        return HashAllInternal(newVal, args...);
+    }
+
+    template <typename T, typename ...Args>
+    constexpr std::size_t HashAll (const T& obj, const Args&... args) noexcept {
+        return HashAllInternal((typename Hasher<T>::HashFunc){}(obj), args...);
+    }
 }
 
 template <typename T, typename U>
 struct std::hash<std::pair<T, U>> {
     std::size_t operator() (const std::pair<T, U>& p) const noexcept {
-        return std::hash<T>{}(p.first) ^ (std::hash<U>{}(p.second) << 1);
+        return phenyl::util::HashAll(p.first, p.second);
+    }
+};
+
+template <typename T>
+struct std::hash<std::vector<T>> {
+    std::size_t operator() (const std::vector<T>& v) const noexcept {
+        std::size_t seed = 0;
+        for (auto& i : v) {
+            seed = phenyl::util::CombineHashes(seed, (typename phenyl::util::Hasher<T>::HashFunc){}(i));
+        }
+
+        return seed;
     }
 };

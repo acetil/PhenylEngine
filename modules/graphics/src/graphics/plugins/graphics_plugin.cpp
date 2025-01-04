@@ -4,6 +4,7 @@
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/debug_layer.h"
 
+#include "mesh_manager.h"
 #include "texture_manager.h"
 #include "core/plugins/input_plugin.h"
 #include "graphics/camera_3d.h"
@@ -49,6 +50,9 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     renderer.loadDefaultShaders();
     textureManager = std::make_unique<TextureManager>(renderer);
     textureManager->selfRegister();
+
+    meshManager = std::make_unique<MeshManager>(renderer);
+    meshManager->selfRegister();
 
     auto* debugLayer = &renderer.addLayer<DebugLayer>();
     runtime.addResource<GraphicsData>(debugLayer);

@@ -66,4 +66,42 @@ namespace phenyl::graphics {
             return *rendererBuffer;
         }
     };
+
+    class RawBuffer {
+    private:
+        std::unique_ptr<IBuffer> rendererBuffer;
+        std::size_t bufSize = 0;
+    public:
+        RawBuffer () = default;
+        explicit RawBuffer (std::unique_ptr<IBuffer> rendererBuffer) : rendererBuffer{std::move(rendererBuffer)} {}
+
+        RawBuffer (const RawBuffer&) = delete;
+        RawBuffer (RawBuffer&&) = default;
+
+        RawBuffer& operator= (const RawBuffer&) = delete;
+        RawBuffer& operator= (RawBuffer&&) = default;
+
+        explicit operator bool () const noexcept {
+            return static_cast<bool>(rendererBuffer);
+        }
+
+        void upload (std::byte* data, std::size_t size) {
+            rendererBuffer->upload(reinterpret_cast<unsigned char*>(data), size);
+            this->bufSize = size;
+        }
+
+        std::size_t size () const noexcept {
+            return bufSize;
+        }
+
+        IBuffer& getUnderlying () noexcept {
+            PHENYL_DASSERT(rendererBuffer);
+            return *rendererBuffer;
+        }
+
+        const IBuffer& getUnderlying () const noexcept {
+            PHENYL_DASSERT(rendererBuffer);
+            return *rendererBuffer;
+        }
+    };
 }
