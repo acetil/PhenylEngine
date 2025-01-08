@@ -66,7 +66,7 @@ namespace phenyl::graphics {
         std::size_t hash{0};
     public:
         Shader () = default;
-        explicit Shader (std::unique_ptr<IShader> shader) : shader{std::move(shader)}, hash{this->shader->hash()} {}
+        explicit Shader (std::unique_ptr<IShader> shader) : shader{std::move(shader)}, hash{this->shader ? this->shader->hash() : 0} {}
 
         explicit operator bool () const noexcept {
             return (bool)shader;

@@ -51,9 +51,6 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     textureManager = std::make_unique<TextureManager>(renderer);
     textureManager->selfRegister();
 
-    meshManager = std::make_unique<MeshManager>(renderer);
-    meshManager->selfRegister();
-
     auto* debugLayer = &renderer.addLayer<DebugLayer>();
     runtime.addResource<GraphicsData>(debugLayer);
 

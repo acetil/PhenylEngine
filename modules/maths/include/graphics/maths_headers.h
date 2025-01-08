@@ -53,7 +53,7 @@ struct std::formatter<glm::vec4, char> {
     template <class ParseContext>
     constexpr ParseContext::iterator parse(ParseContext& ctx) {
         auto it = ctx.begin();
-        if (it != ctx.end()) {
+        if (it != ctx.end() && *it != '}') {
             throw std::format_error("Invalid format string for vec4");
         }
 

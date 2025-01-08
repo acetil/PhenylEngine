@@ -10,25 +10,25 @@ void Camera3D::lookAt (glm::vec3 target, glm::vec3 upAxis) noexcept {
     }
 }
 
-glm::mat4 Camera3D::viewMatrix () const noexcept {
+glm::mat4 Camera3D::view () const noexcept {
     auto pos = transform.position();
     auto rotation = transform.rotation();
 
     glm::mat4 translationMatrix{
-        {0, 0, 0, -pos.x},
-        {0, 0, 0, -pos.y},
-        {0, 0, 0, -pos.z},
-        {0, 0, 0, 1}
+        {1, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {-pos.x, -pos.y, -pos.z, 1}
     };
     return static_cast<glm::mat4>(rotation.inverse()) * translationMatrix;
 }
 
-glm::mat4 Camera3D::perspectiveMatrix () const noexcept {
-    return glm::perspective(glm::radians(fov), resolution.y / resolution.x, nearClippingPlane, farClippingPlane);
+glm::mat4 Camera3D::projection () const noexcept {
+    return glm::perspective(glm::radians(fov), resolution.x / resolution.y, nearClippingPlane, farClippingPlane);
 }
 
-glm::mat4 Camera3D::cameraMatrix () const noexcept {
-    return perspectiveMatrix() * viewMatrix();
+glm::mat4 Camera3D::matrix () const noexcept {
+    return projection() * view();
 }
 
 void Camera3D::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {

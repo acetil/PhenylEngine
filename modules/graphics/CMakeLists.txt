@@ -78,6 +78,13 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/plugins/mesh_manager.cpp
         src/graphics/filetypes/obj_file.h
         src/graphics/filetypes/obj_file.cpp
+        include/graphics/plugins/mesh_3d_plugin.h
+        src/graphics/renderlayer/mesh_layer.h
+        include/graphics/components/3d/mesh_renderer.h
+        src/graphics/renderlayer/mesh_layer.cpp
+        include/graphics/plugins/graphics_3d_plugin.h
+        src/graphics/plugins/mesh_3d_plugin.cpp
+        src/graphics/components/3d/mesh_renderer.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
@@ -103,6 +110,8 @@ target_gen_embedded(graphics
         resources/shaders/canvas_fragment.frag
         resources/shaders/particle_vertex.vert
         resources/shaders/particle_fragment.frag
+        resources/shaders/mesh.vert
+        resources/shaders/mesh.frag
 )
 
 add_phenyl_resource(resources/fonts/NotoSerif-Regular.ttf resources/phenyl/fonts/noto-serif.ttf)

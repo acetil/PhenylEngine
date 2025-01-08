@@ -18,6 +18,13 @@ Mesh* MeshManager::load (std::ifstream& data, std::size_t id) {
     auto mesh = objFile.makeMesh(renderer);
     auto* ptr = mesh.get();
 
+    if (auto it = layoutIds.find(mesh->layout()); it != layoutIds.end()) {
+        mesh->setLayoutId(it->second);
+    } else {
+        mesh->setLayoutId(nextLayoutId);
+        layoutIds.emplace(mesh->layout(), nextLayoutId++);
+    }
+
     meshes.emplace(id, std::move(mesh));
     return ptr;
 }

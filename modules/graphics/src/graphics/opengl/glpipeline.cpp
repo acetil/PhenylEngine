@@ -36,24 +36,24 @@ GlPipeline::~GlPipeline () {
     }
 }
 
-void GlPipeline::bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) {
+void GlPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) {
     PHENYL_DASSERT_MSG(binding < bufferTypes.size(), "Attempted to bind buffer to binding {} which does not exist!", binding);
     PHENYL_DASSERT_MSG(type == bufferTypes[binding], "Attempted to bind buffer to binding {} with invalid type", binding);
-    auto& glBuffer = reinterpret_cast<GlBuffer&>(buffer);
+    auto& glBuffer = reinterpret_cast<const GlBuffer&>(buffer);
 
-    glVertexArrayVertexBuffer(vaoId, binding, glBuffer.id(), 0, static_cast<GLsizei>(glBuffer.elementSize()));
+    glVertexArrayVertexBuffer(vaoId, binding, glBuffer.id(), static_cast<GLintptr>(offset), static_cast<GLsizei>(glBuffer.elementSize()));
 }
 
-void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) {
+void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) {
     PHENYL_DASSERT_MSG(uniformTypes.contains(binding), "Attempted to bind uniform to binding {} which does not exist!", binding);
     PHENYL_DASSERT_MSG(type == uniformTypes[binding], "Attempted to bind uniform to binding {} with invalid type", binding);
 
-    auto& glBuffer = reinterpret_cast<GlUniformBuffer&>(buffer);
+    auto& glBuffer = reinterpret_cast<const GlUniformBuffer&>(buffer);
 
     glBindBufferBase(GL_UNIFORM_BUFFER, binding, glBuffer.id());
 }
 
-void GlPipeline::bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) {
+void GlPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
     switch (type) {
         case ShaderIndexType::UBYTE:
             indexType = PipelineIndex{
@@ -77,7 +77,7 @@ void GlPipeline::bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) {
             PHENYL_ABORT("Invalid shader index type: {}", static_cast<unsigned int>(type));
     }
 
-    auto& glBuffer = reinterpret_cast<GlBuffer&>(buffer);
+    auto& glBuffer = reinterpret_cast<const GlBuffer&>(buffer);
     glVertexArrayElementBuffer(vaoId, glBuffer.id());
 }
 
@@ -102,6 +102,19 @@ void GlPipeline::render (std::size_t vertices, std::size_t offset) {
         glDrawElements(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize));
     } else {
         glDrawArrays(renderMode, static_cast<GLsizei>(offset), static_cast<GLsizei>(vertices));
+    }
+}
+
+void GlPipeline::renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset) {
+    PHENYL_DASSERT(shader);
+
+    getShader().bind();
+    glBindVertexArray(vaoId);
+
+    if (indexType) {
+        glDrawElementsInstanced(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize), static_cast<GLsizei>(numInstances));
+    } else {
+        glDrawArraysInstanced(renderMode, static_cast<GLsizei>(offset), static_cast<GLsizei>(vertices), static_cast<GLsizei>(numInstances));
     }
 }
 
@@ -213,8 +226,9 @@ void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, 
             break;
         case ShaderDataType::MAT4F:
             pipeline->addAttrib(GL_FLOAT, 4, location, binding, offset);
-            pipeline->addAttrib(GL_FLOAT, 4, location + 1, binding, offset + sizeof(glm::vec3));
-            pipeline->addAttrib(GL_FLOAT, 4, location + 2, binding, offset + sizeof(glm::vec3) * 3);
+            pipeline->addAttrib(GL_FLOAT, 4, location + 1, binding, offset + sizeof(glm::vec4));
+            pipeline->addAttrib(GL_FLOAT, 4, location + 2, binding, offset + sizeof(glm::vec4) * 2);
+        pipeline->addAttrib(GL_FLOAT, 4, location + 3, binding, offset + sizeof(glm::vec4) * 3);
             break;
         default:
             PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", static_cast<unsigned int>(type));

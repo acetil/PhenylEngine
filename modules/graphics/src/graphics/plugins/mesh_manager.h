@@ -11,7 +11,8 @@ namespace phenyl::graphics {
     private:
         Renderer& renderer;
         util::HashMap<std::size_t, std::unique_ptr<Mesh>> meshes;
-
+        util::HashMap<MeshLayout, std::uint64_t> layoutIds;
+        std::uint64_t nextLayoutId = 1;
     public:
         MeshManager (Renderer& renderer);
 

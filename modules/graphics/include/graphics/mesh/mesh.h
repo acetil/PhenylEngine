@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/pipeline.h"
+
 #include "graphics/buffer.h"
 #include "util/hash.h"
 
@@ -26,12 +28,18 @@ namespace phenyl::graphics {
         ShaderDataType type = ShaderDataType::UNKNOWN;
         std::uint32_t stream = 0;
         std::size_t offset = 0;
+
+        bool operator== (const MeshAttribute&) const = default;
     };
 
     struct MeshLayout {
-        ShaderDataType indexType;
+        ShaderIndexType indexType;
         std::vector<MeshAttribute> attributes;
-        std::uint32_t numStreams;
+        std::vector<std::size_t> streamStrides;
+
+        std::uint64_t layoutId = 0;
+
+        bool operator== (const MeshLayout&) const = default;
     };
 
     class Mesh {
@@ -39,9 +47,10 @@ namespace phenyl::graphics {
         MeshLayout meshLayout{};
         RawBuffer meshIndices;
         std::vector<RawBuffer> meshStreams;
+        std::size_t meshSize;
 
     public:
-        Mesh (MeshLayout layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams);
+        Mesh (MeshLayout layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams, std::size_t meshSize);
 
         const MeshLayout& layout () const noexcept {
             return meshLayout;
@@ -53,6 +62,15 @@ namespace phenyl::graphics {
 
         const std::vector<RawBuffer>& streams () const noexcept {
             return meshStreams;
+        }
+
+        std::size_t numVertices () const noexcept {
+            return meshSize;
+        }
+
+        // TODO
+        void setLayoutId (std::uint64_t id) noexcept {
+            meshLayout.layoutId = id;
         }
     };
 }
@@ -67,6 +85,6 @@ struct std::hash<phenyl::graphics::MeshAttribute> {
 template<>
 struct std::hash<phenyl::graphics::MeshLayout> {
     std::size_t operator() (const phenyl::graphics::MeshLayout& layout) const noexcept {
-        return phenyl::util::HashAll(layout.indexType, layout.attributes, layout.numStreams);
+        return phenyl::util::HashAll(layout.indexType, layout.attributes, layout.streamStrides);
     }
 };

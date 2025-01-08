@@ -33,13 +33,14 @@ namespace phenyl::graphics {
 
         ~GlPipeline () override;
 
-        void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) override;
-        void bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) override;
-        void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) override;
+        void bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) override;
+        void bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) override;
+        void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) override;
         void bindSampler (SamplerBinding binding, const ISampler& sampler) override;
         void unbindIndexBuffer () override;
 
         void render (std::size_t vertices, std::size_t offset) override;
+        void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
 
         void setRenderMode (GLenum renderMode);
         void setShader (core::Asset<Shader> shader);

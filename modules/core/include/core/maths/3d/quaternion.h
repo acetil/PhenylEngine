@@ -21,13 +21,13 @@ namespace phenyl::core {
         explicit Quaternion (float w, glm::vec3 vec) : impl{w, vec} {}
 
         static Quaternion Rotation (glm::vec3 axis, float theta) {
-            PHENYL_DASSERT_MSG(glm::dot(axis, axis) == 1.0f, "Rotation axes must be normalised!");
+            PHENYL_DASSERT_MSG(glm::epsilonEqual(glm::dot(axis, axis), 1.0f, 0.000001f), "Rotation axes must be normalised!");
 
-            return Quaternion{glm::cos(theta / 2), glm::sin(theta / 2) * axis};
+            return Quaternion{glm::cos(theta / 2), glm::sin(theta / 2) * axis}.normalize();
         }
 
         static Quaternion LookAt (glm::vec3 forward, glm::vec3 upAxis = UpVector) {
-            PHENYL_DASSERT_MSG(glm::dot(upAxis, upAxis) == 1.0f, "Up axis must be normalised!");
+            PHENYL_DASSERT_MSG(glm::epsilonEqual(glm::dot(upAxis, upAxis), 1.0f, 0.000001f), "Up axis must be normalised!");
             PHENYL_DASSERT_MSG((forward != glm::vec3{0, 0, 0}), "Forward axis cannot be zero vector!");
 
             // https://stackoverflow.com/questions/52413464/look-at-quaternion-using-up-vector/52551983
@@ -69,6 +69,10 @@ namespace phenyl::core {
 
         Quaternion normalize () const noexcept {
             return Quaternion{impl / length()};
+        }
+
+        bool normalized () const noexcept {
+            return glm::epsilonEqual(lengthSquared(), 1.0f, 0.000001f);
         }
 
         float length () const noexcept {

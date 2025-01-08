@@ -60,22 +60,22 @@ namespace phenyl::core {
         }
 
         Transform3D& rotateBy (Quaternion q) noexcept {
-            PHENYL_DASSERT_MSG(q.lengthSquared() == 1.0f, "Cannot rotate by non-normalized quaternion!");
+            PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
             transformRot = q * transformRot;
             return *this;
         }
         Transform3D withRotateBy (Quaternion q) const noexcept {
-            PHENYL_DASSERT_MSG(q.lengthSquared() == 1.0f, "Cannot rotate by non-normalized quaternion!");
+            PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
             return Transform3D{transformPos, transformScale, q * transformRot};
         }
 
         Transform3D& setRotation (Quaternion q) noexcept {
-            PHENYL_DASSERT_MSG(q.lengthSquared() == 1.0f, "Cannot rotate by non-normalized quaternion!");
+            PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
             transformRot = q;
             return *this;
         }
         Transform3D withRotation (Quaternion q) const noexcept {
-            PHENYL_DASSERT_MSG(q.lengthSquared() == 1.0f, "Cannot rotate by non-normalized quaternion!");
+            PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
             return Transform3D{transformPos, transformScale, q};
         }
 
@@ -90,10 +90,10 @@ namespace phenyl::core {
 
         glm::mat4 transformMatrx () const noexcept {
             glm::mat4 translationMat = {
-                {0, 0, 0, transformPos.x},
-                {0, 0, 0, transformPos.y},
-                {0, 0, 0, transformPos.z},
-                {0, 0, 0, 1}
+                {1, 0, 0, 0},
+                {0, 1, 0, 0},
+                {0, 0, 1, 0},
+                {transformPos.x, transformPos.y, transformPos.z, 1}
             };
 
             return translationMat * static_cast<glm::mat4>(rotation()) * scaleMatrix();

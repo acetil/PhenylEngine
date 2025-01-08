@@ -13,6 +13,9 @@
 #include "resources/shaders/canvas_fragment.frag.h"
 #include "resources/shaders/particle_vertex.vert.h"
 #include "resources/shaders/particle_fragment.frag.h"
+#include "resources/shaders/mesh.vert.h"
+#include "resources/shaders/mesh.frag.h"
+
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
 #include "glpipeline.h"
@@ -25,6 +28,11 @@ using namespace phenyl::graphics;
 static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
 GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)} {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_DEPTH_TEST);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
@@ -176,6 +184,14 @@ void GLRenderer::loadDefaultShaders () {
             .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
             .withUniformBlock("Camera")
             .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual mesh shader!");
+    meshShader = core::Assets::LoadVirtual("phenyl/shaders/mesh", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_MESH_VERT)
+        .withSource(ShaderSourceType::FRAGMENT, EMBED_MESH_FRAG)
+        .withUniformBlock("GlobalUniform")
+        .build()
     });
 }
 

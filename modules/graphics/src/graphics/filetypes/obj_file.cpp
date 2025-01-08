@@ -87,7 +87,7 @@ ObjFile::ObjFile (std::istream& file) {
             }
 
             PHENYL_ASSERT_MSG(i == 3, "Obj vn directive requires 3 arguments!");
-            objUvs.emplace_back(v);
+            objNorms.emplace_back(v);
         } else if (first == "f") {
             std::vector<ObjFaceVertex> faceVertices;
             for ( ; it != split.end(); ++it) {
@@ -105,11 +105,11 @@ ObjFile::ObjFile (std::istream& file) {
                     PHENYL_ASSERT_MSG(std::from_chars(v.begin(), v.end(), index).ec == std::errc{}, "Failed to parse face index {}", v);
 
                     if (i == 0) {
-                        f.v = index;
+                        f.v = index - 1;
                     } else if (i == 1) {
-                        f.vt = index;
+                        f.vt = index - 1;
                     } else {
-                        f.vn = index;
+                        f.vn = index - 1;
                     }
                     i++;
                 }
@@ -143,7 +143,7 @@ ObjFile::ObjFile (std::istream& file) {
                 indices.emplace_back(it->second);
             } else {
                 std::uint32_t index = positions.size();
-                positions.emplace_back(objVertices[index]);
+                positions.emplace_back(objVertices[v.v]);
 
                 if (hasTex) {
                     uvs.emplace_back(objUvs[*v.vt]);
@@ -218,7 +218,7 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
 
     auto vertexBuffer = renderer.makeRawBuffer(stride, numVertices);
     vertexBuffer.upload(data.get(), stride * numVertices);
-    layout.numStreams = 1;
+    layout.streamStrides = std::vector{stride};
 
     RawBuffer indexBuffer;
     if (numVertices <= std::numeric_limits<std::uint16_t>::max()) {
@@ -226,15 +226,15 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
         indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size());
         indexBuffer.upload(reinterpret_cast<std::byte*>(vec.data()), vec.size() * sizeof(std::uint16_t));
 
-        layout.indexType = ShaderDataType::INT16;
+        layout.indexType = ShaderIndexType::USHORT;
     } else {
         indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), indices.size());
         indexBuffer.upload(reinterpret_cast<std::byte*>(indices.data()), indices.size() * sizeof(std::uint32_t));
 
-        layout.indexType = ShaderDataType::INT32;
+        layout.indexType = ShaderIndexType::UINT;
     }
 
     std::vector<RawBuffer> streams;
     streams.emplace_back(std::move(vertexBuffer));
-    return std::make_unique<Mesh>(std::move(layout), std::move(indexBuffer), std::move(streams));
+    return std::make_unique<Mesh>(std::move(layout), std::move(indexBuffer), std::move(streams), indices.size());
 }
