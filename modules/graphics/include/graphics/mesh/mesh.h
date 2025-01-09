@@ -23,6 +23,37 @@ namespace phenyl::graphics {
         TexCoord7,
     };
 
+    inline std::string GetMeshAttribName (MeshAttributeKind kind) {
+        switch (kind) {
+            case MeshAttributeKind::Unknown:
+                break;
+            case MeshAttributeKind::Position:
+                return "position";
+            case MeshAttributeKind::Normal:
+                return "normal";
+            case MeshAttributeKind::Color:
+                return "color";
+            case MeshAttributeKind::TexCoord0:
+                return "texcoord_0";
+            case MeshAttributeKind::TexCoord1:
+                return "texcoord_1";
+            case MeshAttributeKind::TexCoord2:
+                return "texcoord_2";
+            case MeshAttributeKind::TexCoord3:
+                return "texcoord_3";
+            case MeshAttributeKind::TexCoord4:
+                return "texcoord_4";
+            case MeshAttributeKind::TexCoord5:
+                return "texcoord_5";
+            case MeshAttributeKind::TexCoord6:
+                return "texcoord_6";
+            case MeshAttributeKind::TexCoord7:
+                return "texcoord_7";
+        }
+
+        PHENYL_ABORT("Invalid mesh attribute kind!");
+    }
+
     struct MeshAttribute {
         MeshAttributeKind kind = MeshAttributeKind::Unknown;
         ShaderDataType type = ShaderDataType::UNKNOWN;

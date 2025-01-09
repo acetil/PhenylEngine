@@ -1,0 +1,9 @@
+{
+  "shader" : "phenyl/shaders/mesh",
+  "uniforms" : [
+    {
+      "name" : "material_color",
+      "type" : "vec4f"
+    }
+  ]
+}

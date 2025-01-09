@@ -59,7 +59,8 @@ add_library(phenyl SHARED
         include/phenyl/components/3D/global_transform.h
         include/phenyl/components/3D/mesh_renderer.h
         include/phenyl/graphics/mesh.h
-        src/phenyl/plugins/default_3d_plugin.cpp)
+        src/phenyl/plugins/default_3d_plugin.cpp
+        include/phenyl/graphics/material.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

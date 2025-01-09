@@ -68,6 +68,10 @@ namespace phenyl::graphics {
             return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
         }
 
+        RawUniformBuffer makeRawUniformBuffer (std::size_t size, bool readable = false) {
+            return RawUniformBuffer{makeRendererUniformBuffer(readable), size};
+        }
+
         ImageTexture makeTexture (const TextureProperties& properties, const Image& image) {
             auto texture = makeImageTexture(properties);
             texture.upload(image);

@@ -9,24 +9,27 @@
 #include "graphics/pipeline.h"
 #include "graphics/abstract_render_layer.h"
 #include "graphics/camera_3d.h"
+#include "graphics/material.h"
 #include "graphics/components/3d/mesh_renderer.h"
 
 namespace phenyl::graphics {
+    struct MeshGlobalUniform {
+        glm::mat4 view;
+        glm::mat4 projection;
+    };
+
     class MeshRenderLayer : public AbstractRenderLayer {
     private:
-        struct GlobalUniform {
-            glm::mat4 view;
-            glm::mat4 projection;
-        };
-
         struct MeshRenderRequest {
             std::uint64_t layout;
             const Mesh* mesh;
+            MaterialInstance* materialInstance;
             glm::mat4 transform;
         };
 
         struct MeshInstances {
             const Mesh* mesh;
+            MaterialInstance* materialInstance;
             std::size_t instanceOffset;
             std::size_t numInstances;
         };
@@ -39,15 +42,16 @@ namespace phenyl::graphics {
         };
 
         Renderer* renderer = nullptr;
+        //core::Asset<Material> meshMaterial; // TODO
         core::Query<core::GlobalTransform3D, MeshRenderer3D> meshQuery;
-        util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
+        //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
         Buffer<glm::mat4> instanceBuffer; // TODO: per material
-        UniformBuffer<GlobalUniform> globalUniform{};
+        UniformBuffer<MeshGlobalUniform> globalUniform{};
 
         std::vector<MeshRenderRequest> requests;
         std::vector<MeshInstances> instances;
 
-        MeshPipeline& getPipeline (const MeshLayout& layout);
+        //MeshPipeline& getPipeline (const MeshLayout& layout);
     public:
         explicit MeshRenderLayer (core::World& world);
 

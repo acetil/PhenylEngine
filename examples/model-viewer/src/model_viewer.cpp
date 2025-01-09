@@ -12,6 +12,7 @@
 #include <phenyl/maths.h>
 
 #include "phenyl/entrypoint.h"
+#include "phenyl/graphics/material.h"
 #include "util/random.h"
 
 class ModelViewer : public phenyl::Application3D {
@@ -35,7 +36,8 @@ public:
         });
         entity.insert(phenyl::MeshRenderer3D{
             //.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj")
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj")
+            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj"),
+            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")
         });
 
         entity2 = runtime().world().create();
@@ -43,8 +45,8 @@ public:
             .transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f}).translate(glm::vec3{0.5f, 0, -0.4f})
         });
         entity2.insert(phenyl::MeshRenderer3D{
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj")
-            //.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj")
+            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")
         });
 
         runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);

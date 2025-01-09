@@ -6,7 +6,10 @@
 using namespace phenyl::graphics;
 
 namespace phenyl::graphics {
-    PHENYL_SERIALIZABLE(MeshRenderer3D, PHENYL_SERIALIZABLE_MEMBER(mesh))
+    PHENYL_SERIALIZABLE(MeshRenderer3D,
+        PHENYL_SERIALIZABLE_MEMBER(mesh),
+        PHENYL_SERIALIZABLE_MEMBER(material)
+    )
 }
 
 // PHENYL_SERIALIZABLE(phenyl::graphics::MeshRenderer3D, PHENYL_SERIALIZABLE_MEMBER(mesh))

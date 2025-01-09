@@ -1,0 +1,10 @@
+{
+  "material" : "resources/phenyl/materials/blinn_phong",
+  "uniforms" : [
+    {
+      "name" : "material_color",
+      "type" : "vec4f",
+      "val" : [0.0, 1.0, 1.0, 1.0]
+    }
+  ]
+}

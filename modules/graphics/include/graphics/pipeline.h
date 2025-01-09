@@ -105,6 +105,13 @@ namespace phenyl::graphics {
             return *this;
         }
 
+        Pipeline& bindUniform (UniformBinding binding, const RawUniformBuffer& buffer) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindUniform(0, binding, buffer.getUnderlying());
+
+            return *this;
+        }
+
         Pipeline& bindSampler (SamplerBinding binding, const Texture& texture) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindSampler(binding, texture.sampler());
@@ -207,6 +214,13 @@ namespace phenyl::graphics {
         PipelineBuilder& withUniform (unsigned int location, UniformBinding& bindingOut) {
             PHENYL_DASSERT(builder);
             bindingOut = builder->withUniform(meta::type_index<T>(), location);
+
+            return *this;
+        }
+
+        PipelineBuilder& withRawUniform (unsigned int location, UniformBinding& bindingOut) {
+            PHENYL_DASSERT(builder);
+            bindingOut = builder->withUniform(0, location);
 
             return *this;
         }

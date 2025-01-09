@@ -1,5 +1,7 @@
 #include "graphics/plugins/mesh_3d_plugin.h"
 
+#include "material_instance_manager.h"
+#include "material_manager.h"
 #include "mesh_manager.h"
 #include "core/runtime.h"
 #include "graphics/plugins/graphics_plugin.h"
@@ -18,6 +20,12 @@ void Mesh3DPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
     auto& renderer = runtime.resource<Renderer>();
+    materialManager = std::make_unique<MaterialManager>(renderer);
+    materialManager->selfRegister();
+
+    materialInstanceManager = std::make_unique<MaterialInstanceManager>();
+    materialInstanceManager->selfRegister();
+
     meshManager = std::make_unique<MeshManager>(renderer);
     meshManager->selfRegister();
 

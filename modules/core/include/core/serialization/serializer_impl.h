@@ -11,9 +11,13 @@
 namespace phenyl::core::detail {
     template <SerializableType T>
     class VectorSerializable : public ISerializable<std::vector<T>> {
+    private:
+        std::string serializableName;
     public:
+        VectorSerializable () : serializableName{std::format("std::vector<{}>", GetSerializable<T>().name())} {}
+
         [[nodiscard]] std::string_view name () const noexcept override {
-            return std::format("std::vector<{}>", GetSerializable<T>().name());
+            return serializableName;
         }
 
         void serialize (ISerializer& serializer, const std::vector<T>& obj) override {
@@ -40,7 +44,7 @@ namespace phenyl::core::detail {
     };
     template <SerializableType T>
     ISerializable<std::vector<T>>& phenyl_GetSerializable(SerializableMarker<std::vector<T>>) {
-        static VectorSerializable<std::vector<T>> serializable{};
+        static VectorSerializable<T> serializable{};
         return serializable;
     }
 

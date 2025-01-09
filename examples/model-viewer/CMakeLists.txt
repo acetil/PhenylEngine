@@ -8,5 +8,7 @@ target_link_libraries(model-viewer PRIVATE phenyl)
 target_copy_resources(model-viewer
     resources/meshes/cube.obj
     resources/meshes/suzanne.obj
+
+    resources/material_instances/mat1.json
 )
 target_copy_phenyl_resources(model-viewer)

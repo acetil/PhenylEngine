@@ -85,6 +85,12 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         include/graphics/plugins/graphics_3d_plugin.h
         src/graphics/plugins/mesh_3d_plugin.cpp
         src/graphics/components/3d/mesh_renderer.cpp
+        include/graphics/material.h
+        src/graphics/material.cpp
+        src/graphics/plugins/material_manager.h
+        src/graphics/plugins/material_manager.cpp
+        src/graphics/plugins/material_instance_manager.h
+        src/graphics/plugins/material_instance_manager.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
@@ -116,6 +122,7 @@ target_gen_embedded(graphics
 
 add_phenyl_resource(resources/fonts/NotoSerif-Regular.ttf resources/phenyl/fonts/noto-serif.ttf)
 add_phenyl_resource(resources/fonts/OFL.txt resources/phenyl/fonts/OFL.txt)
+add_phenyl_resource(resources/materials/blinn_phong.json resources/phenyl/materials/blinn_phong.json)
 
 target_include_directories(graphics PUBLIC include)
 target_include_directories(graphics PRIVATE src)
