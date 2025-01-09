@@ -16,9 +16,11 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
     auto builder = renderer.buildPipeline();
 
     UniformBinding globalUniform;
+    UniformBinding lightUniform;
     BufferBinding model;
     builder.withShader(shader)
         .withUniform<MeshGlobalUniform>(*shader->uniformLocation("GlobalUniform"), globalUniform)
+        .withUniform<BPLightUniform>(*shader->uniformLocation("BPLightUniform"), lightUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
     // TODO: material specific uniform binding
@@ -46,6 +48,7 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
     auto [it, _] = pipelines.emplace(layout.layoutId, MatPipeline{
         .pipeline = builder.build(),
         .globalUniform = globalUniform,
+        .lightUniform = lightUniform,
         .modelBinding = model,
         .streamBindings = std::move(streamBindings),
         .instanceBinding = instanceBinding,

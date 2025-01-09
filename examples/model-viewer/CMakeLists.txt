@@ -10,5 +10,6 @@ target_copy_resources(model-viewer
     resources/meshes/suzanne.obj
 
     resources/material_instances/mat1.json
+    resources/material_instances/mat2.json
 )
 target_copy_phenyl_resources(model-viewer)

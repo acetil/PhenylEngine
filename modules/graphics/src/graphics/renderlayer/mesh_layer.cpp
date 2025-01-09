@@ -18,6 +18,7 @@ void MeshRenderLayer::init (Renderer& renderer) {
 
     instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
     globalUniform = renderer.makeUniformBuffer<MeshGlobalUniform>();
+    bpLight = renderer.makeUniformBuffer<BPLightUniform>();
     //meshMaterial = core::Assets::Load<Material>("resources/phenyl/materials/blinn_phong");
 }
 
@@ -73,11 +74,17 @@ void MeshRenderLayer::uploadData (Camera3D& camera) {
 
     globalUniform->view = camera.view();
     globalUniform->projection = camera.projection();
+    globalUniform->viewPos = camera.transform.position();
     globalUniform.upload();
 }
 
 void MeshRenderLayer::render () {
     PHENYL_DASSERT(renderer);
+
+    bpLight->lightPos = {-2, 0, 0};
+    bpLight->lightColor = {1, 1, 1};
+    bpLight->ambientColor = {1.0, 1.0, 1.0};
+    bpLight.upload();
 
     for (const auto& instance : instances) {
         //auto& meshPipeline = getPipeline(instance.mesh->layout()); // TODO: ahead of time pipeline creation
@@ -86,6 +93,7 @@ void MeshRenderLayer::render () {
         auto& pipeline = matPipeline.pipeline;
 
         pipeline.bindUniform(matPipeline.globalUniform, globalUniform);
+        pipeline.bindUniform(matPipeline.lightUniform, bpLight);
 
         auto& streams = instance.mesh->streams();
         PHENYL_DASSERT(streams.size() == matPipeline.streamBindings.size());

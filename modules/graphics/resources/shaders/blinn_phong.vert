@@ -7,16 +7,18 @@ layout (location = 2) in vec2 texcoord_0;
 layout (location = 3) in mat4 model;
 
 out vec2 uv;
-out vec4 colorOut;
 
 layout(std140) uniform GlobalUniform {
     mat4 view;
     mat4 projection;
+    vec3 viewPos;
 };
 
-layout(std140) uniform Material {
-    vec4 material_color;
-};
+out BPLight {
+    vec3 fragPos;
+    vec3 viewPos;
+    vec3 normal;
+} vsOut;
 
 void main () {
     vec4 pos;
@@ -24,7 +26,7 @@ void main () {
     gl_Position = projection * view * model * vec4(position, 1.0);
     uv = texcoord_0;
 
-    //colorOut = vec4(1 * max(1 - pos.z, 0), 0, 0, 1);
-    //colorOut = vec4(1, 0, 0, 1);
-    colorOut = material_color;
+    vsOut.fragPos = (model * vec4(position, 1.0)).xyz;
+    vsOut.normal = normalize(((transpose(inverse(model))) * vec4(normal, 0.0f)).xyz);
+    vsOut.viewPos = viewPos;
 }

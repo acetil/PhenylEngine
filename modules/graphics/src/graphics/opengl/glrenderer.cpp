@@ -13,8 +13,8 @@
 #include "resources/shaders/canvas_fragment.frag.h"
 #include "resources/shaders/particle_vertex.vert.h"
 #include "resources/shaders/particle_fragment.frag.h"
-#include "resources/shaders/mesh.vert.h"
-#include "resources/shaders/mesh.frag.h"
+#include "resources/shaders/blinn_phong.vert.h"
+#include "resources/shaders/blinn_phong.frag.h"
 
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
@@ -200,15 +200,16 @@ void GLRenderer::loadDefaultShaders () {
             .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual mesh shader!");
-    meshShader = core::Assets::LoadVirtual("phenyl/shaders/mesh", Shader{GlShader::Builder()
-        .withSource(ShaderSourceType::VERTEX, EMBED_MESH_VERT)
-        .withSource(ShaderSourceType::FRAGMENT, EMBED_MESH_FRAG)
+    PHENYL_TRACE(LOGGER, "Loading virtual Blinn-Phong shader!");
+    meshShader = core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
+        .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
         .withAttrib(ShaderDataType::VEC3F, "position")
         .withAttrib(ShaderDataType::VEC3F, "normal")
         .withAttrib(ShaderDataType::VEC2F, "texcoord_0")
         .withAttrib(ShaderDataType::MAT4F, "model")
         .withUniformBlock("GlobalUniform")
+        .withUniformBlock("BPLightUniform")
         .withUniformBlock("Material")
         .build()
     });

@@ -4,7 +4,7 @@
     {
       "name" : "mat_color",
       "type" : "vec3f",
-      "val" : [1.0, 0.0, 0.0]
+      "val" : [0.0, 1.0, 0.0]
     },
     {
       "name" : "specular_color",
@@ -14,17 +14,17 @@
     {
       "name" : "ambient_strength",
       "type" : "float",
-      "val" : 0.2
+      "val" : 0.3
     },
     {
       "name" : "specular_strength",
       "type" : "float",
-      "val" : 0.7
+      "val" : 0.9
     },
     {
       "name" : "alpha",
       "type" : "float",
-      "val" : 32.0
+      "val" : 256.0
     }
   ]
 }

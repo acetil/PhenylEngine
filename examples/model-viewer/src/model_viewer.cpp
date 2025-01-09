@@ -46,7 +46,7 @@ public:
         });
         entity2.insert(phenyl::MeshRenderer3D{
             .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")
+            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
         });
 
         runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);

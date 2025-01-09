@@ -16,6 +16,14 @@ namespace phenyl::graphics {
     struct MeshGlobalUniform {
         glm::mat4 view;
         glm::mat4 projection;
+        glm::vec3 viewPos;
+    };
+
+    struct BPLightUniform {
+        // std140 alignment
+        alignas(16) glm::vec3 lightPos;
+        alignas(16) glm::vec3 lightColor;
+        glm::vec3 ambientColor;
     };
 
     class MeshRenderLayer : public AbstractRenderLayer {
@@ -47,6 +55,7 @@ namespace phenyl::graphics {
         //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
         Buffer<glm::mat4> instanceBuffer; // TODO: per material
         UniformBuffer<MeshGlobalUniform> globalUniform{};
+        UniformBuffer<BPLightUniform> bpLight;
 
         std::vector<MeshRenderRequest> requests;
         std::vector<MeshInstances> instances;

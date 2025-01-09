@@ -37,6 +37,7 @@ namespace phenyl::graphics {
             Pipeline pipeline;
 
             UniformBinding globalUniform;
+            UniformBinding lightUniform;
             BufferBinding modelBinding;
             std::vector<BufferBinding> streamBindings;
 
