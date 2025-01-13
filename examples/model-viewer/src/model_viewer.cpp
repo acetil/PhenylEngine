@@ -12,6 +12,7 @@
 #include <phenyl/maths.h>
 
 #include "phenyl/entrypoint.h"
+#include "phenyl/components/3D/lighting.h"
 #include "phenyl/graphics/material.h"
 #include "util/random.h"
 
@@ -47,6 +48,24 @@ public:
         entity2.insert(phenyl::MeshRenderer3D{
             .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
             .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
+        });
+
+        auto light1 = runtime().world().create();
+        light1.insert(phenyl::GlobalTransform3D{
+            .transform = phenyl::Transform3D{}.translate(glm::vec3{-2, 0, -0})
+        });
+        light1.insert(phenyl::PointLight3D{
+            .color = {1.0f, 1.0f, 1.0f},
+            .brightness = 4.0f
+        });
+
+        auto light2 = runtime().world().create();
+        light2.insert(phenyl::GlobalTransform3D{
+            .transform = phenyl::Transform3D{}.translate(glm::vec3{2, 0, -0})
+        });
+        light2.insert(phenyl::PointLight3D{
+            .color = {1.0f, 0.2f, 0.2f},
+            .brightness = 5.0f
         });
 
         runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);

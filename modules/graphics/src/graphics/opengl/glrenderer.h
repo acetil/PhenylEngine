@@ -23,6 +23,7 @@ namespace phenyl::graphics {
         core::Asset<Shader> textShader;
         core::Asset<Shader> particleShader;
         core::Asset<Shader> meshShader;
+        core::Asset<Shader> prepassShader;
     protected:
         std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
         std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;

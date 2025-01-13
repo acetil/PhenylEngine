@@ -11,6 +11,7 @@
 #include "graphics/camera_3d.h"
 #include "graphics/material.h"
 #include "graphics/components/3d/mesh_renderer.h"
+#include "graphics/components/3d/lighting.h"
 
 namespace phenyl::graphics {
     struct MeshGlobalUniform {
@@ -23,7 +24,8 @@ namespace phenyl::graphics {
         // std140 alignment
         alignas(16) glm::vec3 lightPos;
         alignas(16) glm::vec3 lightColor;
-        glm::vec3 ambientColor;
+        alignas(16) glm::vec3 ambientColor;
+        float brightness;
     };
 
     class MeshRenderLayer : public AbstractRenderLayer {
@@ -49,18 +51,33 @@ namespace phenyl::graphics {
             std::vector<BufferBinding> streamBindings;
         };
 
+        struct MeshLight {
+            glm::vec3 pos;
+            glm::vec3 color;
+            float brightness;
+            glm::vec3 ambientColor;
+        };
+
         Renderer* renderer = nullptr;
         //core::Asset<Material> meshMaterial; // TODO
         core::Query<core::GlobalTransform3D, MeshRenderer3D> meshQuery;
+        core::Query<core::GlobalTransform3D, PointLight3D> pointLightQuery;
+
         //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
         Buffer<glm::mat4> instanceBuffer; // TODO: per material
         UniformBuffer<MeshGlobalUniform> globalUniform{};
         UniformBuffer<BPLightUniform> bpLight;
+        std::vector<MeshLight> pointLights;
 
         std::vector<MeshRenderRequest> requests;
         std::vector<MeshInstances> instances;
 
         //MeshPipeline& getPipeline (const MeshLayout& layout);
+        void gatherGeometry ();
+        void gatherLights ();
+
+        void depthPrepass ();
+        void renderLight (const MeshLight& light);
     public:
         explicit MeshRenderLayer (core::World& world);
 

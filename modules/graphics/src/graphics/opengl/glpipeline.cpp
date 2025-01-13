@@ -98,6 +98,8 @@ void GlPipeline::render (std::size_t vertices, std::size_t offset) {
     getShader().bind();
     glBindVertexArray(vaoId);
 
+    setBlending();
+
     if (indexType) {
         glDrawElements(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize));
     } else {
@@ -110,6 +112,8 @@ void GlPipeline::renderInstanced (std::size_t numInstances, std::size_t vertices
 
     getShader().bind();
     glBindVertexArray(vaoId);
+
+    setBlending();
 
     if (indexType) {
         glDrawElementsInstanced(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize), static_cast<GLsizei>(numInstances));
@@ -155,6 +159,10 @@ SamplerBinding GlPipeline::addSampler (unsigned int location) {
     return GL_TEXTURE0 + location;
 }
 
+void GlPipeline::setBlendMode (BlendMode mode) {
+    blendMode = mode;
+}
+
 GLuint GlPipeline::getCurrDivisor () const {
     if (renderMode == GL_TRIANGLES) {
         return 3;
@@ -168,6 +176,17 @@ GLuint GlPipeline::getCurrDivisor () const {
 GlShader& GlPipeline::getShader () {
     PHENYL_ASSERT(shader);
     return static_cast<GlShader&>(shader->getUnderlying());
+}
+
+void GlPipeline::setBlending () {
+    switch (blendMode) {
+        case BlendMode::ALPHA_BLEND:
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+        case BlendMode::ADDITIVE:
+            glBlendFunc(GL_ONE, GL_ONE);
+            break;
+    }
 }
 
 GlPipelineBuilder::GlPipelineBuilder () : pipeline(std::make_unique<GlPipeline>()) {}
@@ -244,6 +263,11 @@ UniformBinding GlPipelineBuilder::withUniform (std::size_t type, unsigned int lo
 SamplerBinding GlPipelineBuilder::withSampler (unsigned int location) {
     PHENYL_DASSERT(pipeline);
     return pipeline->addSampler(location);
+}
+
+void GlPipelineBuilder::withBlendMode (BlendMode mode) {
+    PHENYL_DASSERT(pipeline);
+    return pipeline->setBlendMode(mode);
 }
 
 std::unique_ptr<IPipeline> GlPipelineBuilder::build () {

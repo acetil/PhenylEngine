@@ -25,12 +25,14 @@ namespace phenyl::graphics {
     class Material : public core::IAssetType<Material> {
     public:
         struct MatPipeline;
+        struct DepthPipeline;
     private:
         Renderer& renderer;
         std::uint32_t materialId;
         core::Asset<Shader> shader;
 
         util::HashMap<std::uint64_t, MatPipeline> pipelines;
+        util::HashMap<std::uint64_t, DepthPipeline> depthPipelines;
         MaterialProperties materialProperties;
     public:
         struct MatPipeline {
@@ -45,6 +47,14 @@ namespace phenyl::graphics {
             std::vector<SamplerBinding> samplerBindings;
         };
 
+        struct DepthPipeline {
+            Pipeline pipeline;
+
+            UniformBinding globalUniform;
+            BufferBinding modelBinding;
+            std::vector<BufferBinding> streamBindings;
+        };
+
         Material (Renderer& renderer, std::uint32_t id, core::Asset<Shader> shader, MaterialProperties properties);
 
         std::uint32_t id () const noexcept {
@@ -52,6 +62,7 @@ namespace phenyl::graphics {
         }
 
         MatPipeline& getPipeline (const MeshLayout& layout);
+        DepthPipeline& getDepthPipeline (const MeshLayout& layout);
 
         std::shared_ptr<MaterialInstance> instance ();
     };

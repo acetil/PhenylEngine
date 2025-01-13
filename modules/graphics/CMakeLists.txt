@@ -91,6 +91,8 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/plugins/material_manager.cpp
         src/graphics/plugins/material_instance_manager.h
         src/graphics/plugins/material_instance_manager.cpp
+        include/graphics/components/3d/lighting.h
+        src/graphics/components/3d/lighting.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
@@ -118,6 +120,7 @@ target_gen_embedded(graphics
         resources/shaders/particle_fragment.frag
         resources/shaders/blinn_phong.vert
         resources/shaders/blinn_phong.frag
+        resources/shaders/mesh_prepass.vert
 )
 
 add_phenyl_resource(resources/fonts/NotoSerif-Regular.ttf resources/phenyl/fonts/noto-serif.ttf)

@@ -25,6 +25,11 @@ namespace phenyl::graphics {
         UINT
     };
 
+    enum class BlendMode {
+        ALPHA_BLEND,
+        ADDITIVE
+    };
+
     template <typename T>
     concept IndexType = std::unsigned_integral<T> && (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
 
@@ -148,6 +153,7 @@ namespace phenyl::graphics {
     public:
         virtual ~IPipelineBuilder() = default;
 
+        virtual void withBlendMode (BlendMode mode) = 0;
         virtual void withGeometryType (GeometryType type) = 0;
         virtual void withShader (core::Asset<Shader> shader) = 0;
 
@@ -228,6 +234,13 @@ namespace phenyl::graphics {
         PipelineBuilder& withSampler2D (unsigned int location, SamplerBinding& bindingOut) {
             PHENYL_DASSERT(builder);
             bindingOut = builder->withSampler(location);
+
+            return *this;
+        }
+
+        PipelineBuilder& withBlending (BlendMode mode) {
+            PHENYL_DASSERT(builder);
+            builder->withBlendMode(mode);
 
             return *this;
         }

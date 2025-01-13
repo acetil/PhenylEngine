@@ -15,6 +15,7 @@
 #include "resources/shaders/particle_fragment.frag.h"
 #include "resources/shaders/blinn_phong.vert.h"
 #include "resources/shaders/blinn_phong.frag.h"
+#include "resources/shaders/mesh_prepass.vert.h"
 
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
@@ -29,9 +30,8 @@ static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
 GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)} {
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     setupErrorHandling();
@@ -211,6 +211,15 @@ void GLRenderer::loadDefaultShaders () {
         .withUniformBlock("GlobalUniform")
         .withUniformBlock("BPLightUniform")
         .withUniformBlock("Material")
+        .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual mesh z-prepass shader!");
+    prepassShader = core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
+        .withAttrib(ShaderDataType::VEC3F, "position")
+        .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniformBlock("GlobalUniform")
         .build()
     });
 }

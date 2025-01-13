@@ -341,10 +341,10 @@ static std::optional<GLuint> LinkShader (const std::unordered_map<ShaderSourceTy
         PHENYL_LOGE(LOGGER, "Attempted to link program with missing vertex shader!");
         return std::nullopt;
     }
-    if (!shaders.contains(ShaderSourceType::FRAGMENT)) {
-        PHENYL_LOGE(LOGGER, "Attempted to link program with missing fragment shader!");
-        return std::nullopt;
-    }
+    // if (!shaders.contains(ShaderSourceType::FRAGMENT)) {
+    //     PHENYL_LOGE(LOGGER, "Attempted to link program with missing fragment shader!");
+    //     return std::nullopt;
+    // }
 
     auto programId = glCreateProgram();
     PHENYL_TRACE(LOGGER, "Building shader with programId={}", programId);

@@ -2,12 +2,11 @@
 
 #include <graphics/renderer.h>
 
-#include "../../../../../include/phenyl/asset.h"
 #include "core/assets/assets.h"
 
 using namespace phenyl::graphics;
 
-MeshRenderLayer::MeshRenderLayer (core::World& world) : AbstractRenderLayer{0}, meshQuery{world.query<core::GlobalTransform3D, MeshRenderer3D>()} {}
+MeshRenderLayer::MeshRenderLayer (core::World& world) : AbstractRenderLayer{0}, meshQuery{world.query<core::GlobalTransform3D, MeshRenderer3D>()}, pointLightQuery{world.query<core::GlobalTransform3D, PointLight3D>()} {}
 
 std::string_view MeshRenderLayer::getName () const {
     return "MeshRenderLayer";
@@ -19,6 +18,7 @@ void MeshRenderLayer::init (Renderer& renderer) {
     instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
     globalUniform = renderer.makeUniformBuffer<MeshGlobalUniform>();
     bpLight = renderer.makeUniformBuffer<BPLightUniform>();
+
     //meshMaterial = core::Assets::Load<Material>("resources/phenyl/materials/blinn_phong");
 }
 
@@ -32,6 +32,31 @@ void MeshRenderLayer::uploadSystem (core::PhenylRuntime& runtime) {
 
 
 void MeshRenderLayer::uploadData (Camera3D& camera) {
+    gatherGeometry();
+    gatherLights();
+
+    globalUniform->view = camera.view();
+    globalUniform->projection = camera.projection();
+    globalUniform->viewPos = camera.transform.position();
+    globalUniform.upload();
+}
+
+void MeshRenderLayer::render () {
+    PHENYL_DASSERT(renderer);
+
+    depthPrepass();
+
+    for (const auto& light : pointLights) {
+        renderLight(light);
+    }
+
+    instances.clear();
+    pointLights.clear();
+
+    instanceBuffer.clear();
+}
+
+void MeshRenderLayer::gatherGeometry () {
     meshQuery.each([&] (const core::GlobalTransform3D& transform, MeshRenderer3D& renderer) {
         auto* mesh = renderer.mesh.get();
         auto* matInstance = renderer.material.get();
@@ -46,6 +71,10 @@ void MeshRenderLayer::uploadData (Camera3D& camera) {
     });
 
     std::ranges::sort(requests, [] (const MeshRenderRequest& lhs, const MeshRenderRequest& rhs) {
+        if (lhs.materialInstance->material() != rhs.materialInstance->material()) {
+            return lhs.materialInstance->material() < rhs.materialInstance->material();
+        }
+
         if (lhs.materialInstance != rhs.materialInstance) {
             return lhs.materialInstance < rhs.materialInstance;
         }
@@ -71,19 +100,44 @@ void MeshRenderLayer::uploadData (Camera3D& camera) {
     }
     instanceBuffer.upload();
     requests.clear();
-
-    globalUniform->view = camera.view();
-    globalUniform->projection = camera.projection();
-    globalUniform->viewPos = camera.transform.position();
-    globalUniform.upload();
 }
 
-void MeshRenderLayer::render () {
-    PHENYL_DASSERT(renderer);
+void MeshRenderLayer::gatherLights () {
+    pointLightQuery.each([&] (const core::GlobalTransform3D& transform, const PointLight3D& light) {
+        pointLights.emplace_back(MeshLight{
+            .pos = transform.transform.position(),
+            .color = light.color,
+            .brightness = light.brightness,
+            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f}
+        });
+    });
+}
 
-    bpLight->lightPos = {-2, 0, 0};
-    bpLight->lightColor = {1, 1, 1};
-    bpLight->ambientColor = {1.0, 1.0, 1.0};
+void MeshRenderLayer::depthPrepass () {
+    for (const auto& instance : instances) {
+        auto& depthPipeline = instance.materialInstance->material()->getDepthPipeline(instance.mesh->layout());
+
+        auto& pipeline = depthPipeline.pipeline;
+        pipeline.bindUniform(depthPipeline.globalUniform, globalUniform);
+
+        auto& streams = instance.mesh->streams();
+        PHENYL_DASSERT(streams.size() == depthPipeline.streamBindings.size());
+        for (std::size_t i = 0; i < streams.size(); i++) {
+            pipeline.bindBuffer(depthPipeline.streamBindings[i], streams[i]);
+        }
+
+        pipeline.bindBuffer(depthPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
+        pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
+
+        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+    }
+}
+
+void MeshRenderLayer::renderLight (const MeshLight& light) {
+    bpLight->lightPos = light.pos;
+    bpLight->lightColor = light.color;
+    bpLight->ambientColor = light.ambientColor / static_cast<float>(pointLights.size());
+    bpLight->brightness = light.brightness;
     bpLight.upload();
 
     for (const auto& instance : instances) {
@@ -108,9 +162,6 @@ void MeshRenderLayer::render () {
 
         pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
-
-    instances.clear();
-    instanceBuffer.clear();
 }
 
 // MeshRenderLayer::MeshPipeline& MeshRenderLayer::getPipeline (const MeshLayout& layout) {

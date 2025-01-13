@@ -22,7 +22,10 @@ namespace phenyl::graphics {
         util::Map<UniformBinding, std::size_t> uniformTypes;
         std::optional<PipelineIndex> indexType = std::nullopt;
 
+        BlendMode blendMode = BlendMode::ALPHA_BLEND;
+
         GlShader& getShader ();
+        void setBlending ();
     public:
         explicit GlPipeline ();
         GlPipeline (const GlPipeline&) = delete;
@@ -51,6 +54,8 @@ namespace phenyl::graphics {
         UniformBinding addUniform (std::size_t type, unsigned int location);
         SamplerBinding addSampler (unsigned int location);
 
+        void setBlendMode (BlendMode mode);
+
         GLuint getCurrDivisor () const;
     };
 
@@ -68,6 +73,8 @@ namespace phenyl::graphics {
 
         UniformBinding withUniform (std::size_t type, unsigned int location) override;
         SamplerBinding withSampler (unsigned int location) override;
+
+        void withBlendMode (BlendMode mode) override;
 
         std::unique_ptr<IPipeline> build() override;
     };

@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "core/assets/assets.h"
 #include "renderlayer/mesh_layer.h"
 
 using namespace phenyl::graphics;
@@ -19,6 +20,7 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
     UniformBinding lightUniform;
     BufferBinding model;
     builder.withShader(shader)
+        .withBlending(BlendMode::ADDITIVE)
         .withUniform<MeshGlobalUniform>(*shader->uniformLocation("GlobalUniform"), globalUniform)
         .withUniform<BPLightUniform>(*shader->uniformLocation("BPLightUniform"), lightUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
@@ -54,6 +56,47 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
         .instanceBinding = instanceBinding,
         .samplerBindings = {} // TODO
     });
+    return it->second;
+}
+
+Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
+    if (auto it = depthPipelines.find(layout.layoutId); it != depthPipelines.end()) {
+        return it->second;
+    }
+
+    auto builder = renderer.buildPipeline();
+
+    auto prepassShader = core::Assets::Load<Shader>("phenyl/shaders/mesh_prepass");
+
+    UniformBinding globalUniform;
+    BufferBinding model;
+    builder.withShader(prepassShader)
+    .withUniform<MeshGlobalUniform>(*prepassShader->uniformLocation("GlobalUniform"), globalUniform)
+    .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
+
+    std::vector<BufferBinding> streamBindings;
+    for (auto i : layout.streamStrides) {
+        streamBindings.emplace_back();
+
+        builder.withRawBuffer(streamBindings.back(), i);
+    }
+
+    for (auto& i : layout.attributes) {
+        PHENYL_DASSERT(i.stream < streamBindings.size());
+        if (auto loc = prepassShader->attribLocation(GetMeshAttribName(i.kind))) {
+            builder.withAttrib(*loc, streamBindings[i.stream], i.type, i.offset);
+        }
+    }
+
+    builder.withAttrib<glm::mat4>(*prepassShader->attribLocation("model"), model);
+
+    auto [it, _] = depthPipelines.emplace(layout.layoutId, DepthPipeline{
+        .pipeline = builder.build(),
+        .globalUniform = globalUniform,
+        .modelBinding = model,
+        .streamBindings = std::move(streamBindings)
+    });
+
     return it->second;
 }
 

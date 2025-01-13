@@ -4,6 +4,7 @@
 #include "material_manager.h"
 #include "mesh_manager.h"
 #include "core/runtime.h"
+#include "graphics/components/3d/lighting.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/mesh_layer.h"
 
@@ -33,5 +34,5 @@ void Mesh3DPlugin::init (core::PhenylRuntime& runtime) {
     layer.addSystems(runtime);
 
     runtime.addComponent<MeshRenderer3D>("MeshRenderer3D");
+    runtime.addComponent<PointLight3D>("PointLight3D");
 }
-
