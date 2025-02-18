@@ -9,7 +9,8 @@
 namespace phenyl::graphics {
     enum class ImageFormat {
         R,
-        RGBA
+        RGBA,
+        DEPTH24_STENCIL8
     };
 
     class Image {

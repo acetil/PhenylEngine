@@ -16,6 +16,8 @@
 #include "resources/shaders/blinn_phong.vert.h"
 #include "resources/shaders/blinn_phong.frag.h"
 #include "resources/shaders/mesh_prepass.vert.h"
+#include "resources/shaders/postprocess.vert.h"
+#include "resources/shaders/noop_postprocess.frag.h"
 
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
@@ -28,18 +30,19 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
-GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)} {
+GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    clearColor = {0, 0, 0, 1};
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
 
     shaderManager.selfRegister();
 
-    this->viewport->addUpdateHandler(this);
+    //this->viewport->addUpdateHandler(this);
+    this->viewport->addUpdateHandler(&windowFrameBuffer);
 }
 
 double GLRenderer::getCurrentTime () {
@@ -47,7 +50,7 @@ double GLRenderer::getCurrentTime () {
 }
 
 void GLRenderer::clearWindow () {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    windowFrameBuffer.clear(clearColor);
 }
 
 void GLRenderer::finishRender () {
@@ -135,7 +138,7 @@ std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapaci
 }
 
 PipelineBuilder GLRenderer::buildPipeline () {
-    return PipelineBuilder(std::make_unique<GlPipelineBuilder>());
+    return PipelineBuilder(std::make_unique<GlPipelineBuilder>(&windowFrameBuffer));
 }
 
 std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool readable) {
@@ -222,6 +225,15 @@ void GLRenderer::loadDefaultShaders () {
         .withUniformBlock("GlobalUniform")
         .build()
     });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual no-op post-process shader!");
+    noopPostShader = core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
+        .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
+        .withAttrib(ShaderDataType::VEC2F, "position")
+        .withSampler("frameBuffer")
+        .build()
+    });
 }
 
 std::string_view GLRenderer::getName () const noexcept {
@@ -244,7 +256,7 @@ std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properti
 }
 
 void GLRenderer::render () {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    clearWindow();
     layerRender();
     viewport->swapBuffers();
 }
@@ -257,6 +269,11 @@ std::unique_ptr<IImageArrayTexture> GLRenderer::makeRendererArrayTexture (const 
     return std::make_unique<GlArrayTexture>(properties, width, height);
 }
 
+std::unique_ptr<IFrameBuffer> GLRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties,
+    std::uint32_t width, std::uint32_t height) {
+    return std::make_unique<GlFrameBuffer>(glm::ivec2{width, height}, properties);
+}
+
 void GLRenderer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
-    glViewport(0, 0, newResolution.x, newResolution.y);
+    //glViewport(0, 0, newResolution.x, newResolution.y);
 }

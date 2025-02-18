@@ -14,12 +14,37 @@ std::string_view MeshRenderLayer::getName () const {
 
 void MeshRenderLayer::init (Renderer& renderer) {
     this->renderer = &renderer;
+    auto& viewport = renderer.getViewport();
 
+    testFb = renderer.makeFrameBuffer(FrameBufferProperties{}, viewport.getResolution().x, viewport.getResolution().y);
     instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
     globalUniform = renderer.makeUniformBuffer<MeshGlobalUniform>();
     bpLight = renderer.makeUniformBuffer<BPLightUniform>();
 
     //meshMaterial = core::Assets::Load<Material>("resources/phenyl/materials/blinn_phong");
+
+    auto ppShader = core::Assets::Load<Shader>("phenyl/shaders/postprocess/noop");
+    BufferBinding vertexBinding;
+
+    postProcessPipeline = renderer.buildPipeline()
+        .withShader(ppShader)
+        .withBuffer<glm::vec2>(vertexBinding)
+        .withAttrib<glm::vec2>(0, vertexBinding)
+        .withSampler2D(*ppShader->samplerLocation("frameBuffer"), ppSampler)
+        .build();
+
+    ppQuad = renderer.makeBuffer<glm::vec2>(6);
+    ppQuad.emplace(-1, -1);
+    ppQuad.emplace(1, -1);
+    ppQuad.emplace(1, 1);
+
+    ppQuad.emplace(1, 1);
+    ppQuad.emplace(-1, 1);
+    ppQuad.emplace(-1, -1);
+
+    ppQuad.upload();
+
+    postProcessPipeline.bindBuffer(vertexBinding, ppQuad);
 }
 
 void MeshRenderLayer::addSystems (core::PhenylRuntime& runtime) {
@@ -32,6 +57,8 @@ void MeshRenderLayer::uploadSystem (core::PhenylRuntime& runtime) {
 
 
 void MeshRenderLayer::uploadData (Camera3D& camera) {
+    testFb.clear();
+
     gatherGeometry();
     gatherLights();
 
@@ -49,6 +76,8 @@ void MeshRenderLayer::render () {
     for (const auto& light : pointLights) {
         renderLight(light);
     }
+
+    postProcessing();
 
     instances.clear();
     pointLights.clear();
@@ -129,7 +158,7 @@ void MeshRenderLayer::depthPrepass () {
         pipeline.bindBuffer(depthPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
     }
 }
 
@@ -160,9 +189,15 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
 
         matInstance->bind(matPipeline);
 
-        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
     }
 }
+
+void MeshRenderLayer::postProcessing () {
+    postProcessPipeline.bindSampler(ppSampler, testFb.texture());
+    postProcessPipeline.render(6);
+}
+
 
 // MeshRenderLayer::MeshPipeline& MeshRenderLayer::getPipeline (const MeshLayout& layout) {
 //     if (auto it = pipelines.find(layout.layoutId); it != pipelines.end()) {

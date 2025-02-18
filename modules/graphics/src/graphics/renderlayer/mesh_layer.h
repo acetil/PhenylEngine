@@ -64,6 +64,7 @@ namespace phenyl::graphics {
         core::Query<core::GlobalTransform3D, PointLight3D> pointLightQuery;
 
         //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
+        FrameBuffer testFb;
         Buffer<glm::mat4> instanceBuffer; // TODO: per material
         UniformBuffer<MeshGlobalUniform> globalUniform{};
         UniformBuffer<BPLightUniform> bpLight;
@@ -72,12 +73,17 @@ namespace phenyl::graphics {
         std::vector<MeshRenderRequest> requests;
         std::vector<MeshInstances> instances;
 
+        Pipeline postProcessPipeline;
+        SamplerBinding ppSampler;
+        Buffer<glm::vec2> ppQuad;
+
         //MeshPipeline& getPipeline (const MeshLayout& layout);
         void gatherGeometry ();
         void gatherLights ();
 
         void depthPrepass ();
         void renderLight (const MeshLight& light);
+        void postProcessing ();
     public:
         explicit MeshRenderLayer (core::World& world);
 

@@ -1,5 +1,6 @@
 #include "glpipeline.h"
 #include "glbuffer.h"
+#include "glframebuffer.h"
 #include "glimage_texture.h"
 #include "gluniform_buffer.h"
 
@@ -7,12 +8,13 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_PIPELINE"};
 
-GlPipeline::GlPipeline () : vaoId{0} {
+GlPipeline::GlPipeline (const GlWindowFrameBuffer* fb) : vaoId{0}, windowFrameBuffer{fb} {
+    PHENYL_DASSERT(fb);
     glCreateVertexArrays(1, &vaoId);
 }
 
 
-GlPipeline::GlPipeline (GlPipeline&& other) noexcept : vaoId{other.vaoId}, bufferTypes{std::move(other.bufferTypes)}, uniformTypes{std::move(other.uniformTypes)} {
+GlPipeline::GlPipeline (GlPipeline&& other) noexcept : vaoId{other.vaoId}, windowFrameBuffer{other.windowFrameBuffer}, bufferTypes{std::move(other.bufferTypes)}, uniformTypes{std::move(other.uniformTypes)} {
     other.vaoId = 0;
 }
 
@@ -92,7 +94,7 @@ void GlPipeline::unbindIndexBuffer () {
     indexType = std::nullopt;
 }
 
-void GlPipeline::render (std::size_t vertices, std::size_t offset) {
+void GlPipeline::render (IFrameBuffer* frameBuffer, std::size_t vertices, std::size_t offset) {
     PHENYL_DASSERT(shader);
 
     getShader().bind();
@@ -100,6 +102,7 @@ void GlPipeline::render (std::size_t vertices, std::size_t offset) {
 
     setBlending();
 
+    bindFrameBuffer(frameBuffer);
     if (indexType) {
         glDrawElements(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize));
     } else {
@@ -107,7 +110,7 @@ void GlPipeline::render (std::size_t vertices, std::size_t offset) {
     }
 }
 
-void GlPipeline::renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset) {
+void GlPipeline::renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInstances, std::size_t vertices, std::size_t offset) {
     PHENYL_DASSERT(shader);
 
     getShader().bind();
@@ -115,6 +118,7 @@ void GlPipeline::renderInstanced (std::size_t numInstances, std::size_t vertices
 
     setBlending();
 
+    bindFrameBuffer(frameBuffer);
     if (indexType) {
         glDrawElementsInstanced(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize), static_cast<GLsizei>(numInstances));
     } else {
@@ -189,7 +193,15 @@ void GlPipeline::setBlending () {
     }
 }
 
-GlPipelineBuilder::GlPipelineBuilder () : pipeline(std::make_unique<GlPipeline>()) {}
+void GlPipeline::bindFrameBuffer (IFrameBuffer* frameBuffer) {
+    if (frameBuffer) {
+        reinterpret_cast<AbstractGlFrameBuffer*>(frameBuffer)->bindViewport();
+    } else {
+        windowFrameBuffer->bindViewport();
+    }
+}
+
+GlPipelineBuilder::GlPipelineBuilder (const GlWindowFrameBuffer* fb) : pipeline(std::make_unique<GlPipeline>(fb)) {}
 
 void GlPipelineBuilder::withGeometryType (GeometryType type) {
     PHENYL_DASSERT(pipeline);

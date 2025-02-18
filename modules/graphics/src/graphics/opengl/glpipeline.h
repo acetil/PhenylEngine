@@ -1,5 +1,6 @@
 #pragma once
 
+#include "glframebuffer.h"
 #include "util/map.h"
 
 #include "graphics/pipeline.h"
@@ -17,6 +18,7 @@ namespace phenyl::graphics {
 
         GLuint vaoId;
         GLenum renderMode = GL_TRIANGLES;
+        const GlWindowFrameBuffer* windowFrameBuffer;
         core::Asset<Shader> shader;
         std::vector<std::size_t> bufferTypes;
         util::Map<UniformBinding, std::size_t> uniformTypes;
@@ -26,8 +28,9 @@ namespace phenyl::graphics {
 
         GlShader& getShader ();
         void setBlending ();
+        void bindFrameBuffer (IFrameBuffer* frameBuffer);
     public:
-        explicit GlPipeline ();
+        explicit GlPipeline (const GlWindowFrameBuffer* fb);
         GlPipeline (const GlPipeline&) = delete;
         GlPipeline (GlPipeline&& other) noexcept;
 
@@ -42,8 +45,8 @@ namespace phenyl::graphics {
         void bindSampler (SamplerBinding binding, const ISampler& sampler) override;
         void unbindIndexBuffer () override;
 
-        void render (std::size_t vertices, std::size_t offset) override;
-        void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
+        void render (IFrameBuffer* frameBuffer, std::size_t vertices, std::size_t offset) override;
+        void renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
 
         void setRenderMode (GLenum renderMode);
         void setShader (core::Asset<Shader> shader);
@@ -63,7 +66,7 @@ namespace phenyl::graphics {
     private:
         std::unique_ptr<GlPipeline> pipeline;
     public:
-        GlPipelineBuilder ();
+        GlPipelineBuilder (const GlWindowFrameBuffer* fb);
 
         void withGeometryType (GeometryType type) override;
         void withShader (core::Asset<Shader> shader) override;

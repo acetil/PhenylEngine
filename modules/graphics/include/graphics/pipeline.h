@@ -4,6 +4,7 @@
 #include "util/meta.h"
 
 #include "buffer.h"
+#include "framebuffer.h"
 #include "shader.h"
 #include "texture.h"
 #include "uniform_buffer.h"
@@ -57,8 +58,8 @@ namespace phenyl::graphics {
         virtual void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) = 0;
         virtual void bindSampler (SamplerBinding binding, const ISampler& sampler) = 0;
         virtual void unbindIndexBuffer () = 0;
-        virtual void render (std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
-        virtual void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset) = 0;
+        virtual void render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
+        virtual void renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) = 0;
     };
 
     class Pipeline {
@@ -140,12 +141,22 @@ namespace phenyl::graphics {
 
         void render (std::size_t vertices, std::size_t offset=0) {
             PHENYL_DASSERT(pipeline);
-            pipeline->render(vertices, offset);
+            pipeline->render(nullptr, vertices, offset);
+        }
+
+        void render (FrameBuffer& frameBuffer, std::size_t vertices, std::size_t offset=0) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->render(&frameBuffer.getUnderlying(), vertices, offset);
         }
 
         void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset=0) {
             PHENYL_DASSERT(pipeline);
-            pipeline->renderInstanced(numInstances, vertices, offset);
+            pipeline->renderInstanced(nullptr, numInstances, vertices, offset);
+        }
+
+        void renderInstanced (FrameBuffer& frameBuffer, std::size_t numInstances, std::size_t vertices, std::size_t offset=0) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->renderInstanced(&frameBuffer.getUnderlying(), numInstances, vertices, offset);
         }
     };
 

@@ -27,6 +27,7 @@ namespace phenyl::graphics {
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
         virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
         virtual std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
+        virtual std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
 
         void layerRender () {
             for (auto& i : layers) {
@@ -85,6 +86,10 @@ namespace phenyl::graphics {
 
         ImageArrayTexture makeArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
             return ImageArrayTexture{makeRendererArrayTexture(properties, width, height)};
+        }
+
+        FrameBuffer makeFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {
+            return FrameBuffer{makeRendererFrameBuffer(properties, width, height)};
         }
 
         template <std::derived_from<AbstractRenderLayer> T, typename ...Args>
