@@ -2,23 +2,23 @@
   "shader" : "phenyl/shaders/blinn_phong",
   "uniforms" : [
     {
-      "name" : "mat_color",
+      "name" : "Material_color",
       "type" : "vec3f"
     },
     {
-      "name" : "specular_color",
+      "name" : "Material_specular_color",
       "type" : "vec3f"
     },
     {
-      "name" : "ambient_strength",
+      "name" : "Material_ambient",
       "type" : "float"
     },
     {
-      "name" : "specular_strength",
+      "name" : "Material_specular",
       "type" : "float"
     },
     {
-      "name" : "alpha",
+      "name" : "Material_alpha",
       "type" : "float"
     }
   ]

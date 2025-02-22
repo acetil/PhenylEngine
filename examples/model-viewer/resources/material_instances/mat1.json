@@ -2,27 +2,27 @@
   "material" : "resources/phenyl/materials/blinn_phong",
   "uniforms" : [
     {
-      "name" : "mat_color",
+      "name" : "Material_color",
       "type" : "vec3f",
       "val" : [1.0, 0.0, 0.0]
     },
     {
-      "name" : "specular_color",
+      "name" : "Material_specular_color",
       "type" : "vec3f",
       "val" : [1.0, 1.0, 1.0]
     },
     {
-      "name" : "ambient_strength",
+      "name" : "Material_ambient",
       "type" : "float",
       "val" : 0.2
     },
     {
-      "name" : "specular_strength",
+      "name" : "Material_specular",
       "type" : "float",
-      "val" : 0.7
+      "val" : 0.5
     },
     {
-      "name" : "alpha",
+      "name" : "Material_alpha",
       "type" : "float",
       "val" : 32.0
     }

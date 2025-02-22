@@ -85,6 +85,7 @@ namespace phenyl::graphics {
         void set (const std::string& uniform, T&& val) requires (GetShaderDataType<T>() != ShaderDataType::UNKNOWN) {
             auto it = uniforms.find(uniform);
             if (it == uniforms.end() || it->second.type != GetShaderDataType<T>()) {
+                PHENYL_LOGE(detail::GRAPHICS_LOGGER, "Failed to find material uniform {}", uniform);
                 return;
             }
 

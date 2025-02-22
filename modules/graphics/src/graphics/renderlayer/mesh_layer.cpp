@@ -6,7 +6,7 @@
 
 using namespace phenyl::graphics;
 
-MeshRenderLayer::MeshRenderLayer (core::World& world) : AbstractRenderLayer{0}, meshQuery{world.query<core::GlobalTransform3D, MeshRenderer3D>()}, pointLightQuery{world.query<core::GlobalTransform3D, PointLight3D>()} {}
+MeshRenderLayer::MeshRenderLayer (core::World& world) : AbstractRenderLayer{0}, meshQuery{world.query<core::GlobalTransform3D, MeshRenderer3D>()}, pointLightQuery{world.query<core::GlobalTransform3D, PointLight3D>()}, dirLightQuery{world.query<core::GlobalTransform3D, DirectionalLight3D>()}, spotLightQuery{world.query<core::GlobalTransform3D, SpotLight3D>()} {}
 
 std::string_view MeshRenderLayer::getName () const {
     return "MeshRenderLayer";
@@ -136,8 +136,32 @@ void MeshRenderLayer::gatherLights () {
         pointLights.emplace_back(MeshLight{
             .pos = transform.transform.position(),
             .color = light.color,
+            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
             .brightness = light.brightness,
-            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f}
+            .type = LightType::Point
+        });
+    });
+
+    dirLightQuery.each([&] (const core::GlobalTransform3D& transform, const DirectionalLight3D& light) {
+        pointLights.emplace_back(MeshLight{
+            .dir = transform.transform.rotation() * core::Quaternion::ForwardVector,
+            .color = light.color,
+            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
+            .brightness = light.brightness,
+            .type = LightType::Directional
+        });
+    });
+
+    spotLightQuery.each([&] (const core::GlobalTransform3D& transform, const SpotLight3D& light) {
+        pointLights.emplace_back(MeshLight{
+            .pos = transform.transform.position(),
+            .dir = transform.transform.rotation() * core::Quaternion::ForwardVector,
+            .color = light.color,
+            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
+            .brightness = light.brightness,
+            .cosOuter = glm::cos(light.outerAngle),
+            .cosInner = glm::cos(light.innerAngle),
+            .type = LightType::Spot
         });
     });
 }
@@ -164,9 +188,13 @@ void MeshRenderLayer::depthPrepass () {
 
 void MeshRenderLayer::renderLight (const MeshLight& light) {
     bpLight->lightPos = light.pos;
+    bpLight->lightDir = light.dir;
     bpLight->lightColor = light.color;
     bpLight->ambientColor = light.ambientColor / static_cast<float>(pointLights.size());
     bpLight->brightness = light.brightness;
+    bpLight->cosInner = light.cosInner;
+    bpLight->cosOuter = light.cosOuter;
+    bpLight->lightType = static_cast<int>(light.type);
     bpLight.upload();
 
     for (const auto& instance : instances) {
@@ -194,7 +222,7 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
 }
 
 void MeshRenderLayer::postProcessing () {
-    postProcessPipeline.bindSampler(ppSampler, testFb.texture());
+    postProcessPipeline.bindSampler(ppSampler, testFb.sampler());
     postProcessPipeline.render(6);
 }
 

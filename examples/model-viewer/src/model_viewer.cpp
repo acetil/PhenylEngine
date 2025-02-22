@@ -68,6 +68,26 @@ public:
             .brightness = 5.0f
         });
 
+        auto light3 = runtime().world().create();
+        light3.insert(phenyl::GlobalTransform3D{
+            .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({0.0f, 1.0f, 0.0f}, glm::vec3{1.0f, 0.0f, 0.0f}))
+        });
+        light3.insert(phenyl::DirectionalLight3D{
+            .color = {1.0f, 1.0f, 1.0f},
+            .brightness = 5.0f
+        });
+
+        auto light4 = runtime().world().create();
+        light4.insert(phenyl::GlobalTransform3D{
+            .transform = phenyl::Transform3D{}
+                .setPosition({-1.0f, -1.0f, 0.0f})
+                .setRotation(phenyl::Quaternion::LookAt({1.0f, 1.0f, 0.0f}))
+        });
+        light4.insert(phenyl::SpotLight3D{
+            .color = {1.0f, 1.0f, 1.0f},
+            .brightness = 20.0f
+        });
+
         runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);
 
         runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 0, 2.0f});

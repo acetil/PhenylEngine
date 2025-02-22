@@ -23,26 +23,12 @@ namespace phenyl::graphics {
         virtual glm::ivec2 getDimensions () const noexcept = 0;
     };
 
-    class FrameBufferTexture : public Texture {
-    private:
-        IFrameBuffer* fb;
-
-    public:
-        FrameBufferTexture (IFrameBuffer* fb) : Texture{fb ? fb->getSampler().hash() : 0}, fb{fb} {}
-
-        const ISampler& sampler () const noexcept override {
-            PHENYL_ASSERT(fb);
-            return fb->getSampler();
-        }
-    };
-
     class FrameBuffer {
     private:
         std::unique_ptr<IFrameBuffer> rendererFB;
-        FrameBufferTexture fbTexture;
     public:
-        FrameBuffer () : rendererFB{nullptr}, fbTexture{nullptr} {}
-        explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : rendererFB{std::move(fb)}, fbTexture{rendererFB.get()} {}
+        FrameBuffer () : rendererFB{nullptr} {}
+        explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : rendererFB{std::move(fb)} {}
 
         IFrameBuffer& getUnderlying () noexcept {
             PHENYL_DASSERT(rendererFB);
@@ -54,12 +40,8 @@ namespace phenyl::graphics {
             return *rendererFB;
         }
 
-        FrameBufferTexture& texture () noexcept {
-            return fbTexture;
-        }
-
-        const FrameBufferTexture& texture () const noexcept {
-            return fbTexture;
+        const ISampler& sampler () const noexcept {
+            return rendererFB->getSampler();
         }
 
         glm::ivec2 dimensions () const noexcept {

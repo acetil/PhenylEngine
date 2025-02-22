@@ -35,4 +35,6 @@ void Mesh3DPlugin::init (core::PhenylRuntime& runtime) {
 
     runtime.addComponent<MeshRenderer3D>("MeshRenderer3D");
     runtime.addComponent<PointLight3D>("PointLight3D");
+    runtime.addComponent<DirectionalLight3D>("DirectionalLight3D");
+    runtime.addComponent<SpotLight3D>("SpotLight3D");
 }

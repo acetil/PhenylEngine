@@ -23,9 +23,13 @@ namespace phenyl::graphics {
     struct BPLightUniform {
         // std140 alignment
         alignas(16) glm::vec3 lightPos;
+        alignas(16) glm::vec3 lightDir;
         alignas(16) glm::vec3 lightColor;
         alignas(16) glm::vec3 ambientColor;
         float brightness;
+        float cosOuter;
+        float cosInner;
+        int lightType = 0;
     };
 
     class MeshRenderLayer : public AbstractRenderLayer {
@@ -51,17 +55,29 @@ namespace phenyl::graphics {
             std::vector<BufferBinding> streamBindings;
         };
 
+        enum class LightType {
+            Point = 0,
+            Directional = 1,
+            Spot = 2
+        };
+
         struct MeshLight {
             glm::vec3 pos;
+            glm::vec3 dir;
             glm::vec3 color;
-            float brightness;
             glm::vec3 ambientColor;
+            float brightness;
+            float cosOuter;
+            float cosInner;
+            LightType type;
         };
 
         Renderer* renderer = nullptr;
         //core::Asset<Material> meshMaterial; // TODO
         core::Query<core::GlobalTransform3D, MeshRenderer3D> meshQuery;
         core::Query<core::GlobalTransform3D, PointLight3D> pointLightQuery;
+        core::Query<core::GlobalTransform3D, DirectionalLight3D> dirLightQuery;
+        core::Query<core::GlobalTransform3D, SpotLight3D> spotLightQuery;
 
         //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
         FrameBuffer testFb;
