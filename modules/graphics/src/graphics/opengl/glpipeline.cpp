@@ -167,16 +167,6 @@ void GlPipeline::setBlendMode (BlendMode mode) {
     blendMode = mode;
 }
 
-GLuint GlPipeline::getCurrDivisor () const {
-    if (renderMode == GL_TRIANGLES) {
-        return 3;
-    } else if (renderMode == GL_LINES) {
-        return 2;
-    } else {
-        return 0;
-    }
-}
-
 GlShader& GlPipeline::getShader () {
     PHENYL_ASSERT(shader);
     return static_cast<GlShader&>(shader->getUnderlying());
@@ -223,7 +213,7 @@ void GlPipelineBuilder::withShader (core::Asset<Shader> shader) {
 
 BufferBinding GlPipelineBuilder::withBuffer (std::size_t type, std::size_t size, BufferInputRate inputRate) {
     PHENYL_DASSERT(pipeline);
-    GLuint divisor = inputRate == BufferInputRate::INSTANCE ? pipeline->getCurrDivisor() : 0;
+    GLuint divisor = inputRate == BufferInputRate::INSTANCE ? 1 : 0;
 
     return pipeline->addBuffer(type, divisor);
 }
@@ -259,7 +249,7 @@ void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, 
             pipeline->addAttrib(GL_FLOAT, 4, location, binding, offset);
             pipeline->addAttrib(GL_FLOAT, 4, location + 1, binding, offset + sizeof(glm::vec4));
             pipeline->addAttrib(GL_FLOAT, 4, location + 2, binding, offset + sizeof(glm::vec4) * 2);
-        pipeline->addAttrib(GL_FLOAT, 4, location + 3, binding, offset + sizeof(glm::vec4) * 3);
+            pipeline->addAttrib(GL_FLOAT, 4, location + 3, binding, offset + sizeof(glm::vec4) * 3);
             break;
         default:
             PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", static_cast<unsigned int>(type));

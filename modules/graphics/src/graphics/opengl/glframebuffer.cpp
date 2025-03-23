@@ -84,13 +84,29 @@ glm::ivec2 AbstractGlFrameBuffer::getDimensions () const noexcept {
     return dimensions;
 }
 
-GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties& properties) : AbstractGlFrameBuffer{dimensions}, colorSampler{GL_TEXTURE_2D, TextureProperties{.format = properties.format, .useMipmapping = false}}, depthSampler{GL_TEXTURE_2D, TextureProperties{.format = ImageFormat::DEPTH24_STENCIL8, .useMipmapping = false}} {
-    colorSampler.createEmpty2D(dimensions.x, dimensions.y);
-    depthSampler.createEmpty2D(dimensions.x, dimensions.y);
+GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties& properties) : AbstractGlFrameBuffer{dimensions},
+        colorSampler{properties.format ? std::optional{GlSampler{GL_TEXTURE_2D, TextureProperties{.format = *properties.format, .useMipmapping = false}}} : std::nullopt},
+        depthSampler{properties.depthFormat ? std::optional{GlSampler{GL_TEXTURE_2D, TextureProperties{.format = ImageFormat::DEPTH24_STENCIL8, .useMipmapping = false}}} : std::nullopt} {
+
+    if (colorSampler) {
+        colorSampler->createEmpty2D(dimensions.x, dimensions.y);
+    }
+
+    if (depthSampler) {
+        depthSampler->createEmpty2D(dimensions.x, dimensions.y);
+    }
 
     bind();
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorSampler.type(), colorSampler.id(), 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depthSampler.type(), depthSampler.id(), 0);
+    if (colorSampler) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorSampler->type(), colorSampler->id(), 0);
+    } else {
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+    }
+
+    if (depthSampler) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depthSampler->type(), depthSampler->id(), 0);
+    }
 
     auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     PHENYL_LOGW_IF((status != GL_FRAMEBUFFER_COMPLETE), LOGGER, "Frame buffer creation failed with status {}: {}", status, GetFrameBufferStatusString(status));
@@ -98,15 +114,24 @@ GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties
     valid = status == GL_FRAMEBUFFER_COMPLETE;
     PHENYL_DASSERT(valid);
 }
-const ISampler& GlFrameBuffer::getSampler () const noexcept {
-    return colorSampler;
+const ISampler* GlFrameBuffer::getSampler () const noexcept {
+    return colorSampler ? &*colorSampler : nullptr;
+}
+
+const ISampler* GlFrameBuffer::getDepthSampler () const noexcept {
+    return depthSampler ? &*depthSampler : nullptr;
 }
 
 GlWindowFrameBuffer::GlWindowFrameBuffer (glm::ivec2 dimensions) : AbstractGlFrameBuffer{0, dimensions} {}
 
-const ISampler& GlWindowFrameBuffer::getSampler () const noexcept {
+const ISampler* GlWindowFrameBuffer::getSampler () const noexcept {
     PHENYL_ABORT("Cannot sample window frame buffer!");
 }
+
+const ISampler* GlWindowFrameBuffer::getDepthSampler () const noexcept {
+    PHENYL_ABORT("Cannot sample window frame buffer!");
+}
+
 
 void GlWindowFrameBuffer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
     dimensions = newResolution;

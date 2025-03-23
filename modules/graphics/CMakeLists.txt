@@ -126,6 +126,7 @@ target_gen_embedded(graphics
         resources/shaders/mesh_prepass.vert
         resources/shaders/postprocess.vert
         resources/shaders/noop_postprocess.frag
+        resources/shaders/shadow_map.vert
 )
 
 add_phenyl_resource(resources/fonts/NotoSerif-Regular.ttf resources/phenyl/fonts/noto-serif.ttf)

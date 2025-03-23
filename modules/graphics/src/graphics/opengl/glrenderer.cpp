@@ -18,6 +18,7 @@
 #include "resources/shaders/mesh_prepass.vert.h"
 #include "resources/shaders/postprocess.vert.h"
 #include "resources/shaders/noop_postprocess.frag.h"
+#include "resources/shaders/shadow_map.vert.h"
 
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
@@ -214,6 +215,16 @@ void GLRenderer::loadDefaultShaders () {
         .withUniformBlock("GlobalUniform")
         .withUniformBlock("BPLightUniform")
         .withUniformBlock("Material")
+        .withSampler("ShadowMap")
+        .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual shadow mapping shader!");
+    shadowMapShader = core::Assets::LoadVirtual("phenyl/shaders/shadow_map", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
+        .withAttrib(ShaderDataType::VEC3F, "position")
+        .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniformBlock("BPLightUniform")
         .build()
     });
 

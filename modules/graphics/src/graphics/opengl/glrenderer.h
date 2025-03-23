@@ -26,6 +26,7 @@ namespace phenyl::graphics {
         core::Asset<Shader> textShader;
         core::Asset<Shader> particleShader;
         core::Asset<Shader> meshShader;
+        core::Asset<Shader> shadowMapShader;
         core::Asset<Shader> prepassShader;
 
         core::Asset<Shader> noopPostShader;

@@ -58,8 +58,6 @@ namespace phenyl::graphics {
         SamplerBinding addSampler (unsigned int location);
 
         void setBlendMode (BlendMode mode);
-
-        GLuint getCurrDivisor () const;
     };
 
     class GlPipelineBuilder : public IPipelineBuilder {

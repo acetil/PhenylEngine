@@ -22,6 +22,8 @@ unsigned int Image::FormatComps (ImageFormat format) {
             return 4;
         case ImageFormat::DEPTH24_STENCIL8:
             return 4;
+        case ImageFormat::DEPTH:
+            return 4;
     }
 
     PHENYL_ABORT("Invalid format: {}", static_cast<std::uint32_t>(format));
@@ -34,6 +36,8 @@ std::size_t Image::FormatSize (ImageFormat format) {
         case ImageFormat::RGBA:
             return 4;
         case ImageFormat::DEPTH24_STENCIL8:
+            return 4;
+        case ImageFormat::DEPTH:
             return 4;
     }
 

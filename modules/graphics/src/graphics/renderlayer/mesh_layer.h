@@ -22,6 +22,7 @@ namespace phenyl::graphics {
 
     struct BPLightUniform {
         // std140 alignment
+        alignas(16) glm::mat4 lightSpace;
         alignas(16) glm::vec3 lightPos;
         alignas(16) glm::vec3 lightDir;
         alignas(16) glm::vec3 lightColor;
@@ -30,6 +31,7 @@ namespace phenyl::graphics {
         float cosOuter;
         float cosInner;
         int lightType = 0;
+        int castShadows; // TODO: combine with light type
     };
 
     class MeshRenderLayer : public AbstractRenderLayer {
@@ -63,13 +65,14 @@ namespace phenyl::graphics {
 
         struct MeshLight {
             glm::vec3 pos;
-            glm::vec3 dir;
+            core::Quaternion dir;
             glm::vec3 color;
             glm::vec3 ambientColor;
             float brightness;
-            float cosOuter;
-            float cosInner;
+            float outer;
+            float inner;
             LightType type;
+            bool castShadows;
         };
 
         Renderer* renderer = nullptr;
@@ -81,6 +84,7 @@ namespace phenyl::graphics {
 
         //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
         FrameBuffer testFb;
+        FrameBuffer shadowFb;
         Buffer<glm::mat4> instanceBuffer; // TODO: per material
         UniformBuffer<MeshGlobalUniform> globalUniform{};
         UniformBuffer<BPLightUniform> bpLight;
@@ -99,6 +103,10 @@ namespace phenyl::graphics {
 
         void depthPrepass ();
         void renderLight (const MeshLight& light);
+        glm::mat4 getLightSpaceView (const MeshLight& light);
+        glm::mat4 getLightSpaceProj (const MeshLight& light);
+        glm::mat4 getLightSpaceMatrix (const MeshLight& light);
+        void renderShadowMap (const MeshLight& light);
         void postProcessing ();
     public:
         explicit MeshRenderLayer (core::World& world);

@@ -37,8 +37,8 @@ namespace phenyl::graphics {
 
     class GlFrameBuffer : public AbstractGlFrameBuffer {
     private:
-        GlSampler colorSampler;
-        GlSampler depthSampler;
+        std::optional<GlSampler> colorSampler;
+        std::optional<GlSampler> depthSampler;
         bool valid;
     public:
         GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties& properties);
@@ -47,14 +47,16 @@ namespace phenyl::graphics {
             return valid;
         }
 
-        const ISampler& getSampler () const noexcept override;
+        const ISampler* getSampler () const noexcept override;
+        const ISampler* getDepthSampler() const noexcept override;
     };
 
     class GlWindowFrameBuffer : public AbstractGlFrameBuffer, public IViewportUpdateHandler {
     public:
         GlWindowFrameBuffer (glm::ivec2 dimensions);
 
-        const ISampler& getSampler() const noexcept override;
+        const ISampler* getSampler() const noexcept override;
+        const ISampler* getDepthSampler() const noexcept override;
         void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };
 }

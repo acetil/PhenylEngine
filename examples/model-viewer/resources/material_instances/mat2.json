@@ -14,17 +14,17 @@
     {
       "name" : "Material_ambient",
       "type" : "float",
-      "val" : 0.3
+      "val" : 0.1
     },
     {
       "name" : "Material_specular",
       "type" : "float",
-      "val" : 0.9
+      "val" : 0.5
     },
     {
       "name" : "Material_alpha",
       "type" : "float",
-      "val" : 256.0
+      "val" : 32.0
     }
   ]
 }

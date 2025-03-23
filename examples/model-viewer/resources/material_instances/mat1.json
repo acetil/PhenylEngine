@@ -4,7 +4,7 @@
     {
       "name" : "Material_color",
       "type" : "vec3f",
-      "val" : [1.0, 0.0, 0.0]
+      "val" : [1.0, 1.0, 1.0]
     },
     {
       "name" : "Material_specular_color",
@@ -14,17 +14,17 @@
     {
       "name" : "Material_ambient",
       "type" : "float",
-      "val" : 0.2
+      "val" : 0.1
     },
     {
       "name" : "Material_specular",
       "type" : "float",
-      "val" : 0.5
+      "val" : 0.2
     },
     {
       "name" : "Material_alpha",
       "type" : "float",
-      "val" : 32.0
+      "val" : 64.0
     }
   ]
 }

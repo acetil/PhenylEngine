@@ -11,7 +11,8 @@ namespace phenyl::graphics {
     // };
 
     struct FrameBufferProperties {
-        ImageFormat format = ImageFormat::RGBA;
+        std::optional<ImageFormat> format = std::nullopt;
+        std::optional<ImageFormat> depthFormat = std::nullopt;
     };
 
     class IFrameBuffer {
@@ -19,7 +20,8 @@ namespace phenyl::graphics {
         virtual ~IFrameBuffer () = default;
 
         virtual void clear (glm::vec4 clearColor) = 0;
-        virtual const ISampler& getSampler () const noexcept = 0;
+        virtual const ISampler* getSampler () const noexcept = 0;
+        virtual const ISampler* getDepthSampler () const noexcept = 0;
         virtual glm::ivec2 getDimensions () const noexcept = 0;
     };
 
@@ -41,7 +43,13 @@ namespace phenyl::graphics {
         }
 
         const ISampler& sampler () const noexcept {
-            return rendererFB->getSampler();
+            PHENYL_DASSERT_MSG(rendererFB->getSampler(), "Attempted to get sampler from framebuffer without color attachment!");
+            return *rendererFB->getSampler();
+        }
+
+        const ISampler& depthSampler () const noexcept {
+            PHENYL_DASSERT_MSG(rendererFB->getDepthSampler(), "Attempted to get depth sampler from framebuffer without depth attachment!");
+            return *rendererFB->getDepthSampler();
         }
 
         glm::ivec2 dimensions () const noexcept {

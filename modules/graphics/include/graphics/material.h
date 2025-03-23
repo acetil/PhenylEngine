@@ -26,6 +26,7 @@ namespace phenyl::graphics {
     public:
         struct MatPipeline;
         struct DepthPipeline;
+        struct ShadowMapPipeline;
     private:
         Renderer& renderer;
         std::uint32_t materialId;
@@ -33,6 +34,8 @@ namespace phenyl::graphics {
 
         util::HashMap<std::uint64_t, MatPipeline> pipelines;
         util::HashMap<std::uint64_t, DepthPipeline> depthPipelines;
+        util::HashMap<std::uint64_t, ShadowMapPipeline> shadowMapPipelines;
+
         MaterialProperties materialProperties;
     public:
         struct MatPipeline {
@@ -44,6 +47,7 @@ namespace phenyl::graphics {
             std::vector<BufferBinding> streamBindings;
 
             UniformBinding instanceBinding;
+            SamplerBinding shadowMapBinding;
             std::vector<SamplerBinding> samplerBindings;
         };
 
@@ -51,6 +55,14 @@ namespace phenyl::graphics {
             Pipeline pipeline;
 
             UniformBinding globalUniform;
+            BufferBinding modelBinding;
+            std::vector<BufferBinding> streamBindings;
+        };
+
+        struct ShadowMapPipeline {
+            Pipeline pipeline;
+
+            UniformBinding lightUniform;
             BufferBinding modelBinding;
             std::vector<BufferBinding> streamBindings;
         };
@@ -63,6 +75,7 @@ namespace phenyl::graphics {
 
         MatPipeline& getPipeline (const MeshLayout& layout);
         DepthPipeline& getDepthPipeline (const MeshLayout& layout);
+        ShadowMapPipeline& getShadowMapPipeline (const MeshLayout& layout);
 
         std::shared_ptr<MaterialInstance> instance ();
     };

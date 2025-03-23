@@ -16,7 +16,14 @@ void MeshRenderLayer::init (Renderer& renderer) {
     this->renderer = &renderer;
     auto& viewport = renderer.getViewport();
 
-    testFb = renderer.makeFrameBuffer(FrameBufferProperties{}, viewport.getResolution().x, viewport.getResolution().y);
+    testFb = renderer.makeFrameBuffer(FrameBufferProperties{
+        .format = ImageFormat::RGBA,
+        .depthFormat = ImageFormat::DEPTH24_STENCIL8
+    }, viewport.getResolution().x, viewport.getResolution().y);
+    shadowFb = renderer.makeFrameBuffer(FrameBufferProperties{
+        .depthFormat = ImageFormat::DEPTH
+    }, 512, 512);
+
     instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
     globalUniform = renderer.makeUniformBuffer<MeshGlobalUniform>();
     bpLight = renderer.makeUniformBuffer<BPLightUniform>();
@@ -138,30 +145,34 @@ void MeshRenderLayer::gatherLights () {
             .color = light.color,
             .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
             .brightness = light.brightness,
-            .type = LightType::Point
+            .type = LightType::Point,
+            .castShadows = light.castShadows
         });
     });
 
     dirLightQuery.each([&] (const core::GlobalTransform3D& transform, const DirectionalLight3D& light) {
         pointLights.emplace_back(MeshLight{
-            .dir = transform.transform.rotation() * core::Quaternion::ForwardVector,
+            .pos = transform.transform.position(),
+            .dir = transform.transform.rotation(),
             .color = light.color,
             .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
             .brightness = light.brightness,
-            .type = LightType::Directional
+            .type = LightType::Directional,
+            .castShadows = light.castShadows
         });
     });
 
     spotLightQuery.each([&] (const core::GlobalTransform3D& transform, const SpotLight3D& light) {
         pointLights.emplace_back(MeshLight{
             .pos = transform.transform.position(),
-            .dir = transform.transform.rotation() * core::Quaternion::ForwardVector,
+            .dir = transform.transform.rotation(),
             .color = light.color,
             .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
             .brightness = light.brightness,
-            .cosOuter = glm::cos(light.outerAngle),
-            .cosInner = glm::cos(light.innerAngle),
-            .type = LightType::Spot
+            .outer = light.outerAngle,
+            .inner = light.innerAngle,
+            .type = LightType::Spot,
+            .castShadows = light.castShadows
         });
     });
 }
@@ -187,15 +198,21 @@ void MeshRenderLayer::depthPrepass () {
 }
 
 void MeshRenderLayer::renderLight (const MeshLight& light) {
+    bpLight->lightSpace = getLightSpaceMatrix(light);
     bpLight->lightPos = light.pos;
-    bpLight->lightDir = light.dir;
+    bpLight->lightDir = light.dir * core::Quaternion::ForwardVector * -1.0f;
     bpLight->lightColor = light.color;
     bpLight->ambientColor = light.ambientColor / static_cast<float>(pointLights.size());
     bpLight->brightness = light.brightness;
-    bpLight->cosInner = light.cosInner;
-    bpLight->cosOuter = light.cosOuter;
+    bpLight->cosInner = glm::cos(light.inner);
+    bpLight->cosOuter = glm::cos(light.outer);
     bpLight->lightType = static_cast<int>(light.type);
+    bpLight->castShadows = light.castShadows;
     bpLight.upload();
+
+    if (light.castShadows) {
+        renderShadowMap(light);
+    }
 
     for (const auto& instance : instances) {
         //auto& meshPipeline = getPipeline(instance.mesh->layout()); // TODO: ahead of time pipeline creation
@@ -215,9 +232,92 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
         pipeline.bindBuffer(matPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
+        if (light.castShadows) {
+            pipeline.bindSampler(matPipeline.shadowMapBinding, shadowFb.depthSampler());
+        }
+
         matInstance->bind(matPipeline);
 
         pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+    }
+}
+
+glm::mat4 MeshRenderLayer::getLightSpaceMatrix (const MeshLight& light) {
+    return getLightSpaceProj(light) * getLightSpaceView(light);
+}
+
+glm::mat4 MeshRenderLayer::getLightSpaceView (const MeshLight& light) {
+    if (light.type == LightType::Directional || light.type == LightType::Spot) {
+        if (light.type == LightType::Directional) {
+            //view = glm::identity<glm::mat4>();
+            glm::mat4 translationMatrix{
+                        {1, 0, 0, 0},
+                        {0, 1, 0, 0},
+                        {0, 0, 1, 0},
+                        {-light.pos.x, -light.pos.y, -light.pos.z, 1}
+            };
+            glm::mat4 fixRotation = {
+                {1, 0, 0, 0},
+                {0, -1, 0, 0},
+                {0, 0, 1, 0},
+                {0, 0, 0, 1}
+            };
+            return fixRotation * static_cast<glm::mat4>(light.dir.inverse()) * translationMatrix;
+        } else {
+            glm::mat4 translationMatrix{
+                    {1, 0, 0, 0},
+                    {0, 1, 0, 0},
+                    {0, 0, 1, 0},
+                    {-light.pos.x, -light.pos.y, -light.pos.z, 1}
+            };
+            glm::mat4 fixRotation = {
+                {1, 0, 0, 0},
+                {0, -1, 0, 0},
+                {0, 0, 1, 0},
+                {0, 0, 0, 1}
+            };
+            return fixRotation * static_cast<glm::mat4>(light.dir.inverse()) * translationMatrix;
+        }
+    } else {
+        return glm::identity<glm::mat4>();
+    }
+}
+
+glm::mat4 MeshRenderLayer::getLightSpaceProj (const MeshLight& light) {
+    if (light.type == LightType::Directional || light.type == LightType::Spot) {
+        if (light.type == LightType::Directional) {
+            return glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.001f, 20.0f);
+        } else {
+            return glm::perspective(light.outer, 1.0f, 0.1f, 100.0f);
+        }
+    } else {
+        return glm::identity<glm::mat4>();
+    }
+}
+
+
+void MeshRenderLayer::renderShadowMap (const MeshLight& light) {
+    shadowFb.clear();
+    if (light.type == LightType::Directional || light.type == LightType::Spot) {
+        for (const auto& instance : instances) {
+            auto& smPipeline = instance.materialInstance->material()->getShadowMapPipeline(instance.mesh->layout());
+
+            auto& pipeline = smPipeline.pipeline;
+            pipeline.bindUniform(smPipeline.lightUniform, bpLight);
+
+            auto& streams = instance.mesh->streams();
+            PHENYL_DASSERT(streams.size() == smPipeline.streamBindings.size());
+            for (std::size_t i = 0; i < streams.size(); i++) {
+                pipeline.bindBuffer(smPipeline.streamBindings[i], streams[i]);
+            }
+
+            pipeline.bindBuffer(smPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
+            pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
+
+            pipeline.renderInstanced(shadowFb, instance.numInstances, instance.mesh->numVertices());
+        }
+    } else {
+        // TODO
     }
 }
 

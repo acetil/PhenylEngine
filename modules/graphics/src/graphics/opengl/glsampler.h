@@ -12,6 +12,8 @@ namespace phenyl::graphics {
                 return GL_RGBA;
             case ImageFormat::DEPTH24_STENCIL8:
                 return GL_DEPTH24_STENCIL8;
+            case ImageFormat::DEPTH:
+                return GL_DEPTH_COMPONENT;
         }
 
         PHENYL_ABORT("Invalid format type: {}", static_cast<std::uint32_t>(format));
@@ -25,6 +27,8 @@ namespace phenyl::graphics {
                 return GL_RGBA;
             case ImageFormat::DEPTH24_STENCIL8:
                 return GL_DEPTH_STENCIL;
+            case ImageFormat::DEPTH:
+                return GL_DEPTH_COMPONENT;
         }
 
         PHENYL_ABORT("Invalid format type: {}", static_cast<std::uint32_t>(format));
@@ -37,6 +41,8 @@ namespace phenyl::graphics {
                 return GL_UNSIGNED_BYTE;
             case ImageFormat::DEPTH24_STENCIL8:
                 return GL_UNSIGNED_INT_24_8;
+            case ImageFormat::DEPTH:
+                return GL_FLOAT;
         }
 
         PHENYL_ABORT("Invalid format type: {}", static_cast<std::uint32_t>(format));
