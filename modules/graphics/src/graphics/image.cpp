@@ -20,6 +20,8 @@ unsigned int Image::FormatComps (ImageFormat format) {
             return 1;
         case ImageFormat::RGBA:
             return 4;
+        case ImageFormat::RGBA32:
+            return 4;
         case ImageFormat::DEPTH24_STENCIL8:
             return 4;
         case ImageFormat::DEPTH:
@@ -35,6 +37,8 @@ std::size_t Image::FormatSize (ImageFormat format) {
             return 1;
         case ImageFormat::RGBA:
             return 4;
+        case ImageFormat::RGBA32:
+            return 16;
         case ImageFormat::DEPTH24_STENCIL8:
             return 4;
         case ImageFormat::DEPTH:

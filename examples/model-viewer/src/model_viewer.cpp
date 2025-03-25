@@ -78,24 +78,24 @@ public:
 
         auto light3 = runtime().world().create();
         light3.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({1.0f, 0.0f, 0.0f}))
+            .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({-1.0f, 0.0f, 0.0f}))
         });
         light3.insert(phenyl::DirectionalLight3D{
             .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 5.0f,
+            .brightness = 1,
             .castShadows = false
         });
 
         auto light4 = runtime().world().create();
         light4.insert(phenyl::GlobalTransform3D{
             .transform = phenyl::Transform3D{}
-                .setPosition({-1.0f, 0.0f, 0.0f})
-                .setRotation(phenyl::Quaternion::LookAt({1.0f, 0.0f, 0.0f}))
+                         .setPosition({-1.0f, 0.0f, 0.0f})
+                         .setRotation(phenyl::Quaternion::LookAt({1.0f, 0.0f, 0.0f}))
         });
         light4.insert(phenyl::SpotLight3D{
             .color = {1.0f, 1.0f, 1.0f},
             .brightness = 10.0f,
-            .innerAngle = 60.0f/ 180.0f * std::numbers::pi,
+            .innerAngle = 60.0f / 180.0f * std::numbers::pi,
             .outerAngle = 70.0f / 180.0f * std::numbers::pi,
             .castShadows = false
         });
@@ -154,12 +154,13 @@ public:
         auto light = runtime().world().create();
         light.insert(phenyl::GlobalTransform3D{
             .transform = phenyl::Transform3D{}
-            .setPosition({0, 4.0f, 0})
-            .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{1.0f, -2.0f, 0.0f}, phenyl::Quaternion::ForwardVector))
+            .setPosition({6, 6.0f, -3})
+            .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{-2.0f, -1.5f, 1.0f}))
         });
+
         light.insert(phenyl::SpotLight3D{
             .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 20.0f,
+            .brightness = 50.0f,
             .innerAngle = 20.0f * std::numbers::pi / 180.0f,
             .outerAngle = 40.0f * std::numbers::pi / 180.0f,
             .castShadows = true
@@ -186,8 +187,8 @@ public:
     }
 
     void postInit() override {
-        //scene1();
-        scene2();
+        scene1();
+        //scene2();
 
         auto& input = runtime().resource<phenyl::GameInput>();
         cameraControl = input.addAxis2D("camera_control", true);

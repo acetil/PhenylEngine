@@ -8,6 +8,10 @@ GlSampler::GlSampler (GLenum samplerType, const TextureProperties& properties) :
     bind();
     glTexParameteri(type(), GL_TEXTURE_MIN_FILTER, filter());
     glTexParameteri(type(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexParameteri(type(), GL_TEXTURE_WRAP_S, GetGlWrapping(properties.wrapping));
+    glTexParameteri(type(), GL_TEXTURE_WRAP_T, GetGlWrapping(properties.wrapping));
+    glTexParameterfv(type(), GL_TEXTURE_BORDER_COLOR, &properties.borderColor[0]);
 }
 
 GlSampler::GlSampler (GlSampler&& other) noexcept : textureId{other.textureId}, samplerType{other.samplerType}, samplerProperties{other.samplerProperties} {

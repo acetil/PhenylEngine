@@ -33,6 +33,7 @@ static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
 GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
     glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 

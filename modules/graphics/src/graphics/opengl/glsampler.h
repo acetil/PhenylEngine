@@ -10,6 +10,8 @@ namespace phenyl::graphics {
                 return GL_RED;
             case ImageFormat::RGBA:
                 return GL_RGBA;
+            case ImageFormat::RGBA32:
+                return GL_RGBA32F;
             case ImageFormat::DEPTH24_STENCIL8:
                 return GL_DEPTH24_STENCIL8;
             case ImageFormat::DEPTH:
@@ -24,6 +26,7 @@ namespace phenyl::graphics {
             case ImageFormat::R:
                 return GL_RED;
             case ImageFormat::RGBA:
+            case ImageFormat::RGBA32:
                 return GL_RGBA;
             case ImageFormat::DEPTH24_STENCIL8:
                 return GL_DEPTH_STENCIL;
@@ -43,9 +46,26 @@ namespace phenyl::graphics {
                 return GL_UNSIGNED_INT_24_8;
             case ImageFormat::DEPTH:
                 return GL_FLOAT;
+            case ImageFormat::RGBA32:
+                return GL_FLOAT;
         }
 
         PHENYL_ABORT("Invalid format type: {}", static_cast<std::uint32_t>(format));
+    }
+
+    static GLint GetGlWrapping (TextureWrapping wrapping) {
+        switch (wrapping) {
+            case TextureWrapping::REPEAT:
+                return GL_REPEAT;
+            case TextureWrapping::REPEAT_MIRROR:
+                return GL_MIRRORED_REPEAT;
+            case TextureWrapping::CLAMP:
+                return GL_CLAMP_TO_EDGE;
+            case TextureWrapping::CLAMP_BORDER:
+                return GL_CLAMP_TO_BORDER;
+        }
+
+        PHENYL_ABORT("Invalid wrapping: {}", static_cast<std::uint32_t>(wrapping));
     }
 
     class GlSampler : public ISampler {

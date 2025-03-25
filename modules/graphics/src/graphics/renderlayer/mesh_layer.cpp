@@ -21,7 +21,8 @@ void MeshRenderLayer::init (Renderer& renderer) {
         .depthFormat = ImageFormat::DEPTH24_STENCIL8
     }, viewport.getResolution().x, viewport.getResolution().y);
     shadowFb = renderer.makeFrameBuffer(FrameBufferProperties{
-        .depthFormat = ImageFormat::DEPTH
+        .depthFormat = ImageFormat::DEPTH,
+        .wrapping = TextureWrapping::CLAMP_BORDER
     }, 512, 512);
 
     instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
@@ -64,7 +65,7 @@ void MeshRenderLayer::uploadSystem (core::PhenylRuntime& runtime) {
 
 
 void MeshRenderLayer::uploadData (Camera3D& camera) {
-    testFb.clear();
+    testFb.clear({0, 0, 0, 0});
 
     gatherGeometry();
     gatherLights();
@@ -139,17 +140,6 @@ void MeshRenderLayer::gatherGeometry () {
 }
 
 void MeshRenderLayer::gatherLights () {
-    pointLightQuery.each([&] (const core::GlobalTransform3D& transform, const PointLight3D& light) {
-        pointLights.emplace_back(MeshLight{
-            .pos = transform.transform.position(),
-            .color = light.color,
-            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
-            .brightness = light.brightness,
-            .type = LightType::Point,
-            .castShadows = light.castShadows
-        });
-    });
-
     dirLightQuery.each([&] (const core::GlobalTransform3D& transform, const DirectionalLight3D& light) {
         pointLights.emplace_back(MeshLight{
             .pos = transform.transform.position(),
@@ -158,6 +148,17 @@ void MeshRenderLayer::gatherLights () {
             .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
             .brightness = light.brightness,
             .type = LightType::Directional,
+            .castShadows = light.castShadows
+        });
+    });
+
+    pointLightQuery.each([&] (const core::GlobalTransform3D& transform, const PointLight3D& light) {
+        pointLights.emplace_back(MeshLight{
+            .pos = transform.transform.position(),
+            .color = light.color,
+            .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
+            .brightness = light.brightness,
+            .type = LightType::Point,
             .castShadows = light.castShadows
         });
     });
@@ -194,6 +195,7 @@ void MeshRenderLayer::depthPrepass () {
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
         pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+        //pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
 
@@ -239,6 +241,7 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
         matInstance->bind(matPipeline);
 
         pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+        //pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
 

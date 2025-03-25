@@ -18,19 +18,23 @@ namespace phenyl::graphics {
 
         GLuint vaoId;
         GLenum renderMode = GL_TRIANGLES;
-        const GlWindowFrameBuffer* windowFrameBuffer;
+        GlWindowFrameBuffer* windowFrameBuffer;
         core::Asset<Shader> shader;
         std::vector<std::size_t> bufferTypes;
         util::Map<UniformBinding, std::size_t> uniformTypes;
         std::optional<PipelineIndex> indexType = std::nullopt;
 
+        bool doDepthMask = true;
         BlendMode blendMode = BlendMode::ALPHA_BLEND;
+        CullMode cullMode = CullMode::NONE;
 
         GlShader& getShader ();
-        void setBlending ();
+        void updateDepthMask ();
+        void setBlending (const AbstractGlFrameBuffer& fb);
+        void setCulling ();
         void bindFrameBuffer (IFrameBuffer* frameBuffer);
     public:
-        explicit GlPipeline (const GlWindowFrameBuffer* fb);
+        explicit GlPipeline (GlWindowFrameBuffer* fb);
         GlPipeline (const GlPipeline&) = delete;
         GlPipeline (GlPipeline&& other) noexcept;
 
@@ -57,14 +61,16 @@ namespace phenyl::graphics {
         UniformBinding addUniform (std::size_t type, unsigned int location);
         SamplerBinding addSampler (unsigned int location);
 
+        void setDepthMask (bool doMask);
         void setBlendMode (BlendMode mode);
+        void setCullMode (CullMode mode);
     };
 
     class GlPipelineBuilder : public IPipelineBuilder {
     private:
         std::unique_ptr<GlPipeline> pipeline;
     public:
-        GlPipelineBuilder (const GlWindowFrameBuffer* fb);
+        GlPipelineBuilder (GlWindowFrameBuffer* fb);
 
         void withGeometryType (GeometryType type) override;
         void withShader (core::Asset<Shader> shader) override;
@@ -75,7 +81,9 @@ namespace phenyl::graphics {
         UniformBinding withUniform (std::size_t type, unsigned int location) override;
         SamplerBinding withSampler (unsigned int location) override;
 
+        void withCullMode(CullMode mode) override;
         void withBlendMode (BlendMode mode) override;
+        void withDepthMask (bool doMask) override;
 
         std::unique_ptr<IPipeline> build() override;
     };

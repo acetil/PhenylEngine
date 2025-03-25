@@ -8,7 +8,7 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_PIPELINE"};
 
-GlPipeline::GlPipeline (const GlWindowFrameBuffer* fb) : vaoId{0}, windowFrameBuffer{fb} {
+GlPipeline::GlPipeline (GlWindowFrameBuffer* fb) : vaoId{0}, windowFrameBuffer{fb} {
     PHENYL_DASSERT(fb);
     glCreateVertexArrays(1, &vaoId);
 }
@@ -100,9 +100,12 @@ void GlPipeline::render (IFrameBuffer* frameBuffer, std::size_t vertices, std::s
     getShader().bind();
     glBindVertexArray(vaoId);
 
-    setBlending();
+    //setBlending();
 
     bindFrameBuffer(frameBuffer);
+    setCulling();
+    updateDepthMask();
+
     if (indexType) {
         glDrawElements(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize));
     } else {
@@ -116,9 +119,10 @@ void GlPipeline::renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInst
     getShader().bind();
     glBindVertexArray(vaoId);
 
-    setBlending();
-
     bindFrameBuffer(frameBuffer);
+    setCulling();
+    updateDepthMask();
+
     if (indexType) {
         glDrawElementsInstanced(renderMode, static_cast<GLsizei>(vertices), indexType->typeEnum, reinterpret_cast<void*>(offset * indexType->typeSize), static_cast<GLsizei>(numInstances));
     } else {
@@ -163,8 +167,16 @@ SamplerBinding GlPipeline::addSampler (unsigned int location) {
     return GL_TEXTURE0 + location;
 }
 
+void GlPipeline::setDepthMask (bool doMask) {
+    doDepthMask = doMask;
+}
+
 void GlPipeline::setBlendMode (BlendMode mode) {
     blendMode = mode;
+}
+
+void GlPipeline::setCullMode (CullMode mode) {
+    cullMode = mode;
 }
 
 GlShader& GlPipeline::getShader () {
@@ -172,26 +184,54 @@ GlShader& GlPipeline::getShader () {
     return static_cast<GlShader&>(shader->getUnderlying());
 }
 
-void GlPipeline::setBlending () {
+void GlPipeline::updateDepthMask () {
+    glDepthMask(doDepthMask);
+}
+
+void GlPipeline::setBlending (const AbstractGlFrameBuffer& fb) {
     switch (blendMode) {
         case BlendMode::ALPHA_BLEND:
+            glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             break;
         case BlendMode::ADDITIVE:
+            //glBlendFunci(fb.id(), GL_ONE, GL_ONE);
+            glEnable(GL_BLEND);
+            glBlendEquation(GL_FUNC_ADD);
+
             glBlendFunc(GL_ONE, GL_ONE);
+            break;
+    }
+}
+
+void GlPipeline::setCulling () {
+    switch (cullMode) {
+        case CullMode::FRONT_FACE:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            break;
+        case CullMode::BACK_FACE:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            break;
+        case CullMode::NONE:
+            glDisable(GL_CULL_FACE);
             break;
     }
 }
 
 void GlPipeline::bindFrameBuffer (IFrameBuffer* frameBuffer) {
     if (frameBuffer) {
-        reinterpret_cast<AbstractGlFrameBuffer*>(frameBuffer)->bindViewport();
+        auto* fb = reinterpret_cast<AbstractGlFrameBuffer*>(frameBuffer);
+        fb->bindViewport();
+        setBlending(*fb);
     } else {
         windowFrameBuffer->bindViewport();
+        setBlending(*windowFrameBuffer);
     }
 }
 
-GlPipelineBuilder::GlPipelineBuilder (const GlWindowFrameBuffer* fb) : pipeline(std::make_unique<GlPipeline>(fb)) {}
+GlPipelineBuilder::GlPipelineBuilder (GlWindowFrameBuffer* fb) : pipeline(std::make_unique<GlPipeline>(fb)) {}
 
 void GlPipelineBuilder::withGeometryType (GeometryType type) {
     PHENYL_DASSERT(pipeline);
@@ -267,9 +307,19 @@ SamplerBinding GlPipelineBuilder::withSampler (unsigned int location) {
     return pipeline->addSampler(location);
 }
 
+void GlPipelineBuilder::withCullMode (CullMode mode) {
+    PHENYL_DASSERT(pipeline);
+    pipeline->setCullMode(mode);
+}
+
 void GlPipelineBuilder::withBlendMode (BlendMode mode) {
     PHENYL_DASSERT(pipeline);
-    return pipeline->setBlendMode(mode);
+    pipeline->setBlendMode(mode);
+}
+
+void GlPipelineBuilder::withDepthMask (bool doMask) {
+    PHENYL_DASSERT(pipeline);
+    pipeline->setDepthMask(doMask);
 }
 
 std::unique_ptr<IPipeline> GlPipelineBuilder::build () {

@@ -22,6 +22,7 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
     BufferBinding model;
     builder.withShader(shader)
         .withBlending(BlendMode::ADDITIVE)
+        .withDepthMask(false)
         .withUniform<MeshGlobalUniform>(*shader->uniformLocation("GlobalUniform"), globalUniform)
         .withUniform<BPLightUniform>(*shader->uniformLocation("BPLightUniform"), lightUniform)
         .withSampler2D(*shader->samplerLocation("ShadowMap"), shadowMapBinding)
@@ -68,6 +69,7 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     }
 
     auto builder = renderer.buildPipeline();
+    builder.withBlending(BlendMode::ADDITIVE);
 
     auto prepassShader = core::Assets::Load<Shader>("phenyl/shaders/mesh_prepass");
 
@@ -115,6 +117,7 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
     UniformBinding lightUniform;
     BufferBinding model;
     builder.withShader(shadowMapShader)
+        .withCulling(CullMode::FRONT_FACE)
         .withUniform<BPLightUniform>(*shadowMapShader->uniformLocation("BPLightUniform"), lightUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 

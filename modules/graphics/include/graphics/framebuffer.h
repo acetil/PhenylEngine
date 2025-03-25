@@ -13,6 +13,11 @@ namespace phenyl::graphics {
     struct FrameBufferProperties {
         std::optional<ImageFormat> format = std::nullopt;
         std::optional<ImageFormat> depthFormat = std::nullopt;
+
+        // TODO: move to per pipeline
+        TextureWrapping wrapping = TextureWrapping::REPEAT;
+        glm::vec4 borderColor = {0, 0, 0, 0};
+        float depthBorder = 1.0f;
     };
 
     class IFrameBuffer {
