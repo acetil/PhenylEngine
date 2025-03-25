@@ -1,4 +1,4 @@
-add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera.cpp src/stb/stb_image.cpp include/graphics/phenyl_graphics.h src/graphics/phenyl_graphics.cpp  include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
+add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/phenyl_graphics.h src/graphics/phenyl_graphics.cpp  include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
         include/graphics/components/2d/sprite.h
         include/graphics/ui/forward.h
         include/graphics/particles/particle_system_2d.h
@@ -71,6 +71,31 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         include/graphics/ui/widgets/event.h
         include/graphics/ui/widgets/button.h
         src/graphics/ui/widgets/button.cpp
+        include/graphics/camera_3d.h
+        src/graphics/camera_3d.cpp
+        src/graphics/mesh/mesh.cpp
+        src/graphics/plugins/mesh_manager.h
+        src/graphics/plugins/mesh_manager.cpp
+        src/graphics/filetypes/obj_file.h
+        src/graphics/filetypes/obj_file.cpp
+        include/graphics/plugins/mesh_3d_plugin.h
+        src/graphics/renderlayer/mesh_layer.h
+        include/graphics/components/3d/mesh_renderer.h
+        src/graphics/renderlayer/mesh_layer.cpp
+        include/graphics/plugins/graphics_3d_plugin.h
+        src/graphics/plugins/mesh_3d_plugin.cpp
+        src/graphics/components/3d/mesh_renderer.cpp
+        include/graphics/material.h
+        src/graphics/material.cpp
+        src/graphics/plugins/material_manager.h
+        src/graphics/plugins/material_manager.cpp
+        src/graphics/plugins/material_instance_manager.h
+        src/graphics/plugins/material_instance_manager.cpp
+        include/graphics/components/3d/lighting.h
+        src/graphics/components/3d/lighting.cpp
+        include/graphics/framebuffer.h
+        src/graphics/opengl/glframebuffer.h
+        src/graphics/opengl/glframebuffer.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
@@ -96,10 +121,17 @@ target_gen_embedded(graphics
         resources/shaders/canvas_fragment.frag
         resources/shaders/particle_vertex.vert
         resources/shaders/particle_fragment.frag
+        resources/shaders/blinn_phong.vert
+        resources/shaders/blinn_phong.frag
+        resources/shaders/mesh_prepass.vert
+        resources/shaders/postprocess.vert
+        resources/shaders/noop_postprocess.frag
+        resources/shaders/shadow_map.vert
 )
 
 add_phenyl_resource(resources/fonts/NotoSerif-Regular.ttf resources/phenyl/fonts/noto-serif.ttf)
 add_phenyl_resource(resources/fonts/OFL.txt resources/phenyl/fonts/OFL.txt)
+add_phenyl_resource(resources/materials/blinn_phong.json resources/phenyl/materials/blinn_phong.json)
 
 target_include_directories(graphics PUBLIC include)
 target_include_directories(graphics PRIVATE src)

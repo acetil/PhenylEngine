@@ -5,15 +5,25 @@
 #include "image.h"
 
 namespace phenyl::graphics {
+    // TODO: move sampler to per-pipeline?
     enum class TextureFilter {
         POINT,
         BILINEAR,
         TRILINEAR
     };
 
+    enum class TextureWrapping {
+        REPEAT,
+        REPEAT_MIRROR,
+        CLAMP,
+        CLAMP_BORDER
+    };
+
     struct TextureProperties {
         ImageFormat format = ImageFormat::R;
         TextureFilter filter = TextureFilter::POINT;
+        TextureWrapping wrapping = TextureWrapping::REPEAT;
+        glm::vec4 borderColor = {0, 0, 0, 0};
         bool useMipmapping = true;
     };
 

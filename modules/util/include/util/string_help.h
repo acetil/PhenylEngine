@@ -7,6 +7,8 @@
 #include <vector>
 #include <cstring>
 #include <cstdint>
+#include <limits>
+#include <optional>
 
 namespace phenyl::util {
     std::vector<std::string> stringSplit (const std::string& str, const std::string& delim = " ", int maxSplits = INT32_MAX);
@@ -43,4 +45,52 @@ namespace phenyl::util {
     std::string ToLower (T&& str) requires (std::constructible_from<std::string, T>) {
         return ToLower(std::string{str});
     }
+
+    std::string_view StringTrim (std::string_view s);
+
+    namespace detail {
+        struct StringSplitter {
+        private:
+            std::string_view s;
+            std::string_view delim;
+            std::size_t maxSplits;
+
+            struct Sentinel {
+
+            };
+
+            struct Iterator {
+            private:
+                const StringSplitter* splitter = nullptr;
+                std::size_t pos = 0;
+                std::size_t numSplits = 0;
+                std::optional<std::string_view> curr;
+
+                void findNext ();
+            public:
+                using value_type = std::string_view;
+                using difference_type = std::ptrdiff_t;
+
+                Iterator () = default;
+                Iterator (const StringSplitter* splitter);
+
+                std::string_view operator* () const;
+                Iterator& operator++ ();
+                Iterator operator++ (int);
+
+                bool operator== (const Iterator& other) const noexcept;
+                bool operator== (const Sentinel& other) const noexcept;
+            };
+        public:
+            using iterator = Iterator;
+            using sentinel = Sentinel;
+
+            StringSplitter (std::string_view s, std::string_view delim, std::size_t maxSplits);
+
+            iterator begin () const;
+            sentinel end () const;
+        };
+    }
+
+    detail::StringSplitter StringSplit (std::string_view s, std::string_view delim=" ", std::size_t maxSplits = std::numeric_limits<std::size_t>::max());
 }

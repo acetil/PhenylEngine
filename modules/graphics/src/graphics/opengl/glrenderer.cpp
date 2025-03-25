@@ -13,6 +13,13 @@
 #include "resources/shaders/canvas_fragment.frag.h"
 #include "resources/shaders/particle_vertex.vert.h"
 #include "resources/shaders/particle_fragment.frag.h"
+#include "resources/shaders/blinn_phong.vert.h"
+#include "resources/shaders/blinn_phong.frag.h"
+#include "resources/shaders/mesh_prepass.vert.h"
+#include "resources/shaders/postprocess.vert.h"
+#include "resources/shaders/noop_postprocess.frag.h"
+#include "resources/shaders/shadow_map.vert.h"
+
 #include "glbuffer.h"
 #include "gluniform_buffer.h"
 #include "glpipeline.h"
@@ -24,14 +31,20 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
 
-GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)} {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
+    glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+
+    clearColor = {0, 0, 0, 1};
     setupErrorHandling();
     util::setProfilerTimingFunction(glfwGetTime);
 
     shaderManager.selfRegister();
 
-    this->viewport->addUpdateHandler(this);
+    //this->viewport->addUpdateHandler(this);
+    this->viewport->addUpdateHandler(&windowFrameBuffer);
 }
 
 double GLRenderer::getCurrentTime () {
@@ -39,7 +52,7 @@ double GLRenderer::getCurrentTime () {
 }
 
 void GLRenderer::clearWindow () {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    windowFrameBuffer.clear(clearColor);
 }
 
 void GLRenderer::finishRender () {
@@ -127,7 +140,7 @@ std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapaci
 }
 
 PipelineBuilder GLRenderer::buildPipeline () {
-    return PipelineBuilder(std::make_unique<GlPipelineBuilder>());
+    return PipelineBuilder(std::make_unique<GlPipelineBuilder>(&windowFrameBuffer));
 }
 
 std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool readable) {
@@ -139,6 +152,11 @@ void GLRenderer::loadDefaultShaders () {
     boxShader = core::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "pos")
+            .withAttrib(ShaderDataType::VEC2F, "rectPosIn")
+            .withAttrib(ShaderDataType::VEC4F, "borderColourIn")
+            .withAttrib(ShaderDataType::VEC4F, "bgColourIn")
+            .withAttrib(ShaderDataType::VEC4F, "boxDetailIn")
             .withUniformBlock("Uniform")
             .build()
     });
@@ -148,6 +166,8 @@ void GLRenderer::loadDefaultShaders () {
     debugShader = core::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC3F, "position")
+            .withAttrib(ShaderDataType::VEC4F, "colourOut")
             .withUniformBlock("Uniform")
             .build()
     });
@@ -156,6 +176,8 @@ void GLRenderer::loadDefaultShaders () {
     spriteShader = core::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "position")
+            .withAttrib(ShaderDataType::VEC2F, "uvOut")
             .withUniformBlock("Camera")
             .withSampler("textureSampler")
             .build()
@@ -165,6 +187,9 @@ void GLRenderer::loadDefaultShaders () {
     textShader = core::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "pos")
+            .withAttrib(ShaderDataType::VEC3F, "uvOut")
+            .withAttrib(ShaderDataType::VEC4F, "colorOut")
             .withUniformBlock("Uniform")
             .withSampler("textureSampler")
             .build()
@@ -174,8 +199,52 @@ void GLRenderer::loadDefaultShaders () {
     particleShader = core::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "pos")
+            .withAttrib(ShaderDataType::VEC4F, "colourIn")
             .withUniformBlock("Camera")
             .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual Blinn-Phong shader!");
+    meshShader = core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
+        .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
+        .withAttrib(ShaderDataType::VEC3F, "position")
+        .withAttrib(ShaderDataType::VEC3F, "normal")
+        .withAttrib(ShaderDataType::VEC2F, "texcoord_0")
+        .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniformBlock("GlobalUniform")
+        .withUniformBlock("BPLightUniform")
+        .withUniformBlock("Material")
+        .withSampler("ShadowMap")
+        .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual shadow mapping shader!");
+    shadowMapShader = core::Assets::LoadVirtual("phenyl/shaders/shadow_map", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
+        .withAttrib(ShaderDataType::VEC3F, "position")
+        .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniformBlock("BPLightUniform")
+        .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual mesh z-prepass shader!");
+    prepassShader = core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
+        .withAttrib(ShaderDataType::VEC3F, "position")
+        .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniformBlock("GlobalUniform")
+        .build()
+    });
+
+    PHENYL_TRACE(LOGGER, "Loading virtual no-op post-process shader!");
+    noopPostShader = core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", Shader{GlShader::Builder()
+        .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
+        .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
+        .withAttrib(ShaderDataType::VEC2F, "position")
+        .withSampler("frameBuffer")
+        .build()
     });
 }
 
@@ -199,7 +268,7 @@ std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properti
 }
 
 void GLRenderer::render () {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    clearWindow();
     layerRender();
     viewport->swapBuffers();
 }
@@ -212,6 +281,11 @@ std::unique_ptr<IImageArrayTexture> GLRenderer::makeRendererArrayTexture (const 
     return std::make_unique<GlArrayTexture>(properties, width, height);
 }
 
+std::unique_ptr<IFrameBuffer> GLRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties,
+    std::uint32_t width, std::uint32_t height) {
+    return std::make_unique<GlFrameBuffer>(glm::ivec2{width, height}, properties);
+}
+
 void GLRenderer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
-    glViewport(0, 0, newResolution.x, newResolution.y);
+    //glViewport(0, 0, newResolution.x, newResolution.y);
 }

@@ -6,6 +6,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace phenyl::util {
@@ -34,7 +35,7 @@ struct std::formatter<glm::vec3, char> {
     template <class ParseContext>
     constexpr ParseContext::iterator parse(ParseContext& ctx) {
         auto it = ctx.begin();
-        if (it != ctx.end()) {
+        if (it != ctx.end() && *it != '}') {
             throw std::format_error("Invalid format string for vec3");
         }
 
@@ -52,7 +53,7 @@ struct std::formatter<glm::vec4, char> {
     template <class ParseContext>
     constexpr ParseContext::iterator parse(ParseContext& ctx) {
         auto it = ctx.begin();
-        if (it != ctx.end()) {
+        if (it != ctx.end() && *it != '}') {
             throw std::format_error("Invalid format string for vec4");
         }
 
@@ -62,5 +63,23 @@ struct std::formatter<glm::vec4, char> {
     template <class FmtContext>
     FmtContext::iterator format(const glm::vec4& vec, FmtContext& ctx) const {
         return std::format_to(ctx.out(), "<{}, {}, {}, {}>", vec.x, vec.y, vec.z, vec.w);
+    }
+};
+
+template <>
+struct std::formatter<glm::mat3, char> {
+    template <class ParseContext>
+constexpr ParseContext::iterator parse(ParseContext& ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it != '}') {
+            throw std::format_error("Invalid format string for mat3");
+        }
+
+        return it;
+    }
+
+    template <class FmtContext>
+    FmtContext::iterator format(const glm::mat3& mat, FmtContext& ctx) const {
+        return std::format_to(ctx.out(), "<{}, {}, {}>", mat[0], mat[1], mat[2]);
     }
 };

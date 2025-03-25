@@ -54,7 +54,14 @@ add_library(phenyl SHARED
         include/phenyl/ui/container.h
         include/phenyl/ui/event.h
         include/phenyl/entrypoint.h
-        include/phenyl/platform.h)
+        include/phenyl/platform.h
+        include/phenyl/plugins/default_3d_plugin.h
+        include/phenyl/components/3D/global_transform.h
+        include/phenyl/components/3D/mesh_renderer.h
+        include/phenyl/graphics/mesh.h
+        src/phenyl/plugins/default_3d_plugin.cpp
+        include/phenyl/graphics/material.h
+        include/phenyl/components/3D/lighting.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 

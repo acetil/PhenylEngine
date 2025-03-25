@@ -27,6 +27,7 @@ namespace phenyl::graphics {
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
         virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
         virtual std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
+        virtual std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
 
         void layerRender () {
             for (auto& i : layers) {
@@ -54,6 +55,10 @@ namespace phenyl::graphics {
             return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity, sizeof(T)));
         }
 
+        RawBuffer makeRawBuffer (std::size_t stride, std::size_t capacity) {
+            return RawBuffer{makeRendererBuffer(capacity * stride, stride)};
+        }
+
         template <typename T, typename ...Args>
         UniformBuffer<T> makeUniformBuffer (bool readable, Args&&...args) {
             return UniformBuffer<T>(makeRendererUniformBuffer(readable), std::forward<Args>(args)...);
@@ -62,6 +67,10 @@ namespace phenyl::graphics {
         template <typename T, typename ...Args>
         UniformBuffer<T> makeUniformBuffer (Args&&...args) {
             return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
+        }
+
+        RawUniformBuffer makeRawUniformBuffer (std::size_t size, bool readable = false) {
+            return RawUniformBuffer{makeRendererUniformBuffer(readable), size};
         }
 
         ImageTexture makeTexture (const TextureProperties& properties, const Image& image) {
@@ -77,6 +86,10 @@ namespace phenyl::graphics {
 
         ImageArrayTexture makeArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
             return ImageArrayTexture{makeRendererArrayTexture(properties, width, height)};
+        }
+
+        FrameBuffer makeFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {
+            return FrameBuffer{makeRendererFrameBuffer(properties, width, height)};
         }
 
         template <std::derived_from<AbstractRenderLayer> T, typename ...Args>

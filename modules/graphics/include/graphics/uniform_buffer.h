@@ -85,4 +85,53 @@ namespace phenyl::graphics {
             return *rendererBuffer;
         }
     };
+
+    class RawUniformBuffer {
+    private:
+        std::unique_ptr<IUniformBuffer> rendererBuffer;
+        std::byte* bufData;
+        std::size_t bufSize;
+    public:
+        RawUniformBuffer () = default;
+
+        RawUniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t size) : rendererBuffer{std::move(rendererBuffer)}, bufSize{size} {
+            bufData = reinterpret_cast<std::byte*>(this->rendererBuffer->allocate(size));
+        }
+
+        explicit operator bool () const noexcept {
+            return (bool)rendererBuffer;
+        }
+
+        std::byte* data () noexcept {
+            return bufData;
+        }
+
+        const std::byte* data () const noexcept {
+            return bufData;
+        }
+
+        std::size_t size () const noexcept {
+            return bufSize;
+        }
+
+        [[nodiscard]] bool readable () const {
+            PHENYL_DASSERT(rendererBuffer);
+            return rendererBuffer->isReadable();
+        }
+
+        void upload () {
+            PHENYL_DASSERT(rendererBuffer);
+            rendererBuffer->upload();
+        }
+
+        IUniformBuffer& getUnderlying () {
+            PHENYL_DASSERT(rendererBuffer);
+            return *rendererBuffer;
+        }
+
+        [[nodiscard]] const IUniformBuffer& getUnderlying () const {
+            PHENYL_DASSERT(rendererBuffer);
+            return *rendererBuffer;
+        }
+    };
 }

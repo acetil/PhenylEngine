@@ -12,9 +12,11 @@ namespace phenyl::graphics {
     class GlShader : public IShader {
     private:
         GLuint programId{0};
+        std::unordered_map<std::string, unsigned int> attribs;
         std::unordered_map<std::string, unsigned int> uniformBlocks;
         std::unordered_map<std::string, unsigned int> samplers;
 
+        bool addAttrib (ShaderDataType type, const std::string& attrib);
         bool addUniformBlock (const std::string& uniform);
         bool addSampler (const std::string& sampler);
 
@@ -23,6 +25,7 @@ namespace phenyl::graphics {
         class Builder {
         private:
             std::unordered_map<ShaderSourceType, GLuint> shaderSources;
+            std::unordered_map<std::string, ShaderDataType> attribs;
             std::unordered_set<std::string> uniformBlocks;
             std::unordered_set<std::string> samplers;
 
@@ -31,6 +34,7 @@ namespace phenyl::graphics {
             Builder() = default;
 
             Builder& withSource (ShaderSourceType type, std::string source);
+            Builder& withAttrib (ShaderDataType type, std::string attrib);
             Builder& withUniformBlock (std::string uniformName);
             Builder& withSampler (std::string samplerName);
             std::unique_ptr<GlShader> build ();
@@ -46,8 +50,12 @@ namespace phenyl::graphics {
         ~GlShader() override;
 
         std::size_t hash () const noexcept override;
+        std::optional<unsigned int> getAttribLocation (const std::string& attrib) const noexcept override;
         std::optional<unsigned int> getUniformLocation (const std::string& uniform) const noexcept override;
         std::optional<unsigned int> getSamplerLocation (const std::string& sampler) const noexcept override;
+
+        std::optional<std::size_t> getUniformOffset (const std::string& uniformBlock, const std::string& uniform) const noexcept override;
+        std::optional<std::size_t> getUniformBlockSize (const std::string& uniformBlock) const noexcept override;
 
         void bind ();
     };

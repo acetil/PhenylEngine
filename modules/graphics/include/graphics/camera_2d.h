@@ -7,7 +7,7 @@
 #include "core/iresource.h"
 
 namespace phenyl::graphics {
-    class Camera : public core::IResource, public IViewportUpdateHandler {
+    class Camera2D : public core::IResource, public IViewportUpdateHandler {
     private:
         glm::mat4 camMatrix{};
         glm::mat4 positionMat{};
@@ -24,7 +24,7 @@ namespace phenyl::graphics {
         [[maybe_unused]] void setScale (float scale);
         [[nodiscard]] glm::mat4 getCamMatrix () const ;
         static std::string getUniformName () ;
-        explicit Camera (glm::vec2 resolution);
+        explicit Camera2D (glm::vec2 resolution);
 
         glm::vec2 getWorldPos2D (glm::vec2 screenPos) const;
 

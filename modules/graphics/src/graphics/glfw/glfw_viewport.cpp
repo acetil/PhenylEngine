@@ -47,9 +47,6 @@ GLFWViewport::GLFWViewport (const GraphicsProperties& properties) {
         return;
     }
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glfwSwapInterval(properties.getVsync() ? 1 : 0); // TODO: handle enable/disable vsync
     resolution = {properties.getWindowWidth(), properties.getWindowHeight()};
 

@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "glframebuffer.h"
 #include "graphics/graphics_headers.h"
 #include "graphics/renderer.h"
 
@@ -14,6 +15,8 @@ namespace phenyl::graphics {
     class GLRenderer : public Renderer, public IViewportUpdateHandler {
     private:
         std::unique_ptr<GLFWViewport> viewport;
+        GlWindowFrameBuffer windowFrameBuffer;
+        glm::vec4 clearColor;
 
         GlShaderManager shaderManager;
 
@@ -22,11 +25,17 @@ namespace phenyl::graphics {
         core::Asset<Shader> spriteShader;
         core::Asset<Shader> textShader;
         core::Asset<Shader> particleShader;
+        core::Asset<Shader> meshShader;
+        core::Asset<Shader> shadowMapShader;
+        core::Asset<Shader> prepassShader;
+
+        core::Asset<Shader> noopPostShader;
     protected:
         std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
         std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
         std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) override;
         std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture(const TextureProperties &properties, std::uint32_t width, std::uint32_t height) override;
+        std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) override;
 
     public:
         static std::unique_ptr<GLRenderer> Make (const GraphicsProperties& properties);

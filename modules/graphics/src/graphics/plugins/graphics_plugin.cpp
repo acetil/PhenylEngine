@@ -4,8 +4,10 @@
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/debug_layer.h"
 
+#include "mesh_manager.h"
 #include "texture_manager.h"
 #include "core/plugins/input_plugin.h"
+#include "graphics/camera_3d.h"
 
 using namespace phenyl::graphics;
 
@@ -19,7 +21,7 @@ struct GraphicsData : public phenyl::core::IResource {
     GraphicsData (DebugLayer* layer) : layer{layer} {}
 };
 
-static void DebugRenderSystem (const phenyl::core::Resources<const Viewport, const Camera, GraphicsData>& resources) {
+static void DebugRenderSystem (const phenyl::core::Resources<const Viewport, const Camera2D, GraphicsData>& resources) {
     auto& [viewport, camera, data] = resources;
     data.layer->bufferData(camera, viewport.getResolution());
 }
@@ -39,10 +41,11 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     auto& renderer = runtime.resource<Renderer>();
     runtime.addResource(&renderer.getViewport());
 
-    runtime.addResource<Camera>(renderer.getViewport().getResolution());
+    runtime.addResource<Camera2D>(renderer.getViewport().getResolution());
+    runtime.addResource<Camera3D>(renderer.getViewport().getResolution());
 
-    auto& camera = runtime.resource<Camera>();
-    renderer.getViewport().addUpdateHandler(&camera);
+    renderer.getViewport().addUpdateHandler(&runtime.resource<Camera2D>());
+    renderer.getViewport().addUpdateHandler(&runtime.resource<Camera3D>());
 
     renderer.loadDefaultShaders();
     textureManager = std::make_unique<TextureManager>(renderer);

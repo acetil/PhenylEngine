@@ -99,7 +99,7 @@ void DebugLayer::init (Renderer& renderer) {
     linePipeline.bindUniform(uniformBinding, uniformBuffer);
 }
 
-void DebugLayer::bufferData (const Camera& camera, glm::vec2 screenSize) {
+void DebugLayer::bufferData (const Camera2D& camera, glm::vec2 screenSize) {
     boxPos.clear();
     boxColour.clear();
     linePos.clear();

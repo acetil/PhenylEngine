@@ -72,7 +72,7 @@ void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
     runtime.addSystem<phenyl::FixedUpdate>("Paddle::Update", &Paddle::update);
 }
 
-void Paddle::update (const phenyl::Resources<const phenyl::Camera, const phenyl::FixedDelta>& resources, const phenyl::Bundle<const phenyl::GlobalTransform2D, phenyl::RigidBody2D>& bundle) {
+void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const phenyl::FixedDelta>& resources, const phenyl::Bundle<const phenyl::GlobalTransform2D, phenyl::RigidBody2D>& bundle) {
     auto& [transform, body] = bundle.comps();
     auto& [camera, deltaTime] = resources;
 

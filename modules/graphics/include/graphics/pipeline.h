@@ -4,6 +4,7 @@
 #include "util/meta.h"
 
 #include "buffer.h"
+#include "framebuffer.h"
 #include "shader.h"
 #include "texture.h"
 #include "uniform_buffer.h"
@@ -23,6 +24,17 @@ namespace phenyl::graphics {
         UBYTE,
         USHORT,
         UINT
+    };
+
+    enum class BlendMode {
+        ALPHA_BLEND,
+        ADDITIVE
+    };
+
+    enum class CullMode {
+        FRONT_FACE,
+        BACK_FACE,
+        NONE
     };
 
     template <typename T>
@@ -47,12 +59,13 @@ namespace phenyl::graphics {
     public:
         virtual ~IPipeline() = default;
 
-        virtual void bindBuffer (std::size_t type, BufferBinding binding, IBuffer& buffer) = 0;
-        virtual void bindIndexBuffer (ShaderIndexType type, IBuffer& buffer) = 0;
-        virtual void bindUniform (std::size_t type, UniformBinding binding, IUniformBuffer& buffer) = 0;
+        virtual void bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) = 0;
+        virtual void bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) = 0;
+        virtual void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) = 0;
         virtual void bindSampler (SamplerBinding binding, const ISampler& sampler) = 0;
         virtual void unbindIndexBuffer () = 0;
-        virtual void render (std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
+        virtual void render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
+        virtual void renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) = 0;
     };
 
     class Pipeline {
@@ -66,26 +79,47 @@ namespace phenyl::graphics {
             return (bool)pipeline;
         }
 
-        template <typename T>
-        Pipeline& bindBuffer (BufferBinding binding, Buffer<T>& buffer) {
+        Pipeline& bindBuffer (BufferBinding binding, const RawBuffer& buffer, std::size_t offset = 0) {
             PHENYL_DASSERT(pipeline);
-            pipeline->bindBuffer(meta::type_index<T>(), binding, buffer.getUnderlying());
+            pipeline->bindBuffer(0, binding, buffer.getUnderlying(), offset);
+
+            return *this;
+        }
+
+        template <typename T>
+        Pipeline& bindBuffer (BufferBinding binding, const Buffer<T>& buffer, std::size_t offset = 0) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindBuffer(meta::type_index<T>(), binding, buffer.getUnderlying(), offset * sizeof(T));
 
             return *this;
         }
 
         template <IndexType T>
-        Pipeline& bindIndexBuffer (Buffer<T>& buffer) {
+        Pipeline& bindIndexBuffer (const Buffer<T>& buffer) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindIndexBuffer(GetIndexType<T>(), buffer.getUnderlying());
 
             return *this;
         }
 
+        Pipeline& bindIndexBuffer (ShaderIndexType type, const RawBuffer& buffer) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindIndexBuffer(type, buffer.getUnderlying());
+
+            return *this;
+        }
+
         template <typename T>
-        Pipeline& bindUniform (UniformBinding binding, UniformBuffer<T>& buffer) {
+        Pipeline& bindUniform (UniformBinding binding, const UniformBuffer<T>& buffer) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying());
+
+            return *this;
+        }
+
+        Pipeline& bindUniform (UniformBinding binding, const RawUniformBuffer& buffer) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindUniform(0, binding, buffer.getUnderlying());
 
             return *this;
         }
@@ -113,7 +147,22 @@ namespace phenyl::graphics {
 
         void render (std::size_t vertices, std::size_t offset=0) {
             PHENYL_DASSERT(pipeline);
-            pipeline->render(vertices, offset);
+            pipeline->render(nullptr, vertices, offset);
+        }
+
+        void render (FrameBuffer& frameBuffer, std::size_t vertices, std::size_t offset=0) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->render(&frameBuffer.getUnderlying(), vertices, offset);
+        }
+
+        void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset=0) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->renderInstanced(nullptr, numInstances, vertices, offset);
+        }
+
+        void renderInstanced (FrameBuffer& frameBuffer, std::size_t numInstances, std::size_t vertices, std::size_t offset=0) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->renderInstanced(&frameBuffer.getUnderlying(), numInstances, vertices, offset);
         }
     };
 
@@ -121,6 +170,9 @@ namespace phenyl::graphics {
     public:
         virtual ~IPipelineBuilder() = default;
 
+        virtual void withBlendMode (BlendMode mode) = 0;
+        virtual void withDepthMask (bool doMask) = 0;
+        virtual void withCullMode (CullMode mode) = 0;
         virtual void withGeometryType (GeometryType type) = 0;
         virtual void withShader (core::Asset<Shader> shader) = 0;
 
@@ -153,10 +205,24 @@ namespace phenyl::graphics {
             return *this;
         }
 
+        PipelineBuilder& withRawBuffer (BufferBinding& bindingOut, std::size_t stride, BufferInputRate inputRate = BufferInputRate::VERTEX) {
+            PHENYL_DASSERT(builder);
+            bindingOut = builder->withBuffer(0, stride, inputRate);
+
+            return *this;
+        }
+
         template <typename T>
         PipelineBuilder& withBuffer (BufferBinding& bindingOut, BufferInputRate inputRate = BufferInputRate::VERTEX) {
             PHENYL_DASSERT(builder);
             bindingOut = builder->withBuffer(meta::type_index<T>(), sizeof(T), inputRate);
+
+            return *this;
+        }
+
+        PipelineBuilder& withAttrib (unsigned int location, BufferBinding binding, ShaderDataType type, std::size_t offset = 0) {
+            PHENYL_DASSERT(builder);
+            builder->withAttrib(type, location, binding, offset);
 
             return *this;
         }
@@ -177,9 +243,37 @@ namespace phenyl::graphics {
             return *this;
         }
 
+        PipelineBuilder& withRawUniform (unsigned int location, UniformBinding& bindingOut) {
+            PHENYL_DASSERT(builder);
+            bindingOut = builder->withUniform(0, location);
+
+            return *this;
+        }
+
         PipelineBuilder& withSampler2D (unsigned int location, SamplerBinding& bindingOut) {
             PHENYL_DASSERT(builder);
             bindingOut = builder->withSampler(location);
+
+            return *this;
+        }
+
+        PipelineBuilder& withBlending (BlendMode mode) {
+            PHENYL_DASSERT(builder);
+            builder->withBlendMode(mode);
+
+            return *this;
+        }
+
+        PipelineBuilder& withCulling (CullMode mode) {
+            PHENYL_DASSERT(builder);
+            builder->withCullMode(mode);
+
+            return *this;
+        }
+
+        PipelineBuilder& withDepthMask (bool doMask) {
+            PHENYL_DASSERT(builder);
+            builder->withDepthMask(doMask);
 
             return *this;
         }

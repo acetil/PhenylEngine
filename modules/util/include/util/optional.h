@@ -308,8 +308,8 @@ namespace phenyl::util {
     concept IsNotReference = !std::is_reference_v<T>;
 
     template <IsNotReference T>
-    Optional (T&&) -> util::Optional<T>;
+    Optional (T&&) -> Optional<T>;
 
     template <IsNotReference T>
-    Optional (const T&) -> util::Optional<T>;
+    Optional (const T&) -> Optional<T>;
 }

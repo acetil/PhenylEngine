@@ -4,6 +4,7 @@
 #include "plugin.h"
 
 #include "plugins/default_2d_plugin.h"
+#include "plugins/default_3d_plugin.h"
 
 namespace phenyl {
     template <PluginType ...Plugins>
@@ -105,4 +106,5 @@ namespace phenyl {
     };
 
     using Application2D = Application<Default2DPlugin>;
+    using Application3D = Application<Default3DPlugin>;
 }
