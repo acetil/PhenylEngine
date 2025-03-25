@@ -1,9 +1,8 @@
 #include "util/map.h"
 #include "util/string_help.h"
+#include "graphics/detail/loggers.h"
 
 #include "obj_file.h"
-
-
 
 using namespace phenyl::graphics;
 

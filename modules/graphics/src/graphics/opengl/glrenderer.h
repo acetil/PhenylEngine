@@ -5,7 +5,7 @@
 
 #include "glframebuffer.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 
 #include "glshader.h"
 #include "graphics/glfw/glfw_viewport.h"

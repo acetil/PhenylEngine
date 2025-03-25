@@ -1,7 +1,7 @@
 #include "entity_layer.h"
 #include "core/assets/assets.h"
 #include "core/components/2d/global_transform.h"
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/components/2d/sprite.h"
 #include "core/runtime.h"
 

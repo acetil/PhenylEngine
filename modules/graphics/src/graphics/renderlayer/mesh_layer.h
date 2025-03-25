@@ -6,8 +6,8 @@
 #include "util/map.h"
 
 #include "graphics/mesh/mesh.h"
-#include "graphics/pipeline.h"
-#include "graphics/abstract_render_layer.h"
+#include "graphics/backend/pipeline.h"
+#include "graphics/backend/abstract_render_layer.h"
 #include "graphics/camera_3d.h"
 #include "graphics/material.h"
 #include "graphics/components/3d/mesh_renderer.h"

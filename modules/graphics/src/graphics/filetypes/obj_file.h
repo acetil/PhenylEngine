@@ -2,7 +2,7 @@
 
 #include <iosfwd>
 #include <vector>
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/mesh/mesh.h"
 
 #include "graphics/maths_headers.h"

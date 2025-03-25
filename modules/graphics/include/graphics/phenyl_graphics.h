@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "graphics_properties.h"
 
 namespace phenyl::graphics {

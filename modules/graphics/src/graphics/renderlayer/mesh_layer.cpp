@@ -1,6 +1,6 @@
 #include "mesh_layer.h"
 
-#include <graphics/renderer.h>
+#include <graphics/backend/renderer.h>
 
 #include "core/assets/assets.h"
 

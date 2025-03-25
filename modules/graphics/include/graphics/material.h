@@ -1,12 +1,13 @@
 #pragma once
 
-#include "pipeline.h"
-#include "renderer.h"
+#include "graphics/backend/pipeline.h"
+#include "graphics/backend/renderer.h"
 #include "util/map.h"
 
-#include "shader.h"
+#include "graphics/backend/shader.h"
 #include "core/assets/asset.h"
 #include "mesh/mesh.h"
+#include "detail/loggers.h"
 
 namespace phenyl::graphics {
     class MaterialInstance;

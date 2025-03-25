@@ -21,17 +21,14 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         include/graphics/plugins/sprite_2d_plugin.h
         src/graphics/plugins/sprite_2d_plugin.cpp
         include/graphics/plugins/graphics_2d_plugin.h
-        include/graphics/viewport.h
         src/graphics/glfw/glfw_viewport.h
         src/graphics/glfw/glfw_viewport.cpp
         src/graphics/opengl/glbuffer.h
         src/graphics/opengl/glbuffer.cpp
-        include/graphics/uniform_buffer.h
         src/graphics/opengl/gluniform_buffer.h
         src/graphics/opengl/gluniform_buffer.cpp
         src/graphics/opengl/glpipeline.h
         src/graphics/opengl/glpipeline.cpp
-        include/graphics/abstract_render_layer.h
         src/graphics/opengl/glimage_texture.h
         src/graphics/opengl/glimage_texture.cpp
         src/graphics/opengl/glsampler.h
@@ -93,7 +90,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/plugins/material_instance_manager.cpp
         include/graphics/components/3d/lighting.h
         src/graphics/components/3d/lighting.cpp
-        include/graphics/framebuffer.h
         src/graphics/opengl/glframebuffer.h
         src/graphics/opengl/glframebuffer.cpp
 )
@@ -109,6 +105,8 @@ find_package(GLEW REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 set_property(TARGET graphics PROPERTY CXX_STANDARD 20)
+
+add_subdirectory(backends)
 
 target_gen_embedded(graphics
         resources/shaders/box_vertex.vert
@@ -146,7 +144,4 @@ target_link_libraries(graphics PRIVATE glfw GL GLEW::GLEW)
 target_link_libraries(graphics PRIVATE nlohmann_json)
 
 target_link_libraries(graphics PUBLIC core)
-
-add_library(graphics_interface INTERFACE)
-target_include_directories(graphics_interface INTERFACE include)
-target_link_libraries(graphics_interface INTERFACE runtime_interface)
+target_link_libraries(graphics PUBLIC graphics_api)

@@ -1,4 +1,5 @@
 #include "graphics/opengl/glrenderer.h"
+#include "graphics/detail/loggers.h"
 
 #include "util/profiler.h"
 #include "core/assets/assets.h"

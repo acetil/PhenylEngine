@@ -3,8 +3,8 @@
 #include "graphics/graphics_headers.h"
 
 #include "glsampler.h"
-#include "graphics/framebuffer.h"
-#include "graphics/viewport.h"
+#include "graphics/backend/framebuffer.h"
+#include "../../../backends/api/include/graphics/viewport.h"
 
 namespace phenyl::graphics {
     class AbstractGlFrameBuffer : public IFrameBuffer {

@@ -3,6 +3,7 @@
 #include "graphics/canvas/canvas.h"
 
 #include "core/assets/assets.h"
+#include "graphics/detail/loggers.h"
 
 using namespace phenyl::graphics;
 

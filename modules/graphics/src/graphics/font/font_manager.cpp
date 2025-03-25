@@ -4,6 +4,8 @@
 #include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_manager.h"
 
+#include "graphics/detail/loggers.h"
+
 using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"FONT_MANAGER", detail::GRAPHICS_LOGGER};

@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "graphics/maths_headers.h"
-#include "graphics/texture.h"
+#include "graphics/backend/texture.h"
 #include "core/assets/asset.h"
 #include "core/serialization/serializer_forward.h"
 

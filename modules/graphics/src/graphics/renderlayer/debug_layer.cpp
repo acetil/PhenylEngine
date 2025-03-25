@@ -1,6 +1,7 @@
 #include "debug_layer.h"
 #include "core/debug.h"
 #include "core/assets/assets.h"
+#include "graphics/detail/loggers.h"
 
 #define STARTING_BUFFER_SIZE 2048
 

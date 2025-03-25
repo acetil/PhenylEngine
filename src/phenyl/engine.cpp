@@ -4,7 +4,7 @@
 #include <thread>
 
 #include "graphics/phenyl_graphics.h"
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "logging/logging.h"
 #include "plugins/app_plugin.h"
 #include "core/runtime.h"

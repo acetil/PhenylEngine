@@ -2,9 +2,11 @@
 
 #include <memory>
 
-#include "image.h"
+// TODO: remove
+#include "graphics/image.h"
 
 namespace phenyl::graphics {
+
     // TODO: move sampler to per-pipeline?
     enum class TextureFilter {
         POINT,

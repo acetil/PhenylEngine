@@ -3,9 +3,9 @@
 #include "glframebuffer.h"
 #include "util/map.h"
 
-#include "graphics/pipeline.h"
+#include "graphics/backend/pipeline.h"
 #include "graphics/graphics_headers.h"
-#include "graphics/shader.h"
+#include "graphics/backend/shader.h"
 #include "glshader.h"
 
 namespace phenyl::graphics {

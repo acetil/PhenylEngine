@@ -5,8 +5,8 @@
 #include "util/map.h"
 
 #include "graphics/image.h"
-#include "graphics/renderer.h"
-#include "graphics/texture.h"
+#include "graphics/backend/renderer.h"
+#include "graphics/backend/texture.h"
 
 namespace phenyl::graphics {
     struct ColumnAtlas {

@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstring>
 
-#include "graphics/image.h"
+#include "../../include/graphics/image.h"
 
 #include "graphics/detail/loggers.h"
 #include "stb/stb_image.h"

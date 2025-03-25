@@ -2,10 +2,10 @@
 
 #include "core/world.h"
 
-#include "graphics/abstract_render_layer.h"
+#include "graphics/backend/abstract_render_layer.h"
 #include "graphics/camera_2d.h"
-#include "graphics/buffer.h"
-#include "graphics/pipeline.h"
+#include "graphics/backend/buffer.h"
+#include "graphics/backend/pipeline.h"
 
 namespace phenyl::core {
     struct GlobalTransform2D;

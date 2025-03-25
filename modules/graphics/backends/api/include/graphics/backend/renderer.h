@@ -5,20 +5,24 @@
 #include <memory>
 
 #include "core/iresource.h"
+
+#include "abstract_render_layer.h"
 #include "buffer.h"
+#include "pipeline.h"
 #include "uniform_buffer.h"
+#include "graphics/viewport.h"
 #include "shader.h"
 #include "texture.h"
 
 #include "util/optional.h"
-#include "graphics/viewport.h"
-#include "pipeline.h"
-#include "graphics/abstract_render_layer.h"
-#include "graphics/detail/loggers.h"
 #include "graphics/image.h"
-#include "graphics/texture.h"
 
 namespace phenyl::graphics {
+    // TODO
+    namespace detail {
+        extern phenyl::Logger RENDERER_LOGGER;
+    }
+
     class Renderer : public core::IResource {
     private:
         std::vector<std::unique_ptr<AbstractRenderLayer>> layers;
