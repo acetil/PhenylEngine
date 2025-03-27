@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "glframebuffer.h"
-#include "graphics/graphics_headers.h"
+#include "opengl_headers.h"
 #include "graphics/backend/renderer.h"
 
 #include "glshader.h"

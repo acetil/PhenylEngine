@@ -16,6 +16,7 @@
 
 #include "util/optional.h"
 #include "graphics/image.h"
+#include "graphics/graphics_properties.h"
 
 namespace phenyl::graphics {
     // TODO
@@ -117,4 +118,6 @@ namespace phenyl::graphics {
 
         virtual void render () = 0;
     };
+
+    std::unique_ptr<Renderer> MakeGLRenderer (const GraphicsProperties& properties);
 }

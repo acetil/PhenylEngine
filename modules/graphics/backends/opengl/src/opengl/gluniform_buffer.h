@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/backend/uniform_buffer.h"
-#include "graphics/graphics_headers.h"
+#include "opengl_headers.h"
 
 namespace phenyl::graphics {
     class GlUniformBuffer : public IUniformBuffer {

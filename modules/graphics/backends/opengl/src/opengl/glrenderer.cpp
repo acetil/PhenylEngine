@@ -1,5 +1,4 @@
-#include "graphics/opengl/glrenderer.h"
-#include "graphics/detail/loggers.h"
+#include "glrenderer.h"
 
 #include "util/profiler.h"
 #include "core/assets/assets.h"
@@ -30,7 +29,7 @@
 #include <vector>
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_RENDERER", detail::GRAPHICS_LOGGER};
+phenyl::Logger detail::OPENGL_LOGGER{"OPENGL", phenyl::PHENYL_LOGGER};
 
 GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
     glEnable(GL_BLEND);
@@ -114,22 +113,22 @@ void GLRenderer::setupErrorHandling () {
         }
         switch(severity) {
             case GL_DEBUG_SEVERITY_NOTIFICATION:
-                PHENYL_TRACE(LOGGER,  "GL debug notification from {} with type {} and message {}", sourceString, typeString, message);
+                PHENYL_TRACE(detail::OPENGL_LOGGER,  "GL debug notification from {} with type {} and message {}", sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_LOW:
-                PHENYL_LOGW(LOGGER, "GL low severity message from {} with type {} and message {}",
+                PHENYL_LOGW(detail::OPENGL_LOGGER, "GL low severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_MEDIUM:
-                PHENYL_LOGE(LOGGER, "GL medium severity message from {} with type {} and message {}",
+                PHENYL_LOGE(detail::OPENGL_LOGGER, "GL medium severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             case GL_DEBUG_SEVERITY_HIGH:
-                PHENYL_LOGF(LOGGER, "GL high severity message from {} with type {} and message {}",
+                PHENYL_LOGF(detail::OPENGL_LOGGER, "GL high severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
             default:
-                PHENYL_LOGW(LOGGER, "GL unknown severity message from {} with type {} and message {}",
+                PHENYL_LOGW(detail::OPENGL_LOGGER, "GL unknown severity message from {} with type {} and message {}",
                               sourceString, typeString, message);
                 break;
         }
@@ -149,7 +148,7 @@ std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool read
 }
 
 void GLRenderer::loadDefaultShaders () {
-    PHENYL_TRACE(LOGGER, "Loading virtual box shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual box shader!");
     boxShader = core::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
@@ -163,7 +162,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
 
-    PHENYL_TRACE(LOGGER, "Loading virtual debug shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual debug shader!");
     debugShader = core::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
@@ -173,7 +172,7 @@ void GLRenderer::loadDefaultShaders () {
             .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual sprite shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual sprite shader!");
     spriteShader = core::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
@@ -184,7 +183,7 @@ void GLRenderer::loadDefaultShaders () {
             .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual canvas shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual canvas shader!");
     textShader = core::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
@@ -196,7 +195,7 @@ void GLRenderer::loadDefaultShaders () {
             .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual particle shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual particle shader!");
     particleShader = core::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
@@ -206,7 +205,7 @@ void GLRenderer::loadDefaultShaders () {
             .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual Blinn-Phong shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual Blinn-Phong shader!");
     meshShader = core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
@@ -221,7 +220,7 @@ void GLRenderer::loadDefaultShaders () {
         .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual shadow mapping shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual shadow mapping shader!");
     shadowMapShader = core::Assets::LoadVirtual("phenyl/shaders/shadow_map", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
         .withAttrib(ShaderDataType::VEC3F, "position")
@@ -230,7 +229,7 @@ void GLRenderer::loadDefaultShaders () {
         .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual mesh z-prepass shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual mesh z-prepass shader!");
     prepassShader = core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
         .withAttrib(ShaderDataType::VEC3F, "position")
@@ -239,7 +238,7 @@ void GLRenderer::loadDefaultShaders () {
         .build()
     });
 
-    PHENYL_TRACE(LOGGER, "Loading virtual no-op post-process shader!");
+    PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual no-op post-process shader!");
     noopPostShader = core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
@@ -289,4 +288,8 @@ std::unique_ptr<IFrameBuffer> GLRenderer::makeRendererFrameBuffer (const FrameBu
 
 void GLRenderer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
     //glViewport(0, 0, newResolution.x, newResolution.y);
+}
+
+std::unique_ptr<Renderer> phenyl::graphics::MakeGLRenderer (const phenyl::graphics::GraphicsProperties& properties) {
+    return GLRenderer::Make(properties);
 }

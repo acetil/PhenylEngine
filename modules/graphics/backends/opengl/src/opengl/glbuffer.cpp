@@ -1,9 +1,8 @@
-#include "graphics/detail/loggers.h"
 #include "glbuffer.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_BUFFER", detail::GRAPHICS_LOGGER};
+static phenyl::Logger LOGGER{"GL_BUFFER", detail::OPENGL_LOGGER};
 
 GlBuffer::GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint) : capacity{0}, elemSize{elemSize}, usageHint{usageHint} {
     glCreateBuffers(1, &bufferId);

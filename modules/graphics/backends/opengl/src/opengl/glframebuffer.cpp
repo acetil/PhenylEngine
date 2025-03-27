@@ -1,10 +1,8 @@
 #include "glframebuffer.h"
 
-#include "graphics/detail/loggers.h"
-
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_FRAME_BUFFER", detail::GRAPHICS_LOGGER};
+static phenyl::Logger LOGGER{"GL_FRAME_BUFFER", detail::OPENGL_LOGGER};
 
 static std::string_view GetFrameBufferStatusString (GLenum status) {
     if (status == GL_FRAMEBUFFER_UNDEFINED) {

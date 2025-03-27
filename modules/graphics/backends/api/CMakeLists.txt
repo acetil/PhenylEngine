@@ -1,4 +1,5 @@
-add_library(graphics_api INTERFACE include)
+add_library(graphics_api INTERFACE include
+        include/graphics/phenyl_graphics.h)
 
 set_property(TARGET graphics_api PROPERTY CXX_STANDARD 20)
 

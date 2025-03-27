@@ -3,13 +3,12 @@
 #include <nlohmann/json.hpp>
 
 #include "core/assets/assets.h"
-#include "graphics/detail/loggers.h"
 
 #include "glshader.h"
 
 using namespace phenyl::graphics;
 
-static phenyl::Logger LOGGER{"GL_SHADER", detail::GRAPHICS_LOGGER};
+static phenyl::Logger LOGGER{"GL_SHADER", detail::OPENGL_LOGGER};
 
 static GLenum GetGlShaderType (ShaderSourceType type);
 static std::optional<GLuint> LoadShader (GLenum type, const std::string& source);

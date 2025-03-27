@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/graphics_headers.h"
+#include "opengl_headers.h"
 #include "graphics/backend/buffer.h"
 
 namespace phenyl::graphics {

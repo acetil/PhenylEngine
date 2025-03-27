@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/backend/texture.h"
-#include "graphics/graphics_headers.h"
+#include "opengl_headers.h"
 
 namespace phenyl::graphics {
     inline GLint GetGlInternalFormat (ImageFormat format) {
