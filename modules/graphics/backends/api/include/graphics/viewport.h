@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "../../../../../maths/include/graphics/maths_headers.h"
-#include "../../../../../core/include/core/iresource.h"
+#include "graphics/maths_headers.h"
+#include "core/iresource.h"
 
 namespace phenyl::core {
     class GameInput;

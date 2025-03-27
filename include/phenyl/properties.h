@@ -1,7 +1,7 @@
 #pragma once
 
 #include "logging/properties.h"
-#include "graphics/graphics_properties.h"
+#include "../../modules/graphics/backends/api/include/graphics/graphics_properties.h"
 
 namespace phenyl {
     class PhenylEngine;

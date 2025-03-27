@@ -1,2 +1,2 @@
-add_subdirectory(api INTERFACE)
-
+add_subdirectory(api)
+add_subdirectory(glfw)

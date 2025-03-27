@@ -2,9 +2,16 @@
 
 #include "util/map.h"
 
+#include "glfw/glfw_headers.h"
 #include "core/input/input_device.h"
+#include "logging/logging.h"
 
 namespace phenyl::graphics {
+    // TODO
+    namespace detail {
+        extern phenyl::Logger GRAPHICS_LOGGER;
+    }
+
     class GLFWKeyInput : public core::IInputDevice {
     private:
         GLFWwindow* window;

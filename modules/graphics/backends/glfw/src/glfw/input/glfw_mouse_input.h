@@ -1,10 +1,15 @@
 #pragma once
 
 #include "core/input/input_device.h"
-#include "graphics/graphics_headers.h"
+#include "glfw/glfw_headers.h"
 #include "util/map.h"
 
 namespace phenyl::graphics {
+    // TODO
+    namespace detail {
+        extern phenyl::Logger GRAPHICS_LOGGER;
+    }
+
     class GLFWMouseInput : public core::IInputDevice {
     private:
         GLFWwindow* window;

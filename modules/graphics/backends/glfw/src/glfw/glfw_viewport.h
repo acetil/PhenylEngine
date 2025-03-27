@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/graphics_headers.h"
+#include "glfw_headers.h"
 
-#include "../../../backends/api/include/graphics/viewport.h"
+#include "graphics/viewport.h"
 #include "graphics/graphics_properties.h"
 #include "input/glfw_key_input.h"
 #include "input/glfw_mouse_input.h"

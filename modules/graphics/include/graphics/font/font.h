@@ -6,7 +6,7 @@
 #include "util/map.h"
 #include "graphics/maths_headers.h"
 #include "harfbuzz_typedefs.h"
-#include "../image.h"
+#include "graphics/image.h"
 #include "glyph.h"
 
 namespace phenyl::graphics {

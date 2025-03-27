@@ -2,7 +2,6 @@
 #include <utility>
 
 #include "graphics/phenyl_graphics.h"
-#include "graphics/glfw/glfw_viewport.h"
 #include "graphics/opengl/glrenderer.h"
 
 using namespace phenyl::graphics;

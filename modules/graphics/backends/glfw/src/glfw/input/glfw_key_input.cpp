@@ -1,6 +1,4 @@
-#include "graphics/graphics_headers.h"
-#include "graphics/detail/loggers.h"
-
+#include "glfw/glfw_headers.h"
 #include "glfw_key_input.h"
 
 #include "logging/logging.h"

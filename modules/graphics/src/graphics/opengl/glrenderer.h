@@ -8,7 +8,7 @@
 #include "graphics/backend/renderer.h"
 
 #include "glshader.h"
-#include "graphics/glfw/glfw_viewport.h"
+#include "glfw/glfw_viewport.h"
 
 
 namespace phenyl::graphics {

@@ -1,4 +1,3 @@
-#include "graphics/detail/loggers.h"
 #include "logging/logging.h"
 
 #include "glfw_mouse_input.h"

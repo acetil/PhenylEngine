@@ -9,7 +9,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/particles/particle_manager.cpp
         include/graphics/components/2d/particle_emitter.h
         src/graphics/particles/particle_emitter_2d.cpp
-        include/graphics/graphics_properties.h
         include/graphics/detail/loggers.h
         src/graphics/detail/loggers.cpp
         include/graphics/plugins/ui_plugin.h
@@ -21,8 +20,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         include/graphics/plugins/sprite_2d_plugin.h
         src/graphics/plugins/sprite_2d_plugin.cpp
         include/graphics/plugins/graphics_2d_plugin.h
-        src/graphics/glfw/glfw_viewport.h
-        src/graphics/glfw/glfw_viewport.cpp
         src/graphics/opengl/glbuffer.h
         src/graphics/opengl/glbuffer.cpp
         src/graphics/opengl/gluniform_buffer.h
@@ -50,10 +47,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/canvas/canvas.cpp
         src/graphics/plugins/texture_manager.h
         src/graphics/plugins/texture_manager.cpp
-        src/graphics/glfw/input/glfw_key_input.h
-        src/graphics/glfw/input/glfw_key_input.cpp
-        src/graphics/glfw/input/glfw_mouse_input.cpp
-        src/graphics/glfw/input/glfw_mouse_input.h
         src/graphics/components/2d/sprite.cpp
         include/graphics/ui/widgets/widget.h
         src/graphics/ui/widgets/widget.cpp
@@ -140,8 +133,9 @@ target_link_libraries(graphics PRIVATE maths)
 target_link_libraries(graphics PRIVATE util)
 target_link_libraries(graphics PRIVATE harfbuzz::harfbuzz)
 target_link_libraries(graphics PRIVATE Freetype::Freetype)
-target_link_libraries(graphics PRIVATE glfw GL GLEW::GLEW)
+target_link_libraries(graphics PRIVATE GL GLEW::GLEW)
 target_link_libraries(graphics PRIVATE nlohmann_json)
+target_link_libraries(graphics PRIVATE glfw_backend)
 
 target_link_libraries(graphics PUBLIC core)
 target_link_libraries(graphics PUBLIC graphics_api)

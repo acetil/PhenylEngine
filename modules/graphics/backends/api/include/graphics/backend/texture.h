@@ -2,7 +2,6 @@
 
 #include <memory>
 
-// TODO: remove
 #include "graphics/image.h"
 
 namespace phenyl::graphics {

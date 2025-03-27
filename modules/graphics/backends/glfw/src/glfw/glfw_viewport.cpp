@@ -1,5 +1,5 @@
 #include "core/input/game_input.h"
-#include "graphics/detail/loggers.h"
+#include "logging/logging.h"
 
 #include "glfw_viewport.h"
 
