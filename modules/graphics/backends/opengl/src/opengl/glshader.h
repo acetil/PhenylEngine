@@ -8,15 +8,15 @@
 #include "opengl_headers.h"
 #include "graphics/backend/shader.h"
 
-namespace phenyl::graphics {
-    class GlShader : public IShader {
+namespace phenyl::opengl {
+    class GlShader : public graphics::IShader {
     private:
         GLuint programId{0};
         std::unordered_map<std::string, unsigned int> attribs;
         std::unordered_map<std::string, unsigned int> uniformBlocks;
         std::unordered_map<std::string, unsigned int> samplers;
 
-        bool addAttrib (ShaderDataType type, const std::string& attrib);
+        bool addAttrib (graphics::ShaderDataType type, const std::string& attrib);
         bool addUniformBlock (const std::string& uniform);
         bool addSampler (const std::string& sampler);
 
@@ -24,8 +24,8 @@ namespace phenyl::graphics {
     public:
         class Builder {
         private:
-            std::unordered_map<ShaderSourceType, GLuint> shaderSources;
-            std::unordered_map<std::string, ShaderDataType> attribs;
+            std::unordered_map<graphics::ShaderSourceType, GLuint> shaderSources;
+            std::unordered_map<std::string, graphics::ShaderDataType> attribs;
             std::unordered_set<std::string> uniformBlocks;
             std::unordered_set<std::string> samplers;
 
@@ -33,8 +33,8 @@ namespace phenyl::graphics {
         public:
             Builder() = default;
 
-            Builder& withSource (ShaderSourceType type, std::string source);
-            Builder& withAttrib (ShaderDataType type, std::string attrib);
+            Builder& withSource (graphics::ShaderSourceType type, std::string source);
+            Builder& withAttrib (graphics::ShaderDataType type, std::string attrib);
             Builder& withUniformBlock (std::string uniformName);
             Builder& withSampler (std::string samplerName);
             std::unique_ptr<GlShader> build ();
@@ -60,13 +60,13 @@ namespace phenyl::graphics {
         void bind ();
     };
 
-    class GlShaderManager : public core::AssetManager<Shader> {
+    class GlShaderManager : public core::AssetManager<graphics::Shader> {
     private:
-        std::unordered_map<std::size_t, Shader> shaders;
+        std::unordered_map<std::size_t, graphics::Shader> shaders;
     public:
         const char* getFileType() const override;
-        Shader* load (std::ifstream& data, std::size_t id) override;
-        Shader* load (Shader&& obj, std::size_t id) override;
+        graphics::Shader* load (std::ifstream& data, std::size_t id) override;
+        graphics::Shader* load (graphics::Shader&& obj, std::size_t id) override;
         void queueUnload(std::size_t id) override;
 
         void selfRegister ();

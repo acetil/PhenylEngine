@@ -2,9 +2,9 @@
 
 #include "glfw_mouse_input.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::glfw;
 
-static phenyl::Logger LOGGER{"GLFW_MOUSE_INPUT", detail::GRAPHICS_LOGGER};
+static phenyl::Logger LOGGER{"GLFW_MOUSE_INPUT", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 GLFWMouseInput::GLFWMouseInput (GLFWwindow* window) : window{window} {
     buttonIds["button_left"] = GLFW_MOUSE_BUTTON_LEFT;

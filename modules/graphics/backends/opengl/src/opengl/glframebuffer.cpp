@@ -1,6 +1,6 @@
 #include "glframebuffer.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 static phenyl::Logger LOGGER{"GL_FRAME_BUFFER", detail::OPENGL_LOGGER};
 
@@ -82,9 +82,9 @@ glm::ivec2 AbstractGlFrameBuffer::getDimensions () const noexcept {
     return dimensions;
 }
 
-GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties& properties) : AbstractGlFrameBuffer{dimensions},
-        colorSampler{properties.format ? std::optional{GlSampler{GL_TEXTURE_2D, TextureProperties{.format = *properties.format, .useMipmapping = false}}} : std::nullopt},
-        depthSampler{properties.depthFormat ? std::optional{GlSampler{GL_TEXTURE_2D, TextureProperties{.format = ImageFormat::DEPTH24_STENCIL8, .useMipmapping = false}}} : std::nullopt} {
+GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const graphics::FrameBufferProperties& properties) : AbstractGlFrameBuffer{dimensions},
+        colorSampler{properties.format ? std::optional{GlSampler{GL_TEXTURE_2D, graphics::TextureProperties{.format = *properties.format, .useMipmapping = false}}} : std::nullopt},
+        depthSampler{properties.depthFormat ? std::optional{GlSampler{GL_TEXTURE_2D, graphics::TextureProperties{.format = graphics::ImageFormat::DEPTH24_STENCIL8, .useMipmapping = false}}} : std::nullopt} {
 
     if (colorSampler) {
         colorSampler->createEmpty2D(dimensions.x, dimensions.y);
@@ -112,21 +112,21 @@ GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties
     valid = status == GL_FRAMEBUFFER_COMPLETE;
     PHENYL_DASSERT(valid);
 }
-const ISampler* GlFrameBuffer::getSampler () const noexcept {
+const phenyl::graphics::ISampler* GlFrameBuffer::getSampler () const noexcept {
     return colorSampler ? &*colorSampler : nullptr;
 }
 
-const ISampler* GlFrameBuffer::getDepthSampler () const noexcept {
+const phenyl::graphics::ISampler* GlFrameBuffer::getDepthSampler () const noexcept {
     return depthSampler ? &*depthSampler : nullptr;
 }
 
 GlWindowFrameBuffer::GlWindowFrameBuffer (glm::ivec2 dimensions) : AbstractGlFrameBuffer{0, dimensions} {}
 
-const ISampler* GlWindowFrameBuffer::getSampler () const noexcept {
+const phenyl::graphics::ISampler* GlWindowFrameBuffer::getSampler () const noexcept {
     PHENYL_ABORT("Cannot sample window frame buffer!");
 }
 
-const ISampler* GlWindowFrameBuffer::getDepthSampler () const noexcept {
+const phenyl::graphics::ISampler* GlWindowFrameBuffer::getDepthSampler () const noexcept {
     PHENYL_ABORT("Cannot sample window frame buffer!");
 }
 

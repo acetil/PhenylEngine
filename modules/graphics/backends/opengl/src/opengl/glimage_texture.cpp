@@ -1,14 +1,14 @@
 #include "glimage_texture.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
-GlImageTexture::GlImageTexture (const TextureProperties& properties) : texSampler{GL_TEXTURE_2D, properties} {
+GlImageTexture::GlImageTexture (const graphics::TextureProperties& properties) : texSampler{GL_TEXTURE_2D, properties} {
     texSampler.bind();
     // glTexParameteri(texSampler.type(), GL_TEXTURE_MIN_FILTER, texSampler.filter());
     // glTexParameteri(texSampler.type(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-void GlImageTexture::upload (const Image& image) {
+void GlImageTexture::upload (const graphics::Image& image) {
     // texSampler.bind();
     //
     // glTexImage2D(texSampler.type(), 0, texSampler.format(), static_cast<GLsizei>(image.width()), static_cast<GLsizei>(image.height()), 0, GetGlFormat(image.format()),
@@ -31,6 +31,6 @@ std::uint32_t GlImageTexture::height () const noexcept {
     return texHeight;
 }
 
-const ISampler& GlImageTexture::sampler () const noexcept {
+const phenyl::graphics::ISampler& GlImageTexture::sampler () const noexcept {
     return texSampler;
 }

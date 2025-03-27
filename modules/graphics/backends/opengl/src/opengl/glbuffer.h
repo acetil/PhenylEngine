@@ -3,8 +3,8 @@
 #include "opengl_headers.h"
 #include "graphics/backend/buffer.h"
 
-namespace phenyl::graphics {
-    class GlBuffer : public IBuffer {
+namespace phenyl::opengl {
+    class GlBuffer : public graphics::IBuffer {
     private:
         GLuint bufferId = 0;
         GLenum usageHint;

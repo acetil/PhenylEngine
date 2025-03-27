@@ -28,10 +28,11 @@
 
 #include <vector>
 using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
-phenyl::Logger detail::OPENGL_LOGGER{"OPENGL", phenyl::PHENYL_LOGGER};
+phenyl::Logger phenyl::opengl::detail::OPENGL_LOGGER{"OPENGL", PHENYL_LOGGER};
 
-GLRenderer::GLRenderer (std::unique_ptr<GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
+GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -261,7 +262,7 @@ const Viewport& GLRenderer::getViewport () const {
 }
 
 std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properties) {
-    auto viewport = std::make_unique<GLFWViewport>(properties);
+    auto viewport = std::make_unique<glfw::GLFWViewport>(properties);
     PHENYL_ASSERT_MSG(viewport, "Failed to initialise GLFW viewport!");
 
     return std::make_unique<GLRenderer>(std::move(viewport));

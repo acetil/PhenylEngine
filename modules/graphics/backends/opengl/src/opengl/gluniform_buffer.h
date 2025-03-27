@@ -3,8 +3,8 @@
 #include "graphics/backend/uniform_buffer.h"
 #include "opengl_headers.h"
 
-namespace phenyl::graphics {
-    class GlUniformBuffer : public IUniformBuffer {
+namespace phenyl::opengl {
+    class GlUniformBuffer : public graphics::IUniformBuffer {
     private:
         GLuint bufferId;
         void* data;

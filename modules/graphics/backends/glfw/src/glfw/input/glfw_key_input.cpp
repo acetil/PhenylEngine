@@ -3,9 +3,9 @@
 
 #include "logging/logging.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::glfw;
 
-static phenyl::Logger LOGGER{"GLFW_KEY_INPUT", detail::GRAPHICS_LOGGER};
+static phenyl::Logger LOGGER{"GLFW_KEY_INPUT", phenyl::graphics::detail::GRAPHICS_LOGGER};
 
 GLFWKeyInput::GLFWKeyInput (GLFWwindow* window) : window{window} {
     buttonIds["key_space"] = GLFW_KEY_SPACE;

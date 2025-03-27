@@ -1,7 +1,7 @@
 #include "gluniform_buffer.h"
 #include "logging/logging.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 GlUniformBuffer::GlUniformBuffer (bool readable) : bufferId{}, data{nullptr}, size{0}, readable{readable} {
     glCreateBuffers(1, &bufferId);
@@ -13,7 +13,7 @@ GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept : bufferId{o
     other.size = 0;
 }
 
-GlUniformBuffer& GlUniformBuffer::operator= (phenyl::graphics::GlUniformBuffer&& other) noexcept {
+GlUniformBuffer& GlUniformBuffer::operator= (GlUniformBuffer&& other) noexcept {
     if (data) {
         glUnmapBuffer(bufferId);
     }

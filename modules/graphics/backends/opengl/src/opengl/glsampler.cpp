@@ -1,6 +1,7 @@
 #include "glsampler.h"
 
 using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 GlSampler::GlSampler (GLenum samplerType, const TextureProperties& properties) : samplerProperties{properties}, samplerType{samplerType} {
     glGenTextures(1, &textureId);

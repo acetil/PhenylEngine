@@ -7,6 +7,7 @@
 #include "glshader.h"
 
 using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 static phenyl::Logger LOGGER{"GL_SHADER", detail::OPENGL_LOGGER};
 

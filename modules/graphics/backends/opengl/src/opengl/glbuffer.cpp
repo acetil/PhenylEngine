@@ -1,6 +1,6 @@
 #include "glbuffer.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 static phenyl::Logger LOGGER{"GL_BUFFER", detail::OPENGL_LOGGER};
 

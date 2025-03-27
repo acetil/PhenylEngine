@@ -7,10 +7,10 @@
 #include "input/glfw_key_input.h"
 #include "input/glfw_mouse_input.h"
 
-namespace phenyl::graphics {
-    class GLFWViewport : public Viewport {
+namespace phenyl::glfw {
+    class GLFWViewport : public graphics::Viewport {
     public:
-        explicit GLFWViewport (const GraphicsProperties& properties);
+        explicit GLFWViewport (const graphics::GraphicsProperties& properties);
         ~GLFWViewport() override;
 
         explicit operator bool () const;
@@ -20,7 +20,7 @@ namespace phenyl::graphics {
         [[nodiscard]] glm::ivec2 getResolution() const override;
         glm::vec2 getContentScale() const override;
 
-        void addUpdateHandler (IViewportUpdateHandler* handler) override;
+        void addUpdateHandler (graphics::IViewportUpdateHandler* handler) override;
         void addInputDevices (core::GameInput& manager) override;
 
         [[nodiscard]] double getTime () const;
@@ -34,7 +34,7 @@ namespace phenyl::graphics {
         std::unique_ptr<GLFWKeyInput> keyInput;
         std::unique_ptr<GLFWMouseInput> mouseInput;
 
-        std::vector<IViewportUpdateHandler*> updateHandlers;
+        std::vector<graphics::IViewportUpdateHandler*> updateHandlers;
 
         void onCursorPosCallback (glm::vec2 pos);
         void onWindowSizeCallback (glm::ivec2 newRes);

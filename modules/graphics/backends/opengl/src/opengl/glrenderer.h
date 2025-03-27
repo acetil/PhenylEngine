@@ -10,36 +10,35 @@
 #include "glshader.h"
 #include "glfw/glfw_viewport.h"
 
-
-namespace phenyl::graphics {
-    class GLRenderer : public Renderer, public IViewportUpdateHandler {
+namespace phenyl::opengl {
+    class GLRenderer : public graphics::Renderer, public graphics::IViewportUpdateHandler {
     private:
-        std::unique_ptr<GLFWViewport> viewport;
+        std::unique_ptr<glfw::GLFWViewport> viewport;
         GlWindowFrameBuffer windowFrameBuffer;
         glm::vec4 clearColor;
 
         GlShaderManager shaderManager;
 
-        core::Asset<Shader> boxShader;
-        core::Asset<Shader> debugShader;
-        core::Asset<Shader> spriteShader;
-        core::Asset<Shader> textShader;
-        core::Asset<Shader> particleShader;
-        core::Asset<Shader> meshShader;
-        core::Asset<Shader> shadowMapShader;
-        core::Asset<Shader> prepassShader;
+        core::Asset<graphics::Shader> boxShader;
+        core::Asset<graphics::Shader> debugShader;
+        core::Asset<graphics::Shader> spriteShader;
+        core::Asset<graphics::Shader> textShader;
+        core::Asset<graphics::Shader> particleShader;
+        core::Asset<graphics::Shader> meshShader;
+        core::Asset<graphics::Shader> shadowMapShader;
+        core::Asset<graphics::Shader> prepassShader;
 
-        core::Asset<Shader> noopPostShader;
+        core::Asset<graphics::Shader> noopPostShader;
     protected:
-        std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
-        std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
-        std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) override;
-        std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture(const TextureProperties &properties, std::uint32_t width, std::uint32_t height) override;
-        std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) override;
+        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
+        std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
+        std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (const graphics::TextureProperties& properties) override;
+        std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture(const graphics::TextureProperties &properties, std::uint32_t width, std::uint32_t height) override;
+        std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) override;
 
     public:
-        static std::unique_ptr<GLRenderer> Make (const GraphicsProperties& properties);
-        explicit GLRenderer (std::unique_ptr<GLFWViewport> viewport);
+        static std::unique_ptr<GLRenderer> Make (const graphics::GraphicsProperties& properties);
+        explicit GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport);
 
         void setupErrorHandling ();
 
@@ -51,11 +50,11 @@ namespace phenyl::graphics {
         void render () override;
         void finishRender () override;
 
-        PipelineBuilder buildPipeline () override;
+        graphics::PipelineBuilder buildPipeline () override;
         void loadDefaultShaders () override;
 
-        Viewport& getViewport () override;
-        const Viewport& getViewport () const override;
+        graphics::Viewport& getViewport () override;
+        const graphics::Viewport& getViewport () const override;
 
         void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };

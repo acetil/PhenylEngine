@@ -5,6 +5,6 @@
 
 #include "logging/logging.h"
 
-namespace phenyl::graphics::detail {
+namespace phenyl::opengl::detail {
     extern phenyl::Logger OPENGL_LOGGER;
 }

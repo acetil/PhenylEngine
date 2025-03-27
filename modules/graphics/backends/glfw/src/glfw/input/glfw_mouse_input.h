@@ -4,12 +4,12 @@
 #include "glfw/glfw_headers.h"
 #include "util/map.h"
 
-namespace phenyl::graphics {
-    // TODO
-    namespace detail {
-        extern phenyl::Logger GRAPHICS_LOGGER;
-    }
+// TODO
+namespace phenyl::graphics::detail {
+    extern phenyl::Logger GRAPHICS_LOGGER;
+}
 
+namespace phenyl::glfw {
     class GLFWMouseInput : public core::IInputDevice {
     private:
         GLFWwindow* window;

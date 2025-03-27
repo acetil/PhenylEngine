@@ -6,12 +6,12 @@
 #include "core/input/input_device.h"
 #include "logging/logging.h"
 
-namespace phenyl::graphics {
-    // TODO
-    namespace detail {
-        extern phenyl::Logger GRAPHICS_LOGGER;
-    }
+// TODO
+namespace phenyl::graphics::detail {
+    extern phenyl::Logger GRAPHICS_LOGGER;
+}
 
+namespace phenyl::glfw {
     class GLFWKeyInput : public core::IInputDevice {
     private:
         GLFWwindow* window;

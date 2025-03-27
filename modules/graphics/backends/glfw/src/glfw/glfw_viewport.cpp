@@ -3,18 +3,18 @@
 
 #include "glfw_viewport.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::glfw;
 
-static phenyl::Logger LOGGER{"GLFW_VIEWPORT", detail::GRAPHICS_LOGGER};
+phenyl::Logger phenyl::glfw::detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
 
-GLFWViewport::GLFWViewport (const GraphicsProperties& properties) {
+GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
     glewExperimental = true;
 
     if (!glfwInit()) {
         const char* glfwError;
         int code;
         if ((code = glfwGetError(&glfwError))) {
-            PHENYL_LOGE(LOGGER, "glfwInit() error code {}: {}", code, glfwError);
+            PHENYL_LOGE(detail::GLFW_LOGGER, "glfwInit() error code {}: {}", code, glfwError);
         }
         return;
     }
@@ -31,7 +31,7 @@ GLFWViewport::GLFWViewport (const GraphicsProperties& properties) {
         const char* glfwError;
         int code;
         if ((code = glfwGetError(&glfwError))) {
-            PHENYL_LOGE(LOGGER, "glfwCreatWindow() error code {}: {}", code, glfwError);
+            PHENYL_LOGE(detail::GLFW_LOGGER, "glfwCreatWindow() error code {}: {}", code, glfwError);
         }
 
         PHENYL_ABORT("Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
@@ -161,7 +161,7 @@ void GLFWViewport::setupCallbacks () {
     });
 }
 
-void GLFWViewport::addUpdateHandler (IViewportUpdateHandler* handler) {
+void GLFWViewport::addUpdateHandler (graphics::IViewportUpdateHandler* handler) {
     PHENYL_DASSERT(handler);
     updateHandlers.emplace_back(handler);
 }

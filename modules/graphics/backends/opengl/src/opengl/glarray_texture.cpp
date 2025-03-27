@@ -1,11 +1,11 @@
 #include "glarray_texture.h"
 
-using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 #define STARTING_DEPTH 8
 #define RESIZE_FACTOR (3 / 2)
 
-GlArrayTexture::GlArrayTexture (const TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight) : texSampler{GL_TEXTURE_2D_ARRAY, properties}, texWidth{texWidth}, texHeight{texHeight}, depth{0}, depthCapacity{STARTING_DEPTH} {
+GlArrayTexture::GlArrayTexture (const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight) : texSampler{GL_TEXTURE_2D_ARRAY, properties}, texWidth{texWidth}, texHeight{texHeight}, depth{0}, depthCapacity{STARTING_DEPTH} {
     // texSampler.bind();
     // // glTexParameteri(texSampler.type(), GL_TEXTURE_MIN_FILTER, texSampler.filter());
     // // glTexParameteri(texSampler.type(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -60,7 +60,7 @@ std::uint32_t GlArrayTexture::append () {
     return depth++;
 }
 
-void GlArrayTexture::upload (std::uint32_t index, const Image& image) {
+void GlArrayTexture::upload (std::uint32_t index, const graphics::Image& image) {
     PHENYL_ASSERT_MSG(index < depth, "Invalid array index={} (array size={})", index, depth);
     PHENYL_ASSERT_MSG(image.width() == width() && image.height() == height(), "Invalid image dimensions: array is {}x{} but image is {}x{}", width(), height(), image.width(), image.height());
 
@@ -73,6 +73,6 @@ void GlArrayTexture::upload (std::uint32_t index, const Image& image) {
     texSampler.uploadLayer(index, image);
 }
 
-const ISampler& GlArrayTexture::sampler () const noexcept {
+const phenyl::graphics::ISampler& GlArrayTexture::sampler () const noexcept {
     return texSampler;
 }

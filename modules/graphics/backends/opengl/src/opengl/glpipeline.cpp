@@ -5,6 +5,7 @@
 #include "gluniform_buffer.h"
 
 using namespace phenyl::graphics;
+using namespace phenyl::opengl;
 
 static phenyl::Logger LOGGER{"GL_PIPELINE"};
 

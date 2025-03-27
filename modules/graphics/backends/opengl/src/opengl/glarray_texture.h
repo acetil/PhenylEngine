@@ -2,8 +2,8 @@
 
 #include "glsampler.h"
 
-namespace phenyl::graphics {
-    class GlArrayTexture : public IImageArrayTexture {
+namespace phenyl::opengl {
+    class GlArrayTexture : public graphics::IImageArrayTexture {
     private:
         GlSampler texSampler;
         std::uint32_t texWidth;
@@ -11,7 +11,7 @@ namespace phenyl::graphics {
         std::uint32_t depth;
         std::uint32_t depthCapacity;
     public:
-        GlArrayTexture (const TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight);
+        GlArrayTexture (const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight);
 
         [[nodiscard]] std::uint32_t width () const noexcept override;
         [[nodiscard]] std::uint32_t height () const noexcept override;
@@ -20,8 +20,8 @@ namespace phenyl::graphics {
         void reserve (std::uint32_t capacity) override;
         std::uint32_t append () override;
 
-        void upload (std::uint32_t index, const Image& image) override;
+        void upload (std::uint32_t index, const graphics::Image& image) override;
 
-        const ISampler& sampler () const noexcept override;
+        const graphics::ISampler& sampler () const noexcept override;
     };
 }

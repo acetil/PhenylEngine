@@ -6,8 +6,8 @@
 #include "graphics/backend/framebuffer.h"
 #include "graphics/viewport.h"
 
-namespace phenyl::graphics {
-    class AbstractGlFrameBuffer : public IFrameBuffer {
+namespace phenyl::opengl {
+    class AbstractGlFrameBuffer : public graphics::IFrameBuffer {
     protected:
         GLuint fbId{};
         glm::ivec2 dimensions;
@@ -41,22 +41,22 @@ namespace phenyl::graphics {
         std::optional<GlSampler> depthSampler;
         bool valid;
     public:
-        GlFrameBuffer (glm::ivec2 dimensions, const FrameBufferProperties& properties);
+        GlFrameBuffer (glm::ivec2 dimensions, const graphics::FrameBufferProperties& properties);
 
         explicit operator bool () const noexcept {
             return valid;
         }
 
-        const ISampler* getSampler () const noexcept override;
-        const ISampler* getDepthSampler() const noexcept override;
+        const graphics::ISampler* getSampler () const noexcept override;
+        const graphics::ISampler* getDepthSampler() const noexcept override;
     };
 
-    class GlWindowFrameBuffer : public AbstractGlFrameBuffer, public IViewportUpdateHandler {
+    class GlWindowFrameBuffer : public AbstractGlFrameBuffer, public graphics::IViewportUpdateHandler {
     public:
         GlWindowFrameBuffer (glm::ivec2 dimensions);
 
-        const ISampler* getSampler() const noexcept override;
-        const ISampler* getDepthSampler() const noexcept override;
+        const graphics::ISampler* getSampler() const noexcept override;
+        const graphics::ISampler* getDepthSampler() const noexcept override;
         void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };
 }
