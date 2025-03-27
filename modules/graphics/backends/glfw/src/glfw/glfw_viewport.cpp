@@ -8,7 +8,7 @@ using namespace phenyl::glfw;
 phenyl::Logger phenyl::glfw::detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
 
 GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
-    glewExperimental = true;
+    //glewExperimental = true;
 
     if (!glfwInit()) {
         const char* glfwError;
@@ -30,22 +30,17 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
     if (!window) {
         const char* glfwError;
         int code;
-        if ((code = glfwGetError(&glfwError))) {
-            PHENYL_LOGE(detail::GLFW_LOGGER, "glfwCreatWindow() error code {}: {}", code, glfwError);
+        if ((code = glfwGetError(&glfwError)) != GLFW_NO_ERROR) {
+            PHENYL_LOGE(detail::GLFW_LOGGER, "glfwCreateWindow() error code {}: {}", code, glfwError);
         }
 
-        PHENYL_ABORT("Failed to open GLFW window! The GPU may not be compatible with OpenGL 3.3!");
+        PHENYL_ABORT("Failed to open GLFW window!");
     }
 
     glfwMakeContextCurrent(window);
 
     // TODO: move out
-    glewExperimental = true; // TODO: check if removal affects anything
-    if (glewInit() != GLEW_OK) {
-        glfwDestroyWindow(window);
-        window = nullptr;
-        return;
-    }
+    //glewExperimental = true; // TODO: check if removal affects anything
 
     glfwSwapInterval(properties.getVsync() ? 1 : 0); // TODO: handle enable/disable vsync
     resolution = {properties.getWindowWidth(), properties.getWindowHeight()};
@@ -59,11 +54,13 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
     glfwGetCursorPos(window, &cursorX, &cursorY);
     cursorPos = glm::vec2{cursorX, cursorY};
 
+    PHENYL_LOGI(detail::GLFW_LOGGER, "Initialised GLFW viewport");
     setupCallbacks();
 }
 
 GLFWViewport::~GLFWViewport () {
     if (window) {
+        PHENYL_LOGI(detail::GLFW_LOGGER, "Destroying GLFW viewport");
         glfwDestroyWindow(window);
         glfwTerminate();
     }

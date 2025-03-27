@@ -33,6 +33,9 @@ using namespace phenyl::opengl;
 phenyl::Logger phenyl::opengl::detail::OPENGL_LOGGER{"OPENGL", PHENYL_LOGGER};
 
 GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
+    auto glewRes = glewInit();
+    PHENYL_ASSERT_MSG(glewRes == GLEW_OK, "Failed to initialise GLEW!");
+
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -46,6 +49,7 @@ GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : viewport
 
     //this->viewport->addUpdateHandler(this);
     this->viewport->addUpdateHandler(&windowFrameBuffer);
+    PHENYL_LOGI(detail::OPENGL_LOGGER, "Initialised OpenGL graphics backend");
 }
 
 double GLRenderer::getCurrentTime () {
