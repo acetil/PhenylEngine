@@ -44,15 +44,18 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     PHENYL_DASSERT(viewport);
 
 
-    createVkInstance(properties);
+    instance = createVkInstance(properties);
     PHENYL_DASSERT(instance);
 
     setupDebugMessenger();
+
+    device = std::make_unique<VulkanDevice>(instance);
 }
 
 VulkanRenderer::~VulkanRenderer () {
-    destroyDebugMessenger();
+    device = nullptr;
 
+    destroyDebugMessenger();
     vkDestroyInstance(instance, nullptr);
 
     viewport = nullptr;
@@ -157,15 +160,12 @@ std::vector<const char*> VulkanRenderer::GatherValidationLayers () {
 }
 
 void VulkanRenderer::FilterValidationLayers (std::vector<const char*>& layers) {
-    std::uint32_t layerCount = 0;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-    std::vector<VkLayerProperties> layerProperties(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+    auto layerProperties = Enumerate<VkLayerProperties>(vkEnumerateInstanceLayerProperties);
 
     std::unordered_set<const char*> seenLayers;
     for (const auto& properties : layerProperties) {
         PHENYL_LOGD(detail::VULKAN_LOGGER, "Found validation layer \"{}\" (version={}, impl version={}): \"\"",
-            properties.layerName, properties.specVersion, properties.implementationVersion, properties.description);
+            properties.layerName, VulkanVersion::FromPacked(properties.specVersion), properties.implementationVersion, properties.description);
         auto it = std::ranges::find_if(layers, [&] (const auto* x) {
             return std::strcmp(x, properties.layerName) == 0;
         });
@@ -204,14 +204,11 @@ std::vector<const char*> VulkanRenderer::GatherExtensions (const GraphicsPropert
 }
 
 void VulkanRenderer::CheckExtensions (const std::vector<const char*>& extensions) {
-    std::uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    std::vector<VkExtensionProperties> extensionProperties(extensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionProperties.data());
+    auto extensionProperties = Enumerate<VkExtensionProperties>(vkEnumerateInstanceExtensionProperties, nullptr);
 
     std::unordered_set<const char*> seenExtensions;
     for (const auto& properties : extensionProperties) {
-        PHENYL_LOGD(detail::VULKAN_LOGGER, "Found extension \"{}\" (version={})", properties.extensionName, properties.specVersion);
+        PHENYL_LOGD(detail::VULKAN_LOGGER, "Found extension \"{}\" (version={})", properties.extensionName, VulkanVersion::FromPacked(properties.specVersion));
         auto it = std::ranges::find_if(extensions, [&] (const auto* x) {
             return std::strcmp(x, properties.extensionName) == 0;
         });
@@ -238,7 +235,7 @@ VkDebugUtilsMessengerCreateInfoEXT VulkanRenderer::getDebugMessengerCreateInfo (
         .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
                 | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
         .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT,
+                | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = DebugMessageCallback,
         .pUserData = this
     };
@@ -262,7 +259,7 @@ void VulkanRenderer::destroyDebugMessenger () {
     }
 }
 
-void VulkanRenderer::createVkInstance (const GraphicsProperties& properties) {
+VkInstance VulkanRenderer::createVkInstance (const GraphicsProperties& properties) {
     VkApplicationInfo appInfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = "Phenyl Application", // TODO
@@ -286,9 +283,13 @@ void VulkanRenderer::createVkInstance (const GraphicsProperties& properties) {
         .ppEnabledExtensionNames = extensions.data(),
     };
 
+    VkInstance instance;
     if (auto result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {
         PHENYL_ABORT("Failed to create Vulkan instance, error = {}", result);
     }
+
+    PHENYL_LOGI(detail::VULKAN_LOGGER, "Created instance for Vulkan version {}", VulkanVersion::FromPacked(VK_API_VERSION_1_3));
+    return instance;
 }
 
 std::unique_ptr<Renderer> phenyl::graphics::MakeVulkanRenderer (const GraphicsProperties& properties) {

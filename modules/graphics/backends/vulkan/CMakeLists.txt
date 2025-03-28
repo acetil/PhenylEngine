@@ -1,4 +1,5 @@
-add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp)
+add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp
+        src/vulkan/vk_device.cpp)
 
 set_property(TARGET vulkan_backend PROPERTY CXX_STANDARD 20)
 

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "vk_device.h"
 #include "graphics/backend/renderer.h"
 #include "glfw/glfw_viewport.h"
 
@@ -21,10 +22,11 @@ namespace phenyl::vulkan {
 
         std::unique_ptr<VulkanViewport> viewport;
         VkInstance instance{};
+        std::unique_ptr<VulkanDevice> device;
 
         VkDebugUtilsMessengerEXT debugMessenger{};
 
-        void createVkInstance (const graphics::GraphicsProperties& properties);
+        VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
 
         VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
         void setupDebugMessenger ();
