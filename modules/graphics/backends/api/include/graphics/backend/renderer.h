@@ -120,4 +120,5 @@ namespace phenyl::graphics {
     };
 
     std::unique_ptr<Renderer> MakeGLRenderer (const GraphicsProperties& properties);
+    std::unique_ptr<Renderer> MakeVulkanRenderer (const GraphicsProperties& properties);
 }

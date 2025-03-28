@@ -69,7 +69,6 @@ add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphi
         src/graphics/plugins/material_instance_manager.cpp
         include/graphics/components/3d/lighting.h
         src/graphics/components/3d/lighting.cpp
-        backends/opengl/src/opengl/opengl_headers.h
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
@@ -122,6 +121,7 @@ target_link_libraries(graphics PRIVATE GL GLEW::GLEW)
 target_link_libraries(graphics PRIVATE nlohmann_json)
 target_link_libraries(graphics PRIVATE glfw_backend)
 target_link_libraries(graphics PRIVATE opengl_backend)
+target_link_libraries(graphics PRIVATE vulkan_backend)
 
 target_link_libraries(graphics PUBLIC core)
 target_link_libraries(graphics PUBLIC graphics_api)

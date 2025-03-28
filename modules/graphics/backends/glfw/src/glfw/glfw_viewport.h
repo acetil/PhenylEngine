@@ -26,8 +26,9 @@ namespace phenyl::glfw {
         [[nodiscard]] double getTime () const;
         void swapBuffers ();
         void setupCallbacks ();
-    private:
+    protected:
         GLFWwindow* window = nullptr;
+    private:
         glm::ivec2 resolution;
         glm::vec2 cursorPos{0, 0};
 

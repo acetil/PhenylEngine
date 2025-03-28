@@ -27,7 +27,7 @@ private:
     double deltaTime{0.0};
     double fixedTimeSlop{0.0};
 public:
-    explicit Engine (const ApplicationProperties& properties) : renderer{graphics::MakeGLRenderer(properties.graphicsProperties)}, runtime(), lastTime{renderer->getCurrentTime()} {}
+    explicit Engine (const ApplicationProperties& properties) : renderer{graphics::MakeVulkanRenderer(properties.graphicsProperties)}, runtime(), lastTime{renderer->getCurrentTime()} {}
 
     ~Engine() {
         PHENYL_LOGI(LOGGER, "Shutting down!");
