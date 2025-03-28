@@ -10,7 +10,7 @@
 namespace phenyl::glfw {
     class GLFWViewport : public graphics::Viewport {
     public:
-        explicit GLFWViewport (const graphics::GraphicsProperties& properties);
+        explicit GLFWViewport (const graphics::GraphicsProperties& properties, const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback = [] (auto*) {});
         ~GLFWViewport() override;
 
         explicit operator bool () const;

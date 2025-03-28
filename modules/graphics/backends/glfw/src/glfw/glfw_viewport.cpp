@@ -7,7 +7,7 @@ using namespace phenyl::glfw;
 
 phenyl::Logger phenyl::glfw::detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
 
-GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
+GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback) {
     //glewExperimental = true;
 
     if (!glfwInit()) {
@@ -21,10 +21,7 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
 
     // window hints TODO: update
     glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    windowHintCallback();
 
     window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(), properties.getWindowTitle().c_str(), nullptr, nullptr);
     if (!window) {
@@ -39,9 +36,6 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
 
     glfwMakeContextCurrent(window);
 
-    // TODO: move out
-    //glewExperimental = true; // TODO: check if removal affects anything
-
     glfwSwapInterval(properties.getVsync() ? 1 : 0); // TODO: handle enable/disable vsync
     resolution = {properties.getWindowWidth(), properties.getWindowHeight()};
 
@@ -54,6 +48,7 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties) {
     glfwGetCursorPos(window, &cursorX, &cursorY);
     cursorPos = glm::vec2{cursorX, cursorY};
 
+    postInitCallback(window);
     PHENYL_LOGI(detail::GLFW_LOGGER, "Initialised GLFW viewport");
     setupCallbacks();
 }

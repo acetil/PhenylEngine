@@ -266,7 +266,13 @@ const Viewport& GLRenderer::getViewport () const {
 }
 
 std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properties) {
-    auto viewport = std::make_unique<glfw::GLFWViewport>(properties);
+    auto viewport = std::make_unique<glfw::GLFWViewport>(properties, [] {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    });
+
     PHENYL_ASSERT_MSG(viewport, "Failed to initialise GLFW viewport!");
 
     return std::make_unique<GLRenderer>(std::move(viewport));
