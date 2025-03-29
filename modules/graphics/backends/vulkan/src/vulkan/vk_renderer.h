@@ -10,7 +10,6 @@
 
 namespace phenyl::vulkan {
     class VulkanViewport;
-    struct DebugMessage;
 
     class VulkanRenderer : public graphics::Renderer {
     private:
@@ -22,7 +21,9 @@ namespace phenyl::vulkan {
 
         std::unique_ptr<VulkanViewport> viewport;
         VkInstance instance{};
+        VkSurfaceKHR surface{};
         std::unique_ptr<VulkanDevice> device;
+        std::unique_ptr<VulkanSwapChain> swapChain;
 
         VkDebugUtilsMessengerEXT debugMessenger{};
 
@@ -31,7 +32,6 @@ namespace phenyl::vulkan {
         VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
         void setupDebugMessenger ();
         void destroyDebugMessenger ();
-        void onDebugMessage (const DebugMessage& msg);
     protected:
         std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
         std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;

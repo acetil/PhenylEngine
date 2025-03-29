@@ -1,25 +1,33 @@
 #pragma once
 
+#include <memory>
+
 #include "vulkan_headers.h"
+#include "vk_swap_chain.h"
 
 namespace phenyl::vulkan {
-    struct VulkanQueueFamilies {
-        std::uint32_t graphicsFamily;
-    };
-
     class VulkanDevice {
     private:
-        static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device);
+        static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface);
+        static bool CheckDeviceExtensionSupport (VkPhysicalDevice device, const std::vector<const char*>& extensions);
+        static std::optional<VulkanSwapChainDetails> GetDeviceSwapChainDetails (VkPhysicalDevice device, VkSurfaceKHR surface);
 
         VkPhysicalDevice physicalDevice{};
         VkDevice logicalDevice{};
+        VulkanQueueFamilies queueFamilies{};
+        VulkanSwapChainDetails swapChainDetails{};
 
         VkQueue graphicsQueue;
+        VkQueue presentQueue;
 
-        VulkanQueueFamilies choosePhysicalDevice (VkInstance instance);
-        VkDevice createLogicalDevice (const VulkanQueueFamilies& queueFamiles);
+        void choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions);
+        VkDevice createLogicalDevice (const std::vector<const char*>& deviceExtensions);
+        VkQueue makeQueue (std::uint32_t queueFamilyIndex);
     public:
-        explicit VulkanDevice (VkInstance instance);
+        explicit VulkanDevice (VkInstance instance, VkSurfaceKHR surface);
+
+        std::unique_ptr<VulkanSwapChain> makeSwapChain (VkSurfaceKHR surface);
+
         ~VulkanDevice ();
     };
 }

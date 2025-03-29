@@ -28,12 +28,15 @@ namespace phenyl::vulkan {
 
             return {extensions, extensions + extensionNum};
         }
-    };
 
-    struct DebugMessage {
-        VkDebugUtilsMessageSeverityFlagBitsEXT severity;
-        VkDebugUtilsMessageTypeFlagsEXT type;
-        const VkDebugUtilsMessengerCallbackDataEXT* data;
+        VkSurfaceKHR createSurface (VkInstance instance) {
+            VkSurfaceKHR surface;
+            auto result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+            PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create window surface!");
+
+            PHENYL_LOGI(detail::VULKAN_LOGGER, "Created Vulkan window surface");
+            return surface;
+        }
     };
 }
 
@@ -49,7 +52,10 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 
     setupDebugMessenger();
 
-    device = std::make_unique<VulkanDevice>(instance);
+    surface = viewport->createSurface(instance);
+
+    device = std::make_unique<VulkanDevice>(instance, surface);
+    swapChain = device->makeSwapChain(surface);
 }
 
 VulkanRenderer::~VulkanRenderer () {
@@ -114,37 +120,6 @@ PipelineBuilder VulkanRenderer::buildPipeline () {
 }
 
 void VulkanRenderer::loadDefaultShaders () {}
-
-void VulkanRenderer::onDebugMessage (const DebugMessage& msg) {
-    auto* messageIdName = msg.data->pMessageIdName;
-    auto* message = msg.data->pMessage;
-
-    std::string_view type;
-    if (msg.type == VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {
-        type = "GENERAL";
-    } else if (msg.type == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
-        type = "VALIDATION";
-    } else if (msg.type == VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
-        type = "PERFORMANCE";
-    } else if (msg.type == VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT) {
-        type = "DEVICE_ADDRESS_BINDING";
-    } else {
-        PHENYL_LOGE(detail::VULKAN_LOGGER, "Received unexpected message type {}", msg.type);
-        type = "UNEXPECTED";
-    }
-
-    if (msg.severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-        PHENYL_LOGE(detail::VULKAN_LOGGER, "Vulkan {} message ({}): \"{}\"", type, messageIdName, message);
-    } else if (msg.severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-        PHENYL_LOGW(detail::VULKAN_LOGGER, "Vulkan {} message ({}): \"{}\"", type, messageIdName, message);
-    } else if (msg.severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-        PHENYL_LOGI(detail::VULKAN_LOGGER, "Vulkan {} message ({}): \"{}\"", type, messageIdName, message);
-    } else if (msg.severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-        PHENYL_LOGD(detail::VULKAN_LOGGER, "Vulkan {} message ({}): \"{}\"", type, messageIdName, message);
-    } else {
-        PHENYL_LOGW(detail::VULKAN_LOGGER, "Vulkan unknown severity {} message: \"{}\"", type, messageIdName, message);
-    }
-}
 
 std::vector<const char*> VulkanRenderer::GatherValidationLayers () {
     std::vector<const char*> layers{
@@ -321,7 +296,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessageCallback (VkDebugUtilsMessageS
     } else if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
         PHENYL_LOGD(phenyl::vulkan::detail::VULKAN_LOGGER, "Vulkan {} message ({}): {}", type, messageIdName, message);
     } else if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-        PHENYL_TRACE(phenyl::vulkan::detail::VULKAN_LOGGER, "Vulkan {} message ({}): {}", type, messageIdName, message);
+        PHENYL_LOGD(phenyl::vulkan::detail::VULKAN_LOGGER, "Vulkan verbose {} message ({}): {}", type, messageIdName, message);
     } else {
         PHENYL_LOGW(phenyl::vulkan::detail::VULKAN_LOGGER, "Vulkan unknown severity {} message ({}): \"{}\"", type, messageIdName, message);
     }
