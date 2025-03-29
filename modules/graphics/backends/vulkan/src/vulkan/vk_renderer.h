@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "vk_shader.h"
+#include "shader/vk_shader.h"
 #include "init/vk_device.h"
 #include "init/vk_swap_chain.h"
 #include "graphics/backend/renderer.h"

@@ -64,7 +64,7 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     device = std::make_unique<VulkanDevice>(instance, surface);
     swapChain = device->makeSwapChain(surface);
 
-    shaderManager = std::make_unique<VulkanShaderManager>();
+    shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
 }
 

@@ -28,6 +28,10 @@ namespace phenyl::vulkan {
 
         std::unique_ptr<VulkanSwapChain> makeSwapChain (VkSurfaceKHR surface);
 
+        VkDevice device () const noexcept {
+            return logicalDevice;
+        }
+
         ~VulkanDevice ();
     };
 }
