@@ -43,7 +43,6 @@ GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : viewport
 
     clearColor = {0, 0, 0, 1};
     setupErrorHandling();
-    util::setProfilerTimingFunction(glfwGetTime);
 
     shaderManager.selfRegister();
 

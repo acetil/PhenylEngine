@@ -1,11 +1,13 @@
 #include "core/input/game_input.h"
 #include "logging/logging.h"
+#include "util/profiler.h"
 
 #include "glfw_viewport.h"
 
+
 using namespace phenyl::glfw;
 
-phenyl::Logger phenyl::glfw::detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
+phenyl::Logger detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
 
 GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback) {
     //glewExperimental = true;
@@ -51,6 +53,8 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, cons
     postInitCallback(window);
     PHENYL_LOGI(detail::GLFW_LOGGER, "Initialised GLFW viewport");
     setupCallbacks();
+
+    util::setProfilerTimingFunction(glfwGetTime);
 }
 
 GLFWViewport::~GLFWViewport () {

@@ -5,6 +5,13 @@
 
 #include <unordered_set>
 
+#include "vk_array_texture.h"
+#include "vk_buffer.h"
+#include "vk_framebuffer.h"
+#include "vk_image_texture.h"
+#include "vk_pipeline.h"
+#include "vk_uniform_buffer.h"
+
 using namespace phenyl::graphics;
 using namespace phenyl::vulkan;
 
@@ -56,10 +63,17 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 
     device = std::make_unique<VulkanDevice>(instance, surface);
     swapChain = device->makeSwapChain(surface);
+
+    shaderManager = std::make_unique<VulkanShaderManager>();
+    shaderManager->selfRegister();
 }
 
 VulkanRenderer::~VulkanRenderer () {
+    shaderManager->clearDefaults();
+
+    swapChain = nullptr;
     device = nullptr;
+    vkDestroySurfaceKHR(instance, surface, nullptr);
 
     destroyDebugMessenger();
     vkDestroyInstance(instance, nullptr);
@@ -96,30 +110,32 @@ std::string_view VulkanRenderer::getName () const noexcept {
 }
 
 std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) {
-    return nullptr;
+    return std::make_unique<VulkanBuffer>();
 }
 
 std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool readable) {
-    return nullptr;
+    return std::make_unique<VulkanUniformBuffer>();
 }
 
 std::unique_ptr<IImageTexture> VulkanRenderer::makeRendererImageTexture (const TextureProperties& properties) {
-    return nullptr;
+    return std::make_unique<VulkanImageTexture>();
 }
 
 std::unique_ptr<IImageArrayTexture> VulkanRenderer::makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return nullptr;
+    return std::make_unique<VulkanArrayTexture>();
 }
 
 std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return nullptr;
+    return std::make_unique<VulkanFrameBuffer>();
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{nullptr};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>()};
 }
 
-void VulkanRenderer::loadDefaultShaders () {}
+void VulkanRenderer::loadDefaultShaders () {
+    shaderManager->loadDefaultShaders();
+}
 
 std::vector<const char*> VulkanRenderer::GatherValidationLayers () {
     std::vector<const char*> layers{

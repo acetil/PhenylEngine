@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vulkan_headers.h"
+#include "vulkan/vulkan_headers.h"
 
 namespace phenyl::vulkan {
     struct VulkanSwapChainDetails {

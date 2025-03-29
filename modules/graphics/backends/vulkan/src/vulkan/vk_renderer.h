@@ -2,7 +2,9 @@
 
 #include <memory>
 
-#include "vk_device.h"
+#include "vk_shader.h"
+#include "init/vk_device.h"
+#include "init/vk_swap_chain.h"
 #include "graphics/backend/renderer.h"
 #include "glfw/glfw_viewport.h"
 
@@ -26,6 +28,8 @@ namespace phenyl::vulkan {
         std::unique_ptr<VulkanSwapChain> swapChain;
 
         VkDebugUtilsMessengerEXT debugMessenger{};
+
+        std::unique_ptr<VulkanShaderManager> shaderManager;
 
         VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
 
