@@ -26,12 +26,14 @@ namespace phenyl::vulkan {
         VkSurfaceKHR surface{};
         std::unique_ptr<VulkanDevice> device;
         std::unique_ptr<VulkanSwapChain> swapChain;
+        VkRenderPass renderPass;
 
         VkDebugUtilsMessengerEXT debugMessenger{};
 
         std::unique_ptr<VulkanShaderManager> shaderManager;
 
         VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
+        VkRenderPass createRenderPass ();
 
         VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
         void setupDebugMessenger ();

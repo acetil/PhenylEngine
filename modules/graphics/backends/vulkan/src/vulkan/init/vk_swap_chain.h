@@ -28,5 +28,9 @@ namespace phenyl::vulkan {
     public:
         VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies);
         ~VulkanSwapChain();
+
+        VkFormat format () const noexcept {
+            return imageFormat;
+        }
     };
 }

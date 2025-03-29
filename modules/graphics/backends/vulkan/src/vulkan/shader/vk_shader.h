@@ -17,7 +17,7 @@ namespace phenyl::vulkan {
         static std::unique_ptr<VulkanShader> Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType,
             std::vector<std::uint32_t>>& sources);
 
-        ~VulkanShader();
+        ~VulkanShader () override;
 
         std::vector<VkPipelineShaderStageCreateInfo> getStageInfo ();
 
@@ -67,6 +67,5 @@ namespace phenyl::vulkan {
         void selfRegister ();
 
         void loadDefaultShaders ();
-        void clearDefaults ();
     };
 }

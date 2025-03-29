@@ -11,6 +11,7 @@
 #include "vk_image_texture.h"
 #include "vk_pipeline.h"
 #include "vk_uniform_buffer.h"
+#include "core/assets/assets.h"
 
 using namespace phenyl::graphics;
 using namespace phenyl::vulkan;
@@ -63,13 +64,17 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 
     device = std::make_unique<VulkanDevice>(instance, surface);
     swapChain = device->makeSwapChain(surface);
+    renderPass = createRenderPass();
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
+    PHENYL_LOGI(detail::VULKAN_LOGGER, "Completed renderer setup");
 }
 
 VulkanRenderer::~VulkanRenderer () {
-    shaderManager->clearDefaults();
+    shaderManager = nullptr;
+
+    vkDestroyRenderPass(device->device(), renderPass, nullptr);
 
     swapChain = nullptr;
     device = nullptr;
@@ -130,11 +135,15 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>()};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(device->device(), renderPass)};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
     shaderManager->loadDefaultShaders();
+
+    auto pipeline = VulkanRenderer::buildPipeline()
+        .withShader(core::Assets::Load<Shader>("phenyl/shaders/test"))
+        .build();
 }
 
 std::vector<const char*> VulkanRenderer::GatherValidationLayers () {
@@ -218,6 +227,46 @@ void VulkanRenderer::CheckExtensions (const std::vector<const char*>& extensions
         }
     }
     PHENYL_ABORT("Required Vulkan extensions not present!");
+}
+
+VkRenderPass VulkanRenderer::createRenderPass () {
+    VkAttachmentDescription colorAttachment{
+        .format = swapChain->format(),
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    };
+
+    VkAttachmentReference colorAttachmentRef{
+        .attachment = 0,
+        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
+
+    VkSubpassDescription subpass{
+        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &colorAttachmentRef
+    };
+
+    VkRenderPassCreateInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .attachmentCount = 1,
+        .pAttachments = &colorAttachment,
+        .subpassCount = 1,
+        .pSubpasses = &subpass
+    };
+
+    VkRenderPass renderPass;
+    if (auto result = vkCreateRenderPass(device->device(), &renderPassInfo, nullptr, &renderPass); result != VK_SUCCESS) {
+        PHENYL_ABORT("Failed to create render pass, error: {}", result);
+    }
+    PHENYL_DASSERT(renderPass);
+
+    return renderPass;
 }
 
 VkDebugUtilsMessengerCreateInfoEXT VulkanRenderer::getDebugMessengerCreateInfo () {

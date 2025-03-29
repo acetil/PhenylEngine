@@ -125,10 +125,6 @@ void VulkanShaderManager::selfRegister () {
     core::Assets::AddManager(this);
 }
 
-void VulkanShaderManager::clearDefaults () {
-    defaultShaders.clear();
-}
-
 void VulkanShaderManager::loadDefault (const std::string& path, std::unique_ptr<VulkanShader> shader) {
     if (!shader) {
         PHENYL_LOGE(LOGGER, "Failed to load default shader \"{}\"", path);
