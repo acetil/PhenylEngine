@@ -10,7 +10,8 @@ static phenyl::Logger LOGGER{"VK_DEVICE", detail::VULKAN_LOGGER};
 
 VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
     std::vector deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
     };
 
     choosePhysicalDevice(instance, surface, deviceExtensions);
@@ -27,6 +28,10 @@ VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
 
 std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surface) {
     return std::make_unique<VulkanSwapChain>(logicalDevice, surface, swapChainDetails, queueFamilies);
+}
+
+std::unique_ptr<VulkanCommandPool> VulkanDevice::makeCommandPool (std::size_t initialCapacity) {
+    return std::make_unique<VulkanCommandPool>(logicalDevice, queueFamilies.graphicsFamily, initialCapacity);
 }
 
 VulkanDevice::~VulkanDevice () {
@@ -49,6 +54,10 @@ void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surfa
     for (auto device : devices) {
         if (!CheckDeviceExtensionSupport(device, deviceExtensions)) {
              continue;
+        }
+
+        if (!CheckDeviceFeatures(device)) {
+            continue;
         }
 
         auto familes = GetDeviceFamilies(device, surface);
@@ -90,16 +99,24 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
             })
         | std::ranges::to<std::vector>();
 
-    // TODO
-    VkPhysicalDeviceFeatures deviceFeatures{};
+    VkPhysicalDeviceVulkan13Features vulkan13Features{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .synchronization2 = true,
+        .dynamicRendering = true,
+    };
+
+    VkPhysicalDeviceFeatures2 deviceFeatures2{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &vulkan13Features
+    };
 
     VkDeviceCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = &deviceFeatures2,
         .queueCreateInfoCount = static_cast<std::uint32_t>(queueCreateInfos.size()),
         .pQueueCreateInfos = queueCreateInfos.data(),
         .enabledExtensionCount = static_cast<std::uint32_t>(deviceExtensions.size()),
         .ppEnabledExtensionNames = deviceExtensions.data(),
-        .pEnabledFeatures = &deviceFeatures
     };
 
     VkDevice device;
@@ -163,7 +180,6 @@ bool VulkanDevice::CheckDeviceExtensionSupport (VkPhysicalDevice device, const s
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
     auto deviceExtensions = Enumerate<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties, device, nullptr);
-
     bool allPresent = true;
     for (auto i : extensions) {
         bool present = std::ranges::any_of(deviceExtensions, [&] (const VkExtensionProperties& x) {
@@ -196,4 +212,38 @@ std::optional<VulkanSwapChainDetails> VulkanDevice::GetDeviceSwapChainDetails (V
         .formats = std::move(formats),
         .presentModes = std::move(presentModes)
     };
+}
+
+bool VulkanDevice::CheckDeviceFeatures (VkPhysicalDevice device) {
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+    VkPhysicalDeviceVulkan13Features vk13Features{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES
+    };
+
+    VkPhysicalDeviceFeatures2 features2{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &vk13Features
+    };
+    vkGetPhysicalDeviceFeatures2(device, &features2);
+
+    auto* features = &features2.features;
+
+    // if (!vk13Features) {
+    //     PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing Vulkan 1.3 features", deviceProperties.deviceName);
+    //     return false;
+    // }
+
+    if (!vk13Features.dynamicRendering) {
+        PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing feature dynamicRendering", deviceProperties.deviceName);
+        return false;
+    }
+
+    if (!vk13Features.synchronization2) {
+        PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing feature synchronization2", deviceProperties.deviceName);
+        return false;
+    }
+
+    return true;
 }

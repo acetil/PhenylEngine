@@ -16,7 +16,7 @@ VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const V
     imageFormat = surfaceFormat.format;
 
     auto presentMode = ChoosePresentMode(details);
-    extent = ChooseExtent(details);
+    imageExtent = ChooseExtent(details);
     auto imageCount = ChooseImageCount(details);
 
     std::vector<std::uint32_t> queueFamilyIndices{};
@@ -34,7 +34,7 @@ VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const V
         .minImageCount = imageCount,
         .imageFormat = surfaceFormat.format,
         .imageColorSpace = surfaceFormat.colorSpace,
-        .imageExtent = extent,
+        .imageExtent = imageExtent,
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         .imageSharingMode = sharingMode,
@@ -63,6 +63,54 @@ VulkanSwapChain::~VulkanSwapChain () {
     }
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
+VkViewport VulkanSwapChain::getViewport () const noexcept {
+    return VkViewport{
+        .x = 0,
+        .y = 0,
+        .width = static_cast<float>(extent().width),
+        .height = static_cast<float>(extent().height),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+}
+
+VkRect2D VulkanSwapChain::getScissor () const noexcept {
+    return VkRect2D{
+        .offset = {0, 0},
+        .extent = extent()
+    };
+}
+
+
+SwapChainImage VulkanSwapChain::acquireImage (const VulkanSemaphore& signalSem) {
+    auto result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<std::uint64_t>::max(),
+        signalSem.get(), VK_NULL_HANDLE, &currIndex);
+    PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to acquire image: {}", result);
+
+    return SwapChainImage{
+        .image = swapChainImages.at(currIndex),
+        .view = swapChainViews.at(currIndex)
+    };
+}
+
+void VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
+    VkSemaphore sem = waitSem.get();
+
+    VkPresentInfoKHR presentInfo{
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &sem,
+        .swapchainCount = 1,
+        .pSwapchains = &swapChain,
+        .pImageIndices = &currIndex
+    };
+
+    auto result = vkQueuePresentKHR(queue, &presentInfo);
+    if (result != VK_SUCCESS) {
+        PHENYL_LOGE(LOGGER, "Failed to present swapchain image: {}", result);
+    }
 }
 
 void VulkanSwapChain::createImages () {

@@ -46,7 +46,13 @@ void VulkanPipeline::renderInstanced (graphics::IFrameBuffer* fb, std::size_t nu
 
 }
 
-VulkanPipelineBuilder::VulkanPipelineBuilder (VkDevice device, VkRenderPass renderPass) : device{device}, renderPass{renderPass} {}
+void VulkanPipeline::renderTest (VulkanRenderingRecorder& recorder, VkViewport viewport, VkRect2D scissor, std::size_t vertices) {
+    recorder.setPipeline(pipeline, viewport, scissor);
+
+    recorder.draw(vertices, 0);
+}
+
+VulkanPipelineBuilder::VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat) : device{device}, colorFormat{swapChainFormat} {}
 
 void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
     switch (mode) {
@@ -188,6 +194,14 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
         .pAttachments = &blendAttachment
     };
 
+    VkPipelineRenderingCreateInfo renderInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+        .colorAttachmentCount = 1,
+        .pColorAttachmentFormats = &colorFormat,
+        .depthAttachmentFormat = VK_FORMAT_UNDEFINED, // TODO
+        .stencilAttachmentFormat = VK_FORMAT_UNDEFINED
+    };
+
     // TODO
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -206,7 +220,7 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
 
     VkGraphicsPipelineCreateInfo pipelineInfo{
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-
+        .pNext = &renderInfo,
         .stageCount = static_cast<std::uint32_t>(shaderStages.size()),
         .pStages = shaderStages.data(),
 
@@ -219,8 +233,6 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
         .pColorBlendState = &colorBlendInfo,
         .pDynamicState = &dynamicStateInfo,
         .layout = pipelineLayout,
-        .renderPass = renderPass,
-        .subpass = 0
     };
 
     VkPipeline pipeline;

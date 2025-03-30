@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/backend/pipeline.h"
+#include "init/vk_device.h"
 
 namespace phenyl::vulkan {
     class VulkanPipeline : public graphics::IPipeline {
@@ -22,12 +23,14 @@ namespace phenyl::vulkan {
 
         void render (graphics::IFrameBuffer* fb, std::size_t vertices, std::size_t offset) override;
         void renderInstanced (graphics::IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
+
+        void renderTest (VulkanRenderingRecorder& recorder, VkViewport viewport, VkRect2D scissor, std::size_t vertices);
     };
 
     class VulkanPipelineBuilder : public graphics::IPipelineBuilder {
     private:
         VkDevice device;
-        VkRenderPass renderPass;
+        VkFormat colorFormat;
 
         core::Asset<graphics::Shader> shader;
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -39,7 +42,7 @@ namespace phenyl::vulkan {
         };
 
     public:
-        VulkanPipelineBuilder (VkDevice device, VkRenderPass renderPass);
+        VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat);
 
         void withBlendMode (graphics::BlendMode mode) override;
         void withCullMode (graphics::CullMode mode) override;

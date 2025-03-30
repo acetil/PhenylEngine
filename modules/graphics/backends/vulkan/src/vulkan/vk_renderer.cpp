@@ -64,18 +64,30 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 
     device = std::make_unique<VulkanDevice>(instance, surface);
     swapChain = device->makeSwapChain(surface);
-    renderPass = createRenderPass();
+    commandPool = device->makeCommandPool();
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
+
+    testImageAvailableSem = std::make_unique<VulkanSemaphore>(device->device());
+    testRenderFinishSem = std::make_unique<VulkanSemaphore>(device->device());
+    testInFlightFence = std::make_unique<VulkanFence>(device->device(), true);
+
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Completed renderer setup");
 }
 
 VulkanRenderer::~VulkanRenderer () {
+    vkDeviceWaitIdle(device->device());
+    PHENYL_LOGI(detail::VULKAN_LOGGER, "Destroying Vulkan renderer");
+
+    testImageAvailableSem = nullptr;
+    testRenderFinishSem = nullptr;
+    testInFlightFence = nullptr;
+    testPipeline = nullptr;
+
     shaderManager = nullptr;
 
-    vkDestroyRenderPass(device->device(), renderPass, nullptr);
-
+    commandPool = nullptr;
     swapChain = nullptr;
     device = nullptr;
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -95,7 +107,26 @@ void VulkanRenderer::clearWindow () {
 }
 
 void VulkanRenderer::render () {
+    PHENYL_ASSERT(testInFlightFence->wait(1000000000));
+    testInFlightFence->reset();
 
+    auto scImage = swapChain->acquireImage(*testImageAvailableSem);
+    commandPool->reset();
+
+    auto commandBuffer = commandPool->getBuffer();
+
+    commandBuffer.doImageTransition(scImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    {
+        auto recorder = commandBuffer.beginRendering(scImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent());
+        testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
+    }
+
+    commandBuffer.doImageTransition(scImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    auto recordedBuffer = commandBuffer.record();
+
+    recordedBuffer.submit(device->getGraphicsQueue(), testImageAvailableSem.get(), testRenderFinishSem.get(), *testInFlightFence);
+
+    swapChain->present(device->getGraphicsQueue(), *testRenderFinishSem);
 }
 
 void VulkanRenderer::finishRender () {
@@ -135,15 +166,15 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(device->device(), renderPass)};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(device->device(), swapChain->format())};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
     shaderManager->loadDefaultShaders();
 
-    auto pipeline = VulkanRenderer::buildPipeline()
-        .withShader(core::Assets::Load<Shader>("phenyl/shaders/test"))
-        .build();
+    auto builder = VulkanPipelineBuilder{device->device(), swapChain->format()};
+    builder.withShader(core::Assets::Load<Shader>("phenyl/shaders/test"));
+    testPipeline = std::unique_ptr<VulkanPipeline>(reinterpret_cast<VulkanPipeline*>(builder.build().release()));
 }
 
 std::vector<const char*> VulkanRenderer::GatherValidationLayers () {
@@ -227,46 +258,6 @@ void VulkanRenderer::CheckExtensions (const std::vector<const char*>& extensions
         }
     }
     PHENYL_ABORT("Required Vulkan extensions not present!");
-}
-
-VkRenderPass VulkanRenderer::createRenderPass () {
-    VkAttachmentDescription colorAttachment{
-        .format = swapChain->format(),
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    };
-
-    VkAttachmentReference colorAttachmentRef{
-        .attachment = 0,
-        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-    VkSubpassDescription subpass{
-        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachmentRef
-    };
-
-    VkRenderPassCreateInfo renderPassInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = 1,
-        .pAttachments = &colorAttachment,
-        .subpassCount = 1,
-        .pSubpasses = &subpass
-    };
-
-    VkRenderPass renderPass;
-    if (auto result = vkCreateRenderPass(device->device(), &renderPassInfo, nullptr, &renderPass); result != VK_SUCCESS) {
-        PHENYL_ABORT("Failed to create render pass, error: {}", result);
-    }
-    PHENYL_DASSERT(renderPass);
-
-    return renderPass;
 }
 
 VkDebugUtilsMessengerCreateInfoEXT VulkanRenderer::getDebugMessengerCreateInfo () {

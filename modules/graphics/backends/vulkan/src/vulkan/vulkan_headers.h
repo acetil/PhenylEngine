@@ -77,3 +77,20 @@ struct std::formatter<phenyl::vulkan::VulkanVersion, char> {
         }
     }
 };
+
+inline bool operator== (const VkViewport& lhs, const VkViewport& rhs) noexcept {
+    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width && lhs.height == rhs.height
+        && lhs.minDepth == rhs.minDepth && lhs.maxDepth == rhs.maxDepth;
+}
+
+inline bool operator== (const VkExtent2D& lhs, const VkExtent2D& rhs) noexcept {
+    return lhs.width == rhs.width && lhs.height == rhs.height;
+}
+
+inline bool operator== (const VkOffset2D& lhs, const VkOffset2D& rhs) noexcept {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+inline bool operator== (const VkRect2D& lhs, const VkRect2D& rhs) noexcept {
+    return lhs.extent == rhs.extent && lhs.offset == rhs.offset;
+}

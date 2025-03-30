@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vulkan/vk_sync.h"
 #include "vulkan/vulkan_headers.h"
 
 namespace phenyl::vulkan {
@@ -14,15 +15,21 @@ namespace phenyl::vulkan {
         std::uint32_t presentFanily;
     };
 
+    struct SwapChainImage {
+        VkImage image;
+        VkImageView view;
+    };
+
     class VulkanSwapChain {
     private:
         VkDevice device;
         VkSwapchainKHR swapChain{};
         std::vector<VkImage> swapChainImages;
         std::vector<VkImageView> swapChainViews;
+        std::uint32_t currIndex{};
 
         VkFormat imageFormat;
-        VkExtent2D extent;
+        VkExtent2D imageExtent;
 
         void createImages ();
     public:
@@ -32,5 +39,15 @@ namespace phenyl::vulkan {
         VkFormat format () const noexcept {
             return imageFormat;
         }
+
+        VkExtent2D extent () const noexcept {
+            return imageExtent;
+        }
+
+        VkViewport getViewport () const noexcept;
+        VkRect2D getScissor () const noexcept;
+
+        SwapChainImage acquireImage (const VulkanSemaphore& signalSem);
+        void present (VkQueue queue, const VulkanSemaphore& waitSem);
     };
 }
