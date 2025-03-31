@@ -14,7 +14,9 @@ add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp
         src/vulkan/vk_command_buffer.h
         src/vulkan/vk_command_buffer.cpp
         src/vulkan/vk_sync.h
-        src/vulkan/vk_sync.cpp)
+        src/vulkan/vk_sync.cpp
+        src/vulkan/vk_frame.h
+        src/vulkan/vk_frame.cpp)
 
 set_property(TARGET vulkan_backend PROPERTY CXX_STANDARD 23)
 

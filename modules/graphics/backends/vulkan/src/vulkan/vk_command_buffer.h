@@ -64,6 +64,12 @@ namespace phenyl::vulkan {
         void addBuffers (std::size_t count);
     public:
         VulkanCommandPool (VkDevice device, std::uint32_t queueIndex, std::size_t capacity = 1);
+        VulkanCommandPool (const VulkanCommandPool&) = delete;
+        VulkanCommandPool (VulkanCommandPool&&) noexcept;
+
+        VulkanCommandPool& operator= (const VulkanCommandPool&) = delete;
+        VulkanCommandPool& operator= (VulkanCommandPool&&) noexcept;
+
         ~VulkanCommandPool ();
 
         VulkanCommandBuffer getBuffer ();

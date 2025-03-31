@@ -47,7 +47,7 @@ namespace phenyl::vulkan {
         VkViewport getViewport () const noexcept;
         VkRect2D getScissor () const noexcept;
 
-        SwapChainImage acquireImage (const VulkanSemaphore& signalSem);
-        void present (VkQueue queue, const VulkanSemaphore& waitSem);
+        std::optional<SwapChainImage> acquireImage (const VulkanSemaphore& signalSem);
+        bool present (VkQueue queue, const VulkanSemaphore& waitSem);
     };
 }

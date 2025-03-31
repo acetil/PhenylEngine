@@ -27,11 +27,12 @@ VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
 }
 
 std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surface) {
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &swapChainDetails.capabilities);
     return std::make_unique<VulkanSwapChain>(logicalDevice, surface, swapChainDetails, queueFamilies);
 }
 
-std::unique_ptr<VulkanCommandPool> VulkanDevice::makeCommandPool (std::size_t initialCapacity) {
-    return std::make_unique<VulkanCommandPool>(logicalDevice, queueFamilies.graphicsFamily, initialCapacity);
+VulkanCommandPool VulkanDevice::makeCommandPool (std::size_t initialCapacity) {
+    return VulkanCommandPool{logicalDevice, queueFamilies.graphicsFamily, initialCapacity};
 }
 
 VulkanDevice::~VulkanDevice () {

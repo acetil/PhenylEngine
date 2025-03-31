@@ -11,7 +11,6 @@ static std::uint32_t ChooseImageCount (const VulkanSwapChainDetails& details);
 
 VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies) : device{device} {
     PHENYL_LOGI(LOGGER, "Creating swap chain");
-
     auto surfaceFormat = ChooseSurfaceFormat(details);
     imageFormat = surfaceFormat.format;
 
@@ -84,18 +83,30 @@ VkRect2D VulkanSwapChain::getScissor () const noexcept {
 }
 
 
-SwapChainImage VulkanSwapChain::acquireImage (const VulkanSemaphore& signalSem) {
+std::optional<SwapChainImage> VulkanSwapChain::acquireImage (const VulkanSemaphore& signalSem) {
     auto result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<std::uint64_t>::max(),
         signalSem.get(), VK_NULL_HANDLE, &currIndex);
-    PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to acquire image: {}", result);
 
-    return SwapChainImage{
-        .image = swapChainImages.at(currIndex),
-        .view = swapChainViews.at(currIndex)
-    };
+    if (result == VK_SUCCESS) {
+        return SwapChainImage{
+            .image = swapChainImages.at(currIndex),
+            .view = swapChainViews.at(currIndex)
+        };
+    } else if (result == VK_SUBOPTIMAL_KHR) {
+        PHENYL_LOGI(LOGGER, "Acquired image with VK_SUBOPTIMAL_KHR mode, ignoring");
+        return SwapChainImage{
+            .image = swapChainImages.at(currIndex),
+            .view = swapChainViews.at(currIndex)
+        };
+    } else if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        PHENYL_LOGI(LOGGER, "Swap chain is out of date, recreation required");
+        return std::nullopt;
+    }
+
+    PHENYL_ABORT("Failed to acquire image: {}", result);
 }
 
-void VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
+bool VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
     VkSemaphore sem = waitSem.get();
 
     VkPresentInfoKHR presentInfo{
@@ -108,9 +119,12 @@ void VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
     };
 
     auto result = vkQueuePresentKHR(queue, &presentInfo);
-    if (result != VK_SUCCESS) {
-        PHENYL_LOGE(LOGGER, "Failed to present swapchain image: {}", result);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        return false;
     }
+
+    PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to present swapchain image: {}", result);
+    return true;
 }
 
 void VulkanSwapChain::createImages () {

@@ -20,8 +20,34 @@ VulkanCommandPool::VulkanCommandPool (VkDevice device, std::uint32_t queueIndex,
     reserve(capacity);
 }
 
+VulkanCommandPool::VulkanCommandPool (VulkanCommandPool&& other) noexcept : device{other.device}, commandPool{other.commandPool},
+        availableBuffers{std::move(other.availableBuffers)}, usedBuffers{std::move(other.usedBuffers)} {
+    other.device = nullptr;
+    other.commandPool = nullptr;
+}
+
+VulkanCommandPool& VulkanCommandPool::operator= (VulkanCommandPool&& other) noexcept {
+    if (commandPool) {
+        PHENYL_DASSERT(device);
+        vkDestroyCommandPool(device, commandPool, nullptr);
+    }
+
+    device = other.device;
+    commandPool = other.commandPool;
+    availableBuffers = std::move(other.availableBuffers);
+    usedBuffers = std::move(other.usedBuffers);
+
+    other.device = nullptr;
+    other.commandPool = nullptr;
+
+    return *this;
+}
+
 VulkanCommandPool::~VulkanCommandPool () {
-    vkDestroyCommandPool(device, commandPool, nullptr);
+    if (commandPool) {
+        PHENYL_DASSERT(device);
+        vkDestroyCommandPool(device, commandPool, nullptr);
+    }
 }
 
 VulkanCommandBuffer VulkanCommandPool::getBuffer () {

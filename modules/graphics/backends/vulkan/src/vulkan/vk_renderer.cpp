@@ -18,6 +18,8 @@ using namespace phenyl::vulkan;
 
 phenyl::Logger phenyl::vulkan::detail::VULKAN_LOGGER{"VULKAN", phenyl::PHENYL_LOGGER};
 
+static constexpr std::size_t MAX_FRAMES_IN_FLIGHT = 2;
+
 namespace phenyl::vulkan {
     class VulkanViewport : public glfw::GLFWViewport {
     private:
@@ -25,7 +27,7 @@ namespace phenyl::vulkan {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
             // TODO
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+            //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         }
     public:
         explicit VulkanViewport (const GraphicsProperties& properties) : GLFWViewport{properties, VulkanWindowHints} {}
@@ -64,30 +66,21 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 
     device = std::make_unique<VulkanDevice>(instance, surface);
     swapChain = device->makeSwapChain(surface);
-    commandPool = device->makeCommandPool();
+    frameManager = std::make_unique<FrameManager>(*device, MAX_FRAMES_IN_FLIGHT);
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
-
-    testImageAvailableSem = std::make_unique<VulkanSemaphore>(device->device());
-    testRenderFinishSem = std::make_unique<VulkanSemaphore>(device->device());
-    testInFlightFence = std::make_unique<VulkanFence>(device->device(), true);
-
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Completed renderer setup");
 }
 
 VulkanRenderer::~VulkanRenderer () {
     vkDeviceWaitIdle(device->device());
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Destroying Vulkan renderer");
-
-    testImageAvailableSem = nullptr;
-    testRenderFinishSem = nullptr;
-    testInFlightFence = nullptr;
     testPipeline = nullptr;
 
     shaderManager = nullptr;
 
-    commandPool = nullptr;
+    frameManager = nullptr;
     swapChain = nullptr;
     device = nullptr;
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -107,26 +100,31 @@ void VulkanRenderer::clearWindow () {
 }
 
 void VulkanRenderer::render () {
-    PHENYL_ASSERT(testInFlightFence->wait(1000000000));
-    testInFlightFence->reset();
+    if (!frameManager->onNewFrame(*swapChain)) {
+        PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame acquisition");
+        recreateSwapChain();
+        return;
+    }
 
-    auto scImage = swapChain->acquireImage(*testImageAvailableSem);
-    commandPool->reset();
+    const auto& frameImage = frameManager->getImage();
+    auto& frameSync = frameManager->getFrameSync();
 
-    auto commandBuffer = commandPool->getBuffer();
-
-    commandBuffer.doImageTransition(scImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    auto commandBuffer = frameManager->getCommandPool().getBuffer();
+    commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     {
-        auto recorder = commandBuffer.beginRendering(scImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent());
+        auto recorder = commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent());
         testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
     }
 
-    commandBuffer.doImageTransition(scImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     auto recordedBuffer = commandBuffer.record();
 
-    recordedBuffer.submit(device->getGraphicsQueue(), testImageAvailableSem.get(), testRenderFinishSem.get(), *testInFlightFence);
+    recordedBuffer.submit(device->getGraphicsQueue(), &frameSync.imageAvailable, &frameSync.renderFinished, frameSync.inFlight);
 
-    swapChain->present(device->getGraphicsQueue(), *testRenderFinishSem);
+    if (!swapChain->present(device->getGraphicsQueue(), frameSync.renderFinished)) {
+        PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame presentation");
+        recreateSwapChain();
+    }
 }
 
 void VulkanRenderer::finishRender () {
@@ -322,6 +320,14 @@ VkInstance VulkanRenderer::createVkInstance (const GraphicsProperties& propertie
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Created instance for Vulkan version {}", VulkanVersion::FromPacked(VK_API_VERSION_1_3));
     return instance;
 }
+
+void VulkanRenderer::recreateSwapChain () {
+    PHENYL_LOGI(detail::VULKAN_LOGGER, "Recreating swap chain");
+    vkDeviceWaitIdle(device->device());
+    swapChain = nullptr;
+    swapChain = device->makeSwapChain(surface);
+}
+
 
 std::unique_ptr<Renderer> phenyl::graphics::MakeVulkanRenderer (const GraphicsProperties& properties) {
     return std::make_unique<VulkanRenderer>(properties, std::make_unique<VulkanViewport>(properties));

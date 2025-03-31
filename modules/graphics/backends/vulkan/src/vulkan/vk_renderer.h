@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "vk_command_buffer.h"
+#include "vk_frame.h"
 #include "vk_pipeline.h"
 #include "vk_sync.h"
 #include "shader/vk_shader.h"
@@ -29,18 +30,17 @@ namespace phenyl::vulkan {
         VkSurfaceKHR surface{};
         std::unique_ptr<VulkanDevice> device;
         std::unique_ptr<VulkanSwapChain> swapChain;
-        std::unique_ptr<VulkanCommandPool> commandPool;
 
         VkDebugUtilsMessengerEXT debugMessenger{};
 
         std::unique_ptr<VulkanShaderManager> shaderManager;
+        std::unique_ptr<FrameManager> frameManager;
 
         std::unique_ptr<VulkanPipeline> testPipeline;
-        std::unique_ptr<VulkanSemaphore> testImageAvailableSem;
-        std::unique_ptr<VulkanSemaphore> testRenderFinishSem;
-        std::unique_ptr<VulkanFence> testInFlightFence;
+
 
         VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
+        void recreateSwapChain ();
 
         VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
         void setupDebugMessenger ();
