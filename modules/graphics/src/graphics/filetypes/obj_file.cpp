@@ -222,7 +222,7 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
     RawBuffer indexBuffer;
     if (numVertices <= std::numeric_limits<std::uint16_t>::max()) {
         std::vector<std::uint16_t> vec{indices.begin(), indices.end()};
-        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size());
+        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size(), true);
         indexBuffer.upload(reinterpret_cast<std::byte*>(vec.data()), vec.size() * sizeof(std::uint16_t));
 
         layout.indexType = ShaderIndexType::USHORT;

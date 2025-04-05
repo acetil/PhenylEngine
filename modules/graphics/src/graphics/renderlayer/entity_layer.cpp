@@ -49,7 +49,7 @@ void EntityRenderLayer::init (Renderer& renderer) {
            .build();
 
     vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);
-    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
+    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, true);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     pipeline.bindIndexBuffer(indices);

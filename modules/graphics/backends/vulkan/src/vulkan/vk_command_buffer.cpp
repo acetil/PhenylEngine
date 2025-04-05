@@ -227,6 +227,29 @@ void VulkanRenderingRecorder::draw (std::uint32_t vertexCount, std::uint32_t fir
     draw(1, vertexCount, firstVertex);
 }
 
+void VulkanRenderingRecorder::drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount,std::uint32_t firstIndex) {
+    PHENYL_DASSERT(commandBuffer);
+    vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, 0, 0);
+}
+
+void VulkanRenderingRecorder::drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex) {
+    drawIndexed(1, indexCount, firstIndex);
+}
+
+void VulkanRenderingRecorder::bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets) {
+    PHENYL_DASSERT(commandBuffer);
+    PHENYL_DASSERT(buffers.size() == offsets.size());
+
+    vkCmdBindVertexBuffers(commandBuffer, 0, static_cast<std::uint32_t>(buffers.size()), buffers.data(), offsets.data());
+}
+
+void VulkanRenderingRecorder::bindIndexBuffer (VkBuffer buffer, VkIndexType indexType) {
+    PHENYL_DASSERT(commandBuffer);
+    PHENYL_DASSERT(buffer);
+
+    vkCmdBindIndexBuffer(commandBuffer, buffer, 0, indexType);
+}
+
 VulkanRenderingRecorder::~VulkanRenderingRecorder () {
     owner.endRendering();
 }

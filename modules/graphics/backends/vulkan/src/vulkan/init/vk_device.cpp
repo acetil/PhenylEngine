@@ -35,6 +35,21 @@ VulkanCommandPool VulkanDevice::makeCommandPool (std::size_t initialCapacity) {
     return VulkanCommandPool{logicalDevice, queueFamilies.graphicsFamily, initialCapacity};
 }
 
+VmaAllocator VulkanDevice::makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion) {
+    VmaAllocatorCreateInfo allocatorInfo{
+        .physicalDevice = physicalDevice,
+        .device = logicalDevice,
+        .instance = instance,
+        .vulkanApiVersion = vkVersion
+    };
+
+    VmaAllocator allocator;
+    auto result = vmaCreateAllocator(&allocatorInfo, &allocator);
+    PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create VMA allocator: {}", result);
+    PHENYL_DASSERT(allocator);
+    return allocator;
+}
+
 VulkanDevice::~VulkanDevice () {
     vkDestroyDevice(logicalDevice, nullptr);
 }

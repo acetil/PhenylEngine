@@ -19,7 +19,8 @@
     "python3",
     "vulkan",
     "vulkan-utility-libraries",
-    "glslang"
+    "glslang",
+    "vulkan-memory-allocator"
   ],
   "builtin-baseline": "6e1219d080fc0525f55bf8c8ba57d8ab2ce35422"
 }

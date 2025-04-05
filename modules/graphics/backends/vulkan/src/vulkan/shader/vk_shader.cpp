@@ -19,9 +19,10 @@ static VkShaderStageFlagBits ConvertShaderType (phenyl::graphics::ShaderSourceTy
     PHENYL_ABORT("Unexpected shader type: {}", static_cast<std::uint32_t>(shaderType));
 }
 
-VulkanShader::VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules) : device{device}, modules{std::move(modules)} {}
+VulkanShader::VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules,
+    std::unordered_map<std::string, std::pair<graphics::ShaderDataType, unsigned int>> attribs) : device{device}, modules{std::move(modules)}, attribs{std::move(attribs)} {}
 
-std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources) {
+std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources, const std::vector<std::pair<graphics::ShaderDataType, std::string>>& attribs) {
     std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules;
 
     bool failed = false;
@@ -48,7 +49,13 @@ std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::un
         return nullptr;
     }
 
-    return std::unique_ptr<VulkanShader>{new VulkanShader(device, std::move(modules))};
+    std::unordered_map<std::string, std::pair<graphics::ShaderDataType, unsigned int>> attribMap;
+    for (unsigned int i = 0; i < attribs.size(); i++) {
+        const auto& [type, name] = attribs[i];
+        attribMap[name] = {type, i};
+    }
+
+    return std::unique_ptr<VulkanShader>{new VulkanShader(device, std::move(modules), std::move(attribMap))};
 }
 
 VulkanShader::~VulkanShader () {
@@ -77,7 +84,9 @@ std::size_t VulkanShader::hash () const noexcept {
 }
 
 std::optional<unsigned int> VulkanShader::getAttribLocation (const std::string& attrib) const noexcept {
-    return 0;
+    auto it = attribs.find(attrib);
+
+    return it != attribs.end() ? std::optional{it ->second.second} : std::nullopt;
 }
 
 std::optional<unsigned int> VulkanShader::getUniformLocation (const std::string& uniform) const noexcept {
@@ -149,6 +158,11 @@ VulkanShaderManager::Builder& VulkanShaderManager::Builder::withSource (graphics
     return *this;
 }
 
+VulkanShaderManager::Builder& VulkanShaderManager::Builder::withAttrib (graphics::ShaderDataType type, std::string attribName) {
+    attribs.emplace_back(type, std::move(attribName));
+    return *this;
+}
+
 std::unique_ptr<VulkanShader> VulkanShaderManager::Builder::build () {
-    return VulkanShader::Make(device, shaderSources);
+    return VulkanShader::Make(device, shaderSources, attribs);
 }

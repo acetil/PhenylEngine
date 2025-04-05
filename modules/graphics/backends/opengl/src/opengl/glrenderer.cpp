@@ -139,7 +139,7 @@ void GLRenderer::setupErrorHandling () {
     }, nullptr);
 }
 
-std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) {
+std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) {
     return std::make_unique<GlBuffer>(startCapacity, elementSize);
 }
 

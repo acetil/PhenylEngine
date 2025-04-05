@@ -57,9 +57,9 @@ std::optional<std::vector<std::uint32_t>> VulkanShaderCompiler::compile (graphic
     // }
 
     if (!shader.parse(resources, DEFAULT_CLIENT_VERSION,  true, messageFilter)) {
-        PHENYL_LOGW(LOGGER, "Shader parse error");
+        PHENYL_LOGW(LOGGER, "Shader parse error in {} shader", shaderType);
         PHENYL_LOGW(LOGGER, "glslang info log: {}", shader.getInfoLog());
-        PHENYL_LOGW(LOGGER, "glslang debug log: {}", shader.getInfoDebugLog());
+        //PHENYL_LOGW(LOGGER, "glslang debug log: {}", shader.getInfoDebugLog());
 
         return std::nullopt;
     }
@@ -76,17 +76,17 @@ std::optional<std::vector<std::uint32_t>> VulkanShaderCompiler::compile (graphic
     program.addShader(&shader);
 
     if (!program.link(messageFilter)) {
-        PHENYL_LOGW(LOGGER, "Shader link error");
+        PHENYL_LOGW(LOGGER, "Shader link error in {} shader", shaderType);
         PHENYL_LOGW(LOGGER, "glslang info log: {}", program.getInfoLog());
-        PHENYL_LOGW(LOGGER, "glslang debug log: {}", program.getInfoDebugLog());
+        //PHENYL_LOGW(LOGGER, "glslang debug log: {}", program.getInfoDebugLog());
 
         return std::nullopt;
     }
 
     if (!program.mapIO()) {
-        PHENYL_LOGW(LOGGER, "Shader map IO error");
+        PHENYL_LOGW(LOGGER, "Shader map IO error in {} shader", shaderType);
         PHENYL_LOGW(LOGGER, "glslang info log: {}", program.getInfoLog());
-        PHENYL_LOGW(LOGGER, "glslang debug log: {}", program.getInfoDebugLog());
+        //PHENYL_LOGW(LOGGER, "glslang debug log: {}", program.getInfoDebugLog());
 
         return std::nullopt;
     }
@@ -104,7 +104,7 @@ std::optional<std::vector<std::uint32_t>> VulkanShaderCompiler::compile (graphic
     glslang::GlslangToSpv(*program.getIntermediate(lang), spirvBytecode, &spvLogger, &spvOptions);
 
     if (!spvLogger.getAllMessages().empty()) {
-        PHENYL_LOGD(LOGGER, "SPIRV conversion log: {}", spvLogger.getAllMessages());
+        PHENYL_LOGD(LOGGER, "SPIRV conversion log for {} shader: {}", shaderType, spvLogger.getAllMessages());
     }
 
     return spirvBytecode;

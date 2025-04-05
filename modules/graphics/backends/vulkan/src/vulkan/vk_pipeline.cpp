@@ -2,26 +2,57 @@
 
 #include "vk_pipeline.h"
 
+#include <ranges>
+
+#include "vk_storage_buffer.h"
 #include "shader/vk_shader.h"
 
+using namespace phenyl::graphics;
 using namespace phenyl::vulkan;
 
-static phenyl::Logger LOGGER{"VK_PIPELINE", detail::VULKAN_LOGGER};
+static phenyl::Logger LOGGER{"VK_PIPELINE", phenyl::vulkan::detail::VULKAN_LOGGER};
 
-VulkanPipeline::VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout) : device{device}, pipeline{pipeline}, pipelineLayout{pipelineLayout} {}
+static VkVertexInputAttributeDescription MakeAttrib (BufferBinding binding, unsigned int location, VkFormat format, std::size_t offset);
+
+static VkIndexType GetIndexType (ShaderIndexType type) {
+    switch (type) {
+        case ShaderIndexType::USHORT:
+            return VK_INDEX_TYPE_UINT16;
+        case ShaderIndexType::UINT:
+            return VK_INDEX_TYPE_UINT32;
+        default:
+            PHENYL_ABORT("Unexpected index buffer type: {}", static_cast<std::uint32_t>(type));
+    }
+}
+
+VulkanPipeline::VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes) :
+        device{device}, pipeline{pipeline}, pipelineLayout{pipelineLayout}, testFramebuffer{framebuffer}, vertexBindingTypes{std::move(vertexBindingTypes)}, boundVertexBuffers(this->vertexBindingTypes.size()),
+        vertexBufferOffsets(this->vertexBindingTypes.size()) {
+    PHENYL_ASSERT(testFramebuffer);
+}
 
 VulkanPipeline::~VulkanPipeline () {
     vkDestroyPipeline(device, pipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
 
-void VulkanPipeline::bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer,
+void VulkanPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer,
                                  std::size_t offset) {
+    std::size_t index = binding;
+    const auto* storageBuffer = reinterpret_cast<const VulkanStorageBuffer*>(&buffer);
+    PHENYL_ASSERT_MSG(index < vertexBindingTypes.size(), "Attempted to bind to invalid binding!");
+    PHENYL_ASSERT_MSG(type == vertexBindingTypes[index], "Attempted to bind buffer with incorrect type!");
 
+    boundVertexBuffers[index] = storageBuffer;
+    vertexBufferOffsets[index] = static_cast<VkDeviceSize>(offset);
 }
 
-void VulkanPipeline::bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) {
+void VulkanPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
+    const auto* storageBuffer = reinterpret_cast<const VulkanStorageBuffer*>(&buffer);
 
+    indexBuffer = storageBuffer;
+    indexBufferType = GetIndexType(type);
+    PHENYL_DASSERT(indexBuffer);
 }
 
 void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding binding,
@@ -29,21 +60,54 @@ void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding bin
 
 }
 
-void VulkanPipeline::bindSampler (graphics::SamplerBinding binding, const graphics::ISampler& sampler) {
+void VulkanPipeline::bindSampler (SamplerBinding binding, const ISampler& sampler) {
 
 }
 
 void VulkanPipeline::unbindIndexBuffer () {
-
+    indexBuffer = nullptr;
+    indexBufferType = VK_INDEX_TYPE_NONE_KHR;
 }
 
-void VulkanPipeline::render (graphics::IFrameBuffer* fb, std::size_t vertices, std::size_t offset) {
+void VulkanPipeline::render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) {
+    PHENYL_ASSERT(testFramebuffer->renderingRecorder);
+    auto& recorder= *testFramebuffer->renderingRecorder;
 
+    recorder.setPipeline(pipeline, testFramebuffer->viewport, testFramebuffer->scissor);
+
+    boundVkBuffers = boundVertexBuffers
+        | std::views::transform(&VulkanStorageBuffer::getBuffer)
+        | std::ranges::to<std::vector>();
+    recorder.bindVertexBuffers(boundVkBuffers, vertexBufferOffsets);
+
+    if (indexBuffer) {
+        PHENYL_ASSERT(indexBuffer->getBuffer());
+        recorder.bindIndexBuffer(indexBuffer->getBuffer(), indexBufferType);
+        recorder.drawIndexed(vertices, offset);
+    } else {
+        recorder.draw(vertices, offset);
+    }
 }
 
-void VulkanPipeline::renderInstanced (graphics::IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
+void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
     std::size_t offset) {
+    PHENYL_ASSERT(testFramebuffer->renderingRecorder);
+    auto& recorder= *testFramebuffer->renderingRecorder;
 
+    recorder.setPipeline(pipeline, testFramebuffer->viewport, testFramebuffer->scissor);
+
+    boundVkBuffers = boundVertexBuffers
+        | std::views::transform(&VulkanStorageBuffer::getBuffer)
+        | std::ranges::to<std::vector>();
+    recorder.bindVertexBuffers(boundVkBuffers, vertexBufferOffsets);
+
+    if (indexBuffer) {
+        PHENYL_ASSERT(indexBuffer->getBuffer());
+        recorder.bindIndexBuffer(indexBuffer->getBuffer(), indexBufferType);
+        recorder.drawIndexed(numInstances, vertices, offset);
+    } else {
+        recorder.draw(numInstances, vertices, offset);
+    }
 }
 
 void VulkanPipeline::renderTest (VulkanRenderingRecorder& recorder, VkViewport viewport, VkRect2D scissor, std::size_t vertices) {
@@ -52,7 +116,7 @@ void VulkanPipeline::renderTest (VulkanRenderingRecorder& recorder, VkViewport v
     recorder.draw(vertices, 0);
 }
 
-VulkanPipelineBuilder::VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat) : device{device}, colorFormat{swapChainFormat} {}
+VulkanPipelineBuilder::VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat, TestFramebuffer* framebuffer) : device{device}, colorFormat{swapChainFormat}, framebuffer{framebuffer} {}
 
 void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
     switch (mode) {
@@ -83,7 +147,7 @@ void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
     }
 }
 
-void VulkanPipelineBuilder::withCullMode (graphics::CullMode mode) {
+void VulkanPipelineBuilder::withCullMode (CullMode mode) {
     switch (mode) {
         case graphics::CullMode::FRONT_FACE:
             cullMode = VK_CULL_MODE_FRONT_BIT;
@@ -119,12 +183,69 @@ void VulkanPipelineBuilder::withShader (core::Asset<graphics::Shader> shader) {
 
 phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (std::size_t type, std::size_t size,
     graphics::BufferInputRate inputRate) {
-    return 0;
+    VkVertexInputRate vkInputRate;
+    switch (inputRate) {
+        case graphics::BufferInputRate::VERTEX:
+            vkInputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+            break;
+        case graphics::BufferInputRate::INSTANCE:
+            vkInputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+            break;
+        default:
+            PHENYL_ABORT("Unexpected BufferInputRate value: {}", static_cast<std::uint32_t>(inputRate));
+    }
+
+    auto binding = static_cast<std::uint32_t>(vertexBindings.size());
+    vertexBindings.push_back(VkVertexInputBindingDescription{
+        .binding = binding,
+        .stride = static_cast<std::uint32_t>(size),
+        .inputRate = vkInputRate
+    });
+    vertexBindingTypes.emplace_back(type);
+
+    return graphics::BufferBinding{binding};
 }
 
-void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned int location,
-    graphics::BufferBinding binding, std::size_t offset) {
+void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned int location, graphics::BufferBinding binding, std::size_t offset) {
+    PHENYL_ASSERT(binding < vertexBindings.size());
 
+    switch (type) {
+        case graphics::ShaderDataType::FLOAT32:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32_SFLOAT, offset));
+            break;
+        case graphics::ShaderDataType::INT16:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R16_SINT, offset));
+            break;
+        case graphics::ShaderDataType::INT32:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32_SINT, offset));
+            break;
+        case graphics::ShaderDataType::VEC2F:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32_SFLOAT, offset));
+            break;
+        case graphics::ShaderDataType::VEC3F:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32_SFLOAT, offset));
+            break;
+        case graphics::ShaderDataType::VEC4F:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offset));
+            break;
+        case graphics::ShaderDataType::MAT2F:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32_SFLOAT, offset));
+            vertexAttribs.push_back(MakeAttrib(binding, location + 1, VK_FORMAT_R32G32_SFLOAT, offset + sizeof(glm::vec2)));
+            break;
+        case graphics::ShaderDataType::MAT3F:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32_SFLOAT, offset));
+            vertexAttribs.push_back(MakeAttrib(binding, location + 1, VK_FORMAT_R32G32B32_SFLOAT, offset + sizeof(glm::vec2)));
+            vertexAttribs.push_back(MakeAttrib(binding, location + 2, VK_FORMAT_R32G32B32_SFLOAT, offset + sizeof(glm::vec2) * 2));
+            break;
+        case graphics::ShaderDataType::MAT4F:
+            vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offset));
+            vertexAttribs.push_back(MakeAttrib(binding, location + 1, VK_FORMAT_R32G32B32A32_SFLOAT, offset + sizeof(glm::vec2)));
+            vertexAttribs.push_back(MakeAttrib(binding, location + 2, VK_FORMAT_R32G32B32A32_SFLOAT, offset + sizeof(glm::vec2) * 2));
+            vertexAttribs.push_back(MakeAttrib(binding, location + 3, VK_FORMAT_R32G32B32A32_SFLOAT, offset + sizeof(glm::vec2) * 3));
+            break;
+        default:
+            PHENYL_LOGE(LOGGER, "Unexpected shader type: {}", static_cast<std::uint32_t>(type));
+    }
 }
 
 phenyl::graphics::UniformBinding VulkanPipelineBuilder::withUniform (std::size_t type, unsigned int location) {
@@ -136,13 +257,12 @@ phenyl::graphics::SamplerBinding VulkanPipelineBuilder::withSampler (unsigned in
 }
 
 std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
-    // TODO
     VkPipelineVertexInputStateCreateInfo vertexInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 0,
-        .pVertexBindingDescriptions = nullptr,
-        .vertexAttributeDescriptionCount = 0,
-        .pVertexAttributeDescriptions = nullptr
+        .vertexBindingDescriptionCount = static_cast<std::uint32_t>(vertexBindings.size()),
+        .pVertexBindingDescriptions = vertexBindings.data(),
+        .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(vertexAttribs.size()),
+        .pVertexAttributeDescriptions = vertexAttribs.data()
     };
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo {
@@ -244,5 +364,14 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
     }
 
     PHENYL_LOGD(LOGGER, "Constructed pipeline");
-    return std::make_unique<VulkanPipeline>(device, pipeline, pipelineLayout);
+    return std::make_unique<VulkanPipeline>(device, pipeline, pipelineLayout, framebuffer, std::move(vertexBindingTypes));
+}
+
+static VkVertexInputAttributeDescription MakeAttrib (phenyl::graphics::BufferBinding binding, unsigned int location, VkFormat format, std::size_t offset) {
+    return VkVertexInputAttributeDescription{
+        .location = location,
+        .binding = binding,
+        .format = format,
+        .offset = static_cast<std::uint32_t>(offset)
+    };
 }

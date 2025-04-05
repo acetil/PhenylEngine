@@ -6,10 +6,10 @@
 #include <unordered_set>
 
 #include "vk_array_texture.h"
-#include "vk_buffer.h"
 #include "vk_framebuffer.h"
 #include "vk_image_texture.h"
 #include "vk_pipeline.h"
+#include "vk_storage_buffer.h"
 #include "vk_uniform_buffer.h"
 #include "core/assets/assets.h"
 
@@ -65,6 +65,8 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     surface = viewport->createSurface(instance);
 
     device = std::make_unique<VulkanDevice>(instance, surface);
+    allocator = device->makeVmaAllocator(instance, VK_API_VERSION_1_3);
+
     swapChain = device->makeSwapChain(surface);
     frameManager = std::make_unique<FrameManager>(*device, MAX_FRAMES_IN_FLIGHT);
 
@@ -82,6 +84,8 @@ VulkanRenderer::~VulkanRenderer () {
 
     frameManager = nullptr;
     swapChain = nullptr;
+
+    vmaDestroyAllocator(allocator);
     device = nullptr;
     vkDestroySurfaceKHR(instance, surface, nullptr);
 
@@ -112,8 +116,18 @@ void VulkanRenderer::render () {
     auto commandBuffer = frameManager->getCommandPool().getBuffer();
     commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     {
-        auto recorder = commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent());
-        testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
+        auto recorder = commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent(), VkClearValue{
+            .color = {
+                .float32 = {0, 0, 0, 1}
+            }
+        });
+        //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
+
+        // TODO
+        framebuffer.renderingRecorder = &recorder;
+        framebuffer.viewport = swapChain->getViewport();
+        framebuffer.scissor = swapChain->getScissor();
+        layerRender();
     }
 
     commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
@@ -143,8 +157,12 @@ std::string_view VulkanRenderer::getName () const noexcept {
     return "VulkanRenderer";
 }
 
-std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) {
-    return std::make_unique<VulkanBuffer>();
+VulkanBuffer VulkanRenderer::makeBuffer (std::size_t size, bool isIndex) {
+    return VulkanBuffer{allocator, static_cast<VkBufferUsageFlags>(isIndex ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT), size};
+}
+
+std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) {
+    return std::make_unique<VulkanStorageBuffer>(*this, startCapacity, isIndex);
 }
 
 std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool readable) {
@@ -164,13 +182,13 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(device->device(), swapChain->format())};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(device->device(), swapChain->format(), &framebuffer)};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
     shaderManager->loadDefaultShaders();
 
-    auto builder = VulkanPipelineBuilder{device->device(), swapChain->format()};
+    auto builder = VulkanPipelineBuilder{device->device(), swapChain->format(), &framebuffer};
     builder.withShader(core::Assets::Load<Shader>("phenyl/shaders/test"));
     testPipeline = std::unique_ptr<VulkanPipeline>(reinterpret_cast<VulkanPipeline*>(builder.build().release()));
 }

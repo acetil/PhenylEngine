@@ -30,7 +30,7 @@ namespace phenyl::opengl {
 
         core::Asset<graphics::Shader> noopPostShader;
     protected:
-        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize) override;
+        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) override;
         std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
         std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (const graphics::TextureProperties& properties) override;
         std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture(const graphics::TextureProperties &properties, std::uint32_t width, std::uint32_t height) override;

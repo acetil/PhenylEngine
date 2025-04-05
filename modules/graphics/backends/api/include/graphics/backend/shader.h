@@ -158,3 +158,23 @@ namespace phenyl::graphics {
         }
     };
 }
+
+template<>
+struct std::formatter<phenyl::graphics::ShaderSourceType, char> {
+    template <class ParseContext>
+    constexpr ParseContext::iterator parse (ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <class FmtContext>
+    FmtContext::iterator format (const phenyl::graphics::ShaderSourceType& type, FmtContext& ctx) const {
+        switch (type) {
+            case phenyl::graphics::ShaderSourceType::FRAGMENT:
+                return std::format_to(ctx.out(), "FRAGMENT");
+            case phenyl::graphics::ShaderSourceType::VERTEX:
+                return std::format_to(ctx.out(), "VERTEX");
+            default:
+                return std::format_to(ctx.out(), "UNKNOWN");
+        }
+    }
+};

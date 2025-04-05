@@ -50,6 +50,12 @@ namespace phenyl::vulkan {
         void draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex);
         void draw (std::uint32_t vertexCount, std::uint32_t firstVertex);
 
+        void drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex);
+        void drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex);
+
+        void bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets);
+        void bindIndexBuffer (VkBuffer buffer, VkIndexType indexType);
+
         ~VulkanRenderingRecorder ();
     };
 

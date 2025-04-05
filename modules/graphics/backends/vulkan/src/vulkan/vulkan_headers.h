@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_enum_string_helper.h>
 
+#include <vk_mem_alloc.h>
+
 #include "logging/logging.h"
 
 namespace phenyl::vulkan {
@@ -23,6 +25,10 @@ namespace phenyl::vulkan {
                 .minor = VK_API_VERSION_MINOR(packed),
                 .patch = VK_API_VERSION_PATCH(packed)
             };
+        }
+
+        [[nodiscard]] std::uint32_t packed () const noexcept {
+            return VK_MAKE_API_VERSION(variant, major, minor, patch);
         }
     };
 

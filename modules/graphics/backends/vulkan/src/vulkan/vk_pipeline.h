@@ -1,17 +1,35 @@
 #pragma once
 
+#include "vk_command_buffer.h"
 #include "graphics/backend/pipeline.h"
-#include "init/vk_device.h"
 
 namespace phenyl::vulkan {
+    struct TestFramebuffer {
+        VulkanRenderingRecorder* renderingRecorder;
+        VkViewport viewport;
+        VkRect2D scissor;
+    };
+
+    class VulkanStorageBuffer;
+
     class VulkanPipeline : public graphics::IPipeline {
     private:
+        TestFramebuffer* testFramebuffer;
         VkDevice device;
         VkPipeline pipeline;
         VkPipelineLayout pipelineLayout;
 
+        std::vector<std::size_t> vertexBindingTypes;
+
+        std::vector<const VulkanStorageBuffer*> boundVertexBuffers;
+        std::vector<VkBuffer> boundVkBuffers;
+        std::vector<VkDeviceSize> vertexBufferOffsets;
+
+        const VulkanStorageBuffer* indexBuffer = nullptr;
+        VkIndexType indexBufferType;
+
     public:
-        VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout);
+        VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes);
         ~VulkanPipeline () override;
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
@@ -32,7 +50,14 @@ namespace phenyl::vulkan {
         VkDevice device;
         VkFormat colorFormat;
 
+        TestFramebuffer* framebuffer;
+
         core::Asset<graphics::Shader> shader;
+
+        std::vector<VkVertexInputBindingDescription> vertexBindings;
+        std::vector<std::size_t> vertexBindingTypes;
+        std::vector<VkVertexInputAttributeDescription> vertexAttribs;
+
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkCullModeFlags cullMode = VK_CULL_MODE_NONE;
 
@@ -42,7 +67,7 @@ namespace phenyl::vulkan {
         };
 
     public:
-        VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat);
+        VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat, TestFramebuffer* framebuffer);
 
         void withBlendMode (graphics::BlendMode mode) override;
         void withCullMode (graphics::CullMode mode) override;

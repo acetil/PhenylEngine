@@ -9,7 +9,7 @@ static VkPresentModeKHR ChoosePresentMode (const VulkanSwapChainDetails& details
 static VkExtent2D ChooseExtent (const VulkanSwapChainDetails& details);
 static std::uint32_t ChooseImageCount (const VulkanSwapChainDetails& details);
 
-VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies) : device{device} {
+VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies) : device{device}, imageExtent{} {
     PHENYL_LOGI(LOGGER, "Creating swap chain");
     auto surfaceFormat = ChooseSurfaceFormat(details);
     imageFormat = surfaceFormat.format;

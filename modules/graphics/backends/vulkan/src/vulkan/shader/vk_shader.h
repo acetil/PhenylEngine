@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "core/assets/asset_manager.h"
 
 #include "graphics/backend/shader.h"
@@ -12,10 +14,12 @@ namespace phenyl::vulkan {
         VkDevice device;
         std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules;
 
-        VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules);
+        std::unordered_map<std::string, std::pair<graphics::ShaderDataType, unsigned int>> attribs;
+
+        VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules, std::unordered_map<std::string, std::pair<graphics::ShaderDataType, unsigned int>> attribs);
     public:
         static std::unique_ptr<VulkanShader> Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType,
-            std::vector<std::uint32_t>>& sources);
+            std::vector<std::uint32_t>>& sources, const std::vector<std::pair<graphics::ShaderDataType, std::string>>& attribs);
 
         ~VulkanShader () override;
 
@@ -45,12 +49,14 @@ namespace phenyl::vulkan {
             VkDevice device;
             const VulkanShaderCompiler& compiler;
             std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>> shaderSources;
+            std::vector<std::pair<graphics::ShaderDataType, std::string>> attribs;
 
         public:
 
             explicit Builder (VkDevice device, const VulkanShaderCompiler& compiler) : device{device}, compiler{compiler} {}
 
             Builder& withSource (graphics::ShaderSourceType type, const std::string& source);
+            Builder& withAttrib (graphics::ShaderDataType type, std::string attribName);
             std::unique_ptr<VulkanShader> build ();
         };
 

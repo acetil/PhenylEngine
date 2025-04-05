@@ -30,7 +30,7 @@ void CanvasRenderLayer::init (Renderer& renderer) {
                        .build();
 
     buffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);
-    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE);
+    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, true);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     pipeline.bindBuffer(textBinding, buffer);
