@@ -3,6 +3,13 @@
 layout (location = 0) in vec3 position;
 layout (location = 1) in mat4 model;
 
+layout(std140, binding = 0) uniform GlobalUniform {
+    mat4 view;
+    mat4 projection;
+    vec3 viewPos;
+};
+
+
 void main () {
-    gl_Position = model * vec4(position, 1.0);
+    gl_Position = projection * view * model * vec4(position, 1.0);
 }

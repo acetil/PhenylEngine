@@ -124,6 +124,7 @@ void DebugLayer::bufferData (const Camera2D& camera, glm::vec2 screenSize) {
 
     uniformBuffer->camera = camera.getCamMatrix();
     uniformBuffer->screenTransform = glm::scale(glm::vec3{2 / screenSize.x, 2 / screenSize.y, 1}) * glm::translate(glm::vec3{-1, -1, 0});
+    uniformBuffer.upload();
 }
 
 void DebugLayer::render () {

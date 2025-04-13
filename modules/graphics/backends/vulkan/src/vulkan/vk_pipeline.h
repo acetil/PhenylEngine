@@ -1,11 +1,14 @@
 #pragma once
 
 #include "vk_command_buffer.h"
+#include "vk_descriptors.h"
+#include "vk_uniform_buffer.h"
 #include "graphics/backend/pipeline.h"
 
 namespace phenyl::vulkan {
     struct TestFramebuffer {
         VulkanRenderingRecorder* renderingRecorder;
+        VulkanDescriptorPool* descriptorPool;
         VkViewport viewport;
         VkRect2D scissor;
     };
@@ -19,6 +22,10 @@ namespace phenyl::vulkan {
         VkPipeline pipeline;
         VkPipelineLayout pipelineLayout;
 
+        VkDescriptorSetLayout descriptorSetLayout;
+        std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
+        std::unordered_map<graphics::UniformBinding, const VkDescriptorBufferInfo*> boundUniformBuffers;
+
         std::vector<std::size_t> vertexBindingTypes;
 
         std::vector<const VulkanStorageBuffer*> boundVertexBuffers;
@@ -28,8 +35,10 @@ namespace phenyl::vulkan {
         const VulkanStorageBuffer* indexBuffer = nullptr;
         VkIndexType indexBufferType;
 
+        VkDescriptorSet getDescriptorSet ();
     public:
-        VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes);
+        VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout descriptorSetLayout,
+            TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes);
         ~VulkanPipeline () override;
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
@@ -57,6 +66,10 @@ namespace phenyl::vulkan {
         std::vector<VkVertexInputBindingDescription> vertexBindings;
         std::vector<std::size_t> vertexBindingTypes;
         std::vector<VkVertexInputAttributeDescription> vertexAttribs;
+
+        std::vector<VkDescriptorSetLayoutBinding> descriptorBindings;
+        std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
+        std::unordered_map<graphics::UniformBinding, const VulkanUniformBuffer*> boundUniforms;
 
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkCullModeFlags cullMode = VK_CULL_MODE_NONE;

@@ -118,13 +118,14 @@ void VulkanRenderer::render () {
     {
         auto recorder = commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent(), VkClearValue{
             .color = {
-                .float32 = {0, 0, 0, 1}
+                .float32 = {1, 0, 0, 1}
             }
         });
         //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
 
         // TODO
         framebuffer.renderingRecorder = &recorder;
+        framebuffer.descriptorPool = &frameManager->getDescriptorPool();
         framebuffer.viewport = swapChain->getViewport();
         framebuffer.scissor = swapChain->getScissor();
         layerRender();
@@ -157,8 +158,15 @@ std::string_view VulkanRenderer::getName () const noexcept {
     return "VulkanRenderer";
 }
 
-VulkanBuffer VulkanRenderer::makeBuffer (std::size_t size, bool isIndex) {
-    return VulkanBuffer{allocator, static_cast<VkBufferUsageFlags>(isIndex ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT), size};
+VulkanBuffer VulkanRenderer::makeBuffer (std::size_t size, bool isStorage, bool isIndex) {
+    VkBufferUsageFlags usage;
+    if (isStorage) {
+        usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | (isIndex ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    } else {
+        usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    }
+
+    return VulkanBuffer{allocator, usage, size};
 }
 
 std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) {
@@ -166,7 +174,7 @@ std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCa
 }
 
 std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool readable) {
-    return std::make_unique<VulkanUniformBuffer>();
+    return std::make_unique<VulkanUniformBuffer>(*this);
 }
 
 std::unique_ptr<IImageTexture> VulkanRenderer::makeRendererImageTexture (const TextureProperties& properties) {
@@ -352,8 +360,8 @@ std::unique_ptr<Renderer> phenyl::graphics::MakeVulkanRenderer (const GraphicsPr
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessageCallback (VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-    auto* messageIdName = pCallbackData->pMessageIdName;
-    auto* message = pCallbackData->pMessage;
+    auto* messageIdName = pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "(null)";
+    auto* message = pCallbackData->pMessage ? pCallbackData->pMessage : "";
 
     std::string_view type;
     if (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {

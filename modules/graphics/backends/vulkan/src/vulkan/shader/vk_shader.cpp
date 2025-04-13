@@ -19,10 +19,11 @@ static VkShaderStageFlagBits ConvertShaderType (phenyl::graphics::ShaderSourceTy
     PHENYL_ABORT("Unexpected shader type: {}", static_cast<std::uint32_t>(shaderType));
 }
 
-VulkanShader::VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules,
-    std::unordered_map<std::string, std::pair<graphics::ShaderDataType, unsigned int>> attribs) : device{device}, modules{std::move(modules)}, attribs{std::move(attribs)} {}
+VulkanShader::VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules, ShaderReflection reflection)
+        : device{device}, modules{std::move(modules)}, reflection{std::move(reflection)} {}
 
-std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources, const std::vector<std::pair<graphics::ShaderDataType, std::string>>& attribs) {
+std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources,
+    const std::vector<std::pair<graphics::ShaderDataType, std::string>>& attribs, std::unordered_map<std::string, unsigned int> uniforms) {
     std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules;
 
     bool failed = false;
@@ -49,13 +50,8 @@ std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::un
         return nullptr;
     }
 
-    std::unordered_map<std::string, std::pair<graphics::ShaderDataType, unsigned int>> attribMap;
-    for (unsigned int i = 0; i < attribs.size(); i++) {
-        const auto& [type, name] = attribs[i];
-        attribMap[name] = {type, i};
-    }
 
-    return std::unique_ptr<VulkanShader>{new VulkanShader(device, std::move(modules), std::move(attribMap))};
+    return std::unique_ptr<VulkanShader>{new VulkanShader(device, std::move(modules), ShaderReflection{sources})};
 }
 
 VulkanShader::~VulkanShader () {
@@ -84,13 +80,13 @@ std::size_t VulkanShader::hash () const noexcept {
 }
 
 std::optional<unsigned int> VulkanShader::getAttribLocation (const std::string& attrib) const noexcept {
-    auto it = attribs.find(attrib);
-
-    return it != attribs.end() ? std::optional{it ->second.second} : std::nullopt;
+    auto* input = reflection.getAttrib(attrib);
+    return input ? std::optional{input->location} : std::nullopt;
 }
 
 std::optional<unsigned int> VulkanShader::getUniformLocation (const std::string& uniform) const noexcept {
-    return 0;
+    auto* block = reflection.getUniformBlock(uniform);
+    return block ? std::optional{block->location} : std::nullopt;
 }
 
 std::optional<unsigned int> VulkanShader::getSamplerLocation (const std::string& sampler) const noexcept {
@@ -99,11 +95,18 @@ std::optional<unsigned int> VulkanShader::getSamplerLocation (const std::string&
 
 std::optional<std::size_t> VulkanShader::getUniformOffset (const std::string& uniformBlock,
     const std::string& uniform) const noexcept {
-    return 0;
+    auto* block = reflection.getUniformBlock(uniform);
+    if (!block) {
+        return std::nullopt;
+    }
+
+    auto it = block->memberOffsets.find(uniform);
+    return it != block->memberOffsets.end() ? std::optional{it->second} : std::nullopt;
 }
 
 std::optional<std::size_t> VulkanShader::getUniformBlockSize (const std::string& uniformBlock) const noexcept {
-    return 0;
+    auto* block = reflection.getUniformBlock(uniformBlock);
+    return block ? std::optional{block->size} : std::nullopt;
 }
 
 VulkanShaderManager::VulkanShaderManager (VkDevice device) : device{device} {}
@@ -163,6 +166,11 @@ VulkanShaderManager::Builder& VulkanShaderManager::Builder::withAttrib (graphics
     return *this;
 }
 
+VulkanShaderManager::Builder& VulkanShaderManager::Builder::withUniform (std::string attribName, unsigned int location) {
+    uniformBindings.emplace(attribName, location);
+    return *this;
+}
+
 std::unique_ptr<VulkanShader> VulkanShaderManager::Builder::build () {
-    return VulkanShader::Make(device, shaderSources, attribs);
+    return VulkanShader::Make(device, shaderSources, attribs, std::move(uniformBindings));
 }

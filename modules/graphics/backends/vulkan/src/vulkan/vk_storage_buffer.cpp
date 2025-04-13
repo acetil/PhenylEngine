@@ -4,7 +4,7 @@ using namespace phenyl::vulkan;
 
 VulkanStorageBuffer::VulkanStorageBuffer (VulkanRenderer& renderer, std::size_t newSize, bool isIndex) : renderer{renderer}, currSize{newSize}, capacity{newSize}, isIndex{isIndex} {
     if (currSize > 0) {
-        buffer = std::make_unique<VulkanBuffer>(renderer.makeBuffer(newSize, isIndex));
+        buffer = std::make_unique<VulkanBuffer>(renderer.makeBuffer(newSize, true, isIndex));
     }
 }
 
@@ -15,11 +15,11 @@ void VulkanStorageBuffer::upload (unsigned char* data, std::size_t size) {
     }
 
     if (!buffer) {
-        buffer = std::make_unique<VulkanBuffer>(renderer.makeBuffer(size, isIndex));
+        buffer = std::make_unique<VulkanBuffer>(renderer.makeBuffer(size, true, isIndex));
         capacity = size;
     } else if (size > capacity) {
         // TODO
-        *buffer = renderer.makeBuffer(size, isIndex);
+        *buffer = renderer.makeBuffer(size, true, isIndex);
         capacity = size;
     }
 

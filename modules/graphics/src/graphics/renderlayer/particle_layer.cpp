@@ -1,6 +1,9 @@
 #include "core/assets/assets.h"
 
 #include "particle_layer.h"
+
+#include "graphics/camera_2d.h"
+
 #include "graphics/particles/particle_manager.h"
 
 #define MAX_PARTICLES 512
@@ -39,14 +42,16 @@ void ParticleRenderLayer::init (Renderer& renderer) {
     pipeline.bindUniform(uniformBinding, uniformBuffer);
 }
 
-void ParticleRenderLayer::bufferData (const ParticleManager2D& manager) {
+void ParticleRenderLayer::bufferData (const Camera2D& camera, const ParticleManager2D& manager) {
     posBuffer.clear();
     colourBuffer.clear();
 
     manager.buffer(posBuffer, colourBuffer);
+    uniformBuffer->camera = camera.getCamMatrix();
 
     posBuffer.upload();
     colourBuffer.upload();
+    uniformBuffer.upload();
 }
 
 void ParticleRenderLayer::render () {

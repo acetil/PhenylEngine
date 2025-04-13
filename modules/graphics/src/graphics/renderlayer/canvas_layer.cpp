@@ -46,6 +46,7 @@ void CanvasRenderLayer::uploadData () {
 
 void CanvasRenderLayer::setScreenSize (glm::vec2 screenSize) {
     uniformBuffer->screenSize = screenSize;
+    uniformBuffer.upload();
 }
 
 void CanvasRenderLayer::render () {

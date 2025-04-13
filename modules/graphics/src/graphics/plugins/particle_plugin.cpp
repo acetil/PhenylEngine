@@ -23,9 +23,9 @@ static void UpdateSystem (const phenyl::core::Resources<const phenyl::core::Delt
     manager.update(static_cast<float>(deltaTime()));
 }
 
-static void RenderSystem (const phenyl::core::Resources<ParticleData, ParticleManager2D>& resources) {
-    auto& [data, manager] = resources;
-    data.layer->bufferData(manager);
+static void RenderSystem (const phenyl::core::Resources<ParticleData, Camera2D, ParticleManager2D>& resources) {
+    auto& [data, camera, manager] = resources;
+    data.layer->bufferData(camera, manager);
 }
 
 Particle2DPlugin::Particle2DPlugin () = default;

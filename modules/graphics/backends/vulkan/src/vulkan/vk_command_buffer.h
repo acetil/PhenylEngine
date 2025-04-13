@@ -56,6 +56,8 @@ namespace phenyl::vulkan {
         void bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets);
         void bindIndexBuffer (VkBuffer buffer, VkIndexType indexType);
 
+        void bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets);
+
         ~VulkanRenderingRecorder ();
     };
 

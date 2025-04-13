@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/camera_2d.h"
+
 #include "graphics/backend/abstract_render_layer.h"
 #include "graphics/backend/renderer.h"
 
@@ -23,6 +25,6 @@ namespace phenyl::graphics {
         void init (Renderer& renderer) override;
         void render () override;
 
-        void bufferData (const ParticleManager2D& manager);
+        void bufferData (const Camera2D& camera, const ParticleManager2D& manager);
     };
 }

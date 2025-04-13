@@ -8,7 +8,7 @@ VulkanBuffer::VulkanBuffer (VmaAllocator allocator, VkBufferUsageFlags usage, st
     VkBufferCreateInfo bufCreateInfo{
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = static_cast<VkDeviceSize>(bufSize),
-        .usage = usage | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+        .usage = usage
     };
 
     VmaAllocationCreateInfo allocCreateInfo{

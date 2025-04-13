@@ -19,7 +19,11 @@ add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp
         src/vulkan/vk_frame.cpp
         src/vulkan/memory/vk_buffer.h
         src/vulkan/memory/vma.cpp
-        src/vulkan/memory/vk_buffer.cpp)
+        src/vulkan/memory/vk_buffer.cpp
+        src/vulkan/vk_descriptors.h
+        src/vulkan/vk_descriptors.cpp
+        src/vulkan/shader/vk_shader_reflection.h
+        src/vulkan/shader/vk_shader_reflection.cpp)
 
 set_property(TARGET vulkan_backend PROPERTY CXX_STANDARD 23)
 
@@ -27,6 +31,11 @@ find_package(Vulkan REQUIRED)
 find_package(VulkanUtilityLibraries REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+
+find_package(spirv_cross_core CONFIG REQUIRED)
+find_package(spirv_cross_glsl CONFIG REQUIRED)
+find_package(spirv_cross_cpp CONFIG REQUIRED)
+find_package(spirv_cross_reflect CONFIG REQUIRED)
 
 target_include_directories(vulkan_backend PRIVATE src)
 target_include_directories(vulkan_backend PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/)
@@ -53,6 +62,7 @@ target_gen_embedded(vulkan_backend
 )
 
 target_link_libraries(vulkan_backend PRIVATE Vulkan::Vulkan Vulkan::UtilityHeaders GPUOpen::VulkanMemoryAllocator)
-target_link_libraries(vulkan_backend PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV)
+target_link_libraries(vulkan_backend PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
+target_link_libraries(vulkan_backend PRIVATE spirv-cross-cpp spirv-cross-reflect)
 target_link_libraries(vulkan_backend PRIVATE glfw_backend logger core)
 target_link_libraries(vulkan_backend PUBLIC graphics_api)

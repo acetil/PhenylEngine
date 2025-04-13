@@ -250,6 +250,14 @@ void VulkanRenderingRecorder::bindIndexBuffer (VkBuffer buffer, VkIndexType inde
     vkCmdBindIndexBuffer(commandBuffer, buffer, 0, indexType);
 }
 
+void VulkanRenderingRecorder::bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets) {
+    PHENYL_DASSERT(commandBuffer);
+    PHENYL_DASSERT(pipelineLayout);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, static_cast<std::uint32_t>(descriptorSets.size()),
+        descriptorSets.data(), 0, nullptr);
+}
+
 VulkanRenderingRecorder::~VulkanRenderingRecorder () {
     owner.endRendering();
 }

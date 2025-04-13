@@ -2,6 +2,7 @@
 
 #include "vulkan_headers.h"
 #include "vk_command_buffer.h"
+#include "vk_descriptors.h"
 #include "vk_sync.h"
 #include "init/vk_device.h"
 #include "init/vk_swap_chain.h"
@@ -20,6 +21,7 @@ namespace phenyl::vulkan {
 
         SwapChainImage frameImage{};
         std::vector<VulkanCommandPool> commandPools;
+        std::vector<VulkanDescriptorPool> descriptorPools; // TODO: per-pipeline pools?
         std::vector<FrameSync> syncs;
 
         friend class VulkanRenderer;
@@ -35,6 +37,11 @@ namespace phenyl::vulkan {
         VulkanCommandPool& getCommandPool () {
             PHENYL_DASSERT(flightNum() < commandPools.size());
             return commandPools[flightNum()];
+        }
+
+        VulkanDescriptorPool& getDescriptorPool () {
+            PHENYL_DASSERT(flightNum() < commandPools.size());
+            return descriptorPools[flightNum()];
         }
 
         FrameSync& getFrameSync () {

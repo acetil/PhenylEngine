@@ -6,10 +6,12 @@ FrameManager::FrameManager (VulkanDevice& device, std::size_t maxInFlight) : max
     PHENYL_DASSERT(maxInFlight > 0);
 
     commandPools.reserve(maxInFlight);
+    descriptorPools.reserve(maxInFlight);
     syncs.reserve(maxInFlight);
 
     for (auto i = 0; i < maxInFlight; i++) {
         commandPools.push_back(device.makeCommandPool(1));
+        descriptorPools.emplace_back(device.device());
         syncs.push_back(FrameSync{
             .imageAvailable = VulkanSemaphore{device.device()},
             .renderFinished = VulkanSemaphore{device.device()},
@@ -33,6 +35,7 @@ bool FrameManager::onNewFrame (VulkanSwapChain& swapChain) {
     sync.inFlight.reset();
 
     getCommandPool().reset();
+    getDescriptorPool().reset();
 
     return true;
 }

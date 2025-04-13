@@ -71,6 +71,6 @@ namespace phenyl::vulkan {
         std::string_view getName() const noexcept override;
 
         // TODO: abstract away
-        VulkanBuffer makeBuffer (std::size_t size, bool isIndex = false);
+        VulkanBuffer makeBuffer (std::size_t size, bool isStorage, bool isIndex = false);
     };
 }

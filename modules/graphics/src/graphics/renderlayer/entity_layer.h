@@ -50,7 +50,6 @@ namespace phenyl::graphics {
 
         SamplerBinding samplerBinding{};
 
-        void bufferData (core::World& world, const Camera2D& camera);
     public:
 
         EntityRenderLayer ();
@@ -59,7 +58,6 @@ namespace phenyl::graphics {
 
         void init (Renderer& renderer) override;
 
-        void preRender (core::World& world, const Camera2D& camera);
         void render () override;
 
         void pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite);

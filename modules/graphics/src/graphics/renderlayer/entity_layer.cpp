@@ -70,10 +70,6 @@ void EntityRenderLayer::render () {
     samplerRenders.clear();
 }
 
-void EntityRenderLayer::preRender (phenyl::core::World& world, const Camera2D& camera) {
-    bufferData(world, camera);
-}
-
 void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite) {
     if (!sprite.texture) {
         return;
@@ -129,66 +125,68 @@ void EntityRenderLayer::bufferEntities (const Camera2D& camera) {
     indices.upload();
 
     uniformBuffer->camera = camera.getCamMatrix();
+    uniformBuffer.upload();
 }
 
 
-void EntityRenderLayer::bufferData (phenyl::core::World& world, const Camera2D& camera) {
-
-    world.query<phenyl::core::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
-        if (!sprite.texture) {
-            return;
-        }
-
-        auto startIndex = vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({-1.0f, 1.0f}),
-            .uv = sprite.uvStart
-        });
-        vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({1.0f, 1.0f}),
-            .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}
-        });
-        vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({1.0f, -1.0f}),
-            .uv = sprite.uvEnd
-        });
-        vertexBuffer.emplace(Vertex{
-            .pos = transform.transform2D.apply({-1.0f, -1.0f}),
-            .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}
-        });
-
-        samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
-    });
-
-    std::sort(samplerStartIndices.begin(), samplerStartIndices.end());
-    std::uint16_t offset = 0;
-    const ISampler* currSampler = nullptr;
-    for (const auto& [sampler, startIndex] : samplerStartIndices) {
-        if (sampler != currSampler) {
-            samplerRenders.emplace_back(SamplerRender{
-                .indexOffset = offset,
-                .size = 0,
-                .sampler = sampler
-            });
-            currSampler = sampler;
-        }
-
-        indices.emplace(startIndex + 0);
-        indices.emplace(startIndex + 1);
-        indices.emplace(startIndex + 2);
-
-        indices.emplace(startIndex + 0);
-        indices.emplace(startIndex + 2);
-        indices.emplace(startIndex + 3);
-
-        offset += 6;
-        samplerRenders.back().size += 6;
-    }
-
-    vertexBuffer.upload();
-    indices.upload();
-
-    uniformBuffer->camera = camera.getCamMatrix();
-}
+// void EntityRenderLayer::bufferData (phenyl::core::World& world, const Camera2D& camera) {
+//
+//     world.query<phenyl::core::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
+//         if (!sprite.texture) {
+//             return;
+//         }
+//
+//         auto startIndex = vertexBuffer.emplace(Vertex{
+//             .pos = transform.transform2D.apply({-1.0f, 1.0f}),
+//             .uv = sprite.uvStart
+//         });
+//         vertexBuffer.emplace(Vertex{
+//             .pos = transform.transform2D.apply({1.0f, 1.0f}),
+//             .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}
+//         });
+//         vertexBuffer.emplace(Vertex{
+//             .pos = transform.transform2D.apply({1.0f, -1.0f}),
+//             .uv = sprite.uvEnd
+//         });
+//         vertexBuffer.emplace(Vertex{
+//             .pos = transform.transform2D.apply({-1.0f, -1.0f}),
+//             .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}
+//         });
+//
+//         samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
+//     });
+//
+//     std::sort(samplerStartIndices.begin(), samplerStartIndices.end());
+//     std::uint16_t offset = 0;
+//     const ISampler* currSampler = nullptr;
+//     for (const auto& [sampler, startIndex] : samplerStartIndices) {
+//         if (sampler != currSampler) {
+//             samplerRenders.emplace_back(SamplerRender{
+//                 .indexOffset = offset,
+//                 .size = 0,
+//                 .sampler = sampler
+//             });
+//             currSampler = sampler;
+//         }
+//
+//         indices.emplace(startIndex + 0);
+//         indices.emplace(startIndex + 1);
+//         indices.emplace(startIndex + 2);
+//
+//         indices.emplace(startIndex + 0);
+//         indices.emplace(startIndex + 2);
+//         indices.emplace(startIndex + 3);
+//
+//         offset += 6;
+//         samplerRenders.back().size += 6;
+//     }
+//
+//     vertexBuffer.upload();
+//     indices.upload();
+//
+//     uniformBuffer->camera = camera.getCamMatrix();
+//     uniformBuffer.upload();
+// }
 
 void EntityRenderLayer::addSystems (core::PhenylRuntime& runtime) {
     runtime.addResource<EntityRenderData2D>(*this);

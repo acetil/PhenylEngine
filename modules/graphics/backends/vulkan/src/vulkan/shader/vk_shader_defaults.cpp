@@ -32,6 +32,7 @@ void VulkanShaderManager::loadDefaultShaders () {
         .withAttrib(ShaderDataType::VEC4F, "borderColourIn")
         .withAttrib(ShaderDataType::VEC4F, "bgColourIn")
         .withAttrib(ShaderDataType::VEC4F, "boxDetailIn")
+        .withUniform("Uniform", 0)
         .build());
 
     loadDefault("phenyl/shaders/debug", builder()
@@ -39,26 +40,34 @@ void VulkanShaderManager::loadDefaultShaders () {
         .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
         .withAttrib(ShaderDataType::VEC3F, "position")
         .withAttrib(ShaderDataType::VEC4F, "colourOut")
+        .withUniform("Uniform", 0)
         .build());
+
     loadDefault("phenyl/shaders/sprite", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
         .withAttrib(ShaderDataType::VEC2F, "position")
         .withAttrib(ShaderDataType::VEC2F, "uvOut")
+        .withUniform("Camera", 0)
         .build());
+
     loadDefault("phenyl/shaders/canvas", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
         .withAttrib(ShaderDataType::VEC2F, "pos")
         .withAttrib(ShaderDataType::VEC3F, "uvOut")
         .withAttrib(ShaderDataType::VEC4F, "colorOut")
+        .withUniform("Uniform", 0)
         .build());
+
     loadDefault("phenyl/shaders/particle", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
         .withAttrib(ShaderDataType::VEC2F, "pos")
         .withAttrib(ShaderDataType::VEC4F, "colourIn")
+        .withUniform("Camera", 0)
         .build());
+
     loadDefault("phenyl/shaders/blinn_phong", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
@@ -66,17 +75,25 @@ void VulkanShaderManager::loadDefaultShaders () {
         .withAttrib(ShaderDataType::VEC3F, "normal")
         .withAttrib(ShaderDataType::VEC2F, "texcoord_0")
         .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniform("GlobalUniform", 0)
+        .withUniform("BPLightUniform", 1)
+        .withUniform("Material", 2)
         .build());
+
     loadDefault("phenyl/shaders/shadow_map", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
         .withAttrib(ShaderDataType::VEC3F, "position")
         .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniform("BPLightUniform", 0)
         .build());
+
     loadDefault("phenyl/shaders/mesh_prepass", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
         .withAttrib(ShaderDataType::VEC3F, "position")
         .withAttrib(ShaderDataType::MAT4F, "model")
+        .withUniform("GlobalUniform", 0)
         .build());
+
     loadDefault("phenyl/shaders/postprocess/noop", builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
