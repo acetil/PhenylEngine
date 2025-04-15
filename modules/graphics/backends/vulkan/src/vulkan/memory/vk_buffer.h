@@ -1,30 +1,20 @@
 #pragma once
 
 #include "vulkan/vulkan_headers.h"
+#include "vulkan/init/vk_resources.h"
 
 namespace phenyl::vulkan {
     class VulkanBuffer {
     private:
-        VmaAllocator allocator;
-
-        VkBuffer buffer{};
-        VmaAllocation alloc{};
-        VmaAllocationInfo allocInfo{};
+        VulkanResource<VulkanBufferInfo> bufferInfo;
 
         std::size_t bufSize;
 
     public:
-        VulkanBuffer (VmaAllocator allocator, VkBufferUsageFlags usage, std::size_t bufSize);
-        VulkanBuffer (const VulkanBuffer&) = delete;
-        VulkanBuffer (VulkanBuffer&&) noexcept;
-
-        VulkanBuffer& operator= (const VulkanBuffer&) = delete;
-        VulkanBuffer& operator= (VulkanBuffer&&) noexcept;
-
-        ~VulkanBuffer ();
+        VulkanBuffer (VulkanResources& resources, VkBufferUsageFlags usage, std::size_t bufSize);
 
         VkBuffer get () const noexcept {
-            return buffer;
+            return bufferInfo->buffer;
         }
 
         std::uint32_t size () const noexcept {

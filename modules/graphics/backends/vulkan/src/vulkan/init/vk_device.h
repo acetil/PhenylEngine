@@ -29,7 +29,7 @@ namespace phenyl::vulkan {
         explicit VulkanDevice (VkInstance instance, VkSurfaceKHR surface);
 
         std::unique_ptr<VulkanSwapChain> makeSwapChain (VkSurfaceKHR surface);
-        VulkanCommandPool makeCommandPool (std::size_t initialCapacity = 1);
+        VkCommandPool makeCommandPool ();
         VmaAllocator makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion);
 
         VkDevice device () const noexcept {

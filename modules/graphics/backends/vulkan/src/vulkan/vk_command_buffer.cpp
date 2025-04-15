@@ -4,50 +4,10 @@ using namespace phenyl::vulkan;
 
 static phenyl::Logger LOGGER{"VK_COMMAND_BUFFER", detail::VULKAN_LOGGER};
 
-VulkanCommandPool::VulkanCommandPool (VkDevice device, std::uint32_t queueIndex, std::size_t capacity) : device{device} {
-    VkCommandPoolCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .queueFamilyIndex = queueIndex
-    };
-    VkCommandPool pool;
-    if (auto result = vkCreateCommandPool(device, &createInfo, nullptr, &pool); result != VK_SUCCESS) {
-        PHENYL_ABORT("Failed to create command pool, error: {}", result);
-    }
-    PHENYL_DASSERT(pool);
-
-    commandPool = pool;
+VulkanCommandPool::VulkanCommandPool (VulkanResources& resources, std::size_t capacity) : device{resources.getDevice()}, pool{resources.makeCommandPool()} {
+    PHENYL_ASSERT_MSG(pool, "Failed to create command pool!");
 
     reserve(capacity);
-}
-
-VulkanCommandPool::VulkanCommandPool (VulkanCommandPool&& other) noexcept : device{other.device}, commandPool{other.commandPool},
-        availableBuffers{std::move(other.availableBuffers)}, usedBuffers{std::move(other.usedBuffers)} {
-    other.device = nullptr;
-    other.commandPool = nullptr;
-}
-
-VulkanCommandPool& VulkanCommandPool::operator= (VulkanCommandPool&& other) noexcept {
-    if (commandPool) {
-        PHENYL_DASSERT(device);
-        vkDestroyCommandPool(device, commandPool, nullptr);
-    }
-
-    device = other.device;
-    commandPool = other.commandPool;
-    availableBuffers = std::move(other.availableBuffers);
-    usedBuffers = std::move(other.usedBuffers);
-
-    other.device = nullptr;
-    other.commandPool = nullptr;
-
-    return *this;
-}
-
-VulkanCommandPool::~VulkanCommandPool () {
-    if (commandPool) {
-        PHENYL_DASSERT(device);
-        vkDestroyCommandPool(device, commandPool, nullptr);
-    }
 }
 
 VulkanCommandBuffer VulkanCommandPool::getBuffer () {
@@ -64,7 +24,7 @@ VulkanCommandBuffer VulkanCommandPool::getBuffer () {
 }
 
 void VulkanCommandPool::reset () {
-    auto result = vkResetCommandPool(device, commandPool, 0);
+    auto result = vkResetCommandPool(device, *pool, 0);
     PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to reset command pool: {}", result);
 
     std::ranges::copy(usedBuffers, std::back_inserter(availableBuffers));
@@ -84,7 +44,7 @@ void VulkanCommandPool::addBuffers (std::size_t count) {
 
     VkCommandBufferAllocateInfo allocInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = commandPool,
+        .commandPool = *pool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = static_cast<std::uint32_t>(count)
     };

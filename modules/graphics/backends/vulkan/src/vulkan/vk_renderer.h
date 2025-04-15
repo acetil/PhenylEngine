@@ -13,6 +13,7 @@
 #include "glfw/glfw_viewport.h"
 
 #include "vulkan_headers.h"
+#include "init/vk_resources.h"
 #include "memory/vk_buffer.h"
 
 namespace phenyl::vulkan {
@@ -30,7 +31,7 @@ namespace phenyl::vulkan {
         VkInstance instance{};
         VkSurfaceKHR surface{};
         std::unique_ptr<VulkanDevice> device;
-        VmaAllocator allocator;
+        std::unique_ptr<VulkanResources> resources;
 
         std::unique_ptr<VulkanSwapChain> swapChain;
 
@@ -39,8 +40,6 @@ namespace phenyl::vulkan {
         std::unique_ptr<VulkanShaderManager> shaderManager;
         std::unique_ptr<FrameManager> frameManager;
         TestFramebuffer framebuffer{};
-
-        std::unique_ptr<VulkanPipeline> testPipeline;
 
 
         VkInstance createVkInstance (const graphics::GraphicsProperties& properties);

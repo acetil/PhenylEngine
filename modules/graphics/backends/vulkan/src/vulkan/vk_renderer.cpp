@@ -65,10 +65,10 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     surface = viewport->createSurface(instance);
 
     device = std::make_unique<VulkanDevice>(instance, surface);
-    allocator = device->makeVmaAllocator(instance, VK_API_VERSION_1_3);
+    resources = std::make_unique<VulkanResources>(instance, *device, MAX_FRAMES_IN_FLIGHT);
 
     swapChain = device->makeSwapChain(surface);
-    frameManager = std::make_unique<FrameManager>(*device, MAX_FRAMES_IN_FLIGHT);
+    frameManager = std::make_unique<FrameManager>(*device, *resources, MAX_FRAMES_IN_FLIGHT);
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
@@ -78,14 +78,13 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 VulkanRenderer::~VulkanRenderer () {
     vkDeviceWaitIdle(device->device());
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Destroying Vulkan renderer");
-    testPipeline = nullptr;
 
     shaderManager = nullptr;
 
     frameManager = nullptr;
     swapChain = nullptr;
 
-    vmaDestroyAllocator(allocator);
+    resources = nullptr;
     device = nullptr;
     vkDestroySurfaceKHR(instance, surface, nullptr);
 
@@ -166,7 +165,7 @@ VulkanBuffer VulkanRenderer::makeBuffer (std::size_t size, bool isStorage, bool 
         usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     }
 
-    return VulkanBuffer{allocator, usage, size};
+    return VulkanBuffer{*resources, usage, size};
 }
 
 std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) {
@@ -190,15 +189,11 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(device->device(), swapChain->format(), &framebuffer)};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*resources, swapChain->format(), &framebuffer)};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
     shaderManager->loadDefaultShaders();
-
-    auto builder = VulkanPipelineBuilder{device->device(), swapChain->format(), &framebuffer};
-    builder.withShader(core::Assets::Load<Shader>("phenyl/shaders/test"));
-    testPipeline = std::unique_ptr<VulkanPipeline>(reinterpret_cast<VulkanPipeline*>(builder.build().release()));
 }
 
 std::vector<const char*> VulkanRenderer::GatherValidationLayers () {

@@ -23,7 +23,9 @@ add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp
         src/vulkan/vk_descriptors.h
         src/vulkan/vk_descriptors.cpp
         src/vulkan/shader/vk_shader_reflection.h
-        src/vulkan/shader/vk_shader_reflection.cpp)
+        src/vulkan/shader/vk_shader_reflection.cpp
+        src/vulkan/init/vk_resources.h
+        src/vulkan/init/vk_resources.cpp)
 
 set_property(TARGET vulkan_backend PROPERTY CXX_STANDARD 23)
 

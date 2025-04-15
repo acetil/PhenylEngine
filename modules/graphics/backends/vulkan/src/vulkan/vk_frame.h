@@ -26,7 +26,7 @@ namespace phenyl::vulkan {
 
         friend class VulkanRenderer;
     public:
-        FrameManager (VulkanDevice& device, std::size_t maxInFlight);
+        FrameManager (VulkanDevice& device, VulkanResources& resources, std::size_t maxInFlight);
 
         bool onNewFrame (VulkanSwapChain& swapChain);
 

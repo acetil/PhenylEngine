@@ -31,8 +31,16 @@ std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surfa
     return std::make_unique<VulkanSwapChain>(logicalDevice, surface, swapChainDetails, queueFamilies);
 }
 
-VulkanCommandPool VulkanDevice::makeCommandPool (std::size_t initialCapacity) {
-    return VulkanCommandPool{logicalDevice, queueFamilies.graphicsFamily, initialCapacity};
+VkCommandPool VulkanDevice::makeCommandPool () {
+    VkCommandPoolCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .queueFamilyIndex = queueFamilies.graphicsFamily
+    };
+    VkCommandPool pool = nullptr;
+    auto result = vkCreateCommandPool(logicalDevice, &createInfo, nullptr, &pool);
+    PHENYL_LOGE_IF(result != VK_SUCCESS, LOGGER, "Failed to create VkCommandPool: {}", result);
+
+    return pool;
 }
 
 VmaAllocator VulkanDevice::makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion) {

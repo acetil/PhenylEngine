@@ -26,17 +26,11 @@ static VkIndexType GetIndexType (ShaderIndexType type) {
     }
 }
 
-VulkanPipeline::VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout descriptorSetLayout,
+VulkanPipeline::VulkanPipeline (VkDevice device, VulkanResource<VkPipeline> pipeline, VulkanResource<VkPipelineLayout> pipelineLayout, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
                                 TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes) :
-        device{device}, pipeline{pipeline}, pipelineLayout{pipelineLayout}, descriptorSetLayout{descriptorSetLayout}, testFramebuffer{framebuffer}, vertexBindingTypes{std::move(vertexBindingTypes)},
+        device{device}, pipeline{std::move(pipeline)}, pipelineLayout{std::move(pipelineLayout)}, descriptorSetLayout{std::move(descriptorSetLayout)}, testFramebuffer{framebuffer}, vertexBindingTypes{std::move(vertexBindingTypes)},
         boundVertexBuffers(this->vertexBindingTypes.size()), vertexBufferOffsets(this->vertexBindingTypes.size()), uniformTypes{std::move(uniformTypes)} {
     PHENYL_ASSERT(testFramebuffer);
-}
-
-VulkanPipeline::~VulkanPipeline () {
-    vkDestroyPipeline(device, pipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 }
 
 void VulkanPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer,
@@ -82,7 +76,7 @@ void VulkanPipeline::render (IFrameBuffer* fb, std::size_t vertices, std::size_t
     PHENYL_ASSERT(testFramebuffer->renderingRecorder);
     auto& recorder= *testFramebuffer->renderingRecorder;
 
-    recorder.setPipeline(pipeline, testFramebuffer->viewport, testFramebuffer->scissor);
+    recorder.setPipeline(*pipeline, testFramebuffer->viewport, testFramebuffer->scissor);
 
     boundVkBuffers = boundVertexBuffers
         | std::views::transform(&VulkanStorageBuffer::getBuffer)
@@ -91,7 +85,7 @@ void VulkanPipeline::render (IFrameBuffer* fb, std::size_t vertices, std::size_t
 
     auto descriptorSet = getDescriptorSet();
     auto sets = std::array{descriptorSet};
-    recorder.bindDescriptorSets(pipelineLayout, sets);
+    recorder.bindDescriptorSets(*pipelineLayout, sets);
 
     if (indexBuffer) {
         PHENYL_ASSERT(indexBuffer->getBuffer());
@@ -107,7 +101,7 @@ void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances
     PHENYL_ASSERT(testFramebuffer->renderingRecorder);
     auto& recorder= *testFramebuffer->renderingRecorder;
 
-    recorder.setPipeline(pipeline, testFramebuffer->viewport, testFramebuffer->scissor);
+    recorder.setPipeline(*pipeline, testFramebuffer->viewport, testFramebuffer->scissor);
 
     boundVkBuffers = boundVertexBuffers
         | std::views::transform(&VulkanStorageBuffer::getBuffer)
@@ -116,7 +110,7 @@ void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances
 
     auto descriptorSet = getDescriptorSet();
     auto sets = std::array{descriptorSet};
-    recorder.bindDescriptorSets(pipelineLayout, sets);
+    recorder.bindDescriptorSets(*pipelineLayout, sets);
 
     if (indexBuffer) {
         PHENYL_ASSERT(indexBuffer->getBuffer());
@@ -128,7 +122,7 @@ void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances
 }
 
 void VulkanPipeline::renderTest (VulkanRenderingRecorder& recorder, VkViewport viewport, VkRect2D scissor, std::size_t vertices) {
-    recorder.setPipeline(pipeline, viewport, scissor);
+    recorder.setPipeline(*pipeline, viewport, scissor);
 
     recorder.draw(vertices, 0);
 }
@@ -139,7 +133,7 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet () {
     PHENYL_DASSERT(testFramebuffer);
     PHENYL_DASSERT(testFramebuffer->descriptorPool);
 
-    auto set = testFramebuffer->descriptorPool->makeDescriptorSet(descriptorSetLayout);
+    auto set = testFramebuffer->descriptorPool->makeDescriptorSet(*descriptorSetLayout);
     std::vector<VkWriteDescriptorSet> writes;
     writes.reserve(boundUniformBuffers.size());
 
@@ -160,7 +154,8 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet () {
     return set;
 }
 
-VulkanPipelineBuilder::VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat, TestFramebuffer* framebuffer) : device{device}, colorFormat{swapChainFormat}, framebuffer{framebuffer} {}
+VulkanPipelineBuilder::VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer) :
+        resources{resources}, colorFormat{swapChainFormat}, framebuffer{framebuffer} {}
 
 void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
     switch (mode) {
@@ -380,24 +375,24 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
         .bindingCount = static_cast<std::uint32_t>(descriptorBindings.size()),
         .pBindings = descriptorBindings.data()
     };
-    VkDescriptorSetLayout descriptorSetLayout;
-    if (auto result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout); result != VK_SUCCESS) {
-        PHENYL_LOGE(LOGGER, "Failed to build pipeline layout, error: {}", result);
+    auto descriptorSetLayout = resources.makeDescriptorSetLayout(layoutInfo);
+    if (!descriptorSetLayout) {
+        PHENYL_LOGE(LOGGER, "Failed to build pipeline");
         return nullptr;
     }
 
 
+    VkDescriptorSetLayout dsLayout = *descriptorSetLayout;
     // TODO
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .setLayoutCount = 1,
-        .pSetLayouts = &descriptorSetLayout
+        .pSetLayouts = &dsLayout
     };
 
-    VkPipelineLayout pipelineLayout;
-    if (auto result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout); result != VK_SUCCESS) {
-        PHENYL_LOGE(LOGGER, "Failed to build pipeline layout, error: {}", result);
-        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+    auto pipelineLayout = resources.makePipelineLayout(pipelineLayoutInfo);
+    if (!pipelineLayout) {
+        PHENYL_LOGE(LOGGER, "Failed to build pipeline");
         return nullptr;
     }
     PHENYL_DASSERT(pipelineLayout);
@@ -420,20 +415,17 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
         .pDepthStencilState = nullptr, // TODO
         .pColorBlendState = &colorBlendInfo,
         .pDynamicState = &dynamicStateInfo,
-        .layout = pipelineLayout,
+        .layout = *pipelineLayout,
     };
 
-    VkPipeline pipeline;
-    if (auto result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline); result != VK_SUCCESS) {
-        PHENYL_LOGE(LOGGER, "Failed to build pipeline, error: {}",  result);
-
-        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+    auto pipeline = resources.makePipeline(pipelineInfo);
+    if (!pipeline) {
+        PHENYL_LOGE(LOGGER, "Failed to build pipeline");
         return nullptr;
     }
 
     PHENYL_LOGD(LOGGER, "Constructed pipeline");
-    return std::make_unique<VulkanPipeline>(device, pipeline, pipelineLayout, descriptorSetLayout, framebuffer, std::move(vertexBindingTypes), std::move(uniformTypes));
+    return std::make_unique<VulkanPipeline>(resources.getDevice(), std::move(pipeline), std::move(pipelineLayout), std::move(descriptorSetLayout), framebuffer, std::move(vertexBindingTypes), std::move(uniformTypes));
 }
 
 static VkVertexInputAttributeDescription MakeAttrib (phenyl::graphics::BufferBinding binding, unsigned int location, VkFormat format, std::size_t offset) {

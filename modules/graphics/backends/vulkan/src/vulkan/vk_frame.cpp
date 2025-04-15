@@ -2,7 +2,7 @@
 
 using namespace phenyl::vulkan;
 
-FrameManager::FrameManager (VulkanDevice& device, std::size_t maxInFlight) : maxInFlight{maxInFlight} {
+FrameManager::FrameManager (VulkanDevice& device, VulkanResources& resources, std::size_t maxInFlight) : maxInFlight{maxInFlight} {
     PHENYL_DASSERT(maxInFlight > 0);
 
     commandPools.reserve(maxInFlight);
@@ -10,12 +10,12 @@ FrameManager::FrameManager (VulkanDevice& device, std::size_t maxInFlight) : max
     syncs.reserve(maxInFlight);
 
     for (auto i = 0; i < maxInFlight; i++) {
-        commandPools.push_back(device.makeCommandPool(1));
+        commandPools.emplace_back(resources);
         descriptorPools.emplace_back(device.device());
         syncs.push_back(FrameSync{
-            .imageAvailable = VulkanSemaphore{device.device()},
-            .renderFinished = VulkanSemaphore{device.device()},
-            .inFlight = VulkanFence{device.device(), true}
+            .imageAvailable = VulkanSemaphore{resources},
+            .renderFinished = VulkanSemaphore{resources},
+            .inFlight = VulkanFence{resources, true}
         });
     }
 }

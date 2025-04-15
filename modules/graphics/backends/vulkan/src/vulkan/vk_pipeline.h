@@ -19,10 +19,10 @@ namespace phenyl::vulkan {
     private:
         TestFramebuffer* testFramebuffer;
         VkDevice device;
-        VkPipeline pipeline;
-        VkPipelineLayout pipelineLayout;
+        VulkanResource<VkPipeline> pipeline;
+        VulkanResource<VkPipelineLayout> pipelineLayout;
 
-        VkDescriptorSetLayout descriptorSetLayout;
+        VulkanResource<VkDescriptorSetLayout> descriptorSetLayout;
         std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
         std::unordered_map<graphics::UniformBinding, const VkDescriptorBufferInfo*> boundUniformBuffers;
 
@@ -37,9 +37,8 @@ namespace phenyl::vulkan {
 
         VkDescriptorSet getDescriptorSet ();
     public:
-        VulkanPipeline (VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, VkDescriptorSetLayout descriptorSetLayout,
+        VulkanPipeline (VkDevice device, VulkanResource<VkPipeline> pipeline, VulkanResource<VkPipelineLayout> pipelineLayout, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
             TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes);
-        ~VulkanPipeline () override;
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
@@ -56,7 +55,8 @@ namespace phenyl::vulkan {
 
     class VulkanPipelineBuilder : public graphics::IPipelineBuilder {
     private:
-        VkDevice device;
+        VulkanResources& resources;
+
         VkFormat colorFormat;
 
         TestFramebuffer* framebuffer;
@@ -80,7 +80,7 @@ namespace phenyl::vulkan {
         };
 
     public:
-        VulkanPipelineBuilder (VkDevice device, VkFormat swapChainFormat, TestFramebuffer* framebuffer);
+        VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer);
 
         void withBlendMode (graphics::BlendMode mode) override;
         void withCullMode (graphics::CullMode mode) override;
