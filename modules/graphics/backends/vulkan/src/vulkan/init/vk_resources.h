@@ -18,6 +18,15 @@ namespace phenyl::vulkan {
         }
     };
 
+    struct VulkanCommandBufferInfo {
+        VkCommandPool pool;
+        VkCommandBuffer commandBuffer;
+
+        explicit operator bool () const noexcept {
+            return pool && commandBuffer;
+        }
+    };
+
     class VulkanResources;
 
     template <std::movable T>
@@ -136,6 +145,7 @@ namespace phenyl::vulkan {
         DestructionQueue<VkFence> fenceQueue;
 
         DestructionQueue<VkCommandPool> commandPoolQueue;
+        DestructionQueue<VulkanCommandBufferInfo> commandBufferQueue;
 
         std::uint64_t frameNum = 0;
         std::uint64_t maxFramesInFlight;
@@ -146,6 +156,7 @@ namespace phenyl::vulkan {
         ~VulkanResources ();
 
         [[nodiscard]] VkDevice getDevice () const noexcept;
+        VkQueue getGraphicsQueue () const noexcept;
 
         VulkanResource<VulkanBufferInfo> makeBuffer (const VkBufferCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
 
@@ -153,7 +164,8 @@ namespace phenyl::vulkan {
         VulkanResource<VkPipelineLayout> makePipelineLayout (const VkPipelineLayoutCreateInfo& layoutInfo);
         VulkanResource<VkPipeline> makePipeline (const VkGraphicsPipelineCreateInfo& createInfo);
 
-        VulkanResource<VkCommandPool> makeCommandPool ();
+        VulkanResource<VkCommandPool> makeCommandPool (VkCommandPoolCreateFlags usage = 0);
+        VulkanResource<VulkanCommandBufferInfo> makeCommandBuffer (VkCommandPool pool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
         VulkanResource<VkSemaphore> makeSemaphore ();
         VulkanResource<VkFence> makeFence (const VkFenceCreateInfo& createInfo);

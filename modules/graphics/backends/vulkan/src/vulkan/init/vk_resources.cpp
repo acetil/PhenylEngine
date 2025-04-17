@@ -14,7 +14,8 @@ VulkanResources::VulkanResources (VkInstance instance, VulkanDevice& device, std
         pipelineQueue{[&] (VkPipeline pipeline) { vkDestroyPipeline(device.device(), pipeline, nullptr); }},
         semaphoreQueue{[&] (VkSemaphore semaphore) { vkDestroySemaphore(device.device(), semaphore, nullptr); }},
         fenceQueue{[&] (VkFence fence) { vkDestroyFence(device.device(), fence, nullptr); }},
-        commandPoolQueue{[&] (VkCommandPool pool) { vkDestroyCommandPool(device.device(), pool, nullptr); } } {}
+        commandPoolQueue{[&] (VkCommandPool pool) { vkDestroyCommandPool(device.device(), pool, nullptr); } },
+        commandBufferQueue{[&] (VulkanCommandBufferInfo info) { vkFreeCommandBuffers(device.device(), info.pool, 1, &info.commandBuffer); } } {}
 
 VulkanResources::~VulkanResources () {
     bufferQueue.clear();
@@ -31,6 +32,10 @@ VulkanResources::~VulkanResources () {
 
 VkDevice VulkanResources::getDevice () const noexcept {
     return device.device();
+}
+
+VkQueue VulkanResources::getGraphicsQueue () const noexcept {
+    return device.getGraphicsQueue();
 }
 
 VulkanResource<VulkanBufferInfo> VulkanResources::makeBuffer (const VkBufferCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo) {
@@ -85,10 +90,28 @@ VulkanResource<VkPipeline> VulkanResources::makePipeline (const VkGraphicsPipeli
     return {pipeline, [&] (VkPipeline&& x) { pipelineQueue.queueDestruction(x, getDestructionFrame()); }};
 }
 
-VulkanResource<VkCommandPool> VulkanResources::makeCommandPool () {
-    auto pool = device.makeCommandPool();
+VulkanResource<VkCommandPool> VulkanResources::makeCommandPool (VkCommandPoolCreateFlags usage) {
+    auto pool = device.makeCommandPool(usage);
 
     return pool ? VulkanResource<VkCommandPool>{pool, [&] (VkCommandPool&& cmdPool) { commandPoolQueue.queueDestruction(cmdPool, getDestructionFrame()); }} : VulkanResource<VkCommandPool>{};
+}
+
+VulkanResource<VulkanCommandBufferInfo> VulkanResources::makeCommandBuffer (VkCommandPool pool, VkCommandBufferLevel level) {
+    VkCommandBufferAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = pool,
+        .level = level,
+        .commandBufferCount = 1
+    };
+
+    VkCommandBuffer buffer;
+    if (auto result = vkAllocateCommandBuffers(device.device(), &allocInfo, &buffer); result != VK_SUCCESS) {
+        PHENYL_LOGE(LOGGER, "Failed to create VkCommandBuffer: {}", result);
+        return {};
+    }
+    PHENYL_DASSERT(buffer);
+
+    return {VulkanCommandBufferInfo{pool, buffer}, [&] (auto&& info) { commandBufferQueue.queueDestruction(info, getDestructionFrame()); } };
 }
 
 VulkanResource<VkSemaphore> VulkanResources::makeSemaphore () {

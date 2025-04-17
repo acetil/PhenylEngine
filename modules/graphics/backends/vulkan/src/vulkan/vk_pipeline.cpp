@@ -121,12 +121,6 @@ void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances
     }
 }
 
-void VulkanPipeline::renderTest (VulkanRenderingRecorder& recorder, VkViewport viewport, VkRect2D scissor, std::size_t vertices) {
-    recorder.setPipeline(*pipeline, viewport, scissor);
-
-    recorder.draw(vertices, 0);
-}
-
 VkDescriptorSet VulkanPipeline::getDescriptorSet () {
     // TODO: only allocate when necessary
     // TODO: incremental updates

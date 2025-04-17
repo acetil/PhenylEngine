@@ -115,7 +115,7 @@ void VulkanRenderer::render () {
     auto commandBuffer = frameManager->getCommandPool().getBuffer();
     commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     {
-        auto recorder = commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent(), VkClearValue{
+        commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent(), VkClearValue{
             .color = {
                 .float32 = {1, 0, 0, 1}
             }
@@ -123,7 +123,7 @@ void VulkanRenderer::render () {
         //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
 
         // TODO
-        framebuffer.renderingRecorder = &recorder;
+        framebuffer.renderingRecorder = &commandBuffer;
         framebuffer.descriptorPool = &frameManager->getDescriptorPool();
         framebuffer.viewport = swapChain->getViewport();
         framebuffer.scissor = swapChain->getScissor();
@@ -131,9 +131,8 @@ void VulkanRenderer::render () {
     }
 
     commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    auto recordedBuffer = commandBuffer.record();
 
-    recordedBuffer.submit(device->getGraphicsQueue(), &frameSync.imageAvailable, &frameSync.renderFinished, frameSync.inFlight);
+    commandBuffer.submit(&frameSync.imageAvailable, &frameSync.renderFinished, &frameSync.inFlight);
 
     if (!swapChain->present(device->getGraphicsQueue(), frameSync.renderFinished)) {
         PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame presentation");

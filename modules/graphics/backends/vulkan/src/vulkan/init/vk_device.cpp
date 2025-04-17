@@ -31,9 +31,10 @@ std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surfa
     return std::make_unique<VulkanSwapChain>(logicalDevice, surface, swapChainDetails, queueFamilies);
 }
 
-VkCommandPool VulkanDevice::makeCommandPool () {
+VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
     VkCommandPoolCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags = usage,
         .queueFamilyIndex = queueFamilies.graphicsFamily
     };
     VkCommandPool pool = nullptr;

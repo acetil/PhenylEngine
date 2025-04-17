@@ -7,7 +7,7 @@
 
 namespace phenyl::vulkan {
     struct TestFramebuffer {
-        VulkanRenderingRecorder* renderingRecorder;
+        VulkanCommandBuffer2* renderingRecorder;
         VulkanDescriptorPool* descriptorPool;
         VkViewport viewport;
         VkRect2D scissor;
@@ -49,8 +49,6 @@ namespace phenyl::vulkan {
 
         void render (graphics::IFrameBuffer* fb, std::size_t vertices, std::size_t offset) override;
         void renderInstanced (graphics::IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
-
-        void renderTest (VulkanRenderingRecorder& recorder, VkViewport viewport, VkRect2D scissor, std::size_t vertices);
     };
 
     class VulkanPipelineBuilder : public graphics::IPipelineBuilder {

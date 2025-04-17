@@ -4,66 +4,78 @@
 #include "vulkan_headers.h"
 
 namespace phenyl::vulkan {
-    class VulkanRenderingRecorder;
-
-    class VulkanRecordedCommandBuffer {
+    class VulkanCommandBuffer2 {
     private:
-        VkCommandBuffer commandBuffer;
+        struct RenderingInfo {
+            VkImageView imageView;
+            VkImageLayout imageLayout;
+            VkExtent2D drawExtent;
 
-    public:
-        explicit VulkanRecordedCommandBuffer (VkCommandBuffer commandBuffer);
+            bool operator== (const RenderingInfo&) const = default;
+        };
 
-        void submit (VkQueue queue, const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence& fence);
-    };
-
-    class VulkanCommandBuffer {
-    private:
-        VkCommandBuffer commandBuffer;
-        bool inRecorder = false;
-
-        void endRendering ();
-
-        friend class VulkanRenderingRecorder;
-    public:
-        explicit VulkanCommandBuffer (VkCommandBuffer commandBuffer);
-
-        VulkanRenderingRecorder beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent, std::optional<VkClearValue> clearColor = std::nullopt);
-
-        void doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-
-        VulkanRecordedCommandBuffer record ();
-        void drop ();
-    };
-
-    class VulkanRenderingRecorder {
-    private:
-        VulkanCommandBuffer& owner;
-        VkCommandBuffer commandBuffer;
+        std::optional<RenderingInfo> currentRendering = std::nullopt;
 
         VkPipeline currPipeline = nullptr;
         std::optional<VkViewport> currViewport{};
         std::optional<VkRect2D> currScissor;
+
+    protected:
+        VkCommandBuffer commandBuffer;
+
+        VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage);
     public:
-        VulkanRenderingRecorder (VulkanCommandBuffer& owner, VkCommandBuffer commandBuffer);
+        virtual ~VulkanCommandBuffer2 () = default;
+
+        explicit operator bool () const noexcept {
+            return commandBuffer;
+        }
+
+        void doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+        void beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent,
+            std::optional<VkClearValue> clearColor = std::nullopt);
+        void endRendering ();
 
         void setPipeline (VkPipeline pipeline, VkViewport viewport, VkRect2D scissor);
-        void draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex);
-        void draw (std::uint32_t vertexCount, std::uint32_t firstVertex);
-
-        void drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex);
-        void drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex);
 
         void bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets);
         void bindIndexBuffer (VkBuffer buffer, VkIndexType indexType);
 
         void bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets);
 
-        ~VulkanRenderingRecorder ();
+        void draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex);
+        void draw (std::uint32_t vertexCount, std::uint32_t firstVertex);
+
+        void drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex);
+        void drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex);
+    };
+
+    class VulkanSingleUseCommandBuffer : public VulkanCommandBuffer2 {
+    private:
+        VkQueue bufferQueue;
+    public:
+        VulkanSingleUseCommandBuffer (VkQueue bufferQueue, VkCommandBuffer commandBuffer);
+
+        void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
+    };
+
+    class VulkanTransientCommandBuffer : public VulkanCommandBuffer2 {
+    private:
+        VkQueue bufferQueue;
+        VulkanResource<VulkanCommandBufferInfo> cbInfo;
+        bool recorded = false;
+    public:
+        VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo);
+
+        void record ();
+        void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
     };
 
     class VulkanCommandPool {
     private:
         VkDevice device;
+        VkQueue poolQueue;
         VulkanResource<VkCommandPool> pool;
 
         std::vector<VkCommandBuffer> availableBuffers;
@@ -71,11 +83,24 @@ namespace phenyl::vulkan {
 
         void addBuffers (std::size_t count);
     public:
-        VulkanCommandPool (VulkanResources& resources, std::size_t capacity = 1);
+        explicit VulkanCommandPool (VulkanResources& resources, std::size_t capacity = 1);
 
-        VulkanCommandBuffer getBuffer ();
+        VulkanSingleUseCommandBuffer getBuffer ();
         void reset ();
 
         void reserve (std::size_t capacity);
+    };
+
+    class VulkanTransientCommandPool {
+    private:
+        VkDevice device;
+        VkQueue poolQueue;
+        VulkanResources* resources;
+        VulkanResource<VkCommandPool> pool;
+
+    public:
+        explicit VulkanTransientCommandPool (VulkanResources& resources);
+
+        VulkanTransientCommandBuffer getBuffer ();
     };
 }

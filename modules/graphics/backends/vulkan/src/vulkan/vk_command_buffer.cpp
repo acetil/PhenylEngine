@@ -4,13 +4,13 @@ using namespace phenyl::vulkan;
 
 static phenyl::Logger LOGGER{"VK_COMMAND_BUFFER", detail::VULKAN_LOGGER};
 
-VulkanCommandPool::VulkanCommandPool (VulkanResources& resources, std::size_t capacity) : device{resources.getDevice()}, pool{resources.makeCommandPool()} {
+VulkanCommandPool::VulkanCommandPool (VulkanResources& resources, std::size_t capacity) : device{resources.getDevice()}, poolQueue{resources.getGraphicsQueue()}, pool{resources.makeCommandPool()} {
     PHENYL_ASSERT_MSG(pool, "Failed to create command pool!");
 
     reserve(capacity);
 }
 
-VulkanCommandBuffer VulkanCommandPool::getBuffer () {
+VulkanSingleUseCommandBuffer VulkanCommandPool::getBuffer () {
     if (availableBuffers.empty()) {
         addBuffers(1);
     }
@@ -20,7 +20,7 @@ VulkanCommandBuffer VulkanCommandPool::getBuffer () {
 
     availableBuffers.pop_back();
     usedBuffers.emplace_back(buffer);
-    return VulkanCommandBuffer{buffer};
+    return VulkanSingleUseCommandBuffer{poolQueue, buffer};
 }
 
 void VulkanCommandPool::reset () {
@@ -54,57 +54,27 @@ void VulkanCommandPool::addBuffers (std::size_t count) {
     }
 }
 
-VulkanCommandBuffer::VulkanCommandBuffer (VkCommandBuffer commandBuffer) : commandBuffer{commandBuffer} {
-    PHENYL_DASSERT(commandBuffer);
+VulkanTransientCommandPool::VulkanTransientCommandPool (VulkanResources& resources) : device{resources.getDevice()}, poolQueue{resources.getGraphicsQueue()}, pool{resources.makeCommandPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT)}, resources{&resources} {}
 
-    VkCommandBufferBeginInfo beginInfo{
+VulkanTransientCommandBuffer VulkanTransientCommandPool::getBuffer () {
+    PHENYL_ASSERT(resources);
+    PHENYL_ASSERT(pool);
+    return VulkanTransientCommandBuffer{poolQueue, resources->makeCommandBuffer(*pool)};
+}
+
+VulkanCommandBuffer2::VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage) : commandBuffer{commandBuffer} {
+    PHENYL_ASSERT(commandBuffer);
+    VkCommandBufferBeginInfo info{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = usage
     };
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    auto result = vkBeginCommandBuffer(commandBuffer, &info);
+    PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to begin command buffer: {}", result);
 }
 
-VulkanRenderingRecorder VulkanCommandBuffer::beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent, std::optional<VkClearValue> clearValue) {
-    PHENYL_ASSERT_MSG(commandBuffer, "Cannot create recorder for invalid buffer");
-    PHENYL_ASSERT_MSG(!inRecorder, "Cannot create recorder while previous recorder is active");
-
-    // TODO: move into framebuffer?
-    VkRenderingAttachmentInfo colorAttachment{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = imageView,
-        .imageLayout = imageLayout,
-        .resolveMode = VK_RESOLVE_MODE_NONE,
-        .loadOp = clearValue ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE
-    };
-    if (clearValue) {
-        colorAttachment.clearValue = *clearValue;
-    }
-
-    VkRenderingInfo renderingInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-        .renderArea = {
-            .offset = {0, 0},
-            .extent = drawExtent
-        },
-        .layerCount = 1,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachment,
-        // TODO: depth/stencil
-    };
-
-    vkCmdBeginRendering(commandBuffer, &renderingInfo);
-    inRecorder = true;
-    return VulkanRenderingRecorder{*this, commandBuffer};
-}
-
-void VulkanCommandBuffer::endRendering () {
-    PHENYL_DASSERT(inRecorder);
-    vkCmdEndRendering(commandBuffer);
-    inRecorder = false;
-}
-
-void VulkanCommandBuffer::doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
-    PHENYL_ASSERT_MSG(!inRecorder, "Cannot do image transition while inside recorder!");
+void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+    PHENYL_TRACE(LOGGER, "Performing image transition: {} -> {}", oldLayout, newLayout);
+    endRendering();
 
     VkImageMemoryBarrier2 imageBarrier{
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -131,34 +101,69 @@ void VulkanCommandBuffer::doImageTransition (VkImage image, VkImageLayout oldLay
     vkCmdPipelineBarrier2(commandBuffer, &depInfo);
 }
 
-VulkanRecordedCommandBuffer VulkanCommandBuffer::record () {
-    PHENYL_ASSERT_MSG(!inRecorder, "Cannot record command buffer while in recorder");
-    PHENYL_ASSERT_MSG(commandBuffer, "Cannot record invalid buffer");
+void VulkanCommandBuffer2::beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent, std::optional<VkClearValue> clearColor) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot begin rendering for invalid buffer");
 
-    if (auto result = vkEndCommandBuffer(commandBuffer); result != VK_SUCCESS) {
-        PHENYL_ABORT("Failed to record command buffer, error: {}", result);
+    RenderingInfo info{
+        .imageView = imageView,
+        .imageLayout = imageLayout,
+        .drawExtent = drawExtent
+    };
+
+    if (currentRendering) {
+        if (info == *currentRendering) {
+            PHENYL_LOGW_IF(clearColor, LOGGER, "Ignoring clear value for duplicate rendering request");
+            return;
+        }
+
+        endRendering();
     }
 
-    VulkanRecordedCommandBuffer recordedBuffer{commandBuffer};
-    commandBuffer = nullptr;
-    return recordedBuffer;
+    PHENYL_DASSERT(!currentRendering);
+
+    // TODO: move into framebuffer?
+    VkRenderingAttachmentInfo colorAttachment{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .imageView = imageView,
+        .imageLayout = imageLayout,
+        .resolveMode = VK_RESOLVE_MODE_NONE,
+        .loadOp = clearColor ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE
+    };
+    if (clearColor) {
+        colorAttachment.clearValue = *clearColor;
+    }
+
+    VkRenderingInfo renderingInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+        .renderArea = {
+            .offset = {0, 0},
+            .extent = drawExtent
+        },
+        .layerCount = 1,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &colorAttachment,
+        // TODO: depth/stencil
+    };
+
+    vkCmdBeginRendering(commandBuffer, &renderingInfo);
+    currentRendering = info;
 }
 
-void VulkanCommandBuffer::drop () {
-    PHENYL_ASSERT_MSG(!inRecorder, "Cannot drop command buffer while in recorder");
+void VulkanCommandBuffer2::endRendering () {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot end rendering for invalid buffer");
 
-    auto result = vkEndCommandBuffer(commandBuffer);
-    PHENYL_LOGW_IF(result != VK_SUCCESS, LOGGER, "Error while dropping command buffer: {}", result);
+    if (currentRendering) {
+        vkCmdEndRendering(commandBuffer);
+    }
 
-    commandBuffer = nullptr;
+    currentRendering = std::nullopt;
+    currPipeline = nullptr;
 }
 
-VulkanRenderingRecorder::VulkanRenderingRecorder (VulkanCommandBuffer& owner, VkCommandBuffer commandBuffer) : owner{owner}, commandBuffer{commandBuffer} {
-    PHENYL_DASSERT(commandBuffer);
-}
-
-void VulkanRenderingRecorder::setPipeline (VkPipeline pipeline, VkViewport viewport, VkRect2D scissor) {
-    PHENYL_DASSERT(commandBuffer);
+void VulkanCommandBuffer2::setPipeline (VkPipeline pipeline, VkViewport viewport, VkRect2D scissor) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot set pipeline for invalid buffer");
+    PHENYL_DASSERT(pipeline);
 
     bool setViewScissor = false;
     if (pipeline != currPipeline) {
@@ -178,55 +183,59 @@ void VulkanRenderingRecorder::setPipeline (VkPipeline pipeline, VkViewport viewp
     }
 }
 
-void VulkanRenderingRecorder::draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex) {
-    PHENYL_DASSERT(commandBuffer);
-    vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, 0);
-}
-
-void VulkanRenderingRecorder::draw (std::uint32_t vertexCount, std::uint32_t firstVertex) {
-    draw(1, vertexCount, firstVertex);
-}
-
-void VulkanRenderingRecorder::drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount,std::uint32_t firstIndex) {
-    PHENYL_DASSERT(commandBuffer);
-    vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, 0, 0);
-}
-
-void VulkanRenderingRecorder::drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex) {
-    drawIndexed(1, indexCount, firstIndex);
-}
-
-void VulkanRenderingRecorder::bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets) {
-    PHENYL_DASSERT(commandBuffer);
-    PHENYL_DASSERT(buffers.size() == offsets.size());
+void VulkanCommandBuffer2::bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot bind vertex buffers for invalid buffer");
+    PHENYL_ASSERT(buffers.size() == offsets.size());
 
     vkCmdBindVertexBuffers(commandBuffer, 0, static_cast<std::uint32_t>(buffers.size()), buffers.data(), offsets.data());
 }
 
-void VulkanRenderingRecorder::bindIndexBuffer (VkBuffer buffer, VkIndexType indexType) {
-    PHENYL_DASSERT(commandBuffer);
+void VulkanCommandBuffer2::bindIndexBuffer (VkBuffer buffer, VkIndexType indexType) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot bind index buffer for invalid buffer");
     PHENYL_DASSERT(buffer);
 
     vkCmdBindIndexBuffer(commandBuffer, buffer, 0, indexType);
 }
 
-void VulkanRenderingRecorder::bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets) {
-    PHENYL_DASSERT(commandBuffer);
+void VulkanCommandBuffer2::bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot bind descriptor sets for invalid buffer");
     PHENYL_DASSERT(pipelineLayout);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, static_cast<std::uint32_t>(descriptorSets.size()),
         descriptorSets.data(), 0, nullptr);
 }
 
-VulkanRenderingRecorder::~VulkanRenderingRecorder () {
-    owner.endRendering();
+void VulkanCommandBuffer2::draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot execute draw command for invalid buffer");
+    vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, 0);
 }
 
-VulkanRecordedCommandBuffer::VulkanRecordedCommandBuffer (VkCommandBuffer commandBuffer) : commandBuffer{commandBuffer} {
-    PHENYL_DASSERT(commandBuffer);
+void VulkanCommandBuffer2::draw (std::uint32_t vertexCount, std::uint32_t firstVertex) {
+    draw(1, vertexCount, firstVertex);
 }
 
-void VulkanRecordedCommandBuffer::submit (VkQueue queue, const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence& fence) {
+void VulkanCommandBuffer2::drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot execute draw command for invalid buffer");
+    vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, 0, 0);
+}
+
+void VulkanCommandBuffer2::drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex) {
+    drawIndexed(1, indexCount, firstIndex);
+}
+
+VulkanSingleUseCommandBuffer::VulkanSingleUseCommandBuffer (VkQueue bufferQueue, VkCommandBuffer commandBuffer) :
+        VulkanCommandBuffer2{commandBuffer, 0}, bufferQueue{bufferQueue} {
+    PHENYL_ASSERT(bufferQueue);
+}
+
+void VulkanSingleUseCommandBuffer::submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence) {
+    PHENYL_ASSERT_MSG(commandBuffer, "Cannot submit invalid command buffer");
+    endRendering();
+
+    if (auto result = vkEndCommandBuffer(commandBuffer); result != VK_SUCCESS) {
+        PHENYL_ABORT("Failed to record command buffer, error: {}", result);
+    }
+
     VkCommandBufferSubmitInfo cbSubmitInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
         .commandBuffer = commandBuffer
@@ -245,6 +254,54 @@ void VulkanRecordedCommandBuffer::submit (VkQueue queue, const VulkanSemaphore* 
         .pSignalSemaphoreInfos = &signalInfo,
     };
 
-    auto result = vkQueueSubmit2(queue, 1, &submitInfo, fence.get());
+    auto result = vkQueueSubmit2(bufferQueue, 1, &submitInfo, fence? fence->get() : VK_NULL_HANDLE);
+    PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to submit to queue: {}", result);
+
+    commandBuffer = nullptr;
+}
+
+VulkanTransientCommandBuffer::VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo) :
+        VulkanCommandBuffer2{cbInfo->commandBuffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT}, bufferQueue{bufferQueue}, cbInfo{std::move(cbInfo)} {
+    PHENYL_ASSERT(bufferQueue);
+    PHENYL_ASSERT(cbInfo);
+}
+
+void VulkanTransientCommandBuffer::record () {
+    PHENYL_ASSERT_MSG(!recorded, "Cannot re-record command buffer!");
+    PHENYL_ASSERT_MSG(commandBuffer, "cannot record invalid command buffer!");
+
+    if (auto result = vkEndCommandBuffer(commandBuffer); result != VK_SUCCESS) {
+        PHENYL_ABORT("Failed to record command buffer, error: {}", result);
+    }
+
+    commandBuffer = nullptr;
+    recorded = true;
+}
+
+void VulkanTransientCommandBuffer::submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem,
+    const VulkanFence* fence) {
+    PHENYL_ASSERT_MSG(cbInfo, "Cannot submit invalid command buffer");
+    PHENYL_ASSERT_MSG(recorded, "Cannot submit unrecorded command buffer");
+
+    VkCommandBufferSubmitInfo cbSubmitInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+        .commandBuffer = cbInfo->commandBuffer
+    };
+
+    auto waitInfo = waitSem ? waitSem->getSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR) : VkSemaphoreSubmitInfo{};
+    auto signalInfo = signalSem ? signalSem->getSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR) : VkSemaphoreSubmitInfo{};
+
+    VkSubmitInfo2 submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .waitSemaphoreInfoCount = waitSem ? 1u : 0u,
+        .pWaitSemaphoreInfos = &waitInfo,
+        .commandBufferInfoCount = 1,
+        .pCommandBufferInfos = &cbSubmitInfo,
+        .signalSemaphoreInfoCount = signalSem ? 1u : 0u,
+        .pSignalSemaphoreInfos = &signalInfo,
+    };
+
+    auto result = vkQueueSubmit2(bufferQueue, 1, &submitInfo, fence? fence->get() : VK_NULL_HANDLE);
     PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to submit to queue: {}", result);
 }
+

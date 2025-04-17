@@ -67,6 +67,19 @@ struct std::formatter<VkResult, char> {
     }
 };
 
+template<>
+struct std::formatter<VkImageLayout, char> {
+    template <class ParseContext>
+constexpr ParseContext::iterator parse (ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <class FmtContext>
+    FmtContext::iterator format (const VkImageLayout& layout, FmtContext& ctx) const {
+        return std::format_to(ctx.out(), "{}", string_VkImageLayout(layout));
+    }
+};
+
 template <>
 struct std::formatter<phenyl::vulkan::VulkanVersion, char> {
     template <class ParseContext>
