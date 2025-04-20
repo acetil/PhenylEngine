@@ -1,9 +1,12 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "vk_command_buffer.h"
 #include "vk_descriptors.h"
 #include "vk_uniform_buffer.h"
 #include "graphics/backend/pipeline.h"
+#include "texture/vk_image.h"
 
 namespace phenyl::vulkan {
     struct TestFramebuffer {
@@ -25,6 +28,8 @@ namespace phenyl::vulkan {
         VulkanResource<VkDescriptorSetLayout> descriptorSetLayout;
         std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
         std::unordered_map<graphics::UniformBinding, const VkDescriptorBufferInfo*> boundUniformBuffers;
+        std::unordered_set<graphics::SamplerBinding> validSamplerBindings;
+        std::unordered_map<graphics::SamplerBinding, const IVulkanCombinedSampler*> boundSamplers;
 
         std::vector<std::size_t> vertexBindingTypes;
 
@@ -38,7 +43,7 @@ namespace phenyl::vulkan {
         VkDescriptorSet getDescriptorSet ();
     public:
         VulkanPipeline (VkDevice device, VulkanResource<VkPipeline> pipeline, VulkanResource<VkPipelineLayout> pipelineLayout, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
-            TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes);
+            TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes, std::unordered_set<graphics::SamplerBinding> validSamplers);
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
@@ -66,8 +71,9 @@ namespace phenyl::vulkan {
         std::vector<VkVertexInputAttributeDescription> vertexAttribs;
 
         std::vector<VkDescriptorSetLayoutBinding> descriptorBindings;
+
         std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
-        std::unordered_map<graphics::UniformBinding, const VulkanUniformBuffer*> boundUniforms;
+        std::unordered_set<graphics::SamplerBinding> registeredSamplers;
 
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkCullModeFlags cullMode = VK_CULL_MODE_NONE;

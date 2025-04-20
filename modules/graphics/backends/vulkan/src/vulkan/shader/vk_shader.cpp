@@ -90,7 +90,8 @@ std::optional<unsigned int> VulkanShader::getUniformLocation (const std::string&
 }
 
 std::optional<unsigned int> VulkanShader::getSamplerLocation (const std::string& sampler) const noexcept {
-    return  0;
+    auto* reflectSampler = reflection.getSampler(sampler);
+    return reflectSampler ? std::optional{reflectSampler->location} : std::nullopt;
 }
 
 std::optional<std::size_t> VulkanShader::getUniformOffset (const std::string& uniformBlock,

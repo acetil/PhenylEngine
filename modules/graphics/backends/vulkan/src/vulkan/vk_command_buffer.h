@@ -33,6 +33,9 @@ namespace phenyl::vulkan {
 
         void doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
+        void copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout, VkExtent3D imageExtent, std::uint32_t numLayers = 1);
+        void copyBufferToImage (VkBuffer buffer, VkImage image, VkImageLayout layout, VkExtent3D imageExtent, std::uint32_t layer = 0);
+
         void beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent,
             std::optional<VkClearValue> clearColor = std::nullopt);
         void endRendering ();

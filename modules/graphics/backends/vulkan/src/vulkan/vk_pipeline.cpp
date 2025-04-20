@@ -11,6 +11,9 @@
 using namespace phenyl::graphics;
 using namespace phenyl::vulkan;
 
+static constexpr unsigned int MAX_ATTRIB_LOCATION = 64;
+static constexpr unsigned int MAX_DESCRIPTOR_BINDING = 64;
+
 static phenyl::Logger LOGGER{"VK_PIPELINE", phenyl::vulkan::detail::VULKAN_LOGGER};
 
 static VkVertexInputAttributeDescription MakeAttrib (BufferBinding binding, unsigned int location, VkFormat format, std::size_t offset);
@@ -27,9 +30,9 @@ static VkIndexType GetIndexType (ShaderIndexType type) {
 }
 
 VulkanPipeline::VulkanPipeline (VkDevice device, VulkanResource<VkPipeline> pipeline, VulkanResource<VkPipelineLayout> pipelineLayout, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
-                                TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes) :
+                                TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes, std::unordered_set<graphics::SamplerBinding> validSamplers) :
         device{device}, pipeline{std::move(pipeline)}, pipelineLayout{std::move(pipelineLayout)}, descriptorSetLayout{std::move(descriptorSetLayout)}, testFramebuffer{framebuffer}, vertexBindingTypes{std::move(vertexBindingTypes)},
-        boundVertexBuffers(this->vertexBindingTypes.size()), vertexBufferOffsets(this->vertexBindingTypes.size()), uniformTypes{std::move(uniformTypes)} {
+        boundVertexBuffers(this->vertexBindingTypes.size()), vertexBufferOffsets(this->vertexBindingTypes.size()), uniformTypes{std::move(uniformTypes)}, validSamplerBindings{std::move(validSamplers)} {
     PHENYL_ASSERT(testFramebuffer);
 }
 
@@ -64,7 +67,16 @@ void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding bin
 }
 
 void VulkanPipeline::bindSampler (SamplerBinding binding, const ISampler& sampler) {
+    const auto& combinedSampler = reinterpret_cast<const IVulkanCombinedSampler&>(sampler);
 
+    PHENYL_ASSERT_MSG(validSamplerBindings.contains(binding), "Attempted to bind unknown sampler {}", binding);
+
+    if (binding == 0) {
+        PHENYL_LOGD(LOGGER, "Temporarily ignoring 0 binding!");
+        return;
+    }
+
+    boundSamplers[binding] = &combinedSampler;
 }
 
 void VulkanPipeline::unbindIndexBuffer () {
@@ -140,6 +152,21 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet () {
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
             .pBufferInfo = bufferInfo
+        });
+    }
+
+    std::vector<VkDescriptorImageInfo> imageDescriptors;
+    imageDescriptors.reserve(boundSamplers.size());
+    for (const auto [binding, sampler] : boundSamplers) {
+        imageDescriptors.push_back(sampler->getDescriptor());
+        writes.push_back(VkWriteDescriptorSet{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = set,
+            .dstBinding = binding,
+            .dstArrayElement = 0,
+            .descriptorCount = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .pImageInfo = &imageDescriptors.back()
         });
     }
 
@@ -241,6 +268,7 @@ phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (std::size_t t
 
 void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned int location, graphics::BufferBinding binding, std::size_t offset) {
     PHENYL_ASSERT(binding < vertexBindings.size());
+    PHENYL_ASSERT_MSG(location < MAX_ATTRIB_LOCATION, "Attrib location {} larger than defined maximum of {}!", location, MAX_ATTRIB_LOCATION);
 
     switch (type) {
         case graphics::ShaderDataType::FLOAT32:
@@ -281,7 +309,8 @@ void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned 
     }
 }
 
-phenyl::graphics::UniformBinding VulkanPipelineBuilder::withUniform (std::size_t type, unsigned int location) {
+UniformBinding VulkanPipelineBuilder::withUniform (std::size_t type, unsigned int location) {
+    PHENYL_ASSERT_MSG(location < MAX_DESCRIPTOR_BINDING, "Uniform binding {} larger than defined maximum of {}!", location, MAX_DESCRIPTOR_BINDING);
     descriptorBindings.push_back(VkDescriptorSetLayoutBinding{
         .binding = location,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, // TODO
@@ -293,8 +322,17 @@ phenyl::graphics::UniformBinding VulkanPipelineBuilder::withUniform (std::size_t
     return UniformBinding{location};
 }
 
-phenyl::graphics::SamplerBinding VulkanPipelineBuilder::withSampler (unsigned int location) {
-    return 0;
+SamplerBinding VulkanPipelineBuilder::withSampler (unsigned int location) {
+    PHENYL_ASSERT_MSG(location < MAX_DESCRIPTOR_BINDING, "Sampler binding {} larger than defined maximum of {}!", location, MAX_DESCRIPTOR_BINDING);
+    descriptorBindings.push_back(VkDescriptorSetLayoutBinding{
+        .binding = location,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS // TODO
+    });
+    registeredSamplers.emplace(location);
+
+    return SamplerBinding{location};
 }
 
 std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
@@ -419,7 +457,7 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
     }
 
     PHENYL_LOGD(LOGGER, "Constructed pipeline");
-    return std::make_unique<VulkanPipeline>(resources.getDevice(), std::move(pipeline), std::move(pipelineLayout), std::move(descriptorSetLayout), framebuffer, std::move(vertexBindingTypes), std::move(uniformTypes));
+    return std::make_unique<VulkanPipeline>(resources.getDevice(), std::move(pipeline), std::move(pipelineLayout), std::move(descriptorSetLayout), framebuffer, std::move(vertexBindingTypes), std::move(uniformTypes), std::move(registeredSamplers));
 }
 
 static VkVertexInputAttributeDescription MakeAttrib (phenyl::graphics::BufferBinding binding, unsigned int location, VkFormat format, std::size_t offset) {

@@ -73,6 +73,7 @@ VulkanCommandBuffer2::VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCom
 }
 
 void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+    PHENYL_ASSERT(commandBuffer);
     PHENYL_TRACE(LOGGER, "Performing image transition: {} -> {}", oldLayout, newLayout);
     endRendering();
 
@@ -92,6 +93,45 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLa
         }
     };
 
+    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
+        imageBarrier.srcStageMask = 0;
+        imageBarrier.srcAccessMask = 0;
+    } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    } else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        // TODO
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    } else if (oldLayout == VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL) {
+        // TODO
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_MEMORY_READ_BIT;
+    } else {
+        PHENYL_ABORT("Unsupported source layout: {}", oldLayout);
+    }
+
+    if (newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT;
+    } else if (newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    } else if (newLayout == VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL) {
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT;
+    } else if (newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        // TODO
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    } else if (newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+        // TODO
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    } else {
+        PHENYL_ABORT("Unsupported destination layout: {}", oldLayout);
+    }
+
     VkDependencyInfo depInfo{
         .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
         .imageMemoryBarrierCount = 1,
@@ -99,6 +139,66 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLa
     };
 
     vkCmdPipelineBarrier2(commandBuffer, &depInfo);
+}
+
+void VulkanCommandBuffer2::copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout,
+    VkExtent3D imageExtent, std::uint32_t numLayers) {
+    PHENYL_ASSERT(commandBuffer);
+    VkImageCopy2 region{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2,
+        .srcSubresource = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, // TODO
+            .mipLevel = 0,
+            .baseArrayLayer = 0,
+            .layerCount = numLayers
+        },
+        .srcOffset = {0, 0, 0},
+        .dstSubresource = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, // TODO
+            .mipLevel = 0,
+            .baseArrayLayer = 0,
+            .layerCount = numLayers
+        },
+        .dstOffset = {0, 0, 0},
+        .extent = imageExtent
+    };
+
+    VkCopyImageInfo2 copyInfo{
+        .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2,
+        .srcImage = fromImage,
+        .srcImageLayout = fromLayout,
+        .dstImage = toImage,
+        .dstImageLayout = toLayout,
+        .regionCount = 1,
+        .pRegions = &region
+    };
+    vkCmdCopyImage2(commandBuffer, &copyInfo);
+}
+
+void VulkanCommandBuffer2::copyBufferToImage (VkBuffer buffer, VkImage image, VkImageLayout layout, VkExtent3D imageExtent, std::uint32_t layer) {
+    PHENYL_ASSERT(commandBuffer);
+    VkBufferImageCopy2 region{
+        .sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2,
+        .imageSubresource = VkImageSubresourceLayers{
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, // TODO
+            .mipLevel = 0,
+            .baseArrayLayer = layer,
+            .layerCount = 1,
+        },
+        .imageOffset = VkOffset3D{0, 0, 0}, // TODO
+        .imageExtent = imageExtent
+    };
+
+    VkCopyBufferToImageInfo2 imageInfo{
+        .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
+        .srcBuffer = buffer,
+        .dstImage = image,
+        .dstImageLayout = layout,
+        .regionCount = 1,
+        .pRegions = &region
+    };
+
+    vkCmdCopyBufferToImage2(commandBuffer, &imageInfo);
 }
 
 void VulkanCommandBuffer2::beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent, std::optional<VkClearValue> clearColor) {
@@ -263,7 +363,7 @@ void VulkanSingleUseCommandBuffer::submit (const VulkanSemaphore* waitSem, const
 VulkanTransientCommandBuffer::VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo) :
         VulkanCommandBuffer2{cbInfo->commandBuffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT}, bufferQueue{bufferQueue}, cbInfo{std::move(cbInfo)} {
     PHENYL_ASSERT(bufferQueue);
-    PHENYL_ASSERT(cbInfo);
+    PHENYL_ASSERT(this->cbInfo);
 }
 
 void VulkanTransientCommandBuffer::record () {

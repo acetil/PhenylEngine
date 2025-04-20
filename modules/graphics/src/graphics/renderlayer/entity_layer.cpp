@@ -44,8 +44,8 @@ void EntityRenderLayer::init (Renderer& renderer) {
            .withBuffer<Vertex>(vertexBinding)
            .withAttrib<glm::vec2>(0, vertexBinding, offsetof(Vertex, pos))
            .withAttrib<glm::vec2>(1, vertexBinding, offsetof(Vertex, uv))
-           .withUniform<Uniform>(*shader->uniformLocation("Camera"), uniformBinding)
-           .withSampler2D(*shader->samplerLocation("textureSampler"), samplerBinding)
+           .withUniform<Uniform>(shader->uniformLocation("Camera").value(), uniformBinding)
+           .withSampler2D(shader->samplerLocation("textureSampler").value(), samplerBinding)
            .build();
 
     vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);

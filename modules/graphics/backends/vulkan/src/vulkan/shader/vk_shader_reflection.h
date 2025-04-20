@@ -33,19 +33,29 @@ namespace phenyl::vulkan {
             bool operator== (const UniformBlock&) const = default;
         };
 
+        struct Sampler {
+            std::uint32_t set;
+            std::uint32_t location;
+
+            bool operator== (const Sampler&) const = default;
+        };
+
     private:
         std::unordered_map<std::string, VertexInput> attribs;
         std::vector<FragmentOutput> outputs;
         std::unordered_map<std::string, UniformBlock> uniformBlocks;
+        std::unordered_map<std::string, Sampler> samplers;
 
         void addAttribs (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
         void addOutputs (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
         void addUniformBlocks (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
+        void addSamplers (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
     public:
         explicit ShaderReflection (const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources);
 
         const VertexInput* getAttrib (const std::string& name) const noexcept;
         const FragmentOutput* getOutput (const std::string& name) const noexcept;
         const UniformBlock* getUniformBlock (const std::string& name) const noexcept;
+        const Sampler* getSampler (const std::string& name) const noexcept;
     };
 }

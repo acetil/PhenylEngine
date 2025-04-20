@@ -58,11 +58,15 @@ namespace phenyl::graphics {
         }
 
         [[nodiscard]] inline std::span<std::byte> data () noexcept {
-            return std::span{imgData.get(), width() * height() * FormatSize(format())};
+            return std::span{imgData.get(), dataSize()};
         }
 
         [[nodiscard]] inline std::span<const std::byte> data () const noexcept {
-            return std::span{imgData.get(), width() * height() * FormatSize(format())};
+            return std::span{imgData.get(), dataSize()};
+        }
+
+        std::size_t dataSize () const noexcept {
+            return width() * height() * FormatSize(format());
         }
     };
 }

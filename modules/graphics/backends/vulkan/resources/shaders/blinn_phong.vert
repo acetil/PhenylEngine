@@ -12,7 +12,7 @@ layout(std140, binding = 0) uniform GlobalUniform {
     vec3 viewPos;
 };
 
-layout(std140, set = 4, binding = 1) uniform BPLightUniform {
+layout(std140, binding = 1) uniform BPLightUniform {
     mat4 BPLight_lightSpace;
     vec3 BPLight_pos;
     vec3 BPLight_dir;
@@ -24,6 +24,13 @@ layout(std140, set = 4, binding = 1) uniform BPLightUniform {
     int BPLight_type;
     bool BPLight_castShadows;
 };
+
+layout(location = 0) out BPLight {
+    vec3 fragPos;
+    vec3 viewPos;
+    vec3 normal;
+    vec4 fragLightSpacePos;
+} vsOut;
 
 void main () {
     gl_Position = projection * view * model * vec4(position, 1.0);

@@ -1,18 +1,21 @@
 #pragma once
 
 #include "graphics/backend/texture.h"
+#include "texture/vk_image.h"
 
 namespace phenyl::vulkan {
     class VulkanImageTexture : public graphics::IImageTexture {
     private:
-        class Sampler : public graphics::ISampler {
-            std::size_t hash () const noexcept override {
-                return 1;
-            }
-        };
+        VulkanResources& resources;
+        TransferManager& transferManager;
 
-        Sampler dummy{};
+        CombinedSampler combinedSampler;
+
+        void recreateIfNecessary (VkFormat format, std::uint32_t width, std::uint32_t height);
+        void recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height);
     public:
+        VulkanImageTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties);
+
         std::uint32_t width () const noexcept override;
         std::uint32_t height () const noexcept override;
 

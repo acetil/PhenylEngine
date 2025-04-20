@@ -1,23 +1,31 @@
 #pragma once
 
 #include <memory>
-#include <vulkan/vk_command_buffer.h>
+#include "vulkan/vk_command_buffer.h"
 
 #include "vulkan/vulkan_headers.h"
 #include "vk_swap_chain.h"
 
 namespace phenyl::vulkan {
+    struct DeviceProperties {
+        std::string deviceName;
+        float maxAnisotropy;
+    };
+
     class VulkanDevice {
     private:
         static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface);
         static bool CheckDeviceExtensionSupport (VkPhysicalDevice device, const std::vector<const char*>& extensions);
         static std::optional<VulkanSwapChainDetails> GetDeviceSwapChainDetails (VkPhysicalDevice device, VkSurfaceKHR surface);
         static bool CheckDeviceFeatures (VkPhysicalDevice device);
+        static DeviceProperties GetDeviceProperties (VkPhysicalDevice device);
 
         VkPhysicalDevice physicalDevice{};
         VkDevice logicalDevice{};
+
         VulkanQueueFamilies queueFamilies{};
         VulkanSwapChainDetails swapChainDetails{};
+        DeviceProperties devProperties{};
 
         VkQueue graphicsQueue;
         VkQueue presentQueue;
@@ -35,6 +43,10 @@ namespace phenyl::vulkan {
 
         VkDevice device () const noexcept {
             return logicalDevice;
+        }
+
+        const DeviceProperties& properties () const noexcept {
+            return devProperties;
         }
 
         VkQueue getGraphicsQueue () const noexcept {

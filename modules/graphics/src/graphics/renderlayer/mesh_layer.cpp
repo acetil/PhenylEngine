@@ -38,7 +38,7 @@ void MeshRenderLayer::init (Renderer& renderer) {
         .withShader(ppShader)
         .withBuffer<glm::vec2>(vertexBinding)
         .withAttrib<glm::vec2>(0, vertexBinding)
-        .withSampler2D(*ppShader->samplerLocation("frameBuffer"), ppSampler)
+        .withSampler2D(ppShader->samplerLocation("frameBuffer").value(), ppSampler)
         .build();
 
     ppQuad = renderer.makeBuffer<glm::vec2>(6);

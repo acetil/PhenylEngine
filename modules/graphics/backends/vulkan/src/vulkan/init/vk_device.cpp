@@ -103,9 +103,8 @@ void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surfa
 
     PHENYL_ASSERT_MSG(physicalDevice, "Failed to find a suitable physical device!");
 
-    VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-    PHENYL_LOGI(LOGGER, "Chose physical device \"{}\"", deviceProperties.deviceName);
+    devProperties = GetDeviceProperties(physicalDevice);
+    PHENYL_LOGI(LOGGER, "Chose physical device \"{}\"", properties().deviceName);
 }
 
 VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& deviceExtensions) {
@@ -132,7 +131,10 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
 
     VkPhysicalDeviceFeatures2 deviceFeatures2{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        .pNext = &vulkan13Features
+        .pNext = &vulkan13Features,
+        .features = {
+            .samplerAnisotropy = true
+        },
     };
 
     VkDeviceCreateInfo createInfo{
@@ -169,8 +171,8 @@ std::optional<VulkanQueueFamilies> VulkanDevice::GetDeviceFamilies (VkPhysicalDe
     std::optional<std::uint32_t> presentFamily;
 
     std::uint32_t index = 0;
-    for (const auto& properties : Enumerate<VkQueueFamilyProperties>(vkGetPhysicalDeviceQueueFamilyProperties, device)) {
-        if (!graphicsFamily && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    for (const auto& props : Enumerate<VkQueueFamilyProperties>(vkGetPhysicalDeviceQueueFamilyProperties, device)) {
+        if (!graphicsFamily && props.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             graphicsFamily = index;
             queueFamilyCount++;
         }
@@ -253,12 +255,17 @@ bool VulkanDevice::CheckDeviceFeatures (VkPhysicalDevice device) {
     };
     vkGetPhysicalDeviceFeatures2(device, &features2);
 
-    auto* features = &features2.features;
+    const auto& features = features2.features;
 
     // if (!vk13Features) {
     //     PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing Vulkan 1.3 features", deviceProperties.deviceName);
     //     return false;
     // }
+
+    if (!features.samplerAnisotropy) {
+        PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing feature samplerAnisotropy", deviceProperties.deviceName);
+        return false;
+    }
 
     if (!vk13Features.dynamicRendering) {
         PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing feature dynamicRendering", deviceProperties.deviceName);
@@ -271,4 +278,14 @@ bool VulkanDevice::CheckDeviceFeatures (VkPhysicalDevice device) {
     }
 
     return true;
+}
+
+DeviceProperties VulkanDevice::GetDeviceProperties (VkPhysicalDevice device) {
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+    return {
+        .deviceName = deviceProperties.deviceName,
+        .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy
+    };
 }

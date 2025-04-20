@@ -25,8 +25,9 @@ void CanvasRenderLayer::init (Renderer& renderer) {
                        .withAttrib<glm::vec2>(0, textBinding, offsetof(Vertex, pos))
                        .withAttrib<glm::vec3>(1, textBinding, offsetof(Vertex, uv))
                        .withAttrib<glm::vec4>(2, textBinding, offsetof(Vertex, colour))
-                       .withSampler2D(*textShader->samplerLocation("textureSampler"), samplerBinding)
-                       .withUniform<Uniform>(*textShader->uniformLocation("Uniform"), uniformBinding)
+                       .withSampler2D(textShader->samplerLocation("textureSampler").value(), samplerBinding)
+                       .withUniform<Uniform>(textShader->uniformLocation("Uniform").value(), uniformBinding)
+                       .withBlending(BlendMode::ALPHA_BLEND)
                        .build();
 
     buffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);

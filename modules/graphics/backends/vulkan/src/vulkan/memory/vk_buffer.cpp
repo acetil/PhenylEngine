@@ -20,7 +20,7 @@ VulkanBuffer::VulkanBuffer (VulkanResources& resources, VkBufferUsageFlags usage
     PHENYL_ASSERT_MSG(bufferInfo, "Failed to create buffer!");
 }
 
-void VulkanBuffer::copyIn (std::byte* data, std::size_t size, std::size_t off) {
+void VulkanBuffer::copyIn (const std::byte* data, std::size_t size, std::size_t off) {
     PHENYL_ASSERT(off < bufSize);
     PHENYL_ASSERT(off + size <= bufSize);
     PHENYL_ASSERT(bufferInfo);

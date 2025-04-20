@@ -23,9 +23,9 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
     builder.withShader(shader)
         .withBlending(BlendMode::ADDITIVE)
         .withDepthMask(false)
-        .withUniform<MeshGlobalUniform>(*shader->uniformLocation("GlobalUniform"), globalUniform)
-        .withUniform<BPLightUniform>(*shader->uniformLocation("BPLightUniform"), lightUniform)
-        .withSampler2D(*shader->samplerLocation("ShadowMap"), shadowMapBinding)
+        .withUniform<MeshGlobalUniform>(shader->uniformLocation("GlobalUniform").value(), globalUniform)
+        .withUniform<BPLightUniform>(shader->uniformLocation("BPLightUniform").value(), lightUniform)
+        .withSampler2D(shader->samplerLocation("ShadowMap").value(), shadowMapBinding)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
     // TODO: material specific uniform binding
@@ -41,14 +41,14 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
     for (auto& i : layout.attributes) {
         PHENYL_DASSERT(i.stream < streamBindings.size());
         if (auto loc = shader->attribLocation(GetMeshAttribName(i.kind))) {
-            builder.withAttrib(*loc, streamBindings[i.stream], i.type, i.offset);
+            builder.withAttrib(loc.value(), streamBindings[i.stream], i.type, i.offset);
         }
     }
 
-    builder.withAttrib<glm::mat4>(*shader->attribLocation("model"), model);
+    builder.withAttrib<glm::mat4>(shader->attribLocation("model").value(), model);
 
     UniformBinding instanceBinding;
-    builder.withRawUniform(*shader->uniformLocation("Material"), instanceBinding);
+    builder.withRawUniform(shader->uniformLocation("Material").value(), instanceBinding);
 
     auto [it, _] = pipelines.emplace(layout.layoutId, MatPipeline{
         .pipeline = builder.build(),
@@ -76,7 +76,7 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     UniformBinding globalUniform;
     BufferBinding model;
     builder.withShader(prepassShader)
-        .withUniform<MeshGlobalUniform>(*prepassShader->uniformLocation("GlobalUniform"), globalUniform)
+        .withUniform<MeshGlobalUniform>(prepassShader->uniformLocation("GlobalUniform").value(), globalUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
     std::vector<BufferBinding> streamBindings;
@@ -89,11 +89,11 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     for (auto& i : layout.attributes) {
         PHENYL_DASSERT(i.stream < streamBindings.size());
         if (auto loc = prepassShader->attribLocation(GetMeshAttribName(i.kind))) {
-            builder.withAttrib(*loc, streamBindings[i.stream], i.type, i.offset);
+            builder.withAttrib(loc.value(), streamBindings[i.stream], i.type, i.offset);
         }
     }
 
-    builder.withAttrib<glm::mat4>(*prepassShader->attribLocation("model"), model);
+    builder.withAttrib<glm::mat4>(prepassShader->attribLocation("model").value(), model);
 
     auto [it, _] = depthPipelines.emplace(layout.layoutId, DepthPipeline{
         .pipeline = builder.build(),
@@ -118,7 +118,7 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
     BufferBinding model;
     builder.withShader(shadowMapShader)
         .withCulling(CullMode::FRONT_FACE)
-        .withUniform<BPLightUniform>(*shadowMapShader->uniformLocation("BPLightUniform"), lightUniform)
+        .withUniform<BPLightUniform>(shadowMapShader->uniformLocation("BPLightUniform").value(), lightUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
     std::vector<BufferBinding> streamBindings;
@@ -131,11 +131,11 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
     for (auto& i : layout.attributes) {
         PHENYL_DASSERT(i.stream < streamBindings.size());
         if (auto loc = shadowMapShader->attribLocation(GetMeshAttribName(i.kind))) {
-            builder.withAttrib(*loc, streamBindings[i.stream], i.type, i.offset);
+            builder.withAttrib(loc.value(), streamBindings[i.stream], i.type, i.offset);
         }
     }
 
-    builder.withAttrib<glm::mat4>(*shadowMapShader->attribLocation("model"), model);
+    builder.withAttrib<glm::mat4>(shadowMapShader->attribLocation("model").value(), model);
 
     auto [it, _] = shadowMapPipelines.emplace(layout.layoutId, ShadowMapPipeline{
         .pipeline = builder.build(),

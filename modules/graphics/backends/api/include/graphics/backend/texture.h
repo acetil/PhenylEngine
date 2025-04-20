@@ -83,7 +83,7 @@ namespace phenyl::graphics {
         std::unique_ptr<IImageTexture> rendererTexture;
     public:
         ImageTexture () = default;
-        explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : Texture{texture->sampler().hash()}, rendererTexture{std::move(texture)} {}
+        explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : Texture{0}, rendererTexture{std::move(texture)} {}
 
         explicit operator bool () const noexcept {
             return (bool)rendererTexture;

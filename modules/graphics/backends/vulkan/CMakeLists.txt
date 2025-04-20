@@ -26,6 +26,10 @@ add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp
         src/vulkan/shader/vk_shader_reflection.cpp
         src/vulkan/init/vk_resources.h
         src/vulkan/init/vk_resources.cpp
+        src/vulkan/texture/vk_image.h
+        src/vulkan/texture/vk_image.cpp
+        src/vulkan/memory/vk_transfer_manager.h
+        src/vulkan/memory/vk_transfer_manager.cpp
 )
 
 set_property(TARGET vulkan_backend PROPERTY CXX_STANDARD 23)

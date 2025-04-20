@@ -45,16 +45,23 @@ void VulkanDescriptorPool::guaranteePool () {
     }
 
     // TODO: more pools
-    VkDescriptorPoolSize poolSize{
+    VkDescriptorPoolSize uniformPool{
         .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .descriptorCount = static_cast<std::uint32_t>(poolUniformSize) * 8 // TODO
     };
 
+    VkDescriptorPoolSize samplerPool{
+        .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = static_cast<std::uint32_t>(poolUniformSize) * 8 // TODO
+    };
+
+    std::array poolSizes{uniformPool, samplerPool};
+
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .maxSets = static_cast<std::uint32_t>(poolUniformSize),
-        .poolSizeCount = 1,
-        .pPoolSizes = &poolSize
+        .poolSizeCount = static_cast<std::uint32_t>(poolSizes.size()),
+        .pPoolSizes = poolSizes.data()
     };
 
     VkDescriptorPool pool;

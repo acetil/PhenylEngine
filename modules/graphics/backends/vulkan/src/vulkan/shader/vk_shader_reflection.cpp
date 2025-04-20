@@ -18,6 +18,7 @@ ShaderReflection::ShaderReflection (const std::unordered_map<graphics::ShaderSou
         }
 
         addUniformBlocks(compiler, res);
+        addSamplers(compiler, res);
     }
 }
 
@@ -97,11 +98,30 @@ void ShaderReflection::addUniformBlocks (const Compiler& compiler, const ShaderR
             .memberOffsets = std::move(memberOffsets)
         };
 
-        auto it = uniformBlocks.find(i.name);
-        if (it == uniformBlocks.end()) {
+        if (auto it = uniformBlocks.find(i.name); it == uniformBlocks.end()) {
             uniformBlocks.emplace(i.name, std::move(block));
         } else {
             PHENYL_ASSERT_MSG(it->second == block, "Inconsistent uniform block: \"{}\"", i.name);
+        }
+    }
+}
+
+void ShaderReflection::addSamplers (const Compiler& compiler, const ShaderResources& resources) {
+    for (const auto& i : resources.sampled_images) {
+        auto set = compiler.get_decoration(i.id, spv::DecorationDescriptorSet);
+        auto binding = compiler.get_decoration(i.id, spv::DecorationBinding);
+        PHENYL_LOGD(PHENYL_LOGGER, "Found sampler: {}, binding: {}, set: {}", i.name, binding, set);
+        // TODO: types
+
+        Sampler sampler{
+            .set = set,
+            .location = binding
+        };
+
+        if (auto it = samplers.find(i.name); it == samplers.end()) {
+            samplers.emplace(i.name, sampler);
+        } else {
+            PHENYL_ASSERT_MSG(it->second == sampler, "Inconsistent sampler: \"{}\"", i.name);
         }
     }
 }
@@ -119,4 +139,9 @@ const ShaderReflection::FragmentOutput* ShaderReflection::getOutput (const std::
 const ShaderReflection::UniformBlock* ShaderReflection::getUniformBlock (const std::string& name) const noexcept {
     auto it = uniformBlocks.find(name);
     return it != uniformBlocks.end() ? &it->second : nullptr;
+}
+
+const ShaderReflection::Sampler* ShaderReflection::getSampler (const std::string& name) const noexcept {
+    auto it = samplers.find(name);
+    return it != samplers.end() ? &it->second : nullptr;
 }

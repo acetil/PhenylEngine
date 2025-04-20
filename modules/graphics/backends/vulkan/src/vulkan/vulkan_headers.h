@@ -80,6 +80,20 @@ constexpr ParseContext::iterator parse (ParseContext& ctx) {
     }
 };
 
+template<>
+struct std::formatter<VkFormat, char> {
+    template <class ParseContext>
+constexpr ParseContext::iterator parse (ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <class FmtContext>
+    FmtContext::iterator format (const VkFormat& format, FmtContext& ctx) const {
+        return std::format_to(ctx.out(), "{}", string_VkFormat(format));
+    }
+};
+
+
 template <>
 struct std::formatter<phenyl::vulkan::VulkanVersion, char> {
     template <class ParseContext>

@@ -69,6 +69,7 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
 
     swapChain = device->makeSwapChain(surface);
     frameManager = std::make_unique<FrameManager>(*device, *resources, MAX_FRAMES_IN_FLIGHT);
+    transferManager = std::make_unique<TransferManager>(*resources);
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
@@ -81,6 +82,7 @@ VulkanRenderer::~VulkanRenderer () {
 
     shaderManager = nullptr;
 
+    transferManager = nullptr;
     frameManager = nullptr;
     swapChain = nullptr;
 
@@ -117,7 +119,7 @@ void VulkanRenderer::render () {
     {
         commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent(), VkClearValue{
             .color = {
-                .float32 = {1, 0, 0, 1}
+                .float32 = {0, 0, 0, 0}
             }
         });
         //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
@@ -176,11 +178,11 @@ std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool 
 }
 
 std::unique_ptr<IImageTexture> VulkanRenderer::makeRendererImageTexture (const TextureProperties& properties) {
-    return std::make_unique<VulkanImageTexture>();
+    return std::make_unique<VulkanImageTexture>(*resources, *transferManager, properties);
 }
 
 std::unique_ptr<IImageArrayTexture> VulkanRenderer::makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return std::make_unique<VulkanArrayTexture>();
+    return std::make_unique<VulkanArrayTexture>(*resources, *transferManager, properties, width, height);
 }
 
 std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {

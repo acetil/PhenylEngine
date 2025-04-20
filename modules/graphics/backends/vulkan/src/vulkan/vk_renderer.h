@@ -15,6 +15,7 @@
 #include "vulkan_headers.h"
 #include "init/vk_resources.h"
 #include "memory/vk_buffer.h"
+#include "memory/vk_transfer_manager.h"
 
 namespace phenyl::vulkan {
     class VulkanViewport;
@@ -39,6 +40,7 @@ namespace phenyl::vulkan {
 
         std::unique_ptr<VulkanShaderManager> shaderManager;
         std::unique_ptr<FrameManager> frameManager;
+        std::unique_ptr<TransferManager> transferManager;
         TestFramebuffer framebuffer{};
 
 

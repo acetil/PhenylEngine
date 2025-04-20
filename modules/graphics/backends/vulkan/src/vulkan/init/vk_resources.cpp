@@ -15,17 +15,17 @@ VulkanResources::VulkanResources (VkInstance instance, VulkanDevice& device, std
         semaphoreQueue{[&] (VkSemaphore semaphore) { vkDestroySemaphore(device.device(), semaphore, nullptr); }},
         fenceQueue{[&] (VkFence fence) { vkDestroyFence(device.device(), fence, nullptr); }},
         commandPoolQueue{[&] (VkCommandPool pool) { vkDestroyCommandPool(device.device(), pool, nullptr); } },
-        commandBufferQueue{[&] (VulkanCommandBufferInfo info) { vkFreeCommandBuffers(device.device(), info.pool, 1, &info.commandBuffer); } } {}
+        commandBufferQueue{[&] (VulkanCommandBufferInfo info) { vkFreeCommandBuffers(device.device(), info.pool, 1, &info.commandBuffer); } },
+        imageQueue{[&] (VulkanImageInfo&& info) { vmaDestroyImage(allocator, info.image, info.alloc); }},
+        imageViewQueue{[&] (VkImageView&& view) { vkDestroyImageView(device.device(), view, nullptr); }},
+        samplerQueue{[&] (VkSampler&& sampler) { vkDestroySampler(device.device(), sampler, nullptr); } } {}
 
 VulkanResources::~VulkanResources () {
     bufferQueue.clear();
 
-    pipelineQueue.clear();
-    pipelineLayoutQueue.clear();
-    descriptorSetLayoutQueue.clear();
-
-    semaphoreQueue.clear();
-    fenceQueue.clear();
+    samplerQueue.clear();
+    imageViewQueue.clear();
+    imageQueue.clear();
 
     vmaDestroyAllocator(allocator);
 }
@@ -36,6 +36,10 @@ VkDevice VulkanResources::getDevice () const noexcept {
 
 VkQueue VulkanResources::getGraphicsQueue () const noexcept {
     return device.getGraphicsQueue();
+}
+
+const DeviceProperties& VulkanResources::getDeviceProperties () const noexcept {
+    return device.properties();
 }
 
 VulkanResource<VulkanBufferInfo> VulkanResources::makeBuffer (const VkBufferCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo) {
@@ -54,6 +58,43 @@ VulkanResource<VulkanBufferInfo> VulkanResources::makeBuffer (const VkBufferCrea
         .buffer = buffer,
         .alloc = alloc
     }, [&] (VulkanBufferInfo&& info) { bufferQueue.queueDestruction(info, getDestructionFrame()); }};
+}
+
+VulkanResource<VulkanImageInfo> VulkanResources::makeImage (const VkImageCreateInfo& createInfo,
+    const VmaAllocationCreateInfo& allocCreateInfo) {
+    VkImage image;
+    VmaAllocation alloc;
+    if (auto result = vmaCreateImage(allocator, &createInfo, &allocCreateInfo, &image, &alloc, nullptr); result != VK_SUCCESS) {
+        PHENYL_LOGE(LOGGER, "Failed to create VkImage using VMA: {}", result);
+        return {};
+    }
+
+    PHENYL_DASSERT(image);
+    PHENYL_DASSERT(alloc);
+
+    return {VulkanImageInfo{ .image = image, .alloc = alloc }, [&] (VulkanImageInfo&& info) { imageQueue.queueDestruction(info, getDestructionFrame()); }};
+}
+
+VulkanResource<VkImageView> VulkanResources::makeImageView (const VkImageViewCreateInfo& createInfo) {
+    VkImageView imageView;
+    if (auto result = vkCreateImageView(device.device(), &createInfo, nullptr, &imageView); result != VK_SUCCESS) {
+        PHENYL_LOGE(LOGGER, "Failed to create VkImageView: {}", result);
+        return {};
+    }
+    PHENYL_DASSERT(imageView);
+
+    return {imageView, [&] (auto&& view) { imageViewQueue.queueDestruction(view, getDestructionFrame()); }};
+}
+
+VulkanResource<VkSampler> VulkanResources::makeSampler (const VkSamplerCreateInfo& createInfo) {
+    VkSampler sampler;
+    if (auto result = vkCreateSampler(device.device(), &createInfo, nullptr, &sampler); result != VK_SUCCESS) {
+        PHENYL_LOGE(LOGGER, "Failed to create VkSampler: {}", result);
+        return {};
+    }
+    PHENYL_DASSERT(sampler);
+
+    return {sampler, [&] (auto&& s) { samplerQueue.queueDestruction(s, getDestructionFrame()); } };
 }
 
 VulkanResource<VkDescriptorSetLayout> VulkanResources::makeDescriptorSetLayout (const VkDescriptorSetLayoutCreateInfo& layoutInfo) {
@@ -142,6 +183,10 @@ VulkanResource<VkFence> VulkanResources::makeFence (const VkFenceCreateInfo& cre
 
 void VulkanResources::onFrame (std::uint64_t frameNum) {
     bufferQueue.onFrame(frameNum);
+
+    samplerQueue.onFrame(frameNum);
+    imageViewQueue.onFrame(frameNum);
+    imageQueue.onFrame(frameNum);
 
     pipelineQueue.onFrame(frameNum);
     pipelineLayoutQueue.onFrame(frameNum);

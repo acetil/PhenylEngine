@@ -18,6 +18,15 @@ namespace phenyl::vulkan {
         }
     };
 
+    struct VulkanImageInfo {
+        VkImage image = nullptr;
+        VmaAllocation alloc = nullptr;
+
+        explicit operator bool () const noexcept {
+            return image && alloc;
+        }
+    };
+
     struct VulkanCommandBufferInfo {
         VkCommandPool pool;
         VkCommandBuffer commandBuffer;
@@ -90,6 +99,7 @@ namespace phenyl::vulkan {
     };
 
     class VulkanDevice;
+    struct DeviceProperties;
 
     class VulkanResources {
     private:
@@ -137,6 +147,10 @@ namespace phenyl::vulkan {
 
         DestructionQueue<VulkanBufferInfo> bufferQueue;
 
+        DestructionQueue<VulkanImageInfo> imageQueue;
+        DestructionQueue<VkImageView> imageViewQueue;
+        DestructionQueue<VkSampler> samplerQueue;
+
         DestructionQueue<VkDescriptorSetLayout> descriptorSetLayoutQueue;
         DestructionQueue<VkPipelineLayout> pipelineLayoutQueue;
         DestructionQueue<VkPipeline> pipelineQueue;
@@ -156,9 +170,14 @@ namespace phenyl::vulkan {
         ~VulkanResources ();
 
         [[nodiscard]] VkDevice getDevice () const noexcept;
-        VkQueue getGraphicsQueue () const noexcept;
+        [[nodiscard]] VkQueue getGraphicsQueue () const noexcept;
+        [[nodiscard]] const DeviceProperties& getDeviceProperties () const noexcept;
 
         VulkanResource<VulkanBufferInfo> makeBuffer (const VkBufferCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
+
+        VulkanResource<VulkanImageInfo> makeImage (const VkImageCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
+        VulkanResource<VkImageView> makeImageView (const VkImageViewCreateInfo& createInfo);
+        VulkanResource<VkSampler> makeSampler (const VkSamplerCreateInfo& createInfo);
 
         VulkanResource<VkDescriptorSetLayout> makeDescriptorSetLayout (const VkDescriptorSetLayoutCreateInfo& layoutInfo);
         VulkanResource<VkPipelineLayout> makePipelineLayout (const VkPipelineLayoutCreateInfo& layoutInfo);
