@@ -1,5 +1,7 @@
 #include "vk_command_buffer.h"
 
+#include "vk_framebuffer.h"
+
 using namespace phenyl::vulkan;
 
 static phenyl::Logger LOGGER{"VK_COMMAND_BUFFER", detail::VULKAN_LOGGER};
@@ -124,6 +126,9 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLa
         // TODO
         imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
         imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    } else if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     } else if (newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
         // TODO
         imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
@@ -201,63 +206,29 @@ void VulkanCommandBuffer2::copyBufferToImage (VkBuffer buffer, VkImage image, Vk
     vkCmdCopyBufferToImage2(commandBuffer, &imageInfo);
 }
 
-void VulkanCommandBuffer2::beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent, std::optional<VkClearValue> clearColor) {
+void VulkanCommandBuffer2::beginRendering (IVulkanFrameBuffer& frameBuffer) {
     PHENYL_ASSERT_MSG(commandBuffer, "Cannot begin rendering for invalid buffer");
 
-    RenderingInfo info{
-        .imageView = imageView,
-        .imageLayout = imageLayout,
-        .drawExtent = drawExtent
-    };
-
-    if (currentRendering) {
-        if (info == *currentRendering) {
-            PHENYL_LOGW_IF(clearColor, LOGGER, "Ignoring clear value for duplicate rendering request");
-            return;
-        }
-
+    if (currentFrameBuffer == &frameBuffer) {
+        return;
+    } else if (currentFrameBuffer) {
         endRendering();
     }
+    PHENYL_DASSERT(!currentFrameBuffer);
 
-    PHENYL_DASSERT(!currentRendering);
-
-    // TODO: move into framebuffer?
-    VkRenderingAttachmentInfo colorAttachment{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = imageView,
-        .imageLayout = imageLayout,
-        .resolveMode = VK_RESOLVE_MODE_NONE,
-        .loadOp = clearColor ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE
-    };
-    if (clearColor) {
-        colorAttachment.clearValue = *clearColor;
-    }
-
-    VkRenderingInfo renderingInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-        .renderArea = {
-            .offset = {0, 0},
-            .extent = drawExtent
-        },
-        .layerCount = 1,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachment,
-        // TODO: depth/stencil
-    };
-
-    vkCmdBeginRendering(commandBuffer, &renderingInfo);
-    currentRendering = info;
+    frameBuffer.prepareRendering(*this);
+    vkCmdBeginRendering(commandBuffer, frameBuffer.getRenderingInfo());
+    currentFrameBuffer = &frameBuffer;
 }
 
 void VulkanCommandBuffer2::endRendering () {
     PHENYL_ASSERT_MSG(commandBuffer, "Cannot end rendering for invalid buffer");
 
-    if (currentRendering) {
+    if (currentFrameBuffer) {
         vkCmdEndRendering(commandBuffer);
     }
 
-    currentRendering = std::nullopt;
+    currentFrameBuffer = nullptr;
     currPipeline = nullptr;
 }
 

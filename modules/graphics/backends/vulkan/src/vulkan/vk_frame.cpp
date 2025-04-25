@@ -20,18 +20,18 @@ FrameManager::FrameManager (VulkanDevice& device, VulkanResources& resources, st
     }
 }
 
-bool FrameManager::onNewFrame (VulkanSwapChain& swapChain) {
+bool FrameManager::onNewFrame (VulkanWindowFrameBuffer& windowFrameBuffer) {
     frameCount++;
     auto& sync = getFrameSync();
 
     PHENYL_ASSERT(sync.inFlight.wait(1000000000));
 
-    auto frameImageOpt = swapChain.acquireImage(sync.imageAvailable);
+    auto frameImageOpt = windowFrameBuffer.acquireFrame(sync.imageAvailable);
     if (!frameImageOpt) {
         return false;
     }
 
-    frameImage = *frameImageOpt;
+    //frameImage = *frameImageOpt;
     sync.inFlight.reset();
 
     getCommandPool().reset();

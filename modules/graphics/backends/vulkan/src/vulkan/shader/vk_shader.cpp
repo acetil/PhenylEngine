@@ -96,12 +96,14 @@ std::optional<unsigned int> VulkanShader::getSamplerLocation (const std::string&
 
 std::optional<std::size_t> VulkanShader::getUniformOffset (const std::string& uniformBlock,
     const std::string& uniform) const noexcept {
-    auto* block = reflection.getUniformBlock(uniform);
+    auto* block = reflection.getUniformBlock(uniformBlock);
     if (!block) {
+        PHENYL_LOGD(LOGGER, "Failed to find uniform block \"{}\"", uniformBlock);
         return std::nullopt;
     }
 
     auto it = block->memberOffsets.find(uniform);
+    PHENYL_LOGD_IF(it == block->memberOffsets.end(), LOGGER, "Failed to find uniform member \"{}::{}\"", uniformBlock, uniform);
     return it != block->memberOffsets.end() ? std::optional{it->second} : std::nullopt;
 }
 

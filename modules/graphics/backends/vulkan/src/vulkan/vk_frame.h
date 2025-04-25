@@ -3,6 +3,7 @@
 #include "vulkan_headers.h"
 #include "vk_command_buffer.h"
 #include "vk_descriptors.h"
+#include "vk_framebuffer.h"
 #include "vk_sync.h"
 #include "init/vk_device.h"
 #include "init/vk_swap_chain.h"
@@ -19,7 +20,7 @@ namespace phenyl::vulkan {
         std::size_t frameCount = static_cast<std::size_t>(-1);
         std::size_t maxInFlight;
 
-        SwapChainImage frameImage{};
+        //SwapChainImage frameImage{};
         std::vector<VulkanCommandPool> commandPools;
         std::vector<VulkanDescriptorPool> descriptorPools; // TODO: per-pipeline pools?
         std::vector<FrameSync> syncs;
@@ -28,11 +29,11 @@ namespace phenyl::vulkan {
     public:
         FrameManager (VulkanDevice& device, VulkanResources& resources, std::size_t maxInFlight);
 
-        bool onNewFrame (VulkanSwapChain& swapChain);
+        bool onNewFrame (VulkanWindowFrameBuffer& windowFrameBuffer);
 
-        const SwapChainImage& getImage () const noexcept {
-            return frameImage;
-        }
+        // const SwapChainImage& getImage () const noexcept {
+        //     return frameImage;
+        // }
 
         VulkanCommandPool& getCommandPool () {
             PHENYL_DASSERT(flightNum() < commandPools.size());

@@ -112,21 +112,22 @@ GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const graphics::FrameBuffer
     valid = status == GL_FRAMEBUFFER_COMPLETE;
     PHENYL_DASSERT(valid);
 }
-const phenyl::graphics::ISampler* GlFrameBuffer::getSampler () const noexcept {
+
+phenyl::graphics::ISampler* GlFrameBuffer::getSampler () noexcept {
     return colorSampler ? &*colorSampler : nullptr;
 }
 
-const phenyl::graphics::ISampler* GlFrameBuffer::getDepthSampler () const noexcept {
+phenyl::graphics::ISampler* GlFrameBuffer::getDepthSampler () noexcept {
     return depthSampler ? &*depthSampler : nullptr;
 }
 
 GlWindowFrameBuffer::GlWindowFrameBuffer (glm::ivec2 dimensions) : AbstractGlFrameBuffer{0, dimensions} {}
 
-const phenyl::graphics::ISampler* GlWindowFrameBuffer::getSampler () const noexcept {
+phenyl::graphics::ISampler* GlWindowFrameBuffer::getSampler () noexcept {
     PHENYL_ABORT("Cannot sample window frame buffer!");
 }
 
-const phenyl::graphics::ISampler* GlWindowFrameBuffer::getDepthSampler () const noexcept {
+phenyl::graphics::ISampler* GlWindowFrameBuffer::getDepthSampler () noexcept {
     PHENYL_ABORT("Cannot sample window frame buffer!");
 }
 

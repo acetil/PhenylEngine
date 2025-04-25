@@ -24,7 +24,8 @@ namespace phenyl::opengl {
         util::Map<graphics::UniformBinding, std::size_t> uniformTypes;
         std::optional<PipelineIndex> indexType = std::nullopt;
 
-        bool doDepthMask = true;
+        bool doDepthTest = false;
+        bool doDepthMask = false;
         graphics::BlendMode blendMode = graphics::BlendMode::ALPHA_BLEND;
         graphics::CullMode cullMode = graphics::CullMode::NONE;
 
@@ -46,7 +47,7 @@ namespace phenyl::opengl {
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
         void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer) override;
-        void bindSampler (graphics::SamplerBinding binding, const graphics::ISampler& sampler) override;
+        void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
         void unbindIndexBuffer () override;
 
         void render (graphics::IFrameBuffer* frameBuffer, std::size_t vertices, std::size_t offset) override;
@@ -61,7 +62,7 @@ namespace phenyl::opengl {
         graphics::UniformBinding addUniform (std::size_t type, unsigned int location);
         graphics::SamplerBinding addSampler (unsigned int location);
 
-        void setDepthMask (bool doMask);
+        void setDepthTest (bool doMask);
         void setBlendMode (graphics::BlendMode mode);
         void setCullMode (graphics::CullMode mode);
     };
@@ -83,7 +84,7 @@ namespace phenyl::opengl {
 
         void withCullMode(graphics::CullMode mode) override;
         void withBlendMode (graphics::BlendMode mode) override;
-        void withDepthMask (bool doMask) override;
+        void withDepthTesting (bool doDepthWrite) override;
 
         std::unique_ptr<graphics::IPipeline> build() override;
     };

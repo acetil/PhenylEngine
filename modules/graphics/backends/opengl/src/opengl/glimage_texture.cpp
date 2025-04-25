@@ -31,6 +31,6 @@ std::uint32_t GlImageTexture::height () const noexcept {
     return texHeight;
 }
 
-const phenyl::graphics::ISampler& GlImageTexture::sampler () const noexcept {
+phenyl::graphics::ISampler& GlImageTexture::sampler () noexcept {
     return texSampler;
 }

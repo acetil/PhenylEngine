@@ -21,7 +21,7 @@ void VulkanImageTexture::upload (const graphics::Image& image) {
     combinedSampler.image().loadImage(transferManager, image);
 }
 
-const phenyl::graphics::ISampler& VulkanImageTexture::sampler () const noexcept {
+phenyl::graphics::ISampler& VulkanImageTexture::sampler () noexcept {
     PHENYL_ASSERT_MSG(combinedSampler, "Attempted to get sampler of uninitialised image");
     return combinedSampler;
 }
@@ -50,10 +50,6 @@ void VulkanImageTexture::recreateIfNecessary (VkFormat format, std::uint32_t wid
 void VulkanImageTexture::recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height) {
     PHENYL_LOGD(LOGGER, "Recreating VulkanImage with dimensions {}x{} and format {}", width, height, imageFormat);
 
-    VulkanImage newImage{resources, imageFormat, width, height};
-    // VulkanImageView newView{resources, newImage};
-    // VulkanSampler newSampler = combinedSampler ? std::move(combinedSampler->sampler) : VulkanSampler{resources, properties};
-    //
-    // combinedSampler = Sampler{std::move(newImage), std::move(newView), std::move(newSampler)};
+    VulkanImage newImage{resources, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, width, height};
     combinedSampler.recreate(resources, std::move(newImage));
 }

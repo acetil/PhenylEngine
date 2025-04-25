@@ -35,6 +35,7 @@ namespace phenyl::vulkan {
         std::unique_ptr<VulkanResources> resources;
 
         std::unique_ptr<VulkanSwapChain> swapChain;
+        std::unique_ptr<VulkanWindowFrameBuffer> windowFrameBuffer;
 
         VkDebugUtilsMessengerEXT debugMessenger{};
 

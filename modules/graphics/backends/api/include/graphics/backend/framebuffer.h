@@ -25,8 +25,8 @@ namespace phenyl::graphics {
         virtual ~IFrameBuffer () = default;
 
         virtual void clear (glm::vec4 clearColor) = 0;
-        virtual const ISampler* getSampler () const noexcept = 0;
-        virtual const ISampler* getDepthSampler () const noexcept = 0;
+        virtual ISampler* getSampler () noexcept = 0;
+        virtual ISampler* getDepthSampler () noexcept = 0;
         virtual glm::ivec2 getDimensions () const noexcept = 0;
     };
 
@@ -47,12 +47,12 @@ namespace phenyl::graphics {
             return *rendererFB;
         }
 
-        const ISampler& sampler () const noexcept {
+        ISampler& sampler () const noexcept {
             PHENYL_DASSERT_MSG(rendererFB->getSampler(), "Attempted to get sampler from framebuffer without color attachment!");
             return *rendererFB->getSampler();
         }
 
-        const ISampler& depthSampler () const noexcept {
+        ISampler& depthSampler () const noexcept {
             PHENYL_DASSERT_MSG(rendererFB->getDepthSampler(), "Attempted to get depth sampler from framebuffer without depth attachment!");
             return *rendererFB->getDepthSampler();
         }

@@ -4,6 +4,7 @@
 
 #include "vk_command_buffer.h"
 #include "vk_descriptors.h"
+#include "vk_framebuffer.h"
 #include "vk_uniform_buffer.h"
 #include "graphics/backend/pipeline.h"
 #include "texture/vk_image.h"
@@ -12,15 +13,18 @@ namespace phenyl::vulkan {
     struct TestFramebuffer {
         VulkanCommandBuffer2* renderingRecorder;
         VulkanDescriptorPool* descriptorPool;
-        VkViewport viewport;
-        VkRect2D scissor;
+        // VkViewport viewport;
+        // VkRect2D scissor;
     };
 
     class VulkanStorageBuffer;
+    class VulkanWindowFrameBuffer;
 
     class VulkanPipeline : public graphics::IPipeline {
     private:
         TestFramebuffer* testFramebuffer;
+        VulkanWindowFrameBuffer* windowFrameBuffer;
+
         VkDevice device;
         VulkanResource<VkPipeline> pipeline;
         VulkanResource<VkPipelineLayout> pipelineLayout;
@@ -29,7 +33,7 @@ namespace phenyl::vulkan {
         std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
         std::unordered_map<graphics::UniformBinding, const VkDescriptorBufferInfo*> boundUniformBuffers;
         std::unordered_set<graphics::SamplerBinding> validSamplerBindings;
-        std::unordered_map<graphics::SamplerBinding, const IVulkanCombinedSampler*> boundSamplers;
+        std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> boundSamplers;
 
         std::vector<std::size_t> vertexBindingTypes;
 
@@ -40,15 +44,16 @@ namespace phenyl::vulkan {
         const VulkanStorageBuffer* indexBuffer = nullptr;
         VkIndexType indexBufferType;
 
-        VkDescriptorSet getDescriptorSet ();
+        void prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffer& frameBuffer);
+        VkDescriptorSet getDescriptorSet (VulkanCommandBuffer2& cmd);
     public:
         VulkanPipeline (VkDevice device, VulkanResource<VkPipeline> pipeline, VulkanResource<VkPipelineLayout> pipelineLayout, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
-            TestFramebuffer* framebuffer, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes, std::unordered_set<graphics::SamplerBinding> validSamplers);
+            TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes, std::unordered_set<graphics::SamplerBinding> validSamplers);
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
         void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer) override;
-        void bindSampler (graphics::SamplerBinding binding, const graphics::ISampler& sampler) override;
+        void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
 
         void unbindIndexBuffer () override;
 
@@ -63,6 +68,7 @@ namespace phenyl::vulkan {
         VkFormat colorFormat;
 
         TestFramebuffer* framebuffer;
+        VulkanWindowFrameBuffer* windowFb;
 
         core::Asset<graphics::Shader> shader;
 
@@ -83,12 +89,15 @@ namespace phenyl::vulkan {
             .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         };
 
+        bool depthTest = false;
+        bool depthWrite = true;
+
     public:
-        VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer);
+        VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb);
 
         void withBlendMode (graphics::BlendMode mode) override;
         void withCullMode (graphics::CullMode mode) override;
-        void withDepthMask (bool doMask) override;
+        void withDepthTesting (bool doDepthWrite) override;
         void withGeometryType (graphics::GeometryType type) override;
 
         void withShader (core::Asset<graphics::Shader> shader) override;

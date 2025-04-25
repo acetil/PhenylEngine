@@ -73,6 +73,6 @@ void GlArrayTexture::upload (std::uint32_t index, const graphics::Image& image) 
     texSampler.uploadLayer(index, image);
 }
 
-const phenyl::graphics::ISampler& GlArrayTexture::sampler () const noexcept {
+phenyl::graphics::ISampler& GlArrayTexture::sampler () noexcept {
     return texSampler;
 }

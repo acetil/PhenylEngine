@@ -21,7 +21,7 @@ namespace phenyl::vulkan {
         VkImageLayout currLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     public:
         VulkanImage () = default;
-        VulkanImage (VulkanResources& resources, VkFormat format, std::uint32_t width, std::uint32_t height, std::uint32_t layers = 1);
+        VulkanImage (VulkanResources& resources, VkFormat format, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers = 1);
 
         explicit operator bool () const noexcept {
             return static_cast<bool>(imageInfo);
@@ -58,16 +58,17 @@ namespace phenyl::vulkan {
         void layoutTransition (VulkanCommandBuffer2& cmd, VkImageLayout newLayout);
 
         void loadImage (TransferManager& transferManager, const graphics::Image& image, std::uint32_t layer = 0);
-        void copy (TransferManager& transferManager, VulkanImage& srcImage, bool retainSrcLayout = false);
+        void copy (TransferManager& transferManager, VulkanImage& srcImage);
     };
 
     class VulkanImageView {
     private:
         VulkanResource<VkImageView> imageView{};
+        VkImageAspectFlags imageAspect;
 
     public:
         VulkanImageView () = default;
-        VulkanImageView (VulkanResources& resources, const VulkanImage& image);
+        VulkanImageView (VulkanResources& resources, const VulkanImage& image, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
 
         explicit operator bool () const noexcept {
             return static_cast<bool>(imageView);
@@ -94,6 +95,7 @@ namespace phenyl::vulkan {
 
     class IVulkanCombinedSampler : public graphics::ISampler {
     public:
+        virtual void prepareSampler (VulkanCommandBuffer2& cmd) = 0;
         virtual VkDescriptorImageInfo getDescriptor () const noexcept = 0;
     };
 
@@ -121,6 +123,8 @@ namespace phenyl::vulkan {
         void recreate (VulkanResources& resources, VulkanImage&& newImage);
 
         [[nodiscard]] std::size_t hash () const noexcept override;
+
+        void prepareSampler (VulkanCommandBuffer2& cmd) override;
         VkDescriptorImageInfo getDescriptor () const noexcept override;
     };
 }

@@ -85,7 +85,7 @@ void ShaderReflection::addUniformBlocks (const Compiler& compiler, const ShaderR
 
         std::unordered_map<std::string, std::size_t> memberOffsets;
         for (std::size_t j = 0; j < numMembers; j++) {
-            const auto& memberName = compiler.get_member_name(i.type_id, j);
+            const auto& memberName = compiler.get_member_name(i.base_type_id, j);
             auto memberOff = compiler.type_struct_member_offset(type, j);
 
             memberOffsets.emplace(memberName, memberOff);
@@ -99,6 +99,7 @@ void ShaderReflection::addUniformBlocks (const Compiler& compiler, const ShaderR
         };
 
         if (auto it = uniformBlocks.find(i.name); it == uniformBlocks.end()) {
+            PHENYL_LOGD(PHENYL_LOGGER, "Adding uniform block \"{}\"", i.name);
             uniformBlocks.emplace(i.name, std::move(block));
         } else {
             PHENYL_ASSERT_MSG(it->second == block, "Inconsistent uniform block: \"{}\"", i.name);

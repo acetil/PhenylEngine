@@ -45,7 +45,7 @@ GlyphAtlas::GlyphAtlas (Renderer& renderer, std::uint32_t size, std::uint32_t pa
     whitePixel = glm::vec3{uvStart, atlasLayer};
 }
 
-const ISampler& GlyphAtlas::sampler () const {
+ISampler& GlyphAtlas::sampler () const {
     return arrayTexture.sampler();
 }
 

@@ -11,5 +11,12 @@ layout(std140, binding = 0) uniform GlobalUniform {
 
 
 void main () {
-    gl_Position = projection * view * model * vec4(position, 1.0);
+    mat4 fixY = mat4(
+        vec4(1, 0, 0, 0),
+        vec4(0, -1, 0, 0),
+        vec4(0, 0, 1, 0),
+        vec4(0, 0, 0, 1)
+    );
+
+    gl_Position = projection * fixY * view * model * vec4(position, 1.0);
 }

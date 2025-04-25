@@ -6,11 +6,7 @@ using namespace phenyl::vulkan;
 
 VulkanArrayTexture::VulkanArrayTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties, std::uint32_t texWidth,
     std::uint32_t texHeight) : resources{resources}, transferManager{transferManager}, properties{properties}, combinedSampler{resources, properties}, texWidth{texWidth}, texHeight{texHeight} {
-    combinedSampler.recreate(resources, VulkanImage{resources, FormatToVulkan(properties.format), texWidth, texWidth, static_cast<std::uint32_t>(texCapacity)});
-    transferManager.queueTransfer([&] (VulkanCommandBuffer2& cmd) {
-        combinedSampler.image().layoutTransition(cmd, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
-    });
-
+    combinedSampler.recreate(resources, VulkanImage{resources, FormatToVulkan(properties.format), VK_IMAGE_USAGE_SAMPLED_BIT, texWidth, texHeight, static_cast<std::uint32_t>(texCapacity)});
 }
 
 std::uint32_t VulkanArrayTexture::width () const noexcept {
@@ -48,6 +44,6 @@ void VulkanArrayTexture::upload (std::uint32_t index, const graphics::Image& ima
     combinedSampler.image().loadImage(transferManager, image, index);
 }
 
-const phenyl::graphics::ISampler& VulkanArrayTexture::sampler () const noexcept {
+phenyl::graphics::ISampler& VulkanArrayTexture::sampler () noexcept {
     return combinedSampler;
 }

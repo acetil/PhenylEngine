@@ -28,14 +28,14 @@ namespace phenyl::graphics {
         struct SamplerRender {
             std::uint16_t indexOffset;
             std::uint16_t size;
-            const ISampler* sampler;
+            ISampler* sampler;
         };
     private:
         struct Uniform {
             glm::mat4 camera;
         };
 
-        std::vector<std::pair<const ISampler*, std::uint16_t>> samplerStartIndices;
+        std::vector<std::pair<ISampler*, std::uint16_t>> samplerStartIndices;
         std::vector<SamplerRender> samplerRenders;
 
         Pipeline pipeline;

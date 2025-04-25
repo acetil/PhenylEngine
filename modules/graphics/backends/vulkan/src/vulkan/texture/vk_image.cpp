@@ -46,7 +46,7 @@ static VkSamplerAddressMode WrappingToVulkan (phenyl::graphics::TextureWrapping 
     }
 }
 
-VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, std::uint32_t width, std::uint32_t height, std::uint32_t layers) : imgFormat{format}, imgWidth{width}, imgHeight{height}, imgLayers{layers}, resources{&resources} {
+VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers) : imgFormat{format}, imgWidth{width}, imgHeight{height}, imgLayers{layers}, resources{&resources} {
     PHENYL_ASSERT_MSG(width > 0 && height > 0, "Attempted to create vulkan image with invalid dimensions: {}x{}", width, height);
     PHENYL_ASSERT_MSG(layers > 0, "Attempted to create vulkan image with no layers");
 
@@ -63,7 +63,7 @@ VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, std::uint
         .arrayLayers = layers,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | usage,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE, // TODO
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
     };
@@ -105,12 +105,10 @@ void VulkanImage::loadImage (TransferManager& transferManager, const graphics::I
          layoutTransition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
         cmd.copyBufferToImage(buffer.get(), get(), currLayout, {width(), height(), 1}, layer);
-
-        layoutTransition(cmd, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
     }));
 }
 
-void VulkanImage::copy (TransferManager& transferManager, VulkanImage& srcImage, bool retainSrcLayout) {
+void VulkanImage::copy (TransferManager& transferManager, VulkanImage& srcImage) {
     PHENYL_ASSERT(*this);
     PHENYL_ASSERT(srcImage);
 
@@ -119,21 +117,14 @@ void VulkanImage::copy (TransferManager& transferManager, VulkanImage& srcImage,
         "Attempted to copy image with incorrect dimensions, this: {}x{}, src: {}x{}", width(), height(), srcImage.width(), srcImage.height());
 
     transferManager.queueTransfer([&] (VulkanCommandBuffer2& cmd) {
-        auto oldSrcLayout = srcImage.layout();
-
         srcImage.layoutTransition(cmd, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
         layoutTransition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
         cmd.copyImage(get(), layout(), srcImage.get(), srcImage.layout(), {width(), height(), 1}, numLayers);
-
-        layoutTransition(cmd, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
-        if (retainSrcLayout) {
-            srcImage.layoutTransition(cmd, oldSrcLayout);
-        }
     });
 }
 
-VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage& image) {
+VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage& image, VkImageAspectFlags aspect) : imageAspect{aspect} {
     VkImageViewCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .image = image.get(),
@@ -141,7 +132,7 @@ VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage&
         .format = image.format(),
         // TODO
         .subresourceRange = VkImageSubresourceRange{
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .aspectMask = aspect,
             .baseMipLevel = 0,
             .levelCount = 1,
             .baseArrayLayer = 0,
@@ -186,6 +177,10 @@ void CombinedSampler::recreate (VulkanResources& resources, VulkanImage&& newIma
 
 std::size_t CombinedSampler::hash () const noexcept {
     return reinterpret_cast<std::size_t>(sampler.get());
+}
+
+void CombinedSampler::prepareSampler (VulkanCommandBuffer2& cmd) {
+    samplerImage.layoutTransition(cmd, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
 }
 
 VkDescriptorImageInfo CombinedSampler::getDescriptor () const noexcept {

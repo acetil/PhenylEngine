@@ -4,17 +4,11 @@
 #include "vulkan_headers.h"
 
 namespace phenyl::vulkan {
+    class IVulkanFrameBuffer;
+
     class VulkanCommandBuffer2 {
     private:
-        struct RenderingInfo {
-            VkImageView imageView;
-            VkImageLayout imageLayout;
-            VkExtent2D drawExtent;
-
-            bool operator== (const RenderingInfo&) const = default;
-        };
-
-        std::optional<RenderingInfo> currentRendering = std::nullopt;
+        IVulkanFrameBuffer* currentFrameBuffer = nullptr;
 
         VkPipeline currPipeline = nullptr;
         std::optional<VkViewport> currViewport{};
@@ -36,8 +30,7 @@ namespace phenyl::vulkan {
         void copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout, VkExtent3D imageExtent, std::uint32_t numLayers = 1);
         void copyBufferToImage (VkBuffer buffer, VkImage image, VkImageLayout layout, VkExtent3D imageExtent, std::uint32_t layer = 0);
 
-        void beginRendering (VkImageView imageView, VkImageLayout imageLayout, VkExtent2D drawExtent,
-            std::optional<VkClearValue> clearColor = std::nullopt);
+        void beginRendering (IVulkanFrameBuffer& frameBuffer);
         void endRendering ();
 
         void setPipeline (VkPipeline pipeline, VkViewport viewport, VkRect2D scissor);

@@ -33,5 +33,21 @@ layout(location = 0) out BPLight {
 } vsOut;
 
 void main () {
-    gl_Position = projection * view * model * vec4(position, 1.0);
+    mat4 fixY = mat4(
+        vec4(1, 0, 0, 0),
+        vec4(0, -1, 0, 0),
+        vec4(0, 0, 1, 0),
+        vec4(0, 0, 0, 1)
+    );
+
+    gl_Position = projection * fixY * view * model * vec4(position, 1.0);
+
+    vsOut.fragPos = (model * vec4(position, 1.0)).xyz;
+    //vsOut.fragPos = (view * model * vec4(position, 1.0)).xyz;
+    vsOut.normal = normalize(((transpose(inverse(model))) * vec4(normal, 0.0f)).xyz);
+    vsOut.viewPos = viewPos;
+
+    vec4 lightSpacePos;
+    vsOut.fragLightSpacePos = BPLight_lightSpace * model * vec4(position, 1.0);
+    //vsOut.fragLightSpacePos = lightSpacePos.xyz / lightSpacePos.w;
 }

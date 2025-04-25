@@ -62,7 +62,7 @@ namespace phenyl::graphics {
         virtual void bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) = 0;
         virtual void bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) = 0;
         virtual void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) = 0;
-        virtual void bindSampler (SamplerBinding binding, const ISampler& sampler) = 0;
+        virtual void bindSampler (SamplerBinding binding, ISampler& sampler) = 0;
         virtual void unbindIndexBuffer () = 0;
         virtual void render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
         virtual void renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) = 0;
@@ -131,7 +131,7 @@ namespace phenyl::graphics {
             return *this;
         }
 
-        Pipeline& bindSampler (SamplerBinding binding, const ISampler& sampler) {
+        Pipeline& bindSampler (SamplerBinding binding, ISampler& sampler) {
             PHENYL_DASSERT(pipeline);
             pipeline->bindSampler(binding, sampler);
 
@@ -171,7 +171,7 @@ namespace phenyl::graphics {
         virtual ~IPipelineBuilder() = default;
 
         virtual void withBlendMode (BlendMode mode) = 0;
-        virtual void withDepthMask (bool doMask) = 0;
+        virtual void withDepthTesting (bool doDepthWrite) = 0;
         virtual void withCullMode (CullMode mode) = 0;
         virtual void withGeometryType (GeometryType type) = 0;
         virtual void withShader (core::Asset<Shader> shader) = 0;
@@ -271,9 +271,9 @@ namespace phenyl::graphics {
             return *this;
         }
 
-        PipelineBuilder& withDepthMask (bool doMask) {
+        PipelineBuilder& withDepthTesting (bool doWrite = true) {
             PHENYL_DASSERT(builder);
-            builder->withDepthMask(doMask);
+            builder->withDepthTesting(doWrite);
 
             return *this;
         }

@@ -84,7 +84,7 @@ void GlPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
     glVertexArrayElementBuffer(vaoId, glBuffer.id());
 }
 
-void GlPipeline::bindSampler (SamplerBinding binding, const ISampler& sampler) {
+void GlPipeline::bindSampler (SamplerBinding binding, ISampler& sampler) {
     const auto& glSampler = reinterpret_cast<const GlSampler&>(sampler);
     glActiveTexture(binding);
     glSampler.bind();
@@ -168,7 +168,8 @@ SamplerBinding GlPipeline::addSampler (unsigned int location) {
     return GL_TEXTURE0 + location;
 }
 
-void GlPipeline::setDepthMask (bool doMask) {
+void GlPipeline::setDepthTest (bool doMask) {
+    doDepthTest = true;
     doDepthMask = doMask;
 }
 
@@ -186,7 +187,14 @@ GlShader& GlPipeline::getShader () {
 }
 
 void GlPipeline::updateDepthMask () {
-    glDepthMask(doDepthMask);
+    if (doDepthTest) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glDepthMask(doDepthMask);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+        glDepthFunc(GL_NONE);
+    }
 }
 
 void GlPipeline::setBlending (const AbstractGlFrameBuffer& fb) {
@@ -318,9 +326,9 @@ void GlPipelineBuilder::withBlendMode (BlendMode mode) {
     pipeline->setBlendMode(mode);
 }
 
-void GlPipelineBuilder::withDepthMask (bool doMask) {
+void GlPipelineBuilder::withDepthTesting (bool doDepthWrite) {
     PHENYL_DASSERT(pipeline);
-    pipeline->setDepthMask(doMask);
+    pipeline->setDepthTest(doDepthWrite);
 }
 
 std::unique_ptr<IPipeline> GlPipelineBuilder::build () {

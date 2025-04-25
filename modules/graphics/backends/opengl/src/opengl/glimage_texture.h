@@ -17,6 +17,6 @@ namespace phenyl::opengl {
         [[nodiscard]] std::uint32_t height () const noexcept override;
 
         void upload (const phenyl::graphics::Image& image) override;
-        const graphics::ISampler& sampler() const noexcept override;
+        graphics::ISampler& sampler() noexcept override;
     };
 }

@@ -20,6 +20,6 @@ namespace phenyl::vulkan {
         std::uint32_t height () const noexcept override;
 
         void upload (const graphics::Image& image) override;
-        const graphics::ISampler& sampler () const noexcept override;
+        graphics::ISampler& sampler () noexcept override;
     };
 }

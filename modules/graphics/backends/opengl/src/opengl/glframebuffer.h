@@ -47,16 +47,16 @@ namespace phenyl::opengl {
             return valid;
         }
 
-        const graphics::ISampler* getSampler () const noexcept override;
-        const graphics::ISampler* getDepthSampler() const noexcept override;
+        graphics::ISampler* getSampler () noexcept override;
+        graphics::ISampler* getDepthSampler() noexcept override;
     };
 
     class GlWindowFrameBuffer : public AbstractGlFrameBuffer, public graphics::IViewportUpdateHandler {
     public:
         GlWindowFrameBuffer (glm::ivec2 dimensions);
 
-        const graphics::ISampler* getSampler() const noexcept override;
-        const graphics::ISampler* getDepthSampler() const noexcept override;
+        graphics::ISampler* getSampler() noexcept override;
+        graphics::ISampler* getDepthSampler() noexcept override;
         void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };
 }

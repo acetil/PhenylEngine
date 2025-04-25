@@ -18,14 +18,14 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
 
     UniformBinding globalUniform;
     UniformBinding lightUniform;
-    SamplerBinding shadowMapBinding;
+    SamplerBinding shadowMapBinding{};
     BufferBinding model;
     builder.withShader(shader)
         .withBlending(BlendMode::ADDITIVE)
-        .withDepthMask(false)
+        .withDepthTesting(false)
         .withUniform<MeshGlobalUniform>(shader->uniformLocation("GlobalUniform").value(), globalUniform)
         .withUniform<BPLightUniform>(shader->uniformLocation("BPLightUniform").value(), lightUniform)
-        .withSampler2D(shader->samplerLocation("ShadowMap").value(), shadowMapBinding)
+        //.withSampler2D(shader->samplerLocation("ShadowMap").value(), shadowMapBinding)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
     // TODO: material specific uniform binding
@@ -76,6 +76,8 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     UniformBinding globalUniform;
     BufferBinding model;
     builder.withShader(prepassShader)
+        .withDepthTesting()
+        .withCulling(CullMode::BACK_FACE)
         .withUniform<MeshGlobalUniform>(prepassShader->uniformLocation("GlobalUniform").value(), globalUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
@@ -117,6 +119,7 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
     UniformBinding lightUniform;
     BufferBinding model;
     builder.withShader(shadowMapShader)
+        .withDepthTesting()
         .withCulling(CullMode::FRONT_FACE)
         .withUniform<BPLightUniform>(shadowMapShader->uniformLocation("BPLightUniform").value(), lightUniform)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);

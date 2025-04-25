@@ -22,6 +22,6 @@ namespace phenyl::opengl {
 
         void upload (std::uint32_t index, const graphics::Image& image) override;
 
-        const graphics::ISampler& sampler () const noexcept override;
+        graphics::ISampler& sampler () noexcept override;
     };
 }

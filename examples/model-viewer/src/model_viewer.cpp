@@ -100,8 +100,8 @@ public:
             .castShadows = false
         });
 
-        runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);
-        runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 0, 2.0f});
+        //runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);
+        runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 0, -2.0f});
         chooseAxis();
     }
 

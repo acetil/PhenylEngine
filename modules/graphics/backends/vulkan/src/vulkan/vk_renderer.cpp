@@ -68,8 +68,12 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     resources = std::make_unique<VulkanResources>(instance, *device, MAX_FRAMES_IN_FLIGHT);
 
     swapChain = device->makeSwapChain(surface);
+
     frameManager = std::make_unique<FrameManager>(*device, *resources, MAX_FRAMES_IN_FLIGHT);
     transferManager = std::make_unique<TransferManager>(*resources);
+
+    windowFrameBuffer = std::make_unique<VulkanWindowFrameBuffer>(*resources, *transferManager);
+    windowFrameBuffer->onSwapChainRecreate(swapChain.get());
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
     shaderManager->selfRegister();
@@ -81,6 +85,8 @@ VulkanRenderer::~VulkanRenderer () {
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Destroying Vulkan renderer");
 
     shaderManager = nullptr;
+
+    windowFrameBuffer = nullptr;
 
     transferManager = nullptr;
     frameManager = nullptr;
@@ -105,34 +111,31 @@ void VulkanRenderer::clearWindow () {
 }
 
 void VulkanRenderer::render () {
-    if (!frameManager->onNewFrame(*swapChain)) {
+    if (!frameManager->onNewFrame(*windowFrameBuffer)) {
         PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame acquisition");
         recreateSwapChain();
         return;
     }
 
-    const auto& frameImage = frameManager->getImage();
     auto& frameSync = frameManager->getFrameSync();
 
+    // auto commandBuffer = frameManager->getCommandPool().getBuffer();
+    // {
+    //     //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
+    //
+    //     // TODO
+    //     framebuffer.renderingRecorder = &commandBuffer;
+    //     framebuffer.descriptorPool = &frameManager->getDescriptorPool();
+    //     layerRender();
+    // }
+
     auto commandBuffer = frameManager->getCommandPool().getBuffer();
-    commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    {
-        commandBuffer.beginRendering(frameImage.view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, swapChain->extent(), VkClearValue{
-            .color = {
-                .float32 = {0, 0, 0, 0}
-            }
-        });
-        //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
 
-        // TODO
-        framebuffer.renderingRecorder = &commandBuffer;
-        framebuffer.descriptorPool = &frameManager->getDescriptorPool();
-        framebuffer.viewport = swapChain->getViewport();
-        framebuffer.scissor = swapChain->getScissor();
-        layerRender();
-    }
+    framebuffer.renderingRecorder = &commandBuffer;
+    framebuffer.descriptorPool = &frameManager->getDescriptorPool();
+    layerRender();
 
-    commandBuffer.doImageTransition(frameImage.image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    windowFrameBuffer->doPresentTransition(commandBuffer);
 
     commandBuffer.submit(&frameSync.imageAvailable, &frameSync.renderFinished, &frameSync.inFlight);
 
@@ -190,7 +193,7 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*resources, swapChain->format(), &framebuffer)};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*resources, swapChain->format(), &framebuffer, windowFrameBuffer.get())};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
@@ -348,6 +351,8 @@ void VulkanRenderer::recreateSwapChain () {
     vkDeviceWaitIdle(device->device());
     swapChain = nullptr;
     swapChain = device->makeSwapChain(surface);
+
+    windowFrameBuffer->onSwapChainRecreate(swapChain.get());
 }
 
 

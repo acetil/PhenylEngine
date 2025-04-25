@@ -85,7 +85,7 @@ void MeshRenderLayer::render () {
         renderLight(light);
     }
 
-    postProcessing();
+    //postProcessing();
 
     instances.clear();
     pointLights.clear();
@@ -194,8 +194,8 @@ void MeshRenderLayer::depthPrepass () {
         pipeline.bindBuffer(depthPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
-        //pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        //pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
 
@@ -212,9 +212,9 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
     bpLight->castShadows = light.castShadows;
     bpLight.upload();
 
-    if (light.castShadows) {
-        renderShadowMap(light);
-    }
+    // if (light.castShadows) {
+    //     renderShadowMap(light);
+    // }
 
     for (const auto& instance : instances) {
         //auto& meshPipeline = getPipeline(instance.mesh->layout()); // TODO: ahead of time pipeline creation
@@ -234,14 +234,14 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
         pipeline.bindBuffer(matPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        if (light.castShadows) {
-            pipeline.bindSampler(matPipeline.shadowMapBinding, shadowFb.depthSampler());
-        }
+        // if (light.castShadows) {
+        //     pipeline.bindSampler(matPipeline.shadowMapBinding, shadowFb.depthSampler());
+        // }
 
         matInstance->bind(matPipeline);
 
-        pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
-        //pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        //pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
 

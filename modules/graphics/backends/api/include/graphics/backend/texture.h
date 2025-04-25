@@ -43,7 +43,7 @@ namespace phenyl::graphics {
         [[nodiscard]] virtual std::uint32_t height () const noexcept = 0;
 
         virtual void upload (const Image& image) = 0;
-        [[nodiscard]] virtual const ISampler& sampler () const noexcept = 0;
+        [[nodiscard]] virtual ISampler& sampler () noexcept = 0;
     };
 
     class IImageArrayTexture {
@@ -59,7 +59,7 @@ namespace phenyl::graphics {
         virtual std::uint32_t append () = 0;
 
         virtual void upload (std::uint32_t index, const Image& image) = 0;
-        [[nodiscard]] virtual const ISampler& sampler () const noexcept = 0;
+        [[nodiscard]] virtual ISampler& sampler () noexcept = 0;
     };
 
     class Texture {
@@ -71,7 +71,7 @@ namespace phenyl::graphics {
 
         virtual ~Texture() = default;
 
-        [[nodiscard]] virtual const ISampler& sampler () const noexcept = 0;
+        [[nodiscard]] virtual ISampler& sampler () const noexcept = 0;
 
         [[nodiscard]] std::size_t hash () const noexcept {
             return texHash;
@@ -101,7 +101,7 @@ namespace phenyl::graphics {
             rendererTexture->upload(image);
         }
 
-        [[nodiscard]] const ISampler& sampler () const noexcept override {
+        [[nodiscard]] ISampler& sampler () const noexcept override {
             return rendererTexture->sampler();
         }
     };
@@ -141,7 +141,7 @@ namespace phenyl::graphics {
             rendererTexture->upload(index, image);
         }
 
-        [[nodiscard]] const ISampler& sampler() const noexcept override {
+        [[nodiscard]] ISampler& sampler() const noexcept override {
             return rendererTexture->sampler();
         }
     };
