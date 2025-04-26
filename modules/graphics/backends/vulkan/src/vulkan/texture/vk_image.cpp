@@ -13,9 +13,12 @@ VkFormat phenyl::vulkan::FormatToVulkan (graphics::ImageFormat imageFormat) {
             return VK_FORMAT_R8G8B8A8_UNORM;
         case graphics::ImageFormat::RGBA32:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
-        default:
-            PHENYL_ABORT("Unimplemented image format: {}", static_cast<std::uint32_t>(imageFormat));
+        case graphics::ImageFormat::DEPTH24_STENCIL8:
+            return VK_FORMAT_D24_UNORM_S8_UINT;
+        case graphics::ImageFormat::DEPTH:
+            return VK_FORMAT_D24_UNORM_S8_UINT;
     }
+    PHENYL_ABORT("Unexpected image format: {}", static_cast<std::uint32_t>(imageFormat));
 }
 
 static VkFilter MagFilterToVulkan (phenyl::graphics::TextureFilter filter) {
@@ -26,9 +29,8 @@ static VkFilter MagFilterToVulkan (phenyl::graphics::TextureFilter filter) {
             return VK_FILTER_LINEAR;
         case phenyl::graphics::TextureFilter::TRILINEAR:
             return VK_FILTER_LINEAR; // TODO
-        default:
-            PHENYL_ABORT("Unexpected filter type: {}", static_cast<std::uint32_t>(filter));
     }
+    PHENYL_ABORT("Unexpected filter type: {}", static_cast<std::uint32_t>(filter));
 }
 
 static VkSamplerAddressMode WrappingToVulkan (phenyl::graphics::TextureWrapping wrapping) {
@@ -46,7 +48,21 @@ static VkSamplerAddressMode WrappingToVulkan (phenyl::graphics::TextureWrapping 
     }
 }
 
-VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers) : imgFormat{format}, imgWidth{width}, imgHeight{height}, imgLayers{layers}, resources{&resources} {
+static VkBorderColor BorderColorToVulkan (phenyl::graphics::TextureBorderColor color) {
+    // TODO: int vs float?
+    switch (color) {
+        case phenyl::graphics::TextureBorderColor::TRANSPARENT:
+            return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+        case phenyl::graphics::TextureBorderColor::BLACK:
+            return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+        case phenyl::graphics::TextureBorderColor::WHITE:
+            return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    }
+
+    PHENYL_ABORT("Unexpected border color: {}", static_cast<std::uint32_t>(color));
+}
+
+VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageAspectFlags aspect, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers) : imgFormat{format}, aspect{aspect}, imgWidth{width}, imgHeight{height}, imgLayers{layers}, resources{&resources} {
     PHENYL_ASSERT_MSG(width > 0 && height > 0, "Attempted to create vulkan image with invalid dimensions: {}x{}", width, height);
     PHENYL_ASSERT_MSG(layers > 0, "Attempted to create vulkan image with no layers");
 
@@ -83,7 +99,7 @@ void VulkanImage::layoutTransition (VulkanCommandBuffer2& cmd, VkImageLayout new
         return;
     }
 
-    cmd.doImageTransition(get(), currLayout, newLayout);
+    cmd.doImageTransition(get(), aspect, currLayout, newLayout);
     currLayout = newLayout;
 }
 
@@ -160,7 +176,7 @@ VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::Textur
         .compareOp = VK_COMPARE_OP_ALWAYS, // TODO
         .minLod = 0.0f,
         .maxLod = 0.0f,
-        .borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK, // TODO
+        .borderColor = BorderColorToVulkan(properties.borderColor), // TODO
         .unnormalizedCoordinates = VK_FALSE
     };
 
@@ -168,11 +184,37 @@ VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::Textur
     PHENYL_ASSERT_MSG(sampler, "Failed to create image sampler");
 }
 
-CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties) : sampler{resources, properties} {}
+VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties) {
+    VkSamplerCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_NEAREST,
+        .minFilter = VK_FILTER_NEAREST, // TODO
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR, // TODO
+        .addressModeU = WrappingToVulkan(properties.wrapping),
+        .addressModeV = WrappingToVulkan(properties.wrapping),
+        .addressModeW = WrappingToVulkan(properties.wrapping),
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = VK_TRUE,
+        .maxAnisotropy = resources.getDeviceProperties().maxAnisotropy,
+        .compareEnable = VK_FALSE, // TODO
+        .compareOp = VK_COMPARE_OP_ALWAYS, // TODO
+        .minLod = 0.0f,
+        .maxLod = 0.0f,
+        .borderColor = BorderColorToVulkan(properties.borderColor),
+        .unnormalizedCoordinates = VK_FALSE
+    };
 
-void CombinedSampler::recreate (VulkanResources& resources, VulkanImage&& newImage) {
+    sampler = resources.makeSampler(createInfo);
+    PHENYL_ASSERT_MSG(sampler, "Failed to create image sampler");
+}
+
+CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties, VkImageLayout samplerLayout) : sampler{resources, properties}, samplerLayout{samplerLayout} {}
+
+CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties, VkImageLayout samplerLayout) : sampler{resources, properties}, samplerLayout{samplerLayout} {}
+
+void CombinedSampler::recreate (VulkanResources& resources, VulkanImage&& newImage, VkImageAspectFlags aspect) {
     samplerImage = std::move(newImage);
-    samplerImageView = VulkanImageView{resources, samplerImage};
+    samplerImageView = VulkanImageView{resources, samplerImage, aspect};
 }
 
 std::size_t CombinedSampler::hash () const noexcept {
@@ -180,7 +222,7 @@ std::size_t CombinedSampler::hash () const noexcept {
 }
 
 void CombinedSampler::prepareSampler (VulkanCommandBuffer2& cmd) {
-    samplerImage.layoutTransition(cmd, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+    samplerImage.layoutTransition(cmd, samplerLayout);
 }
 
 VkDescriptorImageInfo CombinedSampler::getDescriptor () const noexcept {

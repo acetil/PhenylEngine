@@ -73,15 +73,9 @@ void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding bin
 }
 
 void VulkanPipeline::bindSampler (SamplerBinding binding, ISampler& sampler) {
-    auto& combinedSampler = reinterpret_cast<IVulkanCombinedSampler&>(sampler);
-
     PHENYL_ASSERT_MSG(validSamplerBindings.contains(binding), "Attempted to bind unknown sampler {}", binding);
 
-    if (binding == 0) {
-        PHENYL_LOGD(LOGGER, "Temporarily ignoring 0 binding!");
-        return;
-    }
-
+    auto& combinedSampler = reinterpret_cast<IVulkanCombinedSampler&>(sampler);
     boundSamplers[binding] = &combinedSampler;
 }
 
@@ -99,7 +93,11 @@ void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances
     PHENYL_ASSERT(testFramebuffer->renderingRecorder);
     auto& cmd = *testFramebuffer->renderingRecorder;
 
-    prepareRender(cmd, *windowFrameBuffer);
+    if (fb) {
+        prepareRender(cmd, reinterpret_cast<VulkanFrameBuffer&>(*fb));
+    } else {
+        prepareRender(cmd, *windowFrameBuffer);
+    }
 
     if (indexBuffer) {
         PHENYL_ASSERT(indexBuffer->getBuffer());

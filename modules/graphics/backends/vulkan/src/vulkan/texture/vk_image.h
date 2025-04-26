@@ -1,6 +1,7 @@
 #pragma once
 #include "vulkan/memory/vk_transfer_manager.h"
 #include "graphics/image.h"
+#include "graphics/backend/framebuffer.h"
 #include "graphics/backend/texture.h"
 #include "vulkan/vk_command_buffer.h"
 #include "vulkan/init/vk_resources.h"
@@ -14,6 +15,7 @@ namespace phenyl::vulkan {
         VulkanResources* resources = nullptr;
 
         VkFormat imgFormat = VK_FORMAT_UNDEFINED;
+        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_NONE;
         std::uint32_t imgWidth = 0;
         std::uint32_t imgHeight = 0;
         std::uint32_t imgLayers = 0;
@@ -21,7 +23,7 @@ namespace phenyl::vulkan {
         VkImageLayout currLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     public:
         VulkanImage () = default;
-        VulkanImage (VulkanResources& resources, VkFormat format, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers = 1);
+        VulkanImage (VulkanResources& resources, VkFormat format, VkImageAspectFlags aspect, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers = 1);
 
         explicit operator bool () const noexcept {
             return static_cast<bool>(imageInfo);
@@ -85,8 +87,7 @@ namespace phenyl::vulkan {
 
     public:
         VulkanSampler (VulkanResources& resources, const graphics::TextureProperties& properties);
-
-
+        VulkanSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties);
 
         VkSampler get () const noexcept {
             return *sampler;
@@ -101,12 +102,14 @@ namespace phenyl::vulkan {
 
     class CombinedSampler : public IVulkanCombinedSampler {
     private:
-        VulkanImage samplerImage;
-        VulkanImageView samplerImageView;
+        VulkanImage samplerImage{};
+        VulkanImageView samplerImageView{};
         VulkanSampler sampler;
+        VkImageLayout samplerLayout;
 
     public:
-        CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties);
+        CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties, VkImageLayout samplerLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+        CombinedSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties, VkImageLayout samplerLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
 
         VulkanImage& image () noexcept {
             return samplerImage;
@@ -116,11 +119,15 @@ namespace phenyl::vulkan {
             return samplerImage;
         }
 
+        VkImageView view () const noexcept {
+            return samplerImageView.get();
+        }
+
         explicit operator bool () const noexcept {
             return samplerImage && samplerImageView;
         }
 
-        void recreate (VulkanResources& resources, VulkanImage&& newImage);
+        void recreate (VulkanResources& resources, VulkanImage&& newImage, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
 
         [[nodiscard]] std::size_t hash () const noexcept override;
 

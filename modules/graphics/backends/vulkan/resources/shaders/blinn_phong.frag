@@ -30,30 +30,28 @@ layout(std140, binding = 1) uniform BPLightUniform {
     bool BPLight_castShadows;
 };
 
-//layout(binding = 3) uniform sampler2D ShadowMap;
+layout(binding = 3) uniform sampler2D ShadowMap;
 
 layout(location = 0) out vec4 color;
 
 float CalcShadowSpotDir (vec4 fragLightSpacePos, vec3 normal, vec3 lightDir) {
-//    vec3 lightSpacePos = fragLightSpacePos.xyz / fragLightSpacePos.w;
-//    //lightSpacePos.y *= -1;
-//    if (BPLight_castShadows) {
-//        lightSpacePos = lightSpacePos * 0.5 + 0.5;
-//
-//        if (lightSpacePos.z > 1.0) {
-//            return 1.0;
-//        }
-//
-//        float shadowMapDepth = texture(ShadowMap, lightSpacePos.xy).r;
-//        float maxBias = 0.005;
-//        float minBias = 0.0005;
-//        float bias = max(maxBias * (1.0 - dot(normal, lightDir)), minBias);
-////        float bias = 0.0;
-//        return lightSpacePos.z - bias > shadowMapDepth ? 0.0 : 1.0;
-//    } else {
-//        return 1.0;
-//    }
-    return 1.0;
+    vec3 lightSpacePos = fragLightSpacePos.xyz / fragLightSpacePos.w;
+    if (BPLight_castShadows) {
+        vec2 shadowUv = lightSpacePos.xy * 0.5 + 0.5;
+
+        if (lightSpacePos.z > 1.0) {
+            return 1.0;
+        }
+
+        float shadowMapDepth = texture(ShadowMap, shadowUv).r;
+        float maxBias = 0.005;
+        float minBias = 0.0005;
+        float bias = max(maxBias * (1.0 - dot(normal, lightDir)), minBias);
+        return 1.0 - step(shadowMapDepth, lightSpacePos.z - bias);
+    } else {
+        return 1.0;
+    }
+    //return 1.0;
 }
 
 float CalcShadowPoint (vec4 lightSpacePos) {
@@ -96,14 +94,4 @@ void main () {
 
         color = vec4(CalcLighting(normLight, normView, vsOut.normal, attenuation, Material_color, Material_specular_color, Material_alpha, BPLight_color, CalcShadowSpotDir(vsOut.fragLightSpacePos, vsOut.normal, lightDir)), 1.0);
     }
-
-    //color = vec4(vsOut.normal, 1.0);
-//    //vec3 lightDir = lightPos - vsOut.fragPos;
-//    vec3 lightDir = BPLight_pos.xyz - vsOut.fragPos;
-//
-//    vec3 normLight = normalize(lightDir);
-//    vec3 normView = normalize(vsOut.viewPos - vsOut.fragPos);
-//    float attenuation = min(BPLight_brightness / (1 + dot(lightDir, lightDir)), 1.0);
-//
-//    color = vec4(CalcLighting(normLight, normView, vsOut.normal, attenuation, Material_color, Material_specular_color, Material_alpha, BPLight_color), 1.0);
 }

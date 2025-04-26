@@ -66,19 +66,21 @@ namespace phenyl::vulkan {
 
     class VulkanFrameBuffer : public graphics::IFrameBuffer, public IVulkanFrameBuffer {
     private:
-        class Sampler : public graphics::ISampler {
-        public:
-            std::size_t hash () const noexcept override {
-                return 1;
-            }
+        struct FrameBufferSampler {
         };
 
-        Sampler dummy{};
+        std::vector<CombinedSampler> colorSamplers;
+        std::vector<VkRenderingAttachmentInfo> colorAttachments;
+
+        std::optional<CombinedSampler> depthSampler;
+        VkRenderingAttachmentInfo depthAttachment;
+
+        VkExtent2D extent;
         std::optional<VkClearColorValue> clearColor;
 
         VkRenderingInfo renderingInfo{};
     public:
-        VulkanFrameBuffer (FrameBufferLayoutManager& layoutManager, const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height);
+        VulkanFrameBuffer (VulkanResources& resources, FrameBufferLayoutManager& layoutManager, const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height);
 
         void prepareRendering (VulkanCommandBuffer2& cmd) override;
         const VkRenderingInfo* getRenderingInfo () const noexcept override;

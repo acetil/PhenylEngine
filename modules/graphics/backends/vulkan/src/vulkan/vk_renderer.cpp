@@ -189,7 +189,7 @@ std::unique_ptr<IImageArrayTexture> VulkanRenderer::makeRendererArrayTexture (co
 }
 
 std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return std::make_unique<VulkanFrameBuffer>(fbLayoutManager, properties, width, height);
+    return std::make_unique<VulkanFrameBuffer>(*resources, fbLayoutManager, properties, width, height);
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {

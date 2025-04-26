@@ -160,7 +160,7 @@ public:
 
         light.insert(phenyl::SpotLight3D{
             .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 50.0f,
+            .brightness = 10.0f,
             .innerAngle = 20.0f * std::numbers::pi / 180.0f,
             .outerAngle = 21.0f * std::numbers::pi / 180.0f,
             .castShadows = true
@@ -174,6 +174,21 @@ public:
         //     .brightness = 0.4f,
         //     .castShadows = true
         // });
+
+        auto light2 = runtime().world().create();
+        light2.insert(phenyl::GlobalTransform3D{
+            .transform = phenyl::Transform3D{}
+            .setPosition({0, 8.0f, -7})
+            .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{0.0f, -7.0f, 6.0f}))
+        });
+
+        light2.insert(phenyl::SpotLight3D{
+            .color = {1.0f, 0.0f, 0.0f},
+            .brightness = 25.0f,
+            .innerAngle = 10.0f * std::numbers::pi / 180.0f,
+            .outerAngle = 11.0f * std::numbers::pi / 180.0f,
+            .castShadows = true
+        });
 
         runtime().resource<phenyl::Camera3D>().transform
             .translate(glm::vec3{0.0f, 4.0f, 10.0f});

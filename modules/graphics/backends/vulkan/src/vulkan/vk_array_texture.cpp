@@ -6,7 +6,7 @@ using namespace phenyl::vulkan;
 
 VulkanArrayTexture::VulkanArrayTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties, std::uint32_t texWidth,
     std::uint32_t texHeight) : resources{resources}, transferManager{transferManager}, properties{properties}, combinedSampler{resources, properties}, texWidth{texWidth}, texHeight{texHeight} {
-    combinedSampler.recreate(resources, VulkanImage{resources, FormatToVulkan(properties.format), VK_IMAGE_USAGE_SAMPLED_BIT, texWidth, texHeight, static_cast<std::uint32_t>(texCapacity)});
+    combinedSampler.recreate(resources, VulkanImage{resources, FormatToVulkan(properties.format), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, texWidth, texHeight, static_cast<std::uint32_t>(texCapacity)});
 }
 
 std::uint32_t VulkanArrayTexture::width () const noexcept {
@@ -27,7 +27,7 @@ void VulkanArrayTexture::reserve (std::uint32_t capacity) {
     }
 
     auto newCapacity = static_cast<std::uint32_t>(texCapacity * RESIZE_FACTOR);
-    VulkanImage newImage{resources, FormatToVulkan(properties.format), width(), height(), newCapacity};
+    VulkanImage newImage{resources, FormatToVulkan(properties.format), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, width(), height(), newCapacity};
 
     newImage.copy(transferManager, combinedSampler.image());
 

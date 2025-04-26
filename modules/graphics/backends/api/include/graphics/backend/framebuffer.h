@@ -16,7 +16,7 @@ namespace phenyl::graphics {
 
         // TODO: move to per pipeline
         TextureWrapping wrapping = TextureWrapping::REPEAT;
-        glm::vec4 borderColor = {0, 0, 0, 0};
+        TextureBorderColor borderColor = TextureBorderColor::TRANSPARENT;
         float depthBorder = 1.0f;
     };
 

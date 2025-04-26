@@ -20,11 +20,17 @@ namespace phenyl::graphics {
         CLAMP_BORDER
     };
 
+    enum class TextureBorderColor {
+        TRANSPARENT,
+        BLACK,
+        WHITE
+    };
+
     struct TextureProperties {
         ImageFormat format = ImageFormat::R;
         TextureFilter filter = TextureFilter::POINT;
         TextureWrapping wrapping = TextureWrapping::REPEAT;
-        glm::vec4 borderColor = {0, 0, 0, 0};
+        TextureBorderColor borderColor = TextureBorderColor::TRANSPARENT;
         bool useMipmapping = true;
     };
 

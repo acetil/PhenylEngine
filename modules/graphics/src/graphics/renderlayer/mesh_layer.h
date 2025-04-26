@@ -103,7 +103,7 @@ namespace phenyl::graphics {
 
         void depthPrepass ();
         void bufferLights ();
-        void renderLight (std::size_t lightIndex);
+        void renderLight (const MeshLight& light, std::size_t lightIndex);
         glm::mat4 getLightSpaceView (const MeshLight& light);
         glm::mat4 getLightSpaceProj (const MeshLight& light);
         glm::mat4 getLightSpaceMatrix (const MeshLight& light);

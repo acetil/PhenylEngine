@@ -68,6 +68,19 @@ namespace phenyl::opengl {
         PHENYL_ABORT("Invalid wrapping: {}", static_cast<std::uint32_t>(wrapping));
     }
 
+    static glm::vec4 GetGlBorderColor (graphics::TextureBorderColor color) {
+        switch (color) {
+            case graphics::TextureBorderColor::TRANSPARENT:
+                return {0, 0, 0, 0};
+            case graphics::TextureBorderColor::BLACK:
+                return {0, 0, 0, 1};
+            case graphics::TextureBorderColor::WHITE:
+                return {1, 1, 1, 1};
+        }
+
+        PHENYL_ABORT("Invalid border color: {}", static_cast<std::uint32_t>(color));
+    }
+
     class GlSampler : public graphics::ISampler {
     protected:
         GLuint textureId{0};

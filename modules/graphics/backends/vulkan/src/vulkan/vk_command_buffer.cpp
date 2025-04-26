@@ -74,7 +74,7 @@ VulkanCommandBuffer2::VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCom
     PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to begin command buffer: {}", result);
 }
 
-void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageAspectFlags aspect, VkImageLayout oldLayout, VkImageLayout newLayout) {
     PHENYL_ASSERT(commandBuffer);
     PHENYL_TRACE(LOGGER, "Performing image transition: {} -> {}", oldLayout, newLayout);
     endRendering();
@@ -89,7 +89,7 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLa
         .newLayout = newLayout,
         .image = image,
         .subresourceRange = VkImageSubresourceRange{
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, // TODO
+            .aspectMask = aspect, // TODO
             .levelCount = VK_REMAINING_MIP_LEVELS,
             .layerCount = VK_REMAINING_ARRAY_LAYERS
         }
@@ -107,6 +107,12 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLa
         imageBarrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
     } else if (oldLayout == VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL) {
         // TODO
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_MEMORY_READ_BIT;
+    } else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    } else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL) {
         imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
         imageBarrier.srcAccessMask = VK_ACCESS_2_MEMORY_READ_BIT;
     } else {
@@ -128,13 +134,16 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageLayout oldLa
         imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
     } else if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
         imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
-        imageBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    } else if (newLayout == VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL) {
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT;
     } else if (newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
         // TODO
         imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
         imageBarrier.dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
     } else {
-        PHENYL_ABORT("Unsupported destination layout: {}", oldLayout);
+        PHENYL_ABORT("Unsupported destination layout: {}", newLayout);
     }
 
     VkDependencyInfo depInfo{

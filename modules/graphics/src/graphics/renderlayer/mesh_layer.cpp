@@ -22,7 +22,8 @@ void MeshRenderLayer::init (Renderer& renderer) {
     }, viewport.getResolution().x, viewport.getResolution().y);
     shadowFb = renderer.makeFrameBuffer(FrameBufferProperties{
         .depthFormat = ImageFormat::DEPTH,
-        .wrapping = TextureWrapping::CLAMP_BORDER
+        .wrapping = TextureWrapping::CLAMP_BORDER,
+        .borderColor = TextureBorderColor::WHITE
     }, 512, 512);
 
     instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
@@ -83,10 +84,10 @@ void MeshRenderLayer::render () {
 
     bufferLights();
     for (std::size_t i = 0; i < pointLights.size(); i++) {
-        renderLight(i);
+        renderLight(pointLights[i], i);
     }
 
-    //postProcessing();
+    postProcessing();
 
     instances.clear();
     pointLights.clear();
@@ -195,8 +196,8 @@ void MeshRenderLayer::depthPrepass () {
         pipeline.bindBuffer(depthPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        //pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
-        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+        //pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
 
@@ -221,10 +222,10 @@ void MeshRenderLayer::bufferLights () {
     bpLights.upload();
 }
 
-void MeshRenderLayer::renderLight (std::size_t index) {
-    // if (light.castShadows) {
-    //     renderShadowMap(light);
-    // }
+void MeshRenderLayer::renderLight (const MeshLight& light, std::size_t index) {
+    if (light.castShadows) {
+        renderShadowMap(light, index);
+    }
 
     for (const auto& instance : instances) {
         //auto& meshPipeline = getPipeline(instance.mesh->layout()); // TODO: ahead of time pipeline creation
@@ -244,14 +245,14 @@ void MeshRenderLayer::renderLight (std::size_t index) {
         pipeline.bindBuffer(matPipeline.modelBinding, instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        // if (light.castShadows) {
-        //     pipeline.bindSampler(matPipeline.shadowMapBinding, shadowFb.depthSampler());
-        // }
+        if (light.castShadows) {
+            pipeline.bindSampler(matPipeline.shadowMapBinding, shadowFb.depthSampler());
+        }
 
         matInstance->bind(matPipeline);
 
-        //pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
-        pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(testFb, instance.numInstances, instance.mesh->numVertices());
+        //pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
 
@@ -301,7 +302,7 @@ glm::mat4 MeshRenderLayer::getLightSpaceProj (const MeshLight& light) {
         if (light.type == LightType::Directional) {
             return glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.001f, 20.0f);
         } else {
-            return glm::perspective(light.outer, 1.0f, 0.1f, 100.0f);
+            return glm::perspective(light.outer * 2, 1.0f, 1.0f, 100.0f);
         }
     } else {
         return glm::identity<glm::mat4>();

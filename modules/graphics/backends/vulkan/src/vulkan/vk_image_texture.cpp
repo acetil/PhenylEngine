@@ -50,6 +50,6 @@ void VulkanImageTexture::recreateIfNecessary (VkFormat format, std::uint32_t wid
 void VulkanImageTexture::recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height) {
     PHENYL_LOGD(LOGGER, "Recreating VulkanImage with dimensions {}x{} and format {}", width, height, imageFormat);
 
-    VulkanImage newImage{resources, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, width, height};
+    VulkanImage newImage{resources, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, width, height};
     combinedSampler.recreate(resources, std::move(newImage));
 }

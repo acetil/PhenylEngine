@@ -12,7 +12,8 @@ GlSampler::GlSampler (GLenum samplerType, const TextureProperties& properties) :
 
     glTexParameteri(type(), GL_TEXTURE_WRAP_S, GetGlWrapping(properties.wrapping));
     glTexParameteri(type(), GL_TEXTURE_WRAP_T, GetGlWrapping(properties.wrapping));
-    glTexParameterfv(type(), GL_TEXTURE_BORDER_COLOR, &properties.borderColor[0]);
+    auto borderColor = GetGlBorderColor(properties.borderColor);
+    glTexParameterfv(type(), GL_TEXTURE_BORDER_COLOR, &borderColor[0]);
 }
 
 GlSampler::GlSampler (GlSampler&& other) noexcept : textureId{other.textureId}, samplerType{other.samplerType}, samplerProperties{other.samplerProperties} {
