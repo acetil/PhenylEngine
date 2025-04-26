@@ -2,6 +2,34 @@
 
 using namespace phenyl::vulkan;
 
+VkPipelineRenderingCreateInfo FrameBufferLayout::getInfo () const noexcept {
+    return VkPipelineRenderingCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+        .colorAttachmentCount = static_cast<std::uint32_t>(colorFormats.size()),
+        .pColorAttachmentFormats = colorFormats.data(),
+        .depthAttachmentFormat = depthFormat,
+        .stencilAttachmentFormat = stencilFormat
+    };
+}
+
+FrameBufferLayoutManager::FrameBufferLayoutManager () : layoutCache{} {}
+
+const FrameBufferLayout* FrameBufferLayoutManager::cacheLayout (FrameBufferLayout&& layout) {
+    auto it = layoutCache.find(layout);
+    if (it != layoutCache.end()) {
+        return &*it;
+    }
+
+    return &*layoutCache.emplace(std::move(layout)).first;
+}
+
+VulkanFrameBuffer::VulkanFrameBuffer (FrameBufferLayoutManager& layoutManager,
+    const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) : IVulkanFrameBuffer{layoutManager.cacheLayout(FrameBufferLayout{
+        .colorFormats = {VK_FORMAT_R8G8B8A8_SRGB}
+    })} {
+
+}
+
 void VulkanFrameBuffer::prepareRendering (VulkanCommandBuffer2& cmd) {
 
 }
@@ -34,7 +62,11 @@ glm::ivec2 VulkanFrameBuffer::getDimensions () const noexcept {
     return {0, 0};
 }
 
-VulkanWindowFrameBuffer::VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager) : resources{resources}, transferManager{transferManager} {
+VulkanWindowFrameBuffer::VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager, FrameBufferLayoutManager& layoutManager, VkFormat colorFormat) :
+    IVulkanFrameBuffer{layoutManager.cacheLayout(FrameBufferLayout{
+        .colorFormats = {colorFormat},
+        .depthFormat = VK_FORMAT_D24_UNORM_S8_UINT
+    })}, resources{resources}, transferManager{transferManager}  {
     colorAttachment = {
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
         .resolveMode = VK_RESOLVE_MODE_NONE,

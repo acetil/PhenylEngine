@@ -33,6 +33,7 @@ namespace phenyl::vulkan {
         VkSurfaceKHR surface{};
         std::unique_ptr<VulkanDevice> device;
         std::unique_ptr<VulkanResources> resources;
+        FrameBufferLayoutManager fbLayoutManager{};
 
         std::unique_ptr<VulkanSwapChain> swapChain;
         std::unique_ptr<VulkanWindowFrameBuffer> windowFrameBuffer;

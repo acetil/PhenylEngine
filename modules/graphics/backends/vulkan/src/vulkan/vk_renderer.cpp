@@ -72,7 +72,7 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     frameManager = std::make_unique<FrameManager>(*device, *resources, MAX_FRAMES_IN_FLIGHT);
     transferManager = std::make_unique<TransferManager>(*resources);
 
-    windowFrameBuffer = std::make_unique<VulkanWindowFrameBuffer>(*resources, *transferManager);
+    windowFrameBuffer = std::make_unique<VulkanWindowFrameBuffer>(*resources, *transferManager, fbLayoutManager, swapChain->format());
     windowFrameBuffer->onSwapChainRecreate(swapChain.get());
 
     shaderManager = std::make_unique<VulkanShaderManager>(device->device());
@@ -189,7 +189,7 @@ std::unique_ptr<IImageArrayTexture> VulkanRenderer::makeRendererArrayTexture (co
 }
 
 std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return std::make_unique<VulkanFrameBuffer>();
+    return std::make_unique<VulkanFrameBuffer>(fbLayoutManager, properties, width, height);
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {

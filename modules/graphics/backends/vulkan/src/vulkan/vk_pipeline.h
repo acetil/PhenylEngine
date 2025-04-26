@@ -13,12 +13,39 @@ namespace phenyl::vulkan {
     struct TestFramebuffer {
         VulkanCommandBuffer2* renderingRecorder;
         VulkanDescriptorPool* descriptorPool;
-        // VkViewport viewport;
-        // VkRect2D scissor;
     };
 
     class VulkanStorageBuffer;
     class VulkanWindowFrameBuffer;
+
+    class VulkanPipelineFactory {
+    private:
+        std::unordered_map<const FrameBufferLayout*, VulkanResource<VkPipeline>> pipelines;
+
+        VulkanResources& resources;
+        core::Asset<graphics::Shader> shader;
+        VulkanResource<VkPipelineLayout> pipelineLayout;
+
+        std::vector<VkVertexInputBindingDescription> vertexBindings;
+        std::vector<VkVertexInputAttributeDescription> vertexAttribs;
+
+        VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
+        VkPipelineRasterizationStateCreateInfo rasterizerInfo{};
+        VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+
+        VkPipelineColorBlendAttachmentState colorBlendState;
+
+    public:
+        VulkanPipelineFactory (VulkanResources& resources, core::Asset<graphics::Shader> shader, VulkanResource<VkPipelineLayout> pipelineLayout, std::vector<VkVertexInputBindingDescription> vertexBindings,
+            std::vector<VkVertexInputAttributeDescription> vertexAttribs, VkPrimitiveTopology topology, VkCullModeFlags cullMode, const VkPipelineColorBlendAttachmentState& blendAttachment,
+            const VkPipelineDepthStencilStateCreateInfo& depthStencilInfo);
+
+        VkPipeline get (const FrameBufferLayout* layout);
+
+        VkPipelineLayout layout () const noexcept {
+            return *pipelineLayout;
+        }
+    };
 
     class VulkanPipeline : public graphics::IPipeline {
     private:
@@ -32,8 +59,7 @@ namespace phenyl::vulkan {
         VulkanWindowFrameBuffer* windowFrameBuffer;
 
         VkDevice device;
-        VulkanResource<VkPipeline> pipeline;
-        VulkanResource<VkPipelineLayout> pipelineLayout;
+        std::unique_ptr<VulkanPipelineFactory> pipelineFactory;
 
         VulkanResource<VkDescriptorSetLayout> descriptorSetLayout;
         std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
@@ -53,8 +79,9 @@ namespace phenyl::vulkan {
         void prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffer& frameBuffer);
         VkDescriptorSet getDescriptorSet (VulkanCommandBuffer2& cmd);
     public:
-        VulkanPipeline (VkDevice device, VulkanResource<VkPipeline> pipeline, VulkanResource<VkPipelineLayout> pipelineLayout, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
-            TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes, std::unordered_set<graphics::SamplerBinding> validSamplers);
+        VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
+            TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes,
+            std::unordered_set<graphics::SamplerBinding> validSamplers);
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
