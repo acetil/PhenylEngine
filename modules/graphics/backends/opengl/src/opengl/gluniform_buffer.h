@@ -23,7 +23,8 @@ namespace phenyl::opengl {
 
         unsigned char* allocate (std::size_t requestSize) override;
         void upload () override;
-        [[nodiscard]] bool isReadable() const override;
+        [[nodiscard]] bool isReadable () const override;
+        std::size_t getMinAlignment () const noexcept override;
 
         [[nodiscard]] GLuint id () const {
             return bufferId;

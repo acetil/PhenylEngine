@@ -177,7 +177,7 @@ std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCa
 }
 
 std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool readable) {
-    return std::make_unique<VulkanUniformBuffer>(*this);
+    return std::make_unique<VulkanUniformBuffer>(*resources);
 }
 
 std::unique_ptr<IImageTexture> VulkanRenderer::makeRendererImageTexture (const TextureProperties& properties) {

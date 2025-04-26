@@ -69,3 +69,9 @@ void GlUniformBuffer::upload () {
 bool GlUniformBuffer::isReadable () const {
     return readable;
 }
+
+std::size_t GlUniformBuffer::getMinAlignment () const noexcept {
+    GLint64 alignment;
+    glGetInteger64v(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
+    return static_cast<std::size_t>(alignment);
+}

@@ -21,6 +21,7 @@ VulkanBuffer::VulkanBuffer (VulkanResources& resources, VkBufferUsageFlags usage
 }
 
 void VulkanBuffer::copyIn (const std::byte* data, std::size_t size, std::size_t off) {
+    PHENYL_DASSERT(*this);
     PHENYL_ASSERT(off < bufSize);
     PHENYL_ASSERT(off + size <= bufSize);
     PHENYL_ASSERT(bufferInfo);

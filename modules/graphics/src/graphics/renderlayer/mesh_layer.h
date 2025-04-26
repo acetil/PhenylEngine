@@ -87,7 +87,7 @@ namespace phenyl::graphics {
         FrameBuffer shadowFb;
         Buffer<glm::mat4> instanceBuffer; // TODO: per material
         UniformBuffer<MeshGlobalUniform> globalUniform{};
-        UniformBuffer<BPLightUniform> bpLight;
+        UniformArrayBuffer<BPLightUniform> bpLights;
         std::vector<MeshLight> pointLights;
 
         std::vector<MeshRenderRequest> requests;
@@ -102,11 +102,12 @@ namespace phenyl::graphics {
         void gatherLights ();
 
         void depthPrepass ();
-        void renderLight (const MeshLight& light);
+        void bufferLights ();
+        void renderLight (std::size_t lightIndex);
         glm::mat4 getLightSpaceView (const MeshLight& light);
         glm::mat4 getLightSpaceProj (const MeshLight& light);
         glm::mat4 getLightSpaceMatrix (const MeshLight& light);
-        void renderShadowMap (const MeshLight& light);
+        void renderShadowMap (const MeshLight& light, std::size_t index);
         void postProcessing ();
     public:
         explicit MeshRenderLayer (core::World& world);

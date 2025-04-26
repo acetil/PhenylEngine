@@ -14,7 +14,7 @@
     {
       "name" : "Material_ambient",
       "type" : "float",
-      "val" : 0.1
+      "val" : 0.02
     },
     {
       "name" : "Material_specular",

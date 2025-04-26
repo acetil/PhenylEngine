@@ -74,6 +74,11 @@ namespace phenyl::graphics {
             return UniformBuffer<T>(makeRendererUniformBuffer(false), std::forward<Args>(args)...);
         }
 
+        template <typename T>
+        UniformArrayBuffer<T> makeUniformArrayBuffer (std::size_t capacity = 8) {
+            return UniformArrayBuffer<T>(makeRendererUniformBuffer(false), capacity);
+        }
+
         RawUniformBuffer makeRawUniformBuffer (std::size_t size, bool readable = false) {
             return RawUniformBuffer{makeRendererUniformBuffer(readable), size};
         }

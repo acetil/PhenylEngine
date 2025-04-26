@@ -61,7 +61,7 @@ namespace phenyl::graphics {
 
         virtual void bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) = 0;
         virtual void bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) = 0;
-        virtual void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) = 0;
+        virtual void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer, std::size_t offset, std::size_t size) = 0;
         virtual void bindSampler (SamplerBinding binding, ISampler& sampler) = 0;
         virtual void unbindIndexBuffer () = 0;
         virtual void render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) = 0; // TODO: command buffer
@@ -112,14 +112,22 @@ namespace phenyl::graphics {
         template <typename T>
         Pipeline& bindUniform (UniformBinding binding, const UniformBuffer<T>& buffer) {
             PHENYL_DASSERT(pipeline);
-            pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying());
+            pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), 0, sizeof(T));
+
+            return *this;
+        }
+
+        template <typename T>
+        Pipeline& bindUniform (UniformBinding binding, const UniformArrayBuffer<T>& buffer, std::size_t index) {
+            PHENYL_DASSERT(pipeline);
+            pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), index * buffer.stride(), sizeof(T));
 
             return *this;
         }
 
         Pipeline& bindUniform (UniformBinding binding, const RawUniformBuffer& buffer) {
             PHENYL_DASSERT(pipeline);
-            pipeline->bindUniform(0, binding, buffer.getUnderlying());
+            pipeline->bindUniform(0, binding, buffer.getUnderlying(), 0, buffer.size());
 
             return *this;
         }

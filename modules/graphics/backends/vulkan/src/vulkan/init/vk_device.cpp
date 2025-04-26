@@ -286,6 +286,7 @@ DeviceProperties VulkanDevice::GetDeviceProperties (VkPhysicalDevice device) {
 
     return {
         .deviceName = deviceProperties.deviceName,
-        .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy
+        .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy,
+        .minUniformAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment
     };
 }

@@ -58,14 +58,18 @@ void VulkanPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffe
 }
 
 void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding binding,
-    const graphics::IUniformBuffer& buffer) {
+    const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) {
     const auto& uniformBuffer = reinterpret_cast<const VulkanUniformBuffer&>(buffer);
 
     auto it = uniformTypes.find(binding);
     PHENYL_ASSERT_MSG(it != uniformTypes.end(), "Attempted to bind unknown uniform {}", binding);
     PHENYL_ASSERT_MSG(type == it->second, "Attempted to bind uniform to binding {} with incorrect type! (expected: {}, got: {})", binding, it->second, type);
 
-    boundUniformBuffers[binding] = &uniformBuffer.getBufferInfo();
+    boundUniformBuffers[binding] = UniformBufferBinding{
+        .buffer = &uniformBuffer,
+        .offset = offset,
+        .size = size
+    };
 }
 
 void VulkanPipeline::bindSampler (SamplerBinding binding, ISampler& sampler) {
@@ -131,7 +135,10 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
     std::vector<VkWriteDescriptorSet> writes;
     writes.reserve(boundUniformBuffers.size());
 
-    for (const auto [binding, bufferInfo] : boundUniformBuffers) {
+    std::vector<VkDescriptorBufferInfo> bufferDescriptors;
+    bufferDescriptors.reserve(boundUniformBuffers.size());
+    for (const auto& [binding, bufferInfo] : boundUniformBuffers) {
+        bufferDescriptors.push_back(bufferInfo.buffer->getBufferInfo(bufferInfo.offset, bufferInfo.size));
         writes.push_back(VkWriteDescriptorSet{
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .dstSet = set,
@@ -139,7 +146,7 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
             .dstArrayElement = 0,
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .pBufferInfo = bufferInfo
+            .pBufferInfo = &bufferDescriptors.back()
         });
     }
 

@@ -46,7 +46,7 @@ namespace phenyl::opengl {
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
-        void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer) override;
+        void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) override;
         void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
         void unbindIndexBuffer () override;
 

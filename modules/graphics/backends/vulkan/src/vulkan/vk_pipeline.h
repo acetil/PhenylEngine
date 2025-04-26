@@ -22,6 +22,12 @@ namespace phenyl::vulkan {
 
     class VulkanPipeline : public graphics::IPipeline {
     private:
+        struct UniformBufferBinding {
+            const VulkanUniformBuffer* buffer;
+            std::size_t offset;
+            std::size_t size;
+        };
+
         TestFramebuffer* testFramebuffer;
         VulkanWindowFrameBuffer* windowFrameBuffer;
 
@@ -31,7 +37,7 @@ namespace phenyl::vulkan {
 
         VulkanResource<VkDescriptorSetLayout> descriptorSetLayout;
         std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
-        std::unordered_map<graphics::UniformBinding, const VkDescriptorBufferInfo*> boundUniformBuffers;
+        std::unordered_map<graphics::UniformBinding, UniformBufferBinding> boundUniformBuffers;
         std::unordered_set<graphics::SamplerBinding> validSamplerBindings;
         std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> boundSamplers;
 
@@ -52,7 +58,7 @@ namespace phenyl::vulkan {
 
         void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
         void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
-        void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer) override;
+        void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) override;
         void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
 
         void unbindIndexBuffer () override;

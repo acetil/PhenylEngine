@@ -47,13 +47,13 @@ void GlPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuf
     glVertexArrayVertexBuffer(vaoId, binding, glBuffer.id(), static_cast<GLintptr>(offset), static_cast<GLsizei>(glBuffer.elementSize()));
 }
 
-void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer) {
+void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer, std::size_t offset, std::size_t size) {
     PHENYL_DASSERT_MSG(uniformTypes.contains(binding), "Attempted to bind uniform to binding {} which does not exist!", binding);
     PHENYL_DASSERT_MSG(type == uniformTypes[binding], "Attempted to bind uniform to binding {} with invalid type", binding);
 
     auto& glBuffer = reinterpret_cast<const GlUniformBuffer&>(buffer);
 
-    glBindBufferBase(GL_UNIFORM_BUFFER, binding, glBuffer.id());
+    glBindBufferRange(GL_UNIFORM_BUFFER, binding, glBuffer.id(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
 }
 
 void GlPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
@@ -193,7 +193,6 @@ void GlPipeline::updateDepthMask () {
         glDepthMask(doDepthMask);
     } else {
         glDisable(GL_DEPTH_TEST);
-        glDepthFunc(GL_NONE);
     }
 }
 

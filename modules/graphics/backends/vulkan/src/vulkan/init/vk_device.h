@@ -10,6 +10,8 @@ namespace phenyl::vulkan {
     struct DeviceProperties {
         std::string deviceName;
         float maxAnisotropy;
+
+        VkDeviceSize minUniformAlignment;
     };
 
     class VulkanDevice {

@@ -376,6 +376,7 @@ static std::optional<GLuint> LinkShader (const std::unordered_map<ShaderSourceTy
         PHENYL_TRACE(LOGGER, "Successfully created shader with id={}", programId);
         return programId;
     } else {
+        glDeleteProgram(programId);
         return std::nullopt;
     }
 }

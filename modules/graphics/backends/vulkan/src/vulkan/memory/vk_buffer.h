@@ -11,9 +11,15 @@ namespace phenyl::vulkan {
         std::size_t bufSize;
 
     public:
+        VulkanBuffer () = default;
         VulkanBuffer (VulkanResources& resources, VkBufferUsageFlags usage, std::size_t bufSize);
 
+        explicit operator bool () const noexcept {
+            return static_cast<bool>(bufferInfo);
+        }
+
         VkBuffer get () const noexcept {
+            PHENYL_DASSERT(*this);
             return bufferInfo->buffer;
         }
 
