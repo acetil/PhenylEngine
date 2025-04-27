@@ -5,7 +5,6 @@
 
 namespace phenyl::core {
     struct GlobalTransform3D {
-    public:
         Transform3D transform{};
     };
 

@@ -2,34 +2,34 @@
 
 using namespace phenyl::core;
 
-UntypedComponentVector::UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize, std::size_t startCapacity) : typeIndex{typeIndex}, compSize{dataSize}, vecLength{0}, vecCapacity{startCapacity} {
-    memory = std::make_unique<std::byte[]>(dataSize * startCapacity);
+UntypedComponentVector::UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize, std::size_t startCapacity) : m_type{typeIndex}, m_compSize{dataSize}, m_size{0}, m_capacity{startCapacity} {
+    m_memory = std::make_unique<std::byte[]>(dataSize * startCapacity);
 }
 
-UntypedComponentVector::UntypedComponentVector (UntypedComponentVector&& other) noexcept : typeIndex{other.typeIndex}, memory{std::move(other.memory)}, compSize{other.compSize}, vecLength{other.vecLength}, vecCapacity{other.vecCapacity} {
-    other.compSize = 0;
-    other.vecLength = 0;
-    other.vecCapacity = 0;
+UntypedComponentVector::UntypedComponentVector (UntypedComponentVector&& other) noexcept : m_type{other.m_type}, m_memory{std::move(other.m_memory)}, m_compSize{other.m_compSize}, m_size{other.m_size}, m_capacity{other.m_capacity} {
+    other.m_compSize = 0;
+    other.m_size = 0;
+    other.m_capacity = 0;
 }
 
 UntypedComponentVector& UntypedComponentVector::operator= (UntypedComponentVector&& other) noexcept {
-    PHENYL_DASSERT(typeIndex == other.typeIndex);
-    if (memory) {
-        deleteAllComps(memory.get(), memory.get() + compSize * vecCapacity);
+    PHENYL_DASSERT(m_type == other.m_type);
+    if (m_memory) {
+        deleteAllComps(m_memory.get(), m_memory.get() + m_compSize * m_capacity);
     }
 
-    memory = std::move(other.memory);
-    compSize = other.compSize;
-    vecLength = other.vecLength;
-    vecCapacity = other.vecCapacity;
+    m_memory = std::move(other.m_memory);
+    m_compSize = other.m_compSize;
+    m_size = other.m_size;
+    m_capacity = other.m_capacity;
     return *this;
 }
 
 std::byte* UntypedComponentVector::insertUntyped () {
-    guaranteeLength(vecLength + 1);
-    PHENYL_DASSERT(vecCapacity >= vecLength + 1);
+    guaranteeLength(m_size + 1);
+    PHENYL_DASSERT(m_capacity >= m_size + 1);
 
-    return memory.get() + (vecLength++) * compSize;
+    return m_memory.get() + (m_size++) * m_compSize;
 }
 
 void UntypedComponentVector::moveFrom (UntypedComponentVector& other, std::size_t pos) {
@@ -51,23 +51,23 @@ void UntypedComponentVector::remove (std::size_t pos) {
         moveComp(getUntyped(oldPos), getUntyped(pos));
         deleteComp(getUntyped(oldPos));
     }
-    vecLength--;
+    m_size--;
 }
 
 void UntypedComponentVector::clear() {
-    deleteAllComps(memory.get(), memory.get() + vecLength * compSize);
-    vecLength = 0;
+    deleteAllComps(m_memory.get(), m_memory.get() + m_size * m_compSize);
+    m_size = 0;
 }
 
 void UntypedComponentVector::guaranteeLength (std::size_t newLen) {
-    if (newLen <= vecCapacity) {
+    if (newLen <= m_capacity) {
         return;
     }
 
-    std::size_t newCapacity = vecCapacity * RESIZE_FACTOR;
-    std::unique_ptr<std::byte[]> newMemory = std::make_unique<std::byte[]>(newCapacity * compSize);
-    moveAllComps(memory.get(), memory.get() + vecCapacity * compSize, newMemory.get());
+    std::size_t newCapacity = m_capacity * RESIZE_FACTOR;
+    std::unique_ptr<std::byte[]> newMemory = std::make_unique<std::byte[]>(newCapacity * m_compSize);
+    moveAllComps(m_memory.get(), m_memory.get() + m_capacity * m_compSize, newMemory.get());
 
-    vecCapacity = newCapacity;
-    memory = std::move(newMemory);
+    m_capacity = newCapacity;
+    m_memory = std::move(newMemory);
 }

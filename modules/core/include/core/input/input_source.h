@@ -5,27 +5,27 @@
 namespace phenyl::core {
     class ButtonInputSource {
     private:
-        bool currState = false;
+        bool m_currState = false;
     public:
         [[nodiscard]] bool state () const noexcept {
-            return currState;
+            return m_currState;
         }
 
         void setState (bool newState) noexcept {
-            currState = newState;
+            m_currState = newState;
         }
     };
 
     class Axis2DInputSource {
     private:
-        glm::vec2 axis{};
+        glm::vec2 m_axis{};
     public:
         [[nodiscard]] glm::vec2 state () const noexcept {
-            return axis;
+            return m_axis;
         }
 
         void setState (glm::vec2 newAxis) noexcept {
-            axis = newAxis;
+            m_axis = newAxis;
         }
     };
 }

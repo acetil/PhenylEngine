@@ -10,15 +10,15 @@
 namespace phenyl::core {
     class QueryArchetypes {
     private:
-        World& world;
-        detail::ArchetypeKey key;
-        std::unordered_set<Archetype*> archetypes;
+        World& m_world;
+        detail::ArchetypeKey m_key;
+        std::unordered_set<Archetype*> m_archetypes;
 
     public:
         explicit QueryArchetypes (World& world, detail::ArchetypeKey key);
         class Iterator {
         private:
-            std::unordered_set<Archetype*>::const_iterator it;
+            std::unordered_set<Archetype*>::const_iterator m_it;
 
             Iterator (std::unordered_set<Archetype*>::const_iterator it);
             friend QueryArchetypes;
@@ -44,35 +44,35 @@ namespace phenyl::core {
         using iterator = Iterator;
 
         const detail::ArchetypeKey& getKey () const noexcept {
-            return key;
+            return m_key;
         }
 
         void onNewArchetype (Archetype* archetype);
 
         iterator begin () {
-            return iterator{archetypes.begin()};
+            return iterator{m_archetypes.begin()};
         }
 
         iterator end () {
-            return iterator{archetypes.end()};
+            return iterator{m_archetypes.end()};
         }
 
         const_iterator begin () const {
             return cbegin();
         }
         const_iterator cbegin () const {
-            return const_iterator{archetypes.begin()};
+            return const_iterator{m_archetypes.begin()};
         }
 
         const_iterator end () const {
             return cend();
         }
         const_iterator cend () const {
-            return const_iterator{archetypes.end()};
+            return const_iterator{m_archetypes.end()};
         }
 
         bool contains (Archetype* archetype) const noexcept {
-            return archetypes.contains(archetype);
+            return m_archetypes.contains(archetype);
         }
 
         void lock ();
@@ -91,10 +91,10 @@ namespace phenyl::core {
     template <typename ...Args>
     class Query {
     private:
-        std::shared_ptr<QueryArchetypes> archetypes;
-        World* manager;
+        std::shared_ptr<QueryArchetypes> m_archetypes;
+        World* m_world;
 
-        explicit Query (std::shared_ptr<QueryArchetypes> archetypes, World* manager) : archetypes{std::move(archetypes)}, manager{manager} {}
+        explicit Query (std::shared_ptr<QueryArchetypes> archetypes, World* world) : m_archetypes{std::move(archetypes)}, m_world{world} {}
         friend class World;
 
         void pairsIter (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view) const {
@@ -120,61 +120,61 @@ namespace phenyl::core {
             }
         }
     public:
-        Query () : archetypes{nullptr} {}
+        Query () : m_archetypes{nullptr} {}
 
         explicit operator bool () const noexcept {
-            return static_cast<bool>(archetypes);
+            return static_cast<bool>(m_archetypes);
         }
 
         void each (const Query2Callback<Args...> auto& fn) const {
             PHENYL_DASSERT(*this);
-            archetypes->lock();
-            for (auto& archetype : *archetypes) {
-                for (auto comps : ArchetypeView<Args...>{archetype, manager}) {
+            m_archetypes->lock();
+            for (auto& archetype : *m_archetypes) {
+                for (auto comps : ArchetypeView<Args...>{archetype, m_world}) {
                     fn(std::get<std::remove_reference_t<Args>&>(comps)...);
                 }
             }
-            archetypes->unlock();
+            m_archetypes->unlock();
         }
 
         void each (const Query2BundleCallback<Args...> auto& fn) const {
             PHENYL_DASSERT(*this);
-            archetypes->lock();
-            for (auto& archetype : *archetypes) {
-                ArchetypeView<Args...> view{archetype, manager};
+            m_archetypes->lock();
+            for (auto& archetype : *m_archetypes) {
+                ArchetypeView<Args...> view{archetype, m_world};
                 for (const auto& bundle : view.bundles()) {
                     fn(bundle);
                 }
             }
-            archetypes->unlock();
+            m_archetypes->unlock();
         }
 
         void entity (Entity entity, const Query2BundleCallback<Args...> auto& fn) const {
             PHENYL_DASSERT(*this);
             const auto& entry = entity.entry();
 
-            if (!archetypes->contains(entry.archetype)) {
+            if (!m_archetypes->contains(entry.archetype)) {
                 return;
             }
 
-            ArchetypeView<Args...> view{*entry.archetype, manager};
+            ArchetypeView<Args...> view{*entry.archetype, m_world};
             fn(view.bundle(entry.pos));
         }
 
         void pairs (const Query2PairCallback<Args...> auto& fn) const {
             PHENYL_DASSERT(*this);
 
-            archetypes->lock();
-            for (auto a1It = archetypes->begin(); a1It != archetypes->end(); ++a1It) {
-                ArchetypeView<Args...> view1{*a1It, manager};
+            m_archetypes->lock();
+            for (auto a1It = m_archetypes->begin(); a1It != m_archetypes->end(); ++a1It) {
+                ArchetypeView<Args...> view1{*a1It, m_world};
                 pairsIter(fn, view1);
 
-                for (auto a2It = std::next(a1It); a2It != archetypes->end(); ++a2It) {
-                    ArchetypeView<Args...> view2{*a2It, manager} ;
+                for (auto a2It = std::next(a1It); a2It != m_archetypes->end(); ++a2It) {
+                    ArchetypeView<Args...> view2{*a2It, m_world} ;
                     pairsIter2(fn, view1, view2);
                 }
             }
-            archetypes->unlock();
+            m_archetypes->unlock();
         }
     };
 }

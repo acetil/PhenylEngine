@@ -27,22 +27,22 @@ Quaternion::Quaternion (glm::mat3 mat) {
     if (mat[2][2] < 0.0f) {
         if (mat[0][0] > mat[1][1]) {
             t = 1.0f + mat[0][0] - mat[1][1] - mat[2][2];
-            impl = {mat[1][2] - mat[2][1], t, mat[0][1] + mat[1][0], mat[2][0] + mat[0][2]};
+            m_impl = {mat[1][2] - mat[2][1], t, mat[0][1] + mat[1][0], mat[2][0] + mat[0][2]};
         } else {
             t = 1.0f - mat[0][0] + mat[1][1] - mat[2][2];
-            impl = {mat[2][0] - mat[0][2], mat[0][1] + mat[1][0], t, mat[1][2] + mat[2][1]};
+            m_impl = {mat[2][0] - mat[0][2], mat[0][1] + mat[1][0], t, mat[1][2] + mat[2][1]};
         }
     } else {
         if (mat[0][0] < -mat[1][1]) {
             t = 1.0f - mat[0][0] - mat[1][1] + mat[2][2];
-            impl = {mat[0][1] - mat[1][0], mat[2][0] + mat[0][2], mat[1][2] + mat[2][1], t};
+            m_impl = {mat[0][1] - mat[1][0], mat[2][0] + mat[0][2], mat[1][2] + mat[2][1], t};
         } else {
             t = 1.0f + mat[0][0] + mat[1][1] + mat[2][2];
-            impl = {t, mat[1][2] - mat[2][1], mat[2][0] - mat[0][2], mat[0][1] - mat[1][0]};
+            m_impl = {t, mat[1][2] - mat[2][1], mat[2][0] - mat[0][2], mat[0][1] - mat[1][0]};
         }
     }
 
-    impl *= 0.5f / sqrtf(t);
+    m_impl *= 0.5f / sqrtf(t);
 
     PHENYL_DASSERT(normalized());
 }
@@ -130,7 +130,7 @@ Quaternion Quaternion::inverse () const noexcept {
 }
 
 Quaternion Quaternion::normalize () const noexcept {
-    return Quaternion{impl / length()};
+    return Quaternion{m_impl / length()};
 }
 
 bool Quaternion::normalized () const noexcept {

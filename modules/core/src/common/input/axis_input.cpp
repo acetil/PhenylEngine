@@ -4,32 +4,32 @@
 
 using namespace phenyl::core;
 
-Axis2DBinding::Axis2DBinding (bool normalised) : normalised{normalised} {}
+Axis2DBinding::Axis2DBinding (bool normalised) : m_normalised{normalised} {}
 
 void Axis2DBinding::addButtonSource (const ButtonInputSource* source, glm::vec2 sourceVec) {
     PHENYL_DASSERT(source);
-    buttonSources.emplace_back(source, sourceVec);
+    m_buttonSources.emplace_back(source, sourceVec);
 }
 
 void Axis2DBinding::addAxisSource (const Axis2DInputSource* source) {
     PHENYL_DASSERT(source);
-    axisSources.emplace_back(source);
+    m_axisSources.emplace_back(source);
 }
 
 void Axis2DBinding::poll () {
-    currState = {0, 0};
+    m_state = {0, 0};
 
-    for (const auto& [source, vec] : buttonSources) {
+    for (const auto& [source, vec] : m_buttonSources) {
         if (source->state()) {
-            currState += vec;
+            m_state += vec;
         }
     }
 
-    for (const auto* source : axisSources) {
-        currState += source->state();
+    for (const auto* source : m_axisSources) {
+        m_state += source->state();
     }
 
-    if (normalised) {
-        currState = util::SafeNormalize(currState);
+    if (m_normalised) {
+        m_state = util::SafeNormalize(m_state);
     }
 }

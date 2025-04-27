@@ -24,8 +24,8 @@ namespace phenyl::core {
 
         class AssetCacheBase {
         protected:
-            AssetManagerBase* manager;
-            explicit AssetCacheBase (AssetManagerBase* manager) : manager{manager} {}
+            AssetManagerBase* m_manager;
+            explicit AssetCacheBase (AssetManagerBase* manager) : m_manager{manager} {}
         public:
             virtual ~AssetCacheBase () = default;
             virtual void incRefCount (std::size_t id) = 0;
@@ -34,7 +34,7 @@ namespace phenyl::core {
             virtual std::string_view getPath (std::size_t id) = 0;
 
             [[nodiscard]] AssetManagerBase* getManagerBase () const {
-                return manager;
+                return m_manager;
             }
         };
 
@@ -43,14 +43,14 @@ namespace phenyl::core {
         private:
             static constexpr std::string_view UnknownPath = "";
 
-            util::Map<std::string, std::size_t> pathMap;
-            util::FLVector<AssetEntry<T>> cache;
+            util::Map<std::string, std::size_t> m_pathMap;
+            util::FLVector<AssetEntry<T>> m_cache;
         public:
-            explicit AssetCache (AssetManager<T>* manager) : AssetCacheBase{manager}, pathMap{}, cache{} {}
+            explicit AssetCache (AssetManager<T>* manager) : AssetCacheBase{manager}, m_pathMap{}, m_cache{} {}
             Asset<T> getCached (const std::string& path) {
-                if (pathMap.contains(path)) {
-                    auto index = pathMap.at(path);
-                    auto& entry = cache.at(index);
+                if (m_pathMap.contains(path)) {
+                    auto index = m_pathMap.at(path);
+                    auto& entry = m_cache.at(index);
                     entry.refCount++;
 
                     return Asset<T>{index + 1, entry.data};
@@ -60,36 +60,36 @@ namespace phenyl::core {
             }
 
             AssetManager<T>* getManager () const {
-                return static_cast<AssetManager<T>*>(manager);
+                return static_cast<AssetManager<T>*>(m_manager);
             }
 
             std::size_t addEntry (const std::string& path) {
-                PHENYL_DASSERT(!pathMap.contains(path));
-                auto index = cache.emplace(nullptr, path, 1);
-                pathMap[path] = index;
+                PHENYL_DASSERT(!m_pathMap.contains(path));
+                auto index = m_cache.emplace(nullptr, path, 1);
+                m_pathMap[path] = index;
 
                 return index + 1;
             }
 
             void putData (std::size_t id, T* data) {
-                PHENYL_DASSERT(id && cache.present(id - 1));
-                cache.at(id - 1).data = data;
+                PHENYL_DASSERT(id && m_cache.present(id - 1));
+                m_cache.at(id - 1).data = data;
             }
 
             void incRefCount (std::size_t id) override {
-                PHENYL_DASSERT(id && cache.present(id - 1));
-                cache.at(id - 1).refCount++;
+                PHENYL_DASSERT(id && m_cache.present(id - 1));
+                m_cache.at(id - 1).refCount++;
             }
 
             bool decRefCount (std::size_t id) override {
-                PHENYL_DASSERT(id && cache.present(id - 1));
-                PHENYL_DASSERT(cache.at(id - 1).refCount);
-                return --cache.at(id - 1).refCount;
+                PHENYL_DASSERT(id && m_cache.present(id - 1));
+                PHENYL_DASSERT(m_cache.at(id - 1).refCount);
+                return --m_cache.at(id - 1).refCount;
             }
 
             bool removeEntry (std::size_t id) override {
-                PHENYL_DASSERT(id && cache.present(id - 1));
-                if (cache.at(id - 1).refCount) {
+                PHENYL_DASSERT(id && m_cache.present(id - 1));
+                if (m_cache.at(id - 1).refCount) {
                     return false;
                 }
 
@@ -98,14 +98,14 @@ namespace phenyl::core {
             }
 
             void forceRemoveEntry (std::size_t id) {
-                PHENYL_DASSERT(id && cache.present(id - 1));
-                pathMap.remove(cache.at(id - 1).path);
-                cache.remove(id - 1);
+                PHENYL_DASSERT(id && m_cache.present(id - 1));
+                m_pathMap.remove(m_cache.at(id - 1).path);
+                m_cache.remove(id - 1);
             }
 
             std::string_view getPath (std::size_t id) override {
-                if (id && cache.present(id - 1)) {
-                    return cache.at(id - 1).path;
+                if (id && m_cache.present(id - 1)) {
+                    return m_cache.at(id - 1).path;
                 } else {
                     return UnknownPath;
                 }
@@ -125,36 +125,36 @@ namespace phenyl::core {
             return INSTANCE;
         }
 
-        util::Map<std::size_t, std::unique_ptr<detail::AssetCacheBase>> caches;
+        util::Map<std::size_t, std::unique_ptr<detail::AssetCacheBase>> m_caches;
 
         void incrementRefCount (std::size_t typeIndex, std::size_t id) {
-            PHENYL_DASSERT(caches.contains(typeIndex));
-            caches.at(typeIndex)->incRefCount(id);
+            PHENYL_DASSERT(m_caches.contains(typeIndex));
+            m_caches.at(typeIndex)->incRefCount(id);
         }
 
         void decrementRefCount (std::size_t typeIndex, std::size_t id) {
-            if (!caches.contains(typeIndex)) {
+            if (!m_caches.contains(typeIndex)) {
                 PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to decrement ref count of manager with type {} that no longer exists!", typeIndex);
                 return;
             }
-            auto& entry = caches.at(typeIndex);
+            auto& entry = m_caches.at(typeIndex);
             if (!entry->decRefCount(id)) {
                 entry->getManagerBase()->queueUnload(id);
             }
         }
         bool unloadAsset (std::size_t typeIndex, std::size_t id) {
-            PHENYL_DASSERT(caches.contains(typeIndex));
-            return caches.at(typeIndex)->removeEntry(id);
+            PHENYL_DASSERT(m_caches.contains(typeIndex));
+            return m_caches.at(typeIndex)->removeEntry(id);
         }
 
         template <typename T>
         Asset<T> load (const std::string& path) {
-            if (!caches.contains(meta::type_index<T>())) {
+            if (!m_caches.contains(meta::type_index<T>())) {
                 PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
                 return Asset<T>{};
             }
 
-            auto* cache = static_cast<detail::AssetCache<T>*>(caches.at(meta::type_index<T>()).get());
+            auto* cache = static_cast<detail::AssetCache<T>*>(m_caches.at(meta::type_index<T>()).get());
             Asset<T> asset;
             if ((asset = std::move(cache->getCached(path)))) {
                 PHENYL_ASSERT_MSG(asset.get(), "Possible cyclic dependency including \"{}\"!", path);
@@ -193,12 +193,12 @@ namespace phenyl::core {
 
         template <typename T>
         Asset<T> virtualLoad (const std::string& path, T&& obj) {
-            if (!caches.contains(meta::type_index<T>())) {
+            if (!m_caches.contains(meta::type_index<T>())) {
                 PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
                 return Asset<T>{};
             }
 
-            auto* cache = static_cast<detail::AssetCache<T>*>(caches.at(meta::type_index<T>()).get());
+            auto* cache = static_cast<detail::AssetCache<T>*>(m_caches.at(meta::type_index<T>()).get());
 
             PHENYL_ASSERT_MSG(!cache->getCached(path), "Attempted to virtual load an asset multiple times!", path);
 
@@ -216,27 +216,27 @@ namespace phenyl::core {
 
         template <typename T>
         void addManager (AssetManager<T>* manager) {
-            if (caches.contains(meta::type_index<T>())) {
+            if (m_caches.contains(meta::type_index<T>())) {
                 PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to add asset manager that has already been added!");
                 return;
             }
 
-            caches[meta::type_index<T>()] = std::make_unique<detail::AssetCache<T>>(manager);
+            m_caches[meta::type_index<T>()] = std::make_unique<detail::AssetCache<T>>(manager);
         }
 
         template <typename T>
         void removeManager (AssetManager<T>* manager) {
-            if (!caches.contains(meta::type_index<T>())) {
+            if (!m_caches.contains(meta::type_index<T>())) {
                 PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to remove asset manager that does not exist!");
                 return;
             }
 
-            caches.remove(meta::type_index<T>());
+            m_caches.remove(meta::type_index<T>());
         }
 
         std::string_view getPath (std::size_t typeIndex, std::size_t id) {
-            PHENYL_DASSERT(caches.contains(typeIndex));
-            auto& cache = caches.at(typeIndex);
+            PHENYL_DASSERT(m_caches.contains(typeIndex));
+            auto& cache = m_caches.at(typeIndex);
             return cache->getPath(id);
         }
 

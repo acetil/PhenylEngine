@@ -4,33 +4,33 @@
 
 using namespace phenyl::core;
 
-QueryArchetypes::QueryArchetypes (World& world, detail::ArchetypeKey key) : world{world}, key{std::move(key)} {}
+QueryArchetypes::QueryArchetypes (World& world, detail::ArchetypeKey key) : m_world{world}, m_key{std::move(key)} {}
 
 void QueryArchetypes::onNewArchetype (Archetype* archetype) {
-    if (archetype->getKey().subsetOf(key)) {
+    if (archetype->getKey().subsetOf(m_key)) {
         // All components found
-        archetypes.emplace(archetype);
+        m_archetypes.emplace(archetype);
     }
 }
 
 void QueryArchetypes::lock() {
-    world.defer();
+    m_world.defer();
 }
 
 void QueryArchetypes::unlock() {
-    world.deferEnd();
+    m_world.deferEnd();
 }
 
 QueryArchetypes::Iterator::Iterator() = default;
 
-QueryArchetypes::Iterator::Iterator (std::unordered_set<Archetype*>::const_iterator it) : it{it} {}
+QueryArchetypes::Iterator::Iterator (std::unordered_set<Archetype*>::const_iterator it) : m_it{it} {}
 
 QueryArchetypes::Iterator::reference QueryArchetypes::Iterator::operator* () const {
-    return **it;
+    return **m_it;
 }
 
 QueryArchetypes::Iterator& QueryArchetypes::Iterator::operator++ () {
-    ++it;
+    ++m_it;
     return *this;
 }
 
@@ -41,5 +41,5 @@ QueryArchetypes::Iterator QueryArchetypes::Iterator::operator++ (int) {
 }
 
 bool QueryArchetypes::Iterator::operator== (const Iterator& other) const noexcept {
-    return it == other.it;
+    return m_it == other.m_it;
 }

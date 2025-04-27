@@ -12,12 +12,12 @@ namespace phenyl::core::detail {
     template <SerializableType T>
     class VectorSerializable : public ISerializable<std::vector<T>> {
     private:
-        std::string serializableName;
+        std::string m_name;
     public:
-        VectorSerializable () : serializableName{std::format("std::vector<{}>", GetSerializable<T>().name())} {}
+        VectorSerializable () : m_name{std::format("std::vector<{}>", GetSerializable<T>().name())} {}
 
         [[nodiscard]] std::string_view name () const noexcept override {
-            return serializableName;
+            return m_name;
         }
 
         void serialize (ISerializer& serializer, const std::vector<T>& obj) override {
@@ -84,13 +84,13 @@ namespace phenyl::core::detail {
     template <SerializableType T, glm::length_t N>
     class VecSerializable : public ISerializable<glm::vec<N, T>> {
     private:
-        std::string vecName;
+        std::string m_name;
     public:
         using Vec = glm::vec<N, T>;
-        explicit VecSerializable (std::string vecName) : vecName{std::move(vecName)} {}
+        explicit VecSerializable (std::string vecName) : m_name{std::move(vecName)} {}
 
         std::string_view name () const noexcept override {
-            return vecName;
+            return m_name;
         }
 
         void serialize (ISerializer& serializer, const Vec& obj) override {
@@ -127,13 +127,13 @@ namespace phenyl::core::detail {
     template <SerializableType T, glm::length_t H, glm::length_t W>
     class MatSerializable : public ISerializable<glm::mat<H, W, T>> {
     private:
-        std::string matName;
+        std::string m_name;
     public:
         using Mat = glm::mat<H, W, T>;
-        MatSerializable (std::string matName) : matName{std::move(matName)} {}
+        MatSerializable (std::string matName) : m_name{std::move(matName)} {}
 
         std::string_view name () const noexcept override {
-            return matName;
+            return m_name;
         }
 
         void serialize (ISerializer& serializer, const Mat& obj) override {
@@ -194,17 +194,17 @@ namespace phenyl::core::detail {
     template <typename T, SerializableType M>
     class MemberSerializable : public IMemberSerializable<T> {
     private:
-        std::string_view name;
+        std::string_view m_name;
         M T::*member;
     public:
-        MemberSerializable (std::string_view name, M T::*member) : name{name}, member{member} {}
+        MemberSerializable (std::string_view name, M T::*member) : m_name{name}, member{member} {}
 
         std::string_view getKey () const noexcept override {
-            return name;
+            return m_name;
         }
 
         void serialize (IObjectSerializer& serializer, const T* obj) override {
-            serializer.serializeMember(name, obj->*member);
+            serializer.serializeMember(m_name, obj->*member);
         }
 
         void deserialize (IObjectDeserializer& deserializer, T* obj) override {
@@ -212,35 +212,35 @@ namespace phenyl::core::detail {
         }
 
         bool deserialize (IStructDeserializer& deserializer, T* obj) override {
-            return deserializer.next(name, obj->*member);
+            return deserializer.next(m_name, obj->*member);
         }
     };
 
     template <typename T, typename M, typename F1, typename F2>
     class MethodSerializable : public IMemberSerializable<T> {
     private:
-        std::string_view name;
-        F1 getter;
-        F2 setter;
+        std::string_view m_name;
+        F1 m_getter;
+        F2 m_setter;
     public:
-        MethodSerializable (std::string_view name, F1&& getter, F2&& setter) : name{name}, getter{std::move(getter)}, setter{std::move(setter)} {}
+        MethodSerializable (std::string_view name, F1&& getter, F2&& setter) : m_name{name}, m_getter{std::move(getter)}, m_setter{std::move(setter)} {}
 
         std::string_view getKey () const noexcept override {
-            return name;
+            return m_name;
         }
 
         void serialize (IObjectSerializer& serializer, const T* obj) override {
-            serializer.serializeMember(name, std::invoke(getter, obj));
+            serializer.serializeMember(m_name, std::invoke(m_getter, obj));
         }
 
         void deserialize (IObjectDeserializer& deserializer, T* obj) override {
-            std::invoke(setter, obj, deserializer.nextValue<M>());
+            std::invoke(m_setter, obj, deserializer.nextValue<M>());
         }
 
         bool deserialize (IStructDeserializer& deserializer, T* obj) override {
-            std::optional<M> valOpt = deserializer.next<M>(name);
+            std::optional<M> valOpt = deserializer.next<M>(m_name);
             if (valOpt) {
-                std::invoke(setter, obj, std::move(*valOpt));
+                std::invoke(m_setter, obj, std::move(*valOpt));
                 return true;
             } else {
                 return false;
@@ -251,16 +251,16 @@ namespace phenyl::core::detail {
     template <typename T, SerializableType B> requires std::derived_from<T, B>
     class InheritsSerializable : public IMemberSerializable<T> {
     private:
-        std::string_view name;
+        std::string_view m_name;
     public:
-        explicit InheritsSerializable (std::string_view name) : name{name} {}
+        explicit InheritsSerializable (std::string_view name) : m_name{name} {}
 
         std::string_view getKey () const noexcept override {
-            return name;
+            return m_name;
         }
 
         void serialize (IObjectSerializer& serializer, const T* obj) override {
-            serializer.serializeMember(name, *static_cast<const B*>(obj));
+            serializer.serializeMember(m_name, *static_cast<const B*>(obj));
         }
 
         void deserialize (IObjectDeserializer& deserializer, T* obj) override {
@@ -268,36 +268,36 @@ namespace phenyl::core::detail {
         }
 
         bool deserialize (IStructDeserializer& deserializer, T* obj) override {
-            return deserializer.next(name, *static_cast<B*>(obj));
+            return deserializer.next(m_name, *static_cast<B*>(obj));
         }
     };
 
     template <typename T>
     class ClassSerializable : public ISerializable<T> {
     private:
-        std::string_view className;
+        std::string_view m_name;
         //std::unordered_map<std::string_view, std::unique_ptr<IMemberSerializable<T>>> members;
-        std::vector<std::unique_ptr<IMemberSerializable<T>>> members;
-        std::vector<std::string> memberNames;
+        std::vector<std::unique_ptr<IMemberSerializable<T>>> m_members;
+        std::vector<std::string> m_memberNames;
 
         template <typename ...Args>
         void addAll (std::unique_ptr<Args>... args) {
-            members.reserve(sizeof...(Args));
+            m_members.reserve(sizeof...(Args));
             ([&] {
-                members.emplace_back(std::move(args));
+                m_members.emplace_back(std::move(args));
             } (), ...);
         }
     public:
         template <typename ...Args>
-        explicit ClassSerializable (std::string_view className, std::unique_ptr<Args>... args) : className{className} {
+        explicit ClassSerializable (std::string_view className, std::unique_ptr<Args>... args) : m_name{className} {
             addAll(std::move(args)...);
-            for (auto& member : members) {
-                memberNames.emplace_back(std::string{member->getKey()});
+            for (auto& member : m_members) {
+                m_memberNames.emplace_back(std::string{member->getKey()});
             }
         }
 
         [[nodiscard]] std::string_view name () const noexcept override {
-            return className;
+            return m_name;
         }
 
         void serialize (ISerializer& serializer, const T& obj) override {
@@ -306,7 +306,7 @@ namespace phenyl::core::detail {
             /*for (auto& [_, member] : members) {
                 member->serialize(objSerializer, &obj);
             }*/
-            for (auto& member : members) {
+            for (auto& member : m_members) {
                 member->serialize(objSerializer, &obj);
             }
             objSerializer.end();
@@ -314,7 +314,7 @@ namespace phenyl::core::detail {
 
         void deserialize (IDeserializer& deserializer, T& obj) override {
             //deserializer.deserializeObject(*this, obj);
-            deserializer.deserializeStruct(*this, std::span{memberNames}, obj);
+            deserializer.deserializeStruct(*this, std::span{m_memberNames}, obj);
         }
 
         /*void deserializeObject (T& obj, IObjectDeserializer& deserializer) override {
@@ -337,7 +337,7 @@ namespace phenyl::core::detail {
         }*/
 
         void deserializeStruct (T& obj, IStructDeserializer& deserializer) override {
-            for (auto& member : members) {
+            for (auto& member : m_members) {
                 if (!member->deserialize(deserializer, &obj)) {
                     throw DeserializeException(std::format("Failed to deserialize member \"{}\" of class {}", member->getKey(), name()));
                 }

@@ -8,10 +8,10 @@ class JsonSerializer : public ISerializer {
 private:
     class Array : public IArraySerializer {
     private:
-        JsonSerializer* serializer;
-        nlohmann::json::array_t jsonArr{};
+        JsonSerializer* m_serializer;
+        nlohmann::json::array_t m_arr{};
     public:
-        Array (JsonSerializer* serializer) : serializer{serializer} {
+        Array (JsonSerializer* serializer) : m_serializer{serializer} {
             PHENYL_DASSERT(serializer);
         }
 
@@ -19,20 +19,20 @@ private:
             JsonSerializer serializer;
             serializable.serialize(serializer, ptr);
 
-            jsonArr.emplace_back(std::move(serializer.getJson()));
+            m_arr.emplace_back(std::move(serializer.getJson()));
         }
 
         void end () override {
-            serializer->onArrEnd(std::move(jsonArr));
+            m_serializer->onArrEnd(std::move(m_arr));
         }
     };
 
     class Object : public IObjectSerializer {
     private:
-        JsonSerializer* serializer;
-        nlohmann::json::object_t jsonObj{};
+        JsonSerializer* m_serializer;
+        nlohmann::json::object_t m_obj{};
     public:
-        Object (JsonSerializer* serializer) : serializer{serializer} {
+        Object (JsonSerializer* serializer) : m_serializer{serializer} {
             PHENYL_DASSERT(serializer);
         }
 
@@ -40,71 +40,71 @@ private:
             JsonSerializer serializer;
             serializable.serialize(serializer, ptr);
 
-            jsonObj.emplace(memberName, std::move(serializer.getJson()));
+            m_obj.emplace(memberName, std::move(serializer.getJson()));
         }
 
         void end () override {
-            serializer->onObjEnd(std::move(jsonObj));
+            m_serializer->onObjEnd(std::move(m_obj));
         }
 
-        nlohmann::json::object_t& getObj () {
-            return jsonObj;
+        nlohmann::json::object_t& obj () {
+            return m_obj;
         }
     };
 
-    nlohmann::json json;
-    std::optional<Object> objSerializer;
-    std::optional<Array> arrSerializer;
+    nlohmann::json m_json;
+    std::optional<Object> m_objSerializer;
+    std::optional<Array> m_arrSerializer;
 public:
     void serialize (bool val) override {
-        json = val;
+        m_json = val;
     }
 
     void serialize (std::int64_t val) override {
-        json = val;
+        m_json = val;
     }
 
     void serialize (std::uint64_t val) override {
-        json = val;
+        m_json = val;
     }
 
     void serialize (double val) override {
-        json = val;
+        m_json = val;
     }
 
     void serialize (std::string_view val) override {
-        json = val;
+        m_json = val;
     }
 
     IObjectSerializer& serializeObj () override {
-        PHENYL_DASSERT(!arrSerializer);
-        PHENYL_DASSERT(!objSerializer);
+        PHENYL_DASSERT(!m_arrSerializer);
+        PHENYL_DASSERT(!m_objSerializer);
 
-        objSerializer = Object{this};
-        return *objSerializer;
+        m_objSerializer = Object{this};
+        return *m_objSerializer;
     }
 
     IArraySerializer& serializeArr() override {
-        PHENYL_DASSERT(!arrSerializer);
-        PHENYL_DASSERT(!objSerializer);
+        PHENYL_DASSERT(!m_arrSerializer);
+        PHENYL_DASSERT(!m_objSerializer);
 
-        arrSerializer = Array{this};
-        return *arrSerializer;
+        m_arrSerializer = Array{this};
+        return *m_arrSerializer;
     }
 
     void onArrEnd (nlohmann::json::array_t&& arr) {
-        PHENYL_DASSERT(arrSerializer);
-        json = std::move(arr);
-        arrSerializer = std::nullopt;
+        PHENYL_DASSERT(m_arrSerializer);
+        m_json = std::move(arr);
+        m_arrSerializer = std::nullopt;
     }
 
     void onObjEnd (nlohmann::json::object_t&& obj) {
-        json = std::move(obj);
-        objSerializer = std::nullopt;
+        m_json = std::move(obj);
+        m_objSerializer = std::nullopt;
     }
 
     nlohmann::json& getJson () {
-        return json;
+        return m_json;
     }
 };
 
@@ -114,20 +114,20 @@ private:
     private:
         using ArrType = nlohmann::json::array_t;
 
-        const ArrType& jsonArr;
-        ArrType::const_iterator it;
+        const ArrType& m_arr;
+        ArrType::const_iterator m_it;
     public:
-        Array (const ArrType& arr) : jsonArr{arr}, it{arr.begin()} {}
+        Array (const ArrType& arr) : m_arr{arr}, m_it{arr.begin()} {}
 
         bool hasNext () const override {
-            return it != jsonArr.end();
+            return m_it != m_arr.end();
         }
 
         void next (ISerializableBase& serializable, std::byte* obj) override {
-            PHENYL_DASSERT(it != jsonArr.end());
-            JsonDeserializer deserializer{*it};
+            PHENYL_DASSERT(m_it != m_arr.end());
+            JsonDeserializer deserializer{*m_it};
             serializable.deserialize(deserializer, obj);
-            ++it;
+            ++m_it;
         }
     };
 
@@ -135,73 +135,73 @@ private:
     private:
         using ObjectType = nlohmann::json::object_t;
 
-        const ObjectType& jsonObj;
-        ObjectType::const_iterator it;
+        const ObjectType& m_obj;
+        ObjectType::const_iterator m_it;
     public:
-        explicit Object (const ObjectType& obj) : jsonObj{obj}, it{obj.begin()} {}
+        explicit Object (const ObjectType& obj) : m_obj{obj}, m_it{obj.begin()} {}
 
         [[nodiscard]] bool hasNext () const override {
-            return it != jsonObj.end();
+            return m_it != m_obj.end();
         }
 
         std::string_view nextKey () override {
-            PHENYL_DASSERT(it != jsonObj.end());
-            return it->first;
+            PHENYL_DASSERT(m_it != m_obj.end());
+            return m_it->first;
         }
 
         void nextValue (ISerializableBase& serializable, std::byte* obj) override {
-            PHENYL_DASSERT(it != jsonObj.end());
-            JsonDeserializer deserializer{it->second};
+            PHENYL_DASSERT(m_it != m_obj.end());
+            JsonDeserializer deserializer{m_it->second};
             serializable.deserialize(deserializer, obj);
 
-            ++it;
+            ++m_it;
         }
 
         void ignoreNextValue () override {
-            PHENYL_DASSERT(it != jsonObj.end());
-            ++it;
+            PHENYL_DASSERT(m_it != m_obj.end());
+            ++m_it;
         }
     };
 
     class Struct : public IStructDeserializer {
     private:
         using ObjectType = nlohmann::json::object_t;
-        const ObjectType& jsonObj;
-        std::span<const std::string> members;
-        std::span<const std::string>::iterator memberIt;
+        const ObjectType& m_obj;
+        std::span<const std::string> m_members;
+        std::span<const std::string>::iterator m_memberIt;
 
         void advanceToNext () {
-            while (memberIt != members.end() && !jsonObj.contains(*memberIt)) {
-                ++memberIt;
+            while (m_memberIt != m_members.end() && !m_obj.contains(*m_memberIt)) {
+                ++m_memberIt;
             }
         }
     public:
-        Struct (const ObjectType& obj, std::span<const std::string> members) : jsonObj{obj}, members{members}, memberIt{members.begin()} {
+        Struct (const ObjectType& obj, std::span<const std::string> members) : m_obj{obj}, m_members{members}, m_memberIt{members.begin()} {
             advanceToNext();
         }
 
         bool isNext (std::string_view member) override {
-            return memberIt != members.end() && member == *memberIt;
+            return m_memberIt != m_members.end() && member == *m_memberIt;
         }
 
         void next (ISerializableBase& serializable, std::byte* obj) override {
-            PHENYL_DASSERT(memberIt != members.end());
-            const auto& jsonMember = jsonObj.at(*memberIt);
+            PHENYL_DASSERT(m_memberIt != m_members.end());
+            const auto& jsonMember = m_obj.at(*m_memberIt);
 
             JsonDeserializer deserializer{jsonMember};
             serializable.deserialize(deserializer, obj);
 
-            ++memberIt;
+            ++m_memberIt;
             advanceToNext();
         }
     };
 
-    const nlohmann::json& json;
+    const nlohmann::json& m_json;
 
     template <std::integral T>
     T deserializeInt (std::string_view typeName) {
-        if (json.is_number_integer()) {
-            auto i = json.get<nlohmann::json::number_integer_t>();
+        if (m_json.is_number_integer()) {
+            auto i = m_json.get<nlohmann::json::number_integer_t>();
 
             if (std::in_range<T>(i)) {
                 return static_cast<T>(i);
@@ -209,14 +209,14 @@ private:
                 throw JsonException(std::format("Failed to deserialize integer: {} out of bounds of type {}", i, typeName));
             }
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected int, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected int, got {}", m_json.type_name()));
         }
     }
 
     template <std::unsigned_integral T>
     T deserializeUint (std::string_view typeName) {
-        if (json.is_number_unsigned()) {
-            auto i = json.get<nlohmann::json::number_unsigned_t>();
+        if (m_json.is_number_unsigned()) {
+            auto i = m_json.get<nlohmann::json::number_unsigned_t>();
 
             if (std::in_range<T>(i)) {
                 return static_cast<T>(i);
@@ -224,17 +224,17 @@ private:
                 throw JsonException(std::format("Failed to deserialize unsigned integer: {} out of bounds of type {}", i, typeName));
             }
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected uint, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected uint, got {}", m_json.type_name()));
         }
     }
 public:
-    explicit JsonDeserializer (const nlohmann::json& json) : json{json} {}
+    explicit JsonDeserializer (const nlohmann::json& json) : m_json{json} {}
 
     void deserializeBool (ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_boolean()) {
-            serializable.deserializeBool(ptr, json.get<bool>());
+        if (m_json.is_boolean()) {
+            serializable.deserializeBool(ptr, m_json.get<bool>());
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected bool, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected bool, got {}", m_json.type_name()));
         }
     }
 
@@ -271,58 +271,58 @@ public:
     }
 
     void deserializeFloat(ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_number()) {
-            serializable.deserializeFloat(ptr, json.get<float>());
+        if (m_json.is_number()) {
+            serializable.deserializeFloat(ptr, m_json.get<float>());
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected float, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected float, got {}", m_json.type_name()));
         }
     }
 
     void deserializeDouble (ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_number()) {
-            serializable.deserializeDouble(ptr, json.get<double>());
+        if (m_json.is_number()) {
+            serializable.deserializeDouble(ptr, m_json.get<double>());
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected double, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected double, got {}", m_json.type_name()));
         }
     }
 
     void deserializeString (ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_string()) {
-            serializable.deserializeString(ptr, json.get<std::string>());
+        if (m_json.is_string()) {
+            serializable.deserializeString(ptr, m_json.get<std::string>());
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected string, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected string, got {}", m_json.type_name()));
         }
     }
 
     void deserializeArray (ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_array()) {
-            Array arr{*json.get<const nlohmann::json::array_t*>()};
+        if (m_json.is_array()) {
+            Array arr{*m_json.get<const nlohmann::json::array_t*>()};
             serializable.deserializeArray(ptr, arr);
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected array, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected array, got {}", m_json.type_name()));
         }
     }
 
     void deserializeObject (ISerializableBase& serializable, std::byte* ptr) override {
-        if (json.is_object()) {
-            Object obj{*json.get<const nlohmann::json::object_t*>()};
+        if (m_json.is_object()) {
+            Object obj{*m_json.get<const nlohmann::json::object_t*>()};
             serializable.deserializeObject(ptr, obj);
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected object, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected object, got {}", m_json.type_name()));
         }
     }
 
     void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members, std::byte* ptr) override {
-        if (json.is_object()) {
-            Struct obj{*json.get<const nlohmann::json::object_t*>(), members};
+        if (m_json.is_object()) {
+            Struct obj{*m_json.get<const nlohmann::json::object_t*>(), members};
             serializable.deserializeStruct(ptr, obj);
         } else {
-            throw JsonException(std::format("Failed to deserialize json: expected object, got {}", json.type_name()));
+            throw JsonException(std::format("Failed to deserialize json: expected object, got {}", m_json.type_name()));
         }
     }
 
     void deserializeInfer (ISerializableBase& serializable, std::byte* ptr) override {
-        switch (json.type()) {
+        switch (m_json.type()) {
             case nlohmann::detail::value_t::null:
                 throw JsonException("Failed to deserialize json: received null value");
                 break;

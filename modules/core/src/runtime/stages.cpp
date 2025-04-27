@@ -7,45 +7,45 @@
 
 using namespace phenyl::core;
 
-AbstractStage::AbstractStage (std::string name, PhenylRuntime& runtime) : stageName{std::move(name)}, runtime{runtime} {}
+AbstractStage::AbstractStage (std::string name, PhenylRuntime& runtime) : m_name{std::move(name)}, m_runtime{runtime} {}
 AbstractStage::~AbstractStage () = default;
 
 void AbstractStage::addSystemUntyped (IRunnableSystem* system) {
     PHENYL_DASSERT(system);
-    systems.emplace_back(system);
-    updated = true;
+    m_systems.emplace_back(system);
+    m_updated = true;
 }
 
 void AbstractStage::run () {
-    if (updated) {
+    if (m_updated) {
         orderSystems();
         orderStages();
-        updated = false;
+        m_updated = false;
     }
 
-    runtime.world().defer();
-    for (auto* i : orderedSystems) {
+    m_runtime.world().defer();
+    for (auto* i : m_orderedSystems) {
         if (i->exclusive()) {
-            runtime.world().deferEnd();
+            m_runtime.world().deferEnd();
         }
 
-        i->run(runtime);
+        i->run(m_runtime);
 
         if (i->exclusive()) {
-            runtime.world().defer();
+            m_runtime.world().defer();
         }
     }
-    runtime.world().deferEnd();
+    m_runtime.world().deferEnd();
 
-    for (auto* i : childStages) {
+    for (auto* i : m_childStages) {
         i->run();
     }
 }
 
 void AbstractStage::addChildStage (AbstractStage* stage) {
     PHENYL_DASSERT(stage);
-    childStages.emplace_back(stage);
-    updated = true;
+    m_childStages.emplace_back(stage);
+    m_updated = true;
 }
 
 void AbstractStage::runBefore (AbstractStage* stage) {
@@ -55,26 +55,26 @@ void AbstractStage::runBefore (AbstractStage* stage) {
 
 void AbstractStage::runAfter (AbstractStage* stage) {
     PHENYL_DASSERT(stage);
-    prevStages.emplace(stage);
+    m_prevStages.emplace(stage);
 }
 
 void AbstractStage::orderSystems () {
-    orderedSystems.clear();
+    m_orderedSystems.clear();
 
     PHENYL_DEBUG({
-        util::Random::Shuffle(systems.begin(), systems.end());
+        util::Random::Shuffle(m_systems.begin(), m_systems.end());
     })
 
     std::unordered_set<IRunnableSystem*> visited{};
     std::unordered_set<IRunnableSystem*> visiting{};
-    for (auto* i : systems) {
+    for (auto* i : m_systems) {
         orderSystemsRecursive(i, visited, visiting);
     }
 }
 
 void AbstractStage::orderStages () {
-    std::vector<AbstractStage*> stages = childStages;
-    childStages.clear();
+    std::vector<AbstractStage*> stages = m_childStages;
+    m_childStages.clear();
 
     PHENYL_DEBUG({
         util::Random::Shuffle(stages.begin(), stages.end());
@@ -98,7 +98,7 @@ void AbstractStage::orderSystemsRecursive (IRunnableSystem* system, std::unorder
         orderSystemsRecursive(i, visited, visiting);
     }
 
-    orderedSystems.emplace_back(system);
+    m_orderedSystems.emplace_back(system);
     visited.emplace(system);
     visiting.erase(system);
 }
@@ -110,11 +110,11 @@ void AbstractStage::orderStagesRecursive (AbstractStage* stage, std::unordered_s
     }
 
     visiting.emplace(stage);
-    for (auto* i : stage->prevStages) {
+    for (auto* i : stage->m_prevStages) {
         orderStagesRecursive(i, visited, visiting);
     }
 
-    childStages.emplace_back(stage);
+    m_childStages.emplace_back(stage);
     visited.emplace(stage);
     visiting.erase(stage);
 }

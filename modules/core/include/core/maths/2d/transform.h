@@ -6,9 +6,9 @@
 namespace phenyl::core {
     class Transform2D {
     private:
-        glm::vec2 positionVec{0, 0};
-        glm::vec2 scaleVec{1.0f, 1.0f};
-        glm::vec2 complexRotation{1.0f, 0.0f};
+        glm::vec2 m_position{0, 0};
+        glm::vec2 m_scale{1.0f, 1.0f};
+        glm::vec2 m_complexRotation{1.0f, 0.0f};
 
         Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec);
 
@@ -17,7 +17,7 @@ namespace phenyl::core {
         Transform2D () = default;
 
         [[nodiscard]] inline glm::vec2 position () const {
-            return positionVec;
+            return m_position;
         }
         Transform2D& translate (glm::vec2 deltaPos);
         [[nodiscard]] Transform2D withTranslation (glm::vec2 deltaPos) const;
@@ -25,7 +25,7 @@ namespace phenyl::core {
         [[nodiscard]] Transform2D withPosition (glm::vec2 newPosition) const;
 
         [[nodiscard]] inline glm::vec2 scale () const {
-            return scaleVec;
+            return m_scale;
         }
         Transform2D& scaleBy (glm::vec2 deltaScale);
         [[nodiscard]] Transform2D withScaleBy (glm::vec2 deltaScale) const;
@@ -39,10 +39,10 @@ namespace phenyl::core {
         Transform2D withRotation (float angle);
 
         [[nodiscard]] inline glm::mat2 scaleMatrix () const {
-            return {{scaleVec.x, 0}, {0, scaleVec.y}};
+            return {{m_scale.x, 0}, {0, m_scale.y}};
         }
         [[nodiscard]] inline glm::mat2 rotMatrix () const {
-            return {{complexRotation.x, complexRotation.y}, {-complexRotation.y, complexRotation.x}};
+            return {{m_complexRotation.x, m_complexRotation.y}, {-m_complexRotation.y, m_complexRotation.x}};
         }
 
         [[nodiscard]] inline glm::mat2 getMatrix () const {

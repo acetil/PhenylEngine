@@ -16,8 +16,8 @@ namespace phenyl::core {
 
     class Prefab {
     private:
-        std::size_t prefabId;
-        std::weak_ptr<PrefabManager> manager{};
+        std::size_t m_id;
+        std::weak_ptr<PrefabManager> m_manager{};
 
         friend class PrefabBuilder;
         friend class PrefabManager;
@@ -35,7 +35,7 @@ namespace phenyl::core {
         void instantiate (Entity entity) const;
 
         explicit operator bool () const noexcept {
-            return prefabId;
+            return m_id;
         }
     };
 
@@ -47,11 +47,11 @@ namespace phenyl::core {
 
     class PrefabManager : public std::enable_shared_from_this<PrefabManager> {
     private:
-        World& world;
-        std::unordered_map<std::size_t, PrefabEntry> entries;
-        std::size_t nextPrefabId = 1;
-        std::vector<std::pair<EntityId, std::size_t>> deferredInstantiations;
-        bool deferring = false;
+        World& m_world;
+        std::unordered_map<std::size_t, PrefabEntry> m_entries;
+        std::size_t m_nextPrefabId = 1;
+        std::vector<std::pair<EntityId, std::size_t>> m_deferredInstantiations;
+        bool m_deferring = false;
 
     public:
         explicit PrefabManager (World& world);

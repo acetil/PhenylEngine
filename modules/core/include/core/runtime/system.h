@@ -15,15 +15,15 @@ namespace phenyl::core {
     private:
 
     protected:
-        std::unordered_set<IRunnableSystem*> parentSystems;
-        std::string systemName;
+        std::unordered_set<IRunnableSystem*> m_parentSystems;
+        std::string m_name;
     public:
-        explicit IRunnableSystem (std::string name) : systemName{std::move(name)} {}
+        explicit IRunnableSystem (std::string name) : m_name{std::move(name)} {}
 
         virtual ~IRunnableSystem () = default;
 
         const std::string& getName () const noexcept {
-            return systemName;
+            return m_name;
         }
 
         virtual void run (PhenylRuntime& runtime) = 0;
@@ -32,7 +32,7 @@ namespace phenyl::core {
         }
 
         const std::unordered_set<IRunnableSystem*>& getPrecedingSystems () const {
-            return parentSystems;
+            return m_parentSystems;
         }
     };
 
@@ -48,8 +48,8 @@ namespace phenyl::core {
         }
 
         System<Stage>& runAfter (System<Stage>& otherSystem) {
-            PHENYL_DASSERT(!otherSystem.parentSystems.contains(this));
-            parentSystems.emplace(&otherSystem);
+            PHENYL_DASSERT(!otherSystem.m_parentSystems.contains(this));
+            m_parentSystems.emplace(&otherSystem);
 
             return *this;
         }
@@ -58,12 +58,12 @@ namespace phenyl::core {
     template <typename Stage>
     class FunctionSystem : public System<Stage> {
     private:
-        std::function<void()> func;
+        std::function<void()> m_func;
     public:
-        explicit FunctionSystem (std::string name, std::function<void()> func) : System<Stage>{std::move(name)}, func{std::move(func)} {}
+        explicit FunctionSystem (std::string name, std::function<void()> func) : System<Stage>{std::move(name)}, m_func{std::move(func)} {}
 
         void run (PhenylRuntime& runtime) override {
-            func();
+            m_func();
         }
 
         bool exclusive () const noexcept override {
@@ -74,12 +74,12 @@ namespace phenyl::core {
     template <typename Stage, typename T>
     class ExclusiveFunctionSystem : public System<Stage> {
     private:
-        std::function<void(PhenylRuntime&)> func;
+        std::function<void(PhenylRuntime&)> m_func;
     public:
-        ExclusiveFunctionSystem (std::string name, std::function<void(PhenylRuntime&)> func) : System<Stage>{std::move(name)}, func{std::move(func)} {}
+        ExclusiveFunctionSystem (std::string name, std::function<void(PhenylRuntime&)> func) : System<Stage>{std::move(name)}, m_func{std::move(func)} {}
 
         void run (PhenylRuntime& runtime) override {
-            func(runtime);
+            m_func(runtime);
         }
 
         bool exclusive () const noexcept override {

@@ -15,23 +15,23 @@ namespace phenyl::core {
 namespace phenyl::core::detail {
     class UntypedComponent {
     private:
-        World* world;
-        std::string compName;
-        std::size_t typeIndex;
+        World* m_world;
+        std::string m_name;
+        std::size_t m_type;
     protected:
         [[nodiscard]] Entity entity (EntityId id) const noexcept {
-            return Entity{id, world};
+            return Entity{id, m_world};
         }
     public:
-        explicit UntypedComponent (World* world, std::string compName, std::size_t typeIndex) : world{world}, compName{std::move(compName)}, typeIndex{typeIndex} {}
+        explicit UntypedComponent (World* world, std::string compName, std::size_t typeIndex) : m_world{world}, m_name{std::move(compName)}, m_type{typeIndex} {}
         virtual ~UntypedComponent() = default;
 
         [[nodiscard]] std::size_t type () const noexcept {
-            return typeIndex;
+            return m_type;
         }
 
         [[nodiscard]] const std::string& name () const noexcept {
-            return compName;
+            return m_name;
         }
 
         virtual std::unique_ptr<UntypedComponentVector> makeVector () = 0;
@@ -46,11 +46,11 @@ namespace phenyl::core::detail {
     template <typename T>
     class Component : public UntypedComponent {
     private:
-        std::vector<std::function<void(const OnInsert<T>&, Entity)>> insertHandlers;
-        std::vector<std::function<void(const OnRemove<T>&, Entity)>> removeHandlers;
+        std::vector<std::function<void(const OnInsert<T>&, Entity)>> m_insertHandlers;
+        std::vector<std::function<void(const OnRemove<T>&, Entity)>> m_removeHandlers;
 
-        std::vector<std::pair<EntityId, T>> deferredInserts;
-        std::vector<EntityId> deferredErases;
+        std::vector<std::pair<EntityId, T>> m_deferredInserts;
+        std::vector<EntityId> m_deferredErases;
     public:
         Component (World* world, std::string name) : UntypedComponent(world, std::move(name), meta::type_index<T>()) {}
 
@@ -59,17 +59,17 @@ namespace phenyl::core::detail {
         }
 
         void addHandler (std::function<void(const OnInsert<T>&, Entity)> handler) {
-            insertHandlers.emplace_back(std::move(handler));
+            m_insertHandlers.emplace_back(std::move(handler));
         }
 
         void addHandler (std::function<void(const OnRemove<T>&, Entity)> handler) {
-            removeHandlers.emplace_back(std::move(handler));
+            m_removeHandlers.emplace_back(std::move(handler));
         }
 
         void onInsert (EntityId id, std::byte* comp) override {
             auto e = entity(id);
             OnInsert<T> signal{comp};
-            for (const auto& f : insertHandlers) {
+            for (const auto& f : m_insertHandlers) {
                 f(signal, e);
             }
         }
@@ -77,31 +77,31 @@ namespace phenyl::core::detail {
         void onRemove (EntityId id, std::byte* comp) override {
             auto e = entity(id);
             OnRemove<T> signal{comp};
-            for (const auto& f : removeHandlers) {
+            for (const auto& f : m_removeHandlers) {
                 f(signal, e);
             }
         }
 
         void deferComp (EntityId id, std::byte* comp) override {
             auto* typedComp = reinterpret_cast<T*>(comp);
-            deferredInserts.emplace_back(id, std::move(*typedComp));
+            m_deferredInserts.emplace_back(id, std::move(*typedComp));
         }
 
         void deferErase (EntityId id) override {
-            deferredErases.emplace_back(id);
+            m_deferredErases.emplace_back(id);
         }
 
         void deferEnd () override {
-            for (auto& [id, comp] : deferredInserts) {
+            for (auto& [id, comp] : m_deferredInserts) {
                 entity(id).insert(std::move(comp));
             }
 
-            for (auto id : deferredErases) {
+            for (auto id : m_deferredErases) {
                 entity(id).template erase<T>();
             }
 
-            deferredInserts.clear();
-            deferredErases.clear();
+            m_deferredInserts.clear();
+            m_deferredErases.clear();
         }
     };
 }

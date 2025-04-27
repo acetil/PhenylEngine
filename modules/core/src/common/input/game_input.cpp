@@ -10,31 +10,31 @@ static phenyl::Logger LOGGER{"GAME_INPUT", detail::COMMON_LOGGER};
 void GameInput::addDevice (IInputDevice* device) {
     PHENYL_DASSERT(device);
 
-    if (devices.contains(device->getDeviceId())) {
+    if (m_devices.contains(device->getDeviceId())) {
         PHENYL_LOGE(LOGGER, "Attempted to add device \"{}\" twice!", device->getDeviceId());
         return;
     }
 
     PHENYL_LOGD(LOGGER, "Added device \"{}\"", device->getDeviceId());
-    devices.emplace(device->getDeviceId(), device);
+    m_devices.emplace(device->getDeviceId(), device);
 }
 
 InputAction GameInput::addAction (std::string_view actionId) {
     PHENYL_DASSERT(!actionId.empty());
 
-    if (buttonBindings.contains(actionId)) {
+    if (m_buttonBindings.contains(actionId)) {
         PHENYL_LOGE(LOGGER, "Attempted to add action \"{}\" twice!", actionId);
         return InputAction{};
     }
 
     PHENYL_LOGD(LOGGER, "Added action \"{}\"", actionId);
-    auto it = buttonBindings.emplace(actionId, std::make_unique<ButtonInputBinding>()).first;
+    auto it = m_buttonBindings.emplace(actionId, std::make_unique<ButtonInputBinding>()).first;
     return InputAction{it->second.get()};
 }
 
 InputAction GameInput::getAction (std::string_view actionId) {
-    auto it = buttonBindings.find(actionId);
-    if (it == buttonBindings.end()) {
+    auto it = m_buttonBindings.find(actionId);
+    if (it == m_buttonBindings.end()) {
         PHENYL_LOGE(LOGGER, "Failed to find input action \"{}\"", actionId);
         return InputAction{};
     }
@@ -43,8 +43,8 @@ InputAction GameInput::getAction (std::string_view actionId) {
 }
 
 void GameInput::addActionBinding (std::string_view actionId, std::string_view sourceId) {
-    auto bindingIt = buttonBindings.find(actionId);
-    if (bindingIt == buttonBindings.end()) {
+    auto bindingIt = m_buttonBindings.find(actionId);
+    if (bindingIt == m_buttonBindings.end()) {
         PHENYL_LOGE(LOGGER, "Attempted to add binding to action \"{}\" that does not exist!", actionId);
         return;
     }
@@ -62,19 +62,19 @@ void GameInput::addActionBinding (std::string_view actionId, std::string_view so
 Axis2DInput GameInput::addAxis2D (std::string_view inputId, bool normalised) {
     PHENYL_DASSERT(!inputId.empty());
 
-    if (axis2DBindings.contains(inputId)) {
+    if (m_axis2DBindings.contains(inputId)) {
         PHENYL_LOGE(LOGGER, "Attempted to add axis input \"{}\" twice!", inputId);
         return Axis2DInput{};
     }
 
     PHENYL_LOGD(LOGGER, "Added Axis2D input \"{}\"", inputId);
-    auto it = axis2DBindings.emplace(inputId, std::make_unique<Axis2DBinding>(normalised)).first;
+    auto it = m_axis2DBindings.emplace(inputId, std::make_unique<Axis2DBinding>(normalised)).first;
     return Axis2DInput{it->second.get()};
 }
 
 Axis2DInput GameInput::getAxis2D (std::string_view inputId) {
-    auto it = axis2DBindings.find(inputId);
-    if (it == axis2DBindings.end()) {
+    auto it = m_axis2DBindings.find(inputId);
+    if (it == m_axis2DBindings.end()) {
         PHENYL_LOGE(LOGGER, "Failed to find Axis2D input \"{}\"", inputId);
         return Axis2DInput{};
     }
@@ -83,8 +83,8 @@ Axis2DInput GameInput::getAxis2D (std::string_view inputId) {
 }
 
 void GameInput::addButtonAxis2DBinding (std::string_view inputId, std::string_view sourceId, glm::vec2 buttonAxis) {
-    auto bindingIt = axis2DBindings.find(inputId);
-    if (bindingIt == axis2DBindings.end()) {
+    auto bindingIt = m_axis2DBindings.find(inputId);
+    if (bindingIt == m_axis2DBindings.end()) {
         PHENYL_LOGE(LOGGER, "Attempted to add binding to Axis2D input \"{}\" that does not exist!", inputId);
         return;
     }
@@ -100,8 +100,8 @@ void GameInput::addButtonAxis2DBinding (std::string_view inputId, std::string_vi
 }
 
 void GameInput::addAxis2DBinding (std::string_view inputId, std::string_view sourceId) {
-    auto bindingIt = axis2DBindings.find(inputId);
-    if (bindingIt == axis2DBindings.end()) {
+    auto bindingIt = m_axis2DBindings.find(inputId);
+    if (bindingIt == m_axis2DBindings.end()) {
         PHENYL_LOGE(LOGGER, "Attempted to add binding to Axis2D input \"{}\" that does not exist!", inputId);
         return;
     }
@@ -117,16 +117,16 @@ void GameInput::addAxis2DBinding (std::string_view inputId, std::string_view sou
 }
 
 void GameInput::update () {
-    for (auto& [_, device] : devices) {
+    for (auto& [_, device] : m_devices) {
         PHENYL_TRACE(LOGGER, "Polling \"{}\"", device->getDeviceId());
         device->poll();
     }
 
-    for (auto& [_, binding] : buttonBindings) {
+    for (auto& [_, binding] : m_buttonBindings) {
         binding->poll();
     }
 
-    for (auto& [_, binding] : axis2DBindings) {
+    for (auto& [_, binding] : m_axis2DBindings) {
         binding->poll();
     }
 }
@@ -143,8 +143,8 @@ const ButtonInputSource* GameInput::getButtonSource (std::string_view sourceId) 
     }
 
     auto deviceId = sourceId.substr(0, pos);
-    auto deviceIt = devices.find(deviceId);
-    if (deviceIt == devices.end()) {
+    auto deviceIt = m_devices.find(deviceId);
+    if (deviceIt == m_devices.end()) {
         PHENYL_LOGE(LOGGER, "Unknown device \"{}\" in source \"{}\"", deviceId, sourceId);
         return nullptr;
     }
@@ -160,8 +160,8 @@ const Axis2DInputSource* GameInput::getAxis2DSource (std::string_view sourceId) 
     }
 
     auto deviceId = sourceId.substr(0, pos);
-    auto deviceIt = devices.find(deviceId);
-    if (deviceIt == devices.end()) {
+    auto deviceIt = m_devices.find(deviceId);
+    if (deviceIt == m_devices.end()) {
         PHENYL_LOGE(LOGGER, "Unknown device \"{}\" in source \"{}\"", deviceId, sourceId);
         return nullptr;
     }

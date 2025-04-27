@@ -8,10 +8,10 @@
 namespace phenyl::core {
     class Quaternion {
     private:
-        glm::quat impl{1, 0, 0, 0};
+        glm::quat m_impl{1, 0, 0, 0};
 
-        Quaternion (float w, float x, float y, float z) : impl{w, x, y, z} {}
-        explicit Quaternion (glm::quat impl) : impl{impl} {}
+        Quaternion (float w, float x, float y, float z) : m_impl{w, x, y, z} {}
+        explicit Quaternion (glm::quat impl) : m_impl{impl} {}
         PHENYL_SERIALIZABLE_INTRUSIVE(Quaternion)
     public:
         static constexpr glm::vec3 ForwardVector{0, 0, 1};
@@ -21,18 +21,18 @@ namespace phenyl::core {
 
         explicit Quaternion (glm::mat3 mat);
 
-        explicit Quaternion (float w, glm::vec3 vec) : impl{w, vec} {}
+        explicit Quaternion (float w, glm::vec3 vec) : m_impl{w, vec} {}
 
         static Quaternion Rotation (glm::vec3 axis, float theta);
         static Quaternion LookAtOld (glm::vec3 forward, glm::vec3 upAxis = UpVector);
         static Quaternion LookAt (glm::vec3 forward, glm::vec3 upAxis = UpVector);
 
         float w () const noexcept {
-            return impl.w;
+            return m_impl.w;
         }
 
         glm::vec3 xyz () const noexcept {
-            return glm::vec3{impl.x, impl.y, impl.z};
+            return glm::vec3{m_impl.x, m_impl.y, m_impl.z};
         }
 
         glm::vec3 axis () const noexcept;
@@ -47,58 +47,58 @@ namespace phenyl::core {
         float lengthSquared () const noexcept;
 
         Quaternion operator+ (const Quaternion& other) const noexcept {
-            return Quaternion{impl + other.impl};
+            return Quaternion{m_impl + other.m_impl};
         }
 
         Quaternion& operator+= (const Quaternion& other) noexcept {
-            impl += other.impl;
+            m_impl += other.m_impl;
             return *this;
         }
 
         Quaternion operator- (const Quaternion& other) const noexcept {
-            return Quaternion{impl - other.impl};
+            return Quaternion{m_impl - other.m_impl};
         }
 
         Quaternion& operator-= (const Quaternion& other) noexcept {
-            impl += other.impl;
+            m_impl += other.m_impl;
             return *this;
         }
 
         Quaternion operator* (const Quaternion& other) const noexcept {
-            return Quaternion{impl * other.impl};
+            return Quaternion{m_impl * other.m_impl};
         }
 
         Quaternion& operator*= (const Quaternion& other) noexcept {
-            impl *= other.impl;
+            m_impl *= other.m_impl;
             return *this;
         }
 
         Quaternion operator* (float f) const noexcept {
-            return Quaternion{impl * f};
+            return Quaternion{m_impl * f};
         }
 
         Quaternion& operator*= (float f) noexcept {
-            impl *= f;
+            m_impl *= f;
             return *this;
         }
 
         Quaternion operator/ (float f) const noexcept {
-            return Quaternion{impl / f};
+            return Quaternion{m_impl / f};
         }
 
         Quaternion& operator/= (float f) noexcept {
-            impl /= f;
+            m_impl /= f;
             return *this;
         }
 
         glm::vec3 operator* (glm::vec3 vec) const noexcept;
 
         explicit operator glm::mat3 () const noexcept {
-            return glm::mat3_cast(impl);
+            return glm::mat3_cast(m_impl);
         }
 
         explicit operator glm::mat4 () const noexcept {
-            return glm::mat4_cast(impl);
+            return glm::mat4_cast(m_impl);
         }
     };
 }

@@ -3,7 +3,7 @@
 
 namespace phenyl::core {
     PHENYL_SERIALIZABLE(Transform3D,
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(transformPos, "position"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(transformScale, "scale"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(transformRot, "rotation"))
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_position, "position"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_scale, "scale"),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_rotation, "rotation"))
 }

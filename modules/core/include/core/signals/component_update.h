@@ -6,24 +6,24 @@ namespace phenyl::core {
     template <typename T>
     struct OnInsert {
     private:
-        T* ptr;
+        T* m_ptr;
     public:
-        explicit OnInsert (std::byte* ptr) : ptr{reinterpret_cast<T*>(ptr)} {}
+        explicit OnInsert (std::byte* ptr) : m_ptr{reinterpret_cast<T*>(ptr)} {}
 
         T& get () const noexcept {
-            return *ptr;
+            return *m_ptr;
         }
     };
 
     template <typename T>
     struct OnRemove {
     private:
-        T* ptr;
+        T* m_ptr;
     public:
-        explicit OnRemove (std::byte* ptr) : ptr{reinterpret_cast<T*>(ptr)} {}
+        explicit OnRemove (std::byte* ptr) : m_ptr{reinterpret_cast<T*>(ptr)} {}
 
         T& get () const noexcept {
-            return *ptr;
+            return *m_ptr;
         }
     };
 }

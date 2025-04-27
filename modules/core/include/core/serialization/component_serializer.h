@@ -10,13 +10,13 @@
 namespace phenyl::core {
     class IComponentSerializer {
     protected:
-        std::string componentName;
+        std::string m_name;
     public:
-        explicit IComponentSerializer (std::string componentName) : componentName{std::move(componentName)} {}
+        explicit IComponentSerializer (std::string componentName) : m_name{std::move(componentName)} {}
         virtual ~IComponentSerializer () = default;
 
         [[nodiscard]] std::string_view name () const noexcept {
-            return componentName;
+            return m_name;
         }
 
         virtual void serialize (IObjectSerializer& serializer, Entity entity) = 0;
@@ -48,10 +48,10 @@ namespace phenyl::core {
 
     class EntityComponentSerializer {
     private:
-        util::HashMap<std::string, std::unique_ptr<IComponentSerializer>> serializers;
+        util::HashMap<std::string, std::unique_ptr<IComponentSerializer>> m_serializers;
         void serializeEntity (ISerializer& serializer, Entity entity) {
             auto& objSerializer = serializer.serializeObj();
-            for (auto& [_, comp] : serializers) {
+            for (auto& [_, comp] : m_serializers) {
                 comp->serialize(objSerializer, entity);
             }
         }
@@ -59,8 +59,8 @@ namespace phenyl::core {
         void deserializeEntity (IObjectDeserializer& deserializer, Entity entity) {
             while (deserializer.hasNext()) {
                 auto key = deserializer.nextKey();
-                auto it = serializers.find(key);
-                if (it == serializers.end()) {
+                auto it = m_serializers.find(key);
+                if (it == m_serializers.end()) {
                     throw phenyl::DeserializeException(std::format("Invalid component type: {}", key));
                 }
 
@@ -71,8 +71,8 @@ namespace phenyl::core {
         void deserializePrefab (IObjectDeserializer& deserializer, PrefabBuilder& builder) {
             while (deserializer.hasNext()) {
                 auto key = deserializer.nextKey();
-                auto it = serializers.find(key);
-                if (it == serializers.end()) {
+                auto it = m_serializers.find(key);
+                if (it == m_serializers.end()) {
                     throw phenyl::DeserializeException(std::format("Invalid component type: {}", key));
                 }
 
@@ -82,9 +82,9 @@ namespace phenyl::core {
     public:
         class PrefabSerializable : public ISerializable<PrefabBuilder> {
         private:
-            EntityComponentSerializer& compSerializer;
+            EntityComponentSerializer& m_serializer;
         public:
-            explicit PrefabSerializable (EntityComponentSerializer& compSerializer) : compSerializer{compSerializer} {}
+            explicit PrefabSerializable (EntityComponentSerializer& compSerializer) : m_serializer{compSerializer} {}
             std::string_view name () const noexcept override {
                 return "phenyl::Prefab::Components";
             }
@@ -98,22 +98,22 @@ namespace phenyl::core {
             }
 
             void deserializeObject (PrefabBuilder& obj, IObjectDeserializer& deserializer) override {
-                compSerializer.deserializePrefab(deserializer, obj);
+                m_serializer.deserializePrefab(deserializer, obj);
             }
         };
 
         class EntitySerializable : public ISerializable<Entity> {
         private:
-            EntityComponentSerializer& compSerializer;
+            EntityComponentSerializer& m_serializer;
         public:
-            explicit EntitySerializable (EntityComponentSerializer& compSerializer) : compSerializer{compSerializer} {}
+            explicit EntitySerializable (EntityComponentSerializer& compSerializer) : m_serializer{compSerializer} {}
 
             std::string_view name () const noexcept override {
                 return "phenyl::Entity::Components";
             }
 
             void serialize (ISerializer& serializer, const Entity& obj) override {
-                compSerializer.serializeEntity(serializer, obj);
+                m_serializer.serializeEntity(serializer, obj);
             }
 
             void deserialize (IDeserializer& deserializer, Entity& obj) override {
@@ -121,14 +121,14 @@ namespace phenyl::core {
             }
 
             void deserializeObject (Entity& obj, IObjectDeserializer& deserializer) override {
-                compSerializer.deserializeEntity(deserializer, obj);
+                m_serializer.deserializeEntity(deserializer, obj);
             }
         };
 
         template <SerializableType T>
         void addSerializer () {
             auto serializer = std::make_unique<ComponentSerializer<T>>();
-            serializers.emplace(serializer->name(), std::move(serializer));
+            m_serializers.emplace(serializer->name(), std::move(serializer));
         }
 
         PrefabSerializable prefab () {

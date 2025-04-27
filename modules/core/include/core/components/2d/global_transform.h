@@ -5,8 +5,6 @@
 
 namespace phenyl::core {
     struct GlobalTransform2D {
-    private:
-    public:
         GlobalTransform2D() = default;
         /*GlobalTransform2D (glm::mat2 _transform) : transform{_transform}, rotTransform{_transform} {}
         //glm::vec2 pos;

@@ -12,26 +12,26 @@ namespace phenyl::core {
 
     struct EntityId {
     private:
-        unsigned int generation{0};
-        unsigned int id{0};
+        unsigned int m_generation{0};
+        unsigned int m_id{0};
     public:
         EntityId () = default;
-        EntityId (unsigned int _generation, unsigned int _id) : generation(_generation), id(_id) {}
+        EntityId (unsigned int _generation, unsigned int _id) : m_generation(_generation), m_id(_id) {}
 
         [[nodiscard]] std::size_t value () const noexcept {
-            return (static_cast<std::size_t>(generation) << 32) | id;
+            return (static_cast<std::size_t>(m_generation) << 32) | m_id;
         }
 
         explicit operator bool () const noexcept {
-            return id != 0;
+            return m_id != 0;
         }
 
         bool operator== (const EntityId& other) const noexcept {
-            return generation == other.generation && id == other.id;
+            return m_generation == other.m_generation && m_id == other.m_id;
         }
 
         [[nodiscard]] unsigned int pos () const noexcept {
-            return id - 1;
+            return m_id - 1;
         }
 
         friend class Archetype;

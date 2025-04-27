@@ -19,8 +19,8 @@ namespace phenyl::core::detail {
 
         class IdIterator {
         private:
-            const EntityIdList* idList;
-            std::size_t slotPos;
+            const EntityIdList* m_idList;
+            std::size_t m_pos;
             explicit IdIterator (const EntityIdList* idList, std::size_t slotPos);
 
             void next ();
@@ -30,7 +30,7 @@ namespace phenyl::core::detail {
             using reference = void;
             using pointer = void;
             using difference_type = std::ptrdiff_t;
-            IdIterator () : idList{nullptr}, slotPos{0} {}
+            IdIterator () : m_idList{nullptr}, m_pos{0} {}
 
             value_type operator* () const;
 

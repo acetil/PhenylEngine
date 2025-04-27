@@ -8,18 +8,18 @@ using namespace phenyl::core;
 
 void ButtonInputBinding::addSource (const ButtonInputSource* source) {
     PHENYL_DASSERT(source);
-    sources.emplace_back(source);
+    m_sources.emplace_back(source);
 }
 
 void ButtonInputBinding::poll () {
     bool newState = false;
-    for (auto* source : sources) {
+    for (auto* source : m_sources) {
         newState = newState || source->state();
     }
 
-    currState = newState;
+    m_state = newState;
 }
 
 InputAction::InputAction () = default;
 
-InputAction::InputAction (const ButtonInputBinding* binding) : binding{binding} {}
+InputAction::InputAction (const ButtonInputBinding* binding) : m_binding{binding} {}

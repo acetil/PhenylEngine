@@ -11,10 +11,10 @@ namespace phenyl::core {
 
     class Axis2DBinding {
     private:
-        std::vector<std::pair<const ButtonInputSource*, glm::vec2>> buttonSources;
-        std::vector<const Axis2DInputSource*> axisSources;
-        glm::vec2 currState{};
-        bool normalised;
+        std::vector<std::pair<const ButtonInputSource*, glm::vec2>> m_buttonSources;
+        std::vector<const Axis2DInputSource*> m_axisSources;
+        glm::vec2 m_state{};
+        bool m_normalised;
     public:
         explicit Axis2DBinding (bool normalised);
         void addButtonSource (const ButtonInputSource* source, glm::vec2 sourceVec);
@@ -22,23 +22,23 @@ namespace phenyl::core {
         void poll ();
 
         [[nodiscard]] glm::vec2 state () const noexcept {
-            return currState;
+            return m_state;
         }
     };
 
     class Axis2DInput {
     private:
-        const Axis2DBinding* binding = nullptr;
+        const Axis2DBinding* m_binding = nullptr;
     public:
         Axis2DInput () = default;
-        explicit Axis2DInput (const Axis2DBinding* binding) : binding{binding} {}
+        explicit Axis2DInput (const Axis2DBinding* binding) : m_binding{binding} {}
 
         explicit operator bool () const noexcept {
-            return binding;
+            return m_binding;
         }
 
         [[nodiscard]] glm::vec2 value () const noexcept {
-            return binding->state();
+            return m_binding->state();
         }
     };
 }

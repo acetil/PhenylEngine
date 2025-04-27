@@ -28,14 +28,14 @@ namespace phenyl::core::detail {
     template <typename T>
     class FuncPrefabFactory : public IPrefabFactory {
     private:
-        std::function<T()> factory;
+        std::function<T()> m_factory;
     public:
-        explicit FuncPrefabFactory (std::function<T()> factory) : factory{std::move(factory)} {}
+        explicit FuncPrefabFactory (std::function<T()> factory) : m_factory{std::move(factory)} {}
 
         void make (std::byte* ptr) const override {
             T* tPtr = reinterpret_cast<T*>(ptr);
 
-            new (tPtr) T(factory());
+            new (tPtr) T(m_factory());
         }
     };
 

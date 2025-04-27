@@ -11,15 +11,16 @@
 namespace phenyl::core {
     class AbstractStage {
     protected:
-        std::string stageName;
-        PhenylRuntime& runtime;
-        std::vector<IRunnableSystem*> systems;
-        std::vector<IRunnableSystem*> orderedSystems;
+        std::string m_name;
+        PhenylRuntime& m_runtime;
+        std::vector<IRunnableSystem*> m_systems;
+        std::vector<IRunnableSystem*> m_orderedSystems;
 
-        std::vector<AbstractStage*> childStages;
-        std::unordered_set<AbstractStage*> prevStages;
+        std::vector<AbstractStage*> m_childStages;
+        std::unordered_set<AbstractStage*> m_prevStages;
 
-        bool updated = false;
+        bool m_updated = false;
+
         void addSystemUntyped (IRunnableSystem* system);
         void orderSystems ();
         void orderStages ();
@@ -38,7 +39,7 @@ namespace phenyl::core {
         [[nodiscard]] virtual std::size_t id () const noexcept = 0;
 
         const std::string& name () const noexcept {
-            return stageName;
+            return m_name;
         }
     };
 

@@ -133,7 +133,7 @@ namespace phenyl::core {
             BundleIterator () = default;
 
             value_type operator* () const {
-                return value_type{Entity{view->archetype.entityIds[pos], view->manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos]...}};
+                return value_type{Entity{view->archetype.m_entityIds[pos], view->manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos]...}};
             }
 
             BundleIterator& operator++ () {
@@ -181,7 +181,7 @@ namespace phenyl::core {
             }
 
             value_type operator[] (difference_type n) const {
-                return value_type{Entity{view->archetype.entityIds[pos + n], view->manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos + n]...}};
+                return value_type{Entity{view->archetype.m_entityIds[pos + n], view->manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos + n]...}};
             }
 
             bool operator== (const BundleIterator& other) const noexcept {
@@ -206,7 +206,7 @@ namespace phenyl::core {
         }
 
         Bundle<Args...> bundle (std::size_t pos) {
-            return {Entity{archetype.entityIds[pos], manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(components))[pos]...}};
+            return {Entity{archetype.m_entityIds[pos], manager}, std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(components))[pos]...}};
         }
 
         iterator begin () {

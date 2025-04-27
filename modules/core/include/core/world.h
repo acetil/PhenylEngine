@@ -18,14 +18,14 @@ namespace phenyl::core {
     private:
         class EntityIterator {
         private:
-            World* world = nullptr;;
-            detail::EntityIdList::const_iterator it;
+            World* m_world = nullptr;;
+            detail::EntityIdList::const_iterator m_it;
 
         public:
             using value_type = Entity;
 
             EntityIterator () = default;
-            explicit EntityIterator (World* world, detail::EntityIdList::const_iterator it) : world{world}, it{it} {}
+            explicit EntityIterator (World* world, detail::EntityIdList::const_iterator it) : m_world{world}, m_it{it} {}
 
             value_type operator* () const;
 
@@ -38,28 +38,28 @@ namespace phenyl::core {
             bool operator== (const EntityIterator&) const;
         };
 
-        std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> components;
+        std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> m_components;
 
-        detail::EntityIdList idList;
-        detail::RelationshipManager relationships;
+        detail::EntityIdList m_idList;
+        detail::RelationshipManager m_relationships;
 
-        std::vector<std::unique_ptr<Archetype>> archetypes;
-        EmptyArchetype* emptyArchetype;
-        std::vector<detail::EntityEntry> entityEntries;
+        std::vector<std::unique_ptr<Archetype>> m_archetypes;
+        EmptyArchetype* m_emptyArchetype;
+        std::vector<detail::EntityEntry> m_entityEntries;
 
-        std::vector<std::weak_ptr<QueryArchetypes>> queryArchetypes;
+        std::vector<std::weak_ptr<QueryArchetypes>> m_queryArchetypes;
 
-        std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> signalHandlerVectors;
+        std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> m_signalHandlerVectors;
 
-        std::shared_ptr<PrefabManager> prefabManager;
+        std::shared_ptr<PrefabManager> m_prefabManager;
 
-        std::vector<std::pair<EntityId, EntityId>> deferredCreations;
-        std::vector<std::pair<EntityId, std::function<void(Entity)>>> deferredApplys;
-        std::vector<EntityId> deferredRemovals;
+        std::vector<std::pair<EntityId, EntityId>> m_deferredCreations;
+        std::vector<std::pair<EntityId, std::function<void(Entity)>>> m_deferredApplys;
+        std::vector<EntityId> m_deferredRemovals;
 
-        std::uint32_t deferCount = 0;
-        std::uint32_t removeDeferCount = 0;
-        std::uint32_t signalDeferCount = 0;
+        std::uint32_t m_deferCount = 0;
+        std::uint32_t m_removeDeferCount = 0;
+        std::uint32_t m_signalDeferCount = 0;
 
         void completeCreation (EntityId id, EntityId parent);
         void removeInt (EntityId id, bool updateParent);
@@ -103,11 +103,11 @@ namespace phenyl::core {
 
         template <typename T>
         void addComponent (std::string name) {
-            PHENYL_ASSERT_MSG(!components.contains(meta::type_index<T>()), "Attempted to add component \"{}\" twice", name);
+            PHENYL_ASSERT_MSG(!m_components.contains(meta::type_index<T>()), "Attempted to add component \"{}\" twice", name);
 
             auto comp = std::make_unique<detail::Component<T>>(this, std::move(name));
             auto index = comp->type();
-            components.emplace(index, std::move(comp));
+            m_components.emplace(index, std::move(comp));
         }
 
         Entity create (EntityId parent = EntityId{});
@@ -117,7 +117,7 @@ namespace phenyl::core {
         void clear ();
 
         [[nodiscard]] bool exists (EntityId id) const noexcept {
-            return idList.check(id);
+            return m_idList.check(id);
         }
 
         Entity entity (EntityId id) noexcept;
@@ -132,8 +132,8 @@ namespace phenyl::core {
 
         template <typename T>
         void addHandler (std::function<void(const OnInsert<T>&, Entity)> handler) {
-            auto it = components.find(meta::type_index<T>());
-            PHENYL_ASSERT_MSG(it != components.end(), "Failed to find component in addHandler()");
+            auto it = m_components.find(meta::type_index<T>());
+            PHENYL_ASSERT_MSG(it != m_components.end(), "Failed to find component in addHandler()");
 
             auto& component = static_cast<detail::Component<T>&>(*it->second);
             component.addHandler(std::move(handler));
@@ -141,8 +141,8 @@ namespace phenyl::core {
 
         template <typename T>
         void addHandler (std::function<void(const OnRemove<T>&, Entity)> handler) {
-            auto it = components.find(meta::type_index<T>());
-            PHENYL_ASSERT_MSG(it != components.end(), "Failed to find component in addHandler()");
+            auto it = m_components.find(meta::type_index<T>());
+            PHENYL_ASSERT_MSG(it != m_components.end(), "Failed to find component in addHandler()");
 
             auto& component = static_cast<detail::Component<T>&>(*it->second);
             component.addHandler(std::move(handler));
@@ -151,13 +151,13 @@ namespace phenyl::core {
         template <typename Signal, typename ...Args>
         void addHandler (std::function<void(const Signal&, const Bundle<Args...>& bundle)> handler) {
             detail::SignalHandlerVector<Signal>* handlerVec;
-            auto vecIt = signalHandlerVectors.find(meta::type_index<Signal>());
-            if (vecIt != signalHandlerVectors.end()) {
+            auto vecIt = m_signalHandlerVectors.find(meta::type_index<Signal>());
+            if (vecIt != m_signalHandlerVectors.end()) {
                 handlerVec = static_cast<detail::SignalHandlerVector<Signal>*>(vecIt->second.get());
             } else {
                 auto newVec = std::make_unique<detail::SignalHandlerVector<Signal>>(*this);
                 handlerVec = newVec.get();
-                signalHandlerVectors.emplace(meta::type_index<Signal>(), std::move(newVec));
+                m_signalHandlerVectors.emplace(meta::type_index<Signal>(), std::move(newVec));
             }
 
             handlerVec->addHandler(std::make_unique<detail::SignalHandler2<Signal, Args...>>(query<Args...>(), std::move(handler)));

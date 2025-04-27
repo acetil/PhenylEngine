@@ -11,11 +11,11 @@ namespace phenyl::core {
 
     class PrefabAssetManager : public core::AssetManager<Prefab> {
     private:
-        util::Map<std::size_t, std::unique_ptr<Prefab>> prefabs;
-        EntityComponentSerializer& serializer;
-        World& world;
+        util::Map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
+        EntityComponentSerializer& m_serializer;
+        World& m_world;
     public:
-        explicit PrefabAssetManager (World& world, EntityComponentSerializer& serializer) : serializer{serializer}, world{world} {}
+        explicit PrefabAssetManager (World& world, EntityComponentSerializer& serializer) : m_serializer{serializer}, m_world{world} {}
         ~PrefabAssetManager() override;
 
         Prefab* load (std::ifstream& data, std::size_t id) override;

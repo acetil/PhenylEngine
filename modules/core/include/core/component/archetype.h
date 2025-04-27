@@ -15,37 +15,37 @@
 namespace phenyl::core {
     class Archetype {
     private:
-        detail::IArchetypeManager& manager;
-        detail::ArchetypeKey key;
+        detail::IArchetypeManager& m_manager;
+        detail::ArchetypeKey m_key;
 
-        std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components;
-        std::vector<EntityId> entityIds;
+        std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> m_components;
+        std::vector<EntityId> m_entityIds;
 
-        std::unordered_map<std::size_t, Archetype*> addArchetypes;
-        std::unordered_map<std::size_t, Archetype*> removeArchetypes;
+        std::unordered_map<std::size_t, Archetype*> m_addArchetypes;
+        std::unordered_map<std::size_t, Archetype*> m_removeArchetypes;
 
         template <typename T>
         ComponentVector<std::remove_cvref_t<T>>& getComponent () {
-            PHENYL_DASSERT(components.contains(meta::type_index<std::remove_cvref_t<T>>()));
-            return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*components[meta::type_index<std::remove_cvref_t<T>>()]);
+            PHENYL_DASSERT(m_components.contains(meta::type_index<std::remove_cvref_t<T>>()));
+            return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*m_components[meta::type_index<std::remove_cvref_t<T>>()]);
         }
 
         template <typename T>
         const ComponentVector<std::remove_cvref_t<T>>& getComponent () const {
-            PHENYL_DASSERT(components.contains(meta::type_index<std::remove_cvref_t<T>>()));
-            return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*components.at(meta::type_index<std::remove_cvref_t<T>>()));
+            PHENYL_DASSERT(m_components.contains(meta::type_index<std::remove_cvref_t<T>>()));
+            return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*m_components.at(meta::type_index<std::remove_cvref_t<T>>()));
         }
 
         template <typename T>
         ComponentVector<std::remove_cvref_t<T>>* tryGetComponent () {
-            auto it = components.find(meta::type_index<std::remove_cvref_t<T>>());
-            return it != components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) : nullptr;
+            auto it = m_components.find(meta::type_index<std::remove_cvref_t<T>>());
+            return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) : nullptr;
         }
 
         template <typename T>
         const ComponentVector<std::remove_cv_t<T>>* tryGetComponent () const {
-            auto it = components.find(meta::type_index<std::remove_cvref_t<T>>());
-            return it != components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) : nullptr;
+            auto it = m_components.find(meta::type_index<std::remove_cvref_t<T>>());
+            return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) : nullptr;
         }
 
         template <typename T>
@@ -53,14 +53,14 @@ namespace phenyl::core {
             PHENYL_ASSERT(!has<T>());
 
             auto typeIndex = meta::type_index<T>();
-            auto it = addArchetypes.find(typeIndex);
-            if (it != addArchetypes.end()) {
+            auto it = m_addArchetypes.find(typeIndex);
+            if (it != m_addArchetypes.end()) {
                 return *it->second;
             }
 
-            auto* archetype = manager.findArchetype(key.with<T>());
-            addArchetypes.emplace(typeIndex, archetype);
-            archetype->removeArchetypes.emplace(typeIndex, this);
+            auto* archetype = m_manager.findArchetype(m_key.with<T>());
+            m_addArchetypes.emplace(typeIndex, archetype);
+            archetype->m_removeArchetypes.emplace(typeIndex, this);
             return *archetype;
         }
 
@@ -69,14 +69,14 @@ namespace phenyl::core {
             PHENYL_ASSERT(has<T>());
 
             auto typeIndex = meta::type_index<T>();
-            auto it = removeArchetypes.find(typeIndex);
-            if (it != removeArchetypes.end()) {
+            auto it = m_removeArchetypes.find(typeIndex);
+            if (it != m_removeArchetypes.end()) {
                 return *it->second;
             }
 
-            auto* archetype = manager.findArchetype(key.without<T>());
-            removeArchetypes.emplace(typeIndex, archetype);
-            archetype->addArchetypes.emplace(typeIndex, this);
+            auto* archetype = m_manager.findArchetype(m_key.without<T>());
+            m_removeArchetypes.emplace(typeIndex, archetype);
+            archetype->m_addArchetypes.emplace(typeIndex, this);
             return *archetype;
         }
 
@@ -85,7 +85,7 @@ namespace phenyl::core {
             ComponentVector<T>& comp = getComponent<T>();
             auto* ptr = comp.emplace(std::forward<Args>(args)...);
 
-            manager.onComponentInsert(entityIds.back(), meta::type_index<T>(), reinterpret_cast<std::byte*>(ptr));
+            m_manager.onComponentInsert(m_entityIds.back(), meta::type_index<T>(), reinterpret_cast<std::byte*>(ptr));
         }
 
         std::size_t moveFrom (Archetype& other, std::size_t pos);
@@ -102,7 +102,7 @@ namespace phenyl::core {
         Archetype (detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components);
 
         bool hasUntyped (std::size_t typeIndex) const noexcept {
-            return components.contains(typeIndex);
+            return m_components.contains(typeIndex);
         }
 
         template <typename T>
@@ -120,7 +120,7 @@ namespace phenyl::core {
         }
 
         std::size_t size () const noexcept {
-            return entityIds.size();
+            return m_entityIds.size();
         }
 
         template <typename T>
@@ -167,7 +167,7 @@ namespace phenyl::core {
                 return;
             }
 
-            manager.onComponentRemove(entityIds[pos], meta::type_index<T>(), reinterpret_cast<std::byte*>(&getComponent<T>()[pos]));
+            m_manager.onComponentRemove(m_entityIds[pos], meta::type_index<T>(), reinterpret_cast<std::byte*>(&getComponent<T>()[pos]));
             Archetype& dest = getWithout<std::remove_cvref_t<T>>();
 
             dest.moveFrom(*this, pos);
@@ -177,7 +177,7 @@ namespace phenyl::core {
         void clear ();
 
         const detail::ArchetypeKey& getKey () const noexcept {
-            return key;
+            return m_key;
         }
 
         void instantiatePrefab (const detail::PrefabFactories& factories, std::size_t pos);

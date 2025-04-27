@@ -19,8 +19,8 @@ namespace phenyl::core {
     private:
         static Logger LOGGER;
 
-        EntityId entityId;
-        World* entityWorld = nullptr;
+        EntityId m_id;
+        World* m_world = nullptr;
 
         [[nodiscard]] const detail::EntityEntry& entry () const;
         void raiseUntyped (std::size_t signalType, std::byte* ptr);
@@ -137,17 +137,17 @@ namespace phenyl::core {
         }
 
         EntityId id () const noexcept {
-            return entityId;
+            return m_id;
         }
 
         World& world () noexcept {
-            PHENYL_DASSERT(entityWorld);
-            return *entityWorld;
+            PHENYL_DASSERT(m_world);
+            return *m_world;
         }
 
         const World& world () const noexcept {
-            PHENYL_DASSERT(entityWorld);
-            return *entityWorld;
+            PHENYL_DASSERT(m_world);
+            return *m_world;
         }
 
         void addChild (Entity child);

@@ -10,8 +10,8 @@ namespace phenyl::core {
     private:
         class Iterator {
         private:
-            detail::RelationshipManager::ChildIterator it;
-            World* world = nullptr;
+            detail::RelationshipManager::ChildIterator m_it;
+            World* m_world = nullptr;
 
             Iterator (detail::RelationshipManager::ChildIterator it, World* world);
             friend ChildrenView;
@@ -28,8 +28,8 @@ namespace phenyl::core {
             bool operator== (const Iterator&) const noexcept;
         };
 
-        EntityId parentId;
-        World* world = nullptr;
+        EntityId m_parentId;
+        World* m_world = nullptr;
 
     public:
         using const_iterator = Iterator;

@@ -5,16 +5,16 @@
 namespace phenyl::core {
     struct DeltaTime : public IResource {
     private:
-        double value = 0.0;
+        double m_value = 0.0;
     public:
         DeltaTime () = default;
 
         [[nodiscard]] double operator() () const noexcept {
-            return value;
+            return m_value;
         }
 
         void set (const double value) noexcept {
-            this->value = value;
+            this->m_value = value;
         }
 
         [[nodiscard]] std::string_view getName () const noexcept override {
@@ -24,16 +24,16 @@ namespace phenyl::core {
 
     struct FixedDelta : public IResource {
     private:
-        double value = 0.0;
+        double m_value = 0.0;
     public:
         FixedDelta () = default;
 
         [[nodiscard]] double operator() () const noexcept {
-            return value;
+            return m_value;
         }
 
         void set (const double value) noexcept {
-            this->value = value;
+            this->m_value = value;
         }
 
         std::string_view getName () const noexcept override {

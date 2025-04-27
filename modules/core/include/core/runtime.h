@@ -17,56 +17,56 @@ namespace phenyl::core {
 
     class PhenylRuntime {
     private:
-        World runtimeWorld;
-        core::EntityComponentSerializer entitySerializer;
+        World m_world;
+        core::EntityComponentSerializer m_serializer;
 
-        ResourceManager resourceManager;
+        ResourceManager m_resourceManager;
 
-        util::Set<std::size_t> initPlugins;
-        util::Map<std::size_t, std::unique_ptr<IPlugin>> plugins;
+        util::Set<std::size_t> m_initPlugins;
+        util::Map<std::size_t, std::unique_ptr<IPlugin>> m_plugins;
 
-        std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> systemMap;
-        std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> stageMap;
+        std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> m_systems;
+        std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> m_stages;
 
         void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
         void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
 
         template <typename S, typename ...Args>
         System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
-            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), resourceManager);
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
             auto* ptr = system.get();
-            systemMap[ptr->getName()] = std::move(system);
+            m_systems[ptr->getName()] = std::move(system);
 
             return ptr;
         }
 
         template <typename S, typename T, typename ...Args>
         System<S>* makeSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
-            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), resourceManager);
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
             auto* ptr = system.get();
-            systemMap[ptr->getName()] = std::move(system);
+            m_systems[ptr->getName()] = std::move(system);
 
             return ptr;
         }
 
         template <typename S, typename T>
         System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)(PhenylRuntime&)) {
-            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
             auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(runtime); });
             auto* ptr = system.get();
-            systemMap[ptr->getName()] = std::move(system);
+            m_systems[ptr->getName()] = std::move(system);
 
             return ptr;
         }
 
         template <typename S, typename T>
         System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)()) {
-            PHENYL_DASSERT_MSG(!systemMap.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
             auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(); });
             auto* ptr = system.get();
-            systemMap[ptr->getName()] = std::move(system);
+            m_systems[ptr->getName()] = std::move(system);
 
             return ptr;
         }
@@ -75,8 +75,8 @@ namespace phenyl::core {
         Stage<S>* getStage () {
             auto typeIndex = meta::type_index<S>();
 
-            auto it = stageMap.find(typeIndex);
-            if (it != stageMap.end()) {
+            auto it = m_stages.find(typeIndex);
+            if (it != m_stages.end()) {
                 return static_cast<Stage<S>*>(it->second.get());
             } else {
                 return nullptr;
@@ -87,8 +87,8 @@ namespace phenyl::core {
         const Stage<S>* getStage () const {
             auto typeIndex = meta::type_index<S>();
 
-            auto it = stageMap.find(typeIndex);
-            if (it != stageMap.end()) {
+            auto it = m_stages.find(typeIndex);
+            if (it != m_stages.end()) {
                 return static_cast<Stage<S>*>(it->second.get());
             } else {
                 return nullptr;
@@ -99,7 +99,7 @@ namespace phenyl::core {
         Stage<S>* initStage (std::string name) {
             auto stage = std::make_unique<Stage<S>>(std::move(name), *this);
             auto* ptr = stage.get();
-            stageMap.emplace(ptr->id(), std::move(stage));
+            m_stages.emplace(ptr->id(), std::move(stage));
 
             return ptr;
         }
@@ -108,59 +108,59 @@ namespace phenyl::core {
         virtual ~PhenylRuntime();
 
         World& world () {
-            return runtimeWorld;
+            return m_world;
         }
         [[nodiscard]] const World& world () const {
-            return runtimeWorld;
+            return m_world;
         }
 
         core::EntityComponentSerializer& serializer () {
-            return entitySerializer;
+            return m_serializer;
         }
 
         template <std::derived_from<IResource> T>
         T& resource () {
-            return resourceManager.resource<T>();
+            return m_resourceManager.resource<T>();
         }
 
         template <std::derived_from<IResource> T>
         const T& resource () const {
-            return resourceManager.resource<T>();
+            return m_resourceManager.resource<T>();
         }
 
         template <std::derived_from<IResource> T>
         T* resourceMaybe () {
-            return resourceManager.resourceMaybe<T>();
+            return m_resourceManager.resourceMaybe<T>();
         }
 
         template <std::derived_from<IResource> T>
         const T* resourceMaybe () const {
-            return resourceManager.resourceMaybe<T>();
+            return m_resourceManager.resourceMaybe<T>();
         }
 
         template <std::derived_from<IResource> T, typename ...Args>
         void addResource (Args&&... args) requires (std::constructible_from<T, Args...>) {
-            resourceManager.addResource<T>(std::forward<Args>(args)...);
+            m_resourceManager.addResource<T>(std::forward<Args>(args)...);
         }
 
         template <std::derived_from<IResource> T>
         void addResource (T&& res) {
-            resourceManager.addResource<T>(std::forward<T>(res));
+            m_resourceManager.addResource<T>(std::forward<T>(res));
         }
 
         template <std::derived_from<IResource> T>
         void addResource (T* resource) {
-            resourceManager.addResource(resource);
+            m_resourceManager.addResource(resource);
         }
 
         ResourceManager& resources () {
-            return resourceManager;
+            return m_resourceManager;
         }
 
         template <std::derived_from<IPlugin> T>
         void addPlugin () requires std::is_default_constructible_v<T> {
             auto typeIndex = meta::type_index<T>();
-            if (plugins.contains(typeIndex)) {
+            if (m_plugins.contains(typeIndex)) {
                 // Do not add plugins twice
                 return;
             }
@@ -171,7 +171,7 @@ namespace phenyl::core {
         template <std::derived_from<IInitPlugin> T>
         void addPlugin () requires std::is_default_constructible_v<T> {
             auto typeIndex = meta::type_index<T>();
-            if (initPlugins.contains(typeIndex)) {
+            if (m_initPlugins.contains(typeIndex)) {
                 // Do not add plugins twice
                 return;
             }

@@ -10,12 +10,12 @@ namespace phenyl::core {
     private:
         static constexpr std::size_t RESIZE_FACTOR = 2;
 
-        std::size_t typeIndex;
+        std::size_t m_type;
 
-        std::unique_ptr<std::byte[]> memory;
-        std::size_t compSize;
-        std::size_t vecLength;
-        std::size_t vecCapacity;
+        std::unique_ptr<std::byte[]> m_memory;
+        std::size_t m_compSize;
+        std::size_t m_size;
+        std::size_t m_capacity;
 
         void guaranteeLength (std::size_t newLen);
 
@@ -27,19 +27,19 @@ namespace phenyl::core {
         virtual void deleteAllComps (std::byte* start, std::byte* end) = 0;
 
         std::byte* beginUntyped () {
-            return memory.get();
+            return m_memory.get();
         }
 
         [[nodiscard]] const std::byte* beginUntyped () const {
-            return memory.get();
+            return m_memory.get();
         }
 
         std::byte* endUntyped () {
-            return memory.get() + (vecLength * compSize);
+            return m_memory.get() + (m_size * m_compSize);
         }
 
         const std::byte* endUntyped () const {
-            return memory.get() + (vecLength * compSize);
+            return m_memory.get() + (m_size * m_compSize);
         }
     public:
         UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize, std::size_t startCapacity);
@@ -50,12 +50,12 @@ namespace phenyl::core {
 
         std::byte* getUntyped (std::size_t pos) {
             PHENYL_DASSERT(pos < size());
-            return memory.get() + (pos * compSize);
+            return m_memory.get() + (pos * m_compSize);
         }
 
         [[nodiscard]] const std::byte* getUntyped (std::size_t pos) const {
             PHENYL_DASSERT(pos < size());
-            return memory.get() + (pos * compSize);
+            return m_memory.get() + (pos * m_compSize);
         }
 
         std::byte* insertUntyped ();
@@ -65,15 +65,15 @@ namespace phenyl::core {
 
 
         [[nodiscard]] std::size_t type () const noexcept {
-            return typeIndex;
+            return m_type;
         }
 
         [[nodiscard]] std::size_t size () const noexcept {
-            return vecLength;
+            return m_size;
         }
 
         [[nodiscard]] std::size_t capacity () const noexcept {
-            return vecCapacity;
+            return m_capacity;
         }
 
         virtual std::unique_ptr<UntypedComponentVector> makeNew (std::size_t startCapacity = 16) const = 0;

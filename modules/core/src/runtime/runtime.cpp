@@ -13,13 +13,13 @@ using namespace phenyl::core;
 static phenyl::Logger LOGGER{"RUNTIME", phenyl::PHENYL_LOGGER};
 
 void ResourceManager::registerResource (std::size_t typeIndex, IResource* resource) {
-    PHENYL_ASSERT_MSG(!resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!", resource->getName());
+    PHENYL_ASSERT_MSG(!m_resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!", resource->getName());
 
-    resources.emplace(typeIndex, resource);
+    m_resources.emplace(typeIndex, resource);
     PHENYL_LOGI(LOGGER, "Registered resource \"{}\"", resource->getName());
 }
 
-PhenylRuntime::PhenylRuntime () : runtimeWorld{} {
+PhenylRuntime::PhenylRuntime () : m_world{} {
     PHENYL_LOGI(LOGGER, "Initialised Phenyl runtime");
     initStage<PostInit>("PostInit");
     initStage<FrameBegin>("FrameBegin");
@@ -40,22 +40,22 @@ PhenylRuntime::PhenylRuntime () : runtimeWorld{} {
 PhenylRuntime::~PhenylRuntime () = default;
 
 void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin) {
-    PHENYL_DASSERT(!plugins.contains(typeIndex));
+    PHENYL_DASSERT(!m_plugins.contains(typeIndex));
     PHENYL_TRACE(LOGGER, "Starting registration of plugin \"{}\"", plugin->getName());
 
     auto& pluginRef = *plugin;
 
-    plugins.emplace(typeIndex, std::move(plugin));
+    m_plugins.emplace(typeIndex, std::move(plugin));
 
     pluginRef.init(*this);
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", pluginRef.getName());
 }
 
 void PhenylRuntime::registerPlugin (std::size_t typeIndex, IInitPlugin& plugin) {
-    PHENYL_DASSERT(!initPlugins.contains(typeIndex));
+    PHENYL_DASSERT(!m_initPlugins.contains(typeIndex));
     PHENYL_TRACE(LOGGER, "Starting registration of init plugin \"{}\"", plugin.getName());
 
-    initPlugins.emplace(typeIndex);
+    m_initPlugins.emplace(typeIndex);
 
     plugin.init(*this);
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", plugin.getName());
@@ -95,7 +95,7 @@ void PhenylRuntime::shutdown () {
     world().clear();
 
     PHENYL_TRACE(LOGGER, "Running plugin shutdown()");
-    for (auto [_, plugin] : plugins.kv()) {
+    for (auto [_, plugin] : m_plugins.kv()) {
         PHENYL_TRACE(LOGGER, "Running shutdown() for {}", plugin->getName());
         plugin->shutdown(*this);
     }
@@ -104,5 +104,5 @@ void PhenylRuntime::shutdown () {
     //manager().clearAll(); // TODO: try to get rid of this
 
     PHENYL_TRACE(LOGGER, "Destructing plugins");
-    plugins.clear();
+    m_plugins.clear();
 }

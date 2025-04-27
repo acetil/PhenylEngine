@@ -7,83 +7,83 @@
 namespace phenyl::core {
     class Transform3D {
     private:
-        glm::vec3 transformPos{0, 0, 0};
-        glm::vec3 transformScale{1, 1, 1};
-        Quaternion transformRot{};
+        glm::vec3 m_position{0, 0, 0};
+        glm::vec3 m_scale{1, 1, 1};
+        Quaternion m_rotation{};
 
         PHENYL_SERIALIZABLE_INTRUSIVE(Transform3D)
     public:
-        explicit Transform3D (glm::vec3 pos = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}, Quaternion rotation = {}) : transformPos{pos}, transformScale{scale}, transformRot{rotation} {}
+        explicit Transform3D (glm::vec3 pos = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}, Quaternion rotation = {}) : m_position{pos}, m_scale{scale}, m_rotation{rotation} {}
 
         glm::vec3 position () const noexcept {
-            return transformPos;
+            return m_position;
         }
 
         glm::vec3 scale () const noexcept {
-            return transformScale;
+            return m_scale;
         }
 
         Quaternion rotation () const noexcept {
-            return transformRot;
+            return m_rotation;
         }
 
         Transform3D& translate (glm::vec3 delta) noexcept {
-            transformPos += delta;
+            m_position += delta;
             return *this;
         }
         Transform3D withTranslation (glm::vec3 delta) const noexcept {
-            return Transform3D{transformPos + delta, transformScale, transformRot};
+            return Transform3D{m_position + delta, m_scale, m_rotation};
         }
 
         Transform3D& setPosition (glm::vec3 newPos) noexcept {
-            transformPos = newPos;
+            m_position = newPos;
             return *this;
         }
         Transform3D withPosition (glm::vec3 newPos) const noexcept {
-            return Transform3D{newPos, transformScale, transformRot};
+            return Transform3D{newPos, m_scale, m_rotation};
         }
 
         Transform3D& scaleBy (glm::vec3 deltaScale) noexcept {
-            transformScale *= deltaScale;
+            m_scale *= deltaScale;
             return *this;
         }
         Transform3D withScaleBy (glm::vec3 deltaScale) const noexcept {
-            return Transform3D{transformPos, transformScale * deltaScale, transformRot};
+            return Transform3D{m_position, m_scale * deltaScale, m_rotation};
         }
 
         Transform3D& setScale (glm::vec3 scale) noexcept {
-            transformScale = scale;
+            m_scale = scale;
             return *this;
         }
         Transform3D withScale (glm::vec3 scale) const noexcept {
-            return Transform3D{transformPos, scale, transformRot};
+            return Transform3D{m_position, scale, m_rotation};
         }
 
         Transform3D& rotateBy (Quaternion q) noexcept {
             PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
-            transformRot = q * transformRot;
+            m_rotation = q * m_rotation;
             return *this;
         }
         Transform3D withRotateBy (Quaternion q) const noexcept {
             PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
-            return Transform3D{transformPos, transformScale, q * transformRot};
+            return Transform3D{m_position, m_scale, q * m_rotation};
         }
 
         Transform3D& setRotation (Quaternion q) noexcept {
             PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
-            transformRot = q;
+            m_rotation = q;
             return *this;
         }
         Transform3D withRotation (Quaternion q) const noexcept {
             PHENYL_DASSERT_MSG(q.normalized(), "Cannot rotate by non-normalized quaternion!");
-            return Transform3D{transformPos, transformScale, q};
+            return Transform3D{m_position, m_scale, q};
         }
 
         glm::mat4 scaleMatrix () const noexcept {
             return {
-                {transformScale.x, 0, 0, 0},
-                {0, transformScale.y, 0, 0},
-                {0, 0, transformScale.z, 0},
+                {m_scale.x, 0, 0, 0},
+                {0, m_scale.y, 0, 0},
+                {0, 0, m_scale.z, 0},
                 {0, 0, 0, 1}
             };
         }
@@ -93,7 +93,7 @@ namespace phenyl::core {
                 {1, 0, 0, 0},
                 {0, 1, 0, 0},
                 {0, 0, 1, 0},
-                {transformPos.x, transformPos.y, transformPos.z, 1}
+                {m_position.x, m_position.y, m_position.z, 1}
             };
 
             return translationMat * static_cast<glm::mat4>(rotation()) * scaleMatrix();

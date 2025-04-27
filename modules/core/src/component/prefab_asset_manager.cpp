@@ -73,7 +73,7 @@ public:
 };
 
 core::Prefab* core::PrefabAssetManager::load (std::ifstream& data, std::size_t id) {
-    PrefabSerializable serializable{world, serializer};
+    PrefabSerializable serializable{m_world, m_serializer};
 
     auto prefab = std::make_unique<Prefab>();
     try {
@@ -84,7 +84,7 @@ core::Prefab* core::PrefabAssetManager::load (std::ifstream& data, std::size_t i
     }
 
     auto* ptr = prefab.get();
-    prefabs[id] = std::move(prefab);
+    m_prefabs[id] = std::move(prefab);
 
     PHENYL_TRACE(LOGGER, "Loaded prefab {}!", id);
 
@@ -108,10 +108,10 @@ const char* core::PrefabAssetManager::getFileType () const {
 }
 
 void core::PrefabAssetManager::clear () {
-    prefabs.clear();
+    m_prefabs.clear();
 }
 
 core::Prefab* core::PrefabAssetManager::load (core::Prefab&& obj, std::size_t id) {
-    prefabs[id] = std::make_unique<core::Prefab>(std::move(obj));
-    return prefabs[id].get();
+    m_prefabs[id] = std::make_unique<core::Prefab>(std::move(obj));
+    return m_prefabs[id].get();
 }

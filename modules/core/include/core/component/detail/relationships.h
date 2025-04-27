@@ -30,9 +30,9 @@ namespace phenyl::core::detail {
 
         class ChildIterator {
         private:
-            const RelationshipManager* manager;
-            EntityId curr;
-            ChildIterator (const RelationshipManager* manager, EntityId curr) : manager{manager}, curr{curr} {}
+            const RelationshipManager* m_manager;
+            EntityId m_curr;
+            ChildIterator (const RelationshipManager* manager, EntityId curr) : m_manager{manager}, m_curr{curr} {}
 
             friend class RelationshipManager;
         public:
@@ -40,14 +40,14 @@ namespace phenyl::core::detail {
             using reference = const value_type&;
             using difference_type = std::ptrdiff_t;
 
-            ChildIterator () : manager{nullptr}, curr{} {};
+            ChildIterator () : m_manager{nullptr}, m_curr{} {};
 
             reference operator* () const {
-                return curr;
+                return m_curr;
             }
 
             ChildIterator& operator++ () {
-                curr = manager->getRelationship(curr).next;
+                m_curr = m_manager->getRelationship(m_curr).next;
                 return *this;
             }
             ChildIterator operator++ (int) {
@@ -57,20 +57,20 @@ namespace phenyl::core::detail {
             }
 
             bool operator== (const ChildIterator& other) const {
-                return manager == other.manager && curr == other.curr;
+                return m_manager == other.m_manager && m_curr == other.m_curr;
             }
         };
-        std::vector<Relationship> relationships{};
+        std::vector<Relationship> m_relationships{};
         Relationship& getRelationship (EntityId id) {
-            PHENYL_DASSERT(id.id < relationships.size());
+            PHENYL_DASSERT(id.m_id < m_relationships.size());
 
-            return relationships[id.id];
+            return m_relationships[id.m_id];
         }
 
         [[nodiscard]] const Relationship& getRelationship (EntityId id) const {
-            PHENYL_DASSERT(id.id < relationships.size());
+            PHENYL_DASSERT(id.m_id < m_relationships.size());
 
-            return relationships[id.id];
+            return m_relationships[id.m_id];
         }
 
         friend class ChildIterator;
@@ -79,14 +79,14 @@ namespace phenyl::core::detail {
         static_assert(std::forward_iterator<ChildIterator>);
 
         explicit RelationshipManager (std::size_t startCapacity) {
-            relationships.reserve(startCapacity + 1);
-            relationships.push_back(Relationship{});
+            m_relationships.reserve(startCapacity + 1);
+            m_relationships.push_back(Relationship{});
         }
 
         void add (EntityId id, EntityId parent) {
-            PHENYL_DASSERT(relationships.size() >= id.id);
-            if (relationships.size() <= id.id) {
-                relationships.push_back(Relationship{});
+            PHENYL_DASSERT(m_relationships.size() >= id.m_id);
+            if (m_relationships.size() <= id.m_id) {
+                m_relationships.push_back(Relationship{});
             }
 
             setParent(id, parent);
@@ -156,8 +156,8 @@ namespace phenyl::core::detail {
         }
 
         void reset () {
-            relationships.clear();
-            relationships.push_back(Relationship{});
+            m_relationships.clear();
+            m_relationships.push_back(Relationship{});
         }
     };
 }

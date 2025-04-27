@@ -11,11 +11,11 @@ namespace phenyl::core::detail {
     class ArchetypeKey {
     private:
         // Sorted vector of component type ids
-        std::vector<std::size_t> compIds;
+        std::vector<std::size_t> m_compIds;
 
     public:
         ArchetypeKey () = default;
-        explicit ArchetypeKey (std::vector<std::size_t> compIds) : compIds{std::move(compIds)} {}
+        explicit ArchetypeKey (std::vector<std::size_t> compIds) : m_compIds{std::move(compIds)} {}
 
         template <std::forward_iterator It, std::sentinel_for<It> S>
         explicit ArchetypeKey (It first, S last) : ArchetypeKey{std::vector<std::size_t>{first, last}} {}
@@ -31,7 +31,7 @@ namespace phenyl::core::detail {
         }
 
         [[nodiscard]] bool has (std::size_t id) const noexcept {
-            return std::ranges::binary_search(compIds, id);
+            return std::ranges::binary_search(m_compIds, id);
         }
 
         template <typename T>
@@ -41,60 +41,22 @@ namespace phenyl::core::detail {
 
         [[nodiscard]] ArchetypeKey with (std::size_t id) const {
             std::vector<std::size_t> newIds;
-            newIds.reserve(compIds.size() + 1);
-            // auto it = compIds.begin();
-            // while (it != compIds.end() && *it < id) {
-            //     newIds.emplace_back(*it);
-            //     ++it;
-            // }
-            //
-            // if (it == compIds.end() || *it > id) {
-            //     newIds.emplace_back(id);
-            // }
-            //
-            // while (it != compIds.end()) {
-            //     newIds.emplace_back(*it);
-            //     ++it;
-            // }
-            std::ranges::set_union(compIds, std::array{id}, std::back_inserter(newIds));
+            newIds.reserve(m_compIds.size() + 1);
+            std::ranges::set_union(m_compIds, std::array{id}, std::back_inserter(newIds));
             return ArchetypeKey{std::move(newIds)};
         }
 
         template <std::forward_iterator It, std::sentinel_for<It> S>
         ArchetypeKey with (It it, S last) {
             std::vector<std::size_t> newIds;
-            // auto cIt = compIds.begin();
-            // while (cIt != compIds.end() && it != last) {
-            //     if (*cIt < *it) {
-            //         newIds.emplace_back(*cIt);
-            //         ++cIt;
-            //     } else if (*it < *cIt) {
-            //         newIds.emplace_back(*it);
-            //         ++it;
-            //     } else {
-            //         newIds.emplace_back(*cIt);
-            //         ++cIt;
-            //         ++it;
-            //     }
-            // }
-            //
-            // while (cIt != compIds.end()) {
-            //     newIds.emplace_back(*cIt);
-            //     ++cIt;
-            // }
-            //
-            // while (it != last) {
-            //     newIds.emplace_back(*it);
-            //     ++it;
-            // }
-            std::set_union(compIds.begin(), compIds.end(), it, last, std::back_inserter(newIds));
+            std::set_union(m_compIds.begin(), m_compIds.end(), it, last, std::back_inserter(newIds));
             return ArchetypeKey{std::move(newIds)};
         }
 
         template <std::ranges::forward_range R>
         ArchetypeKey with (R&& range) {
             std::vector<std::size_t> newIds;
-            std::ranges::set_union(compIds, range, std::back_inserter(newIds));
+            std::ranges::set_union(m_compIds, range, std::back_inserter(newIds));
             return ArchetypeKey{std::move(newIds)};
         }
 
@@ -105,8 +67,8 @@ namespace phenyl::core::detail {
 
         [[nodiscard]] ArchetypeKey without (std::size_t id) const {
             std::vector<std::size_t> newIds;
-            newIds.reserve(compIds.size() - 1);
-            std::ranges::copy_if(compIds, std::back_inserter(newIds), [id] (auto x) { return x != id; });
+            newIds.reserve(m_compIds.size() - 1);
+            std::ranges::copy_if(m_compIds, std::back_inserter(newIds), [id] (auto x) { return x != id; });
 
             return ArchetypeKey{std::move(newIds)};
         }
@@ -118,44 +80,44 @@ namespace phenyl::core::detail {
 
         [[nodiscard]] ArchetypeKey keyUnion (const ArchetypeKey& other) const {
             std::vector<std::size_t> newIds;
-            std::ranges::set_union(compIds, other.compIds, std::back_inserter(newIds));
+            std::ranges::set_union(m_compIds, other.m_compIds, std::back_inserter(newIds));
 
             return ArchetypeKey{std::move(newIds)};
         }
 
         [[nodiscard]] ArchetypeKey keyIntersection (const ArchetypeKey& other) const {
             std::vector<std::size_t> newIds;
-            std::ranges::set_intersection(compIds, other.compIds, std::back_inserter(newIds));
+            std::ranges::set_intersection(m_compIds, other.m_compIds, std::back_inserter(newIds));
 
             return ArchetypeKey{std::move(newIds)};
         }
 
         [[nodiscard]] bool subsetOf (const ArchetypeKey& other) const noexcept {
-            return std::ranges::includes(compIds, other.compIds);
+            return std::ranges::includes(m_compIds, other.m_compIds);
         }
 
         [[nodiscard]] std::ranges::forward_range auto intersectionView (const ArchetypeKey& other) const noexcept {
-            return util::RangeIntersection{compIds, other.compIds};
+            return util::RangeIntersection{m_compIds, other.m_compIds};
         }
 
         bool operator== (const ArchetypeKey& other) const {
-            return compIds == other.compIds;
+            return m_compIds == other.m_compIds;
         }
 
         auto begin () const {
-            return compIds.begin();
+            return m_compIds.begin();
         }
 
         auto cbegin () const {
-            return compIds.cbegin();
+            return m_compIds.cbegin();
         }
 
         auto end () const {
-            return compIds.end();
+            return m_compIds.end();
         }
 
         auto cend () const {
-            return compIds.cend();
+            return m_compIds.cend();
         }
     };
 }
