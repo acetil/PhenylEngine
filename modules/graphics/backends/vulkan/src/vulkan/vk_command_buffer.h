@@ -27,6 +27,8 @@ namespace phenyl::vulkan {
 
         void doImageTransition (VkImage image, VkImageAspectFlags aspect, VkImageLayout oldLayout, VkImageLayout newLayout);
 
+        void copyBuffer (VkBuffer srcBuffer, std::size_t srcOffset, VkBuffer dstBuffer, std::size_t dstOffset, std::size_t size);
+
         void copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout, VkExtent3D imageExtent, std::uint32_t numLayers = 1);
         void copyBufferToImage (VkBuffer buffer, VkImage image, VkImageLayout layout, VkExtent3D imageExtent, std::uint32_t layer = 0);
 

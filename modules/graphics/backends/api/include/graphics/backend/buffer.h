@@ -6,6 +6,11 @@
 #include "logging/logging.h"
 
 namespace phenyl::graphics {
+    enum class BufferStorageHint {
+        STATIC,
+        DYNAMIC
+    };
+
     class IBuffer {
     public:
         virtual ~IBuffer() = default;

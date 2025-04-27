@@ -33,8 +33,8 @@ void ParticleRenderLayer::init (Renderer& renderer) {
                        .build();
 
 
-    posBuffer = renderer.makeBuffer<glm::vec2>(MAX_VERTICES);
-    colourBuffer = renderer.makeBuffer<glm::vec4>(MAX_VERTICES);
+    posBuffer = renderer.makeBuffer<glm::vec2>(MAX_VERTICES, BufferStorageHint::DYNAMIC);
+    colourBuffer = renderer.makeBuffer<glm::vec4>(MAX_VERTICES, BufferStorageHint::DYNAMIC);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     pipeline.bindBuffer(posBinding, posBuffer);

@@ -48,8 +48,8 @@ void EntityRenderLayer::init (Renderer& renderer) {
            .withSampler2D(shader->samplerLocation("textureSampler").value(), samplerBinding)
            .build();
 
-    vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE);
-    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, true);
+    vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, BufferStorageHint::DYNAMIC, true);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     pipeline.bindIndexBuffer(indices);

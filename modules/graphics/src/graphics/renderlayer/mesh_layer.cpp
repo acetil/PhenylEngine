@@ -26,7 +26,7 @@ void MeshRenderLayer::init (Renderer& renderer) {
         .borderColor = TextureBorderColor::WHITE
     }, 512, 512);
 
-    instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
+    instanceBuffer = renderer.makeBuffer<glm::mat4>(512, BufferStorageHint::DYNAMIC);
     globalUniform = renderer.makeUniformBuffer<MeshGlobalUniform>();
     bpLights = renderer.makeUniformArrayBuffer<BPLightUniform>();
 
@@ -42,7 +42,7 @@ void MeshRenderLayer::init (Renderer& renderer) {
         .withSampler2D(ppShader->samplerLocation("frameBuffer").value(), ppSampler)
         .build();
 
-    ppQuad = renderer.makeBuffer<glm::vec2>(6);
+    ppQuad = renderer.makeBuffer<glm::vec2>(6, BufferStorageHint::STATIC);
     ppQuad.emplace(-1, -1);
     ppQuad.emplace(1, -1);
     ppQuad.emplace(1, 1);

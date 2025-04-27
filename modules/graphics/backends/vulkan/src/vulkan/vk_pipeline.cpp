@@ -41,7 +41,7 @@ VulkanPipeline::VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineF
 void VulkanPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer,
                                  std::size_t offset) {
     std::size_t index = binding;
-    const auto* storageBuffer = reinterpret_cast<const VulkanStorageBuffer*>(&buffer);
+    const auto* storageBuffer = reinterpret_cast<const IVulkanStorageBuffer*>(&buffer);
     PHENYL_ASSERT_MSG(index < vertexBindingTypes.size(), "Attempted to bind to invalid binding!");
     PHENYL_ASSERT_MSG(type == vertexBindingTypes[index], "Attempted to bind buffer with incorrect type!");
 
@@ -50,7 +50,7 @@ void VulkanPipeline::bindBuffer (std::size_t type, BufferBinding binding, const 
 }
 
 void VulkanPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
-    const auto* storageBuffer = reinterpret_cast<const VulkanStorageBuffer*>(&buffer);
+    const auto* storageBuffer = reinterpret_cast<const IVulkanStorageBuffer*>(&buffer);
 
     indexBuffer = storageBuffer;
     indexBufferType = GetIndexType(type);
@@ -223,7 +223,7 @@ void VulkanPipeline::prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffe
     cmd.setPipeline(pipelineFactory->get(frameBuffer.layout()), frameBuffer.viewport(), frameBuffer.scissor());
 
     boundVkBuffers = boundVertexBuffers
-        | std::views::transform(&VulkanStorageBuffer::getBuffer)
+        | std::views::transform(&IVulkanStorageBuffer::getBuffer)
         | std::ranges::to<std::vector>();
     cmd.bindVertexBuffers(boundVkBuffers, vertexBufferOffsets);
 

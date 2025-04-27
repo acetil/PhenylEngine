@@ -25,9 +25,6 @@ namespace phenyl::vulkan {
     private:
         static void VulkanWindowHints () {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-            // TODO
-            //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         }
     public:
         explicit VulkanViewport (const GraphicsProperties& properties) : GLFWViewport{properties, VulkanWindowHints} {}
@@ -118,21 +115,11 @@ void VulkanRenderer::render () {
     }
 
     auto& frameSync = frameManager->getFrameSync();
-
-    // auto commandBuffer = frameManager->getCommandPool().getBuffer();
-    // {
-    //     //testPipeline->renderTest(recorder, swapChain->getViewport(), swapChain->getScissor(), 3);
-    //
-    //     // TODO
-    //     framebuffer.renderingRecorder = &commandBuffer;
-    //     framebuffer.descriptorPool = &frameManager->getDescriptorPool();
-    //     layerRender();
-    // }
-
     auto commandBuffer = frameManager->getCommandPool().getBuffer();
 
     framebuffer.renderingRecorder = &commandBuffer;
     framebuffer.descriptorPool = &frameManager->getDescriptorPool();
+
     layerRender();
 
     windowFrameBuffer->doPresentTransition(commandBuffer);
@@ -161,19 +148,15 @@ std::string_view VulkanRenderer::getName () const noexcept {
     return "VulkanRenderer";
 }
 
-VulkanBuffer VulkanRenderer::makeBuffer (std::size_t size, bool isStorage, bool isIndex) {
-    VkBufferUsageFlags usage;
-    if (isStorage) {
-        usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | (isIndex ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    } else {
-        usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) {
+    switch (storageHint) {
+        case BufferStorageHint::STATIC:
+            return std::make_unique<VulkanStaticStorageBuffer>(*resources, *transferManager, isIndex);
+        case BufferStorageHint::DYNAMIC:
+            return std::make_unique<VulkanStorageBuffer>(*resources, startCapacity, isIndex);
     }
 
-    return VulkanBuffer{*resources, usage, size};
-}
-
-std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) {
-    return std::make_unique<VulkanStorageBuffer>(*this, startCapacity, isIndex);
+    PHENYL_ABORT("Unexpected storage hint: {}", static_cast<std::uint32_t>(storageHint));
 }
 
 std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool readable) {

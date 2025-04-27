@@ -215,19 +215,19 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
         }
     }
 
-    auto vertexBuffer = renderer.makeRawBuffer(stride, numVertices);
+    auto vertexBuffer = renderer.makeRawBuffer(stride, numVertices, BufferStorageHint::STATIC);
     vertexBuffer.upload(data.get(), stride * numVertices);
     layout.streamStrides = std::vector{stride};
 
     RawBuffer indexBuffer;
     if (numVertices <= std::numeric_limits<std::uint16_t>::max()) {
         std::vector<std::uint16_t> vec{indices.begin(), indices.end()};
-        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size(), true);
+        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size(), BufferStorageHint::STATIC, true);
         indexBuffer.upload(reinterpret_cast<std::byte*>(vec.data()), vec.size() * sizeof(std::uint16_t));
 
         layout.indexType = ShaderIndexType::USHORT;
     } else {
-        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), indices.size());
+        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), indices.size(), BufferStorageHint::STATIC, true);
         indexBuffer.upload(reinterpret_cast<std::byte*>(indices.data()), indices.size() * sizeof(std::uint32_t));
 
         layout.indexType = ShaderIndexType::UINT;

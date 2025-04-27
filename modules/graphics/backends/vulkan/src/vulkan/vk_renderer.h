@@ -53,7 +53,7 @@ namespace phenyl::vulkan {
         void setupDebugMessenger ();
         void destroyDebugMessenger ();
     protected:
-        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) override;
+        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) override;
         std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
         std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (const graphics::TextureProperties& properties) override;
         std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture (const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
@@ -72,8 +72,5 @@ namespace phenyl::vulkan {
         graphics::Viewport& getViewport () override;
         const graphics::Viewport& getViewport() const override;
         std::string_view getName() const noexcept override;
-
-        // TODO: abstract away
-        VulkanBuffer makeBuffer (std::size_t size, bool isStorage, bool isIndex = false);
     };
 }

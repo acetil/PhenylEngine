@@ -2,9 +2,11 @@
 
 using namespace phenyl::vulkan;
 
-VulkanStorageBuffer::VulkanStorageBuffer (VulkanRenderer& renderer, std::size_t newSize, bool isIndex) : renderer{renderer}, currSize{newSize}, capacity{newSize}, isIndex{isIndex} {
+static VkBufferUsageFlags GetUsage (bool isIndex);
+
+VulkanStorageBuffer::VulkanStorageBuffer (VulkanResources& resources, std::size_t newSize, bool isIndex) : resources{resources}, currSize{newSize}, capacity{newSize}, isIndex{isIndex} {
     if (currSize > 0) {
-        buffer = std::make_unique<VulkanBuffer>(renderer.makeBuffer(newSize, true, isIndex));
+        buffer = VulkanBuffer{resources, GetUsage(isIndex), capacity};
     }
 }
 
@@ -14,21 +16,30 @@ void VulkanStorageBuffer::upload (unsigned char* data, std::size_t size) {
         return;
     }
 
-    if (!buffer) {
-        buffer = std::make_unique<VulkanBuffer>(renderer.makeBuffer(size, true, isIndex));
-        capacity = size;
-    } else if (size > capacity) {
-        // TODO
-        *buffer = renderer.makeBuffer(size, true, isIndex);
+    if (!buffer || size > capacity) {
+        buffer = VulkanBuffer{resources, GetUsage(isIndex), size};
         capacity = size;
     }
 
     if (data) {
-        buffer->copyIn(reinterpret_cast<std::byte*>(data), size);
+        buffer.copyIn(reinterpret_cast<std::byte*>(data), size);
     }
     currSize = size;
 }
 
-VkBuffer VulkanStorageBuffer::getBuffer () const {
-    return buffer ? buffer->get() : nullptr;
+VkBuffer VulkanStorageBuffer::getBuffer () const noexcept {
+    return buffer ? buffer.get() : nullptr;
+}
+
+VulkanStaticStorageBuffer::VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex) : resources{resources}, transferManager{transferManager}, isIndex{isIndex} {}
+
+void VulkanStaticStorageBuffer::upload (unsigned char* data, std::size_t size) {
+    buffer = VulkanStaticBuffer{resources, transferManager, GetUsage(isIndex), std::span{reinterpret_cast<std::byte*>(data), size}};
+}
+
+static VkBufferUsageFlags GetUsage (bool isIndex) {
+    VkBufferUsageFlags usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    usage |= isIndex ? VK_BUFFER_USAGE_INDEX_BUFFER_BIT : VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    return usage;
 }

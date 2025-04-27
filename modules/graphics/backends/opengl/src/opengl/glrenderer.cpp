@@ -139,8 +139,18 @@ void GLRenderer::setupErrorHandling () {
     }, nullptr);
 }
 
-std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) {
-    return std::make_unique<GlBuffer>(startCapacity, elementSize);
+std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) {
+    GLenum usage = 0;
+    switch (storageHint) {
+        case BufferStorageHint::STATIC:
+            usage = GL_STATIC_DRAW;
+            break;
+        case BufferStorageHint::DYNAMIC:
+            usage = GL_DYNAMIC_DRAW;
+            break;
+    }
+
+    return std::make_unique<GlBuffer>(startCapacity, elementSize, usage);
 }
 
 PipelineBuilder GLRenderer::buildPipeline () {

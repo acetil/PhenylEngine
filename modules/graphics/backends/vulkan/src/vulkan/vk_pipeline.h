@@ -15,7 +15,7 @@ namespace phenyl::vulkan {
         VulkanDescriptorPool* descriptorPool;
     };
 
-    class VulkanStorageBuffer;
+    class IVulkanStorageBuffer;
     class VulkanWindowFrameBuffer;
 
     class VulkanPipelineFactory {
@@ -69,11 +69,11 @@ namespace phenyl::vulkan {
 
         std::vector<std::size_t> vertexBindingTypes;
 
-        std::vector<const VulkanStorageBuffer*> boundVertexBuffers;
+        std::vector<const IVulkanStorageBuffer*> boundVertexBuffers;
         std::vector<VkBuffer> boundVkBuffers;
         std::vector<VkDeviceSize> vertexBufferOffsets;
 
-        const VulkanStorageBuffer* indexBuffer = nullptr;
+        const IVulkanStorageBuffer* indexBuffer = nullptr;
         VkIndexType indexBufferType;
 
         void prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffer& frameBuffer);

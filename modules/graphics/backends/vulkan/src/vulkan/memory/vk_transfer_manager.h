@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "../vk_command_buffer.h"
+#include "vulkan/vk_command_buffer.h"
 
 namespace phenyl::vulkan {
     class TransferManager {

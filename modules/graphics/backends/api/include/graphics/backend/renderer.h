@@ -28,7 +28,7 @@ namespace phenyl::graphics {
     private:
         std::vector<std::unique_ptr<AbstractRenderLayer>> layers;
     protected:
-        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, bool isIndex) = 0;
+        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, BufferStorageHint storageHint, bool isIndex) = 0;
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
         virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
         virtual std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
@@ -56,12 +56,12 @@ namespace phenyl::graphics {
         virtual const Viewport& getViewport () const = 0;
 
         template <typename T>
-        Buffer<T> makeBuffer (std::size_t capacity, bool isIndex = false) {
-            return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity, sizeof(T), isIndex));
+        Buffer<T> makeBuffer (std::size_t capacity, BufferStorageHint storageHint, bool isIndex = false) {
+            return Buffer<T>(makeRendererBuffer(sizeof(T) * capacity, sizeof(T), storageHint, isIndex));
         }
 
-        RawBuffer makeRawBuffer (std::size_t stride, std::size_t capacity, bool isIndex = false) {
-            return RawBuffer{makeRendererBuffer(capacity * stride, stride, isIndex)};
+        RawBuffer makeRawBuffer (std::size_t stride, std::size_t capacity, BufferStorageHint storageHint, bool isIndex = false) {
+            return RawBuffer{makeRendererBuffer(capacity * stride, stride, storageHint, isIndex)};
         }
 
         template <typename T, typename ...Args>

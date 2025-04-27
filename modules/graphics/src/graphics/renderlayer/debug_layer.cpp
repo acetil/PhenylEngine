@@ -65,10 +65,10 @@ std::string_view DebugLayer::getName () const {
 
 void DebugLayer::init (Renderer& renderer) {
     auto shader = core::Assets::Load<Shader>("phenyl/shaders/debug");
-    boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
-    boxColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
-    linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
-    lineColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
+    boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    boxColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    lineColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     BufferBinding posBinding;

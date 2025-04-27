@@ -155,8 +155,29 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageAspectFlags 
     vkCmdPipelineBarrier2(commandBuffer, &depInfo);
 }
 
+void VulkanCommandBuffer2::copyBuffer (VkBuffer srcBuffer, std::size_t srcOffset, VkBuffer dstBuffer, std::size_t dstOffset, std::size_t size) {
+    PHENYL_ASSERT(commandBuffer);
+
+    VkBufferCopy2 region{
+        .sType = VK_STRUCTURE_TYPE_BUFFER_COPY_2,
+        .srcOffset = static_cast<VkDeviceSize>(srcOffset),
+        .dstOffset = static_cast<VkDeviceSize>(dstOffset),
+        .size = static_cast<VkDeviceSize>(size)
+    };
+
+    VkCopyBufferInfo2 info{
+        .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2,
+        .srcBuffer = srcBuffer,
+        .dstBuffer = dstBuffer,
+        .regionCount = 1,
+        .pRegions = &region
+    };
+
+    vkCmdCopyBuffer2(commandBuffer, &info);
+}
+
 void VulkanCommandBuffer2::copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout,
-    VkExtent3D imageExtent, std::uint32_t numLayers) {
+                                      VkExtent3D imageExtent, std::uint32_t numLayers) {
     PHENYL_ASSERT(commandBuffer);
     VkImageCopy2 region{
         .sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2,
