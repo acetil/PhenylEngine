@@ -5,8 +5,6 @@
 #include "bullet.h"
 #include "game/test_app.h"
 
-
-
 using namespace phenyl;
 
 namespace test {
@@ -15,7 +13,7 @@ namespace test {
     )
 }
 
-void test::InitBullet (TestApp* app, phenyl::World& world) {
+void test::InitBullet (TestApp* app, World& world) {
     app->addComponent<Bullet>("Bullet");
 
     world.addHandler<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D>([] (const physics::OnCollision& signal, const phenyl::Bundle<Bullet, const phenyl::GlobalTransform2D>& bundle) {

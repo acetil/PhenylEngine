@@ -20,14 +20,14 @@
 
 class ModelViewer : public phenyl::Application3D {
 private:
-    std::vector<phenyl::Entity> entities;
-    std::vector<float> rotationSpeeds;
-    glm::vec3 axis{};
-    float remainingTime = 3.0f;
+    std::vector<phenyl::Entity> m_entities;
+    std::vector<float> m_rotationSpeeds;
+    glm::vec3 m_axis{};
+    float m_remainingTime = 3.0f;
 
-    phenyl::Axis2DInput cameraControl;
-    phenyl::InputAction zoomIn;
-    phenyl::InputAction zoomOut;
+    phenyl::Axis2DInput m_cameraControl;
+    phenyl::InputAction m_zoomIn;
+    phenyl::InputAction m_zoomOut;
 public:
     explicit ModelViewer (phenyl::ApplicationProperties properties) : Application{std::move(properties)} {}
 
@@ -36,27 +36,27 @@ public:
     }
 
     void scene1 () {
-        entities.emplace_back(runtime().world().create());
+        m_entities.emplace_back(runtime().world().create());
 
-        entities.back().insert(phenyl::GlobalTransform3D{
+        m_entities.back().insert(phenyl::GlobalTransform3D{
             .transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f})
         });
-        entities.back().insert(phenyl::MeshRenderer3D{
+        m_entities.back().insert(phenyl::MeshRenderer3D{
             //.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj")
             .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj"),
             .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")
         });
-        rotationSpeeds.emplace_back(60.0f * std::numbers::pi / 180);
+        m_rotationSpeeds.emplace_back(60.0f * std::numbers::pi / 180);
 
-        entities.emplace_back(runtime().world().create());
-        entities.back().insert(phenyl::GlobalTransform3D{
+        m_entities.emplace_back(runtime().world().create());
+        m_entities.back().insert(phenyl::GlobalTransform3D{
             .transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f}).translate(glm::vec3{0.8f, 0, -0.0f})
         });
-        entities.back().insert(phenyl::MeshRenderer3D{
+        m_entities.back().insert(phenyl::MeshRenderer3D{
             .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
             .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
         });
-        rotationSpeeds.emplace_back(-90.0f * std::numbers::pi / 180);
+        m_rotationSpeeds.emplace_back(-90.0f * std::numbers::pi / 180);
 
         // auto light1 = runtime().world().create();
         // light1.insert(phenyl::GlobalTransform3D{
@@ -206,9 +206,9 @@ public:
         scene2();
 
         auto& input = runtime().resource<phenyl::GameInput>();
-        cameraControl = input.addAxis2D("camera_control", true);
-        zoomIn = input.addAction("zoom_in");
-        zoomOut = input.addAction("zoom_out");
+        m_cameraControl = input.addAxis2D("camera_control", true);
+        m_zoomIn = input.addAction("zoom_in");
+        m_zoomOut = input.addAction("zoom_out");
 
         input.addButtonAxis2DBinding("camera_control", "keyboard.key_a", glm::vec2{-1, 0});
         input.addButtonAxis2DBinding("camera_control", "keyboard.key_d", glm::vec2{1, 0});
@@ -223,13 +223,13 @@ public:
     void rotate () {
         const auto& deltaTime = runtime().resource<phenyl::DeltaTime>();
 
-        for (std::size_t i = 0; i < entities.size(); i++) {
-            entities[i].get<phenyl::GlobalTransform3D>()->transform
-                .rotateBy(phenyl::Quaternion::Rotation(axis, static_cast<float>(rotationSpeeds[i] * deltaTime())));
+        for (std::size_t i = 0; i < m_entities.size(); i++) {
+            m_entities[i].get<phenyl::GlobalTransform3D>()->transform
+                .rotateBy(phenyl::Quaternion::Rotation(m_axis, static_cast<float>(m_rotationSpeeds[i] * deltaTime())));
         }
 
-        remainingTime -= deltaTime();
-        if (remainingTime <= 0.0f) {
+        m_remainingTime -= deltaTime();
+        if (m_remainingTime <= 0.0f) {
             chooseAxis();
         }
     }
@@ -241,17 +241,17 @@ public:
         glm::vec2 axisSpeed = {20.0f, -10.0f};
 
         glm::vec3 zoom{};
-        if (zoomIn.value()) {
+        if (m_zoomIn.value()) {
             zoom += camera.transform.rotation() * glm::vec3{0, 0, -1};
         }
 
-        if (zoomOut.value()) {
+        if (m_zoomOut.value()) {
             zoom += camera.transform.rotation() * glm::vec3{0, 0, 1};
         }
 
         zoom *= 10.0f;
 
-        auto vec = camera.transform.rotation() * glm::vec3{cameraControl.value() * axisSpeed, 0.0f};
+        auto vec = camera.transform.rotation() * glm::vec3{m_cameraControl.value() * axisSpeed, 0.0f};
 
         camera.transform.translate((vec + zoom) * static_cast<float>(deltaTime()));
         camera.lookAt({0, 0, 0});
@@ -263,8 +263,8 @@ public:
         auto y = phenyl::util::Random::Rand(-remaining, remaining);
         auto z = std::sqrt(1.0f - x * x - y * y);
 
-        axis = glm::normalize(glm::vec3{x, y, z});
-        remainingTime = 2.5f;
+        m_axis = glm::normalize(glm::vec3{x, y, z});
+        m_remainingTime = 2.5f;
     }
 };
 

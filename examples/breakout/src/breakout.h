@@ -8,13 +8,13 @@
 namespace breakout {
     class BreakoutApp : public phenyl::Application2D {
     private:
-        int totalPoints = 0;
-        int lives;
+        int m_totalPoints = 0;
+        int m_lives;
         // phenyl::ui::Label pointsLabel;
         // phenyl::ui::Label livesLabel;
-        phenyl::ui::LabelWidget* pointsLabel = nullptr;
-        phenyl::ui::LabelWidget* livesLabel = nullptr;
-        phenyl::Asset<phenyl::Prefab> tilePrefab;
+        phenyl::ui::LabelWidget* m_pointsLabel = nullptr;
+        phenyl::ui::LabelWidget* m_livesLabel = nullptr;
+        phenyl::Asset<phenyl::Prefab> m_tilePrefab;
 
         void init () override;
         void postInit() override;

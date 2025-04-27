@@ -14,25 +14,25 @@ namespace test {
     class TestApp : public phenyl::Application2D {
     private:
         // std::vector<phenyl::ui::Label> extraLabels;
-        std::vector<phenyl::ui::Widget*> extraWidgets;
+        std::vector<phenyl::ui::Widget*> m_extraWidgets;
         // phenyl::ui::Label label{"label"};
         // phenyl::ui::Flexbox flexBoxC{"flex_box"};
 
-        phenyl::ui::ColumnWidget* column = nullptr;
+        phenyl::ui::ColumnWidget* m_column = nullptr;
 
-        phenyl::ui::ButtonWidget* button1 = nullptr;
-        phenyl::ui::ButtonWidget* button2 = nullptr;
+        phenyl::ui::ButtonWidget* m_button1 = nullptr;
+        phenyl::ui::ButtonWidget* m_button2 = nullptr;
 
-        phenyl::InputAction stepAction;
-        phenyl::InputAction consoleAction;
-        phenyl::Asset<phenyl::Font> testFont;
+        phenyl::InputAction m_stepAction;
+        phenyl::InputAction m_consoleAction;
+        phenyl::Asset<phenyl::Font> m_testFont;
 
-        int numPresses = 0;
-        bool isButtonDown = false;
-        bool isButtonDown2 = false;
-        int resumeFrames = 0;
-        bool isStepping = false;
-        bool stepDown = false;
+        int m_numPresses = 0;
+        bool m_isButtonDown = false;
+        bool m_isButtonDown2 = false;
+        int m_resumeFrames = 0;
+        bool m_isStepping = false;
+        bool m_stepDown = false;
 
         void addLabel ();
         void removeLabel ();
