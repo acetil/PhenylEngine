@@ -15,9 +15,9 @@ namespace phenyl::game {
     class Level : public core::IAssetType<Level> {
     private:
         //std::vector<detail::LevelEntity> entities;
-        std::ifstream file;
-        std::ifstream::pos_type startPos;
-        LevelManager& manager;
+        std::ifstream m_file;
+        std::ifstream::pos_type m_startPos;
+        LevelManager& m_manager;
 
         Level (std::ifstream file, LevelManager& manager);
 

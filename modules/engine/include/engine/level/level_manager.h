@@ -15,12 +15,12 @@ namespace phenyl::game {
     // TODO: manager interface
     class LevelManager : public core::AssetManager<Level>, public core::IResource {
     private:
-        util::Map<std::size_t, std::unique_ptr<Level>> levels;
-        core::World& world;
-        core::EntityComponentSerializer& serializer;
+        util::Map<std::size_t, std::unique_ptr<Level>> m_levels;
+        core::World& m_world;
+        core::EntityComponentSerializer& m_serializer;
 
-        std::vector<core::Asset<Level>> queuedLoads;
-        bool queuedClear = false;
+        std::vector<core::Asset<Level>> m_queuedLoads;
+        bool m_queuedClear = false;
 
         void queueUnload(std::size_t id) override;
         [[nodiscard]] const char* getFileType() const override;
