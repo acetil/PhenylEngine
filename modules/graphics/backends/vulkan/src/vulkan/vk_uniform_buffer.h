@@ -18,7 +18,7 @@ namespace phenyl::vulkan {
 
     public:
         VulkanUniformBuffer (VulkanResources& resources);
-        unsigned char* allocate (std::size_t size) override;
+        std::span<std::byte> allocate (std::size_t size) override;
         void upload () override;
         bool isReadable () const override;
         std::size_t getMinAlignment () const noexcept override;

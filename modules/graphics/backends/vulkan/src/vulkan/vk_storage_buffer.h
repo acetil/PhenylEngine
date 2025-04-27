@@ -22,7 +22,7 @@ namespace phenyl::vulkan {
     public:
         VulkanStorageBuffer (VulkanResources& resources, std::size_t size, bool isIndex);
 
-        void upload (unsigned char* data, std::size_t size) override;
+        void upload (std::span<const std::byte> data) override;
         std::size_t size () const noexcept {
             return currSize;
         }
@@ -40,7 +40,7 @@ namespace phenyl::vulkan {
     public:
         VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex);
 
-        void upload (unsigned char* data, std::size_t size) override;
+        void upload (std::span<const std::byte> data) override;
 
         std::size_t size () const noexcept {
             return buffer.size();

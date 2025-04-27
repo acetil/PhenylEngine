@@ -48,11 +48,11 @@ void GlBuffer::ensureCapacity (std::size_t requiredCapacity) {
     PHENYL_TRACE(LOGGER, "Resized buffer buffer id={} to {}", bufferId, capacity);
 }
 
-void GlBuffer::upload (unsigned char* data, std::size_t size) {
-    ensureCapacity(size);
+void GlBuffer::upload (std::span<const std::byte> data) {
+    ensureCapacity(data.size());
 
-    PHENYL_TRACE(LOGGER, "Uploading {} bytes to buffer id={}", size, bufferId);
-    glNamedBufferSubData(bufferId, 0, static_cast<GLsizeiptr>(size), data);
+    PHENYL_TRACE(LOGGER, "Uploading {} bytes to buffer id={}", data.size(), bufferId);
+    glNamedBufferSubData(bufferId, 0, static_cast<GLsizeiptr>(data.size()), data.data());
 }
 
 void GlBuffer::bind () const {

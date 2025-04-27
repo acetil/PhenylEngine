@@ -10,7 +10,7 @@ namespace phenyl::graphics {
     public:
         virtual ~IUniformBuffer() = default;
 
-        virtual unsigned char* allocate (std::size_t size) = 0;
+        virtual std::span<std::byte> allocate (std::size_t size) = 0;
         virtual void upload () = 0;
         virtual bool isReadable () const = 0;
         virtual std::size_t getMinAlignment () const noexcept = 0;
@@ -27,7 +27,7 @@ namespace phenyl::graphics {
         template <typename ...Args>
         explicit UniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, Args&&... args) requires (std::constructible_from<T, Args&&...>) : rendererBuffer{std::move(rendererBuffer)} {
             PHENYL_DASSERT(this->rendererBuffer);
-            data = reinterpret_cast<T*>(this->rendererBuffer->allocate(sizeof(T)));
+            data = reinterpret_cast<T*>(this->rendererBuffer->allocate(sizeof(T)).data());
             T t{std::forward<Args>(args)...};
             new (data) T(std::move(t));
         }
@@ -105,7 +105,7 @@ namespace phenyl::graphics {
                 currCapacity *= 2;
             }
 
-            data =  reinterpret_cast<std::byte*>(this->rendererBuffer->allocate(objStride * currCapacity));
+            data = this->rendererBuffer->allocate(objStride * currCapacity).data();
         }
 
         T* get (std::size_t index) {
@@ -120,7 +120,7 @@ namespace phenyl::graphics {
             auto strideMask = this->rendererBuffer->getMinAlignment() - 1;
             objStride = (sizeof(T) + strideMask) & ~strideMask;
 
-            data = reinterpret_cast<std::byte*>(this->rendererBuffer->allocate(objStride * currCapacity));
+            data = this->rendererBuffer->allocate(objStride * currCapacity).data();
         }
 
         explicit operator bool () const {
@@ -187,13 +187,12 @@ namespace phenyl::graphics {
     class RawUniformBuffer {
     private:
         std::unique_ptr<IUniformBuffer> rendererBuffer;
-        std::byte* bufData;
-        std::size_t bufSize;
+        std::span<std::byte> bufData;
     public:
         RawUniformBuffer () = default;
 
-        RawUniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t size) : rendererBuffer{std::move(rendererBuffer)}, bufSize{size} {
-            bufData = reinterpret_cast<std::byte*>(this->rendererBuffer->allocate(size));
+        RawUniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t size) : rendererBuffer{std::move(rendererBuffer)} {
+            bufData = this->rendererBuffer->allocate(size);
         }
 
         explicit operator bool () const noexcept {
@@ -201,15 +200,15 @@ namespace phenyl::graphics {
         }
 
         std::byte* data () noexcept {
-            return bufData;
+            return bufData.data();
         }
 
         const std::byte* data () const noexcept {
-            return bufData;
+            return bufData.data();
         }
 
         std::size_t size () const noexcept {
-            return bufSize;
+            return bufData.size();
         }
 
         [[nodiscard]] bool readable () const {

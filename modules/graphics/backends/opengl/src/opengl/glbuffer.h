@@ -23,7 +23,7 @@ namespace phenyl::opengl {
 
         ~GlBuffer() override;
 
-        void upload(unsigned char* data, std::size_t size) override;
+        void upload (std::span<const std::byte> data) override;
 
         void bind () const;
 

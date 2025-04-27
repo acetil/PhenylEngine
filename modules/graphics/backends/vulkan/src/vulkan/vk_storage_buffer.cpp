@@ -10,21 +10,19 @@ VulkanStorageBuffer::VulkanStorageBuffer (VulkanResources& resources, std::size_
     }
 }
 
-void VulkanStorageBuffer::upload (unsigned char* data, std::size_t size) {
-    if (size == 0) {
+void VulkanStorageBuffer::upload (std::span<const std::byte> data) {
+    if (data.empty()) {
         currSize = 0;
         return;
     }
 
-    if (!buffer || size > capacity) {
-        buffer = VulkanBuffer{resources, GetUsage(isIndex), size};
-        capacity = size;
+    if (!buffer || data.size() > capacity) {
+        buffer = VulkanBuffer{resources, GetUsage(isIndex), data.size()};
+        capacity = data.size();
     }
 
-    if (data) {
-        buffer.copyIn(reinterpret_cast<std::byte*>(data), size);
-    }
-    currSize = size;
+    buffer.copyIn(data);
+    currSize = data.size();
 }
 
 VkBuffer VulkanStorageBuffer::getBuffer () const noexcept {
@@ -33,8 +31,13 @@ VkBuffer VulkanStorageBuffer::getBuffer () const noexcept {
 
 VulkanStaticStorageBuffer::VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex) : resources{resources}, transferManager{transferManager}, isIndex{isIndex} {}
 
-void VulkanStaticStorageBuffer::upload (unsigned char* data, std::size_t size) {
-    buffer = VulkanStaticBuffer{resources, transferManager, GetUsage(isIndex), std::span{reinterpret_cast<std::byte*>(data), size}};
+void VulkanStaticStorageBuffer::upload (std::span<const std::byte> data) {
+    if (data.empty()) {
+        buffer = VulkanStaticBuffer{};
+        return;
+    }
+
+    buffer = VulkanStaticBuffer{resources, transferManager, GetUsage(isIndex), data};
 }
 
 static VkBufferUsageFlags GetUsage (bool isIndex) {

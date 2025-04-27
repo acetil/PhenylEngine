@@ -15,7 +15,7 @@ namespace phenyl::graphics {
     public:
         virtual ~IBuffer() = default;
 
-        virtual void upload (unsigned char* data, std::size_t size) = 0;
+        virtual void upload (std::span<const std::byte> data) = 0;
     };
 
     template <typename T>
@@ -58,7 +58,7 @@ namespace phenyl::graphics {
         }
 
         void upload () {
-            rendererBuffer->upload(reinterpret_cast<unsigned char*>(data.data()), data.size() * sizeof(T));
+            rendererBuffer->upload(std::as_bytes(std::span{data}));
         }
 
         IBuffer& getUnderlying () {
@@ -90,9 +90,9 @@ namespace phenyl::graphics {
             return static_cast<bool>(rendererBuffer);
         }
 
-        void upload (std::byte* data, std::size_t size) {
-            rendererBuffer->upload(reinterpret_cast<unsigned char*>(data), size);
-            this->bufSize = size;
+        void upload (std::span<const std::byte> data) {
+            rendererBuffer->upload(data);
+            this->bufSize = data.size();
         }
 
         std::size_t size () const noexcept {

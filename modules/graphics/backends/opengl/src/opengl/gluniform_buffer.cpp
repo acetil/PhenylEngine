@@ -3,18 +3,17 @@
 
 using namespace phenyl::opengl;
 
-GlUniformBuffer::GlUniformBuffer (bool readable) : bufferId{}, data{nullptr}, size{0}, readable{readable} {
+GlUniformBuffer::GlUniformBuffer (bool readable) : bufferId{}, readable{readable} {
     glCreateBuffers(1, &bufferId);
 }
 
-GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept : bufferId{other.bufferId}, data{other.data}, size{other.size}, readable{other.readable} {
+GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept : bufferId{other.bufferId}, data{other.data}, readable{other.readable} {
     other.bufferId = 0;
-    other.data = nullptr;
-    other.size = 0;
+    other.data = {};
 }
 
 GlUniformBuffer& GlUniformBuffer::operator= (GlUniformBuffer&& other) noexcept {
-    if (data) {
+    if (!data.empty()) {
         glUnmapBuffer(bufferId);
     }
 
@@ -24,12 +23,10 @@ GlUniformBuffer& GlUniformBuffer::operator= (GlUniformBuffer&& other) noexcept {
 
     bufferId = other.bufferId;
     data = other.data;
-    size = other.size;
     readable = other.readable;
 
     other.bufferId = 0;
-    other.data = nullptr;
-    other.size = 0;
+    other.data = {};
 
     return *this;
 }
@@ -44,22 +41,22 @@ GlUniformBuffer::~GlUniformBuffer () {
     }
 }
 
-unsigned char* GlUniformBuffer::allocate (std::size_t requestSize) {
+std::span<std::byte> GlUniformBuffer::allocate (std::size_t requestSize) {
     PHENYL_DASSERT(requestSize > 0);
 
-    if (size >= requestSize) {
-        return static_cast<unsigned char*>(data);
+    if (data.size() >= requestSize) {
+        return data.subspan(0, requestSize);
     }
-    size = requestSize;
 
     GLbitfield flags = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT;
     if (readable) {
         flags |= GL_MAP_READ_BIT;
     }
-    glNamedBufferStorage(bufferId, static_cast<GLsizeiptr>(size), nullptr, flags);
-    data = glMapNamedBufferRange(bufferId, 0, static_cast<GLsizeiptr>(size), flags);
+    glNamedBufferStorage(bufferId, static_cast<GLsizeiptr>(requestSize), nullptr, flags);
+    void* ptr = glMapNamedBufferRange(bufferId, 0, static_cast<GLsizeiptr>(requestSize), flags);
 
-    return static_cast<unsigned char*>(data);
+    data = std::span{static_cast<std::byte*>(ptr), requestSize};
+    return data;
 }
 
 void GlUniformBuffer::upload () {

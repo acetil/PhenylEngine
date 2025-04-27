@@ -115,7 +115,7 @@ void VulkanImage::loadImage (TransferManager& transferManager, const graphics::I
     auto imgData = image.data();
 
     VulkanBuffer buffer{*resources, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, imgData.size()};
-    buffer.copyIn(imgData.data(), imgData.size());
+    buffer.copyIn(imgData);
 
     transferManager.queueTransfer(std::move([&] (VulkanCommandBuffer2& cmd) {
          layoutTransition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);

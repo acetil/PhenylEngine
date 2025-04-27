@@ -7,8 +7,7 @@ namespace phenyl::opengl {
     class GlUniformBuffer : public graphics::IUniformBuffer {
     private:
         GLuint bufferId;
-        void* data;
-        std::size_t size;
+        std::span<std::byte> data{};
         bool readable;
     public:
         explicit GlUniformBuffer (bool readable);
@@ -21,7 +20,7 @@ namespace phenyl::opengl {
 
         ~GlUniformBuffer() override;
 
-        unsigned char* allocate (std::size_t requestSize) override;
+        std::span<std::byte> allocate (std::size_t requestSize) override;
         void upload () override;
         [[nodiscard]] bool isReadable () const override;
         std::size_t getMinAlignment () const noexcept override;

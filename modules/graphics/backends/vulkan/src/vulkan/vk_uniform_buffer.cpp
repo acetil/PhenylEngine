@@ -9,7 +9,7 @@ VulkanUniformBuffer::VulkanUniformBuffer (VulkanResources& resources) : resource
 
 }
 
-unsigned char* VulkanUniformBuffer::allocate (std::size_t size) {
+std::span<std::byte> VulkanUniformBuffer::allocate (std::size_t size) {
     data = std::make_unique<std::byte[]>(size);
     this->size = size;
     buffer = VulkanBuffer{resources, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, size};
@@ -20,14 +20,14 @@ unsigned char* VulkanUniformBuffer::allocate (std::size_t size) {
         .range = static_cast<VkDeviceSize>(size)
     };
 
-    return reinterpret_cast<unsigned char*>(data.get());
+    return {data.get(), size};
 }
 
 void VulkanUniformBuffer::upload () {
     PHENYL_ASSERT(buffer);
     PHENYL_DASSERT(data);
 
-    buffer.copyIn(data.get(), size);
+    buffer.copyIn({data.get(), size});
 }
 
 bool VulkanUniformBuffer::isReadable () const {

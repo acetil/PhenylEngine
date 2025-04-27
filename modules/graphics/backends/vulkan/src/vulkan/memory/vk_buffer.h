@@ -28,7 +28,6 @@ namespace phenyl::vulkan {
             return bufSize;
         }
 
-        void copyIn (const std::byte* data, std::size_t size, std::size_t off = 0);
         void copyIn (std::span<const std::byte> data, std::size_t off = 0);
     };
 
