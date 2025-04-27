@@ -6,8 +6,8 @@
 namespace phenyl::audio {
     class AudioPlayer {
     private:
-        AudioSource source;
-        float sourceGain{1.0f};
+        AudioSource m_source;
+        float m_gain{1.0f};
 
         PHENYL_SERIALIZABLE_INTRUSIVE(AudioPlayer)
         friend class AudioSystem;

@@ -3,31 +3,31 @@
 
 using namespace phenyl::audio;
 
-AudioSample::AudioSample (phenyl::audio::AudioSample&& other) noexcept : audioSystem{other.audioSystem}, sampleId{other.sampleId} {
-    other.audioSystem = nullptr;
-    other.sampleId = 0;
+AudioSample::AudioSample (phenyl::audio::AudioSample&& other) noexcept : m_audioSystem{other.m_audioSystem}, m_id{other.m_id} {
+    other.m_audioSystem = nullptr;
+    other.m_id = 0;
 }
 
 AudioSample& AudioSample::operator= (AudioSample&& other) noexcept {
-    if (audioSystem && sampleId) {
-        audioSystem->destroySample(sampleId);
+    if (m_audioSystem && m_id) {
+        m_audioSystem->destroySample(m_id);
     }
 
-    audioSystem = other.audioSystem;
-    sampleId = other.sampleId;
+    m_audioSystem = other.m_audioSystem;
+    m_id = other.m_id;
 
-    other.audioSystem = nullptr;
-    other.sampleId = 0;
+    other.m_audioSystem = nullptr;
+    other.m_id = 0;
 
     return *this;
 }
 
 AudioSample::~AudioSample () {
-    if (audioSystem && sampleId) {
-        audioSystem->destroySample(sampleId);
+    if (m_audioSystem && m_id) {
+        m_audioSystem->destroySample(m_id);
     }
 }
 
 float AudioSample::duration () const {
-    return audioSystem->getSampleDuration(*this);
+    return m_audioSystem->getSampleDuration(*this);
 }

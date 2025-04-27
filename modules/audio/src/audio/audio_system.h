@@ -42,15 +42,15 @@ namespace phenyl::audio {
             bool active{false};
         };
 
-        util::Map<std::size_t, std::unique_ptr<AudioSample>> samples;
-        std::unique_ptr<AudioBackend> backend;
+        util::Map<std::size_t, std::unique_ptr<AudioSample>> m_samples;
+        std::unique_ptr<AudioBackend> m_backend;
 
-        util::FLVector<VirtualSource> virtualSources;
-        std::vector<BackendSource> backendSources;
+        util::FLVector<VirtualSource> m_virtualSources;
+        std::vector<BackendSource> m_backendSources;
 
-        std::size_t sourceFreeList;
-        std::size_t LRUHead;
-        std::size_t LRUTail;
+        std::size_t m_sourceFreeList;
+        std::size_t m_lruHead;
+        std::size_t m_lruTail;
 
 
         std::size_t provisionSource (std::size_t virtualId);

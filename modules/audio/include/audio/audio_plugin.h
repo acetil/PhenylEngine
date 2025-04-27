@@ -7,7 +7,7 @@ namespace phenyl::audio {
 
     class AudioPlugin : public core::IPlugin {
     private:
-        std::unique_ptr<AudioSystem> audioSystem;
+        std::unique_ptr<AudioSystem> m_audioSystem;
     public:
         AudioPlugin ();
         ~AudioPlugin() override;

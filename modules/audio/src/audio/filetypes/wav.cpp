@@ -31,26 +31,26 @@ static Logger LOGGER{"WAV_FILE", audio::detail::AUDIO_LOGGER};
 static util::Optional<WAVHeader> readHeader (std::istream& file);
 
 audio::WAVFile::WAVFile (std::unique_ptr<std::byte[]> data, std::uint32_t sampleRate, std::uint16_t bitDepth, std::uint16_t channels, std::uint32_t dataSize) :
-        data{std::move(data)}, sampleRate{sampleRate}, bitDepth{bitDepth}, channels{channels}, dataSize{dataSize} {}
+        m_data{std::move(data)}, m_sampleRate{sampleRate}, m_bitDepth{bitDepth}, m_channels{channels}, m_dataSize{dataSize} {}
 
-std::uint32_t audio::WAVFile::getSampleRate () const {
-    return sampleRate;
+std::uint32_t audio::WAVFile::sampleRate () const {
+    return m_sampleRate;
 }
 
-std::uint16_t audio::WAVFile::getBitDepth () const {
-    return bitDepth;
+std::uint16_t audio::WAVFile::bitDepth () const {
+    return m_bitDepth;
 }
 
-std::uint16_t audio::WAVFile::getNumChannels () const {
-    return channels;
+std::uint16_t audio::WAVFile::numChannels () const {
+    return m_channels;
 }
 
-std::uint32_t audio::WAVFile::getDataSize () const {
-    return dataSize;
+std::uint32_t audio::WAVFile::dataSize () const {
+    return m_dataSize;
 }
 
-const std::byte* audio::WAVFile::getData () const {
-    return data.get();
+const std::byte* audio::WAVFile::data () const {
+    return m_data.get();
 }
 
 util::Optional<audio::WAVFile> audio::WAVFile::Load (std::istream& file) {

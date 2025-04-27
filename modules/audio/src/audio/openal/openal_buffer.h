@@ -7,8 +7,8 @@
 namespace phenyl::audio {
     class OpenALBuffer {
     private:
-        ALuint bufferId{0};
-        bool valid{false};
+        ALuint m_id{0};
+        bool m_valid{false};
     public:
         OpenALBuffer () = default;
         explicit OpenALBuffer (const WAVFile& wavFile);
@@ -20,11 +20,11 @@ namespace phenyl::audio {
         OpenALBuffer& operator= (OpenALBuffer&& other) noexcept;
 
         explicit operator bool () const {
-            return valid;
+            return m_valid;
         }
 
         [[nodiscard]] ALuint id () const {
-            return bufferId;
+            return m_id;
         }
 
         [[nodiscard]] float duration () const;

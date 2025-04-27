@@ -6,12 +6,12 @@ namespace phenyl::audio {
     class AudioSystem;
     class AudioSample {
     private:
-        AudioSystem* audioSystem{nullptr};
-        std::size_t sampleId{0};
+        AudioSystem* m_audioSystem{nullptr};
+        std::size_t m_id{0};
 
         friend AudioSystem;
         friend class AudioSource;
-        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : audioSystem{audioSystem}, sampleId{sampleId} {}
+        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : m_audioSystem{audioSystem}, m_id{sampleId} {}
     public:
         AudioSample () = default;
 
@@ -22,7 +22,7 @@ namespace phenyl::audio {
         AudioSample& operator= (AudioSample&& other) noexcept;
 
         explicit operator bool () const {
-            return audioSystem && sampleId;
+            return m_audioSystem && m_id;
         }
 
         [[nodiscard]] float duration () const;

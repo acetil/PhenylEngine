@@ -13,11 +13,11 @@
 namespace phenyl::audio {
     class OpenALSystem : public AudioBackend {
     private:
-        ALCdevice* device{nullptr};
-        ALCcontext* context{nullptr};
+        ALCdevice* m_device{nullptr};
+        ALCcontext* m_context{nullptr};
 
-        util::FLVector<OpenALSource> sources;
-        util::FLVector<OpenALBuffer> buffers;
+        util::FLVector<OpenALSource> m_sources;
+        util::FLVector<OpenALBuffer> m_buffers;
     public:
         OpenALSystem ();
         ~OpenALSystem() override;

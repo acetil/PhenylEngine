@@ -9,25 +9,25 @@ using namespace phenyl;
 static Logger LOGGER{"AUDIO_SOURCE", audio::detail::AUDIO_LOGGER};
 
 audio::AudioSource::~AudioSource () {
-    if (audioSystem) {
-        audioSystem->destroySource(sourceId);
+    if (m_audioSystem) {
+        m_audioSystem->destroySource(m_id);
     }
 }
 
-audio::AudioSource::AudioSource (audio::AudioSource&& other) noexcept : audioSystem{other.audioSystem}, sourceId{other.sourceId} {
-    other.audioSystem = nullptr;
-    other.sourceId = 0;
+audio::AudioSource::AudioSource (audio::AudioSource&& other) noexcept : m_audioSystem{other.m_audioSystem}, m_id{other.m_id} {
+    other.m_audioSystem = nullptr;
+    other.m_id = 0;
 }
 
 audio::AudioSource& audio::AudioSource::operator= (audio::AudioSource&& other) noexcept {
-    if (audioSystem) {
-        audioSystem->destroySource(sourceId);
+    if (m_audioSystem) {
+        m_audioSystem->destroySource(m_id);
     }
-    audioSystem = other.audioSystem;
-    sourceId = other.sourceId;
+    m_audioSystem = other.m_audioSystem;
+    m_id = other.m_id;
 
-    other.audioSystem = nullptr;
-    other.sourceId = 0;
+    other.m_audioSystem = nullptr;
+    other.m_id = 0;
 
     return *this;
 }
@@ -35,7 +35,7 @@ audio::AudioSource& audio::AudioSource::operator= (audio::AudioSource&& other) n
 void audio::AudioSource::play (const audio::AudioSample& sample) {
     PHENYL_ASSERT_MSG(*this, "Attempted to play to empty source");
 
-    audioSystem->playSample(*this, sample);
+    m_audioSystem->playSample(*this, sample);
 }
 
 void audio::AudioSource::play (const core::Asset<AudioSample>& sample) {
@@ -45,9 +45,9 @@ void audio::AudioSource::play (const core::Asset<AudioSample>& sample) {
 }
 
 float audio::AudioSource::getGain () const {
-    return audioSystem->getSourceGain(*this);
+    return m_audioSystem->getSourceGain(*this);
 }
 
 void audio::AudioSource::setGain (float gain) {
-    audioSystem->setSourceGain(*this, gain);
+    m_audioSystem->setSourceGain(*this, gain);
 }

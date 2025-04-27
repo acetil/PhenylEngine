@@ -8,66 +8,66 @@ using namespace phenyl::audio;
 
 static phenyl::Logger LOGGER{"AL_SOURCE", detail::AUDIO_LOGGER};
 
-phenyl::audio::OpenALSource::OpenALSource () : sourceId{0}, valid{true} {
+phenyl::audio::OpenALSource::OpenALSource () : m_id{0}, m_valid{true} {
     alGetError();
-    alGenSources(1, &sourceId);
+    alGenSources(1, &m_id);
 
     ALenum err;
     if ((err = alGetError())) {
         PHENYL_LOGE(LOGGER, "OpenAL source creation failed: {}", ALStrError(err));
-        valid = false;
+        m_valid = false;
     }
 
-    PHENYL_TRACE_IF(valid, LOGGER, "Created source with id={}", sourceId);
+    PHENYL_TRACE_IF(m_valid, LOGGER, "Created source with id={}", m_id);
 }
 
 phenyl::audio::OpenALSource::~OpenALSource () {
-    if (valid) {
-        alDeleteSources(1, &sourceId);
+    if (m_valid) {
+        alDeleteSources(1, &m_id);
     }
 }
 
-OpenALSource::OpenALSource (OpenALSource&& other) noexcept : sourceId{other.sourceId}, valid{other.valid} {
-    other.sourceId = 0;
-    other.valid = false;
+OpenALSource::OpenALSource (OpenALSource&& other) noexcept : m_id{other.m_id}, m_valid{other.m_valid} {
+    other.m_id = 0;
+    other.m_valid = false;
 }
 
 OpenALSource& OpenALSource::operator= (OpenALSource&& other) noexcept {
-    if (valid) {
-        alDeleteSources(1, &sourceId);
+    if (m_valid) {
+        alDeleteSources(1, &m_id);
     }
 
-    sourceId = other.sourceId;
-    valid = other.valid;
+    m_id = other.m_id;
+    m_valid = other.m_valid;
 
-    other.sourceId = 0;
-    other.valid = false;
+    other.m_id = 0;
+    other.m_valid = false;
 
     return *this;
 }
 
 void OpenALSource::playBuffer (const OpenALBuffer& buffer) {
-    PHENYL_TRACE(LOGGER, "Source id={} playing buffer id={}", sourceId, buffer.id());
+    PHENYL_TRACE(LOGGER, "Source id={} playing buffer id={}", m_id, buffer.id());
 
     alGetError();
-    alSourcei(sourceId, AL_BUFFER, (ALint)buffer.id());
+    alSourcei(m_id, AL_BUFFER, (ALint)buffer.id());
     ALenum err;
     if ((err = alGetError())) {
-        PHENYL_LOGE(LOGGER, "Failed to play sample {} to source {}: {}", buffer.id(), sourceId, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to play sample {} to source {}: {}", buffer.id(), m_id, ALStrError(err));
         return;
     }
-    alSourcePlay(sourceId);
+    alSourcePlay(m_id);
 }
 
 float OpenALSource::getGain () const {
     alGetError();
 
     float gain;
-    alGetSourcef(sourceId, AL_GAIN, &gain);
+    alGetSourcef(m_id, AL_GAIN, &gain);
 
     ALenum err;
     if ((err = alGetError())) {
-        PHENYL_LOGE(LOGGER, "Failed to get gain of source {}: {}", sourceId, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to get gain of source {}: {}", m_id, ALStrError(err));
         return 0.0f;
     }
 
@@ -77,27 +77,27 @@ float OpenALSource::getGain () const {
 void OpenALSource::setGain (float gain) {
     alGetError();
 
-    alSourcef(sourceId, AL_GAIN, gain);
+    alSourcef(m_id, AL_GAIN, gain);
 
     ALenum err;
     if ((err = alGetError())) {
-        PHENYL_LOGE(LOGGER, "Failed to set gain of source {} to {}: {}", sourceId, gain, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to set gain of source {} to {}: {}", m_id, gain, ALStrError(err));
     }
 }
 
 void OpenALSource::stop () {
     alGetError();
-    alSourceStop(sourceId);
+    alSourceStop(m_id);
 
     ALenum err;
     if ((err = alGetError())) {
-        PHENYL_LOGE(LOGGER, "Failed to stop source {}: {}", sourceId, ALStrError(err));
+        PHENYL_LOGE(LOGGER, "Failed to stop source {}: {}", m_id, ALStrError(err));
     }
 }
 
 bool OpenALSource::stopped () const {
     ALint status;
-    alGetSourcei(sourceId, AL_SOURCE_STATE, &status);
+    alGetSourcei(m_id, AL_SOURCE_STATE, &status);
 
     return status == AL_STOPPED;
 }

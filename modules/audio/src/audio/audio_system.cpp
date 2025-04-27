@@ -10,42 +10,42 @@
 #include "audio/detail/loggers.h"
 
 namespace phenyl::audio {
-    PHENYL_SERIALIZABLE(AudioPlayer, PHENYL_SERIALIZABLE_MEMBER_NAMED(sourceGain, "gain"))
+    PHENYL_SERIALIZABLE(AudioPlayer, PHENYL_SERIALIZABLE_MEMBER_NAMED(m_gain, "gain"))
 }
 
 using namespace phenyl::audio;
 
 static phenyl::Logger LOGGER{"AUDIO_SYSTEM", detail::AUDIO_LOGGER};
 
-AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) : backend{std::move(backend)} {
+AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) : m_backend{std::move(backend)} {
     PHENYL_LOGD(LOGGER, "Attempting to provision {} sources", maxBackendSources);
-    backendSources.reserve(maxBackendSources);
+    m_backendSources.reserve(maxBackendSources);
     for (std::size_t i = 0; i < maxBackendSources; i++) {
-        auto id = this->backend->makeSource();
+        auto id = this->m_backend->makeSource();
         if (!id) {
             PHENYL_LOGE(LOGGER, "Failed to provision backend source!");
             break;
         }
 
-        backendSources.emplace_back(BackendSource{.backendId=id});
+        m_backendSources.emplace_back(BackendSource{.backendId=id});
     }
 
-    PHENYL_LOGI(LOGGER, "Initialising audio system with {} backend sources", backendSources.size());
+    PHENYL_LOGI(LOGGER, "Initialising audio system with {} backend sources", m_backendSources.size());
 
-    sourceFreeList = 0;
-    for (std::size_t i = 0; i < backendSources.size() - 1; i++) {
-        backendSources[i].next = i + 1;
+    m_sourceFreeList = 0;
+    for (std::size_t i = 0; i < m_backendSources.size() - 1; i++) {
+        m_backendSources[i].next = i + 1;
     }
-    backendSources.back().next = EMPTY_INDEX;
+    m_backendSources.back().next = EMPTY_INDEX;
 
-    LRUHead = EMPTY_INDEX;
-    LRUTail = EMPTY_INDEX;
+    m_lruHead = EMPTY_INDEX;
+    m_lruTail = EMPTY_INDEX;
 }
 
 AudioSystem::~AudioSystem () {
-    samples.clear();
-    for (auto& i : backendSources) {
-        backend->destroySource(i.backendId);
+    m_samples.clear();
+    for (auto& i : m_backendSources) {
+        m_backend->destroySource(i.backendId);
     }
 }
 
@@ -60,20 +60,20 @@ AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
         return nullptr;
     }
 
-    samples[id] = std::unique_ptr<AudioSample>(new AudioSample(this, backend->makeWAVSample(wavOpt.getUnsafe()))); // cpp is trash
+    m_samples[id] = std::unique_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(wavOpt.getUnsafe()))); // cpp is trash
 
-    return samples[id].get();
+    return m_samples[id].get();
 }
 
 AudioSample* AudioSystem::load (AudioSample&& obj, std::size_t id) {
-    samples[id] = std::make_unique<AudioSample>(std::move(obj));
+    m_samples[id] = std::make_unique<AudioSample>(std::move(obj));
 
-    return samples[id].get();
+    return m_samples[id].get();
 }
 
 void AudioSystem::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        samples.remove(id);
+        m_samples.remove(id);
     }
 }
 
@@ -95,13 +95,13 @@ void AudioSystem::addComponents (core::World& world, core::EntityComponentSerial
 
     world.addHandler<AudioPlayer>([this] (const core::OnInsert<AudioPlayer>& signal, core::Entity entity) {
         auto& comp = signal.get();
-        comp.source = this->createSource();
-        comp.setGain(comp.sourceGain);
+        comp.m_source = this->createSource();
+        comp.setGain(comp.m_gain);
     });
 }
 
 AudioSource AudioSystem::createSource () {
-    auto id = virtualSources.emplace();
+    auto id = m_virtualSources.emplace();
 
     return {this, id + 1};
 }
@@ -109,77 +109,77 @@ AudioSource AudioSystem::createSource () {
 void AudioSystem::destroySource (std::size_t id) {
     PHENYL_DASSERT(id);
     auto virtualIndex = id - 1;
-    auto curr = virtualSources[virtualIndex].sourcesStart;
+    auto curr = m_virtualSources[virtualIndex].sourcesStart;
     while (curr != EMPTY_INDEX) {
-        auto& source = backendSources[curr];
+        auto& source = m_backendSources[curr];
         PHENYL_DASSERT(source.active);
-        backend->stopSource(source.backendId);
+        m_backend->stopSource(source.backendId);
 
-        if (LRUHead == curr) {
-            LRUHead = source.nextLRU;
+        if (m_lruHead == curr) {
+            m_lruHead = source.nextLRU;
         } else {
             PHENYL_DASSERT(source.prevLRU != EMPTY_INDEX);
-            backendSources[source.prevLRU].nextLRU = source.nextLRU;
+            m_backendSources[source.prevLRU].nextLRU = source.nextLRU;
         }
 
-        if (LRUTail == curr) {
-            LRUTail = source.prevLRU;
+        if (m_lruTail == curr) {
+            m_lruTail = source.prevLRU;
         } else {
             PHENYL_DASSERT(source.nextLRU != EMPTY_INDEX);
-            backendSources[source.nextLRU].prevLRU = source.prevLRU;
+            m_backendSources[source.nextLRU].prevLRU = source.prevLRU;
         }
 
         source.active = false;
 
         auto next = source.next;
-        source.next = sourceFreeList;
-        sourceFreeList = curr;
+        source.next = m_sourceFreeList;
+        m_sourceFreeList = curr;
 
         curr = next;
     }
 
-    virtualSources.remove(virtualIndex);
+    m_virtualSources.remove(virtualIndex);
 }
 
 void AudioSystem::destroySample (std::size_t id) {
-    backend->destroySample(id);
+    m_backend->destroySample(id);
 }
 
 void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
     auto virtualIndex = getVirtualSource(source);
     if (virtualIndex == EMPTY_INDEX) {
         //logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");
-        PHENYL_LOGE(LOGGER, "Attepted to play sample {} to empty source {}", sample.sampleId, source.sourceId);
+        PHENYL_LOGE(LOGGER, "Attepted to play sample {} to empty source {}", sample.m_id, source.m_id);
         return;
     }
 
-    auto& virtualSource = virtualSources[virtualIndex];
+    auto& virtualSource = m_virtualSources[virtualIndex];
 
     auto sourceIndex = provisionSource(virtualIndex);
-    auto& backendSource = backendSources[sourceIndex];
+    auto& backendSource = m_backendSources[sourceIndex];
 
     backendSource.next = virtualSource.sourcesStart;
     backendSource.prev = EMPTY_INDEX;
 
     if (virtualSource.sourcesStart != EMPTY_INDEX) {
-        backendSources[virtualSource.sourcesStart].prev = sourceIndex;
+        m_backendSources[virtualSource.sourcesStart].prev = sourceIndex;
     }
 
     virtualSource.sourcesStart = sourceIndex;
 
-    if (LRUTail == EMPTY_INDEX) {
-        PHENYL_DASSERT(LRUHead == EMPTY_INDEX);
-        LRUHead = sourceIndex;
-        LRUTail = sourceIndex;
+    if (m_lruTail == EMPTY_INDEX) {
+        PHENYL_DASSERT(m_lruHead == EMPTY_INDEX);
+        m_lruHead = sourceIndex;
+        m_lruTail = sourceIndex;
     } else {
-        backendSources[LRUTail].nextLRU = sourceIndex;
-        backendSource.prevLRU = LRUTail;
+        m_backendSources[m_lruTail].nextLRU = sourceIndex;
+        backendSource.prevLRU = m_lruTail;
         backendSource.nextLRU = EMPTY_INDEX;
-        LRUTail = sourceIndex;
+        m_lruTail = sourceIndex;
     }
 
-    backend->setSourceGain(backendSource.backendId, virtualSource.gain);
-    backend->playSample(backendSource.backendId, sample.sampleId);
+    m_backend->setSourceGain(backendSource.backendId, virtualSource.gain);
+    m_backend->playSample(backendSource.backendId, sample.m_id);
 
     backendSource.remainingDuration = sample.duration();
 }
@@ -187,59 +187,59 @@ void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
 float AudioSystem::getSourceGain (const AudioSource& source) const {
     auto index = getVirtualSource(source);
     if (index == EMPTY_INDEX) {
-        PHENYL_LOGE(LOGGER, "Attempted to get gain of invalid source {}!", source.sourceId);
+        PHENYL_LOGE(LOGGER, "Attempted to get gain of invalid source {}!", source.m_id);
         return 0.0f;
     }
 
-    return virtualSources[index].gain;
+    return m_virtualSources[index].gain;
 }
 
 void AudioSystem::setSourceGain (AudioSource& source, float gain) {
     auto index = getVirtualSource(source);
     if (index == EMPTY_INDEX) {
-        PHENYL_LOGE(LOGGER, "Attempted to set gain of invalid source {}!", source.sourceId);
+        PHENYL_LOGE(LOGGER, "Attempted to set gain of invalid source {}!", source.m_id);
         return;
     }
 
-    virtualSources[index].gain = gain;
-    for (auto curr = virtualSources[index].sourcesStart; curr != EMPTY_INDEX; curr = backendSources[curr].next) {
-        backend->setSourceGain(backendSources[curr].backendId, gain);
+    m_virtualSources[index].gain = gain;
+    for (auto curr = m_virtualSources[index].sourcesStart; curr != EMPTY_INDEX; curr = m_backendSources[curr].next) {
+        m_backend->setSourceGain(m_backendSources[curr].backendId, gain);
     }
 }
 
 std::size_t AudioSystem::provisionSource (std::size_t virtualId) {
-    if (sourceFreeList != EMPTY_INDEX) {
-        auto newIndex = sourceFreeList;
-        sourceFreeList = backendSources[newIndex].next;
+    if (m_sourceFreeList != EMPTY_INDEX) {
+        auto newIndex = m_sourceFreeList;
+        m_sourceFreeList = m_backendSources[newIndex].next;
 
-        backendSources[newIndex].active = true;
-        backendSources[newIndex].ownerId = virtualId;
+        m_backendSources[newIndex].active = true;
+        m_backendSources[newIndex].ownerId = virtualId;
 
         return newIndex;
     }
 
-    auto index = LRUHead;
-    LRUHead = backendSources[index].nextLRU;
+    auto index = m_lruHead;
+    m_lruHead = m_backendSources[index].nextLRU;
 
-    if (LRUHead == EMPTY_INDEX) {
-        LRUTail = EMPTY_INDEX;
+    if (m_lruHead == EMPTY_INDEX) {
+        m_lruTail = EMPTY_INDEX;
     } else {
-        backendSources[LRUHead].prevLRU = EMPTY_INDEX;
+        m_backendSources[m_lruHead].prevLRU = EMPTY_INDEX;
     }
 
-    auto& source = backendSources[index];
-    backend->stopSource(source.backendId);
+    auto& source = m_backendSources[index];
+    m_backend->stopSource(source.backendId);
     if (source.prev == EMPTY_INDEX) {
-        virtualSources[source.ownerId].sourcesStart = source.next;
+        m_virtualSources[source.ownerId].sourcesStart = source.next;
     } else {
-        backendSources[source.prev].next = source.next;
+        m_backendSources[source.prev].next = source.next;
     }
 
     if (source.next != EMPTY_INDEX) {
-        backendSources[source.next].prev = source.prev;
+        m_backendSources[source.next].prev = source.prev;
     }
 
-    backendSources[index].ownerId = virtualId;
+    m_backendSources[index].ownerId = virtualId;
     PHENYL_DASSERT(source.active);
 
     return index;
@@ -250,50 +250,50 @@ std::size_t AudioSystem::getVirtualSource (const AudioSource& source) const {
         return EMPTY_INDEX;
     }
 
-    return source.sourceId - 1;
+    return source.m_id - 1;
 }
 
 float AudioSystem::getSampleDuration (const AudioSample& sample) const {
-    return backend->getSampleDuration(sample.sampleId);
+    return m_backend->getSampleDuration(sample.m_id);
 }
 
 void AudioSystem::update (float deltaTime) {
-    for (std::size_t i = 0; i < backendSources.size(); i++) {
-        auto& source = backendSources[i];
+    for (std::size_t i = 0; i < m_backendSources.size(); i++) {
+        auto& source = m_backendSources[i];
         if (!source.active) {
             continue;
         }
 
         source.remainingDuration -= deltaTime;
-        if (source.remainingDuration >= 0.0f || !backend->isSourceStopped(source.backendId)) {
+        if (source.remainingDuration >= 0.0f || !m_backend->isSourceStopped(source.backendId)) {
             continue;
         }
 
         if (source.prev == EMPTY_INDEX) {
             PHENYL_DASSERT(source.ownerId != EMPTY_INDEX);
-            virtualSources[source.ownerId].sourcesStart = source.next;
+            m_virtualSources[source.ownerId].sourcesStart = source.next;
         } else {
-            backendSources[source.prev].next = source.next;
+            m_backendSources[source.prev].next = source.next;
         }
 
         if (source.next != EMPTY_INDEX) {
-            backendSources[source.next].prev = source.prev;
+            m_backendSources[source.next].prev = source.prev;
         }
 
-        if (LRUHead == i) {
-            LRUHead = source.nextLRU;
+        if (m_lruHead == i) {
+            m_lruHead = source.nextLRU;
         } else {
-            backendSources[source.prevLRU].nextLRU = source.nextLRU;
+            m_backendSources[source.prevLRU].nextLRU = source.nextLRU;
         }
 
-        if (LRUTail == i) {
-            LRUTail = source.prevLRU;
+        if (m_lruTail == i) {
+            m_lruTail = source.prevLRU;
         } else {
-            backendSources[source.nextLRU].prevLRU = source.prevLRU;
+            m_backendSources[source.nextLRU].prevLRU = source.prevLRU;
         }
 
-        source.next = sourceFreeList;
-        sourceFreeList = i;
+        source.next = m_sourceFreeList;
+        m_sourceFreeList = i;
         source.active = false;
     }
 }

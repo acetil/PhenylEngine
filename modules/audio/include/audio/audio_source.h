@@ -11,15 +11,15 @@ namespace phenyl::audio {
 
     class AudioSource {
     private:
-        AudioSystem* audioSystem;
-        std::size_t sourceId;
-        AudioSource (AudioSystem* audioSystem, std::size_t sourceId) : audioSystem{audioSystem}, sourceId{sourceId} {}
+        AudioSystem* m_audioSystem;
+        std::size_t m_id;
+        AudioSource (AudioSystem* audioSystem, std::size_t sourceId) : m_audioSystem{audioSystem}, m_id{sourceId} {}
         friend class AudioSystem;
     public:
-        AudioSource () : audioSystem{nullptr}, sourceId{0} {}
+        AudioSource () : m_audioSystem{nullptr}, m_id{0} {}
 
         explicit operator bool () const {
-            return audioSystem && sourceId;
+            return m_audioSystem && m_id;
         }
 
         AudioSource (const AudioSource&) = delete;

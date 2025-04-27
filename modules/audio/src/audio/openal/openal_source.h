@@ -6,13 +6,13 @@ namespace phenyl::audio {
     class OpenALBuffer;
     class OpenALSource {
     private:
-        ALuint sourceId;
-        bool valid;
+        ALuint m_id;
+        bool m_valid;
     public:
         OpenALSource ();
 
         explicit operator bool () const {
-            return valid;
+            return m_valid;
         }
 
         OpenALSource (const OpenALSource&) = delete;
@@ -22,7 +22,7 @@ namespace phenyl::audio {
         OpenALSource& operator= (OpenALSource&& other) noexcept;
 
         [[nodiscard]] ALuint id () const {
-            return sourceId;
+            return m_id;
         }
 
         void playBuffer (const OpenALBuffer& buffer);
