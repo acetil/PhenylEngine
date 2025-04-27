@@ -37,7 +37,6 @@ glm::mat4 Camera3D::view () const noexcept {
 
 glm::mat4 Camera3D::projection () const noexcept {
     auto mat = glm::perspective(glm::radians(fov), resolution.x / resolution.y, nearClippingPlane, farClippingPlane);
-    // auto mat =  glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.001f, 20.0f);
     return mat;
     //return glm::perspective(glm::radians(fov), resolution.x / resolution.y, nearClippingPlane, farClippingPlane);
     //return glm::identity<glm::mat4>();

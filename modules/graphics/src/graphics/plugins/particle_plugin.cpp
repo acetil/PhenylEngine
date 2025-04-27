@@ -1,4 +1,4 @@
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/components/2d/particle_emitter.h"
 #include "graphics/particles/particle_manager.h"
 #include "graphics/plugins/graphics_plugin.h"
@@ -23,9 +23,9 @@ static void UpdateSystem (const phenyl::core::Resources<const phenyl::core::Delt
     manager.update(static_cast<float>(deltaTime()));
 }
 
-static void RenderSystem (const phenyl::core::Resources<ParticleData, ParticleManager2D>& resources) {
-    auto& [data, manager] = resources;
-    data.layer->bufferData(manager);
+static void RenderSystem (const phenyl::core::Resources<ParticleData, Camera2D, ParticleManager2D>& resources) {
+    auto& [data, camera, manager] = resources;
+    data.layer->bufferData(camera, manager);
 }
 
 Particle2DPlugin::Particle2DPlugin () = default;

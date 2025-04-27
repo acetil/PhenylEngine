@@ -1,0 +1,39 @@
+#pragma once
+
+#include "graphics/backend/texture.h"
+
+#include "vulkan_headers.h"
+#include "texture/vk_image.h"
+
+namespace phenyl::vulkan {
+    class VulkanArrayTexture : public graphics::IImageArrayTexture {
+    private:
+        static constexpr std::uint32_t STARTING_CAPACITY = 8;
+        static constexpr double RESIZE_FACTOR = 3.0 / 2.0;
+
+        VulkanResources& resources;
+        TransferManager& transferManager;
+        graphics::TextureProperties properties;
+
+        CombinedSampler combinedSampler;
+
+        std::uint32_t texWidth;
+        std::uint32_t texHeight;
+
+        std::size_t texSize = 0;
+        std::size_t texCapacity = STARTING_CAPACITY;
+
+    public:
+        VulkanArrayTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight);
+
+        std::uint32_t width () const noexcept override;
+        std::uint32_t height () const noexcept override;
+
+        std::uint32_t size () const noexcept override;
+        void reserve (std::uint32_t capacity) override;
+
+        std::uint32_t append () override;
+        void upload (std::uint32_t index, const graphics::Image& image) override;
+        graphics::ISampler& sampler () noexcept override;
+    };
+}

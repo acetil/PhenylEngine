@@ -1,7 +1,7 @@
 #include "core/assets/assets.h"
 
 #include "graphics/detail/loggers.h"
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 
 #include "texture_manager.h"
 

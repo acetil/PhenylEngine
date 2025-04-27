@@ -1,4 +1,4 @@
-add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/phenyl_graphics.h src/graphics/phenyl_graphics.cpp  include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
+add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
         include/graphics/components/2d/sprite.h
         include/graphics/ui/forward.h
         include/graphics/particles/particle_system_2d.h
@@ -9,7 +9,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/particles/particle_manager.cpp
         include/graphics/components/2d/particle_emitter.h
         src/graphics/particles/particle_emitter_2d.cpp
-        include/graphics/graphics_properties.h
         include/graphics/detail/loggers.h
         src/graphics/detail/loggers.cpp
         include/graphics/plugins/ui_plugin.h
@@ -21,23 +20,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         include/graphics/plugins/sprite_2d_plugin.h
         src/graphics/plugins/sprite_2d_plugin.cpp
         include/graphics/plugins/graphics_2d_plugin.h
-        include/graphics/viewport.h
-        src/graphics/glfw/glfw_viewport.h
-        src/graphics/glfw/glfw_viewport.cpp
-        src/graphics/opengl/glbuffer.h
-        src/graphics/opengl/glbuffer.cpp
-        include/graphics/uniform_buffer.h
-        src/graphics/opengl/gluniform_buffer.h
-        src/graphics/opengl/gluniform_buffer.cpp
-        src/graphics/opengl/glpipeline.h
-        src/graphics/opengl/glpipeline.cpp
-        include/graphics/abstract_render_layer.h
-        src/graphics/opengl/glimage_texture.h
-        src/graphics/opengl/glimage_texture.cpp
-        src/graphics/opengl/glsampler.h
-        src/graphics/opengl/glsampler.cpp
-        src/graphics/opengl/glarray_texture.h
-        src/graphics/opengl/glarray_texture.cpp
         include/graphics/font/font.h
         src/graphics/font/font.cpp
         include/graphics/font/glyph_atlas.h
@@ -45,18 +27,12 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/font/font_manager.h
         src/graphics/font/font_manager.cpp
         include/graphics/font/glyph.h
-        src/graphics/opengl/glshader.h
-        src/graphics/opengl/glshader.cpp
         include/graphics/canvas/canvas.h
         include/graphics/canvas/canvas_style.h
         include/graphics/canvas/canvas_shapes.h
         src/graphics/canvas/canvas.cpp
         src/graphics/plugins/texture_manager.h
         src/graphics/plugins/texture_manager.cpp
-        src/graphics/glfw/input/glfw_key_input.h
-        src/graphics/glfw/input/glfw_key_input.cpp
-        src/graphics/glfw/input/glfw_mouse_input.cpp
-        src/graphics/glfw/input/glfw_mouse_input.h
         src/graphics/components/2d/sprite.cpp
         include/graphics/ui/widgets/widget.h
         src/graphics/ui/widgets/widget.cpp
@@ -93,9 +69,6 @@ add_library(graphics OBJECT src/graphics/opengl/glrenderer.cpp src/graphics/rend
         src/graphics/plugins/material_instance_manager.cpp
         include/graphics/components/3d/lighting.h
         src/graphics/components/3d/lighting.cpp
-        include/graphics/framebuffer.h
-        src/graphics/opengl/glframebuffer.h
-        src/graphics/opengl/glframebuffer.cpp
 )
 
 cmake_policy(SET CMP0072 NEW) #FindOpenGL
@@ -109,6 +82,8 @@ find_package(GLEW REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 set_property(TARGET graphics PROPERTY CXX_STANDARD 20)
+
+add_subdirectory(backends)
 
 target_gen_embedded(graphics
         resources/shaders/box_vertex.vert
@@ -142,11 +117,11 @@ target_link_libraries(graphics PRIVATE maths)
 target_link_libraries(graphics PRIVATE util)
 target_link_libraries(graphics PRIVATE harfbuzz::harfbuzz)
 target_link_libraries(graphics PRIVATE Freetype::Freetype)
-target_link_libraries(graphics PRIVATE glfw GL GLEW::GLEW)
+target_link_libraries(graphics PRIVATE GL GLEW::GLEW)
 target_link_libraries(graphics PRIVATE nlohmann_json)
+target_link_libraries(graphics PRIVATE glfw_backend)
+target_link_libraries(graphics PRIVATE opengl_backend)
+target_link_libraries(graphics PRIVATE vulkan_backend)
 
 target_link_libraries(graphics PUBLIC core)
-
-add_library(graphics_interface INTERFACE)
-target_include_directories(graphics_interface INTERFACE include)
-target_link_libraries(graphics_interface INTERFACE runtime_interface)
+target_link_libraries(graphics PUBLIC graphics_api)

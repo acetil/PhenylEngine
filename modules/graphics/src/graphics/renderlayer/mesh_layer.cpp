@@ -1,6 +1,6 @@
 #include "mesh_layer.h"
 
-#include <graphics/renderer.h>
+#include <graphics/backend/renderer.h>
 
 #include "core/assets/assets.h"
 
@@ -22,12 +22,13 @@ void MeshRenderLayer::init (Renderer& renderer) {
     }, viewport.getResolution().x, viewport.getResolution().y);
     shadowFb = renderer.makeFrameBuffer(FrameBufferProperties{
         .depthFormat = ImageFormat::DEPTH,
-        .wrapping = TextureWrapping::CLAMP_BORDER
+        .wrapping = TextureWrapping::CLAMP_BORDER,
+        .borderColor = TextureBorderColor::WHITE
     }, 512, 512);
 
-    instanceBuffer = renderer.makeBuffer<glm::mat4>(512);
+    instanceBuffer = renderer.makeBuffer<glm::mat4>(512, BufferStorageHint::DYNAMIC);
     globalUniform = renderer.makeUniformBuffer<MeshGlobalUniform>();
-    bpLight = renderer.makeUniformBuffer<BPLightUniform>();
+    bpLights = renderer.makeUniformArrayBuffer<BPLightUniform>();
 
     //meshMaterial = core::Assets::Load<Material>("resources/phenyl/materials/blinn_phong");
 
@@ -38,10 +39,10 @@ void MeshRenderLayer::init (Renderer& renderer) {
         .withShader(ppShader)
         .withBuffer<glm::vec2>(vertexBinding)
         .withAttrib<glm::vec2>(0, vertexBinding)
-        .withSampler2D(*ppShader->samplerLocation("frameBuffer"), ppSampler)
+        .withSampler2D(ppShader->samplerLocation("frameBuffer").value(), ppSampler)
         .build();
 
-    ppQuad = renderer.makeBuffer<glm::vec2>(6);
+    ppQuad = renderer.makeBuffer<glm::vec2>(6, BufferStorageHint::STATIC);
     ppQuad.emplace(-1, -1);
     ppQuad.emplace(1, -1);
     ppQuad.emplace(1, 1);
@@ -81,8 +82,9 @@ void MeshRenderLayer::render () {
 
     depthPrepass();
 
-    for (const auto& light : pointLights) {
-        renderLight(light);
+    bufferLights();
+    for (std::size_t i = 0; i < pointLights.size(); i++) {
+        renderLight(pointLights[i], i);
     }
 
     postProcessing();
@@ -199,21 +201,30 @@ void MeshRenderLayer::depthPrepass () {
     }
 }
 
-void MeshRenderLayer::renderLight (const MeshLight& light) {
-    bpLight->lightSpace = getLightSpaceMatrix(light);
-    bpLight->lightPos = light.pos;
-    bpLight->lightDir = light.dir * core::Quaternion::ForwardVector * -1.0f;
-    bpLight->lightColor = light.color;
-    bpLight->ambientColor = light.ambientColor / static_cast<float>(pointLights.size());
-    bpLight->brightness = light.brightness;
-    bpLight->cosInner = glm::cos(light.inner);
-    bpLight->cosOuter = glm::cos(light.outer);
-    bpLight->lightType = static_cast<int>(light.type);
-    bpLight->castShadows = light.castShadows;
-    bpLight.upload();
+void MeshRenderLayer::bufferLights () {
+    bpLights.clear();
+    bpLights.reserve(pointLights.size());
+    for (const auto& light : pointLights) {
+        bpLights.push(BPLightUniform{
+            .lightSpace = getLightSpaceMatrix(light),
+            .lightPos = light.pos,
+            .lightDir = light.dir * core::Quaternion::ForwardVector * -1.0f,
+            .lightColor = light.color,
+            .ambientColor = light.ambientColor / static_cast<float>(pointLights.size()),
+            .brightness = light.brightness,
+            .cosOuter = glm::cos(light.outer),
+            .cosInner = glm::cos(light.inner),
+            .lightType = static_cast<int>(light.type),
+            .castShadows = light.castShadows
+        });
+    }
 
+    bpLights.upload();
+}
+
+void MeshRenderLayer::renderLight (const MeshLight& light, std::size_t index) {
     if (light.castShadows) {
-        renderShadowMap(light);
+        renderShadowMap(light, index);
     }
 
     for (const auto& instance : instances) {
@@ -223,7 +234,7 @@ void MeshRenderLayer::renderLight (const MeshLight& light) {
         auto& pipeline = matPipeline.pipeline;
 
         pipeline.bindUniform(matPipeline.globalUniform, globalUniform);
-        pipeline.bindUniform(matPipeline.lightUniform, bpLight);
+        pipeline.bindUniform(matPipeline.lightUniform, bpLights, index);
 
         auto& streams = instance.mesh->streams();
         PHENYL_DASSERT(streams.size() == matPipeline.streamBindings.size());
@@ -291,7 +302,7 @@ glm::mat4 MeshRenderLayer::getLightSpaceProj (const MeshLight& light) {
         if (light.type == LightType::Directional) {
             return glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 0.001f, 20.0f);
         } else {
-            return glm::perspective(light.outer, 1.0f, 0.1f, 100.0f);
+            return glm::perspective(light.outer * 2, 1.0f, 1.0f, 100.0f);
         }
     } else {
         return glm::identity<glm::mat4>();
@@ -299,14 +310,14 @@ glm::mat4 MeshRenderLayer::getLightSpaceProj (const MeshLight& light) {
 }
 
 
-void MeshRenderLayer::renderShadowMap (const MeshLight& light) {
+void MeshRenderLayer::renderShadowMap (const MeshLight& light, std::size_t index) {
     shadowFb.clear();
     if (light.type == LightType::Directional || light.type == LightType::Spot) {
         for (const auto& instance : instances) {
             auto& smPipeline = instance.materialInstance->material()->getShadowMapPipeline(instance.mesh->layout());
 
             auto& pipeline = smPipeline.pipeline;
-            pipeline.bindUniform(smPipeline.lightUniform, bpLight);
+            pipeline.bindUniform(smPipeline.lightUniform, bpLights, index);
 
             auto& streams = instance.mesh->streams();
             PHENYL_DASSERT(streams.size() == smPipeline.streamBindings.size());

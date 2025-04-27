@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/texture.h"
+#include "graphics/backend/texture.h"
 #include "core/assets/asset_manager.h"
 
 namespace phenyl::graphics {

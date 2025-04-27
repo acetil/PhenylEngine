@@ -1,7 +1,7 @@
 #include "core/plugins/core_plugin_2d.h"
 #include "core/runtime.h"
 
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/entity_layer.h"
 

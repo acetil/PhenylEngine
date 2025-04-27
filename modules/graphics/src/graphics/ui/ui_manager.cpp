@@ -3,7 +3,8 @@
 #include "graphics/ui/ui_manager.h"
 
 #include "core/input/game_input.h"
-#include "graphics/renderer.h"
+#include "graphics/detail/loggers.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/ui/widgets/event.h"
 
 #include "logging/logging.h"

@@ -5,8 +5,8 @@
 #include "util/map.h"
 
 #include "graphics/image.h"
-#include "graphics/renderer.h"
-#include "graphics/texture.h"
+#include "graphics/backend/renderer.h"
+#include "graphics/backend/texture.h"
 
 namespace phenyl::graphics {
     struct ColumnAtlas {
@@ -46,7 +46,7 @@ namespace phenyl::graphics {
         explicit GlyphAtlas (Renderer& renderer, std::uint32_t size = 1024, std::uint32_t padding=1);
         Placement place (const Image& image);
 
-        [[nodiscard]] const ISampler& sampler () const;
+        [[nodiscard]] ISampler& sampler () const;
         void upload ();
 
         [[nodiscard]] glm::vec3 opaque () const {

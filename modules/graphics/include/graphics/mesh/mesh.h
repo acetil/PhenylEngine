@@ -1,11 +1,11 @@
 #pragma once
 
-#include "graphics/pipeline.h"
+#include "graphics/backend/pipeline.h"
 
-#include "graphics/buffer.h"
+#include "graphics/backend/buffer.h"
 #include "util/hash.h"
 
-#include "graphics/shader.h"
+#include "graphics/backend/shader.h"
 
 namespace phenyl::graphics {
     enum class MeshAttributeKind {

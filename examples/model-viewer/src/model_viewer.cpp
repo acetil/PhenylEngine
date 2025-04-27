@@ -58,50 +58,50 @@ public:
         });
         rotationSpeeds.emplace_back(-90.0f * std::numbers::pi / 180);
 
-        auto light1 = runtime().world().create();
-        light1.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}.translate(glm::vec3{-2, 0, -0})
-        });
-        light1.insert(phenyl::PointLight3D{
-            .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 4.0f
-        });
+        // auto light1 = runtime().world().create();
+        // light1.insert(phenyl::GlobalTransform3D{
+        //     .transform = phenyl::Transform3D{}.translate(glm::vec3{-2, 0, -0})
+        // });
+        // light1.insert(phenyl::PointLight3D{
+        //     .color = {1.0f, 1.0f, 1.0f},
+        //     .brightness = 4.0f
+        // });
+        // //
+        // auto light2 = runtime().world().create();
+        // light2.insert(phenyl::GlobalTransform3D{
+        //     .transform = phenyl::Transform3D{}.translate(glm::vec3{2, 0, -0})
+        // });
+        // light2.insert(phenyl::PointLight3D{
+        //     .color = {1.0f, 0.2f, 0.2f},
+        //     .brightness = 5.0f
+        // });
 
-        auto light2 = runtime().world().create();
-        light2.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}.translate(glm::vec3{2, 0, -0})
-        });
-        light2.insert(phenyl::PointLight3D{
-            .color = {1.0f, 0.2f, 0.2f},
-            .brightness = 5.0f
-        });
-
-        auto light3 = runtime().world().create();
-        light3.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({-1.0f, 0.0f, 0.0f}))
-        });
-        light3.insert(phenyl::DirectionalLight3D{
-            .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 1,
-            .castShadows = false
-        });
-
+        // auto light3 = runtime().world().create();
+        // light3.insert(phenyl::GlobalTransform3D{
+        //     .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({1.0f, 0.0f, 0.0f}))
+        // });
+        // light3.insert(phenyl::DirectionalLight3D{
+        //     .color = {1.0f, 1.0f, 1.0f},
+        //     .brightness = 1,
+        //     .castShadows = false
+        // });
+        //
         auto light4 = runtime().world().create();
         light4.insert(phenyl::GlobalTransform3D{
             .transform = phenyl::Transform3D{}
                          .setPosition({-1.0f, 0.0f, 0.0f})
-                         .setRotation(phenyl::Quaternion::LookAt({1.0f, 0.0f, 0.0f}))
+                         .setRotation(phenyl::Quaternion::LookAt({-1.0f, 0.0f, 0.0f}))
         });
         light4.insert(phenyl::SpotLight3D{
             .color = {1.0f, 1.0f, 1.0f},
             .brightness = 10.0f,
-            .innerAngle = 60.0f / 180.0f * std::numbers::pi,
-            .outerAngle = 70.0f / 180.0f * std::numbers::pi,
+            .innerAngle = 8.0f / 180.0f * std::numbers::pi,
+            .outerAngle = 9.0f / 180.0f * std::numbers::pi,
             .castShadows = false
         });
 
         runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);
-        runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 0, 2.0f});
+        runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 0, -2.0f});
         chooseAxis();
     }
 
@@ -160,9 +160,9 @@ public:
 
         light.insert(phenyl::SpotLight3D{
             .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 50.0f,
+            .brightness = 10.0f,
             .innerAngle = 20.0f * std::numbers::pi / 180.0f,
-            .outerAngle = 40.0f * std::numbers::pi / 180.0f,
+            .outerAngle = 21.0f * std::numbers::pi / 180.0f,
             .castShadows = true
         });
         // light.insert(phenyl::PointLight3D{
@@ -174,6 +174,21 @@ public:
         //     .brightness = 0.4f,
         //     .castShadows = true
         // });
+
+        auto light2 = runtime().world().create();
+        light2.insert(phenyl::GlobalTransform3D{
+            .transform = phenyl::Transform3D{}
+            .setPosition({0, 8.0f, -7})
+            .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{0.0f, -7.0f, 6.0f}))
+        });
+
+        light2.insert(phenyl::SpotLight3D{
+            .color = {1.0f, 0.0f, 0.0f},
+            .brightness = 25.0f,
+            .innerAngle = 10.0f * std::numbers::pi / 180.0f,
+            .outerAngle = 11.0f * std::numbers::pi / 180.0f,
+            .castShadows = true
+        });
 
         runtime().resource<phenyl::Camera3D>().transform
             .translate(glm::vec3{0.0f, 4.0f, 10.0f});
@@ -187,8 +202,8 @@ public:
     }
 
     void postInit() override {
-        scene1();
-        //scene2();
+        //scene1();
+        scene2();
 
         auto& input = runtime().resource<phenyl::GameInput>();
         cameraControl = input.addAxis2D("camera_control", true);

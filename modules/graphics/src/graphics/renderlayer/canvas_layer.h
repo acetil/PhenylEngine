@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/abstract_render_layer.h"
+#include "graphics/backend/abstract_render_layer.h"
 #include "graphics/maths_headers.h"
-#include "graphics/renderer.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/font/font.h"
 
 namespace phenyl::graphics {

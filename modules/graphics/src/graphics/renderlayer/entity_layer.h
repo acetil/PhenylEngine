@@ -2,10 +2,10 @@
 
 #include "core/world.h"
 
-#include "graphics/abstract_render_layer.h"
+#include "graphics/backend/abstract_render_layer.h"
 #include "graphics/camera_2d.h"
-#include "graphics/buffer.h"
-#include "graphics/pipeline.h"
+#include "graphics/backend/buffer.h"
+#include "graphics/backend/pipeline.h"
 
 namespace phenyl::core {
     struct GlobalTransform2D;
@@ -28,14 +28,14 @@ namespace phenyl::graphics {
         struct SamplerRender {
             std::uint16_t indexOffset;
             std::uint16_t size;
-            const ISampler* sampler;
+            ISampler* sampler;
         };
     private:
         struct Uniform {
             glm::mat4 camera;
         };
 
-        std::vector<std::pair<const ISampler*, std::uint16_t>> samplerStartIndices;
+        std::vector<std::pair<ISampler*, std::uint16_t>> samplerStartIndices;
         std::vector<SamplerRender> samplerRenders;
 
         Pipeline pipeline;
@@ -50,7 +50,6 @@ namespace phenyl::graphics {
 
         SamplerBinding samplerBinding{};
 
-        void bufferData (core::World& world, const Camera2D& camera);
     public:
 
         EntityRenderLayer ();
@@ -59,7 +58,6 @@ namespace phenyl::graphics {
 
         void init (Renderer& renderer) override;
 
-        void preRender (core::World& world, const Camera2D& camera);
         void render () override;
 
         void pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite);

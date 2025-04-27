@@ -47,7 +47,7 @@ namespace phenyl::util::detail {
     template <typename T>
     class Memory : public Copyable<std::is_copy_assignable_v<T> || std::is_copy_constructible_v<T>> {
     private:
-        std::aligned_storage_t<sizeof(T), alignof(T)> data;
+        alignas(T) std::byte data[sizeof(T)];
         bool initialised = false;
     public:
         Memory () = default;
@@ -112,18 +112,18 @@ namespace phenyl::util::detail {
     template <typename T>
     class RefMemory {
     private:
-        std::aligned_storage_t<sizeof(T*), alignof(T*)> data;
+        T* data;
     public:
         RefMemory() = default;
         explicit RefMemory(T& val) {
-            *reinterpret_cast<T**>(&data) = (reinterpret_cast<T*>(&val));
+            data = &val;
         }
 
         //RefMemory<T>& operator= (RefMemory<T>&) = delete;
         //RefMemory<T>& operator= (RefMemory<T>&&) = delete;
 
         T& get () const {
-            return **reinterpret_cast<T* const*>(&data);
+            return *data;
         }
     };
 }

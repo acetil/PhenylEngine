@@ -1,6 +1,7 @@
 #include "debug_layer.h"
 #include "core/debug.h"
 #include "core/assets/assets.h"
+#include "graphics/detail/loggers.h"
 
 #define STARTING_BUFFER_SIZE 2048
 
@@ -64,10 +65,10 @@ std::string_view DebugLayer::getName () const {
 
 void DebugLayer::init (Renderer& renderer) {
     auto shader = core::Assets::Load<Shader>("phenyl/shaders/debug");
-    boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
-    boxColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
-    linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE);
-    lineColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE);
+    boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    boxColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    lineColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
     uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     BufferBinding posBinding;
@@ -79,7 +80,7 @@ void DebugLayer::init (Renderer& renderer) {
                           .withBuffer<glm::vec4>(colourBinding)
                           .withAttrib<glm::vec3>(0, posBinding)
                           .withAttrib<glm::vec4>(1, colourBinding)
-                          .withUniform<Uniform>(*shader->uniformLocation("Uniform"), uniformBinding)
+                          .withUniform<Uniform>(shader->uniformLocation("Uniform").value(), uniformBinding)
                           .build();
     boxPipeline.bindBuffer(posBinding, boxPos);
     boxPipeline.bindBuffer(colourBinding, boxColour);
@@ -92,7 +93,7 @@ void DebugLayer::init (Renderer& renderer) {
                            .withBuffer<glm::vec4>(colourBinding)
                            .withAttrib<glm::vec3>(0, posBinding)
                            .withAttrib<glm::vec4>(1, colourBinding)
-                           .withUniform<Uniform>(*shader->uniformLocation("Uniform"), uniformBinding)
+                           .withUniform<Uniform>(shader->uniformLocation("Uniform").value(), uniformBinding)
                            .build();
     linePipeline.bindBuffer(posBinding, linePos);
     linePipeline.bindBuffer(colourBinding, lineColour);
@@ -123,6 +124,7 @@ void DebugLayer::bufferData (const Camera2D& camera, glm::vec2 screenSize) {
 
     uniformBuffer->camera = camera.getCamMatrix();
     uniformBuffer->screenTransform = glm::scale(glm::vec3{2 / screenSize.x, 2 / screenSize.y, 1}) * glm::translate(glm::vec3{-1, -1, 0});
+    uniformBuffer.upload();
 }
 
 void DebugLayer::render () {
