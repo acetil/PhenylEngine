@@ -43,58 +43,58 @@ namespace phenyl::vulkan {
     public:
         using DestructorFunc = std::function<void(T&&)>;
     private:
-        T obj{};
-        DestructorFunc destructor;
+        T m_obj{};
+        DestructorFunc m_destructor;
     public:
         VulkanResource () = default;
-        VulkanResource (T obj, DestructorFunc destructor) : obj{std::move(obj)}, destructor{std::move(destructor)} {}
+        VulkanResource (T obj, DestructorFunc destructor) : m_obj{std::move(obj)}, m_destructor{std::move(destructor)} {}
 
         VulkanResource (const VulkanResource&) = delete;
-        VulkanResource (VulkanResource&& other) noexcept : obj{other.obj}, destructor{other.destructor} {
-            other.obj = {};
-            other.destructor = nullptr;
+        VulkanResource (VulkanResource&& other) noexcept : m_obj{other.m_obj}, m_destructor{other.m_destructor} {
+            other.m_obj = {};
+            other.m_destructor = nullptr;
         }
 
         VulkanResource& operator= (const VulkanResource&) = delete;
         VulkanResource& operator= (VulkanResource&& other) noexcept {
-            if (obj) {
-                PHENYL_DASSERT(destructor);
-                destructor(std::move(obj));
+            if (m_obj) {
+                PHENYL_DASSERT(m_destructor);
+                m_destructor(std::move(m_obj));
             }
 
-            obj = other.obj;
-            destructor = other.destructor;
+            m_obj = other.m_obj;
+            m_destructor = other.m_destructor;
 
-            other.obj = {};
-            other.destructor = nullptr;
+            other.m_obj = {};
+            other.m_destructor = nullptr;
 
             return *this;
         }
 
         ~VulkanResource () noexcept {
-            if (obj) {
-                PHENYL_DASSERT(destructor);
-                destructor(std::move(obj));
+            if (m_obj) {
+                PHENYL_DASSERT(m_destructor);
+                m_destructor(std::move(m_obj));
             }
         }
 
         explicit operator bool () const noexcept {
-            return static_cast<bool>(obj);
+            return static_cast<bool>(m_obj);
         }
 
         T operator* () const noexcept {
             PHENYL_ASSERT(static_cast<bool>(*this));
-            return obj;
+            return m_obj;
         }
 
         T* operator-> () noexcept {
             PHENYL_ASSERT(static_cast<bool>(*this));
-            return &obj;
+            return &m_obj;
         }
 
         const T* operator-> () const noexcept {
             PHENYL_ASSERT(static_cast<bool>(*this));
-            return &obj;
+            return &m_obj;
         }
     };
 
@@ -106,63 +106,63 @@ namespace phenyl::vulkan {
         template <typename T>
         class DestructionQueue {
         private:
-            std::function<void(T)> destructor;
-            std::queue<std::pair<T, std::uint64_t>> queuedDestructions;
+            std::function<void(T)> m_destructor;
+            std::queue<std::pair<T, std::uint64_t>> m_queuedDestructions;
 
         public:
-            explicit DestructionQueue (std::function<void(T)> destructor) : destructor{std::move(destructor)} {}
+            explicit DestructionQueue (std::function<void(T)> destructor) : m_destructor{std::move(destructor)} {}
 
             ~DestructionQueue() {
                 clear();
             }
 
             void queueDestruction (T obj, std::uint64_t frameNum) {
-                queuedDestructions.emplace(std::move(obj), frameNum);
+                m_queuedDestructions.emplace(std::move(obj), frameNum);
             }
 
             void onFrame (std::uint64_t frame) {
-                while (!queuedDestructions.empty()) {
-                    auto [obj, objFrame] = queuedDestructions.front();
+                while (!m_queuedDestructions.empty()) {
+                    auto [obj, objFrame] = m_queuedDestructions.front();
                     if (objFrame > frame) {
                         break;
                     }
 
-                    queuedDestructions.pop();
-                    destructor(obj);
+                    m_queuedDestructions.pop();
+                    m_destructor(obj);
                 }
             }
 
             void clear () {
-                while (!queuedDestructions.empty()) {
-                    auto [obj, _] = queuedDestructions.front();
-                    queuedDestructions.pop();
+                while (!m_queuedDestructions.empty()) {
+                    auto [obj, _] = m_queuedDestructions.front();
+                    m_queuedDestructions.pop();
 
-                    destructor(obj);
+                    m_destructor(obj);
                 }
             }
         };
 
-        VulkanDevice& device;
-        VmaAllocator allocator;
+        VulkanDevice& m_device;
+        VmaAllocator m_allocator;
 
-        DestructionQueue<VulkanBufferInfo> bufferQueue;
+        DestructionQueue<VulkanBufferInfo> m_bufferQueue;
 
-        DestructionQueue<VulkanImageInfo> imageQueue;
-        DestructionQueue<VkImageView> imageViewQueue;
-        DestructionQueue<VkSampler> samplerQueue;
+        DestructionQueue<VulkanImageInfo> m_imageQueue;
+        DestructionQueue<VkImageView> m_imageViewQueue;
+        DestructionQueue<VkSampler> m_samplerQueue;
 
-        DestructionQueue<VkDescriptorSetLayout> descriptorSetLayoutQueue;
-        DestructionQueue<VkPipelineLayout> pipelineLayoutQueue;
-        DestructionQueue<VkPipeline> pipelineQueue;
+        DestructionQueue<VkDescriptorSetLayout> m_descriptorSetLayoutQueue;
+        DestructionQueue<VkPipelineLayout> m_pipelineLayoutQueue;
+        DestructionQueue<VkPipeline> m_pipelineQueue;
 
-        DestructionQueue<VkSemaphore> semaphoreQueue;
-        DestructionQueue<VkFence> fenceQueue;
+        DestructionQueue<VkSemaphore> m_semaphoreQueue;
+        DestructionQueue<VkFence> m_fenceQueue;
 
-        DestructionQueue<VkCommandPool> commandPoolQueue;
-        DestructionQueue<VulkanCommandBufferInfo> commandBufferQueue;
+        DestructionQueue<VkCommandPool> m_commandPoolQueue;
+        DestructionQueue<VulkanCommandBufferInfo> m_commandBufferQueue;
 
-        std::uint64_t frameNum = 0;
-        std::uint64_t maxFramesInFlight;
+        std::uint64_t m_frameNum = 0;
+        std::uint64_t m_maxFramesInFlight;
 
         [[nodiscard]] std::uint64_t getDestructionFrame () const noexcept;
     public:

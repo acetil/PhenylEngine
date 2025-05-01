@@ -9,13 +9,13 @@ static VkPresentModeKHR ChoosePresentMode (const VulkanSwapChainDetails& details
 static VkExtent2D ChooseExtent (const VulkanSwapChainDetails& details);
 static std::uint32_t ChooseImageCount (const VulkanSwapChainDetails& details);
 
-VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies) : device{device}, imageExtent{} {
+VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies) : m_device{device}, m_extent{} {
     PHENYL_LOGI(LOGGER, "Creating swap chain");
     auto surfaceFormat = ChooseSurfaceFormat(details);
-    imageFormat = surfaceFormat.format;
+    m_format = surfaceFormat.format;
 
     auto presentMode = ChoosePresentMode(details);
-    imageExtent = ChooseExtent(details);
+    m_extent = ChooseExtent(details);
     auto imageCount = ChooseImageCount(details);
 
     std::vector<std::uint32_t> queueFamilyIndices{};
@@ -33,7 +33,7 @@ VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const V
         .minImageCount = imageCount,
         .imageFormat = surfaceFormat.format,
         .imageColorSpace = surfaceFormat.colorSpace,
-        .imageExtent = imageExtent,
+        .imageExtent = m_extent,
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         .imageSharingMode = sharingMode,
@@ -50,21 +50,21 @@ VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const V
     auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchainKhr);
     PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create swapchain!");
 
-    swapChain = swapchainKhr;
+    m_swapChain = swapchainKhr;
     createImages();
 
     PHENYL_LOGI(LOGGER, "Created swap chain");
 }
 
 VulkanSwapChain::~VulkanSwapChain () {
-    for (auto view : swapChainViews) {
-        vkDestroyImageView(device, view, nullptr);
+    for (auto view : m_imageViews) {
+        vkDestroyImageView(m_device, view, nullptr);
     }
 
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
+    vkDestroySwapchainKHR(m_device, m_swapChain, nullptr);
 }
 
-VkViewport VulkanSwapChain::getViewport () const noexcept {
+VkViewport VulkanSwapChain::viewport () const noexcept {
     return VkViewport{
         .x = 0,
         .y = 0,
@@ -75,7 +75,7 @@ VkViewport VulkanSwapChain::getViewport () const noexcept {
     };
 }
 
-VkRect2D VulkanSwapChain::getScissor () const noexcept {
+VkRect2D VulkanSwapChain::scissor () const noexcept {
     return VkRect2D{
         .offset = {0, 0},
         .extent = extent()
@@ -84,19 +84,19 @@ VkRect2D VulkanSwapChain::getScissor () const noexcept {
 
 
 std::optional<SwapChainImage> VulkanSwapChain::acquireImage (const VulkanSemaphore& signalSem) {
-    auto result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<std::uint64_t>::max(),
-        signalSem.get(), VK_NULL_HANDLE, &currIndex);
+    auto result = vkAcquireNextImageKHR(m_device, m_swapChain, std::numeric_limits<std::uint64_t>::max(),
+        signalSem.get(), VK_NULL_HANDLE, &m_currIndex);
 
     if (result == VK_SUCCESS) {
         return SwapChainImage{
-            .image = swapChainImages.at(currIndex),
-            .view = swapChainViews.at(currIndex)
+            .image = m_images.at(m_currIndex),
+            .view = m_imageViews.at(m_currIndex)
         };
     } else if (result == VK_SUBOPTIMAL_KHR) {
         PHENYL_LOGI(LOGGER, "Acquired image with VK_SUBOPTIMAL_KHR mode, ignoring");
         return SwapChainImage{
-            .image = swapChainImages.at(currIndex),
-            .view = swapChainViews.at(currIndex)
+            .image = m_images.at(m_currIndex),
+            .view = m_imageViews.at(m_currIndex)
         };
     } else if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         PHENYL_LOGI(LOGGER, "Swap chain is out of date, recreation required");
@@ -114,8 +114,8 @@ bool VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &sem,
         .swapchainCount = 1,
-        .pSwapchains = &swapChain,
-        .pImageIndices = &currIndex
+        .pSwapchains = &m_swapChain,
+        .pImageIndices = &m_currIndex
     };
 
     auto result = vkQueuePresentKHR(queue, &presentInfo);
@@ -128,11 +128,11 @@ bool VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
 }
 
 void VulkanSwapChain::createImages () {
-    swapChainImages = Enumerate<VkImage>(vkGetSwapchainImagesKHR, device, swapChain);
-    swapChainViews.reserve(swapChainImages.size());
+    m_images = Enumerate<VkImage>(vkGetSwapchainImagesKHR, m_device, m_swapChain);
+    m_imageViews.reserve(m_images.size());
 
     // TODO: abstract away into class
-    for (const auto& image : swapChainImages) {
+    for (const auto& image : m_images) {
         VkComponentMapping components{
             .r = VK_COMPONENT_SWIZZLE_IDENTITY,
             .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -152,16 +152,16 @@ void VulkanSwapChain::createImages () {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = imageFormat,
+            .format = m_format,
             .components = components,
             .subresourceRange = subresourceRange
         };
 
         VkImageView imageView;
-        auto result = vkCreateImageView(device, &createInfo, nullptr, &imageView);
+        auto result = vkCreateImageView(m_device, &createInfo, nullptr, &imageView);
         PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create image view!");
 
-        swapChainViews.emplace_back(imageView);
+        m_imageViews.emplace_back(imageView);
     }
 
     PHENYL_LOGI(LOGGER, "Created swap chain images");

@@ -10,7 +10,7 @@ namespace phenyl::core {
 namespace phenyl {
     class PrefabPlugin : public IPlugin {
     private:
-        std::unique_ptr<core::PrefabAssetManager> manager;
+        std::unique_ptr<core::PrefabAssetManager> m_manager;
     public:
         PrefabPlugin ();
         ~PrefabPlugin() override;

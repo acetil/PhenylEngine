@@ -6,10 +6,10 @@
 namespace phenyl::vulkan {
     class VulkanImageTexture : public graphics::IImageTexture {
     private:
-        VulkanResources& resources;
-        TransferManager& transferManager;
+        VulkanResources& m_resources;
+        TransferManager& m_transferManager;
 
-        CombinedSampler combinedSampler;
+        CombinedSampler m_combinedSampler;
 
         void recreateIfNecessary (VkFormat format, std::uint32_t width, std::uint32_t height);
         void recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height);

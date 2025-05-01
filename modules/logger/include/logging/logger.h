@@ -8,9 +8,9 @@
 namespace phenyl::logging {
     class Logger {
     private:
-        std::string_view name;
-        Logger* parent;
-        LogSink* logSink = nullptr;
+        std::string_view m_name;
+        Logger* m_parent;
+        LogSink* m_sink = nullptr;
 
         void initSink ();
 
@@ -23,16 +23,16 @@ namespace phenyl::logging {
 
         template <typename ...Args>
         void log (const std::source_location sourceLoc, const int level, std::format_string<Args...> fmt, Args&&... args) {
-            if (!logSink) {
+            if (!m_sink) {
                 [[unlikely]]
                 initSink();
             }
 
-            if (level < logSink->getMinLogLevel()) {
+            if (level < m_sink->getMinLogLevel()) {
                 return;
             }
 
-            logSink->log(sourceLoc, level, std::format(fmt, std::forward<Args>(args)...));
+            m_sink->log(sourceLoc, level, std::format(fmt, std::forward<Args>(args)...));
         }
 
         template <typename ...Args>

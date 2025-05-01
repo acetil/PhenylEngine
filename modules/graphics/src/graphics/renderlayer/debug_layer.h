@@ -15,15 +15,15 @@ namespace phenyl::graphics {
             glm::mat4 screenTransform;
         };
 
-        Pipeline boxPipeline;
-        Buffer<glm::vec3> boxPos;
-        Buffer<glm::vec4> boxColour;
+        Pipeline m_boxPipeline;
+        Buffer<glm::vec3> m_boxPos;
+        Buffer<glm::vec4> m_boxColor;
 
-        Pipeline linePipeline;
-        Buffer<glm::vec3> linePos;
-        Buffer<glm::vec4> lineColour;
+        Pipeline m_linePipeline;
+        Buffer<glm::vec3> m_linePos;
+        Buffer<glm::vec4> m_lineColor;
 
-        UniformBuffer<Uniform> uniformBuffer;
+        UniformBuffer<Uniform> m_uniformBuffer;
 
         void bufferBox (const DebugBox& box);
         void bufferLine (const DebugLine& line);

@@ -7,8 +7,8 @@
 namespace phenyl::vulkan {
     class TransferManager {
     private:
-        VkQueue transferQueue;
-        VulkanTransientCommandPool commandPool;
+        VkQueue m_queue;
+        VulkanTransientCommandPool m_commandPool;
     public:
         TransferManager (VulkanResources& resources);
 

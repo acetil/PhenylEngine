@@ -32,67 +32,67 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"PARTICLE_SYSTEM2D", detail::GRAPHICS_LOGGER};
 
-ParticleSystem2D::ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles) : properties{properties}, particles{maxParticles}, startIndex{0}, size{0}, activeNum{0} {}
+ParticleSystem2D::ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles) : m_properties{properties}, m_particles{maxParticles}, m_startIndex{0}, m_size{0}, m_activeNum{0} {}
 
 void ParticleSystem2D::emit (glm::vec2 worldPos, glm::vec2 direction) {
-    if (size < particles.size()) {
-        addParticle(worldPos, direction, (startIndex + size) % particles.size());
-        size++;
-        activeNum++;
-    } else if (activeNum < particles.size()) {
-        for (auto i = 0; i < particles.size(); i++) {
-            auto index = (startIndex + i) % particles.size();
-            if (!particles[index].active) {
+    if (m_size < m_particles.size()) {
+        addParticle(worldPos, direction, (m_startIndex + m_size) % m_particles.size());
+        m_size++;
+        m_activeNum++;
+    } else if (m_activeNum < m_particles.size()) {
+        for (auto i = 0; i < m_particles.size(); i++) {
+            auto index = (m_startIndex + i) % m_particles.size();
+            if (!m_particles[index].active) {
                 addParticle(worldPos, direction, index);
-                activeNum++;
+                m_activeNum++;
                 return;
             }
         }
 
         // Evict first particle
-        addParticle(worldPos, direction, startIndex);
+        addParticle(worldPos, direction, m_startIndex);
     } else {
         // Evict first particle
-        addParticle(worldPos, direction, startIndex);
-        startIndex = (startIndex + 1) % particles.size();
+        addParticle(worldPos, direction, m_startIndex);
+        m_startIndex = (m_startIndex + 1) % m_particles.size();
     }
 }
 
 void ParticleSystem2D::addParticle (glm::vec2 worldPos, glm::vec2 direction, std::size_t index) {
-    Particle& particle = particles[index];
+    Particle& particle = m_particles[index];
 
     float dirAngle = std::atan2(direction.y, direction.x);
-    float newDirAngle = util::Random::Rand(dirAngle - properties.directionSpread / 180 * std::numbers::pi_v<float>, dirAngle + properties.directionSpread / 180 * std::numbers::pi_v<float>);
+    float newDirAngle = util::Random::Rand(dirAngle - m_properties.directionSpread / 180 * std::numbers::pi_v<float>, dirAngle + m_properties.directionSpread / 180 * std::numbers::pi_v<float>);
     direction = glm::vec2{glm::cos(newDirAngle), glm::sin(newDirAngle)};
 
-    particle.lifetime = util::Random::Rand(properties.lifetimeMin, properties.lifetimeMax);
+    particle.lifetime = util::Random::Rand(m_properties.lifetimeMin, m_properties.lifetimeMax);
     particle.remainingTime = particle.lifetime;
 
     particle.pos = worldPos;
-    particle.vel = util::Random::Rand(properties.velocityMin, properties.velocityMax) * direction;
-    particle.acc = properties.gravity;
+    particle.vel = util::Random::Rand(m_properties.velocityMin, m_properties.velocityMax) * direction;
+    particle.acc = m_properties.gravity;
 
-    particle.colourStart = util::Random::Rand(properties.colourStartMin, properties.colourStartMax);
-    particle.colourEnd = util::Random::Rand(properties.colourEndMin, properties.colourEndMax);
+    particle.colourStart = util::Random::Rand(m_properties.colourStartMin, m_properties.colourStartMax);
+    particle.colourEnd = util::Random::Rand(m_properties.colourEndMin, m_properties.colourEndMax);
     particle.colour = particle.colourStart;
 
-    particle.sizeStart = util::Random::Rand(properties.sizeStartMin, properties.sizeStartMax);
-    particle.sizeEnd = util::Random::Rand(properties.sizeEndMin, properties.sizeEndMax);
+    particle.sizeStart = util::Random::Rand(m_properties.sizeStartMin, m_properties.sizeStartMax);
+    particle.sizeEnd = util::Random::Rand(m_properties.sizeEndMin, m_properties.sizeEndMax);
     particle.size = particle.sizeStart;
 
-    particle.angle = util::Random::Rand(properties.angleMin, properties.angleMax) / 180 * std::numbers::pi_v<float>;
-    particle.angularVel = util::Random::Rand(properties.angularVelMin, properties.angularVelMax) / 180 * std::numbers::pi_v<float>;
+    particle.angle = util::Random::Rand(m_properties.angleMin, m_properties.angleMax) / 180 * std::numbers::pi_v<float>;
+    particle.angularVel = util::Random::Rand(m_properties.angularVelMin, m_properties.angularVelMax) / 180 * std::numbers::pi_v<float>;
 
     particle.active = true;
 }
 
 void ParticleSystem2D::update (float deltaTime) {
-    auto beginSize = size;
-    auto beginIndex = startIndex;
+    auto beginSize = m_size;
+    auto beginIndex = m_startIndex;
     for (std::size_t i = 0; i < beginSize; i++) {
-        auto index = (beginIndex + i) % particles.size();
+        auto index = (beginIndex + i) % m_particles.size();
 
-        auto& particle = particles[index];
+        auto& particle = m_particles[index];
         if (!particle.active) {
             continue;
         }
@@ -100,14 +100,14 @@ void ParticleSystem2D::update (float deltaTime) {
         particle.remainingTime -= deltaTime;
         if (particle.remainingTime <= 0) {
             particle.active = false;
-            activeNum--;
+            m_activeNum--;
 
-            if (index == startIndex) {
-                startIndex = (startIndex + 1) % particles.size();
-                size--;
-            } else if (index == (startIndex + size) % particles.size()) {
-                while (size > 0 && !particles[(startIndex + size) % particles.size()].active) {
-                    size--;
+            if (index == m_startIndex) {
+                m_startIndex = (m_startIndex + 1) % m_particles.size();
+                m_size--;
+            } else if (index == (m_startIndex + m_size) % m_particles.size()) {
+                while (m_size > 0 && !m_particles[(m_startIndex + m_size) % m_particles.size()].active) {
+                    m_size--;
                 }
             }
             continue;
@@ -133,9 +133,9 @@ void ParticleSystem2D::bufferPos (Buffer<glm::vec2>& buffer) const {
             {1.0f, -1.0f}
     };
 
-    for (std::size_t i = 0; i < size; i++) {
-        auto index = (startIndex + i) % particles.size();
-        auto& particle = particles[index];
+    for (std::size_t i = 0; i < m_size; i++) {
+        auto index = (m_startIndex + i) % m_particles.size();
+        auto& particle = m_particles[index];
 
         if (!particle.active) {
             continue;
@@ -150,9 +150,9 @@ void ParticleSystem2D::bufferPos (Buffer<glm::vec2>& buffer) const {
 }
 
 void ParticleSystem2D::bufferColour (Buffer<glm::vec4>& buffer) const {
-    for (std::size_t i = 0; i < size; i++) {
-        auto index = (startIndex + i) % particles.size();
-        auto& particle = particles[index];
+    for (std::size_t i = 0; i < m_size; i++) {
+        auto index = (m_startIndex + i) % m_particles.size();
+        auto& particle = m_particles[index];
 
         if (!particle.active) {
             continue;

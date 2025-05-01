@@ -17,13 +17,13 @@ namespace phenyl::vulkan {
 
     class FrameManager {
     private:
-        std::size_t frameCount = static_cast<std::size_t>(-1);
-        std::size_t maxInFlight;
+        std::size_t m_frameCount = static_cast<std::size_t>(-1);
+        std::size_t m_maxInFlight;
 
         //SwapChainImage frameImage{};
-        std::vector<VulkanCommandPool> commandPools;
-        std::vector<VulkanDescriptorPool> descriptorPools; // TODO: per-pipeline pools?
-        std::vector<FrameSync> syncs;
+        std::vector<VulkanCommandPool> m_commandPools;
+        std::vector<VulkanDescriptorPool> m_descriptorPools; // TODO: per-pipeline pools?
+        std::vector<FrameSync> m_syncs;
 
         friend class VulkanRenderer;
     public:
@@ -36,26 +36,26 @@ namespace phenyl::vulkan {
         // }
 
         VulkanCommandPool& getCommandPool () {
-            PHENYL_DASSERT(flightNum() < commandPools.size());
-            return commandPools[flightNum()];
+            PHENYL_DASSERT(flightNum() < m_commandPools.size());
+            return m_commandPools[flightNum()];
         }
 
         VulkanDescriptorPool& getDescriptorPool () {
-            PHENYL_DASSERT(flightNum() < commandPools.size());
-            return descriptorPools[flightNum()];
+            PHENYL_DASSERT(flightNum() < m_commandPools.size());
+            return m_descriptorPools[flightNum()];
         }
 
         FrameSync& getFrameSync () {
-            PHENYL_DASSERT(flightNum() < syncs.size());
-            return syncs[flightNum()];
+            PHENYL_DASSERT(flightNum() < m_syncs.size());
+            return m_syncs[flightNum()];
         }
 
         std::size_t frameNum () const noexcept {
-            return frameCount;
+            return m_frameCount;
         }
 
         std::size_t flightNum () const noexcept {
-            return frameCount % maxInFlight;
+            return m_frameCount % m_maxInFlight;
         }
     };
 }

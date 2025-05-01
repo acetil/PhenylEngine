@@ -32,7 +32,7 @@ namespace {
     )
 }
 
-MaterialManager::MaterialManager (Renderer& renderer) : renderer{renderer} {}
+MaterialManager::MaterialManager (Renderer& renderer) : m_renderer{renderer} {}
 
 Material* MaterialManager::load (std::ifstream& data, std::size_t id) {
     auto def = core::DeserializeFromJson<MaterialDefinition>(data);
@@ -54,8 +54,8 @@ Material* MaterialManager::load (std::ifstream& data, std::size_t id) {
 
     props.uniformBlockSize = *def.shader->uniformBlockSize("Material");
 
-    auto material = std::make_unique<Material>(renderer, id, std::move(def.shader), std::move(props));
-    auto [it, _] = materials.emplace(id, std::move(material));
+    auto material = std::make_unique<Material>(m_renderer, id, std::move(def.shader), std::move(props));
+    auto [it, _] = m_materials.emplace(id, std::move(material));
 
     return it->second.get();
 }

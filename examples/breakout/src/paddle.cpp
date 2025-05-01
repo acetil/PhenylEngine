@@ -81,7 +81,7 @@ void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const pheny
 
     vel.x = (glm::clamp(newPos.x, minX + width / 2, maxX - width / 2) - transform.transform2D.position().x) / static_cast<float>(deltaTime());
 
-    body.applyImpulse(vel * body.getMass() - body.getMomentum());
+    body.applyImpulse(vel * body.mass() - body.momentum());
 
     if (BallShoot.value() && hasBall) {
         hasBall = false;
@@ -104,7 +104,7 @@ void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const pheny
             transform.transform2D.setPosition(pos);
         });
         ballEntity.apply<phenyl::RigidBody2D>([ballVel] (phenyl::RigidBody2D& body) {
-            body.applyImpulse(body.getMass() * ballVel);
+            body.applyImpulse(body.mass() * ballVel);
         });
 
     } else if (!BallShoot.value() && !hasBall) {

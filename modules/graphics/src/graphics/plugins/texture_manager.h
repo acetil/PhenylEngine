@@ -8,8 +8,8 @@ namespace phenyl::graphics {
 
     class TextureManager : public core::AssetManager<Texture> {
     private:
-        Renderer& renderer;
-        std::unordered_map<std::size_t, std::unique_ptr<Texture>> textures;
+        Renderer& m_renderer;
+        std::unordered_map<std::size_t, std::unique_ptr<Texture>> m_textures;
     public:
         TextureManager (Renderer& renderer);
 

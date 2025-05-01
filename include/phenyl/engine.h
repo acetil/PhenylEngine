@@ -15,7 +15,7 @@ namespace phenyl {
 
     class PhenylEngine {
     private:
-        std::unique_ptr<engine::Engine> internal;
+        std::unique_ptr<engine::Engine> m_internal;
 
     public:
         PhenylEngine (const logging::LoggingProperties& = {});

@@ -19,120 +19,120 @@ namespace phenyl::graphics {
     template <typename T>
     class UniformBuffer {
     private:
-        std::unique_ptr<IUniformBuffer> rendererBuffer;
-        T* data;
+        std::unique_ptr<IUniformBuffer> m_buffer;
+        T* m_data;
     public:
         UniformBuffer() = default;
 
         template <typename ...Args>
-        explicit UniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, Args&&... args) requires (std::constructible_from<T, Args&&...>) : rendererBuffer{std::move(rendererBuffer)} {
-            PHENYL_DASSERT(this->rendererBuffer);
-            data = reinterpret_cast<T*>(this->rendererBuffer->allocate(sizeof(T)).data());
+        explicit UniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, Args&&... args) requires (std::constructible_from<T, Args&&...>) : m_buffer{std::move(rendererBuffer)} {
+            PHENYL_DASSERT(this->m_buffer);
+            m_data = reinterpret_cast<T*>(this->m_buffer->allocate(sizeof(T)).data());
             T t{std::forward<Args>(args)...};
-            new (data) T(std::move(t));
+            new (m_data) T(std::move(t));
         }
 
         explicit operator bool () const {
-            return static_cast<bool>(rendererBuffer);
+            return static_cast<bool>(m_buffer);
         }
 
         T& operator* () {
-            PHENYL_DASSERT(data);
-            return *data;
+            PHENYL_DASSERT(m_data);
+            return *m_data;
         }
 
         const T& operator* () const {
-            PHENYL_DASSERT(data);
-            return *data;
+            PHENYL_DASSERT(m_data);
+            return *m_data;
         }
 
         T* operator-> () {
-            PHENYL_DASSERT(data);
-            return data;
+            PHENYL_DASSERT(m_data);
+            return m_data;
         }
 
         const T* operator-> () const {
-            PHENYL_DASSERT(data);
-            return data;
+            PHENYL_DASSERT(m_data);
+            return m_data;
         }
 
         T* get () {
-            PHENYL_DASSERT(data);
-            return data;
+            PHENYL_DASSERT(m_data);
+            return m_data;
         }
 
         const T* get () const {
-            PHENYL_DASSERT(data);
-            return data;
+            PHENYL_DASSERT(m_data);
+            return m_data;
         }
 
         void upload () {
-            PHENYL_DASSERT(rendererBuffer);
-            rendererBuffer->upload();
+            PHENYL_DASSERT(m_buffer);
+            m_buffer->upload();
         }
 
         [[nodiscard]] bool readable () const {
-            PHENYL_DASSERT(rendererBuffer);
-            return rendererBuffer->isReadable();
+            PHENYL_DASSERT(m_buffer);
+            return m_buffer->isReadable();
         }
 
         IUniformBuffer& getUnderlying () {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
+            PHENYL_DASSERT(m_buffer);
+            return *m_buffer;
         }
 
         [[nodiscard]] const IUniformBuffer& getUnderlying () const {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
+            PHENYL_DASSERT(m_buffer);
+            return *m_buffer;
         }
     };
 
     template <typename T>
     class UniformArrayBuffer {
     private:
-        std::unique_ptr<IUniformBuffer> rendererBuffer;
-        std::byte* data;
-        std::size_t objStride = 0;
-        std::size_t currSize = 0;
-        std::size_t currCapacity = 0;
+        std::unique_ptr<IUniformBuffer> m_buffer;
+        std::byte* m_data;
+        std::size_t m_stride = 0;
+        std::size_t m_size = 0;
+        std::size_t m_capacity = 0;
 
         void guaranteeCapacity (std::size_t reqCapacity) {
-            if (currCapacity >= reqCapacity) {
+            if (m_capacity >= reqCapacity) {
                 return;
             }
 
-            while (currCapacity < reqCapacity) {
-                currCapacity *= 2;
+            while (m_capacity < reqCapacity) {
+                m_capacity *= 2;
             }
 
-            data = this->rendererBuffer->allocate(objStride * currCapacity).data();
+            m_data = this->m_buffer->allocate(m_stride * m_capacity).data();
         }
 
         T* get (std::size_t index) {
-            return reinterpret_cast<T*>(data + index * objStride);
+            return reinterpret_cast<T*>(m_data + index * m_stride);
         }
     public:
         UniformArrayBuffer () = default;
-        UniformArrayBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t startCapacity = 8) : rendererBuffer{std::move(rendererBuffer)}, currCapacity{startCapacity} {
-            PHENYL_DASSERT(this->rendererBuffer);
+        UniformArrayBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t startCapacity = 8) : m_buffer{std::move(rendererBuffer)}, m_capacity{startCapacity} {
+            PHENYL_DASSERT(this->m_buffer);
 
             // https://blog.xoria.org/rounding-up/
-            auto strideMask = this->rendererBuffer->getMinAlignment() - 1;
-            objStride = (sizeof(T) + strideMask) & ~strideMask;
+            auto strideMask = this->m_buffer->getMinAlignment() - 1;
+            m_stride = (sizeof(T) + strideMask) & ~strideMask;
 
-            data = this->rendererBuffer->allocate(objStride * currCapacity).data();
+            m_data = this->m_buffer->allocate(m_stride * m_capacity).data();
         }
 
         explicit operator bool () const {
-            return static_cast<bool>(rendererBuffer);
+            return static_cast<bool>(m_buffer);
         }
 
         std::size_t size () const noexcept {
-            return currSize;
+            return m_size;
         }
 
         std::size_t capacity () const noexcept {
-            return currCapacity;
+            return m_capacity;
         }
 
         void reserve (std::size_t capacity) {
@@ -140,95 +140,95 @@ namespace phenyl::graphics {
         }
 
         T& push (T&& obj) {
-            guaranteeCapacity(currSize + 1);
+            guaranteeCapacity(m_size + 1);
 
-            PHENYL_DASSERT(data);
-            new (get(currSize)) T(std::forward<T>(obj));
+            PHENYL_DASSERT(m_data);
+            new (get(m_size)) T(std::forward<T>(obj));
 
-            return *get(currSize++);
+            return *get(m_size++);
         }
 
         T& at (std::size_t pos) {
-            PHENYL_ASSERT(pos < currSize);
-            PHENYL_DASSERT(data);
+            PHENYL_ASSERT(pos < m_size);
+            PHENYL_DASSERT(m_data);
             return *get(pos);
         }
 
         T& operator[] (std::size_t pos) {
-            PHENYL_DASSERT(pos < currSize);
-            PHENYL_DASSERT(data);
+            PHENYL_DASSERT(pos < m_size);
+            PHENYL_DASSERT(m_data);
             return *get(pos);
         }
 
         void clear () {
-            currSize = 0;
+            m_size = 0;
         }
 
         void upload () {
-            PHENYL_DASSERT(rendererBuffer);
-            rendererBuffer->upload();
+            PHENYL_DASSERT(m_buffer);
+            m_buffer->upload();
         }
 
         IUniformBuffer& getUnderlying () {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
+            PHENYL_DASSERT(m_buffer);
+            return *m_buffer;
         }
 
         [[nodiscard]] const IUniformBuffer& getUnderlying () const {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
+            PHENYL_DASSERT(m_buffer);
+            return *m_buffer;
         }
 
         std::size_t stride () const noexcept {
-            return objStride;
+            return m_stride;
         }
     };
 
     class RawUniformBuffer {
     private:
-        std::unique_ptr<IUniformBuffer> rendererBuffer;
-        std::span<std::byte> bufData;
+        std::unique_ptr<IUniformBuffer> m_buffer;
+        std::span<std::byte> m_data;
     public:
         RawUniformBuffer () = default;
 
-        RawUniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t size) : rendererBuffer{std::move(rendererBuffer)} {
-            bufData = this->rendererBuffer->allocate(size);
+        RawUniformBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t size) : m_buffer{std::move(rendererBuffer)} {
+            m_data = this->m_buffer->allocate(size);
         }
 
         explicit operator bool () const noexcept {
-            return static_cast<bool>(rendererBuffer);
+            return static_cast<bool>(m_buffer);
         }
 
         std::byte* data () noexcept {
-            return bufData.data();
+            return m_data.data();
         }
 
         const std::byte* data () const noexcept {
-            return bufData.data();
+            return m_data.data();
         }
 
         std::size_t size () const noexcept {
-            return bufData.size();
+            return m_data.size();
         }
 
         [[nodiscard]] bool readable () const {
-            PHENYL_DASSERT(rendererBuffer);
-            return rendererBuffer->isReadable();
+            PHENYL_DASSERT(m_buffer);
+            return m_buffer->isReadable();
         }
 
         void upload () {
-            PHENYL_DASSERT(rendererBuffer);
-            rendererBuffer->upload();
+            PHENYL_DASSERT(m_buffer);
+            m_buffer->upload();
         }
 
         IUniformBuffer& getUnderlying () {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
+            PHENYL_DASSERT(m_buffer);
+            return *m_buffer;
         }
 
         [[nodiscard]] const IUniformBuffer& getUnderlying () const {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
+            PHENYL_DASSERT(m_buffer);
+            return *m_buffer;
         }
     };
 }

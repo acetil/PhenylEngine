@@ -5,11 +5,11 @@
 
 using namespace phenyl;
 
-engine::ApplicationBase::ApplicationBase (phenyl::ApplicationProperties properties) : properties{std::move(properties)} {}
+engine::ApplicationBase::ApplicationBase (phenyl::ApplicationProperties properties) : m_properties{std::move(properties)} {}
 
 core::PhenylRuntime& engine::ApplicationBase::runtime () {
-    PHENYL_DASSERT(engineRuntime);
-    return *engineRuntime;
+    PHENYL_DASSERT(m_runtime);
+    return *m_runtime;
 }
 
 core::World& engine::ApplicationBase::world () {
@@ -18,14 +18,14 @@ core::World& engine::ApplicationBase::world () {
 
 void engine::ApplicationBase::setTargetFPS (double fps) {
     if (fps <= 0) {
-        targetFrameTime = 0;
+        m_targetFrameTime = 0;
     } else {
-        targetFrameTime = 1.0 / fps;
+        m_targetFrameTime = 1.0 / fps;
     }
 }
 
 void engine::ApplicationBase::setFixedTimeScale (double newTimeScale) {
-    fixedTimeScale = newTimeScale;
+    m_fixedTimeScale = newTimeScale;
 }
 
 void engine::ApplicationBase::pause () {

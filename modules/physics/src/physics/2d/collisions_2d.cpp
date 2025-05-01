@@ -53,7 +53,7 @@ Constraint2D Manifold2D::buildConstraint (Collider2D* obj1, Collider2D* obj2, fl
     auto r2 = contactPoint - obj2->getPosition();
 
     auto elasticity = obj1->elasticity * obj2->elasticity; // TODO: different types of resolution?
-    auto elasticityTerm = glm::dot(normal, obj1->momentum * obj1->invMass + r1 * obj1->angularMomentum * obj1->invInertiaMoment - obj2->momentum * obj2->invMass - r2 * obj2->angularMomentum * obj2->invInertiaMoment);
+    auto elasticityTerm = glm::dot(normal, obj1->m_momentum * obj1->m_invMass + r1 * obj1->m_angularMomentum * obj1->m_invInertiaMoment - obj2->m_momentum * obj2->m_invMass - r2 * obj2->m_angularMomentum * obj2->m_invInertiaMoment);
 
     float bias = -BAUMGARTE_TERM / deltaTime * (glm::max(depth + BAUMGARTE_SLOP, 0.0f)) - elasticity * elasticityTerm;
     return Constraint2D::ContactConstraint(obj1, obj2, contactPoint, normal, bias);
@@ -70,17 +70,17 @@ Constraint2D Constraint2D::ContactConstraint (Collider2D* obj1, Collider2D* obj2
     auto r1 = contactPoint - obj1->currentPos;
     auto r2 = contactPoint - obj2->currentPos;
 
-    auto jVelObj1 = obj1->invMass != 0 ? -normal : glm::vec2{0, 0};
-    auto jWObj1 = obj1->invInertiaMoment != 0 ? vec2dCross(-r1, normal) : 0.0f;
+    auto jVelObj1 = obj1->m_invMass != 0 ? -normal : glm::vec2{0, 0};
+    auto jWObj1 = obj1->m_invInertiaMoment != 0 ? vec2dCross(-r1, normal) : 0.0f;
 
-    auto jVelObj2 = obj2->invMass != 0 ? normal : glm::vec2{0, 0};
-    auto jWObj2 = obj2->invInertiaMoment != 0 ? vec2dCross(r2, normal) : 0.0f;
+    auto jVelObj2 = obj2->m_invMass != 0 ? normal : glm::vec2{0, 0};
+    auto jWObj2 = obj2->m_invInertiaMoment != 0 ? vec2dCross(r2, normal) : 0.0f;
 
     float jacobMass = 0.0f;
-    jacobMass += glm::dot(jVelObj1 * glm::vec2{1 * obj1->invMass, 1 * obj1->invMass}, jVelObj1);
-    jacobMass += glm::dot(jVelObj2 * glm::vec2{1 * obj2->invMass, 1 * obj2->invMass}, jVelObj2);
-    jacobMass += jWObj1 * obj1->invInertiaMoment * jWObj1;
-    jacobMass += jWObj2 * obj2->invInertiaMoment * jWObj2;
+    jacobMass += glm::dot(jVelObj1 * glm::vec2{1 * obj1->m_invMass, 1 * obj1->m_invMass}, jVelObj1);
+    jacobMass += glm::dot(jVelObj2 * glm::vec2{1 * obj2->m_invMass, 1 * obj2->m_invMass}, jVelObj2);
+    jacobMass += jWObj1 * obj1->m_invInertiaMoment * jWObj1;
+    jacobMass += jWObj2 * obj2->m_invInertiaMoment * jWObj2;
 
     auto invJacobMass = 1 / jacobMass;
 

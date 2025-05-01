@@ -8,10 +8,10 @@
 namespace phenyl::graphics {
     class ProfileUiPlugin : public core::IPlugin {
     private:
-        util::SmoothQueue<double, 30> graphicsQueue;
-        util::SmoothQueue<double, 30> physicsQueue;
-        util::SmoothQueue<double, 30> frameQueue;
-        util::SmoothQueue<float, 30> deltaTimeQueue;
+        util::SmoothQueue<double, 30> m_graphicsQueue;
+        util::SmoothQueue<double, 30> m_physicsQueue;
+        util::SmoothQueue<double, 30> m_frameQueue;
+        util::SmoothQueue<float, 30> m_deltaTimeQueue;
     public:
         std::string_view getName () const noexcept override;
 

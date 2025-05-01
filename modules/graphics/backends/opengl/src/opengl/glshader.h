@@ -11,10 +11,10 @@
 namespace phenyl::opengl {
     class GlShader : public graphics::IShader {
     private:
-        GLuint programId{0};
-        std::unordered_map<std::string, unsigned int> attribs;
-        std::unordered_map<std::string, unsigned int> uniformBlocks;
-        std::unordered_map<std::string, unsigned int> samplers;
+        GLuint m_program{0};
+        std::unordered_map<std::string, unsigned int> m_attribs;
+        std::unordered_map<std::string, unsigned int> m_uniformBlocks;
+        std::unordered_map<std::string, unsigned int> m_samplers;
 
         bool addAttrib (graphics::ShaderDataType type, const std::string& attrib);
         bool addUniformBlock (const std::string& uniform);
@@ -24,10 +24,10 @@ namespace phenyl::opengl {
     public:
         class Builder {
         private:
-            std::unordered_map<graphics::ShaderSourceType, GLuint> shaderSources;
-            std::unordered_map<std::string, graphics::ShaderDataType> attribs;
-            std::unordered_set<std::string> uniformBlocks;
-            std::unordered_set<std::string> samplers;
+            std::unordered_map<graphics::ShaderSourceType, GLuint> m_sources;
+            std::unordered_map<std::string, graphics::ShaderDataType> m_attribs;
+            std::unordered_set<std::string> m_uniformBlocks;
+            std::unordered_set<std::string> m_samplers;
 
             friend class GlShader;
         public:
@@ -62,7 +62,7 @@ namespace phenyl::opengl {
 
     class GlShaderManager : public core::AssetManager<graphics::Shader> {
     private:
-        std::unordered_map<std::size_t, graphics::Shader> shaders;
+        std::unordered_map<std::size_t, graphics::Shader> m_shaders;
     public:
         const char* getFileType() const override;
         graphics::Shader* load (std::ifstream& data, std::size_t id) override;

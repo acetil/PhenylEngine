@@ -29,56 +29,56 @@ namespace phenyl::util {
             static constexpr std::size_t IndexBits = sizeof(T) * 8 - GenerationBits - TypeBits;
             static_assert(sizeof(T) * 8 > GenerationBits + TypeBits, "Number of bits requested for type and generation are too large!");
 
-            T data = 0;
+            T m_data = 0;
         public:
             template <std::unsigned_integral V>
             GameIdData (V generation, V type, V index) {
                 PHENYL_DASSERT(generation < (1ul << GenerationBits));
                 PHENYL_DASSERT(type < (1ul << TypeBits));
                 PHENYL_DASSERT(index < (1ul << IndexBits));
-                data = index | (type << IndexBits) | (generation << (IndexBits + TypeBits));
+                m_data = index | (type << IndexBits) | (generation << (IndexBits + TypeBits));
             }
 
             template <std::unsigned_integral V>
             GameIdData (V type, V index) {
                 PHENYL_DASSERT(type < (1ul << TypeBits));
                 PHENYL_DASSERT(index < (1ul << IndexBits));
-                data = index | (type << IndexBits);
+                m_data = index | (type << IndexBits);
             }
 
             template <std::unsigned_integral V>
             GameIdData (V generation, V index, IdConstructorTag) {
                 PHENYL_DASSERT(generation < (1ul << GenerationBits));
                 PHENYL_DASSERT(index < (1ul << IndexBits));
-                data = index | (generation << (IndexBits + TypeBits));
+                m_data = index | (generation << (IndexBits + TypeBits));
             }
 
             template <std::unsigned_integral V>
             GameIdData (V index) {
                 PHENYL_DASSERT(index <= ((1ul << (IndexBits - 1)) | 1));
-                data = index;
+                m_data = index;
             }
 
-            GameIdData() : data{0} {}
+            GameIdData() : m_data{0} {}
 
             T getIndex () const {
-                return data & safeMask<T, IndexBits>();
+                return m_data & safeMask<T, IndexBits>();
             }
 
             T getType () const {
-                return (data >> IndexBits) & ((1ul << TypeBits) - 1);
+                return (m_data >> IndexBits) & ((1ul << TypeBits) - 1);
             }
 
             T getGeneration () const {
-                return (data >> (IndexBits + TypeBits)) & ((1ul << GenerationBits) - 1);
+                return (m_data >> (IndexBits + TypeBits)) & ((1ul << GenerationBits) - 1);
             }
 
             T getValue () const {
-                return data;
+                return m_data;
             }
 
             bool operator== (const GameIdData<T, GenerationBits, TypeBits>& other) const {
-                return data == other.data;
+                return m_data == other.m_data;
             }
         };
     }
@@ -96,58 +96,58 @@ namespace phenyl::util {
     private:
         using BaseType = detail::GameIdData<T, GenBits, TypeBits>;
 
-        BaseType data;
+        BaseType m_data;
     public:
-        PublicGameId () : data{} {}
+        PublicGameId () : m_data{} {}
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits != 0 && TypeBits != 0>>
         explicit PublicGameId (V generation, V type, V index) {
             PHENYL_DASSERT(index != (detail::safeMask<T, IndexBits>()));
-            data = BaseType{generation, type, index + 1};
+            m_data = BaseType{generation, type, index + 1};
         }
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && ((GenBits == 0 && TypeBits != 0) || (GenBits != 0 && TypeBits == 0))>>
         explicit PublicGameId (V genType, V index) {
             PHENYL_DASSERT(index != (detail::safeMask<T, IndexBits>()));
             if constexpr (GenBits == 0) {
-                data = BaseType{genType, index + 1};
+                m_data = BaseType{genType, index + 1};
             }
 
             if constexpr (TypeBits == 0) {
-                data = BaseType{genType, index + 1, {}};
+                m_data = BaseType{genType, index + 1, {}};
             }
         }
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits == 0 && TypeBits == 0>>
         explicit PublicGameId (V index) {
             PHENYL_DASSERT(index != (detail::safeMask<T, IndexBits>()));
-            data = BaseType{index + 1};
+            m_data = BaseType{index + 1};
         }
 
         T getIndex () const {
-            return data.getIndex() - 1;
+            return m_data.getIndex() - 1;
         }
 
         template <typename U = PublicGameId<T, GenerationBits, TypeBits>>
         std::enable_if_t<U::TypeBits != 0, T> getType () {
-            return data.getType();
+            return m_data.getType();
         }
 
         template <typename U = PublicGameId<T, GenerationBits, TypeBits>>
         std::enable_if_t<U::GenBits != 0, T> getGeneration () {
-            return data.getGeneration();
+            return m_data.getGeneration();
         }
 
         operator bool () const {
-            return data.getIndex() != 0;
+            return m_data.getIndex() != 0;
         }
 
         bool operator== (const PublicGameId<T, GenerationBits, TypeBits>& other) const {
-            return data == other.data;
+            return m_data == other.m_data;
         }
 
         DataType getValue () const {
-            return data.getValue();
+            return m_data.getValue();
         }
 
         template <typename IdType>
@@ -169,39 +169,39 @@ namespace phenyl::util {
     private:
         using BaseType = PublicGameId<T, GenBits, TypeBits>;
 
-        BaseType data;
+        BaseType m_data;
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits != 0 && TypeBits != 0>>
-        GameId (V generation, V type, V index) : data{generation, type, index} {}
+        GameId (V generation, V type, V index) : m_data{generation, type, index} {}
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && ((GenBits == 0 && TypeBits != 0) || (GenBits != 0 && TypeBits == 0))>>
-        GameId (V genType, V index) : data{genType, index} {}
+        GameId (V genType, V index) : m_data{genType, index} {}
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits == 0 && TypeBits == 0>>
-        GameId (V index) : data{index} {}
+        GameId (V index) : m_data{index} {}
 
-        GameId (BaseType base) : data{base} {}
+        GameId (BaseType base) : m_data{base} {}
 
         T getIndex () const {
-            return data.getIndex();
+            return m_data.getIndex();
         }
 
         template <typename U = GameId<T, GenerationBits, TypeBits, IdOwnerType, TagType>>
         std::enable_if_t<U::TypeBits != 0, T> getType () {
-            return data.getType();
+            return m_data.getType();
         }
 
         template <typename U = GameId<T, GenerationBits, TypeBits, IdOwnerType, TagType>>
         std::enable_if_t<U::GenBits != 0, T> getGeneration () {
-            return data.getGeneration();
+            return m_data.getGeneration();
         }
 
         BaseType convert () const {
-            return data;
+            return m_data;
         }
 
     public:
-        GameId () : data{} {}
+        GameId () : m_data{} {}
 
         GameId (const GameId&) = default;
         GameId& operator= (const GameId&) = default;
@@ -210,15 +210,15 @@ namespace phenyl::util {
         GameId& operator= (GameId&&) noexcept = default;
 
         operator bool () const {
-            return data;
+            return m_data;
         }
 
         bool operator== (const GameId<T, GenerationBits, TypeBits, IdOwnerType, TagType>& other) const {
-            return data == other.data;
+            return m_data == other.m_data;
         }
 
         DataType getValue () const {
-            return data.getValue();
+            return m_data.getValue();
         }
 
         friend IdOwnerType;

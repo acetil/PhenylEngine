@@ -20,20 +20,20 @@ namespace phenyl::vulkan {
 
     class VulkanPipelineFactory {
     private:
-        std::unordered_map<const FrameBufferLayout*, VulkanResource<VkPipeline>> pipelines;
+        std::unordered_map<const FrameBufferLayout*, VulkanResource<VkPipeline>> m_pipelines;
 
-        VulkanResources& resources;
-        core::Asset<graphics::Shader> shader;
-        VulkanResource<VkPipelineLayout> pipelineLayout;
+        VulkanResources& m_resources;
+        core::Asset<graphics::Shader> m_shader;
+        VulkanResource<VkPipelineLayout> m_layout;
 
-        std::vector<VkVertexInputBindingDescription> vertexBindings;
-        std::vector<VkVertexInputAttributeDescription> vertexAttribs;
+        std::vector<VkVertexInputBindingDescription> m_vertexBindings;
+        std::vector<VkVertexInputAttributeDescription> m_attribs;
 
-        VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
-        VkPipelineRasterizationStateCreateInfo rasterizerInfo{};
-        VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+        VkPipelineInputAssemblyStateCreateInfo m_inputAssemblyInfo{};
+        VkPipelineRasterizationStateCreateInfo m_rasterizerInfo{};
+        VkPipelineDepthStencilStateCreateInfo m_depthStencilInfo;
 
-        VkPipelineColorBlendAttachmentState colorBlendState;
+        VkPipelineColorBlendAttachmentState m_colorBlendState;
 
     public:
         VulkanPipelineFactory (VulkanResources& resources, core::Asset<graphics::Shader> shader, VulkanResource<VkPipelineLayout> pipelineLayout, std::vector<VkVertexInputBindingDescription> vertexBindings,
@@ -43,7 +43,7 @@ namespace phenyl::vulkan {
         VkPipeline get (const FrameBufferLayout* layout);
 
         VkPipelineLayout layout () const noexcept {
-            return *pipelineLayout;
+            return *m_layout;
         }
     };
 
@@ -55,26 +55,26 @@ namespace phenyl::vulkan {
             std::size_t size;
         };
 
-        TestFramebuffer* testFramebuffer;
-        VulkanWindowFrameBuffer* windowFrameBuffer;
+        TestFramebuffer* m_testFramebuffer;
+        VulkanWindowFrameBuffer* m_windowFrameBuffer;
 
-        VkDevice device;
-        std::unique_ptr<VulkanPipelineFactory> pipelineFactory;
+        VkDevice m_device;
+        std::unique_ptr<VulkanPipelineFactory> m_pipelineFactory;
 
-        VulkanResource<VkDescriptorSetLayout> descriptorSetLayout;
-        std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
-        std::unordered_map<graphics::UniformBinding, UniformBufferBinding> boundUniformBuffers;
-        std::unordered_set<graphics::SamplerBinding> validSamplerBindings;
-        std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> boundSamplers;
+        VulkanResource<VkDescriptorSetLayout> m_descriptorSetLayout;
+        std::unordered_map<graphics::UniformBinding, std::size_t> m_uniformTypes;
+        std::unordered_map<graphics::UniformBinding, UniformBufferBinding> m_boundUniformBuffers;
+        std::unordered_set<graphics::SamplerBinding> m_validSamplerBindings;
+        std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> m_boundSamplers;
 
-        std::vector<std::size_t> vertexBindingTypes;
+        std::vector<std::size_t> m_vertexBindingTypes;
 
-        std::vector<const IVulkanStorageBuffer*> boundVertexBuffers;
-        std::vector<VkBuffer> boundVkBuffers;
-        std::vector<VkDeviceSize> vertexBufferOffsets;
+        std::vector<const IVulkanStorageBuffer*> m_boundVertexBuffers;
+        std::vector<VkBuffer> m_boundVkBuffers;
+        std::vector<VkDeviceSize> m_vertexBufferOffsets;
 
-        const IVulkanStorageBuffer* indexBuffer = nullptr;
-        VkIndexType indexBufferType;
+        const IVulkanStorageBuffer* m_indexBuffer = nullptr;
+        VkIndexType m_indexBufferType;
 
         void prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffer& frameBuffer);
         VkDescriptorSet getDescriptorSet (VulkanCommandBuffer2& cmd);

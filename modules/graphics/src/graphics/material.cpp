@@ -7,25 +7,25 @@
 
 using namespace phenyl::graphics;
 
-Material::Material (Renderer& renderer, std::uint32_t id, core::Asset<Shader> shader, MaterialProperties properties) : renderer{renderer}, materialId{id}, shader{std::move(shader)}, materialProperties{std::move(properties)} {}
+Material::Material (Renderer& renderer, std::uint32_t id, core::Asset<Shader> shader, MaterialProperties properties) : m_renderer{renderer}, m_id{id}, m_shader{std::move(shader)}, materialProperties{std::move(properties)} {}
 
 Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
-    if (auto it = pipelines.find(layout.layoutId); it != pipelines.end()) {
+    if (auto it = m_pipelines.find(layout.layoutId); it != m_pipelines.end()) {
         return it->second;
     }
 
-    auto builder = renderer.buildPipeline();
+    auto builder = m_renderer.buildPipeline();
 
     UniformBinding globalUniform;
     UniformBinding lightUniform;
     SamplerBinding shadowMapBinding;
     BufferBinding model;
-    builder.withShader(shader)
+    builder.withShader(m_shader)
         .withBlending(BlendMode::ADDITIVE)
         .withDepthTesting(false)
-        .withUniform<MeshGlobalUniform>(shader->uniformLocation("GlobalUniform").value(), globalUniform)
-        .withUniform<BPLightUniform>(shader->uniformLocation("BPLightUniform").value(), lightUniform)
-        .withSampler2D(shader->samplerLocation("ShadowMap").value(), shadowMapBinding)
+        .withUniform<MeshGlobalUniform>(m_shader->uniformLocation("GlobalUniform").value(), globalUniform)
+        .withUniform<BPLightUniform>(m_shader->uniformLocation("BPLightUniform").value(), lightUniform)
+        .withSampler2D(m_shader->samplerLocation("ShadowMap").value(), shadowMapBinding)
         .withBuffer<glm::mat4>(model, BufferInputRate::INSTANCE);
 
     // TODO: material specific uniform binding
@@ -40,17 +40,17 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
 
     for (auto& i : layout.attributes) {
         PHENYL_DASSERT(i.stream < streamBindings.size());
-        if (auto loc = shader->attribLocation(GetMeshAttribName(i.kind))) {
+        if (auto loc = m_shader->attribLocation(GetMeshAttribName(i.kind))) {
             builder.withAttrib(loc.value(), streamBindings[i.stream], i.type, i.offset);
         }
     }
 
-    builder.withAttrib<glm::mat4>(shader->attribLocation("model").value(), model);
+    builder.withAttrib<glm::mat4>(m_shader->attribLocation("model").value(), model);
 
     UniformBinding instanceBinding;
-    builder.withRawUniform(shader->uniformLocation("Material").value(), instanceBinding);
+    builder.withRawUniform(m_shader->uniformLocation("Material").value(), instanceBinding);
 
-    auto [it, _] = pipelines.emplace(layout.layoutId, MatPipeline{
+    auto [it, _] = m_pipelines.emplace(layout.layoutId, MatPipeline{
         .pipeline = builder.build(),
         .globalUniform = globalUniform,
         .lightUniform = lightUniform,
@@ -64,11 +64,11 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
 }
 
 Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
-    if (auto it = depthPipelines.find(layout.layoutId); it != depthPipelines.end()) {
+    if (auto it = m_depthPipelines.find(layout.layoutId); it != m_depthPipelines.end()) {
         return it->second;
     }
 
-    auto builder = renderer.buildPipeline();
+    auto builder = m_renderer.buildPipeline();
     builder.withBlending(BlendMode::ADDITIVE);
 
     auto prepassShader = core::Assets::Load<Shader>("phenyl/shaders/mesh_prepass");
@@ -97,7 +97,7 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
 
     builder.withAttrib<glm::mat4>(prepassShader->attribLocation("model").value(), model);
 
-    auto [it, _] = depthPipelines.emplace(layout.layoutId, DepthPipeline{
+    auto [it, _] = m_depthPipelines.emplace(layout.layoutId, DepthPipeline{
         .pipeline = builder.build(),
         .globalUniform = globalUniform,
         .modelBinding = model,
@@ -108,11 +108,11 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
 }
 
 Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& layout) {
-    if (auto it = shadowMapPipelines.find(layout.layoutId); it != shadowMapPipelines.end()) {
+    if (auto it = m_shadowMapPipelines.find(layout.layoutId); it != m_shadowMapPipelines.end()) {
         return it->second;
     }
 
-    auto builder = renderer.buildPipeline();
+    auto builder = m_renderer.buildPipeline();
 
     auto shadowMapShader = core::Assets::Load<Shader>("phenyl/shaders/shadow_map");
 
@@ -140,7 +140,7 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
 
     builder.withAttrib<glm::mat4>(shadowMapShader->attribLocation("model").value(), model);
 
-    auto [it, _] = shadowMapPipelines.emplace(layout.layoutId, ShadowMapPipeline{
+    auto [it, _] = m_shadowMapPipelines.emplace(layout.layoutId, ShadowMapPipeline{
         .pipeline = builder.build(),
         .lightUniform = lightUniform,
         .modelBinding = model,
@@ -151,14 +151,14 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
 }
 
 std::shared_ptr<MaterialInstance> Material::instance () {
-    return std::make_shared<MaterialInstance>(renderer, assetFromThis(), materialProperties);
+    return std::make_shared<MaterialInstance>(m_renderer, assetFromThis(), materialProperties);
 }
 
-MaterialInstance::MaterialInstance (Renderer& renderer, core::Asset<Material> material, const MaterialProperties& properties) : instanceMaterial{std::move(material)} {
-    instanceData = renderer.makeRawUniformBuffer(properties.uniformBlockSize);
+MaterialInstance::MaterialInstance (Renderer& renderer, core::Asset<Material> material, const MaterialProperties& properties) : m_material{std::move(material)} {
+    m_data = renderer.makeRawUniformBuffer(properties.uniformBlockSize);
 
     for (const auto& [id, type, offset] : properties.uniforms) {
-        uniforms[id] = MaterialUniform{
+        m_uniforms[id] = MaterialUniform{
             .type = type,
             .offset = offset
         };
@@ -166,11 +166,11 @@ MaterialInstance::MaterialInstance (Renderer& renderer, core::Asset<Material> ma
 }
 
 void MaterialInstance::upload () {
-    instanceData.upload();
+    m_data.upload();
 }
 
 void MaterialInstance::bind (Material::MatPipeline& pipeline) {
-    pipeline.pipeline.bindUniform(pipeline.instanceBinding, instanceData);
+    pipeline.pipeline.bindUniform(pipeline.instanceBinding, m_data);
 }
 
 

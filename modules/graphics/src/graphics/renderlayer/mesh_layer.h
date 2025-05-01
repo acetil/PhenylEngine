@@ -75,27 +75,27 @@ namespace phenyl::graphics {
             bool castShadows;
         };
 
-        Renderer* renderer = nullptr;
+        Renderer* m_renderer = nullptr;
         //core::Asset<Material> meshMaterial; // TODO
-        core::Query<core::GlobalTransform3D, MeshRenderer3D> meshQuery;
-        core::Query<core::GlobalTransform3D, PointLight3D> pointLightQuery;
-        core::Query<core::GlobalTransform3D, DirectionalLight3D> dirLightQuery;
-        core::Query<core::GlobalTransform3D, SpotLight3D> spotLightQuery;
+        core::Query<core::GlobalTransform3D, MeshRenderer3D> m_meshQuery;
+        core::Query<core::GlobalTransform3D, PointLight3D> m_pointLightQuery;
+        core::Query<core::GlobalTransform3D, DirectionalLight3D> m_dirLightQuery;
+        core::Query<core::GlobalTransform3D, SpotLight3D> m_spotLightQuery;
 
         //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
-        FrameBuffer testFb;
-        FrameBuffer shadowFb;
-        Buffer<glm::mat4> instanceBuffer; // TODO: per material
-        UniformBuffer<MeshGlobalUniform> globalUniform{};
-        UniformArrayBuffer<BPLightUniform> bpLights;
-        std::vector<MeshLight> pointLights;
+        FrameBuffer m_testFb;
+        FrameBuffer m_shadowFb;
+        Buffer<glm::mat4> m_instanceBuffer; // TODO: per material
+        UniformBuffer<MeshGlobalUniform> m_globalUniform{};
+        UniformArrayBuffer<BPLightUniform> m_bpLights;
+        std::vector<MeshLight> m_pointLights;
 
-        std::vector<MeshRenderRequest> requests;
-        std::vector<MeshInstances> instances;
+        std::vector<MeshRenderRequest> m_requests;
+        std::vector<MeshInstances> m_instances;
 
-        Pipeline postProcessPipeline;
-        SamplerBinding ppSampler;
-        Buffer<glm::vec2> ppQuad;
+        Pipeline m_postProcessPipeline;
+        SamplerBinding m_ppSampler;
+        Buffer<glm::vec2> m_ppQuad;
 
         //MeshPipeline& getPipeline (const MeshLayout& layout);
         void gatherGeometry ();

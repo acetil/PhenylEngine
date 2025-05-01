@@ -28,10 +28,10 @@ void graphics::ProfileUiPlugin::init (core::PhenylRuntime& runtime) {
 void graphics::ProfileUiPlugin::update (core::PhenylRuntime& runtime) {
     auto deltaTime = runtime.resource<core::DeltaTime>()();
 
-    deltaTimeQueue.pushPop((float)deltaTime);
-    frameQueue.pushPop(util::getProfileFrameTime());
-    graphicsQueue.pushPop(util::getProfileTime("graphics"));
-    physicsQueue.pushPop(util::getProfileTime("physics"));
+    m_deltaTimeQueue.pushPop((float)deltaTime);
+    m_frameQueue.pushPop(util::getProfileFrameTime());
+    m_graphicsQueue.pushPop(util::getProfileTime("graphics"));
+    m_physicsQueue.pushPop(util::getProfileTime("physics"));
 }
 
 void graphics::ProfileUiPlugin::render (core::PhenylRuntime& runtime) {
@@ -41,9 +41,9 @@ void graphics::ProfileUiPlugin::render (core::PhenylRuntime& runtime) {
 
     auto& canvas = runtime.resource<Canvas>();
 
-    canvas.renderText(glm::vec2{5, 15}, canvas.defaultFont(), 11, "physics: " + std::to_string(physicsQueue.getSmoothed() * 1000) + "ms");
-    canvas.renderText(glm::vec2{5, 30}, canvas.defaultFont(), 11, "graphics: " + std::to_string(graphicsQueue.getSmoothed() * 1000) + "ms");
-    canvas.renderText(glm::vec2{5, 45}, canvas.defaultFont(), 11, "frame time: " + std::to_string(frameQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 15}, canvas.defaultFont(), 11, "physics: " + std::to_string(m_physicsQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 30}, canvas.defaultFont(), 11, "graphics: " + std::to_string(m_graphicsQueue.getSmoothed() * 1000) + "ms");
+    canvas.renderText(glm::vec2{5, 45}, canvas.defaultFont(), 11, "frame time: " + std::to_string(m_frameQueue.getSmoothed() * 1000) + "ms");
 
-    canvas.renderText(glm::vec2{700, 15}, canvas.defaultFont(), 11, std::to_string(1.0f / deltaTimeQueue.getSmoothed()) + " fps", {0.0f, 1.0f, 0.0f});
+    canvas.renderText(glm::vec2{700, 15}, canvas.defaultFont(), 11, std::to_string(1.0f / m_deltaTimeQueue.getSmoothed()) + " fps", {0.0f, 1.0f, 0.0f});
 }

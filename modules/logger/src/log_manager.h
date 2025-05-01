@@ -25,12 +25,12 @@ namespace phenyl::logging {
 
     class LogManager {
     private:
-        std::unordered_map<std::string, std::unique_ptr<LogSink>, detail::StringHasher, std::equal_to<>> sinks;
-        std::unordered_map<std::string, int, detail::StringHasher, std::equal_to<>> logLevels;
-        std::unordered_map<std::string, Logger*, detail::StringHasher, std::equal_to<>> loggers;
+        std::unordered_map<std::string, std::unique_ptr<LogSink>, detail::StringHasher, std::equal_to<>> m_sinks;
+        std::unordered_map<std::string, int, detail::StringHasher, std::equal_to<>> m_logLevels;
+        std::unordered_map<std::string, Logger*, detail::StringHasher, std::equal_to<>> m_loggers;
 
-        std::ofstream logFile;
-        int rootLogLevel = LEVEL_FATAL;
+        std::ofstream m_logFile;
+        int m_rootLogLevel = LEVEL_FATAL;
     public:
         void init (int rootLogLevel, const std::string& logPath);
         LogSink* getSink (const Logger* logger, Logger* parent);

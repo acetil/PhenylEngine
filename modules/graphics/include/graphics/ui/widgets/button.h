@@ -15,12 +15,12 @@ namespace phenyl::graphics {
             PRESSED,
             PRESSED_UNHOVER
         };
-        ContainerWidget container;
-        ButtonState state = ButtonState::UNPRESSED;
+        ContainerWidget m_container;
+        ButtonState m_state = ButtonState::UNPRESSED;
 
-        glm::vec4 widgetDefaultBgColor{};
-        glm::vec4 widgetHoverBgColor{};
-        glm::vec4 widgetPressBgColor{};
+        glm::vec4 m_defaultBgColor{};
+        glm::vec4 m_hoverBgColor{};
+        glm::vec4 m_pressBgColor{};
 
         void onHover ();
         void onUnhover ();
@@ -30,7 +30,7 @@ namespace phenyl::graphics {
         explicit ButtonWidget (const Modifier& modifier = {});
 
         [[nodiscard]] Widget* child () const noexcept {
-            return container.child();
+            return m_container.child();
         }
 
         Widget* replace (std::unique_ptr<Widget> newChild);
@@ -46,17 +46,17 @@ namespace phenyl::graphics {
         }
 
         glm::vec4 defaultBgColor () const noexcept {
-            return widgetDefaultBgColor;
+            return m_defaultBgColor;
         }
         void setDefaultBgColor (glm::vec4 color);
 
         glm::vec4 hoverBgColor () const noexcept {
-            return widgetDefaultBgColor;
+            return m_defaultBgColor;
         }
         void setHoverBgColor (glm::vec4 color);
 
         glm::vec4 pressBgColor () const noexcept {
-            return widgetPressBgColor;
+            return m_pressBgColor;
         }
         void setPressBgColor (glm::vec4 color);
 

@@ -70,107 +70,107 @@ namespace phenyl::graphics {
 
     class Pipeline {
     private:
-        std::unique_ptr<IPipeline> pipeline;
+        std::unique_ptr<IPipeline> m_pipeline;
     public:
         Pipeline () = default;
-        explicit Pipeline (std::unique_ptr<IPipeline> underlying) : pipeline{std::move(underlying)} {}
+        explicit Pipeline (std::unique_ptr<IPipeline> underlying) : m_pipeline{std::move(underlying)} {}
 
         explicit operator bool () const {
-            return (bool)pipeline;
+            return static_cast<bool>(m_pipeline);
         }
 
         Pipeline& bindBuffer (BufferBinding binding, const RawBuffer& buffer, std::size_t offset = 0) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindBuffer(0, binding, buffer.getUnderlying(), offset);
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindBuffer(0, binding, buffer.getUnderlying(), offset);
 
             return *this;
         }
 
         template <typename T>
         Pipeline& bindBuffer (BufferBinding binding, const Buffer<T>& buffer, std::size_t offset = 0) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindBuffer(meta::type_index<T>(), binding, buffer.getUnderlying(), offset * sizeof(T));
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindBuffer(meta::type_index<T>(), binding, buffer.getUnderlying(), offset * sizeof(T));
 
             return *this;
         }
 
         template <IndexType T>
         Pipeline& bindIndexBuffer (const Buffer<T>& buffer) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindIndexBuffer(GetIndexType<T>(), buffer.getUnderlying());
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindIndexBuffer(GetIndexType<T>(), buffer.getUnderlying());
 
             return *this;
         }
 
         Pipeline& bindIndexBuffer (ShaderIndexType type, const RawBuffer& buffer) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindIndexBuffer(type, buffer.getUnderlying());
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindIndexBuffer(type, buffer.getUnderlying());
 
             return *this;
         }
 
         template <typename T>
         Pipeline& bindUniform (UniformBinding binding, const UniformBuffer<T>& buffer) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), 0, sizeof(T));
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), 0, sizeof(T));
 
             return *this;
         }
 
         template <typename T>
         Pipeline& bindUniform (UniformBinding binding, const UniformArrayBuffer<T>& buffer, std::size_t index) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), index * buffer.stride(), sizeof(T));
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), index * buffer.stride(), sizeof(T));
 
             return *this;
         }
 
         Pipeline& bindUniform (UniformBinding binding, const RawUniformBuffer& buffer) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindUniform(0, binding, buffer.getUnderlying(), 0, buffer.size());
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindUniform(0, binding, buffer.getUnderlying(), 0, buffer.size());
 
             return *this;
         }
 
         Pipeline& bindSampler (SamplerBinding binding, const Texture& texture) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindSampler(binding, texture.sampler());
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindSampler(binding, texture.sampler());
 
             return *this;
         }
 
         Pipeline& bindSampler (SamplerBinding binding, ISampler& sampler) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->bindSampler(binding, sampler);
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->bindSampler(binding, sampler);
 
             return *this;
         }
 
         Pipeline& unbindIndexBuffer () {
-            PHENYL_DASSERT(pipeline);
-            pipeline->unbindIndexBuffer();
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->unbindIndexBuffer();
 
             return *this;
         }
 
         void render (std::size_t vertices, std::size_t offset=0) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->render(nullptr, vertices, offset);
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->render(nullptr, vertices, offset);
         }
 
         void render (FrameBuffer& frameBuffer, std::size_t vertices, std::size_t offset=0) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->render(&frameBuffer.getUnderlying(), vertices, offset);
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->render(&frameBuffer.getUnderlying(), vertices, offset);
         }
 
         void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset=0) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->renderInstanced(nullptr, numInstances, vertices, offset);
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->renderInstanced(nullptr, numInstances, vertices, offset);
         }
 
         void renderInstanced (FrameBuffer& frameBuffer, std::size_t numInstances, std::size_t vertices, std::size_t offset=0) {
-            PHENYL_DASSERT(pipeline);
-            pipeline->renderInstanced(&frameBuffer.getUnderlying(), numInstances, vertices, offset);
+            PHENYL_DASSERT(m_pipeline);
+            m_pipeline->renderInstanced(&frameBuffer.getUnderlying(), numInstances, vertices, offset);
         }
     };
 
@@ -195,101 +195,101 @@ namespace phenyl::graphics {
 
     class PipelineBuilder {
     private:
-        std::unique_ptr<IPipelineBuilder> builder;
+        std::unique_ptr<IPipelineBuilder> m_builder;
     public:
-        explicit PipelineBuilder (std::unique_ptr<IPipelineBuilder> builder) : builder{std::move(builder)} {}
+        explicit PipelineBuilder (std::unique_ptr<IPipelineBuilder> builder) : m_builder{std::move(builder)} {}
 
         PipelineBuilder& withGeometryType (GeometryType type) {
-            PHENYL_DASSERT(builder);
-            builder->withGeometryType(type);
+            PHENYL_DASSERT(m_builder);
+            m_builder->withGeometryType(type);
 
             return *this;
         }
 
         PipelineBuilder& withShader (core::Asset<Shader> shader) {
-            PHENYL_DASSERT(builder);
-            builder->withShader(std::move(shader));
+            PHENYL_DASSERT(m_builder);
+            m_builder->withShader(std::move(shader));
 
             return *this;
         }
 
         PipelineBuilder& withRawBuffer (BufferBinding& bindingOut, std::size_t stride, BufferInputRate inputRate = BufferInputRate::VERTEX) {
-            PHENYL_DASSERT(builder);
-            bindingOut = builder->withBuffer(0, stride, inputRate);
+            PHENYL_DASSERT(m_builder);
+            bindingOut = m_builder->withBuffer(0, stride, inputRate);
 
             return *this;
         }
 
         template <typename T>
         PipelineBuilder& withBuffer (BufferBinding& bindingOut, BufferInputRate inputRate = BufferInputRate::VERTEX) {
-            PHENYL_DASSERT(builder);
-            bindingOut = builder->withBuffer(meta::type_index<T>(), sizeof(T), inputRate);
+            PHENYL_DASSERT(m_builder);
+            bindingOut = m_builder->withBuffer(meta::type_index<T>(), sizeof(T), inputRate);
 
             return *this;
         }
 
         PipelineBuilder& withAttrib (unsigned int location, BufferBinding binding, ShaderDataType type, std::size_t offset = 0) {
-            PHENYL_DASSERT(builder);
-            builder->withAttrib(type, location, binding, offset);
+            PHENYL_DASSERT(m_builder);
+            m_builder->withAttrib(type, location, binding, offset);
 
             return *this;
         }
 
         template <typename T>
         PipelineBuilder& withAttrib (unsigned int location, BufferBinding binding, std::size_t offset = 0) {
-            PHENYL_DASSERT(builder);
-            builder->withAttrib(GetShaderDataType<T>(), location, binding, offset);
+            PHENYL_DASSERT(m_builder);
+            m_builder->withAttrib(GetShaderDataType<T>(), location, binding, offset);
 
             return *this;
         }
 
         template <typename T>
         PipelineBuilder& withUniform (unsigned int location, UniformBinding& bindingOut) {
-            PHENYL_DASSERT(builder);
-            bindingOut = builder->withUniform(meta::type_index<T>(), location);
+            PHENYL_DASSERT(m_builder);
+            bindingOut = m_builder->withUniform(meta::type_index<T>(), location);
 
             return *this;
         }
 
         PipelineBuilder& withRawUniform (unsigned int location, UniformBinding& bindingOut) {
-            PHENYL_DASSERT(builder);
-            bindingOut = builder->withUniform(0, location);
+            PHENYL_DASSERT(m_builder);
+            bindingOut = m_builder->withUniform(0, location);
 
             return *this;
         }
 
         PipelineBuilder& withSampler2D (unsigned int location, SamplerBinding& bindingOut) {
-            PHENYL_DASSERT(builder);
-            bindingOut = builder->withSampler(location);
+            PHENYL_DASSERT(m_builder);
+            bindingOut = m_builder->withSampler(location);
 
             return *this;
         }
 
         PipelineBuilder& withBlending (BlendMode mode) {
-            PHENYL_DASSERT(builder);
-            builder->withBlendMode(mode);
+            PHENYL_DASSERT(m_builder);
+            m_builder->withBlendMode(mode);
 
             return *this;
         }
 
         PipelineBuilder& withCulling (CullMode mode) {
-            PHENYL_DASSERT(builder);
-            builder->withCullMode(mode);
+            PHENYL_DASSERT(m_builder);
+            m_builder->withCullMode(mode);
 
             return *this;
         }
 
         PipelineBuilder& withDepthTesting (bool doWrite = true) {
-            PHENYL_DASSERT(builder);
-            builder->withDepthTesting(doWrite);
+            PHENYL_DASSERT(m_builder);
+            m_builder->withDepthTesting(doWrite);
 
             return *this;
         }
 
         Pipeline build () {
-            PHENYL_DASSERT(builder);
+            PHENYL_DASSERT(m_builder);
 
-            return Pipeline{builder->build()};
+            return Pipeline{m_builder->build()};
         }
     };
 }

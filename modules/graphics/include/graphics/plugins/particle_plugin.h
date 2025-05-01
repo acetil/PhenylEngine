@@ -8,8 +8,8 @@ namespace phenyl::graphics {
 
     class Particle2DPlugin : public core::IPlugin {
     private:
-        std::unique_ptr<ParticleManager2D> manager;
-        ParticleRenderLayer* layer = nullptr;
+        std::unique_ptr<ParticleManager2D> m_manager;
+        ParticleRenderLayer* m_layer = nullptr;
     public:
         Particle2DPlugin();
         ~Particle2DPlugin() override;

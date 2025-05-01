@@ -62,12 +62,12 @@ namespace phenyl::graphics {
             bool active = false;
         };
 
-        ParticleProperties2D properties;
+        ParticleProperties2D m_properties;
 
-        std::vector<Particle> particles;
-        std::size_t startIndex;
-        std::size_t size;
-        std::size_t activeNum;
+        std::vector<Particle> m_particles;
+        std::size_t m_startIndex;
+        std::size_t m_size;
+        std::size_t m_activeNum;
 
         void addParticle (glm::vec2 worldPos, glm::vec2 direction, std::size_t index);
     public:

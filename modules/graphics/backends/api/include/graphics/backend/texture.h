@@ -70,85 +70,85 @@ namespace phenyl::graphics {
 
     class Texture {
     private:
-        std::size_t texHash;
+        std::size_t m_hash;
     public:
-        Texture () : texHash{0} {}
-        explicit Texture (std::size_t hash) : texHash{hash} {}
+        Texture () : m_hash{0} {}
+        explicit Texture (std::size_t hash) : m_hash{hash} {}
 
         virtual ~Texture() = default;
 
         [[nodiscard]] virtual ISampler& sampler () const noexcept = 0;
 
         [[nodiscard]] std::size_t hash () const noexcept {
-            return texHash;
+            return m_hash;
         }
     };
 
     class ImageTexture : public Texture {
     private:
-        std::unique_ptr<IImageTexture> rendererTexture;
+        std::unique_ptr<IImageTexture> m_texture;
     public:
         ImageTexture () = default;
-        explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : Texture{0}, rendererTexture{std::move(texture)} {}
+        explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : Texture{0}, m_texture{std::move(texture)} {}
 
         explicit operator bool () const noexcept {
-            return (bool)rendererTexture;
+            return (bool)m_texture;
         }
 
         [[nodiscard]] inline std::uint32_t width () const noexcept {
-            return rendererTexture->width();
+            return m_texture->width();
         }
 
         [[nodiscard]] inline std::uint32_t height () const noexcept {
-            return rendererTexture->height();
+            return m_texture->height();
         }
 
         void upload (const Image& image) {
-            rendererTexture->upload(image);
+            m_texture->upload(image);
         }
 
         [[nodiscard]] ISampler& sampler () const noexcept override {
-            return rendererTexture->sampler();
+            return m_texture->sampler();
         }
     };
 
     class ImageArrayTexture : public Texture {
     private:
-        std::unique_ptr<IImageArrayTexture> rendererTexture;
+        std::unique_ptr<IImageArrayTexture> m_texture;
     public:
         ImageArrayTexture () = default;
-        explicit ImageArrayTexture (std::unique_ptr<IImageArrayTexture> texture) : Texture{texture->sampler().hash()}, rendererTexture{std::move(texture)}{}
+        explicit ImageArrayTexture (std::unique_ptr<IImageArrayTexture> texture) : Texture{texture->sampler().hash()}, m_texture{std::move(texture)}{}
 
         explicit operator bool () const noexcept {
-            return (bool)rendererTexture;
+            return (bool)m_texture;
         }
 
         [[nodiscard]] inline std::uint32_t width () const noexcept {
-            return rendererTexture->width();
+            return m_texture->width();
         }
 
         [[nodiscard]] inline std::uint32_t height () const noexcept {
-            return rendererTexture->height();
+            return m_texture->height();
         }
 
         [[nodiscard]] std::uint32_t size () const noexcept {
-            return rendererTexture->size();
+            return m_texture->size();
         }
 
         void reserve (std::uint32_t capacity) {
-            rendererTexture->reserve(capacity);
+            m_texture->reserve(capacity);
         }
 
         std::uint32_t append () {
-            return rendererTexture->append();
+            return m_texture->append();
         }
 
         void upload (std::uint32_t index, const Image& image) {
-            rendererTexture->upload(index, image);
+            m_texture->upload(index, image);
         }
 
         [[nodiscard]] ISampler& sampler() const noexcept override {
-            return rendererTexture->sampler();
+            return m_texture->sampler();
         }
     };
 }

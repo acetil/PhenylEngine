@@ -9,10 +9,10 @@
 namespace phenyl::graphics {
     class ContainerWidget : public Widget {
     private:
-        std::unique_ptr<Widget> childWidget;
-        glm::vec4 widgetBgColour{};
-        glm::vec4 widgetBorderColour{};
-        float widgetBorderSize = 0.0f;
+        std::unique_ptr<Widget> m_child;
+        glm::vec4 m_bgColor{};
+        glm::vec4 m_borderColor{};
+        float m_borderSize = 0.0f;
 
     public:
         explicit ContainerWidget (std::unique_ptr<Widget> childWidget = nullptr, const Modifier& modifier = {});
@@ -22,7 +22,7 @@ namespace phenyl::graphics {
         explicit ContainerWidget (T&& widget, const Modifier& modifier = {}) : ContainerWidget{std::make_unique<T>(std::forward<T>(widget)), modifier} {}
 
         Widget* child () const noexcept {
-            return childWidget.get();
+            return m_child.get();
         }
 
         Widget* replace (std::unique_ptr<Widget> newChild);
@@ -38,17 +38,17 @@ namespace phenyl::graphics {
         }
 
         glm::vec4 bgColor () const noexcept {
-            return widgetBgColour;
+            return m_bgColor;
         }
         void setBgColor (glm::vec4 newBgColor);
 
         glm::vec4 borderColor () const noexcept {
-            return widgetBorderColour;
+            return m_borderColor;
         }
         void setBorderColor (glm::vec4 newBorderColor);
 
         float borderSize () const noexcept {
-            return widgetBorderSize;
+            return m_borderSize;
         }
         void setBorderSize (float newBorderSize);
 

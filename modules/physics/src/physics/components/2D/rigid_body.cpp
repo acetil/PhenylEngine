@@ -8,10 +8,10 @@ using namespace phenyl::physics;
 
 namespace phenyl::physics {
     PHENYL_SERIALIZABLE(RigidBody2D,
-        PHENYL_SERIALIZABLE_MEMBER(momentum),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularMomentum, "angular_momentum"),
-        PHENYL_SERIALIZABLE_METHOD("mass", &RigidBody2D::getMass, &RigidBody2D::setMass),
-        PHENYL_SERIALIZABLE_METHOD("inertial_moment", &RigidBody2D::getInertia, &RigidBody2D::setInertia),
+        PHENYL_SERIALIZABLE_MEMBER(m_momentum),
+        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_angularMomentum, "angular_momentum"),
+        PHENYL_SERIALIZABLE_METHOD("mass", &RigidBody2D::mass, &RigidBody2D::setMass),
+        PHENYL_SERIALIZABLE_METHOD("inertial_moment", &RigidBody2D::inertia, &RigidBody2D::setInertia),
         PHENYL_SERIALIZABLE_MEMBER(drag),
         PHENYL_SERIALIZABLE_MEMBER_NAMED(angularDrag, "angular_drag"),
         PHENYL_SERIALIZABLE_MEMBER(gravity)
@@ -24,53 +24,53 @@ inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
 
 void RigidBody2D::doMotion (core::GlobalTransform2D& transform2D, float deltaTime) {
     applyFriction();
-    netForce += gravity * mass;
+    m_netForce += gravity * m_mass;
 
-    momentum += netForce * 0.5f * deltaTime;
-    transform2D.transform2D.translate(momentum * invMass * deltaTime);
-    momentum += netForce * 0.5f * deltaTime;
-    netForce = {0, 0};
+    m_momentum += m_netForce * 0.5f * deltaTime;
+    transform2D.transform2D.translate(m_momentum * m_invMass * deltaTime);
+    m_momentum += m_netForce * 0.5f * deltaTime;
+    m_netForce = {0, 0};
 
-    angularMomentum = glm::clamp(angularMomentum + torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * mass, MAX_ANGULAR_VEL * mass);
-    transform2D.transform2D.rotateBy(angularMomentum * invInertialMoment);
-    angularMomentum = angularMomentum + torque * 0.5f * deltaTime; // Will be clamped before rotation next step
+    m_angularMomentum = glm::clamp(m_angularMomentum + m_torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * m_mass, MAX_ANGULAR_VEL * m_mass);
+    transform2D.transform2D.rotateBy(m_angularMomentum * m_invInertialMoment);
+    m_angularMomentum = m_angularMomentum + m_torque * 0.5f * deltaTime; // Will be clamped before rotation next step
 
-    if (glm::abs(angularMomentum * invInertialMoment) < MIN_ANGULAR_VEL) {
-        angularMomentum = 0.0f;
+    if (glm::abs(m_angularMomentum * m_invInertialMoment) < MIN_ANGULAR_VEL) {
+        m_angularMomentum = 0.0f;
     }
 
-    torque = 0.0f;
+    m_torque = 0.0f;
 }
 
 void RigidBody2D::applyForce (glm::vec2 force) {
-    netForce += force;
+    m_netForce += force;
 }
 
 void RigidBody2D::applyForce (glm::vec2 force, glm::vec2 worldDisplacement) {
-    netForce += force;
+    m_netForce += force;
 
-    torque += vec2dCross(worldDisplacement, force);
+    m_torque += vec2dCross(worldDisplacement, force);
 }
 
 void RigidBody2D::applyImpulse (glm::vec2 impulse) {
-    momentum += impulse;
+    m_momentum += impulse;
 }
 
 void RigidBody2D::applyImpulse (glm::vec2 impulse, glm::vec2 worldDisplacement) {
-    momentum += impulse;
+    m_momentum += impulse;
 
-    angularMomentum += vec2dCross(worldDisplacement, impulse);
+    m_angularMomentum += vec2dCross(worldDisplacement, impulse);
 }
 
 void RigidBody2D::applyFriction () {
-    applyForce(-drag * momentum);
-    applyTorque(-angularMomentum * drag);
+    applyForce(-drag * m_momentum);
+    applyTorque(-m_angularMomentum * drag);
 }
 
 void RigidBody2D::applyAngularImpulse (float angularImpulse) {
-    angularMomentum += angularImpulse;
+    m_angularMomentum += angularImpulse;
 }
 
 void RigidBody2D::applyTorque (float appliedTorque) {
-    torque += appliedTorque;
+    m_torque += appliedTorque;
 }

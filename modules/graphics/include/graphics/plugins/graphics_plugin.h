@@ -11,7 +11,7 @@ namespace phenyl::graphics {
 
     class GraphicsPlugin : public core::IPlugin {
     private:
-        std::unique_ptr<TextureManager> textureManager;
+        std::unique_ptr<TextureManager> m_textureManager;
         //DebugLayer* debugLayer = nullptr;
 
     public:

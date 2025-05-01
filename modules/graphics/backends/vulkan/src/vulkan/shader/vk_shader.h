@@ -12,10 +12,10 @@
 namespace phenyl::vulkan {
     class VulkanShader : public graphics::IShader {
     private:
-        VkDevice device;
-        std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules;
+        VkDevice m_device;
+        std::unordered_map<graphics::ShaderSourceType, VkShaderModule> m_modules;
 
-        ShaderReflection reflection;
+        ShaderReflection m_reflection;
 
         VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules, ShaderReflection reflection);
     public:
@@ -37,25 +37,25 @@ namespace phenyl::vulkan {
 
     class VulkanShaderManager : public core::AssetManager<graphics::Shader> {
     private:
-        VkDevice device;
-        VulkanShaderCompiler compiler;
+        VkDevice m_device;
+        VulkanShaderCompiler m_compiler;
 
-        std::unordered_map<std::size_t, std::unique_ptr<graphics::Shader>> shaders;
+        std::unordered_map<std::size_t, std::unique_ptr<graphics::Shader>> m_shaders;
 
-        std::vector<core::Asset<graphics::Shader>> defaultShaders;
+        std::vector<core::Asset<graphics::Shader>> m_defaultShaders;
         void loadDefault (const std::string& path, std::unique_ptr<VulkanShader> shader);
 
         class Builder {
         private:
-            VkDevice device;
-            const VulkanShaderCompiler& compiler;
-            std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>> shaderSources;
-            std::vector<std::pair<graphics::ShaderDataType, std::string>> attribs;
-            std::unordered_map<std::string, unsigned int> uniformBindings;
+            VkDevice m_device;
+            const VulkanShaderCompiler& m_compiler;
+            std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>> m_sources;
+            std::vector<std::pair<graphics::ShaderDataType, std::string>> m_attribs;
+            std::unordered_map<std::string, unsigned int> m_uniformBindings;
 
         public:
 
-            explicit Builder (VkDevice device, const VulkanShaderCompiler& compiler) : device{device}, compiler{compiler} {}
+            explicit Builder (VkDevice device, const VulkanShaderCompiler& compiler) : m_device{device}, m_compiler{compiler} {}
 
             Builder& withSource (graphics::ShaderSourceType type, const std::string& source);
             Builder& withAttrib (graphics::ShaderDataType type, std::string attribName);

@@ -27,15 +27,15 @@ namespace phenyl::glfw {
         void swapBuffers ();
         void setupCallbacks ();
     protected:
-        GLFWwindow* window = nullptr;
+        GLFWwindow* m_window = nullptr;
     private:
-        glm::ivec2 resolution;
-        glm::vec2 cursorPos{0, 0};
+        glm::ivec2 m_resolution;
+        glm::vec2 m_cursorPos{0, 0};
 
-        std::unique_ptr<GLFWKeyInput> keyInput;
-        std::unique_ptr<GLFWMouseInput> mouseInput;
+        std::unique_ptr<GLFWKeyInput> m_keyInput;
+        std::unique_ptr<GLFWMouseInput> m_mouseInput;
 
-        std::vector<graphics::IViewportUpdateHandler*> updateHandlers;
+        std::vector<graphics::IViewportUpdateHandler*> m_updateHandlers;
 
         void onCursorPosCallback (glm::vec2 pos);
         void onWindowSizeCallback (glm::ivec2 newRes);

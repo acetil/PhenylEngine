@@ -14,10 +14,10 @@ namespace phenyl::graphics {
             glm::mat4 camera;
         };
 
-        Pipeline pipeline;
-        Buffer<glm::vec2> posBuffer;
-        Buffer<glm::vec4> colourBuffer;
-        UniformBuffer<Uniform> uniformBuffer;
+        Pipeline m_pipeline;
+        Buffer<glm::vec2> m_posBuffer;
+        Buffer<glm::vec4> m_colorBuffer;
+        UniformBuffer<Uniform> m_uniformBuffer;
     public:
         ParticleRenderLayer ();
 

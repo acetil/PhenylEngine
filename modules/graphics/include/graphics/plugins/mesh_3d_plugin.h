@@ -11,9 +11,9 @@ namespace phenyl::graphics {
 
     class Mesh3DPlugin : public core::IPlugin {
     private:
-        std::unique_ptr<MaterialManager> materialManager;
-        std::unique_ptr<MaterialInstanceManager> materialInstanceManager;
-        std::unique_ptr<MeshManager> meshManager;
+        std::unique_ptr<MaterialManager> m_materialManager;
+        std::unique_ptr<MaterialInstanceManager> m_materialInstanceManager;
+        std::unique_ptr<MeshManager> m_meshManager;
     public:
         Mesh3DPlugin ();
         ~Mesh3DPlugin();

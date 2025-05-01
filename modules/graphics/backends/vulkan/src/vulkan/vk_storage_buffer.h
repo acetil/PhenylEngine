@@ -13,18 +13,18 @@ namespace phenyl::vulkan {
 
     class VulkanStorageBuffer : public IVulkanStorageBuffer {
     private:
-        VulkanResources& resources;
-        VulkanBuffer buffer{};
-        std::size_t currSize;
-        std::size_t capacity;
-        bool isIndex;
+        VulkanResources& m_resources;
+        VulkanBuffer m_buffer{};
+        std::size_t m_size;
+        std::size_t m_capacity;
+        bool m_isIndex;
 
     public:
         VulkanStorageBuffer (VulkanResources& resources, std::size_t size, bool isIndex);
 
         void upload (std::span<const std::byte> data) override;
         std::size_t size () const noexcept {
-            return currSize;
+            return m_size;
         }
 
         VkBuffer getBuffer () const noexcept override;
@@ -32,10 +32,10 @@ namespace phenyl::vulkan {
 
     class VulkanStaticStorageBuffer : public IVulkanStorageBuffer {
     private:
-        VulkanResources& resources;
-        TransferManager& transferManager;
-        VulkanStaticBuffer buffer{};
-        bool isIndex;
+        VulkanResources& m_resources;
+        TransferManager& m_transferManager;
+        VulkanStaticBuffer m_buffer{};
+        bool m_isIndex;
 
     public:
         VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex);
@@ -43,11 +43,11 @@ namespace phenyl::vulkan {
         void upload (std::span<const std::byte> data) override;
 
         std::size_t size () const noexcept {
-            return buffer.size();
+            return m_buffer.size();
         }
 
         VkBuffer getBuffer () const noexcept override {
-            return buffer.get();
+            return m_buffer.get();
         }
     };
 }

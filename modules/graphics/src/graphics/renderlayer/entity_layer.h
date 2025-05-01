@@ -35,20 +35,20 @@ namespace phenyl::graphics {
             glm::mat4 camera;
         };
 
-        std::vector<std::pair<ISampler*, std::uint16_t>> samplerStartIndices;
-        std::vector<SamplerRender> samplerRenders;
+        std::vector<std::pair<ISampler*, std::uint16_t>> m_samplerStartIndices;
+        std::vector<SamplerRender> m_samplerRenders;
 
-        Pipeline pipeline;
+        Pipeline m_pipeline;
 
         //Buffer<glm::vec2> posBuffer;
        // Buffer<glm::vec2> uvBuffer;
-        Buffer<Vertex> vertexBuffer;
-        Buffer<std::uint16_t> indices;
+        Buffer<Vertex> m_vertexBuffer;
+        Buffer<std::uint16_t> m_indices;
 
-        UniformBinding uniformBinding{};
-        UniformBuffer<Uniform> uniformBuffer;
+        UniformBinding m_uniformBinding{};
+        UniformBuffer<Uniform> m_uniformBuffer;
 
-        SamplerBinding samplerBinding{};
+        SamplerBinding m_samplerBinding{};
 
     public:
 

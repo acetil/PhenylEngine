@@ -9,7 +9,7 @@ namespace phenyl::physics {
 
     class Physics2DPlugin : public core::IPlugin {
     private:
-        std::unique_ptr<Physics2D> physics;
+        std::unique_ptr<Physics2D> m_physics;
     public:
         Physics2DPlugin ();
         ~Physics2DPlugin() override;

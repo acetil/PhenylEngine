@@ -13,22 +13,22 @@
 namespace phenyl::opengl {
     class GLRenderer : public graphics::Renderer, public graphics::IViewportUpdateHandler {
     private:
-        std::unique_ptr<glfw::GLFWViewport> viewport;
-        GlWindowFrameBuffer windowFrameBuffer;
-        glm::vec4 clearColor;
+        std::unique_ptr<glfw::GLFWViewport> m_viewport;
+        GlWindowFrameBuffer m_windowFrameBuffer;
+        glm::vec4 m_clearColor;
 
-        GlShaderManager shaderManager;
+        GlShaderManager m_shaderManager;
 
-        core::Asset<graphics::Shader> boxShader;
-        core::Asset<graphics::Shader> debugShader;
-        core::Asset<graphics::Shader> spriteShader;
-        core::Asset<graphics::Shader> textShader;
-        core::Asset<graphics::Shader> particleShader;
-        core::Asset<graphics::Shader> meshShader;
-        core::Asset<graphics::Shader> shadowMapShader;
-        core::Asset<graphics::Shader> prepassShader;
+        core::Asset<graphics::Shader> m_boxShader;
+        core::Asset<graphics::Shader> m_debugShader;
+        core::Asset<graphics::Shader> m_spriteShader;
+        core::Asset<graphics::Shader> m_textShader;
+        core::Asset<graphics::Shader> m_particleShader;
+        core::Asset<graphics::Shader> m_meshShader;
+        core::Asset<graphics::Shader> m_shadowMapShader;
+        core::Asset<graphics::Shader> m_prepassShader;
 
-        core::Asset<graphics::Shader> noopPostShader;
+        core::Asset<graphics::Shader> m_noopPostShader;
     protected:
         std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) override;
         std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;

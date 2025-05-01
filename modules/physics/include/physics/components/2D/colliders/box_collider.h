@@ -9,8 +9,8 @@ namespace phenyl::physics {
     class Face2D;
     class BoxCollider2D : public Collider2D {
     private:
-        glm::vec2 scale;
-        glm::mat2 frameTransform;
+        glm::vec2 m_scale;
+        glm::mat2 m_frameTransform;
 
         friend class Physics2D;
         PHENYL_SERIALIZABLE_INTRUSIVE(BoxCollider2D)
@@ -19,12 +19,12 @@ namespace phenyl::physics {
         Face2D getSignificantFace (glm::vec2 normal);
         void applyFrameTransform (glm::mat2 transform);
 
-        [[nodiscard]] glm::vec2 getScale () const {
-            return scale;
+        [[nodiscard]] glm::vec2 scale () const {
+            return m_scale;
         }
 
         void setScale (glm::vec2 newScale) {
-            scale = newScale;
+            m_scale = newScale;
         }
     };
 

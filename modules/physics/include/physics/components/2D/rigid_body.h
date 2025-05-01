@@ -10,16 +10,16 @@ namespace phenyl::core {
 namespace phenyl::physics {
     struct RigidBody2D {
     private:
-        glm::vec2 momentum{0, 0};
-        glm::vec2 netForce{0, 0};
+        glm::vec2 m_momentum{0, 0};
+        glm::vec2 m_netForce{0, 0};
 
-        float angularMomentum{0.0f};
-        float torque{0.0f};
+        float m_angularMomentum{0.0f};
+        float m_torque{0.0f};
 
-        float mass{1.0f};
-        float invMass{1.0f};
-        float inertialMoment{1.0f};
-        float invInertialMoment{1.0f};
+        float m_mass{1.0f};
+        float m_invMass{1.0f};
+        float m_inertialMoment{1.0f};
+        float m_invInertialMoment{1.0f};
 
         void applyFriction ();
 
@@ -30,26 +30,26 @@ namespace phenyl::physics {
         float drag{0.0f};
         float angularDrag{0.0f};
 
-        [[nodiscard]] float getMass () const {
-            return mass;
+        [[nodiscard]] float mass () const {
+            return m_mass;
         }
-        [[nodiscard]] float getInvMass () const {
-            return invMass;
+        [[nodiscard]] float invMass () const {
+            return m_invMass;
         }
         void setMass (float newMass) {
-            mass = newMass;
-            invMass = newMass != 0 ? 1 / newMass : 0.0f;
+            m_mass = newMass;
+            m_invMass = newMass != 0 ? 1 / newMass : 0.0f;
         }
 
-        [[nodiscard]] float getInertia () const {
-            return inertialMoment;
+        [[nodiscard]] float inertia () const {
+            return m_inertialMoment;
         }
-        [[nodiscard]] float getInvInertia () const {
-            return invInertialMoment;
+        [[nodiscard]] float invInertia () const {
+            return m_invInertialMoment;
         }
         void setInertia (float inertia) {
-            inertialMoment = inertia;
-            invInertialMoment = inertia != 0 ? 1 / inertia : 0.0f;
+            m_inertialMoment = inertia;
+            m_invInertialMoment = inertia != 0 ? 1 / inertia : 0.0f;
         }
 
         void doMotion (core::GlobalTransform2D& transform2D, float deltaTime);
@@ -63,12 +63,12 @@ namespace phenyl::physics {
         void applyAngularImpulse (float angularImpulse);
         void applyTorque (float torque);
 
-        [[nodiscard]] const glm::vec2& getMomentum () const {
-            return momentum;
+        [[nodiscard]] const glm::vec2& momentum () const {
+            return m_momentum;
         }
 
-        [[nodiscard]] float getAngularMomentum () const {
-            return angularMomentum;
+        [[nodiscard]] float angularMomentum () const {
+            return m_angularMomentum;
         }
     };
 }

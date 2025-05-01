@@ -15,30 +15,30 @@ VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
     };
 
     choosePhysicalDevice(instance, surface, deviceExtensions);
-    logicalDevice = createLogicalDevice(deviceExtensions);
-    PHENYL_DASSERT(logicalDevice);
+    m_logicalDevice = createLogicalDevice(deviceExtensions);
+    PHENYL_DASSERT(m_logicalDevice);
 
     // vkGetDeviceQueue(logicalDevice, families.graphicsFamily, 0, &graphicsQueue);
     // vkGetDeviceQueue(logicalDevice, families.presentFanily, 0, &presentQueue);
-    graphicsQueue = makeQueue(queueFamilies.graphicsFamily);
-    presentQueue = makeQueue(queueFamilies.presentFanily);
+    m_graphicsQueue = makeQueue(m_queueFamilies.graphicsFamily);
+    m_presentQueue = makeQueue(m_queueFamilies.presentFanily);
 
     PHENYL_LOGI(LOGGER, "Created logical device with 2 queues");
 }
 
 std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surface) {
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &swapChainDetails.capabilities);
-    return std::make_unique<VulkanSwapChain>(logicalDevice, surface, swapChainDetails, queueFamilies);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface, &m_swapChainDetails.capabilities);
+    return std::make_unique<VulkanSwapChain>(m_logicalDevice, surface, m_swapChainDetails, m_queueFamilies);
 }
 
 VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
     VkCommandPoolCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .flags = usage,
-        .queueFamilyIndex = queueFamilies.graphicsFamily
+        .queueFamilyIndex = m_queueFamilies.graphicsFamily
     };
     VkCommandPool pool = nullptr;
-    auto result = vkCreateCommandPool(logicalDevice, &createInfo, nullptr, &pool);
+    auto result = vkCreateCommandPool(m_logicalDevice, &createInfo, nullptr, &pool);
     PHENYL_LOGE_IF(result != VK_SUCCESS, LOGGER, "Failed to create VkCommandPool: {}", result);
 
     return pool;
@@ -46,8 +46,8 @@ VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
 
 VmaAllocator VulkanDevice::makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion) {
     VmaAllocatorCreateInfo allocatorInfo{
-        .physicalDevice = physicalDevice,
-        .device = logicalDevice,
+        .physicalDevice = m_physicalDevice,
+        .device = m_logicalDevice,
         .instance = instance,
         .vulkanApiVersion = vkVersion
     };
@@ -60,7 +60,7 @@ VmaAllocator VulkanDevice::makeVmaAllocator (VkInstance instance, std::uint32_t 
 }
 
 VulkanDevice::~VulkanDevice () {
-    vkDestroyDevice(logicalDevice, nullptr);
+    vkDestroyDevice(m_logicalDevice, nullptr);
 }
 
 void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions) {
@@ -95,22 +95,22 @@ void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surfa
             continue;
         }
 
-        physicalDevice = device;
-        queueFamilies = *familes;
-        swapChainDetails = std::move(*swapDetails);
+        m_physicalDevice = device;
+        m_queueFamilies = *familes;
+        m_swapChainDetails = std::move(*swapDetails);
         break;
     }
 
-    PHENYL_ASSERT_MSG(physicalDevice, "Failed to find a suitable physical device!");
+    PHENYL_ASSERT_MSG(m_physicalDevice, "Failed to find a suitable physical device!");
 
-    devProperties = GetDeviceProperties(physicalDevice);
+    m_properties = GetDeviceProperties(m_physicalDevice);
     PHENYL_LOGI(LOGGER, "Chose physical device \"{}\"", properties().deviceName);
 }
 
 VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& deviceExtensions) {
-    PHENYL_DASSERT(physicalDevice);
+    PHENYL_DASSERT(m_physicalDevice);
 
-    std::unordered_set familyIndexes{queueFamilies.graphicsFamily, queueFamilies.presentFanily};
+    std::unordered_set familyIndexes{m_queueFamilies.graphicsFamily, m_queueFamilies.presentFanily};
     float priority = 1.0f;
     auto queueCreateInfos = familyIndexes
         | std::views::transform([&] (auto i) {
@@ -147,7 +147,7 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
     };
 
     VkDevice device;
-    if (auto result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device); result != VK_SUCCESS) {
+    if (auto result = vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &device); result != VK_SUCCESS) {
         PHENYL_ABORT("Failed to create logical device (error: {})", result);
     }
 
@@ -156,7 +156,7 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
 
 VkQueue VulkanDevice::makeQueue (std::uint32_t queueFamilyIndex) {
     VkQueue queue;
-    vkGetDeviceQueue(logicalDevice, queueFamilyIndex, 0, &queue);
+    vkGetDeviceQueue(m_logicalDevice, queueFamilyIndex, 0, &queue);
     PHENYL_ASSERT(queue);
 
     return queue;

@@ -22,14 +22,14 @@ namespace phenyl::vulkan {
 
     class VulkanSwapChain {
     private:
-        VkDevice device;
-        VkSwapchainKHR swapChain{};
-        std::vector<VkImage> swapChainImages;
-        std::vector<VkImageView> swapChainViews;
-        std::uint32_t currIndex{};
+        VkDevice m_device;
+        VkSwapchainKHR m_swapChain{};
+        std::vector<VkImage> m_images;
+        std::vector<VkImageView> m_imageViews;
+        std::uint32_t m_currIndex{};
 
-        VkFormat imageFormat;
-        VkExtent2D imageExtent;
+        VkFormat m_format;
+        VkExtent2D m_extent;
 
         void createImages ();
     public:
@@ -37,15 +37,15 @@ namespace phenyl::vulkan {
         ~VulkanSwapChain();
 
         VkFormat format () const noexcept {
-            return imageFormat;
+            return m_format;
         }
 
         VkExtent2D extent () const noexcept {
-            return imageExtent;
+            return m_extent;
         }
 
-        VkViewport getViewport () const noexcept;
-        VkRect2D getScissor () const noexcept;
+        VkViewport viewport () const noexcept;
+        VkRect2D scissor () const noexcept;
 
         std::optional<SwapChainImage> acquireImage (const VulkanSemaphore& signalSem);
         bool present (VkQueue queue, const VulkanSemaphore& waitSem);

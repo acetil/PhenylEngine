@@ -10,31 +10,31 @@ namespace phenyl::physics {
     private:
         //glm::vec2 currentPos = {0, 0};
 
-        float invMass{1.0f};
-        float invInertiaMoment{1.0f};
+        float m_invMass{1.0f};
+        float m_invInertiaMoment{1.0f};
 
-        glm::vec2 momentum{0.0f};
-        float angularMomentum{0.0f};
+        glm::vec2 m_momentum{0.0f};
+        float m_angularMomentum{0.0f};
 
-        glm::vec2 appliedImpulse{0.0f, 0.0f};
-        float appliedAngularImpulse{0.0f};
+        glm::vec2 m_appliedImpulse{0.0f, 0.0f};
+        float m_appliedAngularImpulse{0.0f};
 
-        float outerRadius{0.0f};
+        float m_outerRadius{0.0f};
 
         [[nodiscard]] glm::vec2 getCurrVelocity () const {
-            return (momentum + appliedImpulse) * invMass;
+            return (m_momentum + m_appliedImpulse) * m_invMass;
         }
 
         [[nodiscard]] float getCurrAngularVelocity () const {
-            return (angularMomentum + appliedAngularImpulse) * invInertiaMoment;
+            return (m_angularMomentum + m_appliedAngularImpulse) * m_invInertiaMoment;
         }
 
         void applyImpulse (glm::vec2 impulse) {
-            appliedImpulse += impulse;
+            m_appliedImpulse += impulse;
         }
 
         void applyAngularImpulse (float angularImpulse) {
-            appliedAngularImpulse += angularImpulse;
+            m_appliedAngularImpulse += angularImpulse;
         }
 
 
@@ -43,7 +43,7 @@ namespace phenyl::physics {
         friend class Manifold2D;
     protected:
         void setOuterRadius (float newOuterRadius) {
-            outerRadius = newOuterRadius;
+            m_outerRadius = newOuterRadius;
         };
         [[nodiscard]] glm::vec2 getPosition () const {
             return currentPos;

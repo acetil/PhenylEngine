@@ -7,14 +7,14 @@ namespace phenyl::graphics {
 
     class AbstractRenderLayer {
     private:
-        int priority;
+        int m_priority;
     public:
-        explicit AbstractRenderLayer (int priority) : priority{priority} {}
+        explicit AbstractRenderLayer (int priority) : m_priority{priority} {}
         virtual ~AbstractRenderLayer () = default;
 
         [[nodiscard]] virtual std::string_view getName () const = 0;
-        [[nodiscard]] int getPriority () const {
-            return priority;
+        [[nodiscard]] int priority () const {
+            return m_priority;
         }
 
         virtual void init (Renderer& renderer) = 0;

@@ -8,11 +8,11 @@
 namespace phenyl::graphics {
     class UIEvent {
     private:
-        std::any event;
-        std::size_t eventType;
+        std::any m_event;
+        std::size_t m_type;
     public:
         template <typename T> requires (!std::same_as<T, UIEvent>)
-        explicit UIEvent (T&& event) : event{std::forward<T>(event)}, eventType{meta::type_index<T>()} {}
+        explicit UIEvent (T&& event) : m_event{std::forward<T>(event)}, m_type{meta::type_index<T>()} {}
 
         UIEvent (const UIEvent&) = delete;
         UIEvent (UIEvent&&) = default;
@@ -22,7 +22,7 @@ namespace phenyl::graphics {
 
         template <typename T>
         const T* get () const noexcept {
-            return std::any_cast<const T>(&event);
+            return std::any_cast<const T>(&m_event);
         }
 
         template <typename T>
@@ -31,7 +31,7 @@ namespace phenyl::graphics {
         }
 
         std::size_t type () const noexcept {
-            return eventType;
+            return m_type;
         }
     };
 

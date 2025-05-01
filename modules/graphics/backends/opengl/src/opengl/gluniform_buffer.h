@@ -6,9 +6,9 @@
 namespace phenyl::opengl {
     class GlUniformBuffer : public graphics::IUniformBuffer {
     private:
-        GLuint bufferId;
-        std::span<std::byte> data{};
-        bool readable;
+        GLuint m_id;
+        std::span<std::byte> m_data{};
+        bool m_readable;
     public:
         explicit GlUniformBuffer (bool readable);
 
@@ -26,7 +26,7 @@ namespace phenyl::opengl {
         std::size_t getMinAlignment () const noexcept override;
 
         [[nodiscard]] GLuint id () const {
-            return bufferId;
+            return m_id;
         }
     };
 }

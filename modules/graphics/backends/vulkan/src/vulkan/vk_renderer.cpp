@@ -38,7 +38,7 @@ namespace phenyl::vulkan {
 
         VkSurfaceKHR createSurface (VkInstance instance) {
             VkSurfaceKHR surface;
-            auto result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+            auto result = glfwCreateWindowSurface(instance, m_window, nullptr, &surface);
             PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create window surface!");
 
             PHENYL_LOGI(detail::VULKAN_LOGGER, "Created Vulkan window surface");
@@ -50,57 +50,57 @@ namespace phenyl::vulkan {
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessageCallback (VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
-VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::unique_ptr<VulkanViewport> vkViewport) : viewport{std::move(vkViewport)} {
-    PHENYL_DASSERT(viewport);
+VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::unique_ptr<VulkanViewport> vkViewport) : m_viewport{std::move(vkViewport)} {
+    PHENYL_DASSERT(m_viewport);
 
 
-    instance = createVkInstance(properties);
-    PHENYL_DASSERT(instance);
+    m_instance = createVkInstance(properties);
+    PHENYL_DASSERT(m_instance);
 
     setupDebugMessenger();
 
-    surface = viewport->createSurface(instance);
+    m_surface = m_viewport->createSurface(m_instance);
 
-    device = std::make_unique<VulkanDevice>(instance, surface);
-    resources = std::make_unique<VulkanResources>(instance, *device, MAX_FRAMES_IN_FLIGHT);
+    m_device = std::make_unique<VulkanDevice>(m_instance, m_surface);
+    m_resources = std::make_unique<VulkanResources>(m_instance, *m_device, MAX_FRAMES_IN_FLIGHT);
 
-    swapChain = device->makeSwapChain(surface);
+    m_swapChain = m_device->makeSwapChain(m_surface);
 
-    frameManager = std::make_unique<FrameManager>(*device, *resources, MAX_FRAMES_IN_FLIGHT);
-    transferManager = std::make_unique<TransferManager>(*resources);
+    m_frameManager = std::make_unique<FrameManager>(*m_device, *m_resources, MAX_FRAMES_IN_FLIGHT);
+    m_transferManager = std::make_unique<TransferManager>(*m_resources);
 
-    windowFrameBuffer = std::make_unique<VulkanWindowFrameBuffer>(*resources, *transferManager, fbLayoutManager, swapChain->format());
-    windowFrameBuffer->onSwapChainRecreate(swapChain.get());
+    m_windowFrameBuffer = std::make_unique<VulkanWindowFrameBuffer>(*m_resources, *m_transferManager, m_fbLayoutManager, m_swapChain->format());
+    m_windowFrameBuffer->onSwapChainRecreate(m_swapChain.get());
 
-    shaderManager = std::make_unique<VulkanShaderManager>(device->device());
-    shaderManager->selfRegister();
+    m_shaderManager = std::make_unique<VulkanShaderManager>(m_device->device());
+    m_shaderManager->selfRegister();
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Completed renderer setup");
 }
 
 VulkanRenderer::~VulkanRenderer () {
-    vkDeviceWaitIdle(device->device());
+    vkDeviceWaitIdle(m_device->device());
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Destroying Vulkan renderer");
 
-    shaderManager = nullptr;
+    m_shaderManager = nullptr;
 
-    windowFrameBuffer = nullptr;
+    m_windowFrameBuffer = nullptr;
 
-    transferManager = nullptr;
-    frameManager = nullptr;
-    swapChain = nullptr;
+    m_transferManager = nullptr;
+    m_frameManager = nullptr;
+    m_swapChain = nullptr;
 
-    resources = nullptr;
-    device = nullptr;
-    vkDestroySurfaceKHR(instance, surface, nullptr);
+    m_resources = nullptr;
+    m_device = nullptr;
+    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 
     destroyDebugMessenger();
-    vkDestroyInstance(instance, nullptr);
+    vkDestroyInstance(m_instance, nullptr);
 
-    viewport = nullptr;
+    m_viewport = nullptr;
 }
 
 double VulkanRenderer::getCurrentTime () {
-    return viewport->getTime();
+    return m_viewport->getTime();
 }
 
 void VulkanRenderer::clearWindow () {
@@ -108,25 +108,25 @@ void VulkanRenderer::clearWindow () {
 }
 
 void VulkanRenderer::render () {
-    if (!frameManager->onNewFrame(*windowFrameBuffer)) {
+    if (!m_frameManager->onNewFrame(*m_windowFrameBuffer)) {
         PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame acquisition");
         recreateSwapChain();
         return;
     }
 
-    auto& frameSync = frameManager->getFrameSync();
-    auto commandBuffer = frameManager->getCommandPool().getBuffer();
+    auto& frameSync = m_frameManager->getFrameSync();
+    auto commandBuffer = m_frameManager->getCommandPool().getBuffer();
 
-    framebuffer.renderingRecorder = &commandBuffer;
-    framebuffer.descriptorPool = &frameManager->getDescriptorPool();
+    m_framebuffer.renderingRecorder = &commandBuffer;
+    m_framebuffer.descriptorPool = &m_frameManager->getDescriptorPool();
 
     layerRender();
 
-    windowFrameBuffer->doPresentTransition(commandBuffer);
+    m_windowFrameBuffer->doPresentTransition(commandBuffer);
 
     commandBuffer.submit(&frameSync.imageAvailable, &frameSync.renderFinished, &frameSync.inFlight);
 
-    if (!swapChain->present(device->getGraphicsQueue(), frameSync.renderFinished)) {
+    if (!m_swapChain->present(m_device->graphicsQueue(), frameSync.renderFinished)) {
         PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame presentation");
         recreateSwapChain();
     }
@@ -137,11 +137,11 @@ void VulkanRenderer::finishRender () {
 }
 
 Viewport& VulkanRenderer::getViewport () {
-    return *viewport;
+    return *m_viewport;
 }
 
 const Viewport& VulkanRenderer::getViewport () const {
-    return *viewport;
+    return *m_viewport;
 }
 
 std::string_view VulkanRenderer::getName () const noexcept {
@@ -151,36 +151,36 @@ std::string_view VulkanRenderer::getName () const noexcept {
 std::unique_ptr<IBuffer> VulkanRenderer::makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) {
     switch (storageHint) {
         case BufferStorageHint::STATIC:
-            return std::make_unique<VulkanStaticStorageBuffer>(*resources, *transferManager, isIndex);
+            return std::make_unique<VulkanStaticStorageBuffer>(*m_resources, *m_transferManager, isIndex);
         case BufferStorageHint::DYNAMIC:
-            return std::make_unique<VulkanStorageBuffer>(*resources, startCapacity, isIndex);
+            return std::make_unique<VulkanStorageBuffer>(*m_resources, startCapacity, isIndex);
     }
 
     PHENYL_ABORT("Unexpected storage hint: {}", static_cast<std::uint32_t>(storageHint));
 }
 
 std::unique_ptr<IUniformBuffer> VulkanRenderer::makeRendererUniformBuffer (bool readable) {
-    return std::make_unique<VulkanUniformBuffer>(*resources);
+    return std::make_unique<VulkanUniformBuffer>(*m_resources);
 }
 
 std::unique_ptr<IImageTexture> VulkanRenderer::makeRendererImageTexture (const TextureProperties& properties) {
-    return std::make_unique<VulkanImageTexture>(*resources, *transferManager, properties);
+    return std::make_unique<VulkanImageTexture>(*m_resources, *m_transferManager, properties);
 }
 
 std::unique_ptr<IImageArrayTexture> VulkanRenderer::makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return std::make_unique<VulkanArrayTexture>(*resources, *transferManager, properties, width, height);
+    return std::make_unique<VulkanArrayTexture>(*m_resources, *m_transferManager, properties, width, height);
 }
 
 std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) {
-    return std::make_unique<VulkanFrameBuffer>(*resources, fbLayoutManager, properties, width, height);
+    return std::make_unique<VulkanFrameBuffer>(*m_resources, m_fbLayoutManager, properties, width, height);
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*resources, swapChain->format(), &framebuffer, windowFrameBuffer.get())};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*m_resources, m_swapChain->format(), &m_framebuffer, m_windowFrameBuffer.get())};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
-    shaderManager->loadDefaultShaders();
+    m_shaderManager->loadDefaultShaders();
 }
 
 std::vector<const char*> VulkanRenderer::GatherValidationLayers () {
@@ -281,8 +281,8 @@ VkDebugUtilsMessengerCreateInfoEXT VulkanRenderer::getDebugMessengerCreateInfo (
 void VulkanRenderer::setupDebugMessenger () {
     auto messengerCreateInfo = getDebugMessengerCreateInfo();
 
-    if (const auto func = LookupVulkanEXT<PFN_vkCreateDebugUtilsMessengerEXT>(instance, "vkCreateDebugUtilsMessengerEXT")) {
-        if (auto result = func(instance, &messengerCreateInfo, nullptr, &debugMessenger); result != VK_SUCCESS) {
+    if (const auto func = LookupVulkanEXT<PFN_vkCreateDebugUtilsMessengerEXT>(m_instance, "vkCreateDebugUtilsMessengerEXT")) {
+        if (auto result = func(m_instance, &messengerCreateInfo, nullptr, &m_debugMessenger); result != VK_SUCCESS) {
             PHENYL_LOGE(detail::VULKAN_LOGGER, "Failed to setup debug messenger, error code: {}", result);
         } else {
             PHENYL_LOGD(detail::VULKAN_LOGGER, "Setup Vulkan debug messenger");
@@ -291,8 +291,8 @@ void VulkanRenderer::setupDebugMessenger () {
 }
 
 void VulkanRenderer::destroyDebugMessenger () {
-    if (const auto func = LookupVulkanEXT<PFN_vkDestroyDebugUtilsMessengerEXT>(instance, "vkDestroyDebugUtilsMessengerEXT")) {
-        func(instance, debugMessenger, nullptr);
+    if (const auto func = LookupVulkanEXT<PFN_vkDestroyDebugUtilsMessengerEXT>(m_instance, "vkDestroyDebugUtilsMessengerEXT")) {
+        func(m_instance, m_debugMessenger, nullptr);
     }
 }
 
@@ -307,7 +307,7 @@ VkInstance VulkanRenderer::createVkInstance (const GraphicsProperties& propertie
     };
 
     auto validationLayers = GatherValidationLayers();
-    auto extensions = GatherExtensions(properties, *viewport);
+    auto extensions = GatherExtensions(properties, *m_viewport);
     auto debugMessengerInfo = getDebugMessengerCreateInfo();
 
     const VkInstanceCreateInfo createInfo{
@@ -331,11 +331,11 @@ VkInstance VulkanRenderer::createVkInstance (const GraphicsProperties& propertie
 
 void VulkanRenderer::recreateSwapChain () {
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Recreating swap chain");
-    vkDeviceWaitIdle(device->device());
-    swapChain = nullptr;
-    swapChain = device->makeSwapChain(surface);
+    vkDeviceWaitIdle(m_device->device());
+    m_swapChain = nullptr;
+    m_swapChain = m_device->makeSwapChain(m_surface);
 
-    windowFrameBuffer->onSwapChainRecreate(swapChain.get());
+    m_windowFrameBuffer->onSwapChainRecreate(m_swapChain.get());
 }
 
 

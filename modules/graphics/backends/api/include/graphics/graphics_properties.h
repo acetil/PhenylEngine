@@ -5,46 +5,46 @@
 namespace phenyl::graphics {
     class GraphicsProperties {
     private:
-        int windowWidth = 800;
-        int windowHeight = 600;
-        std::string windowTitle = "Phenyl Engine";
-        bool vsync = false;
+        int m_windowWidth = 800;
+        int m_windowHeight = 600;
+        std::string m_windowTitle = "Phenyl Engine";
+        bool m_vsync = false;
     public:
         GraphicsProperties () = default;
 
         GraphicsProperties& withWindowSize (int width, int height) {
-            windowWidth = width;
-            windowHeight = height;
+            m_windowWidth = width;
+            m_windowHeight = height;
 
             return *this;
         }
 
         GraphicsProperties& withWindowTitle (std::string title) {
-            windowTitle = std::move(title);
+            m_windowTitle = std::move(title);
 
             return *this;
         }
 
         GraphicsProperties& withVsync (bool doVsync) {
-            vsync = doVsync;
+            m_vsync = doVsync;
 
             return *this;
         }
 
         [[nodiscard]] int getWindowWidth () const {
-            return windowWidth;
+            return m_windowWidth;
         }
 
         [[nodiscard]] int getWindowHeight () const {
-            return windowHeight;
+            return m_windowHeight;
         }
 
         [[nodiscard]] const std::string& getWindowTitle () const {
-            return windowTitle;
+            return m_windowTitle;
         }
 
         bool getVsync () const {
-            return vsync;
+            return m_vsync;
         }
     };
 }

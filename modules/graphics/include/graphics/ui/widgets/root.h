@@ -9,8 +9,8 @@
 namespace phenyl::graphics {
     class RootWidget : public Widget {
     private:
-        std::vector<std::unique_ptr<Widget>> children;
-        std::unordered_set<Widget*> widgetsToDelete;
+        std::vector<std::unique_ptr<Widget>> m_children;
+        std::unordered_set<Widget*> m_widgetsToDelete;
 
     public:
         RootWidget ();

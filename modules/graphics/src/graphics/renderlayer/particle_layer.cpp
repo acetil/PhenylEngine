@@ -23,7 +23,7 @@ void ParticleRenderLayer::init (Renderer& renderer) {
     BufferBinding colourBinding;
     UniformBinding uniformBinding;
     auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/particle");
-    pipeline = renderer.buildPipeline()
+    m_pipeline = renderer.buildPipeline()
                        .withShader(shader)
                        .withBuffer<glm::vec2>(posBinding)
                        .withBuffer<glm::vec4>(colourBinding)
@@ -33,27 +33,27 @@ void ParticleRenderLayer::init (Renderer& renderer) {
                        .build();
 
 
-    posBuffer = renderer.makeBuffer<glm::vec2>(MAX_VERTICES, BufferStorageHint::DYNAMIC);
-    colourBuffer = renderer.makeBuffer<glm::vec4>(MAX_VERTICES, BufferStorageHint::DYNAMIC);
-    uniformBuffer = renderer.makeUniformBuffer<Uniform>();
+    m_posBuffer = renderer.makeBuffer<glm::vec2>(MAX_VERTICES, BufferStorageHint::DYNAMIC);
+    m_colorBuffer = renderer.makeBuffer<glm::vec4>(MAX_VERTICES, BufferStorageHint::DYNAMIC);
+    m_uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
-    pipeline.bindBuffer(posBinding, posBuffer);
-    pipeline.bindBuffer(colourBinding, colourBuffer);
-    pipeline.bindUniform(uniformBinding, uniformBuffer);
+    m_pipeline.bindBuffer(posBinding, m_posBuffer);
+    m_pipeline.bindBuffer(colourBinding, m_colorBuffer);
+    m_pipeline.bindUniform(uniformBinding, m_uniformBuffer);
 }
 
 void ParticleRenderLayer::bufferData (const Camera2D& camera, const ParticleManager2D& manager) {
-    posBuffer.clear();
-    colourBuffer.clear();
+    m_posBuffer.clear();
+    m_colorBuffer.clear();
 
-    manager.buffer(posBuffer, colourBuffer);
-    uniformBuffer->camera = camera.getCamMatrix();
+    manager.buffer(m_posBuffer, m_colorBuffer);
+    m_uniformBuffer->camera = camera.getCamMatrix();
 
-    posBuffer.upload();
-    colourBuffer.upload();
-    uniformBuffer.upload();
+    m_posBuffer.upload();
+    m_colorBuffer.upload();
+    m_uniformBuffer.upload();
 }
 
 void ParticleRenderLayer::render () {
-    pipeline.render(posBuffer.size());
+    m_pipeline.render(m_posBuffer.size());
 }

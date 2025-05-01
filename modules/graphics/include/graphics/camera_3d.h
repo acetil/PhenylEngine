@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../backends/api/include/graphics/viewport.h"
+#include "graphics/viewport.h"
 #include "core/iresource.h"
 #include "core/maths/3d/transform.h"
 
 namespace phenyl::graphics {
     class Camera3D : public core::IResource, public IViewportUpdateHandler {
     private:
-        glm::vec2 resolution;
+        glm::vec2 m_resolution;
     public:
         float nearClippingPlane = 0.1f;
         float farClippingPlane = 100.0f;

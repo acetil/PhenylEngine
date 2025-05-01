@@ -5,7 +5,7 @@
 namespace phenyl::logging {
     class StreamSink : public LogSink {
     private:
-        std::ostream& file;
+        std::ostream& m_file;
     public:
         StreamSink (std::ostream& file, std::string path);
 

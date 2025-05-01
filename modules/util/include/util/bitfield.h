@@ -19,27 +19,27 @@ namespace phenyl::util {
         static constexpr std::size_t FullInts = N / (IntSize);
         static constexpr std::size_t NumInts = detail::ceil(N, IntSize);
 
-        std::size_t data[NumInts];
+        std::size_t m_data[NumInts];
     public:
-        Bitfield () : data{{0}} {}
+        Bitfield () : m_data{{0}} {}
 
         Bitfield (const Bitfield<N>& other) {
-            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
+            std::memcpy(m_data, other.m_data, sizeof(std::size_t) * NumInts);
         }
         Bitfield<N>& operator= (const Bitfield<N>& other) {
             if (this == &other) {
                 return *this;
             }
-            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
+            std::memcpy(m_data, other.m_data, sizeof(std::size_t) * NumInts);
 
             return *this;
         }
 
         Bitfield (Bitfield<N>&& other) noexcept {
-            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
+            std::memcpy(m_data, other.m_data, sizeof(std::size_t) * NumInts);
         }
         Bitfield<N>& operator= (Bitfield<N>&& other) noexcept {
-            std::memcpy(data, other.data, sizeof(std::size_t) * NumInts);
+            std::memcpy(m_data, other.m_data, sizeof(std::size_t) * NumInts);
 
             return *this;
         }
@@ -51,9 +51,9 @@ namespace phenyl::util {
             std::size_t index = 0;
             while (index * IntSize < numBits) {
                 if ((index + 1) * IntSize <= numBits) {
-                    result.data[index] = FullMask;
+                    result.m_data[index] = FullMask;
                 } else {
-                    result.data[index] = FullMask & ((1 << (numBits - index * IntSize)) - 1);
+                    result.m_data[index] = FullMask & ((1 << (numBits - index * IntSize)) - 1);
                 }
                 index++;
             }
@@ -66,28 +66,28 @@ namespace phenyl::util {
                 return false;
             }
 
-            return data[bit / IntSize] & (1 << (bit % IntSize));
+            return m_data[bit / IntSize] & (1 << (bit % IntSize));
         }
 
         void putBit (std::size_t bit) {
             PHENYL_DASSERT(bit < N);
 
-            data[bit / IntSize] |= 1 << (bit % IntSize);
+            m_data[bit / IntSize] |= 1 << (bit % IntSize);
         }
 
         void maskBit (std::size_t bit) {
             PHENYL_DASSERT(bit < N);
 
-            data[bit / IntSize] &= (FullMask ^ (1 << (bit % IntSize)));
+            m_data[bit / IntSize] &= (FullMask ^ (1 << (bit % IntSize)));
         }
 
         void clear () {
-            std::memset(data, 0, sizeof(data));
+            std::memset(m_data, 0, sizeof(m_data));
         }
 
         operator bool () {
             for (std::size_t i = 0; i < NumInts; i++) {
-                if (data[i]) {
+                if (m_data[i]) {
                     return true;
                 }
             }
@@ -98,11 +98,11 @@ namespace phenyl::util {
         Bitfield<N> operator~ () {
             Bitfield<N> other{};
             for (std::size_t i = 0; i < FullInts; i++) {
-                other.data[i] = ~data[i];
+                other.m_data[i] = ~m_data[i];
             }
 
             if constexpr (NumInts > FullInts) {
-                other.data[NumInts - 1] = (~data[NumInts - 1]) & ((1 << (N % IntSize)) - 1);
+                other.m_data[NumInts - 1] = (~m_data[NumInts - 1]) & ((1 << (N % IntSize)) - 1);
             }
 
             return other;
@@ -110,7 +110,7 @@ namespace phenyl::util {
 
         Bitfield<N>& operator&= (const Bitfield<N>& other) {
             for (std::size_t i = 0; i < NumInts; i++) {
-                data[i] &= other.data[i];
+                m_data[i] &= other.m_data[i];
             }
 
             return *this;
@@ -118,7 +118,7 @@ namespace phenyl::util {
 
         Bitfield<N>& operator|= (const Bitfield<N>& other) {
             for (std::size_t i = 0; i < NumInts; i++) {
-                data[i] |= other.data[i];
+                m_data[i] |= other.m_data[i];
             }
 
             return *this;
@@ -126,7 +126,7 @@ namespace phenyl::util {
 
         Bitfield<N>& operator^= (const Bitfield<N>& other) {
             for (std::size_t i = 0; i < NumInts; i++) {
-                data[i] ^= other.data[i];
+                m_data[i] ^= other.m_data[i];
             }
 
             return *this;
@@ -144,7 +144,7 @@ namespace phenyl::util {
     template <std::size_t N>
     inline bool operator== (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2) {
         for (std::size_t i = 0; i < Bitfield<N>::NumInts; i++) {
-            if (bitfield1.data[i] != bitfield2.data[i]) {
+            if (bitfield1.m_data[i] != bitfield2.m_data[i]) {
                 return false;
             }
         }
@@ -156,7 +156,7 @@ namespace phenyl::util {
     inline Bitfield<N> operator& (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2) {
         Bitfield<N> result{};
         for (std::size_t i = 0; i < Bitfield<N>::NumInts; i++) {
-            result.data[i] = bitfield1.data[i] & bitfield2.data[i];
+            result.m_data[i] = bitfield1.m_data[i] & bitfield2.m_data[i];
         }
 
         return result;
@@ -166,7 +166,7 @@ namespace phenyl::util {
     inline Bitfield<N> operator| (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2) {
         Bitfield<N> result{};
         for (std::size_t i = 0; i < Bitfield<N>::NumInts; i++) {
-            result.data[i] = bitfield1.data[i] | bitfield2.data[i];
+            result.m_data[i] = bitfield1.m_data[i] | bitfield2.m_data[i];
         }
 
         return result;
@@ -176,7 +176,7 @@ namespace phenyl::util {
     inline Bitfield<N> operator^ (const Bitfield<N>& bitfield1, const Bitfield<N>& bitfield2) {
         Bitfield<N> result{};
         for (std::size_t i = 0; i < Bitfield<N>::NumInts; i++) {
-            result.data[i] = bitfield1.data[i] ^ bitfield2.data[i];
+            result.m_data[i] = bitfield1.m_data[i] ^ bitfield2.m_data[i];
         }
 
         return result;

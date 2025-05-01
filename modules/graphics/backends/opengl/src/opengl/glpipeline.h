@@ -16,18 +16,18 @@ namespace phenyl::opengl {
             std::size_t typeSize;
         };
 
-        GLuint vaoId;
-        GLenum renderMode = GL_TRIANGLES;
-        GlWindowFrameBuffer* windowFrameBuffer;
-        core::Asset<graphics::Shader> shader;
-        std::vector<std::size_t> bufferTypes;
-        util::Map<graphics::UniformBinding, std::size_t> uniformTypes;
-        std::optional<PipelineIndex> indexType = std::nullopt;
+        GLuint m_vao;
+        GLenum m_renderMode = GL_TRIANGLES;
+        GlWindowFrameBuffer* m_windowFrameBuffer;
+        core::Asset<graphics::Shader> m_shader;
+        std::vector<std::size_t> m_bufferTypes;
+        util::Map<graphics::UniformBinding, std::size_t> m_uniformTypes;
+        std::optional<PipelineIndex> m_indexType = std::nullopt;
 
-        bool doDepthTest = false;
-        bool doDepthMask = false;
-        graphics::BlendMode blendMode = graphics::BlendMode::ALPHA_BLEND;
-        graphics::CullMode cullMode = graphics::CullMode::NONE;
+        bool m_doDepthTest = false;
+        bool m_doDepthMask = false;
+        graphics::BlendMode m_blendMode = graphics::BlendMode::ALPHA_BLEND;
+        graphics::CullMode m_cullMode = graphics::CullMode::NONE;
 
         GlShader& getShader ();
         void updateDepthMask ();
@@ -69,7 +69,7 @@ namespace phenyl::opengl {
 
     class GlPipelineBuilder : public graphics::IPipelineBuilder {
     private:
-        std::unique_ptr<GlPipeline> pipeline;
+        std::unique_ptr<GlPipeline> m_pipeline;
     public:
         GlPipelineBuilder (GlWindowFrameBuffer* fb);
 

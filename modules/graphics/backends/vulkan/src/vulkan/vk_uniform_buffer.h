@@ -8,13 +8,13 @@ namespace phenyl::vulkan {
 
     class VulkanUniformBuffer : public graphics::IUniformBuffer {
     private:
-        VulkanResources& resources;
+        VulkanResources& m_resources;
 
-        std::unique_ptr<std::byte[]> data;
-        std::size_t size = 0;
+        std::unique_ptr<std::byte[]> m_data;
+        std::size_t m_size = 0;
 
-        VulkanBuffer buffer;
-        VkDescriptorBufferInfo bufferInfo;
+        VulkanBuffer m_buffer;
+        VkDescriptorBufferInfo m_bufferInfo;
 
     public:
         VulkanUniformBuffer (VulkanResources& resources);
@@ -26,7 +26,7 @@ namespace phenyl::vulkan {
         VkBuffer getBuffer () const;
 
         const VkDescriptorBufferInfo& getBufferInfo () const noexcept {
-            return bufferInfo;
+            return m_bufferInfo;
         }
 
         [[nodiscard]] VkDescriptorBufferInfo getBufferInfo (std::size_t offset, std::size_t size) const noexcept;

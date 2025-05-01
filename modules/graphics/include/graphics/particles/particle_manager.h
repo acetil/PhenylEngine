@@ -9,8 +9,8 @@
 namespace phenyl::graphics {
     class ParticleManager2D : public phenyl::core::AssetManager<ParticleSystem2D>, public core::IResource {
     private:
-        util::Map<std::size_t, std::unique_ptr<ParticleSystem2D>> systems;
-        std::size_t systemMaxParticles;
+        util::Map<std::size_t, std::unique_ptr<ParticleSystem2D>> m_systems;
+        std::size_t m_maxParticles;
     protected:
         [[nodiscard]] const char* getFileType () const override;
 

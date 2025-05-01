@@ -16,11 +16,11 @@ namespace phenyl {
 
         class ApplicationBase {
         private:
-            ApplicationProperties properties;
-            core::PhenylRuntime* engineRuntime = nullptr;
-            double targetFrameTime{1.0 / 60};
-            double targetFps{60};
-            double fixedTimeScale{1.0};
+            ApplicationProperties m_properties;
+            core::PhenylRuntime* m_runtime = nullptr;
+            double m_targetFrameTime{1.0 / 60};
+            double m_targetFps{60};
+            double m_fixedTimeScale{1.0};
 
             virtual void _init () = 0;
             ApplicationBase (ApplicationProperties properties);
@@ -57,15 +57,15 @@ namespace phenyl {
             core::PhenylRuntime& runtime ();
 
             const ApplicationProperties& getProperties () const {
-                return properties;
+                return m_properties;
             }
 
             double getFixedTimeScale () const {
-                return fixedTimeScale;
+                return m_fixedTimeScale;
             }
 
             double getTargetFps () const {
-                return targetFps;
+                return m_targetFps;
             }
         };
     }

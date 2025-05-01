@@ -11,10 +11,10 @@ std::string_view PrefabPlugin::getName () const noexcept {
 }
 
 void PrefabPlugin::init (PhenylRuntime& runtime) {
-    manager = std::make_unique<core::PrefabAssetManager>(runtime.world(), runtime.serializer());
-    manager->selfRegister();
+    m_manager = std::make_unique<core::PrefabAssetManager>(runtime.world(), runtime.serializer());
+    m_manager->selfRegister();
 }
 
 void PrefabPlugin::shutdown (PhenylRuntime& runtime) {
-    manager->clear();
+    m_manager->clear();
 }

@@ -75,33 +75,33 @@ namespace phenyl::graphics {
 
     class Mesh {
     private:
-        MeshLayout meshLayout{};
-        RawBuffer meshIndices;
-        std::vector<RawBuffer> meshStreams;
-        std::size_t meshSize;
+        MeshLayout m_layout{};
+        RawBuffer m_indices;
+        std::vector<RawBuffer> m_streams;
+        std::size_t m_size;
 
     public:
         Mesh (MeshLayout layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams, std::size_t meshSize);
 
         const MeshLayout& layout () const noexcept {
-            return meshLayout;
+            return m_layout;
         }
 
         const RawBuffer& indices () const noexcept {
-            return meshIndices;
+            return m_indices;
         }
 
         const std::vector<RawBuffer>& streams () const noexcept {
-            return meshStreams;
+            return m_streams;
         }
 
         std::size_t numVertices () const noexcept {
-            return meshSize;
+            return m_size;
         }
 
         // TODO
         void setLayoutId (std::uint64_t id) noexcept {
-            meshLayout.layoutId = id;
+            m_layout.layoutId = id;
         }
     };
 }

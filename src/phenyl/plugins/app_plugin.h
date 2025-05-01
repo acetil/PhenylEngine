@@ -9,7 +9,7 @@ namespace phenyl::engine {
 
     class AppPlugin : public core::IPlugin {
     private:
-        std::unique_ptr<ApplicationBase> app;
+        std::unique_ptr<ApplicationBase> m_app;
     public:
         explicit AppPlugin (std::unique_ptr<ApplicationBase> app);
 

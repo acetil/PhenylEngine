@@ -13,42 +13,42 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"UI_MANAGER", detail::GRAPHICS_LOGGER};
 
-UIManager::UIManager (core::GameInput& input) : selectAction{input.addAction("ui_select")}, mousePos{input.addAxis2D("ui_mouse")} {
-    rootWidget = std::make_unique<RootWidget>();
+UIManager::UIManager (core::GameInput& input) : m_selectAction{input.addAction("ui_select")}, m_mousePos{input.addAxis2D("ui_mouse")} {
+    m_rootWidget = std::make_unique<RootWidget>();
 
     input.addActionBinding("ui_select", "mouse.button_left");
     input.addAxis2DBinding("ui_mouse", "mouse.mouse_pos");
 }
 
 void UIManager::renderUI (Canvas& canvas) {
-    rootWidget->measure(WidgetConstraints{
+    m_rootWidget->measure(WidgetConstraints{
         .maxSize = canvas.resolution()
     });
-    rootWidget->render(canvas);
+    m_rootWidget->render(canvas);
 }
 
 void UIManager::updateUI () {
     PHENYL_TRACE(LOGGER, "Updating UI");
-    rootWidget->pointerUpdate(mousePos.value());
+    m_rootWidget->pointerUpdate(m_mousePos.value());
 
-    bool newMouse = selectAction.value();
-    if (newMouse != mouseDown) {
+    bool newMouse = m_selectAction.value();
+    if (newMouse != m_mouseDown) {
         if (newMouse) {
-            focusedWidget = rootWidget->pick(mousePos.value());
-            if (focusedWidget) {
+            m_focusedWidget = m_rootWidget->pick(m_mousePos.value());
+            if (m_focusedWidget) {
                 PHENYL_LOGD(LOGGER, "Received mouse press");
-                focusedWidget->raise(UIEvent{MousePressEvent{}});
+                m_focusedWidget->raise(UIEvent{MousePressEvent{}});
             }
         } else {
-            if (focusedWidget) {
+            if (m_focusedWidget) {
                 PHENYL_LOGD(LOGGER, "Received mouse release");
-                focusedWidget->raise(UIEvent{MouseReleaseEvent{}});
+                m_focusedWidget->raise(UIEvent{MouseReleaseEvent{}});
             }
         }
     }
-    mouseDown = newMouse;
+    m_mouseDown = newMouse;
 
-    rootWidget->update();
+    m_rootWidget->update();
 }
 
 std::string_view UIManager::getName () const noexcept {

@@ -18,13 +18,13 @@ namespace phenyl::graphics {
             glm::vec4 colour;
         };
 
-        Pipeline pipeline;
-        GlyphAtlas& glyphAtlas;
-        SamplerBinding samplerBinding{};
-        Buffer<Vertex> buffer;
-        Buffer<std::uint16_t> indices;
-        UniformBinding uniformBinding;
-        UniformBuffer<Uniform> uniformBuffer;
+        Pipeline m_pipeline;
+        GlyphAtlas& m_glyphAtlas;
+        SamplerBinding m_samplerBinding{};
+        Buffer<Vertex> m_buffer;
+        Buffer<std::uint16_t> m_indices;
+        UniformBinding m_uniformBinding;
+        UniformBuffer<Uniform> m_uniformBuffer;
 
         void uploadData ();
     public:

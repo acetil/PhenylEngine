@@ -32,9 +32,9 @@ static VkIndexType GetIndexType (ShaderIndexType type) {
 
 VulkanPipeline::VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
                                 TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes, std::unordered_set<graphics::SamplerBinding> validSamplers) :
-        device{device}, pipelineFactory{std::move(pipelineFactory)}, descriptorSetLayout{std::move(descriptorSetLayout)}, testFramebuffer{framebuffer}, windowFrameBuffer{windowFb}, vertexBindingTypes{std::move(vertexBindingTypes)},
-        boundVertexBuffers(this->vertexBindingTypes.size()), vertexBufferOffsets(this->vertexBindingTypes.size()), uniformTypes{std::move(uniformTypes)}, validSamplerBindings{std::move(validSamplers)} {
-    PHENYL_ASSERT(testFramebuffer);
+        m_device{device}, m_pipelineFactory{std::move(pipelineFactory)}, m_descriptorSetLayout{std::move(descriptorSetLayout)}, m_testFramebuffer{framebuffer}, m_windowFrameBuffer{windowFb}, m_vertexBindingTypes{std::move(vertexBindingTypes)},
+        m_boundVertexBuffers(this->m_vertexBindingTypes.size()), m_vertexBufferOffsets(this->m_vertexBindingTypes.size()), m_uniformTypes{std::move(uniformTypes)}, m_validSamplerBindings{std::move(validSamplers)} {
+    PHENYL_ASSERT(m_testFramebuffer);
     PHENYL_DASSERT(windowFb);
 }
 
@@ -42,30 +42,30 @@ void VulkanPipeline::bindBuffer (std::size_t type, BufferBinding binding, const 
                                  std::size_t offset) {
     std::size_t index = binding;
     const auto* storageBuffer = reinterpret_cast<const IVulkanStorageBuffer*>(&buffer);
-    PHENYL_ASSERT_MSG(index < vertexBindingTypes.size(), "Attempted to bind to invalid binding!");
-    PHENYL_ASSERT_MSG(type == vertexBindingTypes[index], "Attempted to bind buffer with incorrect type!");
+    PHENYL_ASSERT_MSG(index < m_vertexBindingTypes.size(), "Attempted to bind to invalid binding!");
+    PHENYL_ASSERT_MSG(type == m_vertexBindingTypes[index], "Attempted to bind buffer with incorrect type!");
 
-    boundVertexBuffers[index] = storageBuffer;
-    vertexBufferOffsets[index] = static_cast<VkDeviceSize>(offset);
+    m_boundVertexBuffers[index] = storageBuffer;
+    m_vertexBufferOffsets[index] = static_cast<VkDeviceSize>(offset);
 }
 
 void VulkanPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
     const auto* storageBuffer = reinterpret_cast<const IVulkanStorageBuffer*>(&buffer);
 
-    indexBuffer = storageBuffer;
-    indexBufferType = GetIndexType(type);
-    PHENYL_DASSERT(indexBuffer);
+    m_indexBuffer = storageBuffer;
+    m_indexBufferType = GetIndexType(type);
+    PHENYL_DASSERT(m_indexBuffer);
 }
 
 void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding binding,
     const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) {
     const auto& uniformBuffer = reinterpret_cast<const VulkanUniformBuffer&>(buffer);
 
-    auto it = uniformTypes.find(binding);
-    PHENYL_ASSERT_MSG(it != uniformTypes.end(), "Attempted to bind unknown uniform {}", binding);
+    auto it = m_uniformTypes.find(binding);
+    PHENYL_ASSERT_MSG(it != m_uniformTypes.end(), "Attempted to bind unknown uniform {}", binding);
     PHENYL_ASSERT_MSG(type == it->second, "Attempted to bind uniform to binding {} with incorrect type! (expected: {}, got: {})", binding, it->second, type);
 
-    boundUniformBuffers[binding] = UniformBufferBinding{
+    m_boundUniformBuffers[binding] = UniformBufferBinding{
         .buffer = &uniformBuffer,
         .offset = offset,
         .size = size
@@ -73,15 +73,15 @@ void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding bin
 }
 
 void VulkanPipeline::bindSampler (SamplerBinding binding, ISampler& sampler) {
-    PHENYL_ASSERT_MSG(validSamplerBindings.contains(binding), "Attempted to bind unknown sampler {}", binding);
+    PHENYL_ASSERT_MSG(m_validSamplerBindings.contains(binding), "Attempted to bind unknown sampler {}", binding);
 
     auto& combinedSampler = reinterpret_cast<IVulkanCombinedSampler&>(sampler);
-    boundSamplers[binding] = &combinedSampler;
+    m_boundSamplers[binding] = &combinedSampler;
 }
 
 void VulkanPipeline::unbindIndexBuffer () {
-    indexBuffer = nullptr;
-    indexBufferType = VK_INDEX_TYPE_NONE_KHR;
+    m_indexBuffer = nullptr;
+    m_indexBufferType = VK_INDEX_TYPE_NONE_KHR;
 }
 
 void VulkanPipeline::render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) {
@@ -90,18 +90,18 @@ void VulkanPipeline::render (IFrameBuffer* fb, std::size_t vertices, std::size_t
 
 void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
     std::size_t offset) {
-    PHENYL_ASSERT(testFramebuffer->renderingRecorder);
-    auto& cmd = *testFramebuffer->renderingRecorder;
+    PHENYL_ASSERT(m_testFramebuffer->renderingRecorder);
+    auto& cmd = *m_testFramebuffer->renderingRecorder;
 
     if (fb) {
         prepareRender(cmd, reinterpret_cast<VulkanFrameBuffer&>(*fb));
     } else {
-        prepareRender(cmd, *windowFrameBuffer);
+        prepareRender(cmd, *m_windowFrameBuffer);
     }
 
-    if (indexBuffer) {
-        PHENYL_ASSERT(indexBuffer->getBuffer());
-        cmd.bindIndexBuffer(indexBuffer->getBuffer(), indexBufferType);
+    if (m_indexBuffer) {
+        PHENYL_ASSERT(m_indexBuffer->getBuffer());
+        cmd.bindIndexBuffer(m_indexBuffer->getBuffer(), m_indexBufferType);
         cmd.drawIndexed(numInstances, vertices, offset);
     } else {
         cmd.draw(numInstances, vertices, offset);
@@ -113,15 +113,15 @@ VulkanPipelineFactory::VulkanPipelineFactory (VulkanResources& resources, core::
     std::vector<VkVertexInputAttributeDescription> vertexAttribs, VkPrimitiveTopology topology,
     VkCullModeFlags cullMode, const VkPipelineColorBlendAttachmentState& blendAttachment,
     const VkPipelineDepthStencilStateCreateInfo& depthStencilInfo) :
-        resources{resources}, shader{std::move(shader)}, pipelineLayout{std::move(pipelineLayout)}, vertexBindings{std::move(vertexBindings)}, vertexAttribs{std::move(vertexAttribs)},
-        colorBlendState{blendAttachment}, depthStencilInfo{depthStencilInfo} {
-    inputAssemblyInfo = VkPipelineInputAssemblyStateCreateInfo {
+        m_resources{resources}, m_shader{std::move(shader)}, m_layout{std::move(pipelineLayout)}, m_vertexBindings{std::move(vertexBindings)}, m_attribs{std::move(vertexAttribs)},
+        m_colorBlendState{blendAttachment}, m_depthStencilInfo{depthStencilInfo} {
+    m_inputAssemblyInfo = VkPipelineInputAssemblyStateCreateInfo {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .topology = topology,
         .primitiveRestartEnable = VK_FALSE
     };
 
-    rasterizerInfo = VkPipelineRasterizationStateCreateInfo{
+    m_rasterizerInfo = VkPipelineRasterizationStateCreateInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
         .depthClampEnable = VK_FALSE, // TODO
         .rasterizerDiscardEnable = VK_FALSE,
@@ -137,17 +137,17 @@ VulkanPipelineFactory::VulkanPipelineFactory (VulkanResources& resources, core::
 VkPipeline VulkanPipelineFactory::get (const FrameBufferLayout* layout) {
     PHENYL_ASSERT(layout);
 
-    auto it = pipelines.find(layout);
-    if (it != pipelines.end()) {
+    auto it = m_pipelines.find(layout);
+    if (it != m_pipelines.end()) {
         return *it->second;
     }
 
     VkPipelineVertexInputStateCreateInfo vertexInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = static_cast<std::uint32_t>(vertexBindings.size()),
-        .pVertexBindingDescriptions = vertexBindings.data(),
-        .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(vertexAttribs.size()),
-        .pVertexAttributeDescriptions = vertexAttribs.data()
+        .vertexBindingDescriptionCount = static_cast<std::uint32_t>(m_vertexBindings.size()),
+        .pVertexBindingDescriptions = m_vertexBindings.data(),
+        .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(m_attribs.size()),
+        .pVertexAttributeDescriptions = m_attribs.data()
     };
 
     std::array dynamicStates = {
@@ -177,12 +177,12 @@ VkPipeline VulkanPipelineFactory::get (const FrameBufferLayout* layout) {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         .logicOpEnable = VK_FALSE,
         .attachmentCount = 1,
-        .pAttachments = &colorBlendState
+        .pAttachments = &m_colorBlendState
     };
 
 
-    PHENYL_ASSERT(shader);
-    auto& vkShader = reinterpret_cast<VulkanShader&>(shader->getUnderlying());
+    PHENYL_ASSERT(m_shader);
+    auto& vkShader = reinterpret_cast<VulkanShader&>(m_shader->getUnderlying());
     auto shaderStages = vkShader.getStageInfo();
 
     auto renderInfo = layout->getInfo();
@@ -194,24 +194,24 @@ VkPipeline VulkanPipelineFactory::get (const FrameBufferLayout* layout) {
         .pStages = shaderStages.data(),
 
         .pVertexInputState = &vertexInfo,
-        .pInputAssemblyState = &inputAssemblyInfo,
+        .pInputAssemblyState = &m_inputAssemblyInfo,
         .pViewportState = &viewportStateInfo,
-        .pRasterizationState = &rasterizerInfo,
+        .pRasterizationState = &m_rasterizerInfo,
         .pMultisampleState = &multisampleInfo,
-        .pDepthStencilState = &depthStencilInfo,
+        .pDepthStencilState = &m_depthStencilInfo,
         .pColorBlendState = &colorBlendInfo,
         .pDynamicState = &dynamicStateInfo,
-        .layout = *pipelineLayout,
+        .layout = *m_layout,
     };
 
-    auto pipeline = resources.makePipeline(pipelineInfo);
+    auto pipeline = m_resources.makePipeline(pipelineInfo);
     if (!pipeline) {
         PHENYL_LOGE(LOGGER, "Failed to construct pipeline for layout {}", reinterpret_cast<const void*>(layout));
         return nullptr;
     }
 
     auto pipelineRef = *pipeline;
-    pipelines.emplace(layout, std::move(pipeline));
+    m_pipelines.emplace(layout, std::move(pipeline));
     return pipelineRef;
 }
 
@@ -220,29 +220,29 @@ void VulkanPipeline::prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffe
     auto sets = std::array{descriptorSet};
 
     cmd.beginRendering(frameBuffer);
-    cmd.setPipeline(pipelineFactory->get(frameBuffer.layout()), frameBuffer.viewport(), frameBuffer.scissor());
+    cmd.setPipeline(m_pipelineFactory->get(frameBuffer.layout()), frameBuffer.viewport(), frameBuffer.scissor());
 
-    boundVkBuffers = boundVertexBuffers
+    m_boundVkBuffers = m_boundVertexBuffers
         | std::views::transform(&IVulkanStorageBuffer::getBuffer)
         | std::ranges::to<std::vector>();
-    cmd.bindVertexBuffers(boundVkBuffers, vertexBufferOffsets);
+    cmd.bindVertexBuffers(m_boundVkBuffers, m_vertexBufferOffsets);
 
-    cmd.bindDescriptorSets(pipelineFactory->layout(), sets);
+    cmd.bindDescriptorSets(m_pipelineFactory->layout(), sets);
 }
 
 VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
     // TODO: only allocate when necessary
     // TODO: incremental updates
-    PHENYL_DASSERT(testFramebuffer);
-    PHENYL_DASSERT(testFramebuffer->descriptorPool);
+    PHENYL_DASSERT(m_testFramebuffer);
+    PHENYL_DASSERT(m_testFramebuffer->descriptorPool);
 
-    auto set = testFramebuffer->descriptorPool->makeDescriptorSet(*descriptorSetLayout);
+    auto set = m_testFramebuffer->descriptorPool->makeDescriptorSet(*m_descriptorSetLayout);
     std::vector<VkWriteDescriptorSet> writes;
-    writes.reserve(boundUniformBuffers.size());
+    writes.reserve(m_boundUniformBuffers.size());
 
     std::vector<VkDescriptorBufferInfo> bufferDescriptors;
-    bufferDescriptors.reserve(boundUniformBuffers.size());
-    for (const auto& [binding, bufferInfo] : boundUniformBuffers) {
+    bufferDescriptors.reserve(m_boundUniformBuffers.size());
+    for (const auto& [binding, bufferInfo] : m_boundUniformBuffers) {
         bufferDescriptors.push_back(bufferInfo.buffer->getBufferInfo(bufferInfo.offset, bufferInfo.size));
         writes.push_back(VkWriteDescriptorSet{
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -256,8 +256,8 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
     }
 
     std::vector<VkDescriptorImageInfo> imageDescriptors;
-    imageDescriptors.reserve(boundSamplers.size());
-    for (auto [binding, sampler] : boundSamplers) {
+    imageDescriptors.reserve(m_boundSamplers.size());
+    for (auto [binding, sampler] : m_boundSamplers) {
         sampler->prepareSampler(cmd);
 
         imageDescriptors.push_back(sampler->getDescriptor());
@@ -272,7 +272,7 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
         });
     }
 
-    vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(m_device, writes.size(), writes.data(), 0, nullptr);
 
     return set;
 }

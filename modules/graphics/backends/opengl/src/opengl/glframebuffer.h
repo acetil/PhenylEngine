@@ -9,8 +9,8 @@
 namespace phenyl::opengl {
     class AbstractGlFrameBuffer : public graphics::IFrameBuffer {
     protected:
-        GLuint fbId{};
-        glm::ivec2 dimensions;
+        GLuint m_id{};
+        glm::ivec2 m_dimensions;
 
     public:
         AbstractGlFrameBuffer (GLuint fbId, glm::ivec2 dimensions);
@@ -29,7 +29,7 @@ namespace phenyl::opengl {
         void clear (glm::vec4 clearColor) override;
 
         GLuint id () const noexcept {
-            return fbId;
+            return m_id;
         }
 
         glm::ivec2 getDimensions () const noexcept override;
@@ -37,14 +37,14 @@ namespace phenyl::opengl {
 
     class GlFrameBuffer : public AbstractGlFrameBuffer {
     private:
-        std::optional<GlSampler> colorSampler;
-        std::optional<GlSampler> depthSampler;
-        bool valid;
+        std::optional<GlSampler> m_colorSampler;
+        std::optional<GlSampler> m_depthSampler;
+        bool m_valid;
     public:
         GlFrameBuffer (glm::ivec2 dimensions, const graphics::FrameBufferProperties& properties);
 
         explicit operator bool () const noexcept {
-            return valid;
+            return m_valid;
         }
 
         graphics::ISampler* getSampler () noexcept override;

@@ -48,8 +48,8 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     renderer.getViewport().addUpdateHandler(&runtime.resource<Camera3D>());
 
     renderer.loadDefaultShaders();
-    textureManager = std::make_unique<TextureManager>(renderer);
-    textureManager->selfRegister();
+    m_textureManager = std::make_unique<TextureManager>(renderer);
+    m_textureManager->selfRegister();
 
     auto* debugLayer = &renderer.addLayer<DebugLayer>();
     runtime.addResource<GraphicsData>(debugLayer);

@@ -8,7 +8,7 @@ using namespace phenyl;
 namespace phenyl::physics {
     PHENYL_SERIALIZABLE(BoxCollider2D,
         PHENYL_SERIALIZABLE_INHERITS_NAMED(Collider2D, "Collider2D"),
-        PHENYL_SERIALIZABLE_MEMBER(scale))
+        PHENYL_SERIALIZABLE_MEMBER(m_scale))
 }
 
 static float calculateRadius (glm::mat2 scaleMatrix) {
@@ -21,9 +21,9 @@ static inline float sqLength (glm::vec2 vec) {
 }
 
 void physics::BoxCollider2D::applyFrameTransform (glm::mat2 transform) {
-    frameTransform = transform * glm::mat2{{scale.x, 0.0f}, {0.0f, scale.y}};
+    m_frameTransform = transform * glm::mat2{{m_scale.x, 0.0f}, {0.0f, m_scale.y}};
 
-    setOuterRadius(calculateRadius(frameTransform));
+    setOuterRadius(calculateRadius(m_frameTransform));
 }
 
 static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
@@ -66,9 +66,9 @@ util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const phys
     float minSepSqSize = std::numeric_limits<float>::max();
 
     for (auto i : basisVecs) {
-        auto scaledAxis = frameTransform * i;
+        auto scaledAxis = m_frameTransform * i;
         auto normAxis = glm::normalize(scaledAxis);
-        auto axisOpt = testAxisNew(normAxis, disp, glm::dot(scaledAxis, normAxis), other.frameTransform);
+        auto axisOpt = testAxisNew(normAxis, disp, glm::dot(scaledAxis, normAxis), other.m_frameTransform);
 
         if (!axisOpt) {
             return util::NullOpt;
@@ -84,9 +84,9 @@ util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const phys
     }
 
     for (auto i : basisVecs) {
-        auto scaledAxis = other.frameTransform * i;
+        auto scaledAxis = other.m_frameTransform * i;
         auto normAxis = glm::normalize(scaledAxis);
-        auto axisOpt = testAxisNew(normAxis, -disp, glm::dot(scaledAxis, normAxis), frameTransform);
+        auto axisOpt = testAxisNew(normAxis, -disp, glm::dot(scaledAxis, normAxis), m_frameTransform);
 
         if (!axisOpt) {
             return util::NullOpt;
@@ -125,7 +125,7 @@ physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
     float furthestDistance = -std::numeric_limits<float>::max();
     unsigned int pointIndex = -1;
     for (auto i = 0; i < sizeof(boxPoints) / sizeof(glm::vec2); i++) {
-        auto vertex = frameTransform * boxPoints[i];
+        auto vertex = m_frameTransform * boxPoints[i];
         auto dist = glm::dot(vertex, normal);
         if (dist > furthestDistance) {
             furthestDistance = dist;
@@ -134,8 +134,8 @@ physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
         }
     }
 
-    auto vec1 = frameTransform * boxPoints[(pointIndex + 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
-    auto vec2 = frameTransform * boxPoints[(pointIndex + (sizeof(boxPoints) / sizeof(glm::vec2)) - 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
+    auto vec1 = m_frameTransform * boxPoints[(pointIndex + 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
+    auto vec2 = m_frameTransform * boxPoints[(pointIndex + (sizeof(boxPoints) / sizeof(glm::vec2)) - 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
 
     auto norm1 = -calcSegmentNormal(furthestVertex, vec1);
     auto norm2 = -calcSegmentNormal(vec2, furthestVertex);

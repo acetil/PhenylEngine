@@ -10,10 +10,10 @@
 namespace phenyl::graphics {
     class ObjFile {
     private:
-        std::vector<glm::vec4> positions;
-        std::vector<glm::vec2> uvs;
-        std::vector<glm::vec3> normals;
-        std::vector<std::uint32_t> indices;
+        std::vector<glm::vec4> m_positions;
+        std::vector<glm::vec2> m_uvs;
+        std::vector<glm::vec3> m_normals;
+        std::vector<std::uint32_t> m_indices;
 
     public:
         explicit ObjFile (std::istream& file);

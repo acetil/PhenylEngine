@@ -28,22 +28,22 @@ namespace phenyl::vulkan {
         static std::vector<const char*> GatherExtensions (const graphics::GraphicsProperties& properties, const VulkanViewport& viewport);
         static void CheckExtensions (const std::vector<const char*>& extensions);
 
-        std::unique_ptr<VulkanViewport> viewport;
-        VkInstance instance{};
-        VkSurfaceKHR surface{};
-        std::unique_ptr<VulkanDevice> device;
-        std::unique_ptr<VulkanResources> resources;
-        FrameBufferLayoutManager fbLayoutManager{};
+        std::unique_ptr<VulkanViewport> m_viewport;
+        VkInstance m_instance{};
+        VkSurfaceKHR m_surface{};
+        std::unique_ptr<VulkanDevice> m_device;
+        std::unique_ptr<VulkanResources> m_resources;
+        FrameBufferLayoutManager m_fbLayoutManager{};
 
-        std::unique_ptr<VulkanSwapChain> swapChain;
-        std::unique_ptr<VulkanWindowFrameBuffer> windowFrameBuffer;
+        std::unique_ptr<VulkanSwapChain> m_swapChain;
+        std::unique_ptr<VulkanWindowFrameBuffer> m_windowFrameBuffer;
 
-        VkDebugUtilsMessengerEXT debugMessenger{};
+        VkDebugUtilsMessengerEXT m_debugMessenger{};
 
-        std::unique_ptr<VulkanShaderManager> shaderManager;
-        std::unique_ptr<FrameManager> frameManager;
-        std::unique_ptr<TransferManager> transferManager;
-        TestFramebuffer framebuffer{};
+        std::unique_ptr<VulkanShaderManager> m_shaderManager;
+        std::unique_ptr<FrameManager> m_frameManager;
+        std::unique_ptr<TransferManager> m_transferManager;
+        TestFramebuffer m_framebuffer{};
 
 
         VkInstance createVkInstance (const graphics::GraphicsProperties& properties);

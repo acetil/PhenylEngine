@@ -8,36 +8,36 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"LABEL", detail::GRAPHICS_LOGGER};
 
-LabelWidget::LabelWidget (std::string text, unsigned int textSize, core::Asset<Font> font, const Modifier& modifier) : Widget{modifier}, labelText{std::move(text)}, labelTextSize{textSize} {
-    labelFont = std::move(font);
+LabelWidget::LabelWidget (std::string text, unsigned int textSize, core::Asset<Font> font, const Modifier& modifier) : Widget{modifier}, m_text{std::move(text)}, m_textSize{textSize} {
+    m_font = std::move(font);
     updateModifier();
 }
 // LabelWidget::~LabelWidget () = default;
 
 void LabelWidget::render (Canvas& canvas) {
-    if (!labelFont) {
+    if (!m_font) {
         PHENYL_LOGD(LOGGER, "Ignoring label render due to missing font");
         return;
     }
-    canvas.renderText({0.0f, 0.0f}, labelFont, textSize(), text(), colour());
+    canvas.renderText({0.0f, 0.0f}, m_font, textSize(), text(), color());
 }
 
 void LabelWidget::setText (std::string newText) {
-    labelText = std::move(newText);
+    m_text = std::move(newText);
     updateModifier();
 }
 
 void LabelWidget::setTextSize (unsigned int newTextSize) {
-    labelTextSize = newTextSize;
+    m_textSize = newTextSize;
     updateModifier();
 }
 
-void LabelWidget::setTextColour (glm::vec4 newColour) {
-    labelColour = newColour;
+void LabelWidget::setTextColor (glm::vec4 newColour) {
+    m_color = newColour;
 }
 
 void LabelWidget::setFont (core::Asset<Font> newFont) {
-    labelFont = std::move(newFont);
+    m_font = std::move(newFont);
     updateModifier();
 }
 

@@ -20,7 +20,7 @@ static VkShaderStageFlagBits ConvertShaderType (phenyl::graphics::ShaderSourceTy
 }
 
 VulkanShader::VulkanShader (VkDevice device, std::unordered_map<graphics::ShaderSourceType, VkShaderModule> modules, ShaderReflection reflection)
-        : device{device}, modules{std::move(modules)}, reflection{std::move(reflection)} {}
+        : m_device{device}, m_modules{std::move(modules)}, m_reflection{std::move(reflection)} {}
 
 std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources,
     const std::vector<std::pair<graphics::ShaderDataType, std::string>>& attribs, std::unordered_map<std::string, unsigned int> uniforms) {
@@ -55,13 +55,13 @@ std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device, const std::un
 }
 
 VulkanShader::~VulkanShader () {
-    for (auto module : modules | std::views::values) {
-        vkDestroyShaderModule(device, module, nullptr);
+    for (auto module : m_modules | std::views::values) {
+        vkDestroyShaderModule(m_device, module, nullptr);
     }
 }
 
 std::vector<VkPipelineShaderStageCreateInfo> VulkanShader::getStageInfo () {
-    return modules
+    return m_modules
         | std::views::transform([] (const auto& p) {
                 auto [type, module] = p;
 
@@ -80,23 +80,23 @@ std::size_t VulkanShader::hash () const noexcept {
 }
 
 std::optional<unsigned int> VulkanShader::getAttribLocation (const std::string& attrib) const noexcept {
-    auto* input = reflection.getAttrib(attrib);
+    auto* input = m_reflection.getAttrib(attrib);
     return input ? std::optional{input->location} : std::nullopt;
 }
 
 std::optional<unsigned int> VulkanShader::getUniformLocation (const std::string& uniform) const noexcept {
-    auto* block = reflection.getUniformBlock(uniform);
+    auto* block = m_reflection.getUniformBlock(uniform);
     return block ? std::optional{block->location} : std::nullopt;
 }
 
 std::optional<unsigned int> VulkanShader::getSamplerLocation (const std::string& sampler) const noexcept {
-    auto* reflectSampler = reflection.getSampler(sampler);
+    auto* reflectSampler = m_reflection.getSampler(sampler);
     return reflectSampler ? std::optional{reflectSampler->location} : std::nullopt;
 }
 
 std::optional<std::size_t> VulkanShader::getUniformOffset (const std::string& uniformBlock,
     const std::string& uniform) const noexcept {
-    auto* block = reflection.getUniformBlock(uniformBlock);
+    auto* block = m_reflection.getUniformBlock(uniformBlock);
     if (!block) {
         PHENYL_LOGD(LOGGER, "Failed to find uniform block \"{}\"", uniformBlock);
         return std::nullopt;
@@ -108,20 +108,20 @@ std::optional<std::size_t> VulkanShader::getUniformOffset (const std::string& un
 }
 
 std::optional<std::size_t> VulkanShader::getUniformBlockSize (const std::string& uniformBlock) const noexcept {
-    auto* block = reflection.getUniformBlock(uniformBlock);
+    auto* block = m_reflection.getUniformBlock(uniformBlock);
     return block ? std::optional{block->size} : std::nullopt;
 }
 
-VulkanShaderManager::VulkanShaderManager (VkDevice device) : device{device} {}
+VulkanShaderManager::VulkanShaderManager (VkDevice device) : m_device{device} {}
 
 phenyl::graphics::Shader* VulkanShaderManager::load (std::ifstream& data, std::size_t id) {
     PHENYL_ABORT("Unimplemented");
 }
 
 phenyl::graphics::Shader* VulkanShaderManager::load (graphics::Shader&& obj, std::size_t id) {
-    shaders.emplace(id, std::make_unique<graphics::Shader>(std::move(obj)));
+    m_shaders.emplace(id, std::make_unique<graphics::Shader>(std::move(obj)));
 
-    return shaders[id].get();
+    return m_shaders[id].get();
 }
 
 void VulkanShaderManager::queueUnload (std::size_t id) {
@@ -147,33 +147,33 @@ void VulkanShaderManager::loadDefault (const std::string& path, std::unique_ptr<
     }
 
     PHENYL_LOGD(LOGGER, "Loaded default shader \"{}\"", path);
-    defaultShaders.emplace_back(core::Assets::LoadVirtual(path, graphics::Shader{std::move(shader)}));
+    m_defaultShaders.emplace_back(core::Assets::LoadVirtual(path, graphics::Shader{std::move(shader)}));
 }
 
 VulkanShaderManager::Builder VulkanShaderManager::builder () {
-    return Builder{device, compiler};
+    return Builder{m_device, m_compiler};
 }
 
 VulkanShaderManager::Builder& VulkanShaderManager::Builder::withSource (graphics::ShaderSourceType type,
                                                                         const std::string& source) {
-    auto code = compiler.compile(type, source);
+    auto code = m_compiler.compile(type, source);
 
     if (code) {
-        shaderSources.emplace(type, std::move(*code));
+        m_sources.emplace(type, std::move(*code));
     }
     return *this;
 }
 
 VulkanShaderManager::Builder& VulkanShaderManager::Builder::withAttrib (graphics::ShaderDataType type, std::string attribName) {
-    attribs.emplace_back(type, std::move(attribName));
+    m_attribs.emplace_back(type, std::move(attribName));
     return *this;
 }
 
 VulkanShaderManager::Builder& VulkanShaderManager::Builder::withUniform (std::string attribName, unsigned int location) {
-    uniformBindings.emplace(attribName, location);
+    m_uniformBindings.emplace(attribName, location);
     return *this;
 }
 
 std::unique_ptr<VulkanShader> VulkanShaderManager::Builder::build () {
-    return VulkanShader::Make(device, shaderSources, attribs, std::move(uniformBindings));
+    return VulkanShader::Make(m_device, m_sources, m_attribs, std::move(m_uniformBindings));
 }

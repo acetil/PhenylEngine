@@ -13,24 +13,24 @@ namespace phenyl::util {
     template <typename T>
     class FixedStack {
     private:
-        std::size_t maxSize;
-        std::size_t num{};
-        std::unique_ptr<T[]> data;
+        std::size_t m_capacity;
+        std::size_t m_size{};
+        std::unique_ptr<T[]> m_data;
     public:
-        FixedStack (std::size_t _size) : maxSize{_size}, data{std::make_unique<T[]>(_size)} {}
+        FixedStack (std::size_t _size) : m_capacity{_size}, m_data{std::make_unique<T[]>(_size)} {}
 
         void push (T&& obj) {
-            if (num >= maxSize) {
+            if (m_size >= m_capacity) {
                 logging::log(LEVEL_ERROR, "Attempted to push to full stack!");
 #ifndef NDEBUG
                 throw std::out_of_range("Attempted to push to full stack!");
 #endif
             }
-            data[num++] = std::move(obj);
+            m_data[m_size++] = std::move(obj);
         }
 
         T pop () {
-            if (num == 0) {
+            if (m_size == 0) {
                 logging::log(LEVEL_ERROR, "Attempted to pop from empty stack!");
 #ifndef NDEBUG
                 throw std::out_of_range("Attempted to pop from empty stack!");
@@ -38,23 +38,23 @@ namespace phenyl::util {
                 return std::move(data[0]);
 #endif
             }
-            return std::move(data[--num]);
+            return std::move(m_data[--m_size]);
         }
 
         bool isEmpty () {
-            return num == 0;
+            return m_size == 0;
         }
 
         bool isFull () {
-            return num >= maxSize;
+            return m_size >= m_capacity;
         }
 
         std::size_t size () {
-            return num;
+            return m_size;
         }
 
         std::size_t capacity () {
-            return maxSize;
+            return m_capacity;
         }
     };
 }

@@ -4,7 +4,7 @@
 
 using namespace phenyl::graphics;
 
-Camera3D::Camera3D (glm::vec2 resolution) : resolution{resolution} {}
+Camera3D::Camera3D (glm::vec2 resolution) : m_resolution{resolution} {}
 
 void Camera3D::lookAt (glm::vec3 target, glm::vec3 upAxis) noexcept {
     if (target != transform.position()) {
@@ -36,7 +36,7 @@ glm::mat4 Camera3D::view () const noexcept {
 }
 
 glm::mat4 Camera3D::projection () const noexcept {
-    auto mat = glm::perspective(glm::radians(fov), resolution.x / resolution.y, nearClippingPlane, farClippingPlane);
+    auto mat = glm::perspective(glm::radians(fov), m_resolution.x / m_resolution.y, nearClippingPlane, farClippingPlane);
     return mat;
     //return glm::perspective(glm::radians(fov), resolution.x / resolution.y, nearClippingPlane, farClippingPlane);
     //return glm::identity<glm::mat4>();
@@ -47,7 +47,7 @@ glm::mat4 Camera3D::matrix () const noexcept {
 }
 
 void Camera3D::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
-    resolution = newResolution;
+    m_resolution = newResolution;
 }
 
 std::string_view Camera3D::getName () const noexcept {

@@ -14,13 +14,13 @@ namespace phenyl::graphics {
 
     class Canvas : public core::IResource, private IViewportUpdateHandler {
     private:
-        GlyphAtlas atlas;
-        CanvasRenderLayer& layer;
-        std::unique_ptr<FontManager> fontManager;
-        core::Asset<Font> defaultFontAsset;
+        GlyphAtlas m_atlas;
+        CanvasRenderLayer& m_layer;
+        std::unique_ptr<FontManager> m_fontManager;
+        core::Asset<Font> m_defaultFont;
 
-        std::vector<glm::vec2> offsetStack;
-        glm::ivec2 canvasResolution;
+        std::vector<glm::vec2> m_offsetStack;
+        glm::ivec2 m_resolution;
 
         void submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style);
         [[nodiscard]] glm::vec2 offset () const;
@@ -43,7 +43,7 @@ namespace phenyl::graphics {
         void renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour = {1.0f, 1.0f, 1.0f});
 
         core::Asset<Font>& defaultFont () noexcept {
-            return defaultFontAsset;
+            return m_defaultFont;
         }
 
         void pushOffset (glm::vec2 off);
@@ -52,7 +52,7 @@ namespace phenyl::graphics {
         std::string_view getName () const noexcept override;
 
         glm::ivec2 resolution () const noexcept {
-            return canvasResolution;
+            return m_resolution;
         }
     };
 }

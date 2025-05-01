@@ -9,12 +9,12 @@
 namespace phenyl::logging {
     class LogSink {
     private:
-        std::string sinkName;
-        std::string sinkPath;
+        std::string m_name;
+        std::string m_path;
 
-        std::vector<LogSink*> childSinks;
+        std::vector<LogSink*> m_children;
 
-        int minLogLevel = LEVEL_DEBUG;
+        int m_minLogLevel = LEVEL_DEBUG;
 
     protected:
         virtual void log (const std::string& prefix, const std::string& logText) = 0;
@@ -26,11 +26,11 @@ namespace phenyl::logging {
         void log (std::source_location sourceLoc, int level, const std::string& logText);
 
         [[nodiscard]] const std::string& getPath () const {
-            return sinkPath;
+            return m_path;
         }
 
         int getMinLogLevel () const {
-            return minLogLevel;
+            return m_minLogLevel;
         }
         void setMinLogLevel (int logLevel, bool propagate=true);
 

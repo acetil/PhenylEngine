@@ -12,10 +12,10 @@ namespace phenyl::graphics::detail {
 namespace phenyl::glfw {
     class GLFWMouseInput : public core::IInputDevice {
     private:
-        GLFWwindow* window;
-        util::HashMap<std::string, int> buttonIds;
-        util::HashMap<int, core::ButtonInputSource> sources;
-        core::Axis2DInputSource mousePosSource;
+        GLFWwindow* m_window;
+        util::HashMap<std::string, int> m_buttonIds;
+        util::HashMap<int, core::ButtonInputSource> m_sources;
+        core::Axis2DInputSource m_mousePosSource;
     public:
         GLFWMouseInput (GLFWwindow* window);
 

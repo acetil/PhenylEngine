@@ -5,7 +5,7 @@
 
 using namespace phenyl::graphics;
 
-Widget::Widget (const Modifier& modifier) : widgetModifier{modifier} {}
+Widget::Widget (const Modifier& modifier) : m_modifier{modifier} {}
 Widget::~Widget () = default;
 
 Widget* Widget::pick (glm::vec2 pointer) noexcept {
@@ -21,39 +21,39 @@ void Widget::measure (const WidgetConstraints& constraints) {
 void Widget::update () {}
 
 void Widget::queueDestroy () {
-    PHENYL_ASSERT_MSG(parentWidget, "Attempted to queue destruction on unparented widget!");
-    parentWidget->queueChildDestroy(this);
+    PHENYL_ASSERT_MSG(m_parent, "Attempted to queue destruction on unparented widget!");
+    m_parent->queueChildDestroy(this);
 }
 
 void Widget::setParent (Widget* parent) {
-    parentWidget = parent;
+    m_parent = parent;
 }
 
 bool Widget::pointerUpdate (glm::vec2 pointer) {
     if (pointer.x < 0.0f || pointer.y < 0.0f || pointer.x >= dimensions().x || pointer.y >= dimensions().y) {
-        if (oldPointerPos) {
+        if (m_oldPointerPos) {
             handle(UIEvent{MouseExitEvent{}});
-            oldPointerPos = std::nullopt;
+            m_oldPointerPos = std::nullopt;
         }
         return false;
     }
 
-    if (oldPointerPos) {
-        if (*oldPointerPos != pointer) {
-            handle(UIEvent{MouseMoveEvent{*oldPointerPos, pointer}});
-            oldPointerPos = pointer;
+    if (m_oldPointerPos) {
+        if (*m_oldPointerPos != pointer) {
+            handle(UIEvent{MouseMoveEvent{*m_oldPointerPos, pointer}});
+            m_oldPointerPos = pointer;
         }
     } else {
         handle(UIEvent{MouseEnterEvent{pointer}});
-        oldPointerPos = pointer;
+        m_oldPointerPos = pointer;
     }
     return true;
 }
 
 void Widget::pointerLeave () {
-    if (oldPointerPos) {
+    if (m_oldPointerPos) {
         handle(UIEvent{MouseExitEvent{}});
-        oldPointerPos = std::nullopt;
+        m_oldPointerPos = std::nullopt;
     }
 }
 
@@ -71,8 +71,8 @@ bool Widget::bubbleUp (const UIEvent& event) {
 }
 
 bool Widget::handle (const UIEvent& event) {
-    auto it = listeners.find(event.type());
-    if (it == listeners.end()) {
+    auto it = m_listeners.find(event.type());
+    if (it == m_listeners.end()) {
         return false;
     }
 
@@ -82,13 +82,13 @@ bool Widget::handle (const UIEvent& event) {
 void Widget::queueChildDestroy (Widget* child) {}
 
 void Widget::setModifier (const Modifier& modifier) {
-    widgetModifier = modifier;
+    m_modifier = modifier;
 }
 
 void Widget::setDimensions (glm::vec2 newDims) {
-    widgetSize = newDims;
+    m_size = newDims;
 }
 
 void Widget::setOffset (glm::vec2 newOffset) {
-    widgetOffset = newOffset;
+    m_offset = newOffset;
 }

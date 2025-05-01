@@ -102,21 +102,21 @@ namespace phenyl::graphics {
 
     class Widget {
     private:
-        Modifier widgetModifier;
-        Widget* parentWidget = nullptr;
-        glm::vec2 widgetSize = {0, 0};
-        glm::vec2 widgetOffset = {0, 0};
-        std::optional<glm::vec2> oldPointerPos = std::nullopt;
-        std::unordered_map<std::size_t, std::unique_ptr<detail::IUIEventListeners>> listeners;
+        Modifier m_modifier;
+        Widget* m_parent = nullptr;
+        glm::vec2 m_size = {0, 0};
+        glm::vec2 m_offset = {0, 0};
+        std::optional<glm::vec2> m_oldPointerPos = std::nullopt;
+        std::unordered_map<std::size_t, std::unique_ptr<detail::IUIEventListeners>> m_listeners;
 
         bool bubbleUp (const UIEvent& event);
 
         template <typename T>
         detail::UIEventListeners<T>& getListeners () {
             auto typeIndex = meta::type_index<T>();
-            auto it = listeners.find(typeIndex);
-            if (it == listeners.end()) {
-                it = listeners.emplace(typeIndex, std::make_unique<detail::UIEventListeners<T>>()).first;
+            auto it = m_listeners.find(typeIndex);
+            if (it == m_listeners.end()) {
+                it = m_listeners.emplace(typeIndex, std::make_unique<detail::UIEventListeners<T>>()).first;
             }
 
             return static_cast<detail::UIEventListeners<T>&>(*it->second);
@@ -147,26 +147,26 @@ namespace phenyl::graphics {
         void queueDestroy ();
 
         [[nodiscard]] Widget* parent () const noexcept {
-            return parentWidget;
+            return m_parent;
         }
         void setParent (Widget* parent);
         virtual void setOffset (glm::vec2 newOffset);
 
         [[nodiscard]] const Modifier& modifier () const noexcept {
-            return widgetModifier;
+            return m_modifier;
         }
 
         glm::vec2 offset () const noexcept {
-            return widgetOffset;
+            return m_offset;
         }
 
         glm::vec2 dimensions () const noexcept {
-            return widgetSize;
+            return m_size;
         }
 
         void raise (const UIEvent& event);
         [[nodiscard]] bool pointerOver () const noexcept {
-            return static_cast<bool>(oldPointerPos);
+            return static_cast<bool>(m_oldPointerPos);
         }
 
         template <typename T>

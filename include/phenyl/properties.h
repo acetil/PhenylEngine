@@ -12,8 +12,8 @@ namespace phenyl {
 
     class ApplicationProperties {
     private:
-        graphics::GraphicsProperties graphicsProperties;
-        logging::LoggingProperties loggingProperties;
+        graphics::GraphicsProperties m_graphics;
+        logging::LoggingProperties m_logging;
 
         friend class engine::Engine;
         friend class PhenylEngine;
@@ -21,44 +21,44 @@ namespace phenyl {
         ApplicationProperties () = default;
 
         ApplicationProperties& withResolution (const int width, const int height) {
-            graphicsProperties.withWindowSize(width, height);
+            m_graphics.withWindowSize(width, height);
 
             return *this;
         }
 
         ApplicationProperties& withWindowTitle (std::string title) {
-            graphicsProperties.withWindowTitle(std::move(title));
+            m_graphics.withWindowTitle(std::move(title));
 
             return *this;
         }
 
         ApplicationProperties& withVsync (const bool vsync) {
-            graphicsProperties.withVsync(vsync);
+            m_graphics.withVsync(vsync);
 
             return *this;
         }
 
         ApplicationProperties& withLogFile (std::string logFile) {
-            loggingProperties.withLogFile(std::move(logFile));
+            m_logging.withLogFile(std::move(logFile));
 
             return *this;
         }
 
         ApplicationProperties& withLogLevel (const std::string& logger, const int level) {
-            loggingProperties.withLogLevel(logger, level);
+            m_logging.withLogLevel(logger, level);
 
             return *this;
         }
 
         ApplicationProperties& withRootLogLevel (const int level) {
-            loggingProperties.withRootLogLevel(level);
+            m_logging.withRootLogLevel(level);
 
             return *this;
         }
 
         // TODO: nicer design
         const logging::LoggingProperties& logging () const noexcept {
-            return loggingProperties;
+            return m_logging;
         }
     };
 }

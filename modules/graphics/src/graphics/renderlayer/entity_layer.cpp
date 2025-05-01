@@ -39,35 +39,35 @@ std::string_view EntityRenderLayer::getName () const {
 void EntityRenderLayer::init (Renderer& renderer) {
     BufferBinding vertexBinding;
     auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/sprite");
-    pipeline = renderer.buildPipeline()
+    m_pipeline = renderer.buildPipeline()
            .withShader(shader)
            .withBuffer<Vertex>(vertexBinding)
            .withAttrib<glm::vec2>(0, vertexBinding, offsetof(Vertex, pos))
            .withAttrib<glm::vec2>(1, vertexBinding, offsetof(Vertex, uv))
-           .withUniform<Uniform>(shader->uniformLocation("Camera").value(), uniformBinding)
-           .withSampler2D(shader->samplerLocation("textureSampler").value(), samplerBinding)
+           .withUniform<Uniform>(shader->uniformLocation("Camera").value(), m_uniformBinding)
+           .withSampler2D(shader->samplerLocation("textureSampler").value(), m_samplerBinding)
            .build();
 
-    vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE, BufferStorageHint::DYNAMIC);
-    indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, BufferStorageHint::DYNAMIC, true);
-    uniformBuffer = renderer.makeUniformBuffer<Uniform>();
+    m_vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    m_indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, BufferStorageHint::DYNAMIC, true);
+    m_uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
-    pipeline.bindIndexBuffer(indices);
-    pipeline.bindBuffer(vertexBinding, vertexBuffer);
+    m_pipeline.bindIndexBuffer(m_indices);
+    m_pipeline.bindBuffer(vertexBinding, m_vertexBuffer);
 }
 
 void EntityRenderLayer::render () {
-    pipeline.bindUniform(uniformBinding, uniformBuffer);
+    m_pipeline.bindUniform(m_uniformBinding, m_uniformBuffer);
 
-    for (const auto& [off, size, sampler] : samplerRenders) {
-        pipeline.bindSampler(samplerBinding, *sampler);
-        pipeline.render(size, off);
+    for (const auto& [off, size, sampler] : m_samplerRenders) {
+        m_pipeline.bindSampler(m_samplerBinding, *sampler);
+        m_pipeline.render(size, off);
     }
 
-    vertexBuffer.clear();
-    indices.clear();
-    samplerStartIndices.clear();
-    samplerRenders.clear();
+    m_vertexBuffer.clear();
+    m_indices.clear();
+    m_samplerStartIndices.clear();
+    m_samplerRenders.clear();
 }
 
 void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite) {
@@ -75,33 +75,33 @@ void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, co
         return;
     }
 
-    auto startIndex = vertexBuffer.emplace(Vertex{
+    auto startIndex = m_vertexBuffer.emplace(Vertex{
         .pos = transform.transform2D.apply({-1.0f, 1.0f}),
         .uv = sprite.uvStart
     });
-    vertexBuffer.emplace(Vertex{
+    m_vertexBuffer.emplace(Vertex{
         .pos = transform.transform2D.apply({1.0f, 1.0f}),
         .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}
     });
-    vertexBuffer.emplace(Vertex{
+    m_vertexBuffer.emplace(Vertex{
         .pos = transform.transform2D.apply({1.0f, -1.0f}),
         .uv = sprite.uvEnd
     });
-    vertexBuffer.emplace(Vertex{
+    m_vertexBuffer.emplace(Vertex{
         .pos = transform.transform2D.apply({-1.0f, -1.0f}),
         .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}
     });
 
-    samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
+    m_samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
 }
 
 void EntityRenderLayer::bufferEntities (const Camera2D& camera) {
-    std::sort(samplerStartIndices.begin(), samplerStartIndices.end());
+    std::sort(m_samplerStartIndices.begin(), m_samplerStartIndices.end());
     std::uint16_t offset = 0;
     const ISampler* currSampler = nullptr;
-    for (const auto& [sampler, startIndex] : samplerStartIndices) {
+    for (const auto& [sampler, startIndex] : m_samplerStartIndices) {
         if (sampler != currSampler) {
-            samplerRenders.emplace_back(SamplerRender{
+            m_samplerRenders.emplace_back(SamplerRender{
                 .indexOffset = offset,
                 .size = 0,
                 .sampler = sampler
@@ -109,23 +109,23 @@ void EntityRenderLayer::bufferEntities (const Camera2D& camera) {
             currSampler = sampler;
         }
 
-        indices.emplace(startIndex + 0);
-        indices.emplace(startIndex + 1);
-        indices.emplace(startIndex + 2);
+        m_indices.emplace(startIndex + 0);
+        m_indices.emplace(startIndex + 1);
+        m_indices.emplace(startIndex + 2);
 
-        indices.emplace(startIndex + 0);
-        indices.emplace(startIndex + 2);
-        indices.emplace(startIndex + 3);
+        m_indices.emplace(startIndex + 0);
+        m_indices.emplace(startIndex + 2);
+        m_indices.emplace(startIndex + 3);
 
         offset += 6;
-        samplerRenders.back().size += 6;
+        m_samplerRenders.back().size += 6;
     }
 
-    vertexBuffer.upload();
-    indices.upload();
+    m_vertexBuffer.upload();
+    m_indices.upload();
 
-    uniformBuffer->camera = camera.getCamMatrix();
-    uniformBuffer.upload();
+    m_uniformBuffer->camera = camera.getCamMatrix();
+    m_uniformBuffer.upload();
 }
 
 

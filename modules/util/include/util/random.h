@@ -20,7 +20,7 @@ namespace phenyl::util {
     private:
         static Random* INSTANCE;
 
-        std::mt19937 random;
+        std::mt19937 m_random;
 
         static Random* GetInstance () {
             if (!INSTANCE) {
@@ -30,30 +30,30 @@ namespace phenyl::util {
             return INSTANCE;
         }
 
-        explicit Random (std::random_device rd) : random{rd()} {}
+        explicit Random (std::random_device rd) : m_random{rd()} {}
 
         void seed (std::uint32_t seedVal) {
-            random.seed(seedVal);
+            m_random.seed(seedVal);
         }
 
         template <std::integral T>
         T rand () {
-            return std::uniform_int_distribution<T>(std::numeric_limits<T>::min(), std::numeric_limits<T>::max())(random);
+            return std::uniform_int_distribution<T>(std::numeric_limits<T>::min(), std::numeric_limits<T>::max())(m_random);
         }
 
         template <std::integral T>
         T rand (T min, T max) {
-            return std::uniform_int_distribution<T>(min, max)(random);
+            return std::uniform_int_distribution<T>(min, max)(m_random);
         }
 
         template <std::floating_point T>
         T rand () {
-            return std::uniform_real_distribution<T>(0, 1)(random);
+            return std::uniform_real_distribution<T>(0, 1)(m_random);
         }
 
         template <std::floating_point T>
         T rand (T min, T max) {
-            return std::uniform_real_distribution<T>(min, max)(random);
+            return std::uniform_real_distribution<T>(min, max)(m_random);
         }
 
         template <RandomRangeType T>
@@ -63,7 +63,7 @@ namespace phenyl::util {
 
         template <std::random_access_iterator It>
         void shuffle (It begin, It end) {
-            std::shuffle(begin, end, random);
+            std::shuffle(begin, end, m_random);
         }
     public:
         static void Seed (std::uint32_t seed) {

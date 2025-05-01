@@ -5,11 +5,11 @@
 namespace phenyl::vulkan {
     class VulkanDescriptorPool {
     private:
-        VkDevice device;
-        std::vector<VkDescriptorPool> pools;
-        std::size_t setsAllocated = 0;
+        VkDevice m_device;
+        std::vector<VkDescriptorPool> m_pools;
+        std::size_t m_numAllocated = 0;
 
-        std::size_t poolUniformSize;
+        std::size_t m_poolCapacity;
 
         void guaranteePool ();
     public:

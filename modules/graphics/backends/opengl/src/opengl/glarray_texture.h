@@ -5,11 +5,11 @@
 namespace phenyl::opengl {
     class GlArrayTexture : public graphics::IImageArrayTexture {
     private:
-        GlSampler texSampler;
-        std::uint32_t texWidth;
-        std::uint32_t texHeight;
-        std::uint32_t depth;
-        std::uint32_t depthCapacity;
+        GlSampler m_sampler;
+        std::uint32_t m_width;
+        std::uint32_t m_height;
+        std::uint32_t m_size;
+        std::uint32_t m_capacity;
     public:
         GlArrayTexture (const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight);
 

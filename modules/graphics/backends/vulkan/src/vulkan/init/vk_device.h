@@ -22,15 +22,15 @@ namespace phenyl::vulkan {
         static bool CheckDeviceFeatures (VkPhysicalDevice device);
         static DeviceProperties GetDeviceProperties (VkPhysicalDevice device);
 
-        VkPhysicalDevice physicalDevice{};
-        VkDevice logicalDevice{};
+        VkPhysicalDevice m_physicalDevice{};
+        VkDevice m_logicalDevice{};
 
-        VulkanQueueFamilies queueFamilies{};
-        VulkanSwapChainDetails swapChainDetails{};
-        DeviceProperties devProperties{};
+        VulkanQueueFamilies m_queueFamilies{};
+        VulkanSwapChainDetails m_swapChainDetails{};
+        DeviceProperties m_properties{};
 
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
+        VkQueue m_graphicsQueue;
+        VkQueue m_presentQueue;
 
         void choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions);
         VkDevice createLogicalDevice (const std::vector<const char*>& deviceExtensions);
@@ -44,15 +44,15 @@ namespace phenyl::vulkan {
         VmaAllocator makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion);
 
         VkDevice device () const noexcept {
-            return logicalDevice;
+            return m_logicalDevice;
         }
 
         const DeviceProperties& properties () const noexcept {
-            return devProperties;
+            return m_properties;
         }
 
-        VkQueue getGraphicsQueue () const noexcept {
-            return graphicsQueue;
+        VkQueue graphicsQueue () const noexcept {
+            return m_graphicsQueue;
         }
 
         ~VulkanDevice ();

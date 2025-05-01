@@ -11,17 +11,17 @@ namespace phenyl::vulkan {
         static constexpr std::uint32_t STARTING_CAPACITY = 8;
         static constexpr double RESIZE_FACTOR = 3.0 / 2.0;
 
-        VulkanResources& resources;
-        TransferManager& transferManager;
-        graphics::TextureProperties properties;
+        VulkanResources& m_resources;
+        TransferManager& m_transferManager;
+        graphics::TextureProperties m_properties;
 
-        CombinedSampler combinedSampler;
+        CombinedSampler m_combinedSampler;
 
-        std::uint32_t texWidth;
-        std::uint32_t texHeight;
+        std::uint32_t m_width;
+        std::uint32_t m_height;
 
-        std::size_t texSize = 0;
-        std::size_t texCapacity = STARTING_CAPACITY;
+        std::size_t m_size = 0;
+        std::size_t m_capacity = STARTING_CAPACITY;
 
     public:
         VulkanArrayTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight);

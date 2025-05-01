@@ -8,11 +8,11 @@ namespace phenyl::util {
     private:
         using T = std::remove_cvref_t<decltype(*std::declval<I1>())>;
 
-        I1 first1;
-        S1 last1;
-        I2 first2;
-        S2 last2;
-        Comp comp;
+        I1 m_first1;
+        S1 m_last1;
+        I2 m_first2;
+        S2 m_last2;
+        Comp m_comp;
 
         struct Sentinel {
 
@@ -20,18 +20,18 @@ namespace phenyl::util {
 
         struct Iterator {
         private:
-            I1 it1;
-            S1 s1;
-            I2 it2;
-            S2 s2;
-            Comp comp;
+            I1 m_it1;
+            S1 m_s1;
+            I2 m_it2;
+            S2 m_s2;
+            Comp m_comp;
 
             void advanceToNext () {
-                while (it1 != s1 && it2 != s2) {
-                    if (comp(*it1, *it2)) {
-                        ++it1;
-                    } else if (comp(*it2, *it1)) {
-                        ++it2;
+                while (m_it1 != m_s1 && m_it2 != m_s2) {
+                    if (m_comp(*m_it1, *m_it2)) {
+                        ++m_it1;
+                    } else if (m_comp(*m_it2, *m_it1)) {
+                        ++m_it2;
                     } else {
                         break;
                     }
@@ -43,17 +43,17 @@ namespace phenyl::util {
             using reference = const value_type&;
 
             Iterator () = default;
-            Iterator (I1 it1, S1 s1, I2 it2, S2 s2, Comp comp = {}) : it1{std::move(it1)}, s1{std::move(s1)}, it2{std::move(it2)}, s2{std::move(s2)}, comp{std::move(comp)} {
+            Iterator (I1 it1, S1 s1, I2 it2, S2 s2, Comp comp = {}) : m_it1{std::move(it1)}, m_s1{std::move(s1)}, m_it2{std::move(it2)}, m_s2{std::move(s2)}, m_comp{std::move(comp)} {
 
             }
 
             reference operator* () const noexcept {
-                return *it1;
+                return *m_it1;
             }
 
             Iterator& operator++ () {
-                ++it1;
-                ++it2;
+                ++m_it1;
+                ++m_it2;
                 advanceToNext();
                 return *this;
             }
@@ -65,15 +65,15 @@ namespace phenyl::util {
             }
 
             bool operator== (const Iterator& other) const {
-                return it1 == other.it1 && it2 == other.it2;
+                return m_it1 == other.m_it1 && m_it2 == other.m_it2;
             }
 
             bool operator== (const Sentinel&) const {
-                return it1 == s2 || it2 == s2;
+                return m_it1 == m_s2 || m_it2 == m_s2;
             }
         };
     public:
-        RangeIntersection (I1 first1, S1 last1, I2 first2, S2 last2, Comp comp = {}) : first1{std::move(first1)}, last1{std::move(last1)}, first2{std::move(first2)}, last2{std::move(last2)}, comp{std::move(comp)} {}
+        RangeIntersection (I1 first1, S1 last1, I2 first2, S2 last2, Comp comp = {}) : m_first1{std::move(first1)}, m_last1{std::move(last1)}, m_first2{std::move(first2)}, m_last2{std::move(last2)}, m_comp{std::move(comp)} {}
 
         template <std::ranges::forward_range R1, std::ranges::forward_range R2>
         RangeIntersection (R1&& range1, R2&& range2, Comp comp = {}) : RangeIntersection{range1.begin(), range1.end(), range2.begin(), range2.end(), std::move(comp)} {}
@@ -83,7 +83,7 @@ namespace phenyl::util {
         }
 
         Iterator cbegin () const {
-            return Iterator{first1, last1, first2, last2, comp};
+            return Iterator{m_first1, m_last1, m_first2, m_last2, m_comp};
         }
 
         Sentinel end () const {

@@ -7,41 +7,41 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"FONT", detail::GRAPHICS_LOGGER};
 
-Font::Font (GlyphAtlas& atlas, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId, glm::ivec2 windowDPI) : atlas{atlas}, faceData{std::move(faceData)}, face{face}, fontId{fontId}, windowDPI{windowDPI} {
+Font::Font (GlyphAtlas& atlas, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId, glm::ivec2 windowDPI) : m_atlas{atlas}, m_faceData{std::move(faceData)}, m_face{face}, m_id{fontId}, m_windowDpi{windowDPI} {
     PHENYL_DASSERT(face);
 }
 
-Font::Font (Font&& other) noexcept : atlas{other.atlas}, faceData{std::move(other.faceData)}, face{other.face}, fontId{other.fontId}, windowDPI{other.windowDPI}, currSize{other.currSize}, kernCache{std::move(other.kernCache)} {
-    other.face = nullptr;
-    other.fontId = 0;
+Font::Font (Font&& other) noexcept : m_atlas{other.m_atlas}, m_faceData{std::move(other.m_faceData)}, m_face{other.m_face}, m_id{other.m_id}, m_windowDpi{other.m_windowDpi}, m_size{other.m_size}, m_kernCache{std::move(other.m_kernCache)} {
+    other.m_face = nullptr;
+    other.m_id = 0;
 }
 
 Font& Font::operator= (Font&& other) noexcept {
-    if (face) {
-        FT_Done_Face(face);
+    if (m_face) {
+        FT_Done_Face(m_face);
     }
 
-    faceData = std::move(other.faceData);
-    face = other.face;
-    fontId = other.fontId;
-    windowDPI = other.windowDPI;
-    currSize = other.currSize;
-    kernCache = std::move(other.kernCache);
+    m_faceData = std::move(other.m_faceData);
+    m_face = other.m_face;
+    m_id = other.m_id;
+    m_windowDpi = other.m_windowDpi;
+    m_size = other.m_size;
+    m_kernCache = std::move(other.m_kernCache);
 
-    other.face = nullptr;
-    other.fontId = 0;
+    other.m_face = nullptr;
+    other.m_id = 0;
 
     return *this;
 }
 
 Font::~Font () {
-    if (face) {
-        FT_Done_Face(face);
+    if (m_face) {
+        FT_Done_Face(m_face);
     }
 }
 
 float Font::getKerning (std::uint32_t size, char32_t prev, char32_t next) {
-    auto& cache = kernCache[size];
+    auto& cache = m_kernCache[size];
 
     auto it = cache.find(std::pair{prev, next});
     if (it != cache.end()) {
@@ -54,7 +54,7 @@ float Font::getKerning (std::uint32_t size, char32_t prev, char32_t next) {
     setSize(size);
 
     FT_Vector kerning;
-    auto error = FT_Get_Kerning(face, prevIndex, nextIndex, FT_KERNING_DEFAULT, &kerning);
+    auto error = FT_Get_Kerning(m_face, prevIndex, nextIndex, FT_KERNING_DEFAULT, &kerning);
     if (error) {
         PHENYL_LOGE(LOGGER, "FreeType error on FT_Get_Kerning ({}): {}", error, FT_Error_String(error));
         return 0;
@@ -75,7 +75,7 @@ const Glyph& Font::getGlyph (std::uint32_t size, char32_t charCode) {
         .size = {0, 0}
     };
 
-    auto& sizeMap = glyphMap[size];
+    auto& sizeMap = m_glyphMap[size];
 
     auto charIt = sizeMap.find(charCode);
     if (charIt != sizeMap.end()) {
@@ -84,17 +84,17 @@ const Glyph& Font::getGlyph (std::uint32_t size, char32_t charCode) {
 
     setSize(size);
 
-    auto slot = face->glyph;
+    auto slot = m_face->glyph;
     auto glyphIndex = getCharIndex(charCode);
 
-    auto error = FT_Load_Glyph(face, glyphIndex, FT_LOAD_RENDER);
+    auto error = FT_Load_Glyph(m_face, glyphIndex, FT_LOAD_RENDER);
     if (error) {
         PHENYL_LOGE(LOGGER, "FreeType error on FT_Load_Glyph ({}): {}", error, FT_Error_String(error));
         return EMPTY_GLYPH;
     }
 
     auto image = Image::MakeNonOwning(std::span{reinterpret_cast<std::byte*>(slot->bitmap.buffer), slot->bitmap.width * slot->bitmap.rows}, slot->bitmap.width, slot->bitmap.rows, ImageFormat::R);
-    auto placement = atlas.place(image);
+    auto placement = m_atlas.place(image);
 
     return sizeMap[charCode] = Glyph{
             .uvStart = placement.uvStart,
@@ -162,19 +162,19 @@ void Font::renderText (IGlyphRenderer& glyphRenderer, std::uint32_t size, std::s
 }
 
 void Font::setSize (std::uint32_t size) {
-    if (currSize != size) {
-        FT_Set_Char_Size(face, size * 64, size * 64, windowDPI.x, windowDPI.y);
-        currSize = size;
+    if (m_size != size) {
+        FT_Set_Char_Size(m_face, size * 64, size * 64, m_windowDpi.x, m_windowDpi.y);
+        m_size = size;
     }
 }
 
 std::uint32_t Font::getCharIndex (char32_t c) {
-    auto indexIt = indexCache.find(c);
-    if (indexIt != indexCache.end()) {
+    auto indexIt = m_indexCache.find(c);
+    if (indexIt != m_indexCache.end()) {
         return indexIt->second;
     }
 
-    return indexCache[c] = FT_Get_Char_Index(face, c);
+    return m_indexCache[c] = FT_Get_Char_Index(m_face, c);
 }
 
 

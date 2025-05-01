@@ -3,8 +3,8 @@
 using namespace phenyl::graphics;
 using namespace phenyl::opengl;
 
-GlSampler::GlSampler (GLenum samplerType, const TextureProperties& properties) : samplerProperties{properties}, samplerType{samplerType} {
-    glGenTextures(1, &textureId);
+GlSampler::GlSampler (GLenum samplerType, const TextureProperties& properties) : m_properties{properties}, m_type{samplerType} {
+    glGenTextures(1, &m_id);
 
     bind();
     glTexParameteri(type(), GL_TEXTURE_MIN_FILTER, filter());
@@ -16,31 +16,31 @@ GlSampler::GlSampler (GLenum samplerType, const TextureProperties& properties) :
     glTexParameterfv(type(), GL_TEXTURE_BORDER_COLOR, &borderColor[0]);
 }
 
-GlSampler::GlSampler (GlSampler&& other) noexcept : textureId{other.textureId}, samplerType{other.samplerType}, samplerProperties{other.samplerProperties} {
-    other.textureId = 0;
+GlSampler::GlSampler (GlSampler&& other) noexcept : m_id{other.m_id}, m_type{other.m_type}, m_properties{other.m_properties} {
+    other.m_id = 0;
 }
 
 GlSampler& GlSampler::operator= (GlSampler&& other) noexcept {
-    if (textureId) {
-        glDeleteTextures(1, &textureId);
+    if (m_id) {
+        glDeleteTextures(1, &m_id);
     }
 
-    textureId = other.textureId;
-    samplerProperties = other.samplerProperties;
+    m_id = other.m_id;
+    m_properties = other.m_properties;
 
-    other.textureId = 0;
+    other.m_id = 0;
 
     return *this;
 }
 
 GlSampler::~GlSampler () {
-    if (textureId) {
-        glDeleteTextures(1, &textureId);
+    if (m_id) {
+        glDeleteTextures(1, &m_id);
     }
 }
 
 std::size_t GlSampler::hash () const noexcept {
-    return textureId;
+    return m_id;
 }
 
 GLint GlSampler::internalFormat () const noexcept {
@@ -102,5 +102,5 @@ void GlSampler::uploadLayer (std::uint32_t layer, const Image& image) {
 }
 
 void GlSampler::bind () const {
-    glBindTexture(samplerType, textureId);
+    glBindTexture(m_type, m_id);
 }

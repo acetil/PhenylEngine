@@ -32,34 +32,34 @@ namespace phenyl::graphics {
 
     class FrameBuffer {
     private:
-        std::unique_ptr<IFrameBuffer> rendererFB;
+        std::unique_ptr<IFrameBuffer> m_framebuffer;
     public:
-        FrameBuffer () : rendererFB{nullptr} {}
-        explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : rendererFB{std::move(fb)} {}
+        FrameBuffer () : m_framebuffer{nullptr} {}
+        explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : m_framebuffer{std::move(fb)} {}
 
         IFrameBuffer& getUnderlying () noexcept {
-            PHENYL_DASSERT(rendererFB);
-            return *rendererFB;
+            PHENYL_DASSERT(m_framebuffer);
+            return *m_framebuffer;
         }
 
         const IFrameBuffer& getUnderlying () const noexcept {
-            PHENYL_DASSERT(rendererFB);
-            return *rendererFB;
+            PHENYL_DASSERT(m_framebuffer);
+            return *m_framebuffer;
         }
 
         ISampler& sampler () const noexcept {
-            PHENYL_DASSERT_MSG(rendererFB->getSampler(), "Attempted to get sampler from framebuffer without color attachment!");
-            return *rendererFB->getSampler();
+            PHENYL_DASSERT_MSG(m_framebuffer->getSampler(), "Attempted to get sampler from framebuffer without color attachment!");
+            return *m_framebuffer->getSampler();
         }
 
         ISampler& depthSampler () const noexcept {
-            PHENYL_DASSERT_MSG(rendererFB->getDepthSampler(), "Attempted to get depth sampler from framebuffer without depth attachment!");
-            return *rendererFB->getDepthSampler();
+            PHENYL_DASSERT_MSG(m_framebuffer->getDepthSampler(), "Attempted to get depth sampler from framebuffer without depth attachment!");
+            return *m_framebuffer->getDepthSampler();
         }
 
         glm::ivec2 dimensions () const noexcept {
-            PHENYL_DASSERT(rendererFB);
-            return rendererFB->getDimensions();
+            PHENYL_DASSERT(m_framebuffer);
+            return m_framebuffer->getDimensions();
         }
 
         std::size_t width () const noexcept {
@@ -71,8 +71,8 @@ namespace phenyl::graphics {
         }
 
         void clear (glm::vec4 clearColor = {0.0f, 0.0f, 0.0f, 1.0f}) {
-            PHENYL_DASSERT(rendererFB);
-            rendererFB->clear(clearColor);
+            PHENYL_DASSERT(m_framebuffer);
+            m_framebuffer->clear(clearColor);
         }
     };
 }

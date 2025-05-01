@@ -126,10 +126,10 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
 void Physics2D::debugRender (core::World& world) {
     // Debug render
     world.query<core::GlobalTransform2D, BoxCollider2D>().each([] (const core::GlobalTransform2D& transform, const BoxCollider2D& box) {
-        auto pos1 = box.frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
-        auto pos2 = box.frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
-        auto pos3 = box.frameTransform * glm::vec2{1, 1} + transform.transform2D.position();
-        auto pos4 = box.frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
+        auto pos1 = box.m_frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
+        auto pos2 = box.m_frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
+        auto pos3 = box.m_frameTransform * glm::vec2{1, 1} + transform.transform2D.position();
+        auto pos4 = box.m_frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
 
         core::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
     });

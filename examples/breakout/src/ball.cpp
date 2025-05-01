@@ -30,9 +30,9 @@ void breakout::InitBall (BreakoutApp* app, phenyl::World& world) {
 }
 
 void BallUpdateSystem (const Ball& ball, phenyl::RigidBody2D& body) {
-    auto vel = body.getMomentum() * body.getInvMass();
+    auto vel = body.momentum() * body.invMass();
 
     if (glm::dot(vel, vel) > ball.maxSpeed * ball.maxSpeed) {
-        body.applyImpulse(-body.getMomentum() * (glm::length(vel) - ball.maxSpeed) * ball.appliedDrag);
+        body.applyImpulse(-body.momentum() * (glm::length(vel) - ball.maxSpeed) * ball.appliedDrag);
     }
 }

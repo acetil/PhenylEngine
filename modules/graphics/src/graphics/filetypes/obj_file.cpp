@@ -139,20 +139,20 @@ ObjFile::ObjFile (std::istream& file) {
     for (const auto& f : objFaces) {
         for (const auto& v : f) {
             if (auto it = indexMap.find(v); it != indexMap.end()) {
-                indices.emplace_back(it->second);
+                m_indices.emplace_back(it->second);
             } else {
-                std::uint32_t index = positions.size();
-                positions.emplace_back(objVertices[v.v]);
+                std::uint32_t index = m_positions.size();
+                m_positions.emplace_back(objVertices[v.v]);
 
                 if (hasTex) {
-                    uvs.emplace_back(objUvs[*v.vt]);
+                    m_uvs.emplace_back(objUvs[*v.vt]);
                 }
 
                 if (hasNorm) {
-                    normals.emplace_back(objNorms[*v.vn]);
+                    m_normals.emplace_back(objNorms[*v.vn]);
                 }
 
-                indices.emplace_back(index);
+                m_indices.emplace_back(index);
                 indexMap.emplace(v, index);
             }
         }
@@ -172,46 +172,46 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
     }
 
     std::size_t normOffset = 0;
-    if (!normals.empty()) {
+    if (!m_normals.empty()) {
         normOffset = stride;
         layout.attributes.emplace_back(MeshAttributeKind::Normal, ShaderDataType::VEC3F, 0, normOffset);
         stride += sizeof(glm::vec3);
     }
 
     std::size_t uvOffset = 0;
-    if (!uvs.empty()) {
+    if (!m_uvs.empty()) {
         uvOffset = stride;
         layout.attributes.emplace_back(MeshAttributeKind::TexCoord0, ShaderDataType::VEC2F, 0, uvOffset);
         stride += sizeof(glm::vec2);
     }
 
-    std::size_t numVertices = positions.size();
+    std::size_t numVertices = m_positions.size();
     auto data = std::make_unique<std::byte[]>(stride * numVertices);
 
     if (includeW) {
         for (std::size_t i = 0; i < numVertices; i++) {
             auto* ptr = reinterpret_cast<glm::vec4*>(data.get() + i * stride);
-            *ptr = positions[i];
+            *ptr = m_positions[i];
         }
     } else {
         for (std::size_t i = 0; i < numVertices; i++) {
             auto* ptr = reinterpret_cast<glm::vec3*>(data.get() + i * stride);
-            *ptr = glm::vec3{positions[i]};
+            *ptr = glm::vec3{m_positions[i]};
         }
     }
-    if (!normals.empty()) {
-        PHENYL_DASSERT(numVertices == normals.size());
+    if (!m_normals.empty()) {
+        PHENYL_DASSERT(numVertices == m_normals.size());
         for (std::size_t i = 0; i < numVertices; i++) {
             auto* ptr = reinterpret_cast<glm::vec3*>(data.get() + i * stride + normOffset);
-            *ptr = normals[i];
+            *ptr = m_normals[i];
         }
     }
 
-    if (!uvs.empty()) {
-        PHENYL_DASSERT(numVertices == uvs.size());
+    if (!m_uvs.empty()) {
+        PHENYL_DASSERT(numVertices == m_uvs.size());
         for (std::size_t i = 0; i < numVertices; i++) {
             auto* ptr = reinterpret_cast<glm::vec2*>(data.get() + i * stride + uvOffset);
-            *ptr = uvs[i];
+            *ptr = m_uvs[i];
         }
     }
 
@@ -221,19 +221,19 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
 
     RawBuffer indexBuffer;
     if (numVertices <= std::numeric_limits<std::uint16_t>::max()) {
-        std::vector<std::uint16_t> vec{indices.begin(), indices.end()};
+        std::vector<std::uint16_t> vec{m_indices.begin(), m_indices.end()};
         indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size(), BufferStorageHint::STATIC, true);
         indexBuffer.upload(std::as_bytes(std::span{vec}));
 
         layout.indexType = ShaderIndexType::USHORT;
     } else {
-        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), indices.size(), BufferStorageHint::STATIC, true);
-        indexBuffer.upload(std::as_bytes(std::span{indices}));
+        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), m_indices.size(), BufferStorageHint::STATIC, true);
+        indexBuffer.upload(std::as_bytes(std::span{m_indices}));
 
         layout.indexType = ShaderIndexType::UINT;
     }
 
     std::vector<RawBuffer> streams;
     streams.emplace_back(std::move(vertexBuffer));
-    return std::make_unique<Mesh>(std::move(layout), std::move(indexBuffer), std::move(streams), indices.size());
+    return std::make_unique<Mesh>(std::move(layout), std::move(indexBuffer), std::move(streams), m_indices.size());
 }

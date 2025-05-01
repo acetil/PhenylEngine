@@ -77,7 +77,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
     auto disp = camera.getWorldPos2D(CursorPos.value()) - transform.transform2D.position();
     bool doShoot = KeyShoot.value();
 
-    body.applyForce(forceVec * body.getMass());
+    body.applyForce(forceVec * body.mass());
     auto rot = std::atan2(disp.y, disp.x);
     transform.transform2D.setRotation(rot);
 
@@ -95,7 +95,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
                      .setRotation(rot);
         });
         bulletEntity.apply<phenyl::RigidBody2D>([bulletVel] (auto& body) {
-            body.applyImpulse(bulletVel * body.getMass());
+            body.applyImpulse(bulletVel * body.mass());
         });
 
         // bulletEntity.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel, rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {

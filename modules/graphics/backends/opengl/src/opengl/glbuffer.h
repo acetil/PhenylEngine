@@ -6,10 +6,10 @@
 namespace phenyl::opengl {
     class GlBuffer : public graphics::IBuffer {
     private:
-        GLuint bufferId = 0;
-        GLenum usageHint;
-        std::size_t capacity;
-        std::size_t elemSize;
+        GLuint m_id = 0;
+        GLenum m_usageHint;
+        std::size_t m_capacity;
+        std::size_t m_stride;
 
         void ensureCapacity (std::size_t requiredCapacity);
     public:
@@ -28,11 +28,11 @@ namespace phenyl::opengl {
         void bind () const;
 
         [[nodiscard]] GLuint id () const {
-            return bufferId;
+            return m_id;
         }
 
-        std::size_t elementSize () const {
-            return elemSize;
+        std::size_t stride () const {
+            return m_stride;
         }
     };
 }

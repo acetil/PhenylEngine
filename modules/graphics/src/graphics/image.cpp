@@ -69,7 +69,7 @@ phenyl::util::Optional<Image> Image::Load (std::istream& file, ImageFormat forma
 
 Image::Image (std::uint32_t width, std::uint32_t height, ImageFormat format) : Image{MakeData<float>(width * height * FormatComps(format)), width, height, format} {}
 
-Image::Image (Image::DataPtr data, std::uint32_t width, std::uint32_t height, ImageFormat format) : imgData{std::move(data)}, imgWidth{width}, imgHeight{height}, imgFormat{format} {}
+Image::Image (Image::DataPtr data, std::uint32_t width, std::uint32_t height, ImageFormat format) : m_data{std::move(data)}, m_width{width}, m_height{height}, m_format{format} {}
 
 Image Image::MakeNonOwning (std::span<std::byte> data, std::uint32_t width, std::uint32_t height, ImageFormat format) {
     PHENYL_ASSERT_MSG(data.size() == width * height * FormatSize(format), "Invalid data size: expected {}, got {}", width * height * FormatSize(format), data.size());
@@ -86,6 +86,6 @@ void Image::blit (const Image& src, glm::uvec2 offset) {
     const auto* srcData = src.data().data();
 
     for (uint32_t y = 0; y < src.height(); y++) {
-        std::memcpy(imgData.get() + ((y + offset.y) * width() + offset.x) * formatSize, srcData + y * src.width() * formatSize, src.width() * formatSize);
+        std::memcpy(m_data.get() + ((y + offset.y) * width() + offset.x) * formatSize, srcData + y * src.width() * formatSize, src.width() * formatSize);
     }
 }

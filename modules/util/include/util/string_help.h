@@ -51,9 +51,9 @@ namespace phenyl::util {
     namespace detail {
         struct StringSplitter {
         private:
-            std::string_view s;
-            std::string_view delim;
-            std::size_t maxSplits;
+            std::string_view m_str;
+            std::string_view m_delim;
+            std::size_t m_maxSplits;
 
             struct Sentinel {
 
@@ -61,10 +61,10 @@ namespace phenyl::util {
 
             struct Iterator {
             private:
-                const StringSplitter* splitter = nullptr;
-                std::size_t pos = 0;
-                std::size_t numSplits = 0;
-                std::optional<std::string_view> curr;
+                const StringSplitter* m_splitter = nullptr;
+                std::size_t m_pos = 0;
+                std::size_t m_numSplits = 0;
+                std::optional<std::string_view> m_curr;
 
                 void findNext ();
             public:

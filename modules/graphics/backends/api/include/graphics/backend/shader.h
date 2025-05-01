@@ -117,44 +117,44 @@ namespace phenyl::graphics {
 
     class Shader {
     private:
-        std::unique_ptr<IShader> shader;
-        std::size_t hash{0};
+        std::unique_ptr<IShader> m_shader;
+        std::size_t m_hash{0};
     public:
         Shader () = default;
-        explicit Shader (std::unique_ptr<IShader> shader) : shader{std::move(shader)}, hash{this->shader ? this->shader->hash() : 0} {}
+        explicit Shader (std::unique_ptr<IShader> shader) : m_shader{std::move(shader)}, m_hash{this->m_shader ? this->m_shader->hash() : 0} {}
 
         explicit operator bool () const noexcept {
-            return (bool)shader;
+            return (bool)m_shader;
         }
 
         [[nodiscard]] std::optional<unsigned int> uniformLocation (const std::string& uniform) const noexcept {
-            PHENYL_DASSERT(shader);
-            return shader->getUniformLocation(uniform);
+            PHENYL_DASSERT(m_shader);
+            return m_shader->getUniformLocation(uniform);
         }
 
         [[nodiscard]] std::optional<unsigned int> samplerLocation (const std::string& sampler) const noexcept {
-            PHENYL_DASSERT(shader);
-            return shader->getSamplerLocation(sampler);
+            PHENYL_DASSERT(m_shader);
+            return m_shader->getSamplerLocation(sampler);
         }
 
         [[nodiscard]] std::optional<unsigned int> attribLocation (const std::string& attrib) const noexcept {
-            PHENYL_DASSERT(shader);
-            return shader->getAttribLocation(attrib);
+            PHENYL_DASSERT(m_shader);
+            return m_shader->getAttribLocation(attrib);
         }
 
         std::optional<std::size_t> uniformOffset (const std::string& uniformBlock, const std::string& uniform) const noexcept {
-            PHENYL_DASSERT(shader);
-            return shader->getUniformOffset(uniformBlock, uniform);
+            PHENYL_DASSERT(m_shader);
+            return m_shader->getUniformOffset(uniformBlock, uniform);
         }
 
         std::optional<std::size_t> uniformBlockSize (const std::string& uniformBlock) const noexcept {
-            PHENYL_DASSERT(shader);
-            return shader->getUniformBlockSize(uniformBlock);
+            PHENYL_DASSERT(m_shader);
+            return m_shader->getUniformBlockSize(uniformBlock);
         }
 
         IShader& getUnderlying () {
-            PHENYL_DASSERT(shader);
-            return *shader;
+            PHENYL_DASSERT(m_shader);
+            return *m_shader;
         }
     };
 }

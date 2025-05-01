@@ -5,7 +5,7 @@
 
 using namespace phenyl::graphics;
 
-MeshManager::MeshManager (Renderer& renderer) : renderer{renderer} {}
+MeshManager::MeshManager (Renderer& renderer) : m_renderer{renderer} {}
 
 void MeshManager::selfRegister () {
     core::Assets::AddManager(this);
@@ -15,17 +15,17 @@ Mesh* MeshManager::load (std::ifstream& data, std::size_t id) {
     // Only obj files supported for now
 
     ObjFile objFile{data};
-    auto mesh = objFile.makeMesh(renderer);
+    auto mesh = objFile.makeMesh(m_renderer);
     auto* ptr = mesh.get();
 
-    if (auto it = layoutIds.find(mesh->layout()); it != layoutIds.end()) {
+    if (auto it = m_layoutIds.find(mesh->layout()); it != m_layoutIds.end()) {
         mesh->setLayoutId(it->second);
     } else {
-        mesh->setLayoutId(nextLayoutId);
-        layoutIds.emplace(mesh->layout(), nextLayoutId++);
+        mesh->setLayoutId(m_nextLayoutId);
+        m_layoutIds.emplace(mesh->layout(), m_nextLayoutId++);
     }
 
-    meshes.emplace(id, std::move(mesh));
+    m_meshes.emplace(id, std::move(mesh));
     return ptr;
 }
 

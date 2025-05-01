@@ -21,30 +21,30 @@ static std::string ToLower (std::string str) {
 }
 
 void LogManager::init (const int rootLogLevel, const std::string& logPath) {
-    this->rootLogLevel = rootLogLevel;
-    logFile = std::ofstream{logPath};
+    this->m_rootLogLevel = rootLogLevel;
+    m_logFile = std::ofstream{logPath};
     PHENYL_LOGI(LOGGER, "Initialised logging to {} (default level: {})", logPath, rootLogLevel);
 }
 
 LogSink* LogManager::getSink (const Logger* logger, Logger* parent) {
-    PHENYL_DASSERT(logFile);
+    PHENYL_DASSERT(m_logFile);
 
     std::string path;
     if (parent) {
         parent->initSink();
 
-        path = ToLower(parent->logSink->getPath() + "." + std::string{logger->name});
+        path = ToLower(parent->m_sink->getPath() + "." + std::string{logger->m_name});
     } else {
-        path = ToLower(std::string{logger->name});
+        path = ToLower(std::string{logger->m_name});
     }
 
     auto* sink = getSink(path);
-    sink->setName(std::string{logger->name});
+    sink->setName(std::string{logger->m_name});
     return sink;
 }
 
 LogSink* LogManager::getSink (std::string_view path) {
-    if (const auto sinkIt = sinks.find(path); sinkIt != sinks.end()) {
+    if (const auto sinkIt = m_sinks.find(path); sinkIt != m_sinks.end()) {
         return sinkIt->second.get();
     }
 
@@ -57,17 +57,17 @@ LogSink* LogManager::getSink (std::string_view path) {
 
     std::unique_ptr<LogSink> sink;
     if (parent) {
-        sink = std::make_unique<StreamSink>(logFile, std::string{path});
+        sink = std::make_unique<StreamSink>(m_logFile, std::string{path});
 
         parent->addChild(sink.get());
         sink->setMinLogLevel(parent->getMinLogLevel());
     } else {
-        sink = std::make_unique<StreamSink>(logFile, std::string{path});
-        sink->setMinLogLevel(rootLogLevel);
+        sink = std::make_unique<StreamSink>(m_logFile, std::string{path});
+        sink->setMinLogLevel(m_rootLogLevel);
     }
 
     auto* ptr = sink.get();
-    sinks.emplace(std::string{path}, std::move(sink));
+    m_sinks.emplace(std::string{path}, std::move(sink));
 
     return ptr;
 }
@@ -75,10 +75,10 @@ LogSink* LogManager::getSink (std::string_view path) {
 void LogManager::setLogLevel (const std::string& loggerPath, int level, bool propagate) {
     if (loggerPath.empty()) {
         PHENYL_TRACE(LOGGER, "Setting root log level: level={}", level);
-        rootLogLevel = level;
+        m_rootLogLevel = level;
 
         if (propagate) {
-            for (const auto& sink : std::ranges::views::values(sinks)) {
+            for (const auto& sink : std::ranges::views::values(m_sinks)) {
                 sink->setMinLogLevel(level, false);
             }
         }
@@ -91,23 +91,23 @@ void LogManager::setLogLevel (const std::string& loggerPath, int level, bool pro
 }
 
 void LogManager::shutdownLogging () {
-    for (auto* logger : std::ranges::views::values(loggers)) {
-        PHENYL_TRACE(LOGGER, "Clearing sink for {}", logger->logSink->getPath());
-        logger->logSink = nullptr;
+    for (auto* logger : std::ranges::views::values(m_loggers)) {
+        PHENYL_TRACE(LOGGER, "Clearing sink for {}", logger->m_sink->getPath());
+        logger->m_sink = nullptr;
     }
 
-    loggers.clear();
-    logLevels.clear();
-    sinks.clear();
+    m_loggers.clear();
+    m_logLevels.clear();
+    m_sinks.clear();
 
-    logFile.flush();
-    logFile = std::ofstream{};
+    m_logFile.flush();
+    m_logFile = std::ofstream{};
 }
 
 void phenyl::InitLogging (const LoggingProperties& properties) {
-    LOG_MANAGER.init(properties.rootLogLevel, properties.logFile);
+    LOG_MANAGER.init(properties.m_rootLogLevel, properties.m_logFile);
 
-    for (const auto& [logger, level] : properties.logLevels) {
+    for (const auto& [logger, level] : properties.m_logLevels) {
         LOG_MANAGER.setLogLevel(logger, level, false);
     }
 }

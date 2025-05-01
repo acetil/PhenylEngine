@@ -118,26 +118,26 @@ namespace phenyl::util {
         template <class T>
         class FLVectorIterator {
         private:
-            FlVectorItem<T>* items;
-            std::size_t pos;
-            std::size_t size;
+            FlVectorItem<T>* m_items;
+            std::size_t m_pos;
+            std::size_t m_size;
             void increment () {
-                pos++;
-                while (pos < size && !items[pos].isPresent()) {
-                    pos++;
+                m_pos++;
+                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
+                    m_pos++;
                 }
             }
 
             void findFirst () {
-                while (pos < size && !items[pos].isPresent()) {
-                    pos++;
+                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
+                    m_pos++;
                 }
             }
 
             void decrement () {
-                pos--;
-                while (pos >= 0 && !items[pos].isPresent()) {
-                    pos--;
+                m_pos--;
+                while (m_pos >= 0 && !m_items[m_pos].isPresent()) {
+                    m_pos--;
                 }
             }
 
@@ -149,13 +149,13 @@ namespace phenyl::util {
             using difference_type = std::ptrdiff_t;
             using iterator_category = std::bidirectional_iterator_tag;
 
-            FLVectorIterator() : items{nullptr}, size{0}, pos{0} {}
-            FLVectorIterator (FlVectorItem<T>* items, size_t size, size_t pos = 0) : items{items}, size{size}, pos{pos} {
+            FLVectorIterator() : m_items{nullptr}, m_size{0}, m_pos{0} {}
+            FLVectorIterator (FlVectorItem<T>* items, size_t size, size_t pos = 0) : m_items{items}, m_size{size}, m_pos{pos} {
                 findFirst();
             }
 
             reference operator* () const {
-                return items[pos].getUnsafe();
+                return m_items[m_pos].getUnsafe();
             }
 
             iterator& operator++ () {
@@ -172,7 +172,7 @@ namespace phenyl::util {
             }
 
             bool operator== (const iterator& other) const {
-                return (items == nullptr && other.items == nullptr) || (items == other.items && pos == other.pos);
+                return (m_items == nullptr && other.m_items == nullptr) || (m_items == other.m_items && m_pos == other.m_pos);
             }
 
             iterator& operator-- () {
@@ -191,26 +191,26 @@ namespace phenyl::util {
         template <class T>
         class FLVectorPairIterator {
         private:
-            FlVectorItem<T>* items;
-            std::size_t pos;
-            std::size_t size;
+            FlVectorItem<T>* m_items;
+            std::size_t m_pos;
+            std::size_t m_size;
             void increment () {
-                pos++;
-                while (pos < size && !items[pos].isPresent()) {
-                    pos++;
+                m_pos++;
+                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
+                    m_pos++;
                 }
             }
 
             void findFirst () {
-                while (pos < size && !items[pos].isPresent()) {
-                    pos++;
+                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
+                    m_pos++;
                 }
             }
 
             void decrement () {
-                pos--;
-                while (pos >= 0 && !items[pos].isPresent()) {
-                    pos--;
+                m_pos--;
+                while (m_pos >= 0 && !m_items[m_pos].isPresent()) {
+                    m_pos--;
                 }
             }
 
@@ -222,13 +222,13 @@ namespace phenyl::util {
             using difference_type = std::ptrdiff_t;
             using iterator_category = std::bidirectional_iterator_tag;
 
-            FLVectorPairIterator () : items{nullptr}, size{0}, pos{0} {}
-            FLVectorPairIterator (FlVectorItem<T>* items, size_t size, size_t pos = 0) : items{items}, size{size}, pos{pos} {
+            FLVectorPairIterator () : m_items{nullptr}, m_size{0}, m_pos{0} {}
+            FLVectorPairIterator (FlVectorItem<T>* items, size_t size, size_t pos = 0) : m_items{items}, m_size{size}, m_pos{pos} {
                 findFirst();
             }
 
             value_type operator* () const {
-                return {pos, items[pos].getUnsafe()};
+                return {m_pos, m_items[m_pos].getUnsafe()};
             }
 
             iterator& operator++ () {
@@ -245,7 +245,7 @@ namespace phenyl::util {
             }
 
             bool operator== (const iterator& other) const {
-                return (items == nullptr && other.items == nullptr) || (items == other.items && pos == other.pos);
+                return (m_items == nullptr && other.m_items == nullptr) || (m_items == other.m_items && m_pos == other.m_pos);
             }
 
             iterator& operator-- () {
@@ -269,24 +269,24 @@ namespace phenyl::util {
         using VectorItem = detail::FlVectorItem<T>;
         static constexpr std::size_t DEFAULT_START = 16;
         static constexpr std::size_t RESIZE_RATIO = 2;
-        std::unique_ptr<VectorItem[]> data;
-        std::size_t flHead = VectorItem::FREE_LIST_END;
+        std::unique_ptr<VectorItem[]> m_data;
+        std::size_t m_flHead = VectorItem::FREE_LIST_END;
 
-        std::size_t presentNum = 0;
-        std::size_t listSize = 0;
-        std::size_t vecCapacity  = 0;
+        std::size_t m_presentNum = 0;
+        std::size_t m_listSize = 0;
+        std::size_t m_capacity  = 0;
 
         std::size_t getNextIndex () {
-            if (flHead != VectorItem::FREE_LIST_END) {
-                auto index = flHead - 1;
-                flHead = data[index].next;
+            if (m_flHead != VectorItem::FREE_LIST_END) {
+                auto index = m_flHead - 1;
+                m_flHead = m_data[index].next;
 
                 return index;
-            } else if (listSize == vecCapacity) {
-                reserve(listSize * RESIZE_RATIO);
+            } else if (m_listSize == m_capacity) {
+                reserve(m_listSize * RESIZE_RATIO);
             }
 
-            return listSize++;
+            return m_listSize++;
         }
 
     public:
@@ -295,25 +295,25 @@ namespace phenyl::util {
         using pair_iterator = detail::FLVectorPairIterator<T>;
         FLVector () : FLVector(DEFAULT_START) {}
 
-        explicit FLVector (std::size_t capacity) : vecCapacity{capacity} {
-            data = std::make_unique<VectorItem[]>(capacity);
+        explicit FLVector (std::size_t capacity) : m_capacity{capacity} {
+            m_data = std::make_unique<VectorItem[]>(capacity);
         }
 
-        FLVector (const FLVector<T>& other) : presentNum{other.presentNum}, listSize{other.listSize}, vecCapacity{other.vecCapacity}, flHead{other.flHead} {
-            data = std::make_unique<VectorItem[]>(vecCapacity);
+        FLVector (const FLVector<T>& other) : m_presentNum{other.m_presentNum}, m_listSize{other.m_listSize}, m_capacity{other.m_capacity}, m_flHead{other.m_flHead} {
+            m_data = std::make_unique<VectorItem[]>(m_capacity);
 
-            for (std::size_t i = 0; i < other.listSize; i++) {
-                data[i] = other.data[i];
+            for (std::size_t i = 0; i < other.m_listSize; i++) {
+                m_data[i] = other.m_data[i];
             }
         }
 
-        FLVector (FLVector<T>&& other) noexcept : presentNum{other.presentNum}, listSize{other.listSize}, vecCapacity{other.vecCapacity}, flHead{other.flHead} {
-            data = std::move(other.data);
-            other.data = nullptr;
-            other.presentNum = 0;
-            other.listSize = 0;
-            other.vecCapacity = 0;
-            other.flHead = VectorItem::FREE_LIST_END;
+        FLVector (FLVector<T>&& other) noexcept : m_presentNum{other.m_presentNum}, m_listSize{other.m_listSize}, m_capacity{other.m_capacity}, m_flHead{other.m_flHead} {
+            m_data = std::move(other.m_data);
+            other.m_data = nullptr;
+            other.m_presentNum = 0;
+            other.m_listSize = 0;
+            other.m_capacity = 0;
+            other.m_flHead = VectorItem::FREE_LIST_END;
         }
 
         FLVector<T>& operator= (const FLVector<T>& other) {
@@ -321,117 +321,117 @@ namespace phenyl::util {
                 return *this;
             }
 
-            if (vecCapacity < other.listSize) {
-                data = std::make_unique<VectorItem[]>(other.vecCapacity);
-                vecCapacity = other.vecCapacity;
-                listSize = 0;
+            if (m_capacity < other.m_listSize) {
+                m_data = std::make_unique<VectorItem[]>(other.m_capacity);
+                m_capacity = other.m_capacity;
+                m_listSize = 0;
             }
 
-            for (std::size_t i = 0; i < other.listSize; i++) {
-                data[i] = other.data[i];
+            for (std::size_t i = 0; i < other.m_listSize; i++) {
+                m_data[i] = other.m_data[i];
             }
 
-            for (std::size_t i = other.listSize; i < listSize; i++) {
-                data[i].destroy(VectorItem::FREE_LIST_END);
+            for (std::size_t i = other.m_listSize; i < m_listSize; i++) {
+                m_data[i].destroy(VectorItem::FREE_LIST_END);
             }
 
-            listSize = other.listSize;
-            flHead = other.flHead;
-            presentNum = other.presentNum;
+            m_listSize = other.m_listSize;
+            m_flHead = other.m_flHead;
+            m_presentNum = other.m_presentNum;
 
             return *this;
         }
 
         FLVector<T>& operator= (FLVector<T>&& other) noexcept {
-            data = std::move(other.data);
-            flHead = other.flHead;
-            presentNum = other.presentNum;
-            listSize = other.listSize;
-            vecCapacity = other.vecCapacity;
+            m_data = std::move(other.m_data);
+            m_flHead = other.m_flHead;
+            m_presentNum = other.m_presentNum;
+            m_listSize = other.m_listSize;
+            m_capacity = other.m_capacity;
 
-            other.flHead = 0;
-            other.presentNum = 0;
-            other.listSize = 0;
-            other.vecCapacity = 0;
+            other.m_flHead = 0;
+            other.m_presentNum = 0;
+            other.m_listSize = 0;
+            other.m_capacity = 0;
 
             return *this;
         }
 
 
         T& operator[] (std::size_t index) {
-            return data[index].getUnsafe();
+            return m_data[index].getUnsafe();
         }
 
         const T& operator[] (std::size_t index) const {
-            return data[index].getUnsafe();
+            return m_data[index].getUnsafe();
         }
 
         T& at (std::size_t index) {
-            if (index > listSize || !data[index].isPresent()) {
+            if (index > m_listSize || !m_data[index].isPresent()) {
                 throw std::out_of_range("Attempted to access invalid element!");
             }
 
-            return data[index].getUnsafe();
+            return m_data[index].getUnsafe();
         }
 
         const T& at (std::size_t index) const {
-            if (index > listSize || !data[index].isPresent()) {
+            if (index > m_listSize || !m_data[index].isPresent()) {
                 throw std::out_of_range("Attempted to access invalid element!");
             }
 
-            return data[index].getUnsafe();
+            return m_data[index].getUnsafe();
         }
 
         [[nodiscard]] bool empty () const {
-            return !presentNum;
+            return !m_presentNum;
         }
 
         [[nodiscard]] std::size_t size () const {
-            return presentNum;
+            return m_presentNum;
         }
 
         [[nodiscard]] std::size_t capacity () const {
-            return vecCapacity;
+            return m_capacity;
         }
 
         void reserve (std::size_t newCapacity) {
-            if (vecCapacity >= newCapacity) {
+            if (m_capacity >= newCapacity) {
                 return;
             }
 
             auto newData = std::make_unique<VectorItem[]>(newCapacity);
 
-            for (std::size_t i = 0; i < listSize; i++) {
-                newData[i] = std::move(data[i]);
+            for (std::size_t i = 0; i < m_listSize; i++) {
+                newData[i] = std::move(m_data[i]);
             }
 
-            data = std::move(newData);
-            vecCapacity = newCapacity;
+            m_data = std::move(newData);
+            m_capacity = newCapacity;
         }
 
         void clear () {
-            for (std::size_t i = 0; i < listSize; i++) {
-                data[i].destroy(VectorItem::FREE_LIST_END);
+            for (std::size_t i = 0; i < m_listSize; i++) {
+                m_data[i].destroy(VectorItem::FREE_LIST_END);
             }
 
-            listSize = 0;
-            presentNum = 0;
-            flHead = VectorItem::FREE_LIST_END;
+            m_listSize = 0;
+            m_presentNum = 0;
+            m_flHead = VectorItem::FREE_LIST_END;
         }
 
         std::size_t push (const T& val) {
             auto index = getNextIndex();
 
-            data[index].init(val);
-            presentNum++;
+            m_data[index].init(val);
+            m_presentNum++;
             return index;
         }
 
         std::size_t push (T&& val) {
             auto index = getNextIndex();
 
-            data[index].init(std::move(val));
-            presentNum++;
+            m_data[index].init(std::move(val));
+            m_presentNum++;
             return index;
         }
 
@@ -439,62 +439,62 @@ namespace phenyl::util {
         std::size_t emplace (Args&&... args) {
             auto index = getNextIndex();
 
-            data[index].init(std::forward<Args>(args)...);
-            presentNum++;
+            m_data[index].init(std::forward<Args>(args)...);
+            m_presentNum++;
             return index;
         }
 
         void remove (std::size_t index) {
-            PHENYL_ASSERT_MSG(index < listSize, "Attempted to remove invalid element {} of FLVector!", index);
-            PHENYL_ASSERT_MSG(data[index].isPresent(), "Attempted to remove already removed element {} of FLVector!", index);
+            PHENYL_ASSERT_MSG(index < m_listSize, "Attempted to remove invalid element {} of FLVector!", index);
+            PHENYL_ASSERT_MSG(m_data[index].isPresent(), "Attempted to remove already removed element {} of FLVector!", index);
 
-            data[index].destroy(flHead);
-            flHead = index + 1;
-            presentNum--;
+            m_data[index].destroy(m_flHead);
+            m_flHead = index + 1;
+            m_presentNum--;
         }
 
         bool present (std::size_t index) const {
-            return listSize > index && data[index].isPresent();
+            return m_listSize > index && m_data[index].isPresent();
         }
 
         iterator begin () noexcept {
-            return iterator{data.get(), listSize};
+            return iterator{m_data.get(), m_listSize};
         }
 
         iterator end () noexcept {
-            return iterator{data.get(), listSize, listSize};
+            return iterator{m_data.get(), m_listSize, m_listSize};
         }
 
         const_iterator begin () const noexcept {
-            return const_iterator{data.get(), listSize};
+            return const_iterator{m_data.get(), m_listSize};
         }
 
         const_iterator end () const noexcept {
-            return iterator{data.get(), listSize, listSize};
+            return iterator{m_data.get(), m_listSize, m_listSize};
         }
 
         const_iterator cbegin () const noexcept {
-            return const_iterator{data.get(), listSize};
+            return const_iterator{m_data.get(), m_listSize};
         }
 
         const_iterator cend () const noexcept {
-            return iterator{data.get(), listSize, listSize};
+            return iterator{m_data.get(), m_listSize, m_listSize};
         }
 
         util::Iterable<pair_iterator> iterate () {
-            return {pair_iterator{data.get(), listSize}, pair_iterator{data.get(), listSize, listSize}};
+            return {pair_iterator{m_data.get(), m_listSize}, pair_iterator{m_data.get(), m_listSize, m_listSize}};
         }
 
         template <bool b = true>
         std::string toString () {
             std::stringstream sstream;
             sstream << "[";
-            for (std::size_t i = 0; i < listSize; i++) {
+            for (std::size_t i = 0; i < m_listSize; i++) {
                 if (i != 0) {
                     sstream << ", ";
                 }
-                if (data[i].isPresent()) {
-                    sstream << data[i].getUnsafe();
+                if (m_data[i].isPresent()) {
+                    sstream << m_data[i].getUnsafe();
                 } else {
                     sstream << "NULL";
                 }

@@ -26,10 +26,10 @@ void UIPlugin::init (phenyl::core::PhenylRuntime& runtime) {
 
     auto& renderer = runtime.resource<Renderer>();
     auto& input = runtime.resource<core::GameInput>();
-    manager = std::make_unique<UIManager>(input);
+    m_manager = std::make_unique<UIManager>(input);
 
     runtime.addResource<Canvas>(renderer);
-    runtime.addResource(manager.get());
+    runtime.addResource(m_manager.get());
 
     runtime.addSystem<core::FrameBegin>("UIManager::Update", UIUpdateSystem);
     runtime.addSystem<core::Render>("UIManager::Render", UIRenderSystem);

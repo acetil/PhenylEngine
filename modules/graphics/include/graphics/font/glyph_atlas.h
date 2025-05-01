@@ -36,12 +36,12 @@ namespace phenyl::graphics {
             std::uint32_t atlasLayer;
         };
     private:
-        ImageArrayTexture arrayTexture;
-        std::vector<ColumnAtlas> atlases;
-        std::uint32_t size;
-        std::uint32_t padding;
+        ImageArrayTexture m_arrayTexture;
+        std::vector<ColumnAtlas> m_atlases;
+        std::uint32_t m_size;
+        std::uint32_t m_padding;
 
-        glm::vec3 whitePixel;
+        glm::vec3 m_whitePixel;
     public:
         explicit GlyphAtlas (Renderer& renderer, std::uint32_t size = 1024, std::uint32_t padding=1);
         Placement place (const Image& image);
@@ -50,7 +50,7 @@ namespace phenyl::graphics {
         void upload ();
 
         [[nodiscard]] glm::vec3 opaque () const {
-            return whitePixel;
+            return m_whitePixel;
         }
     };
 }

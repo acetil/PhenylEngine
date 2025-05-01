@@ -14,37 +14,37 @@ phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (s
 
     auto prop = propOpt.getUnsafe();
 
-    systems[id] = std::make_unique<ParticleSystem2D>(prop, systemMaxParticles);
+    m_systems[id] = std::make_unique<ParticleSystem2D>(prop, m_maxParticles);
 
-    return systems[id].get();
+    return m_systems[id].get();
 }
 
-phenyl::graphics::ParticleManager2D::ParticleManager2D (std::size_t systemMaxParticles) : systemMaxParticles{systemMaxParticles} {}
+phenyl::graphics::ParticleManager2D::ParticleManager2D (std::size_t systemMaxParticles) : m_maxParticles{systemMaxParticles} {}
 
 phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (phenyl::graphics::ParticleSystem2D&& obj, std::size_t id) {
-    systems[id] = std::make_unique<ParticleSystem2D>(std::move(obj));
+    m_systems[id] = std::make_unique<ParticleSystem2D>(std::move(obj));
 
-    return systems[id].get();
+    return m_systems[id].get();
 }
 
 void phenyl::graphics::ParticleManager2D::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        systems.remove(id);
+        m_systems.remove(id);
     }
 }
 
 void phenyl::graphics::ParticleManager2D::update (float deltaTime) {
-    for (auto [_, system] : systems.kv()) {
+    for (auto [_, system] : m_systems.kv()) {
         system->update(deltaTime);
     }
 }
 
 void phenyl::graphics::ParticleManager2D::buffer (phenyl::graphics::Buffer<glm::vec2>& posBuffer, phenyl::graphics::Buffer<glm::vec4>& colourBuffer) const {
-    for (auto [_, system] : systems.kv()) {
+    for (auto [_, system] : m_systems.kv()) {
         system->bufferPos(posBuffer);
     }
 
-    for (auto [_, system] : systems.kv()) {
+    for (auto [_, system] : m_systems.kv()) {
         system->bufferColour(colourBuffer);
     }
 }

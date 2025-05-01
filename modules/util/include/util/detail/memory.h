@@ -47,37 +47,37 @@ namespace phenyl::util::detail {
     template <typename T>
     class Memory : public Copyable<std::is_copy_assignable_v<T> || std::is_copy_constructible_v<T>> {
     private:
-        alignas(T) std::byte data[sizeof(T)];
-        bool initialised = false;
+        alignas(T) std::byte m_data[sizeof(T)];
+        bool m_initialized = false;
     public:
         Memory () = default;
 
         template <typename ...Args>
         explicit Memory (Args&&... args) {
-            ::new(&data) T(std::forward<Args&&>(args)...);
-            initialised = true;
+            ::new(&m_data) T(std::forward<Args&&>(args)...);
+            m_initialized = true;
         }
 
         explicit Memory (T& val) {
-            ::new(&data) T(val);
-            initialised = true;
+            ::new(&m_data) T(val);
+            m_initialized = true;
         }
 
         explicit Memory (T&& val) noexcept {
-            ::new(&data) T(std::move(val));
-            initialised = true;
+            ::new(&m_data) T(std::move(val));
+            m_initialized = true;
         }
 
 
         Memory (Memory& other) {
-            ::new(&data) T(other.data);
-            initialised = true;
+            ::new(&m_data) T(other.data);
+            m_initialized = true;
         }
 
         Memory (Memory&& other)  noexcept {
-            ::new(&data) T(std::move(other.mget()));
-            initialised = true;
-            other.initialised = false;
+            ::new(&m_data) T(std::move(other.mget()));
+            m_initialized = true;
+            other.m_initialized = false;
         }
 
         Memory<T>& operator= (Memory const& other) {
@@ -91,15 +91,15 @@ namespace phenyl::util::detail {
         }
 
         T& mget () const {
-            return *const_cast<T*>(reinterpret_cast<const T*>(&data));
+            return *const_cast<T*>(reinterpret_cast<const T*>(&m_data));
         }
 
         const T& get () const {
-            return *reinterpret_cast<const T*>(&data);
+            return *reinterpret_cast<const T*>(&m_data);
         }
 
         void clear () {
-            if (initialised) {
+            if (m_initialized) {
                 get().~T();
             }
         }
@@ -112,18 +112,18 @@ namespace phenyl::util::detail {
     template <typename T>
     class RefMemory {
     private:
-        T* data;
+        T* m_data;
     public:
         RefMemory() = default;
         explicit RefMemory(T& val) {
-            data = &val;
+            m_data = &val;
         }
 
         //RefMemory<T>& operator= (RefMemory<T>&) = delete;
         //RefMemory<T>& operator= (RefMemory<T>&&) = delete;
 
         T& get () const {
-            return *data;
+            return *m_data;
         }
     };
 }

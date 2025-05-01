@@ -2,8 +2,8 @@
 
 using namespace phenyl::graphics;
 
-ButtonWidget::ButtonWidget (const Modifier& modifier) : Widget{modifier}, container{modifier} {
-    container.setParent(this);
+ButtonWidget::ButtonWidget (const Modifier& modifier) : Widget{modifier}, m_container{modifier} {
+    m_container.setParent(this);
     addListener([this] (const MouseEnterEvent&) {
         onHover();
     });
@@ -24,102 +24,102 @@ ButtonWidget::ButtonWidget (const Modifier& modifier) : Widget{modifier}, contai
 }
 
 Widget* ButtonWidget::replace (std::unique_ptr<Widget> newChild) {
-    return container.replace(std::move(newChild));
+    return m_container.replace(std::move(newChild));
 }
 
 void ButtonWidget::setDefaultBgColor (glm::vec4 color) {
-    widgetDefaultBgColor = color;
-    if (state == ButtonState::UNPRESSED) {
-        container.setBgColor(widgetDefaultBgColor);
+    m_defaultBgColor = color;
+    if (m_state == ButtonState::UNPRESSED) {
+        m_container.setBgColor(m_defaultBgColor);
     }
 }
 
 void ButtonWidget::setHoverBgColor (glm::vec4 color) {
-    widgetHoverBgColor = color;
-    if (state == ButtonState::HOVERED) {
-        container.setBgColor(widgetHoverBgColor);
+    m_hoverBgColor = color;
+    if (m_state == ButtonState::HOVERED) {
+        m_container.setBgColor(m_hoverBgColor);
     }
 }
 
 void ButtonWidget::setPressBgColor (glm::vec4 color) {
-    widgetPressBgColor = color;
-    if (state == ButtonState::PRESSED || state == ButtonState::PRESSED_UNHOVER) {
-        container.setBgColor(widgetPressBgColor);
+    m_pressBgColor = color;
+    if (m_state == ButtonState::PRESSED || m_state == ButtonState::PRESSED_UNHOVER) {
+        m_container.setBgColor(m_pressBgColor);
     }
 }
 
 void ButtonWidget::measure (const WidgetConstraints& constraints) {
-    container.measure(constraints);
-    setDimensions(container.dimensions());
+    m_container.measure(constraints);
+    setDimensions(m_container.dimensions());
 }
 
 void ButtonWidget::render (Canvas& canvas) {
-    container.render(canvas);
+    m_container.render(canvas);
 }
 
 bool ButtonWidget::pointerUpdate (glm::vec2 pointer) {
-    container.pointerUpdate(pointer);
+    m_container.pointerUpdate(pointer);
     return Widget::pointerUpdate(pointer);
 }
 
 void ButtonWidget::pointerLeave () {
-    container.pointerLeave();
+    m_container.pointerLeave();
     Widget::pointerLeave();
 }
 
 void ButtonWidget::onHover () {
-    switch (state) {
+    switch (m_state) {
         case ButtonState::UNPRESSED:
-            state = ButtonState::HOVERED;
-            container.setBgColor(widgetHoverBgColor);
+            m_state = ButtonState::HOVERED;
+            m_container.setBgColor(m_hoverBgColor);
             break;
         case ButtonState::PRESSED_UNHOVER:
-            state = ButtonState::PRESSED;
+            m_state = ButtonState::PRESSED;
             break;
         default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onHover on {}", static_cast<int>(state));
+            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onHover on {}", static_cast<int>(m_state));
             break;
     }
 }
 
 void ButtonWidget::onUnhover () {
-    switch (state) {
+    switch (m_state) {
         case ButtonState::HOVERED:
-            state = ButtonState::UNPRESSED;
-            container.setBgColor(widgetDefaultBgColor);
+            m_state = ButtonState::UNPRESSED;
+            m_container.setBgColor(m_defaultBgColor);
             break;
         case ButtonState::PRESSED:
-            state = ButtonState::PRESSED_UNHOVER;
+            m_state = ButtonState::PRESSED_UNHOVER;
             break;
         default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onUnhover on {}", static_cast<int>(state));
+            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onUnhover on {}", static_cast<int>(m_state));
     }
 }
 
 void ButtonWidget::onPress () {
-    switch (state) {
+    switch (m_state) {
         case ButtonState::HOVERED:
-            state = ButtonState::PRESSED;
-            container.setBgColor(widgetPressBgColor);
+            m_state = ButtonState::PRESSED;
+            m_container.setBgColor(m_pressBgColor);
             break;
         default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onPress on {}", static_cast<int>(state));
+            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onPress on {}", static_cast<int>(m_state));
     }
 }
 
 void ButtonWidget::onRelease () {
-    switch (state) {
+    switch (m_state) {
         case ButtonState::PRESSED:
             raise(UIEvent{ButtonPressEvent{}});
-            state = ButtonState::HOVERED;
-            container.setBgColor(widgetHoverBgColor);
+            m_state = ButtonState::HOVERED;
+            m_container.setBgColor(m_hoverBgColor);
             break;
         case ButtonState::PRESSED_UNHOVER:
-            state = ButtonState::UNPRESSED;
-            container.setBgColor(widgetDefaultBgColor);
+            m_state = ButtonState::UNPRESSED;
+            m_container.setBgColor(m_defaultBgColor);
             break;
         default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onRelease on {}", static_cast<int>(state));
+            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onRelease on {}", static_cast<int>(m_state));
     }
 }
 

@@ -26,45 +26,45 @@ static std::string_view GetFrameBufferStatusString (GLenum status) {
     }
 }
 
-AbstractGlFrameBuffer::AbstractGlFrameBuffer (GLuint fbId, glm::ivec2 dimensions) : fbId{fbId}, dimensions{dimensions} {
+AbstractGlFrameBuffer::AbstractGlFrameBuffer (GLuint fbId, glm::ivec2 dimensions) : m_id{fbId}, m_dimensions{dimensions} {
     PHENYL_DASSERT(dimensions.x > 0);
     PHENYL_DASSERT(dimensions.y > 0);
 }
 
-AbstractGlFrameBuffer::AbstractGlFrameBuffer (glm::ivec2 dimensions) : dimensions{dimensions} {
-    glGenFramebuffers(1, &fbId);
+AbstractGlFrameBuffer::AbstractGlFrameBuffer (glm::ivec2 dimensions) : m_dimensions{dimensions} {
+    glGenFramebuffers(1, &m_id);
 }
 
-AbstractGlFrameBuffer::AbstractGlFrameBuffer (AbstractGlFrameBuffer&& other) noexcept : fbId{other.fbId}, dimensions{other.dimensions} {
-    other.fbId = -1;
+AbstractGlFrameBuffer::AbstractGlFrameBuffer (AbstractGlFrameBuffer&& other) noexcept : m_id{other.m_id}, m_dimensions{other.m_dimensions} {
+    other.m_id = -1;
 }
 
 AbstractGlFrameBuffer& AbstractGlFrameBuffer::operator= (AbstractGlFrameBuffer&& other) noexcept {
-    if (fbId && fbId != -1) {
-        glDeleteFramebuffers(1, &fbId);
+    if (m_id && m_id != -1) {
+        glDeleteFramebuffers(1, &m_id);
     }
 
-    fbId = other.fbId;
-    dimensions = other.dimensions;
+    m_id = other.m_id;
+    m_dimensions = other.m_dimensions;
 
-    other.fbId = -1;
+    other.m_id = -1;
 
     return *this;
 }
 
 AbstractGlFrameBuffer::~AbstractGlFrameBuffer () noexcept {
-    if (fbId && fbId != -1) {
-        glDeleteFramebuffers(1, &fbId);
+    if (m_id && m_id != -1) {
+        glDeleteFramebuffers(1, &m_id);
     }
 }
 
 void AbstractGlFrameBuffer::bind () const {
-    glBindFramebuffer(GL_FRAMEBUFFER, fbId);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 }
 
 void AbstractGlFrameBuffer::bindViewport () const {
     bind();
-    glViewport(0, 0, dimensions.x, dimensions.y);
+    glViewport(0, 0, m_dimensions.x, m_dimensions.y);
 }
 
 void AbstractGlFrameBuffer::clear (glm::vec4 clearColor) {
@@ -79,46 +79,46 @@ void AbstractGlFrameBuffer::clear (glm::vec4 clearColor) {
 }
 
 glm::ivec2 AbstractGlFrameBuffer::getDimensions () const noexcept {
-    return dimensions;
+    return m_dimensions;
 }
 
 GlFrameBuffer::GlFrameBuffer (glm::ivec2 dimensions, const graphics::FrameBufferProperties& properties) : AbstractGlFrameBuffer{dimensions},
-        colorSampler{properties.format ? std::optional{GlSampler{GL_TEXTURE_2D, graphics::TextureProperties{.format = *properties.format, .useMipmapping = false}}} : std::nullopt},
-        depthSampler{properties.depthFormat ? std::optional{GlSampler{GL_TEXTURE_2D, graphics::TextureProperties{.format = graphics::ImageFormat::DEPTH24_STENCIL8, .useMipmapping = false}}} : std::nullopt} {
+        m_colorSampler{properties.format ? std::optional{GlSampler{GL_TEXTURE_2D, graphics::TextureProperties{.format = *properties.format, .useMipmapping = false}}} : std::nullopt},
+        m_depthSampler{properties.depthFormat ? std::optional{GlSampler{GL_TEXTURE_2D, graphics::TextureProperties{.format = graphics::ImageFormat::DEPTH24_STENCIL8, .useMipmapping = false}}} : std::nullopt} {
 
-    if (colorSampler) {
-        colorSampler->createEmpty2D(dimensions.x, dimensions.y);
+    if (m_colorSampler) {
+        m_colorSampler->createEmpty2D(dimensions.x, dimensions.y);
     }
 
-    if (depthSampler) {
-        depthSampler->createEmpty2D(dimensions.x, dimensions.y);
+    if (m_depthSampler) {
+        m_depthSampler->createEmpty2D(dimensions.x, dimensions.y);
     }
 
     bind();
-    if (colorSampler) {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorSampler->type(), colorSampler->id(), 0);
+    if (m_colorSampler) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_colorSampler->type(), m_colorSampler->id(), 0);
     } else {
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);
     }
 
-    if (depthSampler) {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depthSampler->type(), depthSampler->id(), 0);
+    if (m_depthSampler) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_depthSampler->type(), m_depthSampler->id(), 0);
     }
 
     auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     PHENYL_LOGW_IF((status != GL_FRAMEBUFFER_COMPLETE), LOGGER, "Frame buffer creation failed with status {}: {}", status, GetFrameBufferStatusString(status));
 
-    valid = status == GL_FRAMEBUFFER_COMPLETE;
-    PHENYL_DASSERT(valid);
+    m_valid = status == GL_FRAMEBUFFER_COMPLETE;
+    PHENYL_DASSERT(m_valid);
 }
 
 phenyl::graphics::ISampler* GlFrameBuffer::getSampler () noexcept {
-    return colorSampler ? &*colorSampler : nullptr;
+    return m_colorSampler ? &*m_colorSampler : nullptr;
 }
 
 phenyl::graphics::ISampler* GlFrameBuffer::getDepthSampler () noexcept {
-    return depthSampler ? &*depthSampler : nullptr;
+    return m_depthSampler ? &*m_depthSampler : nullptr;
 }
 
 GlWindowFrameBuffer::GlWindowFrameBuffer (glm::ivec2 dimensions) : AbstractGlFrameBuffer{0, dimensions} {}
@@ -133,5 +133,5 @@ phenyl::graphics::ISampler* GlWindowFrameBuffer::getDepthSampler () noexcept {
 
 
 void GlWindowFrameBuffer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
-    dimensions = newResolution;
+    m_dimensions = newResolution;
 }

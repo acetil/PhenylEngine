@@ -19,10 +19,10 @@ namespace phenyl::graphics {
     private:
         using DataPtr = std::unique_ptr<std::byte[], void (*) (std::byte*)>;
 
-        DataPtr imgData;
-        std::uint32_t imgWidth;
-        std::uint32_t imgHeight;
-        ImageFormat imgFormat;
+        DataPtr m_data;
+        std::uint32_t m_width;
+        std::uint32_t m_height;
+        ImageFormat m_format;
 
         Image (DataPtr data, std::uint32_t width, std::uint32_t height, ImageFormat format);
 
@@ -46,23 +46,23 @@ namespace phenyl::graphics {
         void blit (const Image& src, glm::uvec2 offset);
 
         [[nodiscard]] inline std::uint32_t width () const noexcept {
-            return imgWidth;
+            return m_width;
         }
 
         [[nodiscard]] inline std::uint32_t height () const noexcept {
-            return imgHeight;
+            return m_height;
         }
 
         [[nodiscard]] inline ImageFormat format () const noexcept {
-            return imgFormat;
+            return m_format;
         }
 
         [[nodiscard]] inline std::span<std::byte> data () noexcept {
-            return std::span{imgData.get(), dataSize()};
+            return std::span{m_data.get(), dataSize()};
         }
 
         [[nodiscard]] inline std::span<const std::byte> data () const noexcept {
-            return std::span{imgData.get(), dataSize()};
+            return std::span{m_data.get(), dataSize()};
         }
 
         std::size_t dataSize () const noexcept {

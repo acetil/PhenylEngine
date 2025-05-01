@@ -10,10 +10,10 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"TEXTURE_MANAGER", detail::GRAPHICS_LOGGER};
 
-TextureManager::TextureManager (Renderer& renderer) : renderer{renderer} {}
+TextureManager::TextureManager (Renderer& renderer) : m_renderer{renderer} {}
 
 Texture* TextureManager::load (std::ifstream& data, std::size_t id) {
-    PHENYL_DASSERT(!textures.contains(id));
+    PHENYL_DASSERT(!m_textures.contains(id));
 
     auto image = Image::Load(data);
     if (!image) {
@@ -27,8 +27,8 @@ Texture* TextureManager::load (std::ifstream& data, std::size_t id) {
         .useMipmapping = true
     };
 
-    textures.emplace(id, std::make_unique<ImageTexture>(renderer.makeTexture(properties, image.getUnsafe())));
-    return textures[id].get();
+    m_textures.emplace(id, std::make_unique<ImageTexture>(m_renderer.makeTexture(properties, image.getUnsafe())));
+    return m_textures[id].get();
 }
 
 Texture* TextureManager::load (Texture&& obj, std::size_t id) {
@@ -44,10 +44,10 @@ const char* TextureManager::getFileType () const {
 }
 
 void TextureManager::queueUnload (std::size_t id) {
-    PHENYL_DASSERT(textures.contains(id));
+    PHENYL_DASSERT(m_textures.contains(id));
 
     if (onUnload(id)) {
-        textures.erase(id);
+        m_textures.erase(id);
     }
 }
 

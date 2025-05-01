@@ -2,17 +2,17 @@
 
 #include <string>
 
-#include "../../backends/api/include/graphics/viewport.h"
+#include "graphics/viewport.h"
 #include "graphics/maths_headers.h"
 #include "core/iresource.h"
 
 namespace phenyl::graphics {
     class Camera2D : public core::IResource, public IViewportUpdateHandler {
     private:
-        glm::mat4 camMatrix{};
-        glm::mat4 positionMat{};
-        glm::mat4 scaleMat{};
-        glm::vec2 resolution;
+        glm::mat4 m_matrix{};
+        glm::mat4 m_positionMat{};
+        glm::mat4 m_scaleMat{};
+        glm::vec2 m_resolution;
     public:
         [[maybe_unused]] void translate (float x, float y);
 

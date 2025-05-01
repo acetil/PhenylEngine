@@ -7,7 +7,7 @@ namespace phenyl::graphics {
 
     class Sprite2DPlugin : public core::IInitPlugin {
     private:
-        EntityRenderLayer* entityLayer = nullptr;
+        EntityRenderLayer* m_entityLayer = nullptr;
     public:
         Sprite2DPlugin () = default;
 

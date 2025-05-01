@@ -6,8 +6,8 @@
 namespace phenyl::graphics {
     class MaterialManager : public core::AssetManager<Material> {
     private:
-        Renderer& renderer;
-        std::unordered_map<std::size_t, std::unique_ptr<Material>> materials;
+        Renderer& m_renderer;
+        std::unordered_map<std::size_t, std::unique_ptr<Material>> m_materials;
     public:
         MaterialManager (Renderer& renderer);
 

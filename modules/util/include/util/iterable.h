@@ -4,19 +4,19 @@ namespace phenyl::util {
     template <typename T>
     class Iterable {
     private:
-        T beginIt;
-        T endIt;
+        T m_begin;
+        T m_end;
     public:
         using iterator = T;
 
-        Iterable (T beginIt, T endIt) : beginIt{beginIt}, endIt{endIt} {}
+        Iterable (T beginIt, T endIt) : m_begin{beginIt}, m_end{endIt} {}
 
         T begin () const {
-            return beginIt;
+            return m_begin;
         }
 
         T end () const {
-            return endIt;
+            return m_end;
         }
     };
 }

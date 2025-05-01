@@ -29,12 +29,12 @@ namespace phenyl::graphics {
             DOWN
         };
     private:
-        Axis axis;
-        LayoutArrangement arrangement;
-        LayoutAlignment alignment;
-        std::vector<std::unique_ptr<Widget>> children;
-        std::vector<glm::vec2> childOff;
-        std::unordered_set<Widget*> widgetsToDelete;
+        Axis m_axis;
+        LayoutArrangement m_arrangement;
+        LayoutAlignment m_alignment;
+        std::vector<std::unique_ptr<Widget>> m_children;
+        std::vector<glm::vec2> m_childOff;
+        std::unordered_set<Widget*> m_widgetsToDelete;
 
         float measureChildren (glm::vec2 dims, glm::vec2 mainAxis, glm::vec2 secondAxis);
         Widget* insert (std::size_t pos, std::unique_ptr<Widget> child);

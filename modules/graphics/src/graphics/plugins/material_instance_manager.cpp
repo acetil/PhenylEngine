@@ -136,7 +136,7 @@ MaterialInstance* MaterialInstanceManager::load (std::ifstream& data, std::size_
     MaterialInstanceSerializable serializable{};
     core::DeserializeFromJson(data, serializable, instance);
 
-    auto [it, _] = instances.emplace(id, std::move(instance));
+    auto [it, _] = m_instances.emplace(id, std::move(instance));
     return it->second.get();
 }
 

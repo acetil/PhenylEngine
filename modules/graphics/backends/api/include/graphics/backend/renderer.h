@@ -26,7 +26,7 @@ namespace phenyl::graphics {
 
     class Renderer : public core::IResource {
     private:
-        std::vector<std::unique_ptr<AbstractRenderLayer>> layers;
+        std::vector<std::unique_ptr<AbstractRenderLayer>> m_layers;
     protected:
         virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, BufferStorageHint storageHint, bool isIndex) = 0;
         virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
@@ -35,7 +35,7 @@ namespace phenyl::graphics {
         virtual std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
 
         void layerRender () {
-            for (auto& i : layers) {
+            for (auto& i : m_layers) {
                 i->render();
             }
         }
@@ -104,9 +104,9 @@ namespace phenyl::graphics {
 
         template <std::derived_from<AbstractRenderLayer> T, typename ...Args>
         T& addLayer (Args&&... args) requires std::constructible_from<T, Args&&...> {
-            auto* ptr = layers.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get();
+            auto* ptr = m_layers.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get();
 
-            std::sort(layers.begin(), layers.end(), [] (const auto& lhs, const auto& rhs) {
+            std::sort(m_layers.begin(), m_layers.end(), [] (const auto& lhs, const auto& rhs) {
                 return lhs->getPriority() < rhs->getPriority();
             });
 
@@ -118,7 +118,7 @@ namespace phenyl::graphics {
         }
 
         void clearLayers () {
-            layers.clear();
+            m_layers.clear();
         }
 
         virtual void render () = 0;

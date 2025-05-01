@@ -65,16 +65,16 @@ std::string_view DebugLayer::getName () const {
 
 void DebugLayer::init (Renderer& renderer) {
     auto shader = core::Assets::Load<Shader>("phenyl/shaders/debug");
-    boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
-    boxColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
-    linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
-    lineColour = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
-    uniformBuffer = renderer.makeUniformBuffer<Uniform>();
+    m_boxPos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    m_boxColor = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    m_linePos = renderer.makeBuffer<glm::vec3>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    m_lineColor = renderer.makeBuffer<glm::vec4>(STARTING_BUFFER_SIZE, BufferStorageHint::DYNAMIC);
+    m_uniformBuffer = renderer.makeUniformBuffer<Uniform>();
 
     BufferBinding posBinding;
     BufferBinding colourBinding;
     UniformBinding uniformBinding;
-    boxPipeline = renderer.buildPipeline()
+    m_boxPipeline = renderer.buildPipeline()
                           .withShader(shader)
                           .withBuffer<glm::vec3>(posBinding)
                           .withBuffer<glm::vec4>(colourBinding)
@@ -82,11 +82,11 @@ void DebugLayer::init (Renderer& renderer) {
                           .withAttrib<glm::vec4>(1, colourBinding)
                           .withUniform<Uniform>(shader->uniformLocation("Uniform").value(), uniformBinding)
                           .build();
-    boxPipeline.bindBuffer(posBinding, boxPos);
-    boxPipeline.bindBuffer(colourBinding, boxColour);
-    boxPipeline.bindUniform(uniformBinding, uniformBuffer);
+    m_boxPipeline.bindBuffer(posBinding, m_boxPos);
+    m_boxPipeline.bindBuffer(colourBinding, m_boxColor);
+    m_boxPipeline.bindUniform(uniformBinding, m_uniformBuffer);
 
-    linePipeline = renderer.buildPipeline()
+    m_linePipeline = renderer.buildPipeline()
                            .withGeometryType(GeometryType::LINES)
                            .withShader(shader)
                            .withBuffer<glm::vec3>(posBinding)
@@ -95,16 +95,16 @@ void DebugLayer::init (Renderer& renderer) {
                            .withAttrib<glm::vec4>(1, colourBinding)
                            .withUniform<Uniform>(shader->uniformLocation("Uniform").value(), uniformBinding)
                            .build();
-    linePipeline.bindBuffer(posBinding, linePos);
-    linePipeline.bindBuffer(colourBinding, lineColour);
-    linePipeline.bindUniform(uniformBinding, uniformBuffer);
+    m_linePipeline.bindBuffer(posBinding, m_linePos);
+    m_linePipeline.bindBuffer(colourBinding, m_lineColor);
+    m_linePipeline.bindUniform(uniformBinding, m_uniformBuffer);
 }
 
 void DebugLayer::bufferData (const Camera2D& camera, glm::vec2 screenSize) {
-    boxPos.clear();
-    boxColour.clear();
-    linePos.clear();
-    lineColour.clear();
+    m_boxPos.clear();
+    m_boxColor.clear();
+    m_linePos.clear();
+    m_lineColor.clear();
 
     for (const auto& i : boxes) {
         bufferBox(i);
@@ -114,47 +114,47 @@ void DebugLayer::bufferData (const Camera2D& camera, glm::vec2 screenSize) {
         bufferLine(i);
     }
 
-    boxPos.upload();
-    boxColour.upload();
-    linePos.upload();
-    lineColour.upload();
+    m_boxPos.upload();
+    m_boxColor.upload();
+    m_linePos.upload();
+    m_lineColor.upload();
 
     boxes.clear();
     lines.clear();
 
-    uniformBuffer->camera = camera.getCamMatrix();
-    uniformBuffer->screenTransform = glm::scale(glm::vec3{2 / screenSize.x, 2 / screenSize.y, 1}) * glm::translate(glm::vec3{-1, -1, 0});
-    uniformBuffer.upload();
+    m_uniformBuffer->camera = camera.getCamMatrix();
+    m_uniformBuffer->screenTransform = glm::scale(glm::vec3{2 / screenSize.x, 2 / screenSize.y, 1}) * glm::translate(glm::vec3{-1, -1, 0});
+    m_uniformBuffer.upload();
 }
 
 void DebugLayer::render () {
-    boxPipeline.render(boxPos.size());
-    linePipeline.render(linePos.size());
+    m_boxPipeline.render(m_boxPos.size());
+    m_linePipeline.render(m_linePos.size());
 }
 
 void DebugLayer::bufferBox (const DebugBox& box) {
     for (int i = 0; i < 6; i++) {
         int boxPoint = i != 4 ? (i % 3) : 3;
 
-        boxPos.emplace(box.vertices[boxPoint]);
-        boxColour.emplace(box.colour);
+        m_boxPos.emplace(box.vertices[boxPoint]);
+        m_boxColor.emplace(box.colour);
     }
 
     for (int i = 0; i < 4; i++) {
         int nextI = (i + 1) % 4;
 
-        linePos.emplace(box.vertices[i]);
-        linePos.emplace(box.vertices[nextI]);
-        lineColour.emplace(box.outlineColour);
-        lineColour.emplace(box.outlineColour);
+        m_linePos.emplace(box.vertices[i]);
+        m_linePos.emplace(box.vertices[nextI]);
+        m_lineColor.emplace(box.outlineColour);
+        m_lineColor.emplace(box.outlineColour);
     }
 }
 
 void DebugLayer::bufferLine (const DebugLine& line) {
-    linePos.emplace(line.vertices[0]);
-    linePos.emplace(line.vertices[1]);
-    lineColour.emplace(line.colour);
-    lineColour.emplace(line.colour);
+    m_linePos.emplace(line.vertices[0]);
+    m_linePos.emplace(line.vertices[1]);
+    m_lineColor.emplace(line.colour);
+    m_lineColor.emplace(line.colour);
 }
 
 /*void graphics::debugWorldRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour, glm::vec4 outlineColour) {

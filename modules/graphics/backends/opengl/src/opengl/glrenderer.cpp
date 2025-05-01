@@ -32,7 +32,7 @@ using namespace phenyl::opengl;
 
 phenyl::Logger phenyl::opengl::detail::OPENGL_LOGGER{"OPENGL", PHENYL_LOGGER};
 
-GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : viewport{std::move(viewport)}, windowFrameBuffer{this->viewport->getResolution()} {
+GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : m_viewport{std::move(viewport)}, m_windowFrameBuffer{this->m_viewport->getResolution()} {
     auto glewRes = glewInit();
     PHENYL_ASSERT_MSG(glewRes == GLEW_OK, "Failed to initialise GLEW!");
 
@@ -41,26 +41,26 @@ GLRenderer::GLRenderer (std::unique_ptr<glfw::GLFWViewport> viewport) : viewport
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    clearColor = {0, 0, 0, 1};
+    m_clearColor = {0, 0, 0, 1};
     setupErrorHandling();
 
-    shaderManager.selfRegister();
+    m_shaderManager.selfRegister();
 
     //this->viewport->addUpdateHandler(this);
-    this->viewport->addUpdateHandler(&windowFrameBuffer);
+    this->m_viewport->addUpdateHandler(&m_windowFrameBuffer);
     PHENYL_LOGI(detail::OPENGL_LOGGER, "Initialised OpenGL graphics backend");
 }
 
 double GLRenderer::getCurrentTime () {
-    return viewport->getTime();
+    return m_viewport->getTime();
 }
 
 void GLRenderer::clearWindow () {
-    windowFrameBuffer.clear(clearColor);
+    m_windowFrameBuffer.clear(m_clearColor);
 }
 
 void GLRenderer::finishRender () {
-    viewport->swapBuffers();
+    m_viewport->swapBuffers();
 }
 
 void GLRenderer::setupErrorHandling () {
@@ -154,7 +154,7 @@ std::unique_ptr<IBuffer> GLRenderer::makeRendererBuffer (std::size_t startCapaci
 }
 
 PipelineBuilder GLRenderer::buildPipeline () {
-    return PipelineBuilder(std::make_unique<GlPipelineBuilder>(&windowFrameBuffer));
+    return PipelineBuilder(std::make_unique<GlPipelineBuilder>(&m_windowFrameBuffer));
 }
 
 std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool readable) {
@@ -163,7 +163,7 @@ std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool read
 
 void GLRenderer::loadDefaultShaders () {
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual box shader!");
-    boxShader = core::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
+    m_boxShader = core::Assets::LoadVirtual("phenyl/shaders/box", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
             .withAttrib(ShaderDataType::VEC2F, "pos")
@@ -177,7 +177,7 @@ void GLRenderer::loadDefaultShaders () {
 
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual debug shader!");
-    debugShader = core::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
+    m_debugShader = core::Assets::LoadVirtual("phenyl/shaders/debug", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
             .withAttrib(ShaderDataType::VEC3F, "position")
@@ -187,7 +187,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual sprite shader!");
-    spriteShader = core::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
+    m_spriteShader = core::Assets::LoadVirtual("phenyl/shaders/sprite", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
             .withAttrib(ShaderDataType::VEC2F, "position")
@@ -198,7 +198,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual canvas shader!");
-    textShader = core::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
+    m_textShader = core::Assets::LoadVirtual("phenyl/shaders/canvas", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
             .withAttrib(ShaderDataType::VEC2F, "pos")
@@ -210,7 +210,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual particle shader!");
-    particleShader = core::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
+    m_particleShader = core::Assets::LoadVirtual("phenyl/shaders/particle", Shader{GlShader::Builder()
             .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
             .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
             .withAttrib(ShaderDataType::VEC2F, "pos")
@@ -220,7 +220,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual Blinn-Phong shader!");
-    meshShader = core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", Shader{GlShader::Builder()
+    m_meshShader = core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
         .withAttrib(ShaderDataType::VEC3F, "position")
@@ -235,7 +235,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual shadow mapping shader!");
-    shadowMapShader = core::Assets::LoadVirtual("phenyl/shaders/shadow_map", Shader{GlShader::Builder()
+    m_shadowMapShader = core::Assets::LoadVirtual("phenyl/shaders/shadow_map", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
         .withAttrib(ShaderDataType::VEC3F, "position")
         .withAttrib(ShaderDataType::MAT4F, "model")
@@ -244,7 +244,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual mesh z-prepass shader!");
-    prepassShader = core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", Shader{GlShader::Builder()
+    m_prepassShader = core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
         .withAttrib(ShaderDataType::VEC3F, "position")
         .withAttrib(ShaderDataType::MAT4F, "model")
@@ -253,7 +253,7 @@ void GLRenderer::loadDefaultShaders () {
     });
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual no-op post-process shader!");
-    noopPostShader = core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", Shader{GlShader::Builder()
+    m_noopPostShader = core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", Shader{GlShader::Builder()
         .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
         .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
         .withAttrib(ShaderDataType::VEC2F, "position")
@@ -267,11 +267,11 @@ std::string_view GLRenderer::getName () const noexcept {
 }
 
 Viewport& GLRenderer::getViewport () {
-    return *viewport;
+    return *m_viewport;
 }
 
 const Viewport& GLRenderer::getViewport () const {
-    return *viewport;
+    return *m_viewport;
 }
 
 std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properties) {
@@ -290,7 +290,7 @@ std::unique_ptr<GLRenderer> GLRenderer::Make (const GraphicsProperties& properti
 void GLRenderer::render () {
     clearWindow();
     layerRender();
-    viewport->swapBuffers();
+    m_viewport->swapBuffers();
 }
 
 std::unique_ptr<IImageTexture> GLRenderer::makeRendererImageTexture (const TextureProperties& properties) {

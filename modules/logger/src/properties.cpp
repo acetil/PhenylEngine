@@ -4,19 +4,19 @@
 using namespace phenyl::logging;
 
 LoggingProperties& LoggingProperties::withLogFile (std::string logFile) {
-    this->logFile = std::move(logFile);
+    this->m_logFile = std::move(logFile);
 
     return *this;
 }
 
 LoggingProperties& LoggingProperties::withLogLevel (const std::string& logger, const int level) {
-    logLevels[logger] = level;
+    m_logLevels[logger] = level;
 
     return *this;
 }
 
 LoggingProperties& LoggingProperties::withRootLogLevel(const int level) {
-    rootLogLevel = level;
+    m_rootLogLevel = level;
 
     return *this;
 }

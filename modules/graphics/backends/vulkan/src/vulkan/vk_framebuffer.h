@@ -36,15 +36,15 @@ namespace phenyl::vulkan {
 
     class IVulkanFrameBuffer {
     private:
-        const FrameBufferLayout* fbLayout;
+        const FrameBufferLayout* m_layout;
     public:
-        IVulkanFrameBuffer (const FrameBufferLayout* fbLayout) : fbLayout{fbLayout} {
+        IVulkanFrameBuffer (const FrameBufferLayout* fbLayout) : m_layout{fbLayout} {
             PHENYL_DASSERT(fbLayout);
         }
         virtual ~IVulkanFrameBuffer () = default;
 
         const FrameBufferLayout* layout () const noexcept {
-            return fbLayout;
+            return m_layout;
         }
 
         virtual void prepareRendering (VulkanCommandBuffer2& cmd) = 0;
@@ -56,7 +56,7 @@ namespace phenyl::vulkan {
 
     class FrameBufferLayoutManager {
     private:
-        std::unordered_set<FrameBufferLayout> layoutCache;
+        std::unordered_set<FrameBufferLayout> m_layoutCache;
 
     public:
         FrameBufferLayoutManager ();
@@ -69,16 +69,16 @@ namespace phenyl::vulkan {
         struct FrameBufferSampler {
         };
 
-        std::vector<CombinedSampler> colorSamplers;
-        std::vector<VkRenderingAttachmentInfo> colorAttachments;
+        std::vector<CombinedSampler> m_colorSamplers;
+        std::vector<VkRenderingAttachmentInfo> m_colorAttachments;
 
-        std::optional<CombinedSampler> depthSampler;
-        VkRenderingAttachmentInfo depthAttachment;
+        std::optional<CombinedSampler> m_depthSampler;
+        VkRenderingAttachmentInfo m_depthAttachment;
 
-        VkExtent2D extent;
-        std::optional<VkClearColorValue> clearColor;
+        VkExtent2D m_extent;
+        std::optional<VkClearColorValue> m_clearColor;
 
-        VkRenderingInfo renderingInfo{};
+        VkRenderingInfo m_renderingInfo{};
     public:
         VulkanFrameBuffer (VulkanResources& resources, FrameBufferLayoutManager& layoutManager, const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height);
 
@@ -98,22 +98,22 @@ namespace phenyl::vulkan {
 
     class VulkanWindowFrameBuffer : public IVulkanFrameBuffer {
     private:
-        VulkanResources& resources;
-        TransferManager& transferManager;
+        VulkanResources& m_resources;
+        TransferManager& m_transferManager;
 
-        VulkanSwapChain* swapChain;
+        VulkanSwapChain* m_swapChain;
 
-        SwapChainImage swapChainImage;
-        VkImageLayout currLayout;
+        SwapChainImage m_swapChainImage;
+        VkImageLayout m_currLayout;
 
-        VulkanImage depthImage{};
-        VulkanImageView depthImageView{};
+        VulkanImage m_depthImage{};
+        VulkanImageView m_depthImageView{};
 
-        bool isFirstRender = true;
+        bool m_isFirstRender = true;
 
-        VkRenderingAttachmentInfo colorAttachment;
-        VkRenderingAttachmentInfo depthAttachment;
-        VkRenderingInfo renderingInfo;
+        VkRenderingAttachmentInfo m_colorAttachment;
+        VkRenderingAttachmentInfo m_depthAttachment;
+        VkRenderingInfo m_renderingInfo;
     public:
         VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager, FrameBufferLayoutManager& layoutManager, VkFormat colorFormat);
 

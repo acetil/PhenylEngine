@@ -13,10 +13,10 @@ namespace phenyl::graphics {
 
     class LabelWidget : public Widget {
     private:
-        std::string labelText;
-        core::Asset<Font> labelFont;
-        unsigned int labelTextSize = 12;
-        glm::vec4 labelColour = {1.0f, 1.0f, 1.0f, 1.0f};
+        std::string m_text;
+        core::Asset<Font> m_font;
+        unsigned int m_textSize = 12;
+        glm::vec4 m_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
         void updateModifier ();
     public:
@@ -32,22 +32,22 @@ namespace phenyl::graphics {
         void render (Canvas& canvas) override;
 
         [[nodiscard]] std::string_view text () const noexcept {
-            return labelText;
+            return m_text;
         }
         void setText (std::string newText);
 
         [[nodiscard]] unsigned int textSize () const noexcept {
-            return labelTextSize;
+            return m_textSize;
         }
         void setTextSize (unsigned int newTextSize);
 
-        [[nodiscard]] glm::vec4 colour () const noexcept {
-            return labelColour;
+        [[nodiscard]] glm::vec4 color () const noexcept {
+            return m_color;
         }
-        void setTextColour (glm::vec4 newColour);
+        void setTextColor (glm::vec4 newColour);
 
         [[nodiscard]] const core::Asset<Font>& font () const noexcept {
-            return labelFont;
+            return m_font;
         }
         void setFont (core::Asset<Font> newFont);
     };

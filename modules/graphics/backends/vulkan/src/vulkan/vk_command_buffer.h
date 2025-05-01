@@ -8,21 +8,21 @@ namespace phenyl::vulkan {
 
     class VulkanCommandBuffer2 {
     private:
-        IVulkanFrameBuffer* currentFrameBuffer = nullptr;
+        IVulkanFrameBuffer* m_currFrameBuffer = nullptr;
 
-        VkPipeline currPipeline = nullptr;
-        std::optional<VkViewport> currViewport{};
-        std::optional<VkRect2D> currScissor;
+        VkPipeline m_currPipeline = nullptr;
+        std::optional<VkViewport> m_currViewport{};
+        std::optional<VkRect2D> m_currScissor;
 
     protected:
-        VkCommandBuffer commandBuffer;
+        VkCommandBuffer m_commandBuffer;
 
         VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage);
     public:
         virtual ~VulkanCommandBuffer2 () = default;
 
         explicit operator bool () const noexcept {
-            return commandBuffer;
+            return m_commandBuffer;
         }
 
         void doImageTransition (VkImage image, VkImageAspectFlags aspect, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -51,7 +51,7 @@ namespace phenyl::vulkan {
 
     class VulkanSingleUseCommandBuffer : public VulkanCommandBuffer2 {
     private:
-        VkQueue bufferQueue;
+        VkQueue m_queue;
     public:
         VulkanSingleUseCommandBuffer (VkQueue bufferQueue, VkCommandBuffer commandBuffer);
 
@@ -60,9 +60,9 @@ namespace phenyl::vulkan {
 
     class VulkanTransientCommandBuffer : public VulkanCommandBuffer2 {
     private:
-        VkQueue bufferQueue;
-        VulkanResource<VulkanCommandBufferInfo> cbInfo;
-        bool recorded = false;
+        VkQueue m_queue;
+        VulkanResource<VulkanCommandBufferInfo> m_info;
+        bool m_recorded = false;
     public:
         VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo);
 
@@ -72,12 +72,12 @@ namespace phenyl::vulkan {
 
     class VulkanCommandPool {
     private:
-        VkDevice device;
-        VkQueue poolQueue;
-        VulkanResource<VkCommandPool> pool;
+        VkDevice m_device;
+        VkQueue m_queue;
+        VulkanResource<VkCommandPool> m_pool;
 
-        std::vector<VkCommandBuffer> availableBuffers;
-        std::vector<VkCommandBuffer> usedBuffers;
+        std::vector<VkCommandBuffer> m_availableBuffers;
+        std::vector<VkCommandBuffer> m_usedBuffers;
 
         void addBuffers (std::size_t count);
     public:
@@ -91,10 +91,10 @@ namespace phenyl::vulkan {
 
     class VulkanTransientCommandPool {
     private:
-        VkDevice device;
-        VkQueue poolQueue;
-        VulkanResources* resources;
-        VulkanResource<VkCommandPool> pool;
+        VkDevice m_device;
+        VkQueue m_poolQueue;
+        VulkanResources* m_resources;
+        VulkanResource<VkCommandPool> m_pool;
 
     public:
         explicit VulkanTransientCommandPool (VulkanResources& resources);

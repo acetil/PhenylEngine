@@ -9,10 +9,10 @@
 namespace phenyl::graphics {
     class MeshManager : public core::AssetManager<Mesh> {
     private:
-        Renderer& renderer;
-        util::HashMap<std::size_t, std::unique_ptr<Mesh>> meshes;
-        util::HashMap<MeshLayout, std::uint64_t> layoutIds;
-        std::uint64_t nextLayoutId = 1;
+        Renderer& m_renderer;
+        util::HashMap<std::size_t, std::unique_ptr<Mesh>> m_meshes;
+        util::HashMap<MeshLayout, std::uint64_t> m_layoutIds;
+        std::uint64_t m_nextLayoutId = 1;
     public:
         MeshManager (Renderer& renderer);
 

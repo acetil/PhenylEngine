@@ -7,11 +7,11 @@
 namespace phenyl::graphics {
     class FontManager : public core::AssetManager<Font> {
     private:
-        const Viewport& viewport;
-        FT_Library library = nullptr;
-        GlyphAtlas& glyphAtlas;
-        std::unordered_map<std::size_t, std::unique_ptr<Font>> fonts;
-        std::size_t nextFontId = 1;
+        const Viewport& m_viewport;
+        FT_Library m_library = nullptr;
+        GlyphAtlas& m_glyphAtlas;
+        std::unordered_map<std::size_t, std::unique_ptr<Font>> m_fonts;
+        std::size_t m_nextFontId = 1;
     public:
         explicit FontManager (const Viewport& viewport, GlyphAtlas& atlas);
 

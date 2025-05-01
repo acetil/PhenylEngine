@@ -62,7 +62,7 @@ static VkBorderColor BorderColorToVulkan (phenyl::graphics::TextureBorderColor c
     PHENYL_ABORT("Unexpected border color: {}", static_cast<std::uint32_t>(color));
 }
 
-VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageAspectFlags aspect, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers) : imgFormat{format}, aspect{aspect}, imgWidth{width}, imgHeight{height}, imgLayers{layers}, resources{&resources} {
+VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageAspectFlags aspect, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers) : m_format{format}, m_aspect{aspect}, m_width{width}, m_height{height}, m_layers{layers}, m_resources{&resources} {
     PHENYL_ASSERT_MSG(width > 0 && height > 0, "Attempted to create vulkan image with invalid dimensions: {}x{}", width, height);
     PHENYL_ASSERT_MSG(layers > 0, "Attempted to create vulkan image with no layers");
 
@@ -88,24 +88,24 @@ VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageAs
         .usage = VMA_MEMORY_USAGE_AUTO
     };
 
-    imageInfo = resources.makeImage(createInfo, allocCreateInfo);
-    PHENYL_ASSERT_MSG(imageInfo, "Failed to create image!");
+    m_imageInfo = resources.makeImage(createInfo, allocCreateInfo);
+    PHENYL_ASSERT_MSG(m_imageInfo, "Failed to create image!");
 
-    currLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
 void VulkanImage::layoutTransition (VulkanCommandBuffer2& cmd, VkImageLayout newLayout) {
-    if (currLayout == newLayout) {
+    if (m_layout == newLayout) {
         return;
     }
 
-    cmd.doImageTransition(get(), aspect, currLayout, newLayout);
-    currLayout = newLayout;
+    cmd.doImageTransition(get(), m_aspect, m_layout, newLayout);
+    m_layout = newLayout;
 }
 
 void VulkanImage::loadImage (TransferManager& transferManager, const graphics::Image& image, std::uint32_t layer) {
-    PHENYL_ASSERT(imageInfo);
-    PHENYL_ASSERT(resources);
+    PHENYL_ASSERT(m_imageInfo);
+    PHENYL_ASSERT(m_resources);
 
     PHENYL_ASSERT_MSG(format() == FormatToVulkan(image.format()), "Attempted to load image with incorrect format!");
     PHENYL_ASSERT_MSG(width() == image.width() && height() == image.height(),
@@ -114,13 +114,13 @@ void VulkanImage::loadImage (TransferManager& transferManager, const graphics::I
 
     auto imgData = image.data();
 
-    VulkanBuffer buffer{*resources, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, imgData.size()};
+    VulkanBuffer buffer{*m_resources, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, imgData.size()};
     buffer.copyIn(imgData);
 
     transferManager.queueTransfer(std::move([&] (VulkanCommandBuffer2& cmd) {
          layoutTransition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-        cmd.copyBufferToImage(buffer.get(), get(), currLayout, {width(), height(), 1}, layer);
+        cmd.copyBufferToImage(buffer.get(), get(), m_layout, {width(), height(), 1}, layer);
     }));
 }
 
@@ -140,7 +140,7 @@ void VulkanImage::copy (TransferManager& transferManager, VulkanImage& srcImage)
     });
 }
 
-VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage& image, VkImageAspectFlags aspect) : imageAspect{aspect} {
+VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage& image, VkImageAspectFlags aspect) : m_aspect{aspect} {
     VkImageViewCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .image = image.get(),
@@ -156,8 +156,8 @@ VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage&
         }
     };
 
-    imageView = resources.makeImageView(createInfo);
-    PHENYL_ASSERT_MSG(imageView, "Failed to create image view");
+    m_view = resources.makeImageView(createInfo);
+    PHENYL_ASSERT_MSG(m_view, "Failed to create image view");
 }
 
 VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::TextureProperties& properties) {
@@ -180,8 +180,8 @@ VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::Textur
         .unnormalizedCoordinates = VK_FALSE
     };
 
-    sampler = resources.makeSampler(createInfo);
-    PHENYL_ASSERT_MSG(sampler, "Failed to create image sampler");
+    m_sampler = resources.makeSampler(createInfo);
+    PHENYL_ASSERT_MSG(m_sampler, "Failed to create image sampler");
 }
 
 VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties) {
@@ -204,31 +204,31 @@ VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::FrameB
         .unnormalizedCoordinates = VK_FALSE
     };
 
-    sampler = resources.makeSampler(createInfo);
-    PHENYL_ASSERT_MSG(sampler, "Failed to create image sampler");
+    m_sampler = resources.makeSampler(createInfo);
+    PHENYL_ASSERT_MSG(m_sampler, "Failed to create image sampler");
 }
 
-CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties, VkImageLayout samplerLayout) : sampler{resources, properties}, samplerLayout{samplerLayout} {}
+CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties, VkImageLayout samplerLayout) : m_sampler{resources, properties}, m_samplerLayout{samplerLayout} {}
 
-CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties, VkImageLayout samplerLayout) : sampler{resources, properties}, samplerLayout{samplerLayout} {}
+CombinedSampler::CombinedSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties, VkImageLayout samplerLayout) : m_sampler{resources, properties}, m_samplerLayout{samplerLayout} {}
 
 void CombinedSampler::recreate (VulkanResources& resources, VulkanImage&& newImage, VkImageAspectFlags aspect) {
-    samplerImage = std::move(newImage);
-    samplerImageView = VulkanImageView{resources, samplerImage, aspect};
+    m_image = std::move(newImage);
+    m_imageView = VulkanImageView{resources, m_image, aspect};
 }
 
 std::size_t CombinedSampler::hash () const noexcept {
-    return reinterpret_cast<std::size_t>(sampler.get());
+    return reinterpret_cast<std::size_t>(m_sampler.get());
 }
 
 void CombinedSampler::prepareSampler (VulkanCommandBuffer2& cmd) {
-    samplerImage.layoutTransition(cmd, samplerLayout);
+    m_image.layoutTransition(cmd, m_samplerLayout);
 }
 
 VkDescriptorImageInfo CombinedSampler::getDescriptor () const noexcept {
     return {
-        .sampler = sampler.get(),
-        .imageView = samplerImageView.get(),
+        .sampler = m_sampler.get(),
+        .imageView = m_imageView.get(),
         .imageLayout = image().layout()
     };
 }

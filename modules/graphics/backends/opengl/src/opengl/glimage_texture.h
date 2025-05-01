@@ -7,9 +7,9 @@
 namespace phenyl::opengl {
     class GlImageTexture : public graphics::IImageTexture {
     private:
-        GlSampler texSampler;
-        std::uint32_t texWidth{0};
-        std::uint32_t texHeight{0};
+        GlSampler m_sampler;
+        std::uint32_t m_width{0};
+        std::uint32_t m_height{0};
     public:
         explicit GlImageTexture (const graphics::TextureProperties& properties);
 
