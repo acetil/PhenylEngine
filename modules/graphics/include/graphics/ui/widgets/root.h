@@ -8,10 +8,6 @@
 
 namespace phenyl::graphics {
     class RootWidget : public Widget {
-    private:
-        std::vector<std::unique_ptr<Widget>> m_children;
-        std::unordered_set<Widget*> m_widgetsToDelete;
-
     public:
         RootWidget ();
 
@@ -33,5 +29,9 @@ namespace phenyl::graphics {
         void queueChildDestroy (Widget* child) override;
         bool pointerUpdate (glm::vec2 pointer) override;
         void pointerLeave () override;
+
+    private:
+        std::vector<std::unique_ptr<Widget>> m_children;
+        std::unordered_set<Widget*> m_widgetsToDelete;
     };
 }

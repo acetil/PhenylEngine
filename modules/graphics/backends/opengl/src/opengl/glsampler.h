@@ -82,11 +82,6 @@ namespace phenyl::opengl {
     }
 
     class GlSampler : public graphics::ISampler {
-    protected:
-        GLuint m_id{0};
-        GLenum m_type;
-        graphics::TextureProperties m_properties;
-
     public:
         explicit GlSampler (GLenum samplerType, const graphics::TextureProperties& properties);
         GlSampler (const GlSampler&) = delete;
@@ -123,5 +118,10 @@ namespace phenyl::opengl {
         void uploadLayer (std::uint32_t layer, const graphics::Image& image);
 
         void bind () const;
+
+    protected:
+        GLuint m_id{0};
+        GLenum m_type;
+        graphics::TextureProperties m_properties;
     };
 }

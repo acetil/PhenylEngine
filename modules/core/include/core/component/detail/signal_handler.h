@@ -18,22 +18,21 @@ namespace phenyl::core::detail {
 
     template <typename Signal, typename ...Args>
     class SignalHandler2 : public ISignalHandler<Signal> {
-    private:
-        Query<Args...> query{};
-        std::function<void(const Signal&, const Bundle<Args...>&)> func;
-
     public:
-        SignalHandler2 (Query<Args...> query, std::function<void(const Signal&, const Bundle<Args...>&)> func) : query{std::move(query)}, func{std::move(func)} {}
+        SignalHandler2 (Query<Args...> query, std::function<void(const Signal&, const Bundle<Args...>&)> func) : m_query{std::move(query)}, m_func{std::move(func)} {}
 
         void handle (Entity entity, const Signal& signal) const override {
-            query.entity(entity, [&] (const Bundle<Args...>& bundle) {
-                func(signal, bundle);
+            m_query.entity(entity, [&] (const Bundle<Args...>& bundle) {
+                m_func(signal, bundle);
             });
         }
+
+    private:
+        Query<Args...> m_query{};
+        std::function<void(const Signal&, const Bundle<Args...>&)> m_func;
     };
 
     class IHandlerVector {
-    protected:
     public:
         virtual ~IHandlerVector() = default;
 
@@ -44,18 +43,6 @@ namespace phenyl::core::detail {
 
     template <typename Signal>
     class SignalHandlerVector : public IHandlerVector {
-    private:
-        World& m_manager;
-        std::vector<std::unique_ptr<ISignalHandler<Signal>>> m_handlers;
-        std::vector<std::pair<EntityId, Signal>> m_deferredSignals;
-        bool m_isDeferred = false;
-
-        void handleSignal (Entity entity, const Signal& signal) {
-            PHENYL_DASSERT(entity.exists());
-            for (const auto& i : m_handlers) {
-                i->handle(entity, signal);
-            }
-        }
     public:
         explicit SignalHandlerVector (World& manager) : m_manager{manager} {}
 
@@ -91,6 +78,19 @@ namespace phenyl::core::detail {
                 }
             }
             m_deferredSignals.clear();
+        }
+
+    private:
+        World& m_manager;
+        std::vector<std::unique_ptr<ISignalHandler<Signal>>> m_handlers;
+        std::vector<std::pair<EntityId, Signal>> m_deferredSignals;
+        bool m_isDeferred = false;
+
+        void handleSignal (Entity entity, const Signal& signal) {
+            PHENYL_DASSERT(entity.exists());
+            for (const auto& i : m_handlers) {
+                i->handle(entity, signal);
+            }
         }
     };
 }

@@ -25,20 +25,6 @@ namespace phenyl::graphics {
     }
 
     class Renderer : public core::IResource {
-    private:
-        std::vector<std::unique_ptr<AbstractRenderLayer>> m_layers;
-    protected:
-        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, BufferStorageHint storageHint, bool isIndex) = 0;
-        virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
-        virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
-        virtual std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
-        virtual std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
-
-        void layerRender () {
-            for (auto& i : m_layers) {
-                i->render();
-            }
-        }
     public:
         virtual ~Renderer() = default;
 
@@ -107,7 +93,7 @@ namespace phenyl::graphics {
             auto* ptr = m_layers.emplace_back(std::make_unique<T>(std::forward<Args>(args)...)).get();
 
             std::sort(m_layers.begin(), m_layers.end(), [] (const auto& lhs, const auto& rhs) {
-                return lhs->getPriority() < rhs->getPriority();
+                return lhs->priority() < rhs->priority();
             });
 
             ptr->init(*this);
@@ -122,6 +108,22 @@ namespace phenyl::graphics {
         }
 
         virtual void render () = 0;
+
+    protected:
+        virtual std::unique_ptr<IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, BufferStorageHint storageHint, bool isIndex) = 0;
+        virtual std::unique_ptr<IUniformBuffer> makeRendererUniformBuffer (bool readable) = 0;
+        virtual std::unique_ptr<IImageTexture> makeRendererImageTexture (const TextureProperties& properties) = 0;
+        virtual std::unique_ptr<IImageArrayTexture> makeRendererArrayTexture (const TextureProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
+        virtual std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) = 0;
+
+        void layerRender () {
+            for (auto& i : m_layers) {
+                i->render();
+            }
+        }
+
+    private:
+        std::vector<std::unique_ptr<AbstractRenderLayer>> m_layers;
     };
 
     std::unique_ptr<Renderer> MakeGLRenderer (const GraphicsProperties& properties);

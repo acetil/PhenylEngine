@@ -9,21 +9,6 @@ namespace phenyl::core {
 }
 namespace phenyl::physics {
     struct RigidBody2D {
-    private:
-        glm::vec2 m_momentum{0, 0};
-        glm::vec2 m_netForce{0, 0};
-
-        float m_angularMomentum{0.0f};
-        float m_torque{0.0f};
-
-        float m_mass{1.0f};
-        float m_invMass{1.0f};
-        float m_inertialMoment{1.0f};
-        float m_invInertialMoment{1.0f};
-
-        void applyFriction ();
-
-        PHENYL_SERIALIZABLE_INTRUSIVE(RigidBody2D);
     public:
         glm::vec2 gravity{0, 0};
 
@@ -70,5 +55,21 @@ namespace phenyl::physics {
         [[nodiscard]] float angularMomentum () const {
             return m_angularMomentum;
         }
+
+    private:
+        glm::vec2 m_momentum{0, 0};
+        glm::vec2 m_netForce{0, 0};
+
+        float m_angularMomentum{0.0f};
+        float m_torque{0.0f};
+
+        float m_mass{1.0f};
+        float m_invMass{1.0f};
+        float m_inertialMoment{1.0f};
+        float m_invInertialMoment{1.0f};
+
+        void applyFriction ();
+
+        PHENYL_SERIALIZABLE_INTRUSIVE(RigidBody2D);
     };
 }

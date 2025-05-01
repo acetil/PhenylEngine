@@ -9,19 +9,9 @@
 
 namespace phenyl::core {
     class QueryArchetypes {
-    private:
-        World& m_world;
-        detail::ArchetypeKey m_key;
-        std::unordered_set<Archetype*> m_archetypes;
-
     public:
         explicit QueryArchetypes (World& world, detail::ArchetypeKey key);
         class Iterator {
-        private:
-            std::unordered_set<Archetype*>::const_iterator m_it;
-
-            Iterator (std::unordered_set<Archetype*>::const_iterator it);
-            friend QueryArchetypes;
         public:
             using value_type = Archetype;
             using reference = Archetype&;
@@ -38,6 +28,12 @@ namespace phenyl::core {
             //Iterator operator-- (int);
 
             bool operator== (const Iterator&) const noexcept;
+
+        private:
+            std::unordered_set<Archetype*>::const_iterator m_it;
+
+            Iterator (std::unordered_set<Archetype*>::const_iterator it);
+            friend QueryArchetypes;
         };
 
         using const_iterator = Iterator;
@@ -77,6 +73,11 @@ namespace phenyl::core {
 
         void lock ();
         void unlock ();
+
+    private:
+        World& m_world;
+        detail::ArchetypeKey m_key;
+        std::unordered_set<Archetype*> m_archetypes;
     };
 
     template <typename F, typename ...Args>
@@ -90,35 +91,6 @@ namespace phenyl::core {
 
     template <typename ...Args>
     class Query {
-    private:
-        std::shared_ptr<QueryArchetypes> m_archetypes;
-        World* m_world;
-
-        explicit Query (std::shared_ptr<QueryArchetypes> archetypes, World* world) : m_archetypes{std::move(archetypes)}, m_world{world} {}
-        friend class World;
-
-        void pairsIter (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view) const {
-            // Iterate though pairs within archetype
-            auto bundles = view.bundles();
-            for (auto b1It = bundles.begin(); b1It != bundles.end(); ++b1It) {
-                const auto& b1 = *b1It;
-                for (auto b2It = std::next(b1It); b2It != bundles.end(); ++b2It) {
-                    fn(b1, *b2It);
-                }
-            }
-        }
-
-        void pairsIter2 (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view1, ArchetypeView<Args...>& view2) const {
-            // Iterate through pairs in different archetypes
-            auto bundles1 = view1.bundles();
-            auto bundles2 = view2.bundles();
-
-            for (const auto& b1 : bundles1) {
-                for (const auto& b2 : bundles2) {
-                    fn(b1, b2);
-                }
-            }
-        }
     public:
         Query () : m_archetypes{nullptr} {}
 
@@ -175,6 +147,36 @@ namespace phenyl::core {
                 }
             }
             m_archetypes->unlock();
+        }
+
+    private:
+        std::shared_ptr<QueryArchetypes> m_archetypes;
+        World* m_world;
+
+        explicit Query (std::shared_ptr<QueryArchetypes> archetypes, World* world) : m_archetypes{std::move(archetypes)}, m_world{world} {}
+        friend class World;
+
+        void pairsIter (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view) const {
+            // Iterate though pairs within archetype
+            auto bundles = view.bundles();
+            for (auto b1It = bundles.begin(); b1It != bundles.end(); ++b1It) {
+                const auto& b1 = *b1It;
+                for (auto b2It = std::next(b1It); b2It != bundles.end(); ++b2It) {
+                    fn(b1, *b2It);
+                }
+            }
+        }
+
+        void pairsIter2 (const Query2PairCallback<Args...> auto& fn, ArchetypeView<Args...>& view1, ArchetypeView<Args...>& view2) const {
+            // Iterate through pairs in different archetypes
+            auto bundles1 = view1.bundles();
+            auto bundles2 = view2.bundles();
+
+            for (const auto& b1 : bundles1) {
+                for (const auto& b2 : bundles2) {
+                    fn(b1, b2);
+                }
+            }
         }
     };
 }

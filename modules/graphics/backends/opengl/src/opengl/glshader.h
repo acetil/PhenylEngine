@@ -10,26 +10,8 @@
 
 namespace phenyl::opengl {
     class GlShader : public graphics::IShader {
-    private:
-        GLuint m_program{0};
-        std::unordered_map<std::string, unsigned int> m_attribs;
-        std::unordered_map<std::string, unsigned int> m_uniformBlocks;
-        std::unordered_map<std::string, unsigned int> m_samplers;
-
-        bool addAttrib (graphics::ShaderDataType type, const std::string& attrib);
-        bool addUniformBlock (const std::string& uniform);
-        bool addSampler (const std::string& sampler);
-
-        friend class Builder;
     public:
         class Builder {
-        private:
-            std::unordered_map<graphics::ShaderSourceType, GLuint> m_sources;
-            std::unordered_map<std::string, graphics::ShaderDataType> m_attribs;
-            std::unordered_set<std::string> m_uniformBlocks;
-            std::unordered_set<std::string> m_samplers;
-
-            friend class GlShader;
         public:
             Builder() = default;
 
@@ -38,6 +20,14 @@ namespace phenyl::opengl {
             Builder& withUniformBlock (std::string uniformName);
             Builder& withSampler (std::string samplerName);
             std::unique_ptr<GlShader> build ();
+
+        private:
+            std::unordered_map<graphics::ShaderSourceType, GLuint> m_sources;
+            std::unordered_map<std::string, graphics::ShaderDataType> m_attribs;
+            std::unordered_set<std::string> m_uniformBlocks;
+            std::unordered_set<std::string> m_samplers;
+
+            friend class GlShader;
         };
 
         explicit GlShader (GLuint programId);
@@ -58,6 +48,18 @@ namespace phenyl::opengl {
         std::optional<std::size_t> getUniformBlockSize (const std::string& uniformBlock) const noexcept override;
 
         void bind ();
+
+    private:
+        GLuint m_program{0};
+        std::unordered_map<std::string, unsigned int> m_attribs;
+        std::unordered_map<std::string, unsigned int> m_uniformBlocks;
+        std::unordered_map<std::string, unsigned int> m_samplers;
+
+        bool addAttrib (graphics::ShaderDataType type, const std::string& attrib);
+        bool addUniformBlock (const std::string& uniform);
+        bool addSampler (const std::string& sampler);
+
+        friend class Builder;
     };
 
     class GlShaderManager : public core::AssetManager<graphics::Shader> {

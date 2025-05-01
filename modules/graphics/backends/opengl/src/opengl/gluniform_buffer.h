@@ -5,10 +5,6 @@
 
 namespace phenyl::opengl {
     class GlUniformBuffer : public graphics::IUniformBuffer {
-    private:
-        GLuint m_id;
-        std::span<std::byte> m_data{};
-        bool m_readable;
     public:
         explicit GlUniformBuffer (bool readable);
 
@@ -28,5 +24,10 @@ namespace phenyl::opengl {
         [[nodiscard]] GLuint id () const {
             return m_id;
         }
+
+    private:
+        GLuint m_id;
+        std::span<std::byte> m_data{};
+        bool m_readable;
     };
 }

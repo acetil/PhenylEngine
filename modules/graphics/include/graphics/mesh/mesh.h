@@ -74,12 +74,6 @@ namespace phenyl::graphics {
     };
 
     class Mesh {
-    private:
-        MeshLayout m_layout{};
-        RawBuffer m_indices;
-        std::vector<RawBuffer> m_streams;
-        std::size_t m_size;
-
     public:
         Mesh (MeshLayout layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams, std::size_t meshSize);
 
@@ -103,6 +97,12 @@ namespace phenyl::graphics {
         void setLayoutId (std::uint64_t id) noexcept {
             m_layout.layoutId = id;
         }
+
+    private:
+        MeshLayout m_layout{};
+        RawBuffer m_indices;
+        std::vector<RawBuffer> m_streams;
+        std::size_t m_size;
     };
 }
 

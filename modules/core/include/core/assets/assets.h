@@ -23,9 +23,6 @@ namespace phenyl::core {
         };
 
         class AssetCacheBase {
-        protected:
-            AssetManagerBase* m_manager;
-            explicit AssetCacheBase (AssetManagerBase* manager) : m_manager{manager} {}
         public:
             virtual ~AssetCacheBase () = default;
             virtual void incRefCount (std::size_t id) = 0;
@@ -36,15 +33,14 @@ namespace phenyl::core {
             [[nodiscard]] AssetManagerBase* getManagerBase () const {
                 return m_manager;
             }
+
+        protected:
+            AssetManagerBase* m_manager;
+            explicit AssetCacheBase (AssetManagerBase* manager) : m_manager{manager} {}
         };
 
         template <typename T>
         class AssetCache : public AssetCacheBase {
-        private:
-            static constexpr std::string_view UnknownPath = "";
-
-            util::Map<std::string, std::size_t> m_pathMap;
-            util::FLVector<AssetEntry<T>> m_cache;
         public:
             explicit AssetCache (AssetManager<T>* manager) : AssetCacheBase{manager}, m_pathMap{}, m_cache{} {}
             Asset<T> getCached (const std::string& path) {
@@ -110,9 +106,36 @@ namespace phenyl::core {
                     return UnknownPath;
                 }
             }
+
+        private:
+            static constexpr std::string_view UnknownPath = "";
+
+            util::Map<std::string, std::size_t> m_pathMap;
+            util::FLVector<AssetEntry<T>> m_cache;
         };
     }
     class Assets {
+    public:
+        template <typename T>
+        static Asset<T> Load (const std::string& path) {
+            return GetInstance()->load<T>(path);
+        }
+
+        template <typename T>
+        static Asset<T> LoadVirtual (const std::string& virtualPath, T&& obj) {
+            return GetInstance()->virtualLoad(virtualPath, std::forward<T>(obj));
+        }
+
+        template <typename T>
+        static void AddManager (AssetManager<T>* manager) {
+            GetInstance()->addManager(manager);
+        }
+
+        template <typename T>
+        static void RemoveManager (AssetManager<T>* manager) {
+            GetInstance()->removeManager(manager);
+        }
+
     private:
         static Assets* INSTANCE;
 
@@ -185,7 +208,7 @@ namespace phenyl::core {
             cache->putData(id, ptr);
 
             if constexpr (std::derived_from<T, IAssetType<T>>) {
-                static_cast<IAssetType<T>*>(ptr)->rId = id;
+                static_cast<IAssetType<T>*>(ptr)->m_id = id;
             }
 
             return Asset<T>{id, ptr};
@@ -258,26 +281,6 @@ namespace phenyl::core {
 
         friend detail::AssetManagerBase;
         friend detail::AssetBase;
-    public:
-        template <typename T>
-        static Asset<T> Load (const std::string& path) {
-            return GetInstance()->load<T>(path);
-        }
-
-        template <typename T>
-        static Asset<T> LoadVirtual (const std::string& virtualPath, T&& obj) {
-            return GetInstance()->virtualLoad(virtualPath, std::forward<T>(obj));
-        }
-
-        template <typename T>
-        static void AddManager (AssetManager<T>* manager) {
-            GetInstance()->addManager(manager);
-        }
-
-        template <typename T>
-        static void RemoveManager (AssetManager<T>* manager) {
-            GetInstance()->removeManager(manager);
-        }
     };
 
     namespace detail {

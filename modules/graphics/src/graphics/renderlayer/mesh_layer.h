@@ -35,7 +35,18 @@ namespace phenyl::graphics {
     };
 
     class MeshRenderLayer : public AbstractRenderLayer {
-    private:
+    public:
+        explicit MeshRenderLayer (core::World& world);
+
+        std::string_view getName() const override;
+
+        void init (Renderer& renderer) override;
+        void addSystems (core::PhenylRuntime& runtime);
+        void uploadData (Camera3D& camera);
+        void uploadSystem (core::PhenylRuntime& runtime);
+        void render () override;
+
+            private:
         struct MeshRenderRequest {
             std::uint64_t layout;
             const Mesh* mesh;
@@ -76,13 +87,11 @@ namespace phenyl::graphics {
         };
 
         Renderer* m_renderer = nullptr;
-        //core::Asset<Material> meshMaterial; // TODO
         core::Query<core::GlobalTransform3D, MeshRenderer3D> m_meshQuery;
         core::Query<core::GlobalTransform3D, PointLight3D> m_pointLightQuery;
         core::Query<core::GlobalTransform3D, DirectionalLight3D> m_dirLightQuery;
         core::Query<core::GlobalTransform3D, SpotLight3D> m_spotLightQuery;
 
-        //util::HashMap<std::uint64_t, MeshPipeline> pipelines; // TODO
         FrameBuffer m_testFb;
         FrameBuffer m_shadowFb;
         Buffer<glm::mat4> m_instanceBuffer; // TODO: per material
@@ -97,7 +106,6 @@ namespace phenyl::graphics {
         SamplerBinding m_ppSampler;
         Buffer<glm::vec2> m_ppQuad;
 
-        //MeshPipeline& getPipeline (const MeshLayout& layout);
         void gatherGeometry ();
         void gatherLights ();
 
@@ -109,15 +117,5 @@ namespace phenyl::graphics {
         glm::mat4 getLightSpaceMatrix (const MeshLight& light);
         void renderShadowMap (const MeshLight& light, std::size_t index);
         void postProcessing ();
-    public:
-        explicit MeshRenderLayer (core::World& world);
-
-        std::string_view getName() const override;
-
-        void init (Renderer& renderer) override;
-        void addSystems (core::PhenylRuntime& runtime);
-        void uploadData (Camera3D& camera);
-        void uploadSystem (core::PhenylRuntime& runtime);
-        void render () override;
     };
 }

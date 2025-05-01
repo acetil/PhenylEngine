@@ -15,8 +15,6 @@ namespace phenyl::graphics {
     class ParticleSystem2D;
 
     struct ParticleEmitter2D {
-    private:
-        void updateInternal (double deltaTime, const core::GlobalTransform2D& transform);
     public:
         phenyl::core::Asset<ParticleSystem2D> system;
         glm::vec2 direction{1.0f, 0.0f};
@@ -35,6 +33,9 @@ namespace phenyl::graphics {
 
         void update (const core::Resources<const core::DeltaTime>& resources, const core::GlobalTransform2D& transform);
         void start ();
+
+    private:
+        void updateInternal (double deltaTime, const core::GlobalTransform2D& transform);
     };
 
     PHENYL_DECLARE_SERIALIZABLE(ParticleEmitter2D)

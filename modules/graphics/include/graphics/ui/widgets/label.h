@@ -12,13 +12,6 @@ namespace phenyl::graphics {
     class Font;
 
     class LabelWidget : public Widget {
-    private:
-        std::string m_text;
-        core::Asset<Font> m_font;
-        unsigned int m_textSize = 12;
-        glm::vec4 m_color = {1.0f, 1.0f, 1.0f, 1.0f};
-
-        void updateModifier ();
     public:
         explicit LabelWidget (std::string text = "", unsigned int textSize = 12, core::Asset<Font> font = {}, const Modifier& modifier = {});
         // LabelWidget (const LabelWidget&) = delete;
@@ -50,5 +43,13 @@ namespace phenyl::graphics {
             return m_font;
         }
         void setFont (core::Asset<Font> newFont);
+
+    private:
+        std::string m_text;
+        core::Asset<Font> m_font;
+        unsigned int m_textSize = 12;
+        glm::vec4 m_color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+        void updateModifier ();
     };
 }

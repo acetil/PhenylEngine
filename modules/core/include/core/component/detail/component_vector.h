@@ -7,40 +7,6 @@
 
 namespace phenyl::core {
     class UntypedComponentVector {
-    private:
-        static constexpr std::size_t RESIZE_FACTOR = 2;
-
-        std::size_t m_type;
-
-        std::unique_ptr<std::byte[]> m_memory;
-        std::size_t m_compSize;
-        std::size_t m_size;
-        std::size_t m_capacity;
-
-        void guaranteeLength (std::size_t newLen);
-
-    protected:
-        virtual void moveComp (std::byte* from, std::byte* to) = 0;
-        virtual void moveConstructComp (std::byte* from, std::byte* to) = 0;
-        virtual void deleteComp (std::byte* comp) = 0;
-        virtual void moveAllComps (std::byte* start, std::byte* end, std::byte* newStart) = 0;
-        virtual void deleteAllComps (std::byte* start, std::byte* end) = 0;
-
-        std::byte* beginUntyped () {
-            return m_memory.get();
-        }
-
-        [[nodiscard]] const std::byte* beginUntyped () const {
-            return m_memory.get();
-        }
-
-        std::byte* endUntyped () {
-            return m_memory.get() + (m_size * m_compSize);
-        }
-
-        const std::byte* endUntyped () const {
-            return m_memory.get() + (m_size * m_compSize);
-        }
     public:
         UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize, std::size_t startCapacity);
         virtual ~UntypedComponentVector() = default;
@@ -77,51 +43,45 @@ namespace phenyl::core {
         }
 
         virtual std::unique_ptr<UntypedComponentVector> makeNew (std::size_t startCapacity = 16) const = 0;
+
+    protected:
+        virtual void moveComp (std::byte* from, std::byte* to) = 0;
+        virtual void moveConstructComp (std::byte* from, std::byte* to) = 0;
+        virtual void deleteComp (std::byte* comp) = 0;
+        virtual void moveAllComps (std::byte* start, std::byte* end, std::byte* newStart) = 0;
+        virtual void deleteAllComps (std::byte* start, std::byte* end) = 0;
+
+        std::byte* beginUntyped () {
+            return m_memory.get();
+        }
+
+        [[nodiscard]] const std::byte* beginUntyped () const {
+            return m_memory.get();
+        }
+
+        std::byte* endUntyped () {
+            return m_memory.get() + (m_size * m_compSize);
+        }
+
+        const std::byte* endUntyped () const {
+            return m_memory.get() + (m_size * m_compSize);
+        }
+
+    private:
+        static constexpr std::size_t RESIZE_FACTOR = 2;
+
+        std::size_t m_type;
+
+        std::unique_ptr<std::byte[]> m_memory;
+        std::size_t m_compSize;
+        std::size_t m_size;
+        std::size_t m_capacity;
+
+        void guaranteeLength (std::size_t newLen);
     };
 
     template <typename T>
     class ComponentVector : public UntypedComponentVector {
-    protected:
-        void moveComp (std::byte* from, std::byte* to) override {
-            auto* fromTyped = reinterpret_cast<T*>(from);
-            auto* toTyped = reinterpret_cast<T*>(to);
-
-            *toTyped = std::move(*fromTyped);
-        }
-
-        void moveConstructComp(std::byte* from, std::byte* to) override {
-            auto* fromTyped = reinterpret_cast<T*>(from);
-            auto* toTyped = reinterpret_cast<T*>(to);
-
-            new (toTyped) T(std::move(*fromTyped));
-        }
-
-        void deleteComp (std::byte* comp) override {
-            auto* compTyped = reinterpret_cast<T*>(comp);
-
-            compTyped->~T();
-        }
-
-        void moveAllComps (std::byte* start, std::byte* end, std::byte* newStart) override {
-            auto* startTyped = reinterpret_cast<T*>(start);
-            auto* endTyped = reinterpret_cast<T*>(end);
-            auto* newStartTyped = reinterpret_cast<T*>(newStart);
-
-            for (auto* i = startTyped; i < endTyped; i++) {
-                *(newStartTyped++) = std::move(*i);
-                i->~T();
-            }
-        }
-
-        void deleteAllComps (std::byte* start, std::byte* end) override {
-            auto* startTyped = reinterpret_cast<T*>(start);
-            auto* endTyped = reinterpret_cast<T*>(end);
-
-            for (auto* i = startTyped; i < endTyped; i++) {
-                i->~T();
-            }
-        }
-
     public:
         using iterator = T*;
         using const_iterator = const T*;
@@ -175,6 +135,47 @@ namespace phenyl::core {
         }
         const_iterator cend () const {
             return const_iterator{reinterpret_cast<T*>(endUntyped())};
+        }
+
+    protected:
+        void moveComp (std::byte* from, std::byte* to) override {
+            auto* fromTyped = reinterpret_cast<T*>(from);
+            auto* toTyped = reinterpret_cast<T*>(to);
+
+            *toTyped = std::move(*fromTyped);
+        }
+
+        void moveConstructComp(std::byte* from, std::byte* to) override {
+            auto* fromTyped = reinterpret_cast<T*>(from);
+            auto* toTyped = reinterpret_cast<T*>(to);
+
+            new (toTyped) T(std::move(*fromTyped));
+        }
+
+        void deleteComp (std::byte* comp) override {
+            auto* compTyped = reinterpret_cast<T*>(comp);
+
+            compTyped->~T();
+        }
+
+        void moveAllComps (std::byte* start, std::byte* end, std::byte* newStart) override {
+            auto* startTyped = reinterpret_cast<T*>(start);
+            auto* endTyped = reinterpret_cast<T*>(end);
+            auto* newStartTyped = reinterpret_cast<T*>(newStart);
+
+            for (auto* i = startTyped; i < endTyped; i++) {
+                *(newStartTyped++) = std::move(*i);
+                i->~T();
+            }
+        }
+
+        void deleteAllComps (std::byte* start, std::byte* end) override {
+            auto* startTyped = reinterpret_cast<T*>(start);
+            auto* endTyped = reinterpret_cast<T*>(end);
+
+            for (auto* i = startTyped; i < endTyped; i++) {
+                i->~T();
+            }
         }
     };
 }

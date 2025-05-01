@@ -5,9 +5,6 @@
 
 namespace phenyl::graphics {
     class MaterialManager : public core::AssetManager<Material> {
-    private:
-        Renderer& m_renderer;
-        std::unordered_map<std::size_t, std::unique_ptr<Material>> m_materials;
     public:
         MaterialManager (Renderer& renderer);
 
@@ -17,5 +14,9 @@ namespace phenyl::graphics {
         void queueUnload(std::size_t id) override;
 
         void selfRegister ();
+
+    private:
+        Renderer& m_renderer;
+        std::unordered_map<std::size_t, std::unique_ptr<Material>> m_materials;
     };
 }

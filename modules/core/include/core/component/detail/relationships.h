@@ -11,23 +11,7 @@
 
 namespace phenyl::core::detail {
     class RelationshipManager {
-    private:
-        struct Relationship {
-            EntityId parent{};
-            EntityId children{};
-
-            // Intrusive doubly linked list
-            EntityId next{};
-            EntityId prev{};
-
-            void clear () {
-                parent = {};
-                children = {};
-                next = {};
-                prev = {};
-            }
-        };
-
+    public:
         class ChildIterator {
         private:
             const RelationshipManager* m_manager;
@@ -60,22 +44,7 @@ namespace phenyl::core::detail {
                 return m_manager == other.m_manager && m_curr == other.m_curr;
             }
         };
-        std::vector<Relationship> m_relationships{};
-        Relationship& getRelationship (EntityId id) {
-            PHENYL_DASSERT(id.m_id < m_relationships.size());
 
-            return m_relationships[id.m_id];
-        }
-
-        [[nodiscard]] const Relationship& getRelationship (EntityId id) const {
-            PHENYL_DASSERT(id.m_id < m_relationships.size());
-
-            return m_relationships[id.m_id];
-        }
-
-        friend class ChildIterator;
-    public:
-        using ChildIterator = ChildIterator;
         static_assert(std::forward_iterator<ChildIterator>);
 
         explicit RelationshipManager (std::size_t startCapacity) {
@@ -159,5 +128,37 @@ namespace phenyl::core::detail {
             m_relationships.clear();
             m_relationships.push_back(Relationship{});
         }
+
+    private:
+        struct Relationship {
+            EntityId parent{};
+            EntityId children{};
+
+            // Intrusive doubly linked list
+            EntityId next{};
+            EntityId prev{};
+
+            void clear () {
+                parent = {};
+                children = {};
+                next = {};
+                prev = {};
+            }
+        };
+
+        std::vector<Relationship> m_relationships{};
+        Relationship& getRelationship (EntityId id) {
+            PHENYL_DASSERT(id.m_id < m_relationships.size());
+
+            return m_relationships[id.m_id];
+        }
+
+        [[nodiscard]] const Relationship& getRelationship (EntityId id) const {
+            PHENYL_DASSERT(id.m_id < m_relationships.size());
+
+            return m_relationships[id.m_id];
+        }
+
+        friend class ChildIterator;
     };
 }

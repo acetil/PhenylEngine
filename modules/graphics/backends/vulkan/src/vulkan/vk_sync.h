@@ -5,9 +5,6 @@
 
 namespace phenyl::vulkan {
     class VulkanSemaphore {
-    private:
-        VulkanResource<VkSemaphore> m_sem;
-
     public:
         VulkanSemaphore (VulkanResources& resources);
 
@@ -16,13 +13,12 @@ namespace phenyl::vulkan {
         }
 
         VkSemaphoreSubmitInfo getSubmitInfo (VkPipelineStageFlags2 flags) const;
+
+    private:
+        VulkanResource<VkSemaphore> m_sem;
     };
 
     class VulkanFence {
-    private:
-        VkDevice m_device;
-        VulkanResource<VkFence> m_fence;
-
     public:
         VulkanFence (VulkanResources& resources, bool signaled);
 
@@ -31,5 +27,9 @@ namespace phenyl::vulkan {
         VkFence get () const noexcept {
             return *m_fence;
         }
+
+    private:
+        VkDevice m_device;
+        VulkanResource<VkFence> m_fence;
     };
 }

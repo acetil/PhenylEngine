@@ -5,12 +5,6 @@
 
 namespace phenyl::audio {
     class AudioPlayer {
-    private:
-        AudioSource m_source;
-        float m_gain{1.0f};
-
-        PHENYL_SERIALIZABLE_INTRUSIVE(AudioPlayer)
-        friend class AudioSystem;
     public:
         AudioPlayer () = default;
 
@@ -24,5 +18,12 @@ namespace phenyl::audio {
 
         [[nodiscard]] float gain () const;
         void setGain (float gain);
+
+    private:
+        AudioSource m_source;
+        float m_gain{1.0f};
+
+        PHENYL_SERIALIZABLE_INTRUSIVE(AudioPlayer)
+        friend class AudioSystem;
     };
 }

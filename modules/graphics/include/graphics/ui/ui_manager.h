@@ -15,13 +15,6 @@
 
 namespace phenyl::graphics {
     class UIManager : public core::IResource {
-    private:
-        bool m_mouseDown = false;
-        std::unique_ptr<RootWidget> m_rootWidget;
-        Widget* m_focusedWidget = nullptr;
-
-        core::InputAction m_selectAction;
-        core::Axis2DInput m_mousePos;
     public:
         UIManager (core::GameInput& input);
 
@@ -33,5 +26,13 @@ namespace phenyl::graphics {
         [[nodiscard]] RootWidget& root () const noexcept {
             return *m_rootWidget;
         }
+
+    private:
+        bool m_mouseDown = false;
+        std::unique_ptr<RootWidget> m_rootWidget;
+        Widget* m_focusedWidget = nullptr;
+
+        core::InputAction m_selectAction;
+        core::Axis2DInput m_mousePos;
     };
 }

@@ -6,8 +6,6 @@ namespace phenyl::graphics {
     class Renderer;
 
     class AbstractRenderLayer {
-    private:
-        int m_priority;
     public:
         explicit AbstractRenderLayer (int priority) : m_priority{priority} {}
         virtual ~AbstractRenderLayer () = default;
@@ -19,5 +17,8 @@ namespace phenyl::graphics {
 
         virtual void init (Renderer& renderer) = 0;
         virtual void render () = 0;
+
+    private:
+        int m_priority;
     };
 }

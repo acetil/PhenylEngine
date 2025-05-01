@@ -35,8 +35,6 @@ namespace phenyl::vulkan {
     class VulkanCommandBuffer2;
 
     class IVulkanFrameBuffer {
-    private:
-        const FrameBufferLayout* m_layout;
     public:
         IVulkanFrameBuffer (const FrameBufferLayout* fbLayout) : m_layout{fbLayout} {
             PHENYL_DASSERT(fbLayout);
@@ -52,33 +50,22 @@ namespace phenyl::vulkan {
 
         virtual VkViewport viewport () const noexcept = 0;
         virtual VkRect2D scissor () const noexcept = 0;
+
+    private:
+        const FrameBufferLayout* m_layout;
     };
 
     class FrameBufferLayoutManager {
-    private:
-        std::unordered_set<FrameBufferLayout> m_layoutCache;
-
     public:
         FrameBufferLayoutManager ();
 
         const FrameBufferLayout* cacheLayout (FrameBufferLayout&& layout);
+
+    private:
+        std::unordered_set<FrameBufferLayout> m_layoutCache;
     };
 
     class VulkanFrameBuffer : public graphics::IFrameBuffer, public IVulkanFrameBuffer {
-    private:
-        struct FrameBufferSampler {
-        };
-
-        std::vector<CombinedSampler> m_colorSamplers;
-        std::vector<VkRenderingAttachmentInfo> m_colorAttachments;
-
-        std::optional<CombinedSampler> m_depthSampler;
-        VkRenderingAttachmentInfo m_depthAttachment;
-
-        VkExtent2D m_extent;
-        std::optional<VkClearColorValue> m_clearColor;
-
-        VkRenderingInfo m_renderingInfo{};
     public:
         VulkanFrameBuffer (VulkanResources& resources, FrameBufferLayoutManager& layoutManager, const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height);
 
@@ -94,9 +81,39 @@ namespace phenyl::vulkan {
         graphics::ISampler* getDepthSampler() noexcept override;
 
         glm::ivec2 getDimensions() const noexcept override;
+
+    private:
+        struct FrameBufferSampler {
+        };
+
+        std::vector<CombinedSampler> m_colorSamplers;
+        std::vector<VkRenderingAttachmentInfo> m_colorAttachments;
+
+        std::optional<CombinedSampler> m_depthSampler;
+        VkRenderingAttachmentInfo m_depthAttachment;
+
+        VkExtent2D m_extent;
+        std::optional<VkClearColorValue> m_clearColor;
+
+        VkRenderingInfo m_renderingInfo{};
     };
 
     class VulkanWindowFrameBuffer : public IVulkanFrameBuffer {
+    public:
+        VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager, FrameBufferLayoutManager& layoutManager, VkFormat colorFormat);
+
+        VkViewport viewport () const noexcept override;
+        VkRect2D scissor () const noexcept override;
+
+        bool acquireFrame (const VulkanSemaphore& waitSem);
+        void onSwapChainRecreate (VulkanSwapChain* newSwapChain);
+        void doPresentTransition (VulkanCommandBuffer2& cmd);
+
+        void setClearColor (glm::vec4 color);
+
+        void prepareRendering (VulkanCommandBuffer2& cmd) override;
+        const VkRenderingInfo* getRenderingInfo () const noexcept override;
+
     private:
         VulkanResources& m_resources;
         TransferManager& m_transferManager;
@@ -114,19 +131,5 @@ namespace phenyl::vulkan {
         VkRenderingAttachmentInfo m_colorAttachment;
         VkRenderingAttachmentInfo m_depthAttachment;
         VkRenderingInfo m_renderingInfo;
-    public:
-        VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager, FrameBufferLayoutManager& layoutManager, VkFormat colorFormat);
-
-        VkViewport viewport () const noexcept override;
-        VkRect2D scissor () const noexcept override;
-
-        bool acquireFrame (const VulkanSemaphore& waitSem);
-        void onSwapChainRecreate (VulkanSwapChain* newSwapChain);
-        void doPresentTransition (VulkanCommandBuffer2& cmd);
-
-        void setClearColor (glm::vec4 color);
-
-        void prepareRendering (VulkanCommandBuffer2& cmd) override;
-        const VkRenderingInfo* getRenderingInfo () const noexcept override;
     };
 }

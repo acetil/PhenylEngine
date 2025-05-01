@@ -8,11 +8,6 @@
 
 namespace phenyl::graphics {
     class Camera2D : public core::IResource, public IViewportUpdateHandler {
-    private:
-        glm::mat4 m_matrix{};
-        glm::mat4 m_positionMat{};
-        glm::mat4 m_scaleMat{};
-        glm::vec2 m_resolution;
     public:
         [[maybe_unused]] void translate (float x, float y);
 
@@ -31,5 +26,11 @@ namespace phenyl::graphics {
         std::string_view getName() const noexcept override;
 
         void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
+
+    private:
+        glm::mat4 m_matrix{};
+        glm::mat4 m_positionMat{};
+        glm::mat4 m_scaleMat{};
+        glm::vec2 m_resolution;
     };
 }

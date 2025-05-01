@@ -19,6 +19,17 @@ namespace phenyl::vulkan {
     class VulkanWindowFrameBuffer;
 
     class VulkanPipelineFactory {
+    public:
+        VulkanPipelineFactory (VulkanResources& resources, core::Asset<graphics::Shader> shader, VulkanResource<VkPipelineLayout> pipelineLayout, std::vector<VkVertexInputBindingDescription> vertexBindings,
+            std::vector<VkVertexInputAttributeDescription> vertexAttribs, VkPrimitiveTopology topology, VkCullModeFlags cullMode, const VkPipelineColorBlendAttachmentState& blendAttachment,
+            const VkPipelineDepthStencilStateCreateInfo& depthStencilInfo);
+
+        VkPipeline get (const FrameBufferLayout* layout);
+
+        VkPipelineLayout layout () const noexcept {
+            return *m_layout;
+        }
+
     private:
         std::unordered_map<const FrameBufferLayout*, VulkanResource<VkPipeline>> m_pipelines;
 
@@ -34,21 +45,25 @@ namespace phenyl::vulkan {
         VkPipelineDepthStencilStateCreateInfo m_depthStencilInfo;
 
         VkPipelineColorBlendAttachmentState m_colorBlendState;
-
-    public:
-        VulkanPipelineFactory (VulkanResources& resources, core::Asset<graphics::Shader> shader, VulkanResource<VkPipelineLayout> pipelineLayout, std::vector<VkVertexInputBindingDescription> vertexBindings,
-            std::vector<VkVertexInputAttributeDescription> vertexAttribs, VkPrimitiveTopology topology, VkCullModeFlags cullMode, const VkPipelineColorBlendAttachmentState& blendAttachment,
-            const VkPipelineDepthStencilStateCreateInfo& depthStencilInfo);
-
-        VkPipeline get (const FrameBufferLayout* layout);
-
-        VkPipelineLayout layout () const noexcept {
-            return *m_layout;
-        }
     };
 
     class VulkanPipeline : public graphics::IPipeline {
     private:
+    public:
+        VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
+            TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes,
+            std::unordered_set<graphics::SamplerBinding> validSamplers);
+
+        void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
+        void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
+        void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) override;
+        void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
+
+        void unbindIndexBuffer () override;
+
+        void render (graphics::IFrameBuffer* fb, std::size_t vertices, std::size_t offset) override;
+        void renderInstanced (graphics::IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
+
         struct UniformBufferBinding {
             const VulkanUniformBuffer* buffer;
             std::size_t offset;
@@ -78,23 +93,27 @@ namespace phenyl::vulkan {
 
         void prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffer& frameBuffer);
         VkDescriptorSet getDescriptorSet (VulkanCommandBuffer2& cmd);
-    public:
-        VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory, VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
-            TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes, std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes,
-            std::unordered_set<graphics::SamplerBinding> validSamplers);
-
-        void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer, std::size_t offset) override;
-        void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
-        void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) override;
-        void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
-
-        void unbindIndexBuffer () override;
-
-        void render (graphics::IFrameBuffer* fb, std::size_t vertices, std::size_t offset) override;
-        void renderInstanced (graphics::IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices, std::size_t offset) override;
     };
 
     class VulkanPipelineBuilder : public graphics::IPipelineBuilder {
+    public:
+        VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb);
+
+        void withBlendMode (graphics::BlendMode mode) override;
+        void withCullMode (graphics::CullMode mode) override;
+        void withDepthTesting (bool doDepthWrite) override;
+        void withGeometryType (graphics::GeometryType type) override;
+
+        void withShader (core::Asset<graphics::Shader> shader) override;
+
+        graphics::BufferBinding withBuffer (std::size_t type, std::size_t size, graphics::BufferInputRate inputRate) override;
+        void withAttrib (graphics::ShaderDataType type, unsigned int location, graphics::BufferBinding binding, std::size_t offset) override;
+
+        graphics::UniformBinding withUniform (std::size_t type, unsigned int location) override;
+        graphics::SamplerBinding withSampler (unsigned int location) override;
+
+        std::unique_ptr<graphics::IPipeline> build () override;
+
     private:
         VulkanResources& resources;
 
@@ -124,23 +143,5 @@ namespace phenyl::vulkan {
 
         bool depthTest = false;
         bool depthWrite = true;
-
-    public:
-        VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb);
-
-        void withBlendMode (graphics::BlendMode mode) override;
-        void withCullMode (graphics::CullMode mode) override;
-        void withDepthTesting (bool doDepthWrite) override;
-        void withGeometryType (graphics::GeometryType type) override;
-
-        void withShader (core::Asset<graphics::Shader> shader) override;
-
-        graphics::BufferBinding withBuffer (std::size_t type, std::size_t size, graphics::BufferInputRate inputRate) override;
-        void withAttrib (graphics::ShaderDataType type, unsigned int location, graphics::BufferBinding binding, std::size_t offset) override;
-
-        graphics::UniformBinding withUniform (std::size_t type, unsigned int location) override;
-        graphics::SamplerBinding withSampler (unsigned int location) override;
-
-        std::unique_ptr<graphics::IPipeline> build () override;
     };
 }

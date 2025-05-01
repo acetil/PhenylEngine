@@ -40,6 +40,13 @@ namespace phenyl::vulkan {
             bool operator== (const Sampler&) const = default;
         };
 
+        explicit ShaderReflection (const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources);
+
+        const VertexInput* getAttrib (const std::string& name) const noexcept;
+        const FragmentOutput* getOutput (const std::string& name) const noexcept;
+        const UniformBlock* getUniformBlock (const std::string& name) const noexcept;
+        const Sampler* getSampler (const std::string& name) const noexcept;
+
     private:
         std::unordered_map<std::string, VertexInput> m_attribs;
         std::vector<FragmentOutput> m_outputs;
@@ -50,12 +57,5 @@ namespace phenyl::vulkan {
         void addOutputs (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
         void addUniformBlocks (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
         void addSamplers (const spirv_cross::Compiler& compiler, const spirv_cross::ShaderResources& resources);
-    public:
-        explicit ShaderReflection (const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources);
-
-        const VertexInput* getAttrib (const std::string& name) const noexcept;
-        const FragmentOutput* getOutput (const std::string& name) const noexcept;
-        const UniformBlock* getUniformBlock (const std::string& name) const noexcept;
-        const Sampler* getSampler (const std::string& name) const noexcept;
     };
 }

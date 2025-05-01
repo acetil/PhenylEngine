@@ -20,9 +20,6 @@ namespace phenyl::graphics {
 
     template <typename T>
     class Buffer {
-    private:
-        std::unique_ptr<IBuffer> m_buffer;
-        std::vector<T> m_data;
     public:
         Buffer () : m_buffer{}, m_data{} {}
         explicit Buffer (std::unique_ptr<IBuffer> rendererBuffer) : m_buffer{std::move(rendererBuffer)}, m_data{} {}
@@ -70,12 +67,13 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_buffer);
             return *m_buffer;
         }
+
+    private:
+        std::unique_ptr<IBuffer> m_buffer;
+        std::vector<T> m_data;
     };
 
     class RawBuffer {
-    private:
-        std::unique_ptr<IBuffer> m_buffer;
-        std::size_t m_size = 0;
     public:
         RawBuffer () = default;
         explicit RawBuffer (std::unique_ptr<IBuffer> rendererBuffer) : m_buffer{std::move(rendererBuffer)} {}
@@ -108,5 +106,9 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_buffer);
             return *m_buffer;
         }
+
+    private:
+        std::unique_ptr<IBuffer> m_buffer;
+        std::size_t m_size = 0;
     };
 }

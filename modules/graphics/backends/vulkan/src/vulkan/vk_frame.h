@@ -16,24 +16,10 @@ namespace phenyl::vulkan {
     };
 
     class FrameManager {
-    private:
-        std::size_t m_frameCount = static_cast<std::size_t>(-1);
-        std::size_t m_maxInFlight;
-
-        //SwapChainImage frameImage{};
-        std::vector<VulkanCommandPool> m_commandPools;
-        std::vector<VulkanDescriptorPool> m_descriptorPools; // TODO: per-pipeline pools?
-        std::vector<FrameSync> m_syncs;
-
-        friend class VulkanRenderer;
     public:
         FrameManager (VulkanDevice& device, VulkanResources& resources, std::size_t maxInFlight);
 
         bool onNewFrame (VulkanWindowFrameBuffer& windowFrameBuffer);
-
-        // const SwapChainImage& getImage () const noexcept {
-        //     return frameImage;
-        // }
 
         VulkanCommandPool& getCommandPool () {
             PHENYL_DASSERT(flightNum() < m_commandPools.size());
@@ -57,5 +43,15 @@ namespace phenyl::vulkan {
         std::size_t flightNum () const noexcept {
             return m_frameCount % m_maxInFlight;
         }
+
+    private:
+        std::size_t m_frameCount = static_cast<std::size_t>(-1);
+        std::size_t m_maxInFlight;
+
+        std::vector<VulkanCommandPool> m_commandPools;
+        std::vector<VulkanDescriptorPool> m_descriptorPools; // TODO: per-pipeline pools?
+        std::vector<FrameSync> m_syncs;
+
+        friend class VulkanRenderer;
     };
 }

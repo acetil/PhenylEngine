@@ -12,10 +12,6 @@
 namespace phenyl::util {
     template <typename T>
     class FixedStack {
-    private:
-        std::size_t m_capacity;
-        std::size_t m_size{};
-        std::unique_ptr<T[]> m_data;
     public:
         FixedStack (std::size_t _size) : m_capacity{_size}, m_data{std::make_unique<T[]>(_size)} {}
 
@@ -56,5 +52,10 @@ namespace phenyl::util {
         std::size_t capacity () {
             return m_capacity;
         }
+
+    private:
+        std::size_t m_capacity;
+        std::size_t m_size{};
+        std::unique_ptr<T[]> m_data;
     };
 }

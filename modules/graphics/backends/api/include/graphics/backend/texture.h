@@ -69,8 +69,6 @@ namespace phenyl::graphics {
     };
 
     class Texture {
-    private:
-        std::size_t m_hash;
     public:
         Texture () : m_hash{0} {}
         explicit Texture (std::size_t hash) : m_hash{hash} {}
@@ -82,11 +80,12 @@ namespace phenyl::graphics {
         [[nodiscard]] std::size_t hash () const noexcept {
             return m_hash;
         }
+
+    private:
+        std::size_t m_hash;
     };
 
     class ImageTexture : public Texture {
-    private:
-        std::unique_ptr<IImageTexture> m_texture;
     public:
         ImageTexture () = default;
         explicit ImageTexture (std::unique_ptr<IImageTexture> texture) : Texture{0}, m_texture{std::move(texture)} {}
@@ -110,11 +109,12 @@ namespace phenyl::graphics {
         [[nodiscard]] ISampler& sampler () const noexcept override {
             return m_texture->sampler();
         }
+
+    private:
+        std::unique_ptr<IImageTexture> m_texture;
     };
 
     class ImageArrayTexture : public Texture {
-    private:
-        std::unique_ptr<IImageArrayTexture> m_texture;
     public:
         ImageArrayTexture () = default;
         explicit ImageArrayTexture (std::unique_ptr<IImageArrayTexture> texture) : Texture{texture->sampler().hash()}, m_texture{std::move(texture)}{}
@@ -150,5 +150,8 @@ namespace phenyl::graphics {
         [[nodiscard]] ISampler& sampler() const noexcept override {
             return m_texture->sampler();
         }
+
+    private:
+        std::unique_ptr<IImageArrayTexture> m_texture;
     };
 }

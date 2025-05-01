@@ -7,17 +7,6 @@ namespace phenyl::vulkan {
     class IVulkanFrameBuffer;
 
     class VulkanCommandBuffer2 {
-    private:
-        IVulkanFrameBuffer* m_currFrameBuffer = nullptr;
-
-        VkPipeline m_currPipeline = nullptr;
-        std::optional<VkViewport> m_currViewport{};
-        std::optional<VkRect2D> m_currScissor;
-
-    protected:
-        VkCommandBuffer m_commandBuffer;
-
-        VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage);
     public:
         virtual ~VulkanCommandBuffer2 () = default;
 
@@ -47,30 +36,52 @@ namespace phenyl::vulkan {
 
         void drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex);
         void drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex);
+
+    protected:
+        VkCommandBuffer m_commandBuffer;
+
+        VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage);
+
+    private:
+        IVulkanFrameBuffer* m_currFrameBuffer = nullptr;
+
+        VkPipeline m_currPipeline = nullptr;
+        std::optional<VkViewport> m_currViewport{};
+        std::optional<VkRect2D> m_currScissor;
     };
 
     class VulkanSingleUseCommandBuffer : public VulkanCommandBuffer2 {
-    private:
-        VkQueue m_queue;
     public:
         VulkanSingleUseCommandBuffer (VkQueue bufferQueue, VkCommandBuffer commandBuffer);
 
         void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
+
+    private:
+        VkQueue m_queue;
     };
 
     class VulkanTransientCommandBuffer : public VulkanCommandBuffer2 {
-    private:
-        VkQueue m_queue;
-        VulkanResource<VulkanCommandBufferInfo> m_info;
-        bool m_recorded = false;
     public:
         VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo);
 
         void record ();
         void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
+
+    private:
+        VkQueue m_queue;
+        VulkanResource<VulkanCommandBufferInfo> m_info;
+        bool m_recorded = false;
     };
 
     class VulkanCommandPool {
+    public:
+        explicit VulkanCommandPool (VulkanResources& resources, std::size_t capacity = 1);
+
+        VulkanSingleUseCommandBuffer getBuffer ();
+        void reset ();
+
+        void reserve (std::size_t capacity);
+
     private:
         VkDevice m_device;
         VkQueue m_queue;
@@ -80,25 +91,18 @@ namespace phenyl::vulkan {
         std::vector<VkCommandBuffer> m_usedBuffers;
 
         void addBuffers (std::size_t count);
-    public:
-        explicit VulkanCommandPool (VulkanResources& resources, std::size_t capacity = 1);
-
-        VulkanSingleUseCommandBuffer getBuffer ();
-        void reset ();
-
-        void reserve (std::size_t capacity);
     };
 
     class VulkanTransientCommandPool {
+    public:
+        explicit VulkanTransientCommandPool (VulkanResources& resources);
+
+        VulkanTransientCommandBuffer getBuffer ();
+
     private:
         VkDevice m_device;
         VkQueue m_poolQueue;
         VulkanResources* m_resources;
         VulkanResource<VkCommandPool> m_pool;
-
-    public:
-        explicit VulkanTransientCommandPool (VulkanResources& resources);
-
-        VulkanTransientCommandBuffer getBuffer ();
     };
 }

@@ -8,9 +8,6 @@
 namespace phenyl::core {
     template <typename ...Args>
     class Bundle {
-    private:
-        Entity bundleEntity;
-        std::tuple<Args&...> bundleComps;
     public:
         Bundle (Entity bundleEntity, std::tuple<Args&...> bundleComps) : bundleEntity{bundleEntity}, bundleComps{bundleComps} {}
 
@@ -31,15 +28,14 @@ namespace phenyl::core {
         Bundle<Args2...> subset () const noexcept {
             return Bundle<Args2...>{bundleEntity, std::tuple<Args2&...>{get<Args2&>()...}};
         }
+
+    private:
+        Entity bundleEntity;
+        std::tuple<Args&...> bundleComps;
     };
 
     template <typename ...Args>
     class ArchetypeView {
-    private:
-        Archetype& archetype;
-        World* manager;
-        std::tuple<ComponentVector<std::remove_cvref_t<Args>>*...> components;
-
     public:
         class Iterator {
         private:
@@ -120,12 +116,6 @@ namespace phenyl::core {
         };
 
         class BundleIterator {
-        private:
-            ArchetypeView<Args...>* view = nullptr;
-            std::size_t pos = 0;
-
-            explicit BundleIterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
-            friend ArchetypeView<Args...>;
         public:
             using value_type = Bundle<Args...>;
             using difference_type = std::ptrdiff_t;
@@ -195,6 +185,13 @@ namespace phenyl::core {
             friend BundleIterator operator+ (std::ptrdiff_t n, const BundleIterator& it) noexcept {
                 return BundleIterator{it.view, it.pos + n};
             }
+
+        private:
+            ArchetypeView<Args...>* view = nullptr;
+            std::size_t pos = 0;
+
+            explicit BundleIterator (ArchetypeView* view, std::size_t pos = 0) : view{view}, pos{pos} {}
+            friend ArchetypeView<Args...>;
         };
 
         using iterator = Iterator;
@@ -220,5 +217,10 @@ namespace phenyl::core {
         util::Iterable<BundleIterator> bundles () {
             return {BundleIterator{this}, BundleIterator{this, size()}};
         }
+
+    private:
+        Archetype& archetype;
+        World* manager;
+        std::tuple<ComponentVector<std::remove_cvref_t<Args>>*...> components;
     };
 }

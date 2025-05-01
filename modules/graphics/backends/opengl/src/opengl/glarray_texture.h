@@ -4,12 +4,6 @@
 
 namespace phenyl::opengl {
     class GlArrayTexture : public graphics::IImageArrayTexture {
-    private:
-        GlSampler m_sampler;
-        std::uint32_t m_width;
-        std::uint32_t m_height;
-        std::uint32_t m_size;
-        std::uint32_t m_capacity;
     public:
         GlArrayTexture (const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight);
 
@@ -23,5 +17,12 @@ namespace phenyl::opengl {
         void upload (std::uint32_t index, const graphics::Image& image) override;
 
         graphics::ISampler& sampler () noexcept override;
+
+    private:
+        GlSampler m_sampler;
+        std::uint32_t m_width;
+        std::uint32_t m_height;
+        std::uint32_t m_size;
+        std::uint32_t m_capacity;
     };
 }

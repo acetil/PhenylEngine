@@ -15,12 +15,8 @@
 
 namespace phenyl::core {
     class World : private detail::IArchetypeManager {
-    private:
+    public:
         class EntityIterator {
-        private:
-            World* m_world = nullptr;;
-            detail::EntityIdList::const_iterator m_it;
-
         public:
             using value_type = Entity;
 
@@ -36,58 +32,12 @@ namespace phenyl::core {
             EntityIterator operator-- (int);
 
             bool operator== (const EntityIterator&) const;
+
+        private:
+            World* m_world = nullptr;;
+            detail::EntityIdList::const_iterator m_it;
         };
 
-        std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> m_components;
-
-        detail::EntityIdList m_idList;
-        detail::RelationshipManager m_relationships;
-
-        std::vector<std::unique_ptr<Archetype>> m_archetypes;
-        EmptyArchetype* m_emptyArchetype;
-        std::vector<detail::EntityEntry> m_entityEntries;
-
-        std::vector<std::weak_ptr<QueryArchetypes>> m_queryArchetypes;
-
-        std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> m_signalHandlerVectors;
-
-        std::shared_ptr<PrefabManager> m_prefabManager;
-
-        std::vector<std::pair<EntityId, EntityId>> m_deferredCreations;
-        std::vector<std::pair<EntityId, std::function<void(Entity)>>> m_deferredApplys;
-        std::vector<EntityId> m_deferredRemovals;
-
-        std::uint32_t m_deferCount = 0;
-        std::uint32_t m_removeDeferCount = 0;
-        std::uint32_t m_signalDeferCount = 0;
-
-        void completeCreation (EntityId id, EntityId parent);
-        void removeInt (EntityId id, bool updateParent);
-
-        std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::ArchetypeKey key);
-        void cleanupQueryArchetypes ();
-
-        Archetype* findArchetype (const detail::ArchetypeKey& key) override;
-        void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
-
-        void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
-        void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
-
-        void deferInsert (EntityId id, std::size_t compType, std::byte* ptr);
-        void deferErase (EntityId id, std::size_t compType);
-        void deferApply (EntityId id, std::function<void(Entity)> applyFunc);
-
-        void instantiatePrefab (EntityId id, const detail::PrefabFactories& factories);
-
-        void raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr);
-
-        void deferRemove ();
-        void deferRemoveEnd ();
-
-        friend Entity;
-        friend ChildrenView;
-        friend PrefabManager;
-    public:
         using iterator = EntityIterator;
 
         static constexpr std::size_t DEFAULT_CAPACITY = 256;
@@ -189,5 +139,56 @@ namespace phenyl::core {
 
         iterator begin ();
         iterator end ();
+
+    private:
+        std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> m_components;
+
+        detail::EntityIdList m_idList;
+        detail::RelationshipManager m_relationships;
+
+        std::vector<std::unique_ptr<Archetype>> m_archetypes;
+        EmptyArchetype* m_emptyArchetype;
+        std::vector<detail::EntityEntry> m_entityEntries;
+
+        std::vector<std::weak_ptr<QueryArchetypes>> m_queryArchetypes;
+
+        std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> m_signalHandlerVectors;
+
+        std::shared_ptr<PrefabManager> m_prefabManager;
+
+        std::vector<std::pair<EntityId, EntityId>> m_deferredCreations;
+        std::vector<std::pair<EntityId, std::function<void(Entity)>>> m_deferredApplys;
+        std::vector<EntityId> m_deferredRemovals;
+
+        std::uint32_t m_deferCount = 0;
+        std::uint32_t m_removeDeferCount = 0;
+        std::uint32_t m_signalDeferCount = 0;
+
+        void completeCreation (EntityId id, EntityId parent);
+        void removeInt (EntityId id, bool updateParent);
+
+        std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::ArchetypeKey key);
+        void cleanupQueryArchetypes ();
+
+        Archetype* findArchetype (const detail::ArchetypeKey& key) override;
+        void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
+
+        void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
+        void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
+
+        void deferInsert (EntityId id, std::size_t compType, std::byte* ptr);
+        void deferErase (EntityId id, std::size_t compType);
+        void deferApply (EntityId id, std::function<void(Entity)> applyFunc);
+
+        void instantiatePrefab (EntityId id, const detail::PrefabFactories& factories);
+
+        void raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr);
+
+        void deferRemove ();
+        void deferRemoveEnd ();
+
+        friend Entity;
+        friend ChildrenView;
+        friend PrefabManager;
     };
 }

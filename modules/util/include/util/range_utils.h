@@ -5,41 +5,15 @@
 namespace phenyl::util {
     template <std::forward_iterator I1, std::sentinel_for<I1> S1, std::forward_iterator I2, std::sentinel_for<I2> S2, typename Comp = std::ranges::less>
     class RangeIntersection {
-    private:
-        using T = std::remove_cvref_t<decltype(*std::declval<I1>())>;
-
-        I1 m_first1;
-        S1 m_last1;
-        I2 m_first2;
-        S2 m_last2;
-        Comp m_comp;
-
+    public:
         struct Sentinel {
 
         };
 
         struct Iterator {
-        private:
-            I1 m_it1;
-            S1 m_s1;
-            I2 m_it2;
-            S2 m_s2;
-            Comp m_comp;
-
-            void advanceToNext () {
-                while (m_it1 != m_s1 && m_it2 != m_s2) {
-                    if (m_comp(*m_it1, *m_it2)) {
-                        ++m_it1;
-                    } else if (m_comp(*m_it2, *m_it1)) {
-                        ++m_it2;
-                    } else {
-                        break;
-                    }
-                }
-            }
         public:
             using difference_type = std::ptrdiff_t;
-            using value_type = T;
+            using value_type = std::remove_cvref_t<decltype(*std::declval<I1>())>;
             using reference = const value_type&;
 
             Iterator () = default;
@@ -71,8 +45,27 @@ namespace phenyl::util {
             bool operator== (const Sentinel&) const {
                 return m_it1 == m_s2 || m_it2 == m_s2;
             }
+
+        private:
+            I1 m_it1;
+            S1 m_s1;
+            I2 m_it2;
+            S2 m_s2;
+            Comp m_comp;
+
+            void advanceToNext () {
+                while (m_it1 != m_s1 && m_it2 != m_s2) {
+                    if (m_comp(*m_it1, *m_it2)) {
+                        ++m_it1;
+                    } else if (m_comp(*m_it2, *m_it1)) {
+                        ++m_it2;
+                    } else {
+                        break;
+                    }
+                }
+            }
         };
-    public:
+
         RangeIntersection (I1 first1, S1 last1, I2 first2, S2 last2, Comp comp = {}) : m_first1{std::move(first1)}, m_last1{std::move(last1)}, m_first2{std::move(first2)}, m_last2{std::move(last2)}, m_comp{std::move(comp)} {}
 
         template <std::ranges::forward_range R1, std::ranges::forward_range R2>
@@ -93,6 +86,13 @@ namespace phenyl::util {
         Sentinel cend () const {
             return Sentinel{};
         }
+
+    private:
+        I1 m_first1;
+        S1 m_last1;
+        I2 m_first2;
+        S2 m_last2;
+        Comp m_comp;
     };
 
     template <std::input_iterator I1, std::sentinel_for<I1> S1, std::input_iterator I2, std::sentinel_for<I2> S2, typename Comp = std::ranges::less>

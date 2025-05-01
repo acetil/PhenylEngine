@@ -11,9 +11,6 @@ namespace phenyl::core {
     }
 
     struct EntityId {
-    private:
-        unsigned int m_generation{0};
-        unsigned int m_id{0};
     public:
         EntityId () = default;
         EntityId (unsigned int _generation, unsigned int _id) : m_generation(_generation), m_id(_id) {}
@@ -37,6 +34,10 @@ namespace phenyl::core {
         friend class Archetype;
         friend class detail::EntityIdList;
         friend class detail::RelationshipManager;
+
+    private:
+        unsigned int m_generation{0};
+        unsigned int m_id{0};
     };
 
     static EntityId NullId = EntityId{};

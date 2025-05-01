@@ -13,13 +13,6 @@ namespace phenyl::util {
     }
     template <std::size_t N>
     class Bitfield {
-    private:
-        static constexpr std::size_t FullMask = ~((std::size_t)0);
-        static constexpr std::size_t IntSize = sizeof(size_t) * 8;
-        static constexpr std::size_t FullInts = N / (IntSize);
-        static constexpr std::size_t NumInts = detail::ceil(N, IntSize);
-
-        std::size_t m_data[NumInts];
     public:
         Bitfield () : m_data{{0}} {}
 
@@ -139,6 +132,14 @@ namespace phenyl::util {
         friend Bitfield<N2> operator| (const Bitfield<N2>& bitfield1, const Bitfield<N2>& bitfield2);
         template <std::size_t N2>
         friend Bitfield<N2> operator^ (const Bitfield<N2>& bitfield1, const Bitfield<N2>& bitfield2);
+
+    private:
+        static constexpr std::size_t FullMask = ~((std::size_t)0);
+        static constexpr std::size_t IntSize = sizeof(size_t) * 8;
+        static constexpr std::size_t FullInts = N / (IntSize);
+        static constexpr std::size_t NumInts = detail::ceil(N, IntSize);
+
+        std::size_t m_data[NumInts];
     };
 
     template <std::size_t N>

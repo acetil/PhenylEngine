@@ -6,11 +6,6 @@
 
 namespace phenyl::vulkan {
     class VulkanBuffer {
-    private:
-        VulkanResource<VulkanBufferInfo> m_bufferInfo;
-
-        std::size_t m_size;
-
     public:
         VulkanBuffer () = default;
         VulkanBuffer (VulkanResources& resources, VkBufferUsageFlags usage, std::size_t bufSize);
@@ -29,13 +24,14 @@ namespace phenyl::vulkan {
         }
 
         void copyIn (std::span<const std::byte> data, std::size_t off = 0);
+
+    private:
+        VulkanResource<VulkanBufferInfo> m_bufferInfo;
+
+        std::size_t m_size;
     };
 
     class VulkanStaticBuffer {
-    private:
-        VulkanResource<VulkanBufferInfo> m_bufferInfo{};
-        std::size_t m_size = 0;
-
     public:
         VulkanStaticBuffer () = default;
         VulkanStaticBuffer (VulkanResources& resources, TransferManager& transferManager, VkBufferUsageFlags usage, std::span<const std::byte> data);
@@ -52,5 +48,10 @@ namespace phenyl::vulkan {
         std::size_t size () const noexcept {
             return m_size;
         }
+
+    private:
+        VulkanResource<VulkanBufferInfo> m_bufferInfo{};
+        std::size_t m_size = 0;
+
     };
 }

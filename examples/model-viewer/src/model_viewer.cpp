@@ -19,15 +19,6 @@
 #include "util/random.h"
 
 class ModelViewer : public phenyl::Application3D {
-private:
-    std::vector<phenyl::Entity> m_entities;
-    std::vector<float> m_rotationSpeeds;
-    glm::vec3 m_axis{};
-    float m_remainingTime = 3.0f;
-
-    phenyl::Axis2DInput m_cameraControl;
-    phenyl::InputAction m_zoomIn;
-    phenyl::InputAction m_zoomOut;
 public:
     explicit ModelViewer (phenyl::ApplicationProperties properties) : Application{std::move(properties)} {}
 
@@ -266,6 +257,16 @@ public:
         m_axis = glm::normalize(glm::vec3{x, y, z});
         m_remainingTime = 2.5f;
     }
+
+private:
+    std::vector<phenyl::Entity> m_entities;
+    std::vector<float> m_rotationSpeeds;
+    glm::vec3 m_axis{};
+    float m_remainingTime = 3.0f;
+
+    phenyl::Axis2DInput m_cameraControl;
+    phenyl::InputAction m_zoomIn;
+    phenyl::InputAction m_zoomOut;
 };
 
 PHENYL_ENTRYPOINT(ModelViewer)

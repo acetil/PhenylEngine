@@ -11,11 +11,7 @@ namespace phenyl::util {
     public:
         using SetCallback_t = void (C::*) (T&&);
         using GetCallback_t = const T& (C::*) ();
-    private:
-        SetCallback_t m_setCallback;
-        GetCallback_t m_getCallback;
-        C* m_classRef;
-    public:
+
         CallbackMember (C& _classRef, GetCallback_t _getCallback, SetCallback_t _setCallback) : m_classRef{&_classRef}, m_setCallback{_setCallback}, m_getCallback{_getCallback} {}
 
         CallbackMember& operator= (T&& obj) {
@@ -26,5 +22,10 @@ namespace phenyl::util {
         operator T () {
             return std::invoke(m_getCallback, *m_classRef);
         }
+
+    private:
+        SetCallback_t m_setCallback;
+        GetCallback_t m_getCallback;
+        C* m_classRef;
     };
 }

@@ -7,9 +7,6 @@ namespace phenyl::graphics {
     class Renderer;
 
     class TextureManager : public core::AssetManager<Texture> {
-    private:
-        Renderer& m_renderer;
-        std::unordered_map<std::size_t, std::unique_ptr<Texture>> m_textures;
     public:
         TextureManager (Renderer& renderer);
 
@@ -21,5 +18,9 @@ namespace phenyl::graphics {
         void queueUnload (std::size_t id) override;
 
         void selfRegister ();
+
+    private:
+        Renderer& m_renderer;
+        std::unordered_map<std::size_t, std::unique_ptr<Texture>> m_textures;
     };
 }

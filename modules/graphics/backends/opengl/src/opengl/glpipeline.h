@@ -10,30 +10,6 @@
 
 namespace phenyl::opengl {
     class GlPipeline : public graphics::IPipeline {
-    private:
-        struct PipelineIndex {
-            GLenum typeEnum;
-            std::size_t typeSize;
-        };
-
-        GLuint m_vao;
-        GLenum m_renderMode = GL_TRIANGLES;
-        GlWindowFrameBuffer* m_windowFrameBuffer;
-        core::Asset<graphics::Shader> m_shader;
-        std::vector<std::size_t> m_bufferTypes;
-        util::Map<graphics::UniformBinding, std::size_t> m_uniformTypes;
-        std::optional<PipelineIndex> m_indexType = std::nullopt;
-
-        bool m_doDepthTest = false;
-        bool m_doDepthMask = false;
-        graphics::BlendMode m_blendMode = graphics::BlendMode::ALPHA_BLEND;
-        graphics::CullMode m_cullMode = graphics::CullMode::NONE;
-
-        GlShader& getShader ();
-        void updateDepthMask ();
-        void setBlending (const AbstractGlFrameBuffer& fb);
-        void setCulling ();
-        void bindFrameBuffer (graphics::IFrameBuffer* frameBuffer);
     public:
         explicit GlPipeline (GlWindowFrameBuffer* fb);
         GlPipeline (const GlPipeline&) = delete;
@@ -65,11 +41,34 @@ namespace phenyl::opengl {
         void setDepthTest (bool doMask);
         void setBlendMode (graphics::BlendMode mode);
         void setCullMode (graphics::CullMode mode);
+
+    private:
+        struct PipelineIndex {
+            GLenum typeEnum;
+            std::size_t typeSize;
+        };
+
+        GLuint m_vao;
+        GLenum m_renderMode = GL_TRIANGLES;
+        GlWindowFrameBuffer* m_windowFrameBuffer;
+        core::Asset<graphics::Shader> m_shader;
+        std::vector<std::size_t> m_bufferTypes;
+        util::Map<graphics::UniformBinding, std::size_t> m_uniformTypes;
+        std::optional<PipelineIndex> m_indexType = std::nullopt;
+
+        bool m_doDepthTest = false;
+        bool m_doDepthMask = false;
+        graphics::BlendMode m_blendMode = graphics::BlendMode::ALPHA_BLEND;
+        graphics::CullMode m_cullMode = graphics::CullMode::NONE;
+
+        GlShader& getShader ();
+        void updateDepthMask ();
+        void setBlending (const AbstractGlFrameBuffer& fb);
+        void setCulling ();
+        void bindFrameBuffer (graphics::IFrameBuffer* frameBuffer);
     };
 
     class GlPipelineBuilder : public graphics::IPipelineBuilder {
-    private:
-        std::unique_ptr<GlPipeline> m_pipeline;
     public:
         GlPipelineBuilder (GlWindowFrameBuffer* fb);
 
@@ -87,5 +86,8 @@ namespace phenyl::opengl {
         void withDepthTesting (bool doDepthWrite) override;
 
         std::unique_ptr<graphics::IPipeline> build() override;
+
+    private:
+        std::unique_ptr<GlPipeline> m_pipeline;
     };
 }

@@ -7,12 +7,6 @@
 
 namespace phenyl::core {
     class Quaternion {
-    private:
-        glm::quat m_impl{1, 0, 0, 0};
-
-        Quaternion (float w, float x, float y, float z) : m_impl{w, x, y, z} {}
-        explicit Quaternion (glm::quat impl) : m_impl{impl} {}
-        PHENYL_SERIALIZABLE_INTRUSIVE(Quaternion)
     public:
         static constexpr glm::vec3 ForwardVector{0, 0, 1};
         static constexpr glm::vec3 UpVector{0, 1, 0};
@@ -100,5 +94,12 @@ namespace phenyl::core {
         explicit operator glm::mat4 () const noexcept {
             return glm::mat4_cast(m_impl);
         }
+
+    private:
+        glm::quat m_impl{1, 0, 0, 0};
+
+        Quaternion (float w, float x, float y, float z) : m_impl{w, x, y, z} {}
+        explicit Quaternion (glm::quat impl) : m_impl{impl} {}
+        PHENYL_SERIALIZABLE_INTRUSIVE(Quaternion)
     };
 }

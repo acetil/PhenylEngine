@@ -10,6 +10,9 @@ namespace phenyl::core {
     class Assets;
     namespace detail {
         class AssetManagerBase {
+        public:
+            virtual ~AssetManagerBase () = default;
+
         private:
             virtual void queueUnload (std::size_t id) = 0;
             [[nodiscard]] virtual const char* getFileType () const = 0;
@@ -24,15 +27,11 @@ namespace phenyl::core {
             friend class core::Assets;
             template <typename T>
             friend class core::AssetManager;
-        public:
-            virtual ~AssetManagerBase () = default;
         };
     }
 
     template <typename T>
     class AssetManager : public detail::AssetManagerBase {
-    private:
-        friend class Assets;
     protected:
         virtual T* load (std::ifstream& data, std::size_t id) = 0;
         virtual T* load (T&& obj, std::size_t id) = 0;
@@ -43,5 +42,8 @@ namespace phenyl::core {
         std::size_t onVirtualLoad (const std::string& virtualPath, T* data) {
             return onVirtualLoadUntyped(meta::type_index<T>(), virtualPath, (std::byte*)data);
         }
+
+    private:
+        friend class Assets;
     };
 }

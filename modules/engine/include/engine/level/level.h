@@ -13,6 +13,9 @@ namespace phenyl::game {
     class LevelManager;
 
     class Level : public core::IAssetType<Level> {
+    public:
+        void load (bool additive=false);
+
     private:
         //std::vector<detail::LevelEntity> entities;
         std::ifstream m_file;
@@ -23,7 +26,5 @@ namespace phenyl::game {
 
         void loadImmediate (core::World& world, core::EntityComponentSerializer& serializer);
         friend LevelManager;
-    public:
-        void load (bool additive=false);
     };
 }

@@ -8,24 +8,6 @@ namespace phenyl::graphics {
     struct ButtonPressEvent {};
 
     class ButtonWidget : public Widget {
-    private:
-        enum class ButtonState {
-            UNPRESSED,
-            HOVERED,
-            PRESSED,
-            PRESSED_UNHOVER
-        };
-        ContainerWidget m_container;
-        ButtonState m_state = ButtonState::UNPRESSED;
-
-        glm::vec4 m_defaultBgColor{};
-        glm::vec4 m_hoverBgColor{};
-        glm::vec4 m_pressBgColor{};
-
-        void onHover ();
-        void onUnhover ();
-        void onPress ();
-        void onRelease ();
     public:
         explicit ButtonWidget (const Modifier& modifier = {});
 
@@ -64,5 +46,24 @@ namespace phenyl::graphics {
         void render (Canvas& canvas) override;
         bool pointerUpdate (glm::vec2 pointer) override;
         void pointerLeave () override;
+
+    private:
+        enum class ButtonState {
+            UNPRESSED,
+            HOVERED,
+            PRESSED,
+            PRESSED_UNHOVER
+        };
+        ContainerWidget m_container;
+        ButtonState m_state = ButtonState::UNPRESSED;
+
+        glm::vec4 m_defaultBgColor{};
+        glm::vec4 m_hoverBgColor{};
+        glm::vec4 m_pressBgColor{};
+
+        void onHover ();
+        void onUnhover ();
+        void onPress ();
+        void onRelease ();
     };
 }

@@ -13,8 +13,6 @@ namespace phenyl::util {
     namespace detail {
         template <typename T>
         struct FlVectorItem {
-        private:
-            static constexpr std::size_t PRESENT_INDEX = 0;
         public:
             static constexpr std::size_t FREE_LIST_END = -1;
             alignas(T) unsigned char data[sizeof(T)] = {};
@@ -113,34 +111,13 @@ namespace phenyl::util {
                     getUnsafe().~T();
                 }
             }
+
+        private:
+            static constexpr std::size_t PRESENT_INDEX = 0;
         };
 
         template <class T>
         class FLVectorIterator {
-        private:
-            FlVectorItem<T>* m_items;
-            std::size_t m_pos;
-            std::size_t m_size;
-            void increment () {
-                m_pos++;
-                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
-                    m_pos++;
-                }
-            }
-
-            void findFirst () {
-                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
-                    m_pos++;
-                }
-            }
-
-            void decrement () {
-                m_pos--;
-                while (m_pos >= 0 && !m_items[m_pos].isPresent()) {
-                    m_pos--;
-                }
-            }
-
         public:
             using iterator = FLVectorIterator<T>;
             using value_type = T;
@@ -186,10 +163,7 @@ namespace phenyl::util {
 
                 return old;
             }
-        };
 
-        template <class T>
-        class FLVectorPairIterator {
         private:
             FlVectorItem<T>* m_items;
             std::size_t m_pos;
@@ -213,7 +187,10 @@ namespace phenyl::util {
                     m_pos--;
                 }
             }
+        };
 
+        template <class T>
+        class FLVectorPairIterator {
         public:
             using iterator = FLVectorPairIterator<T>;
             using value_type = std::pair<std::size_t, T&>;
@@ -260,35 +237,35 @@ namespace phenyl::util {
 
                 return old;
             }
+
+        private:
+            FlVectorItem<T>* m_items;
+            std::size_t m_pos;
+            std::size_t m_size;
+            void increment () {
+                m_pos++;
+                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
+                    m_pos++;
+                }
+            }
+
+            void findFirst () {
+                while (m_pos < m_size && !m_items[m_pos].isPresent()) {
+                    m_pos++;
+                }
+            }
+
+            void decrement () {
+                m_pos--;
+                while (m_pos >= 0 && !m_items[m_pos].isPresent()) {
+                    m_pos--;
+                }
+            }
         };
     }
 
     template <class T>
     class FLVector {
-    private:
-        using VectorItem = detail::FlVectorItem<T>;
-        static constexpr std::size_t DEFAULT_START = 16;
-        static constexpr std::size_t RESIZE_RATIO = 2;
-        std::unique_ptr<VectorItem[]> m_data;
-        std::size_t m_flHead = VectorItem::FREE_LIST_END;
-
-        std::size_t m_presentNum = 0;
-        std::size_t m_listSize = 0;
-        std::size_t m_capacity  = 0;
-
-        std::size_t getNextIndex () {
-            if (m_flHead != VectorItem::FREE_LIST_END) {
-                auto index = m_flHead - 1;
-                m_flHead = m_data[index].next;
-
-                return index;
-            } else if (m_listSize == m_capacity) {
-                reserve(m_listSize * RESIZE_RATIO);
-            }
-
-            return m_listSize++;
-        }
-
     public:
         using iterator = detail::FLVectorIterator<T>;
         using const_iterator = detail::FLVectorIterator<const T>;
@@ -502,6 +479,30 @@ namespace phenyl::util {
             sstream << "]";
 
             return sstream.str();
+        }
+
+    private:
+        using VectorItem = detail::FlVectorItem<T>;
+        static constexpr std::size_t DEFAULT_START = 16;
+        static constexpr std::size_t RESIZE_RATIO = 2;
+        std::unique_ptr<VectorItem[]> m_data;
+        std::size_t m_flHead = VectorItem::FREE_LIST_END;
+
+        std::size_t m_presentNum = 0;
+        std::size_t m_listSize = 0;
+        std::size_t m_capacity  = 0;
+
+        std::size_t getNextIndex () {
+            if (m_flHead != VectorItem::FREE_LIST_END) {
+                auto index = m_flHead - 1;
+                m_flHead = m_data[index].next;
+
+                return index;
+            } else if (m_listSize == m_capacity) {
+                reserve(m_listSize * RESIZE_RATIO);
+            }
+
+            return m_listSize++;
         }
     };
 }

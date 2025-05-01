@@ -16,24 +16,6 @@ namespace phenyl::core {
     class ChildrenView;
 
     class Entity {
-    private:
-        static Logger LOGGER;
-
-        EntityId m_id;
-        World* m_world = nullptr;
-
-        [[nodiscard]] const detail::EntityEntry& entry () const;
-        void raiseUntyped (std::size_t signalType, std::byte* ptr);
-        bool shouldDefer ();
-        void deferInsert (std::size_t compType, std::byte* ptr);
-        void deferErase (std::size_t compType);
-        void deferApply (std::function<void(Entity)> applyFunc);
-
-        friend World;
-        template <typename ...Args>
-        friend class ArchetypeView;
-        template <typename ...Args>
-        friend class Query;
     public:
         Entity () = default;
         Entity (EntityId id, World* entityWorld);
@@ -152,5 +134,24 @@ namespace phenyl::core {
 
         void addChild (Entity child);
         Entity createChild ();
+
+    private:
+        static Logger LOGGER;
+
+        EntityId m_id;
+        World* m_world = nullptr;
+
+        [[nodiscard]] const detail::EntityEntry& entry () const;
+        void raiseUntyped (std::size_t signalType, std::byte* ptr);
+        bool shouldDefer ();
+        void deferInsert (std::size_t compType, std::byte* ptr);
+        void deferErase (std::size_t compType);
+        void deferApply (std::function<void(Entity)> applyFunc);
+
+        friend World;
+        template <typename ...Args>
+        friend class ArchetypeView;
+        template <typename ...Args>
+        friend class Query;
     };
 }

@@ -15,24 +15,6 @@ namespace phenyl {
 
 
         class ApplicationBase {
-        private:
-            ApplicationProperties m_properties;
-            core::PhenylRuntime* m_runtime = nullptr;
-            double m_targetFrameTime{1.0 / 60};
-            double m_targetFps{60};
-            double m_fixedTimeScale{1.0};
-
-            virtual void _init () = 0;
-            ApplicationBase (ApplicationProperties properties);
-
-            friend class AppPlugin;
-            template <PluginType ...Plugins>
-            friend class ::phenyl::Application;
-        protected:
-            core::World& world ();
-
-            void setTargetFPS (double fps);
-            void setFixedTimeScale (double newTimeScale);
         public:
             virtual ~ApplicationBase() = default;
 
@@ -67,11 +49,36 @@ namespace phenyl {
             double getTargetFps () const {
                 return m_targetFps;
             }
+
+        protected:
+            core::World& world ();
+
+            void setTargetFPS (double fps);
+            void setFixedTimeScale (double newTimeScale);
+
+        private:
+            ApplicationProperties m_properties;
+            core::PhenylRuntime* m_runtime = nullptr;
+            double m_targetFrameTime{1.0 / 60};
+            double m_targetFps{60};
+            double m_fixedTimeScale{1.0};
+
+            virtual void _init () = 0;
+            ApplicationBase (ApplicationProperties properties);
+
+            friend class AppPlugin;
+            template <PluginType ...Plugins>
+            friend class ::phenyl::Application;
         };
     }
 
     template <PluginType ...Plugins>
     class Application : public engine::ApplicationBase {
+    public:
+        explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
+
+        virtual void init () = 0;
+
     private:
         template <PluginType T, PluginType ...Args>
         static void InitPlugins (core::PhenylRuntime& runtime) {
@@ -87,22 +94,19 @@ namespace phenyl {
 
             init();
         }
-    public:
-        explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
-
-        virtual void init () = 0;
     };
 
     template <>
     class Application<> : public engine::ApplicationBase {
-    private:
-        void _init() final {
-            init();
-        }
     public:
         explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
 
         virtual void init () = 0;
+
+    private:
+        void _init() final {
+            init();
+        }
     };
 
     using Application2D = Application<Default2DPlugin>;

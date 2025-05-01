@@ -5,21 +5,20 @@
 namespace phenyl::audio {
     class OpenALBuffer;
     class OpenALSource {
-    private:
-        ALuint m_id;
-        bool m_valid;
     public:
         OpenALSource ();
-
-        explicit operator bool () const {
-            return m_valid;
-        }
 
         OpenALSource (const OpenALSource&) = delete;
         OpenALSource (OpenALSource&& other) noexcept;
 
         OpenALSource& operator= (const OpenALSource&) = delete;
         OpenALSource& operator= (OpenALSource&& other) noexcept;
+
+        ~OpenALSource();
+
+        explicit operator bool () const {
+            return m_valid;
+        }
 
         [[nodiscard]] ALuint id () const {
             return m_id;
@@ -33,6 +32,8 @@ namespace phenyl::audio {
         void stop ();
         bool stopped () const;
 
-        ~OpenALSource();
+    private:
+        ALuint m_id;
+        bool m_valid;
     };
 }

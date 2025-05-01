@@ -14,19 +14,6 @@
 namespace phenyl::game {
     // TODO: manager interface
     class LevelManager : public core::AssetManager<Level>, public core::IResource {
-    private:
-        util::Map<std::size_t, std::unique_ptr<Level>> m_levels;
-        core::World& m_world;
-        core::EntityComponentSerializer& m_serializer;
-
-        std::vector<core::Asset<Level>> m_queuedLoads;
-        bool m_queuedClear = false;
-
-        void queueUnload(std::size_t id) override;
-        [[nodiscard]] const char* getFileType() const override;
-    protected:
-        Level* load(std::ifstream& data, std::size_t id) override;
-        Level* load (phenyl::game::Level&& obj, std::size_t id) override;
     public:
         LevelManager (core::World& manager, core::EntityComponentSerializer& serializer);
         ~LevelManager() override;
@@ -39,5 +26,20 @@ namespace phenyl::game {
         void loadLevels ();
 
         void dump (std::ostream& file) const;
+
+    protected:
+        Level* load(std::ifstream& data, std::size_t id) override;
+        Level* load (phenyl::game::Level&& obj, std::size_t id) override;
+
+    private:
+        util::Map<std::size_t, std::unique_ptr<Level>> m_levels;
+        core::World& m_world;
+        core::EntityComponentSerializer& m_serializer;
+
+        std::vector<core::Asset<Level>> m_queuedLoads;
+        bool m_queuedClear = false;
+
+        void queueUnload(std::size_t id) override;
+        [[nodiscard]] const char* getFileType() const override;
     };
 }

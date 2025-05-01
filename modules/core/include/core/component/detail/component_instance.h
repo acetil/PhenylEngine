@@ -14,14 +14,6 @@ namespace phenyl::core {
 
 namespace phenyl::core::detail {
     class UntypedComponent {
-    private:
-        World* m_world;
-        std::string m_name;
-        std::size_t m_type;
-    protected:
-        [[nodiscard]] Entity entity (EntityId id) const noexcept {
-            return Entity{id, m_world};
-        }
     public:
         explicit UntypedComponent (World* world, std::string compName, std::size_t typeIndex) : m_world{world}, m_name{std::move(compName)}, m_type{typeIndex} {}
         virtual ~UntypedComponent() = default;
@@ -41,16 +33,20 @@ namespace phenyl::core::detail {
         virtual void deferComp (EntityId id, std::byte* comp) = 0;
         virtual void deferErase (EntityId id) = 0;
         virtual void deferEnd () = 0;
+
+    protected:
+        [[nodiscard]] Entity entity (EntityId id) const noexcept {
+            return Entity{id, m_world};
+        }
+
+    private:
+        World* m_world;
+        std::string m_name;
+        std::size_t m_type;
     };
 
     template <typename T>
     class Component : public UntypedComponent {
-    private:
-        std::vector<std::function<void(const OnInsert<T>&, Entity)>> m_insertHandlers;
-        std::vector<std::function<void(const OnRemove<T>&, Entity)>> m_removeHandlers;
-
-        std::vector<std::pair<EntityId, T>> m_deferredInserts;
-        std::vector<EntityId> m_deferredErases;
     public:
         Component (World* world, std::string name) : UntypedComponent(world, std::move(name), meta::type_index<T>()) {}
 
@@ -103,5 +99,12 @@ namespace phenyl::core::detail {
             m_deferredInserts.clear();
             m_deferredErases.clear();
         }
+
+    private:
+        std::vector<std::function<void(const OnInsert<T>&, Entity)>> m_insertHandlers;
+        std::vector<std::function<void(const OnRemove<T>&, Entity)>> m_removeHandlers;
+
+        std::vector<std::pair<EntityId, T>> m_deferredInserts;
+        std::vector<EntityId> m_deferredErases;
     };
 }

@@ -25,20 +25,6 @@ namespace phenyl::graphics {
 
     class Material : public core::IAssetType<Material> {
     public:
-        struct MatPipeline;
-        struct DepthPipeline;
-        struct ShadowMapPipeline;
-    private:
-        Renderer& m_renderer;
-        std::uint32_t m_id;
-        core::Asset<Shader> m_shader;
-
-        util::HashMap<std::uint64_t, MatPipeline> m_pipelines;
-        util::HashMap<std::uint64_t, DepthPipeline> m_depthPipelines;
-        util::HashMap<std::uint64_t, ShadowMapPipeline> m_shadowMapPipelines;
-
-        MaterialProperties materialProperties;
-    public:
         struct MatPipeline {
             Pipeline pipeline;
 
@@ -79,19 +65,20 @@ namespace phenyl::graphics {
         ShadowMapPipeline& getShadowMapPipeline (const MeshLayout& layout);
 
         std::shared_ptr<MaterialInstance> instance ();
+
+    private:
+        Renderer& m_renderer;
+        std::uint32_t m_id;
+        core::Asset<Shader> m_shader;
+
+        util::HashMap<std::uint64_t, MatPipeline> m_pipelines;
+        util::HashMap<std::uint64_t, DepthPipeline> m_depthPipelines;
+        util::HashMap<std::uint64_t, ShadowMapPipeline> m_shadowMapPipelines;
+
+        MaterialProperties materialProperties;
     };
 
     class MaterialInstance {
-    private:
-        struct MaterialUniform {
-            ShaderDataType type;
-            std::size_t offset;
-        };
-
-        core::Asset<Material> m_material;
-        RawUniformBuffer m_data;
-        std::unordered_map<std::string, MaterialUniform> m_uniforms;
-
     public:
         MaterialInstance (Renderer& renderer, core::Asset<Material> material, const MaterialProperties& properties);
 
@@ -116,5 +103,15 @@ namespace phenyl::graphics {
 
         void upload ();
         void bind (Material::MatPipeline& pipeline);
+
+    private:
+        struct MaterialUniform {
+            ShaderDataType type;
+            std::size_t offset;
+        };
+
+        core::Asset<Material> m_material;
+        RawUniformBuffer m_data;
+        std::unordered_map<std::string, MaterialUniform> m_uniforms;
     };
 }

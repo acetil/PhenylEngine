@@ -3,9 +3,6 @@
 namespace phenyl::util {
     template <typename T>
     class Iterable {
-    private:
-        T m_begin;
-        T m_end;
     public:
         using iterator = T;
 
@@ -18,5 +15,9 @@ namespace phenyl::util {
         T end () const {
             return m_end;
         }
+
+    private:
+        T m_begin;
+        T m_end;
     };
 }

@@ -39,6 +39,16 @@ namespace phenyl::graphics {
     };
 
     class ParticleSystem2D {
+    public:
+        ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles);
+
+        void emit (glm::vec2 worldPos, glm::vec2 direction);
+
+        void update (float deltaTime);
+
+        void bufferPos (Buffer<glm::vec2>& buffer) const;
+        void bufferColour (Buffer<glm::vec4>& buffer) const;
+
     private:
         struct Particle {
             glm::vec2 pos{0, 0};
@@ -70,15 +80,6 @@ namespace phenyl::graphics {
         std::size_t m_activeNum;
 
         void addParticle (glm::vec2 worldPos, glm::vec2 direction, std::size_t index);
-    public:
-        ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles);
-
-        void emit (glm::vec2 worldPos, glm::vec2 direction);
-
-        void update (float deltaTime);
-
-        void bufferPos (Buffer<glm::vec2>& buffer) const;
-        void bufferColour (Buffer<glm::vec4>& buffer) const;
     };
 
     util::Optional<ParticleProperties2D> LoadParticleProperties2D (std::istream& file);

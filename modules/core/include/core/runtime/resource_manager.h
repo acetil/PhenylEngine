@@ -10,11 +10,6 @@
 
 namespace phenyl::core {
     class ResourceManager {
-    private:
-        std::vector<std::unique_ptr<IResource>> m_ownedResources;
-        util::Map<std::size_t, IResource*> m_resources;
-
-        void registerResource (std::size_t typeIndex, IResource* resource);
     public:
         template <std::derived_from<IResource> T>
         T& resource () {
@@ -54,5 +49,11 @@ namespace phenyl::core {
         void addResource (T* resource) {
             registerResource(meta::type_index<T>(), resource);
         }
+
+    private:
+        std::vector<std::unique_ptr<IResource>> m_ownedResources;
+        util::Map<std::size_t, IResource*> m_resources;
+
+        void registerResource (std::size_t typeIndex, IResource* resource);
     };
 }

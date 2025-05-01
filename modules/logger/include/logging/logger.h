@@ -7,16 +7,6 @@
 
 namespace phenyl::logging {
     class Logger {
-    private:
-        std::string_view m_name;
-        Logger* m_parent;
-        LogSink* m_sink = nullptr;
-
-        void initSink ();
-
-        void setMinLevel (int level);
-
-        friend class LogManager;
     public:
         explicit Logger (std::string_view name);
         Logger (std::string_view name, Logger& parent);
@@ -64,5 +54,16 @@ namespace phenyl::logging {
         void fatal (const std::source_location sourceLoc, std::format_string<Args...> fmt, Args&&... args) {
             log(sourceLoc, LEVEL_FATAL, std::move(fmt), std::forward<Args>(args)...);
         }
+
+    private:
+        std::string_view m_name;
+        Logger* m_parent;
+        LogSink* m_sink = nullptr;
+
+        void initSink ();
+
+        void setMinLevel (int level);
+
+        friend class LogManager;
     };
 }

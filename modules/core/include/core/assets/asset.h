@@ -34,14 +34,6 @@ namespace phenyl::core {
 
     template <typename T>
     class Asset {
-    private:
-        std::size_t m_id;
-        T* m_ptr;
-
-        friend class Assets;
-        friend class IAssetType<T>;
-        friend class detail::AssetCache<T>;
-        Asset (std::size_t id, T* ptr) : m_id{id}, m_ptr{ptr} {}
     public:
         Asset () : m_id{0}, m_ptr{nullptr} {}
 
@@ -118,12 +110,19 @@ namespace phenyl::core {
         [[nodiscard]] std::string_view path () const {
             return detail::AssetBase::GetPath(meta::type_index<T>(), m_id);
         }
+
+    private:
+        std::size_t m_id;
+        T* m_ptr;
+
+        friend class Assets;
+        friend class IAssetType<T>;
+        friend class detail::AssetCache<T>;
+        Asset (std::size_t id, T* ptr) : m_id{id}, m_ptr{ptr} {}
     };
 
     template <typename T>
     class IAssetType {
-    private:
-        std::optional<std::size_t> m_id = 0;
     public:
         virtual ~IAssetType () = default;
 
@@ -138,6 +137,9 @@ namespace phenyl::core {
         }
 
         friend class Assets;
+
+    private:
+        std::optional<std::size_t> m_id = 0;
     };
 
     template <typename T>

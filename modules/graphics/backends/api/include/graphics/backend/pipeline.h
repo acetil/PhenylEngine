@@ -69,8 +69,6 @@ namespace phenyl::graphics {
     };
 
     class Pipeline {
-    private:
-        std::unique_ptr<IPipeline> m_pipeline;
     public:
         Pipeline () = default;
         explicit Pipeline (std::unique_ptr<IPipeline> underlying) : m_pipeline{std::move(underlying)} {}
@@ -172,6 +170,9 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_pipeline);
             m_pipeline->renderInstanced(&frameBuffer.getUnderlying(), numInstances, vertices, offset);
         }
+
+    private:
+        std::unique_ptr<IPipeline> m_pipeline;
     };
 
     class IPipelineBuilder {
@@ -194,8 +195,6 @@ namespace phenyl::graphics {
     };
 
     class PipelineBuilder {
-    private:
-        std::unique_ptr<IPipelineBuilder> m_builder;
     public:
         explicit PipelineBuilder (std::unique_ptr<IPipelineBuilder> builder) : m_builder{std::move(builder)} {}
 
@@ -291,5 +290,8 @@ namespace phenyl::graphics {
 
             return Pipeline{m_builder->build()};
         }
+
+    private:
+        std::unique_ptr<IPipelineBuilder> m_builder;
     };
 }

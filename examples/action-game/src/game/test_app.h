@@ -12,6 +12,23 @@
 
 namespace test {
     class TestApp : public phenyl::Application2D {
+    public:
+        TestApp (phenyl::ApplicationProperties properties);
+
+        void init () override;
+        void postInit() override;
+        void update ();
+        void fixedUpdate ();
+
+        void queueResume ();
+        void startStepping ();
+        void stopStepping ();
+        void step ();
+
+        void updateDebugRender (bool doRender);
+        void updateProfileRender (bool doRender);
+        void dumpLevel (const std::string& path);
+
     private:
         // std::vector<phenyl::ui::Label> extraLabels;
         std::vector<phenyl::ui::Widget*> m_extraWidgets;
@@ -36,21 +53,5 @@ namespace test {
 
         void addLabel ();
         void removeLabel ();
-    public:
-        TestApp (phenyl::ApplicationProperties properties);
-
-        void init () override;
-        void postInit() override;
-        void update ();
-        void fixedUpdate ();
-
-        void queueResume ();
-        void startStepping ();
-        void stopStepping ();
-        void step ();
-
-        void updateDebugRender (bool doRender);
-        void updateProfileRender (bool doRender);
-        void dumpLevel (const std::string& path);
     };
 }

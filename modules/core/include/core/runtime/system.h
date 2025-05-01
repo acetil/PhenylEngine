@@ -12,11 +12,6 @@
 
 namespace phenyl::core {
     class IRunnableSystem {
-    private:
-
-    protected:
-        std::unordered_set<IRunnableSystem*> m_parentSystems;
-        std::string m_name;
     public:
         explicit IRunnableSystem (std::string name) : m_name{std::move(name)} {}
 
@@ -34,6 +29,10 @@ namespace phenyl::core {
         const std::unordered_set<IRunnableSystem*>& getPrecedingSystems () const {
             return m_parentSystems;
         }
+
+    protected:
+        std::unordered_set<IRunnableSystem*> m_parentSystems;
+        std::string m_name;
     };
 
     template <typename Stage>
@@ -57,8 +56,6 @@ namespace phenyl::core {
 
     template <typename Stage>
     class FunctionSystem : public System<Stage> {
-    private:
-        std::function<void()> m_func;
     public:
         explicit FunctionSystem (std::string name, std::function<void()> func) : System<Stage>{std::move(name)}, m_func{std::move(func)} {}
 
@@ -69,12 +66,13 @@ namespace phenyl::core {
         bool exclusive () const noexcept override {
             return true;
         }
+
+    private:
+        std::function<void()> m_func;
     };
 
     template <typename Stage, typename T>
     class ExclusiveFunctionSystem : public System<Stage> {
-    private:
-        std::function<void(PhenylRuntime&)> m_func;
     public:
         ExclusiveFunctionSystem (std::string name, std::function<void(PhenylRuntime&)> func) : System<Stage>{std::move(name)}, m_func{std::move(func)} {}
 
@@ -85,6 +83,9 @@ namespace phenyl::core {
         bool exclusive () const noexcept override {
             return true;
         }
+
+    private:
+        std::function<void(PhenylRuntime&)> m_func;
     };
 
     template <typename Stage, ResourceType ...ResourceTypes, ComponentType ...Components> requires (sizeof...(Components) > 0 && (!std::same_as<std::remove_all_extents_t<Components>, core::Entity> && ... && true))

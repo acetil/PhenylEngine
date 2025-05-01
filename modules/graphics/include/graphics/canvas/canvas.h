@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../backends/api/include/graphics/viewport.h"
+#include "graphics/viewport.h"
 #include "graphics/font/glyph_atlas.h"
 
 #include "canvas_shapes.h"
@@ -13,19 +13,6 @@ namespace phenyl::graphics {
     class CanvasRenderLayer;
 
     class Canvas : public core::IResource, private IViewportUpdateHandler {
-    private:
-        GlyphAtlas m_atlas;
-        CanvasRenderLayer& m_layer;
-        std::unique_ptr<FontManager> m_fontManager;
-        core::Asset<Font> m_defaultFont;
-
-        std::vector<glm::vec2> m_offsetStack;
-        glm::ivec2 m_resolution;
-
-        void submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style);
-        [[nodiscard]] glm::vec2 offset () const;
-
-        void onViewportResize(glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     public:
         explicit Canvas (Renderer& renderer);
         ~Canvas() override;
@@ -54,5 +41,19 @@ namespace phenyl::graphics {
         glm::ivec2 resolution () const noexcept {
             return m_resolution;
         }
+
+    private:
+        GlyphAtlas m_atlas;
+        CanvasRenderLayer& m_layer;
+        std::unique_ptr<FontManager> m_fontManager;
+        core::Asset<Font> m_defaultFont;
+
+        std::vector<glm::vec2> m_offsetStack;
+        glm::ivec2 m_resolution;
+
+        void submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style);
+        [[nodiscard]] glm::vec2 offset () const;
+
+        void onViewportResize(glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
     };
 }

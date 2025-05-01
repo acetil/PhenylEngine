@@ -17,6 +17,30 @@ namespace phenyl::util {
     };
 
     class Random {
+    public:
+        static void Seed (std::uint32_t seed) {
+            GetInstance()->seed(seed);
+        }
+
+        static void Cleanup () {
+            delete INSTANCE;
+        }
+
+        template <typename T>
+        static T Rand () {
+            return GetInstance()->rand<T>();
+        }
+
+        template <typename T>
+        static T Rand (T min, T max) {
+            return GetInstance()->rand(min, max);
+        }
+
+        template <std::random_access_iterator It>
+        static void Shuffle (It begin, It end) {
+            GetInstance()->shuffle(begin, end);
+        }
+
     private:
         static Random* INSTANCE;
 
@@ -64,29 +88,6 @@ namespace phenyl::util {
         template <std::random_access_iterator It>
         void shuffle (It begin, It end) {
             std::shuffle(begin, end, m_random);
-        }
-    public:
-        static void Seed (std::uint32_t seed) {
-            GetInstance()->seed(seed);
-        }
-
-        static void Cleanup () {
-            delete INSTANCE;
-        }
-
-        template <typename T>
-        static T Rand () {
-            return GetInstance()->rand<T>();
-        }
-
-        template <typename T>
-        static T Rand (T min, T max) {
-            return GetInstance()->rand(min, max);
-        }
-
-        template <std::random_access_iterator It>
-        static void Shuffle (It begin, It end) {
-            GetInstance()->shuffle(begin, end);
         }
     };
 }

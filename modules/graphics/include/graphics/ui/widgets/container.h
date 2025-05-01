@@ -8,12 +8,6 @@
 
 namespace phenyl::graphics {
     class ContainerWidget : public Widget {
-    private:
-        std::unique_ptr<Widget> m_child;
-        glm::vec4 m_bgColor{};
-        glm::vec4 m_borderColor{};
-        float m_borderSize = 0.0f;
-
     public:
         explicit ContainerWidget (std::unique_ptr<Widget> childWidget = nullptr, const Modifier& modifier = {});
         explicit ContainerWidget (const Modifier& modifier) : ContainerWidget{nullptr, modifier} {}
@@ -58,5 +52,11 @@ namespace phenyl::graphics {
         void render (Canvas& canvas) override;
         bool pointerUpdate (glm::vec2 pointer) override;
         void pointerLeave () override;
+
+    private:
+        std::unique_ptr<Widget> m_child;
+        glm::vec4 m_bgColor{};
+        glm::vec4 m_borderColor{};
+        float m_borderSize = 0.0f;
     };
 }

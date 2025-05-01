@@ -50,23 +50,12 @@ namespace phenyl::util {
 
     namespace detail {
         struct StringSplitter {
-        private:
-            std::string_view m_str;
-            std::string_view m_delim;
-            std::size_t m_maxSplits;
-
+        public:
             struct Sentinel {
 
             };
 
             struct Iterator {
-            private:
-                const StringSplitter* m_splitter = nullptr;
-                std::size_t m_pos = 0;
-                std::size_t m_numSplits = 0;
-                std::optional<std::string_view> m_curr;
-
-                void findNext ();
             public:
                 using value_type = std::string_view;
                 using difference_type = std::ptrdiff_t;
@@ -80,8 +69,16 @@ namespace phenyl::util {
 
                 bool operator== (const Iterator& other) const noexcept;
                 bool operator== (const Sentinel& other) const noexcept;
+
+            private:
+                const StringSplitter* m_splitter = nullptr;
+                std::size_t m_pos = 0;
+                std::size_t m_numSplits = 0;
+                std::optional<std::string_view> m_curr;
+
+                void findNext ();
             };
-        public:
+
             using iterator = Iterator;
             using sentinel = Sentinel;
 
@@ -89,6 +86,11 @@ namespace phenyl::util {
 
             iterator begin () const;
             sentinel end () const;
+
+        private:
+            std::string_view m_str;
+            std::string_view m_delim;
+            std::size_t m_maxSplits;
         };
     }
 

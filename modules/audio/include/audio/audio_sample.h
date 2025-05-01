@@ -5,13 +5,6 @@
 namespace phenyl::audio {
     class AudioSystem;
     class AudioSample {
-    private:
-        AudioSystem* m_audioSystem{nullptr};
-        std::size_t m_id{0};
-
-        friend AudioSystem;
-        friend class AudioSource;
-        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : m_audioSystem{audioSystem}, m_id{sampleId} {}
     public:
         AudioSample () = default;
 
@@ -28,5 +21,13 @@ namespace phenyl::audio {
         [[nodiscard]] float duration () const;
 
         ~AudioSample();
+
+    private:
+        AudioSystem* m_audioSystem{nullptr};
+        std::size_t m_id{0};
+
+        friend AudioSystem;
+        friend class AudioSource;
+        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : m_audioSystem{audioSystem}, m_id{sampleId} {}
     };
 }

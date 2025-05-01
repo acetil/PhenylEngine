@@ -8,11 +8,6 @@
 
 namespace phenyl::graphics {
     class MeshManager : public core::AssetManager<Mesh> {
-    private:
-        Renderer& m_renderer;
-        util::HashMap<std::size_t, std::unique_ptr<Mesh>> m_meshes;
-        util::HashMap<MeshLayout, std::uint64_t> m_layoutIds;
-        std::uint64_t m_nextLayoutId = 1;
     public:
         MeshManager (Renderer& renderer);
 
@@ -23,5 +18,11 @@ namespace phenyl::graphics {
         const char* getFileType() const override;
         bool isBinary() const override;
         void queueUnload(std::size_t id) override;
+
+    private:
+        Renderer& m_renderer;
+        util::HashMap<std::size_t, std::unique_ptr<Mesh>> m_meshes;
+        util::HashMap<MeshLayout, std::uint64_t> m_layoutIds;
+        std::uint64_t m_nextLayoutId = 1;
     };
 }

@@ -5,13 +5,6 @@
 
 namespace phenyl::opengl {
     class GlBuffer : public graphics::IBuffer {
-    private:
-        GLuint m_id = 0;
-        GLenum m_usageHint;
-        std::size_t m_capacity;
-        std::size_t m_stride;
-
-        void ensureCapacity (std::size_t requiredCapacity);
     public:
         GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint = GL_DYNAMIC_DRAW);
 
@@ -34,5 +27,13 @@ namespace phenyl::opengl {
         std::size_t stride () const {
             return m_stride;
         }
+
+    private:
+        GLuint m_id = 0;
+        GLenum m_usageHint;
+        std::size_t m_capacity;
+        std::size_t m_stride;
+
+        void ensureCapacity (std::size_t requiredCapacity);
     };
 }

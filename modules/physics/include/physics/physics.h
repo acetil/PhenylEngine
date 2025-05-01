@@ -8,8 +8,6 @@ namespace phenyl::physics {
     class Physics2D;
 
     class Physics2DPlugin : public core::IPlugin {
-    private:
-        std::unique_ptr<Physics2D> m_physics;
     public:
         Physics2DPlugin ();
         ~Physics2DPlugin() override;
@@ -18,5 +16,8 @@ namespace phenyl::physics {
 
         void init(core::PhenylRuntime& runtime) override;
         void render(core::PhenylRuntime& runtime);
+
+    private:
+        std::unique_ptr<Physics2D> m_physics;
     };
 }

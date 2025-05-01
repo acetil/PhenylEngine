@@ -4,8 +4,6 @@
 
 namespace phenyl::core {
     struct DeltaTime : public IResource {
-    private:
-        double m_value = 0.0;
     public:
         DeltaTime () = default;
 
@@ -20,11 +18,12 @@ namespace phenyl::core {
         [[nodiscard]] std::string_view getName () const noexcept override {
             return "DeltaTime";
         }
+
+    private:
+        double m_value = 0.0;
     };
 
     struct FixedDelta : public IResource {
-    private:
-        double m_value = 0.0;
     public:
         FixedDelta () = default;
 
@@ -39,5 +38,8 @@ namespace phenyl::core {
         std::string_view getName () const noexcept override {
             return "FixedDelta";
         }
+
+    private:
+        double m_value = 0.0;
     };
 }

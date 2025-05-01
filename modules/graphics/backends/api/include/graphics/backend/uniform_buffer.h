@@ -18,9 +18,6 @@ namespace phenyl::graphics {
 
     template <typename T>
     class UniformBuffer {
-    private:
-        std::unique_ptr<IUniformBuffer> m_buffer;
-        T* m_data;
     public:
         UniformBuffer() = default;
 
@@ -85,32 +82,14 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_buffer);
             return *m_buffer;
         }
+
+    private:
+        std::unique_ptr<IUniformBuffer> m_buffer;
+        T* m_data;
     };
 
     template <typename T>
     class UniformArrayBuffer {
-    private:
-        std::unique_ptr<IUniformBuffer> m_buffer;
-        std::byte* m_data;
-        std::size_t m_stride = 0;
-        std::size_t m_size = 0;
-        std::size_t m_capacity = 0;
-
-        void guaranteeCapacity (std::size_t reqCapacity) {
-            if (m_capacity >= reqCapacity) {
-                return;
-            }
-
-            while (m_capacity < reqCapacity) {
-                m_capacity *= 2;
-            }
-
-            m_data = this->m_buffer->allocate(m_stride * m_capacity).data();
-        }
-
-        T* get (std::size_t index) {
-            return reinterpret_cast<T*>(m_data + index * m_stride);
-        }
     public:
         UniformArrayBuffer () = default;
         UniformArrayBuffer (std::unique_ptr<IUniformBuffer> rendererBuffer, std::size_t startCapacity = 8) : m_buffer{std::move(rendererBuffer)}, m_capacity{startCapacity} {
@@ -182,12 +161,32 @@ namespace phenyl::graphics {
         std::size_t stride () const noexcept {
             return m_stride;
         }
+
+    private:
+        std::unique_ptr<IUniformBuffer> m_buffer;
+        std::byte* m_data;
+        std::size_t m_stride = 0;
+        std::size_t m_size = 0;
+        std::size_t m_capacity = 0;
+
+        void guaranteeCapacity (std::size_t reqCapacity) {
+            if (m_capacity >= reqCapacity) {
+                return;
+            }
+
+            while (m_capacity < reqCapacity) {
+                m_capacity *= 2;
+            }
+
+            m_data = this->m_buffer->allocate(m_stride * m_capacity).data();
+        }
+
+        T* get (std::size_t index) {
+            return reinterpret_cast<T*>(m_data + index * m_stride);
+        }
     };
 
     class RawUniformBuffer {
-    private:
-        std::unique_ptr<IUniformBuffer> m_buffer;
-        std::span<std::byte> m_data;
     public:
         RawUniformBuffer () = default;
 
@@ -230,5 +229,9 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_buffer);
             return *m_buffer;
         }
+
+    private:
+        std::unique_ptr<IUniformBuffer> m_buffer;
+        std::span<std::byte> m_data;
     };
 }

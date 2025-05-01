@@ -5,14 +5,6 @@
 
 namespace phenyl::vulkan {
     class VulkanImageTexture : public graphics::IImageTexture {
-    private:
-        VulkanResources& m_resources;
-        TransferManager& m_transferManager;
-
-        CombinedSampler m_combinedSampler;
-
-        void recreateIfNecessary (VkFormat format, std::uint32_t width, std::uint32_t height);
-        void recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height);
     public:
         VulkanImageTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties);
 
@@ -21,5 +13,14 @@ namespace phenyl::vulkan {
 
         void upload (const graphics::Image& image) override;
         graphics::ISampler& sampler () noexcept override;
+
+    private:
+        VulkanResources& m_resources;
+        TransferManager& m_transferManager;
+
+        CombinedSampler m_combinedSampler;
+
+        void recreateIfNecessary (VkFormat format, std::uint32_t width, std::uint32_t height);
+        void recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height);
     };
 }

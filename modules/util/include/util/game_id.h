@@ -25,11 +25,6 @@ namespace phenyl::util {
 
         template<BackingType T, std::size_t GenerationBits, std::size_t TypeBits>
         class GameIdData {
-        private:
-            static constexpr std::size_t IndexBits = sizeof(T) * 8 - GenerationBits - TypeBits;
-            static_assert(sizeof(T) * 8 > GenerationBits + TypeBits, "Number of bits requested for type and generation are too large!");
-
-            T m_data = 0;
         public:
             template <std::unsigned_integral V>
             GameIdData (V generation, V type, V index) {
@@ -80,6 +75,12 @@ namespace phenyl::util {
             bool operator== (const GameIdData<T, GenerationBits, TypeBits>& other) const {
                 return m_data == other.m_data;
             }
+
+        private:
+            static constexpr std::size_t IndexBits = sizeof(T) * 8 - GenerationBits - TypeBits;
+            static_assert(sizeof(T) * 8 > GenerationBits + TypeBits, "Number of bits requested for type and generation are too large!");
+
+            T m_data = 0;
         };
     }
 
@@ -93,11 +94,7 @@ namespace phenyl::util {
         static constexpr std::size_t TypeBits = TypeBits_;
         static constexpr std::size_t IndexBits = sizeof(T) * 8 - GenBits - TypeBits;
         using DataType = T;
-    private:
-        using BaseType = detail::GameIdData<T, GenBits, TypeBits>;
 
-        BaseType m_data;
-    public:
         PublicGameId () : m_data{} {}
 
         template <std::unsigned_integral V, typename = std::enable_if_t<std::is_integral_v<V> && GenBits != 0 && TypeBits != 0>>
@@ -154,6 +151,11 @@ namespace phenyl::util {
         IdType convert () const {
             return IdType{*this};
         }
+
+    private:
+        using BaseType = detail::GameIdData<T, GenBits, TypeBits>;
+
+        BaseType m_data;
     };
 
 
@@ -166,6 +168,27 @@ namespace phenyl::util {
         using OwnerType = IdOwnerType;
         using Tag = TagType;
         using DataType = T;
+
+        GameId () : m_data{} {}
+
+        GameId (const GameId&) = default;
+        GameId& operator= (const GameId&) = default;
+
+        GameId (GameId&&) noexcept = default;
+        GameId& operator= (GameId&&) noexcept = default;
+
+        operator bool () const {
+            return m_data;
+        }
+
+        bool operator== (const GameId<T, GenerationBits, TypeBits, IdOwnerType, TagType>& other) const {
+            return m_data == other.m_data;
+        }
+
+        DataType getValue () const {
+            return m_data.getValue();
+        }
+
     private:
         using BaseType = PublicGameId<T, GenBits, TypeBits>;
 
@@ -200,26 +223,6 @@ namespace phenyl::util {
             return m_data;
         }
 
-    public:
-        GameId () : m_data{} {}
-
-        GameId (const GameId&) = default;
-        GameId& operator= (const GameId&) = default;
-
-        GameId (GameId&&) noexcept = default;
-        GameId& operator= (GameId&&) noexcept = default;
-
-        operator bool () const {
-            return m_data;
-        }
-
-        bool operator== (const GameId<T, GenerationBits, TypeBits, IdOwnerType, TagType>& other) const {
-            return m_data == other.m_data;
-        }
-
-        DataType getValue () const {
-            return m_data.getValue();
-        }
 
         friend IdOwnerType;
         friend PublicGameId<T, GenBits, TypeBits>;

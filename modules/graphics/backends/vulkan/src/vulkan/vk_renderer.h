@@ -21,6 +21,27 @@ namespace phenyl::vulkan {
     class VulkanViewport;
 
     class VulkanRenderer : public graphics::Renderer {
+    public:
+        VulkanRenderer (const graphics::GraphicsProperties& properties, std::unique_ptr<VulkanViewport> vkViewport);
+        ~VulkanRenderer () override;
+
+        double getCurrentTime () override;
+        void clearWindow () override;
+        void render() override;
+        void finishRender () override;
+        graphics::PipelineBuilder buildPipeline () override;
+        void loadDefaultShaders () override;
+        graphics::Viewport& getViewport () override;
+        const graphics::Viewport& getViewport() const override;
+        std::string_view getName() const noexcept override;
+
+    protected:
+        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) override;
+        std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
+        std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (const graphics::TextureProperties& properties) override;
+        std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture (const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
+        std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) override;
+
     private:
         static std::vector<const char*> GatherValidationLayers ();
         static void FilterValidationLayers (std::vector<const char*>& layers);
@@ -52,25 +73,5 @@ namespace phenyl::vulkan {
         VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
         void setupDebugMessenger ();
         void destroyDebugMessenger ();
-    protected:
-        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) override;
-        std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
-        std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (const graphics::TextureProperties& properties) override;
-        std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture (const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
-        std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) override;
-
-    public:
-        VulkanRenderer (const graphics::GraphicsProperties& properties, std::unique_ptr<VulkanViewport> vkViewport);
-        ~VulkanRenderer () override;
-
-        double getCurrentTime () override;
-        void clearWindow () override;
-        void render() override;
-        void finishRender () override;
-        graphics::PipelineBuilder buildPipeline () override;
-        void loadDefaultShaders () override;
-        graphics::Viewport& getViewport () override;
-        const graphics::Viewport& getViewport() const override;
-        std::string_view getName() const noexcept override;
     };
 }

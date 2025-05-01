@@ -9,8 +9,6 @@
 
 namespace phenyl::core {
     class IComponentSerializer {
-    protected:
-        std::string m_name;
     public:
         explicit IComponentSerializer (std::string componentName) : m_name{std::move(componentName)} {}
         virtual ~IComponentSerializer () = default;
@@ -23,6 +21,9 @@ namespace phenyl::core {
 
         virtual void deserialize (IObjectDeserializer& deserializer, Entity entity) = 0;
         virtual void deserialize (IObjectDeserializer& deserializer, PrefabBuilder& builder) = 0;
+
+    protected:
+        std::string m_name;
     };
 
     template <SerializableType T>
@@ -47,38 +48,6 @@ namespace phenyl::core {
     };
 
     class EntityComponentSerializer {
-    private:
-        util::HashMap<std::string, std::unique_ptr<IComponentSerializer>> m_serializers;
-        void serializeEntity (ISerializer& serializer, Entity entity) {
-            auto& objSerializer = serializer.serializeObj();
-            for (auto& [_, comp] : m_serializers) {
-                comp->serialize(objSerializer, entity);
-            }
-        }
-
-        void deserializeEntity (IObjectDeserializer& deserializer, Entity entity) {
-            while (deserializer.hasNext()) {
-                auto key = deserializer.nextKey();
-                auto it = m_serializers.find(key);
-                if (it == m_serializers.end()) {
-                    throw phenyl::DeserializeException(std::format("Invalid component type: {}", key));
-                }
-
-                it->second->deserialize(deserializer, entity);
-            }
-        }
-
-        void deserializePrefab (IObjectDeserializer& deserializer, PrefabBuilder& builder) {
-            while (deserializer.hasNext()) {
-                auto key = deserializer.nextKey();
-                auto it = m_serializers.find(key);
-                if (it == m_serializers.end()) {
-                    throw phenyl::DeserializeException(std::format("Invalid component type: {}", key));
-                }
-
-                it->second->deserialize(deserializer, builder);
-            }
-        }
     public:
         class PrefabSerializable : public ISerializable<PrefabBuilder> {
         private:
@@ -137,6 +106,39 @@ namespace phenyl::core {
 
         EntitySerializable entity () {
             return EntitySerializable{*this};
+        }
+
+    private:
+        util::HashMap<std::string, std::unique_ptr<IComponentSerializer>> m_serializers;
+        void serializeEntity (ISerializer& serializer, Entity entity) {
+            auto& objSerializer = serializer.serializeObj();
+            for (auto& [_, comp] : m_serializers) {
+                comp->serialize(objSerializer, entity);
+            }
+        }
+
+        void deserializeEntity (IObjectDeserializer& deserializer, Entity entity) {
+            while (deserializer.hasNext()) {
+                auto key = deserializer.nextKey();
+                auto it = m_serializers.find(key);
+                if (it == m_serializers.end()) {
+                    throw phenyl::DeserializeException(std::format("Invalid component type: {}", key));
+                }
+
+                it->second->deserialize(deserializer, entity);
+            }
+        }
+
+        void deserializePrefab (IObjectDeserializer& deserializer, PrefabBuilder& builder) {
+            while (deserializer.hasNext()) {
+                auto key = deserializer.nextKey();
+                auto it = m_serializers.find(key);
+                if (it == m_serializers.end()) {
+                    throw phenyl::DeserializeException(std::format("Invalid component type: {}", key));
+                }
+
+                it->second->deserialize(deserializer, builder);
+            }
         }
     };
 }

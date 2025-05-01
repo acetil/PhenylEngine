@@ -10,15 +10,14 @@ namespace phenyl::graphics {
     class TextureManager;
 
     class GraphicsPlugin : public core::IPlugin {
-    private:
-        std::unique_ptr<TextureManager> m_textureManager;
-        //DebugLayer* debugLayer = nullptr;
-
     public:
         GraphicsPlugin ();
         ~GraphicsPlugin () override;
         [[nodiscard]] std::string_view getName() const noexcept override;
         void init (core::PhenylRuntime& runtime) override;
         void postInit (core::PhenylRuntime& runtime);
+
+    private:
+        std::unique_ptr<TextureManager> m_textureManager;
     };
 }

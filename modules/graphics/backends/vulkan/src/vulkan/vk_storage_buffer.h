@@ -12,13 +12,6 @@ namespace phenyl::vulkan {
     };
 
     class VulkanStorageBuffer : public IVulkanStorageBuffer {
-    private:
-        VulkanResources& m_resources;
-        VulkanBuffer m_buffer{};
-        std::size_t m_size;
-        std::size_t m_capacity;
-        bool m_isIndex;
-
     public:
         VulkanStorageBuffer (VulkanResources& resources, std::size_t size, bool isIndex);
 
@@ -28,15 +21,17 @@ namespace phenyl::vulkan {
         }
 
         VkBuffer getBuffer () const noexcept override;
+
+    private:
+        VulkanResources& m_resources;
+        VulkanBuffer m_buffer{};
+        std::size_t m_size;
+        std::size_t m_capacity;
+        bool m_isIndex;
+
     };
 
     class VulkanStaticStorageBuffer : public IVulkanStorageBuffer {
-    private:
-        VulkanResources& m_resources;
-        TransferManager& m_transferManager;
-        VulkanStaticBuffer m_buffer{};
-        bool m_isIndex;
-
     public:
         VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex);
 
@@ -49,5 +44,11 @@ namespace phenyl::vulkan {
         VkBuffer getBuffer () const noexcept override {
             return m_buffer.get();
         }
+
+    private:
+        VulkanResources& m_resources;
+        TransferManager& m_transferManager;
+        VulkanStaticBuffer m_buffer{};
+        bool m_isIndex;
     };
 }

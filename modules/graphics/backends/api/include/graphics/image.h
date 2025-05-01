@@ -16,24 +16,6 @@ namespace phenyl::graphics {
     };
 
     class Image {
-    private:
-        using DataPtr = std::unique_ptr<std::byte[], void (*) (std::byte*)>;
-
-        DataPtr m_data;
-        std::uint32_t m_width;
-        std::uint32_t m_height;
-        ImageFormat m_format;
-
-        Image (DataPtr data, std::uint32_t width, std::uint32_t height, ImageFormat format);
-
-        template <typename T>
-        static DataPtr MakeData (std::size_t size) {
-            auto* data = reinterpret_cast<std::byte*>(new T[size]);
-
-            return DataPtr{data, [] (std::byte* ptr) {
-                delete[] (reinterpret_cast<T*>(ptr));
-            }};
-        }
     public:
         static std::uint32_t FormatComps (ImageFormat format);
         static std::size_t FormatSize (ImageFormat format);
@@ -67,6 +49,25 @@ namespace phenyl::graphics {
 
         std::size_t dataSize () const noexcept {
             return width() * height() * FormatSize(format());
+        }
+
+    private:
+        using DataPtr = std::unique_ptr<std::byte[], void (*) (std::byte*)>;
+
+        DataPtr m_data;
+        std::uint32_t m_width;
+        std::uint32_t m_height;
+        ImageFormat m_format;
+
+        Image (DataPtr data, std::uint32_t width, std::uint32_t height, ImageFormat format);
+
+        template <typename T>
+        static DataPtr MakeData (std::size_t size) {
+            auto* data = reinterpret_cast<std::byte*>(new T[size]);
+
+            return DataPtr{data, [] (std::byte* ptr) {
+                delete[] (reinterpret_cast<T*>(ptr));
+            }};
         }
     };
 }

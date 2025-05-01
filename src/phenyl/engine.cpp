@@ -19,13 +19,6 @@ using namespace phenyl;
 static Logger LOGGER{"ENGINE", PHENYL_LOGGER};
 
 class engine::Engine {
-private:
-    std::unique_ptr<graphics::Renderer> m_renderer;
-    core::PhenylRuntime m_runtime;
-
-    double m_lastTime;
-    double m_deltaTime{0.0};
-    double m_fixedTimeSlop{0.0};
 public:
     explicit Engine (const ApplicationProperties& properties) : m_renderer{graphics::MakeVulkanRenderer(properties.m_graphics)}, m_runtime(), m_lastTime{m_renderer->getCurrentTime()} {}
 
@@ -107,6 +100,14 @@ public:
         m_deltaTime = currTime - m_lastTime;
         m_lastTime = currTime;
     }
+
+private:
+    std::unique_ptr<graphics::Renderer> m_renderer;
+    core::PhenylRuntime m_runtime;
+
+    double m_lastTime;
+    double m_deltaTime{0.0};
+    double m_fixedTimeSlop{0.0};
 };
 
 

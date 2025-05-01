@@ -6,8 +6,6 @@
 
 namespace phenyl::graphics {
     class Camera3D : public core::IResource, public IViewportUpdateHandler {
-    private:
-        glm::vec2 m_resolution;
     public:
         float nearClippingPlane = 0.1f;
         float farClippingPlane = 100.0f;
@@ -24,5 +22,8 @@ namespace phenyl::graphics {
 
         void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;
         std::string_view getName() const noexcept override;
+
+    private:
+        glm::vec2 m_resolution;
     };
 }

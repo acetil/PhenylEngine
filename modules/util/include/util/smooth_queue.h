@@ -3,9 +3,6 @@
 namespace phenyl::util {
     template <class T, int N>
     class SmoothQueue {
-        T m_total{};
-        T m_values[N] = {};
-        int m_pos = 0;
     public:
         T pushPop (T val) {
             T old = m_values[m_pos];
@@ -16,8 +13,13 @@ namespace phenyl::util {
             return old;
         }
 
-        decltype(m_total / N) getSmoothed () {
+        decltype(std::declval<T>() / N) getSmoothed () {
             return m_total / N;
         }
+
+    private:
+        T m_total{};
+        T m_values[N] = {};
+        int m_pos = 0;
     };
 }

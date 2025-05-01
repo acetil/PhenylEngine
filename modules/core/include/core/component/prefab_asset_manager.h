@@ -10,10 +10,6 @@ namespace phenyl::core {
     class EntityComponentSerializer;
 
     class PrefabAssetManager : public core::AssetManager<Prefab> {
-    private:
-        util::Map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
-        EntityComponentSerializer& m_serializer;
-        World& m_world;
     public:
         explicit PrefabAssetManager (World& world, EntityComponentSerializer& serializer) : m_serializer{serializer}, m_world{world} {}
         ~PrefabAssetManager() override;
@@ -26,5 +22,10 @@ namespace phenyl::core {
 
         void selfRegister ();
         void clear ();
+
+    private:
+        util::Map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
+        EntityComponentSerializer& m_serializer;
+        World& m_world;
     };
 }

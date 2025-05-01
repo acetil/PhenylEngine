@@ -12,9 +12,6 @@ namespace phenyl::os {
 
     template <typename R, typename ...Args>
     class DynamicLibFunction {
-    private:
-        std::weak_ptr<detail::DynamicLibImpl> m_dynamicLibrary;
-        R (*func) (Args...);
     public:
         DynamicLibFunction (std::weak_ptr<detail::DynamicLibImpl> dynamicLibrary, void* funcPtr) : m_dynamicLibrary{std::move(dynamicLibrary)}, func{reinterpret_cast<R (*) (Args...)>(funcPtr)} {
             PHENYL_DASSERT(!this->m_dynamicLibrary.expired());
@@ -28,13 +25,13 @@ namespace phenyl::os {
                 PHENYL_ABORT("Dynamic library function has been invalidated!");
             }
         }
+
+    private:
+        std::weak_ptr<detail::DynamicLibImpl> m_dynamicLibrary;
+        R (*func) (Args...);
     };
 
     class DynamicLibrary {
-    private:
-        std::shared_ptr<detail::DynamicLibImpl> m_impl;
-
-        void* loadFunctionSymbol (const std::string& symbolName) const;
     public:
         template <typename R, typename ...Args>
         using FunctionType = R (*) (Args...);
@@ -61,5 +58,10 @@ namespace phenyl::os {
                 return std::nullopt;
             }
         }
+
+    private:
+        std::shared_ptr<detail::DynamicLibImpl> m_impl;
+
+        void* loadFunctionSymbol (const std::string& symbolName) const;
     };
 }

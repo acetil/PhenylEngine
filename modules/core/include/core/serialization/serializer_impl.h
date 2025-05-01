@@ -11,8 +11,6 @@
 namespace phenyl::core::detail {
     template <SerializableType T>
     class VectorSerializable : public ISerializable<std::vector<T>> {
-    private:
-        std::string m_name;
     public:
         VectorSerializable () : m_name{std::format("std::vector<{}>", GetSerializable<T>().name())} {}
 
@@ -41,6 +39,9 @@ namespace phenyl::core::detail {
                 obj.emplace_back(deserializer.next<T>());
             }
         }
+
+    private:
+        std::string m_name;
     };
     template <SerializableType T>
     ISerializable<std::vector<T>>& phenyl_GetSerializable(SerializableMarker<std::vector<T>>) {
@@ -83,8 +84,6 @@ namespace phenyl::core::detail {
 
     template <SerializableType T, glm::length_t N>
     class VecSerializable : public ISerializable<glm::vec<N, T>> {
-    private:
-        std::string m_name;
     public:
         using Vec = glm::vec<N, T>;
         explicit VecSerializable (std::string vecName) : m_name{std::move(vecName)} {}
@@ -122,12 +121,13 @@ namespace phenyl::core::detail {
                 i++;
             }
         }
+
+    private:
+        std::string m_name;
     };
 
     template <SerializableType T, glm::length_t H, glm::length_t W>
     class MatSerializable : public ISerializable<glm::mat<H, W, T>> {
-    private:
-        std::string m_name;
     public:
         using Mat = glm::mat<H, W, T>;
         MatSerializable (std::string matName) : m_name{std::move(matName)} {}
@@ -165,6 +165,9 @@ namespace phenyl::core::detail {
                 i++;
             }
         }
+
+    private:
+        std::string m_name;
     };
 
     template <glm::length_t L>
@@ -193,9 +196,6 @@ namespace phenyl::core::detail {
 
     template <typename T, SerializableType M>
     class MemberSerializable : public IMemberSerializable<T> {
-    private:
-        std::string_view m_name;
-        M T::*member;
     public:
         MemberSerializable (std::string_view name, M T::*member) : m_name{name}, member{member} {}
 
@@ -214,14 +214,14 @@ namespace phenyl::core::detail {
         bool deserialize (IStructDeserializer& deserializer, T* obj) override {
             return deserializer.next(m_name, obj->*member);
         }
+
+    private:
+        std::string_view m_name;
+        M T::*member;
     };
 
     template <typename T, typename M, typename F1, typename F2>
     class MethodSerializable : public IMemberSerializable<T> {
-    private:
-        std::string_view m_name;
-        F1 m_getter;
-        F2 m_setter;
     public:
         MethodSerializable (std::string_view name, F1&& getter, F2&& setter) : m_name{name}, m_getter{std::move(getter)}, m_setter{std::move(setter)} {}
 
@@ -246,12 +246,15 @@ namespace phenyl::core::detail {
                 return false;
             }
         }
+
+    private:
+        std::string_view m_name;
+        F1 m_getter;
+        F2 m_setter;
     };
 
     template <typename T, SerializableType B> requires std::derived_from<T, B>
     class InheritsSerializable : public IMemberSerializable<T> {
-    private:
-        std::string_view m_name;
     public:
         explicit InheritsSerializable (std::string_view name) : m_name{name} {}
 
@@ -270,23 +273,13 @@ namespace phenyl::core::detail {
         bool deserialize (IStructDeserializer& deserializer, T* obj) override {
             return deserializer.next(m_name, *static_cast<B*>(obj));
         }
+
+    private:
+        std::string_view m_name;
     };
 
     template <typename T>
     class ClassSerializable : public ISerializable<T> {
-    private:
-        std::string_view m_name;
-        //std::unordered_map<std::string_view, std::unique_ptr<IMemberSerializable<T>>> members;
-        std::vector<std::unique_ptr<IMemberSerializable<T>>> m_members;
-        std::vector<std::string> m_memberNames;
-
-        template <typename ...Args>
-        void addAll (std::unique_ptr<Args>... args) {
-            m_members.reserve(sizeof...(Args));
-            ([&] {
-                m_members.emplace_back(std::move(args));
-            } (), ...);
-        }
     public:
         template <typename ...Args>
         explicit ClassSerializable (std::string_view className, std::unique_ptr<Args>... args) : m_name{className} {
@@ -342,6 +335,20 @@ namespace phenyl::core::detail {
                     throw DeserializeException(std::format("Failed to deserialize member \"{}\" of class {}", member->getKey(), name()));
                 }
             }
+        }
+
+    private:
+        std::string_view m_name;
+        //std::unordered_map<std::string_view, std::unique_ptr<IMemberSerializable<T>>> members;
+        std::vector<std::unique_ptr<IMemberSerializable<T>>> m_members;
+        std::vector<std::string> m_memberNames;
+
+        template <typename ...Args>
+        void addAll (std::unique_ptr<Args>... args) {
+            m_members.reserve(sizeof...(Args));
+            ([&] {
+                m_members.emplace_back(std::move(args));
+            } (), ...);
         }
     };
 }

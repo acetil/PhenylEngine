@@ -9,10 +9,6 @@
 
 namespace phenyl::core::detail {
     class ArchetypeKey {
-    private:
-        // Sorted vector of component type ids
-        std::vector<std::size_t> m_compIds;
-
     public:
         ArchetypeKey () = default;
         explicit ArchetypeKey (std::vector<std::size_t> compIds) : m_compIds{std::move(compIds)} {}
@@ -119,5 +115,9 @@ namespace phenyl::core::detail {
         auto cend () const {
             return m_compIds.cend();
         }
+
+    private:
+        // Sorted vector of component type ids
+        std::vector<std::size_t> m_compIds;
     };
 }

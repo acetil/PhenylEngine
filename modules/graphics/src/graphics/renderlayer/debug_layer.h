@@ -9,6 +9,16 @@ namespace phenyl::graphics {
     struct DebugLine;
 
     class DebugLayer : public AbstractRenderLayer {
+    public:
+        DebugLayer ();
+
+        [[nodiscard]] std::string_view getName () const override;
+        void init (Renderer& renderer) override;
+
+        void bufferData (const Camera2D& camera, glm::vec2 screenSize);
+
+        void render () override;
+
     private:
         struct Uniform {
             glm::mat4 camera;
@@ -27,14 +37,5 @@ namespace phenyl::graphics {
 
         void bufferBox (const DebugBox& box);
         void bufferLine (const DebugLine& line);
-    public:
-        DebugLayer ();
-
-        [[nodiscard]] std::string_view getName () const override;
-        void init (Renderer& renderer) override;
-
-        void bufferData (const Camera2D& camera, glm::vec2 screenSize);
-
-        void render () override;
     };
 }

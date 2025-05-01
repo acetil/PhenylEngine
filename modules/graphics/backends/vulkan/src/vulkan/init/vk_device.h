@@ -15,26 +15,6 @@ namespace phenyl::vulkan {
     };
 
     class VulkanDevice {
-    private:
-        static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface);
-        static bool CheckDeviceExtensionSupport (VkPhysicalDevice device, const std::vector<const char*>& extensions);
-        static std::optional<VulkanSwapChainDetails> GetDeviceSwapChainDetails (VkPhysicalDevice device, VkSurfaceKHR surface);
-        static bool CheckDeviceFeatures (VkPhysicalDevice device);
-        static DeviceProperties GetDeviceProperties (VkPhysicalDevice device);
-
-        VkPhysicalDevice m_physicalDevice{};
-        VkDevice m_logicalDevice{};
-
-        VulkanQueueFamilies m_queueFamilies{};
-        VulkanSwapChainDetails m_swapChainDetails{};
-        DeviceProperties m_properties{};
-
-        VkQueue m_graphicsQueue;
-        VkQueue m_presentQueue;
-
-        void choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions);
-        VkDevice createLogicalDevice (const std::vector<const char*>& deviceExtensions);
-        VkQueue makeQueue (std::uint32_t queueFamilyIndex);
     public:
         explicit VulkanDevice (VkInstance instance, VkSurfaceKHR surface);
 
@@ -56,5 +36,26 @@ namespace phenyl::vulkan {
         }
 
         ~VulkanDevice ();
+
+    private:
+        static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface);
+        static bool CheckDeviceExtensionSupport (VkPhysicalDevice device, const std::vector<const char*>& extensions);
+        static std::optional<VulkanSwapChainDetails> GetDeviceSwapChainDetails (VkPhysicalDevice device, VkSurfaceKHR surface);
+        static bool CheckDeviceFeatures (VkPhysicalDevice device);
+        static DeviceProperties GetDeviceProperties (VkPhysicalDevice device);
+
+        VkPhysicalDevice m_physicalDevice{};
+        VkDevice m_logicalDevice{};
+
+        VulkanQueueFamilies m_queueFamilies{};
+        VulkanSwapChainDetails m_swapChainDetails{};
+        DeviceProperties m_properties{};
+
+        VkQueue m_graphicsQueue;
+        VkQueue m_presentQueue;
+
+        void choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions);
+        VkDevice createLogicalDevice (const std::vector<const char*>& deviceExtensions);
+        VkQueue makeQueue (std::uint32_t queueFamilyIndex);
     };
 }

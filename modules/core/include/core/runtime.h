@@ -16,93 +16,6 @@ namespace phenyl::core {
     class IPlugin;
 
     class PhenylRuntime {
-    private:
-        World m_world;
-        core::EntityComponentSerializer m_serializer;
-
-        ResourceManager m_resourceManager;
-
-        util::Set<std::size_t> m_initPlugins;
-        util::Map<std::size_t, std::unique_ptr<IPlugin>> m_plugins;
-
-        std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> m_systems;
-        std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> m_stages;
-
-        void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
-        void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
-
-        template <typename S, typename ...Args>
-        System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
-            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
-            auto* ptr = system.get();
-            m_systems[ptr->getName()] = std::move(system);
-
-            return ptr;
-        }
-
-        template <typename S, typename T, typename ...Args>
-        System<S>* makeSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
-            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
-            auto* ptr = system.get();
-            m_systems[ptr->getName()] = std::move(system);
-
-            return ptr;
-        }
-
-        template <typename S, typename T>
-        System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)(PhenylRuntime&)) {
-            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(runtime); });
-            auto* ptr = system.get();
-            m_systems[ptr->getName()] = std::move(system);
-
-            return ptr;
-        }
-
-        template <typename S, typename T>
-        System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)()) {
-            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
-            auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(); });
-            auto* ptr = system.get();
-            m_systems[ptr->getName()] = std::move(system);
-
-            return ptr;
-        }
-
-        template <typename S>
-        Stage<S>* getStage () {
-            auto typeIndex = meta::type_index<S>();
-
-            auto it = m_stages.find(typeIndex);
-            if (it != m_stages.end()) {
-                return static_cast<Stage<S>*>(it->second.get());
-            } else {
-                return nullptr;
-            }
-        }
-
-        template <typename S>
-        const Stage<S>* getStage () const {
-            auto typeIndex = meta::type_index<S>();
-
-            auto it = m_stages.find(typeIndex);
-            if (it != m_stages.end()) {
-                return static_cast<Stage<S>*>(it->second.get());
-            } else {
-                return nullptr;
-            }
-        }
-
-        template <typename S>
-        Stage<S>* initStage (std::string name) {
-            auto stage = std::make_unique<Stage<S>>(std::move(name), *this);
-            auto* ptr = stage.get();
-            m_stages.emplace(ptr->id(), std::move(stage));
-
-            return ptr;
-        }
     public:
         explicit PhenylRuntime ();
         virtual ~PhenylRuntime();
@@ -243,6 +156,94 @@ namespace phenyl::core {
         void runRender ();
 
         void shutdown ();
+
+    private:
+        World m_world;
+        core::EntityComponentSerializer m_serializer;
+
+        ResourceManager m_resourceManager;
+
+        util::Set<std::size_t> m_initPlugins;
+        util::Map<std::size_t, std::unique_ptr<IPlugin>> m_plugins;
+
+        std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> m_systems;
+        std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> m_stages;
+
+        void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
+        void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
+
+        template <typename S, typename ...Args>
+        System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
+            auto* ptr = system.get();
+            m_systems[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S, typename T, typename ...Args>
+        System<S>* makeSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            std::unique_ptr<System<S>> system = MakeSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
+            auto* ptr = system.get();
+            m_systems[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S, typename T>
+        System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)(PhenylRuntime&)) {
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(runtime); });
+            auto* ptr = system.get();
+            m_systems[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S, typename T>
+        System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)()) {
+            PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"", systemName);
+            auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName), [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(); });
+            auto* ptr = system.get();
+            m_systems[ptr->getName()] = std::move(system);
+
+            return ptr;
+        }
+
+        template <typename S>
+        Stage<S>* getStage () {
+            auto typeIndex = meta::type_index<S>();
+
+            auto it = m_stages.find(typeIndex);
+            if (it != m_stages.end()) {
+                return static_cast<Stage<S>*>(it->second.get());
+            } else {
+                return nullptr;
+            }
+        }
+
+        template <typename S>
+        const Stage<S>* getStage () const {
+            auto typeIndex = meta::type_index<S>();
+
+            auto it = m_stages.find(typeIndex);
+            if (it != m_stages.end()) {
+                return static_cast<Stage<S>*>(it->second.get());
+            } else {
+                return nullptr;
+            }
+        }
+
+        template <typename S>
+        Stage<S>* initStage (std::string name) {
+            auto stage = std::make_unique<Stage<S>>(std::move(name), *this);
+            auto* ptr = stage.get();
+            m_stages.emplace(ptr->id(), std::move(stage));
+
+            return ptr;
+        }
 
         template <typename S>
         friend class Stage;

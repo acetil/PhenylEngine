@@ -6,12 +6,6 @@
 
 namespace phenyl::core {
     class Transform3D {
-    private:
-        glm::vec3 m_position{0, 0, 0};
-        glm::vec3 m_scale{1, 1, 1};
-        Quaternion m_rotation{};
-
-        PHENYL_SERIALIZABLE_INTRUSIVE(Transform3D)
     public:
         explicit Transform3D (glm::vec3 pos = {0.0f, 0.0f, 0.0f}, glm::vec3 scale = {1.0f, 1.0f, 1.0f}, Quaternion rotation = {}) : m_position{pos}, m_scale{scale}, m_rotation{rotation} {}
 
@@ -102,5 +96,12 @@ namespace phenyl::core {
         glm::vec3 apply (glm::vec3 v) const noexcept {
             return rotation() * (v * scale()) + position();
         }
+
+    private:
+        glm::vec3 m_position{0, 0, 0};
+        glm::vec3 m_scale{1, 1, 1};
+        Quaternion m_rotation{};
+
+        PHENYL_SERIALIZABLE_INTRUSIVE(Transform3D)
     };
 }

@@ -31,8 +31,6 @@ namespace phenyl::graphics {
     };
 
     class FrameBuffer {
-    private:
-        std::unique_ptr<IFrameBuffer> m_framebuffer;
     public:
         FrameBuffer () : m_framebuffer{nullptr} {}
         explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : m_framebuffer{std::move(fb)} {}
@@ -74,5 +72,8 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_framebuffer);
             m_framebuffer->clear(clearColor);
         }
+
+    private:
+        std::unique_ptr<IFrameBuffer> m_framebuffer;
     };
 }

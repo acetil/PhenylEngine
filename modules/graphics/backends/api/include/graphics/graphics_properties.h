@@ -4,11 +4,6 @@
 
 namespace phenyl::graphics {
     class GraphicsProperties {
-    private:
-        int m_windowWidth = 800;
-        int m_windowHeight = 600;
-        std::string m_windowTitle = "Phenyl Engine";
-        bool m_vsync = false;
     public:
         GraphicsProperties () = default;
 
@@ -46,5 +41,11 @@ namespace phenyl::graphics {
         bool getVsync () const {
             return m_vsync;
         }
+
+    private:
+        int m_windowWidth = 800;
+        int m_windowHeight = 600;
+        std::string m_windowTitle = "Phenyl Engine";
+        bool m_vsync = false;
     };
 }

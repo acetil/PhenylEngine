@@ -7,6 +7,14 @@
 
 namespace breakout {
     class BreakoutApp : public phenyl::Application2D {
+    public:
+        BreakoutApp (phenyl::ApplicationProperties properties);
+
+        void addPoints (int points);
+        void subtractLife ();
+
+        void onWin ();
+
     private:
         int m_totalPoints = 0;
         int m_lives;
@@ -18,12 +26,5 @@ namespace breakout {
 
         void init () override;
         void postInit() override;
-    public:
-        BreakoutApp (phenyl::ApplicationProperties properties);
-
-        void addPoints (int points);
-        void subtractLife ();
-
-        void onWin ();
     };
 }

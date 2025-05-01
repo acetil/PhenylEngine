@@ -21,17 +21,6 @@ namespace phenyl::vulkan {
     };
 
     class VulkanSwapChain {
-    private:
-        VkDevice m_device;
-        VkSwapchainKHR m_swapChain{};
-        std::vector<VkImage> m_images;
-        std::vector<VkImageView> m_imageViews;
-        std::uint32_t m_currIndex{};
-
-        VkFormat m_format;
-        VkExtent2D m_extent;
-
-        void createImages ();
     public:
         VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies);
         ~VulkanSwapChain();
@@ -49,5 +38,17 @@ namespace phenyl::vulkan {
 
         std::optional<SwapChainImage> acquireImage (const VulkanSemaphore& signalSem);
         bool present (VkQueue queue, const VulkanSemaphore& waitSem);
+
+    private:
+        VkDevice m_device;
+        VkSwapchainKHR m_swapChain{};
+        std::vector<VkImage> m_images;
+        std::vector<VkImageView> m_imageViews;
+        std::uint32_t m_currIndex{};
+
+        VkFormat m_format;
+        VkExtent2D m_extent;
+
+        void createImages ();
     };
 }

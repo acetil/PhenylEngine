@@ -30,27 +30,6 @@ namespace phenyl::graphics {
             std::uint16_t size;
             ISampler* sampler;
         };
-    private:
-        struct Uniform {
-            glm::mat4 camera;
-        };
-
-        std::vector<std::pair<ISampler*, std::uint16_t>> m_samplerStartIndices;
-        std::vector<SamplerRender> m_samplerRenders;
-
-        Pipeline m_pipeline;
-
-        //Buffer<glm::vec2> posBuffer;
-       // Buffer<glm::vec2> uvBuffer;
-        Buffer<Vertex> m_vertexBuffer;
-        Buffer<std::uint16_t> m_indices;
-
-        UniformBinding m_uniformBinding{};
-        UniformBuffer<Uniform> m_uniformBuffer;
-
-        SamplerBinding m_samplerBinding{};
-
-    public:
 
         EntityRenderLayer ();
 
@@ -64,5 +43,23 @@ namespace phenyl::graphics {
         void bufferEntities (const Camera2D& camera);
 
         void addSystems (core::PhenylRuntime& runtime);
+
+    private:
+        struct Uniform {
+            glm::mat4 camera;
+        };
+
+        std::vector<std::pair<ISampler*, std::uint16_t>> m_samplerStartIndices;
+        std::vector<SamplerRender> m_samplerRenders;
+
+        Pipeline m_pipeline;
+
+        Buffer<Vertex> m_vertexBuffer;
+        Buffer<std::uint16_t> m_indices;
+
+        UniformBinding m_uniformBinding{};
+        UniformBuffer<Uniform> m_uniformBuffer;
+
+        SamplerBinding m_samplerBinding{};
     };
 }

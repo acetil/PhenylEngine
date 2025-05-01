@@ -7,9 +7,6 @@
 
 namespace phenyl::graphics {
     class UIEvent {
-    private:
-        std::any m_event;
-        std::size_t m_type;
     public:
         template <typename T> requires (!std::same_as<T, UIEvent>)
         explicit UIEvent (T&& event) : m_event{std::forward<T>(event)}, m_type{meta::type_index<T>()} {}
@@ -33,6 +30,10 @@ namespace phenyl::graphics {
         std::size_t type () const noexcept {
             return m_type;
         }
+
+    private:
+        std::any m_event;
+        std::size_t m_type;
     };
 
     struct MouseEnterEvent {

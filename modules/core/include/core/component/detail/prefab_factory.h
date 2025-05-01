@@ -13,8 +13,6 @@ namespace phenyl::core::detail {
 
     template <typename T>
     class CopyPrefabFactory : public IPrefabFactory {
-    private:
-        T obj;
     public:
         explicit CopyPrefabFactory (T&& obj) : obj{std::move(obj)} {}
 
@@ -23,12 +21,13 @@ namespace phenyl::core::detail {
 
             new (tPtr) T(obj);
         }
+
+    private:
+        T obj;
     };
 
     template <typename T>
     class FuncPrefabFactory : public IPrefabFactory {
-    private:
-        std::function<T()> m_factory;
     public:
         explicit FuncPrefabFactory (std::function<T()> factory) : m_factory{std::move(factory)} {}
 
@@ -37,6 +36,9 @@ namespace phenyl::core::detail {
 
             new (tPtr) T(m_factory());
         }
+
+    private:
+        std::function<T()> m_factory;
     };
 
     using PrefabFactories = std::map<std::size_t, std::unique_ptr<IPrefabFactory>>;

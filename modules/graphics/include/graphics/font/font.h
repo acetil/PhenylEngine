@@ -18,20 +18,6 @@ namespace phenyl::graphics {
     };
 
     class Font {
-    private:
-        GlyphAtlas& m_atlas;
-        std::unique_ptr<std::byte[]> m_faceData;
-        FT_Face m_face;
-        std::size_t m_id;
-        glm::ivec2 m_windowDpi;
-        std::uint32_t m_size = 0;
-
-        std::unordered_map<char32_t, std::uint32_t> m_indexCache;
-        std::unordered_map<std::uint32_t, std::unordered_map<std::pair<char32_t, char32_t>, float>> m_kernCache;
-        std::unordered_map<std::uint32_t, std::unordered_map<char32_t, Glyph>> m_glyphMap;
-
-        void setSize (std::uint32_t size);
-        std::uint32_t getCharIndex (char32_t c);
     public:
         Font (GlyphAtlas& atlas, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId, glm::ivec2 windowDPI);
         Font (const Font&) = delete;
@@ -50,5 +36,20 @@ namespace phenyl::graphics {
         std::size_t id () const noexcept {
             return m_id;
         }
+
+    private:
+        GlyphAtlas& m_atlas;
+        std::unique_ptr<std::byte[]> m_faceData;
+        FT_Face m_face;
+        std::size_t m_id;
+        glm::ivec2 m_windowDpi;
+        std::uint32_t m_size = 0;
+
+        std::unordered_map<char32_t, std::uint32_t> m_indexCache;
+        std::unordered_map<std::uint32_t, std::unordered_map<std::pair<char32_t, char32_t>, float>> m_kernCache;
+        std::unordered_map<std::uint32_t, std::unordered_map<char32_t, Glyph>> m_glyphMap;
+
+        void setSize (std::uint32_t size);
+        std::uint32_t getCharIndex (char32_t c);
     };
 }

@@ -4,8 +4,6 @@
 
 namespace phenyl::core {
     class ButtonInputSource {
-    private:
-        bool m_currState = false;
     public:
         [[nodiscard]] bool state () const noexcept {
             return m_currState;
@@ -14,11 +12,12 @@ namespace phenyl::core {
         void setState (bool newState) noexcept {
             m_currState = newState;
         }
+
+    private:
+        bool m_currState = false;
     };
 
     class Axis2DInputSource {
-    private:
-        glm::vec2 m_axis{};
     public:
         [[nodiscard]] glm::vec2 state () const noexcept {
             return m_axis;
@@ -27,5 +26,8 @@ namespace phenyl::core {
         void setState (glm::vec2 newAxis) noexcept {
             m_axis = newAxis;
         }
+
+    private:
+        glm::vec2 m_axis{};
     };
 }

@@ -69,7 +69,73 @@ namespace phenyl::core {
 
     template <typename T>
     class ISerializable : public ISerializableBase {
-    private:
+    public:
+        virtual T make () const {
+            if constexpr (std::is_default_constructible_v<T>) {
+                return T{};
+            } else {
+                throw DeserializeException(std::format("Cannot initialize object of type {}", name()));
+            }
+        }
+
+        [[nodiscard]] std::string_view name () const noexcept override = 0;
+
+        virtual void serialize (ISerializer& serializer, const T& obj) = 0;
+
+        virtual void deserialize (IDeserializer& deserializer, T& obj) = 0;
+
+        virtual void deserializeBool (T& obj, bool val) {
+            throw DeserializeException(std::format("Attempted to deserialize bool to type {} that doesn't support it!", name()));
+        }
+
+        virtual void deserializeInt8 (T& obj, std::int8_t val) {
+            deserializeInt16(obj, val);
+        }
+        virtual void deserializeInt16 (T& obj, std::int16_t val) {
+            deserializeInt32(obj, val);
+        }
+        virtual void deserializeInt32 (T& obj, std::int32_t val) {
+            deserializeInt64(obj, val);
+        }
+        virtual void deserializeInt64 (T& obj, std::int64_t val) {
+            throw DeserializeException(std::format("Attempted to deserialize int64 to type {} that doesn't support it!", name()));
+        }
+
+        virtual void deserializeUint8 (T& obj, std::uint8_t val) {
+            deserializeUint16(obj, val);
+        }
+        virtual void deserializeUint16 (T& obj, std::uint16_t val) {
+            deserializeUint32(obj, val);
+        }
+        virtual void deserializeUint32 (T& obj, std::uint32_t val) {
+            deserializeUint64(obj, val);
+        }
+        virtual void deserializeUint64 (T& obj, std::uint64_t val) {
+            throw DeserializeException(std::format("Attempted to deserialize uint64 to type {} that doesn't support it!", name()));
+        }
+
+        virtual void deserializeFloat (T& obj, float val) {
+            deserializeDouble(obj, static_cast<double>(val));
+        }
+        virtual void deserializeDouble (T& obj, double val) {
+            throw DeserializeException(std::format("Attempted to deserialize double to type {} that doesn't support it!", name()));
+        }
+
+        virtual void deserializeString (T& obj, std::string_view val) {
+            throw DeserializeException(std::format("Attempted to deserialize string to type {} that doesn't support it!", name()));
+        }
+
+        virtual void deserializeArray (T& obj, IArrayDeserializer& deserializer) {
+            throw DeserializeException(std::format("Attempted to deserialize array to type {} that doesn't support it!", name()));
+        }
+        virtual void deserializeObject (T& obj, IObjectDeserializer& deserializer) {
+            throw DeserializeException(std::format("Attempted to deserialize object to type {} that doesn't support it!", name()));
+        }
+        virtual void deserializeStruct (T& obj, IStructDeserializer& deserializer) {
+            throw DeserializeException(std::format("Attempted to deserialize struct to type {} that doesn't support it!", name()));
+        }
+
+        private:
         void serialize (ISerializer& serializer, const std::byte* ptr) final {
             PHENYL_DASSERT(ptr);
             serialize(serializer, *reinterpret_cast<const T*>(ptr));
@@ -155,71 +221,6 @@ namespace phenyl::core {
         friend class IDeserializer;
         friend class IObjectDeserializer;
         friend class IArrayDeserializer;
-    public:
-        virtual T make () const {
-            if constexpr (std::is_default_constructible_v<T>) {
-                return T{};
-            } else {
-                throw DeserializeException(std::format("Cannot initialize object of type {}", name()));
-            }
-        }
-
-        [[nodiscard]] std::string_view name () const noexcept override = 0;
-
-        virtual void serialize (ISerializer& serializer, const T& obj) = 0;
-
-        virtual void deserialize (IDeserializer& deserializer, T& obj) = 0;
-
-        virtual void deserializeBool (T& obj, bool val) {
-            throw DeserializeException(std::format("Attempted to deserialize bool to type {} that doesn't support it!", name()));
-        }
-
-        virtual void deserializeInt8 (T& obj, std::int8_t val) {
-            deserializeInt16(obj, val);
-        }
-        virtual void deserializeInt16 (T& obj, std::int16_t val) {
-            deserializeInt32(obj, val);
-        }
-        virtual void deserializeInt32 (T& obj, std::int32_t val) {
-            deserializeInt64(obj, val);
-        }
-        virtual void deserializeInt64 (T& obj, std::int64_t val) {
-            throw DeserializeException(std::format("Attempted to deserialize int64 to type {} that doesn't support it!", name()));
-        }
-
-        virtual void deserializeUint8 (T& obj, std::uint8_t val) {
-            deserializeUint16(obj, val);
-        }
-        virtual void deserializeUint16 (T& obj, std::uint16_t val) {
-            deserializeUint32(obj, val);
-        }
-        virtual void deserializeUint32 (T& obj, std::uint32_t val) {
-            deserializeUint64(obj, val);
-        }
-        virtual void deserializeUint64 (T& obj, std::uint64_t val) {
-            throw DeserializeException(std::format("Attempted to deserialize uint64 to type {} that doesn't support it!", name()));
-        }
-
-        virtual void deserializeFloat (T& obj, float val) {
-            deserializeDouble(obj, static_cast<double>(val));
-        }
-        virtual void deserializeDouble (T& obj, double val) {
-            throw DeserializeException(std::format("Attempted to deserialize double to type {} that doesn't support it!", name()));
-        }
-
-        virtual void deserializeString (T& obj, std::string_view val) {
-            throw DeserializeException(std::format("Attempted to deserialize string to type {} that doesn't support it!", name()));
-        }
-
-        virtual void deserializeArray (T& obj, IArrayDeserializer& deserializer) {
-            throw DeserializeException(std::format("Attempted to deserialize array to type {} that doesn't support it!", name()));
-        }
-        virtual void deserializeObject (T& obj, IObjectDeserializer& deserializer) {
-            throw DeserializeException(std::format("Attempted to deserialize object to type {} that doesn't support it!", name()));
-        }
-        virtual void deserializeStruct (T& obj, IStructDeserializer& deserializer) {
-            throw DeserializeException(std::format("Attempted to deserialize struct to type {} that doesn't support it!", name()));
-        }
     };
 
     class ISerializer {
@@ -271,8 +272,6 @@ namespace phenyl::core {
     };
 
     class IObjectSerializer {
-    protected:
-        virtual void serializeMember (std::string_view memberName, ISerializableBase& serializable, const std::byte* ptr) = 0;
     public:
         virtual ~IObjectSerializer () = default;
 
@@ -287,11 +286,12 @@ namespace phenyl::core {
         }
 
         virtual void end () = 0;
+
+    protected:
+        virtual void serializeMember (std::string_view memberName, ISerializableBase& serializable, const std::byte* ptr) = 0;
     };
 
     class IArraySerializer {
-    protected:
-        virtual void serializeElement (ISerializableBase& serializable, const std::byte* ptr) = 0;
     public:
         virtual ~IArraySerializer () = default;
 
@@ -305,32 +305,12 @@ namespace phenyl::core {
             serializeElement(serializable, reinterpret_cast<const std::byte*>(&obj));
         }
         virtual void end () = 0;
+
+    protected:
+        virtual void serializeElement (ISerializableBase& serializable, const std::byte* ptr) = 0;
     };
 
     class IDeserializer {
-    protected:
-        virtual void deserializeBool (ISerializableBase& serializable, std::byte* ptr) = 0;
-
-        virtual void deserializeInt8 (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeInt16 (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeInt32 (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeInt64 (ISerializableBase& serializable, std::byte* ptr) = 0;
-
-        virtual void deserializeUint8 (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeUint16 (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeUint32 (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeUint64 (ISerializableBase& serializable, std::byte* ptr) = 0;
-
-        virtual void deserializeFloat (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeDouble (ISerializableBase& serializable, std::byte* ptr) = 0;
-
-        virtual void deserializeString (ISerializableBase& serializable, std::byte* ptr) = 0;
-
-        virtual void deserializeObject (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeArray (ISerializableBase& serializable, std::byte* ptr) = 0;
-        virtual void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members, std::byte* ptr) = 0;
-
-        virtual void deserializeInfer (ISerializableBase& serializable, std::byte* ptr) = 0;
     public:
         virtual ~IDeserializer () = default;
 
@@ -414,11 +394,33 @@ namespace phenyl::core {
 
             return obj;
         }
+
+    protected:
+        virtual void deserializeBool (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeInt8 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeInt16 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeInt32 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeInt64 (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeUint8 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeUint16 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeUint32 (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeUint64 (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeFloat (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeDouble (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeString (ISerializableBase& serializable, std::byte* ptr) = 0;
+
+        virtual void deserializeObject (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeArray (ISerializableBase& serializable, std::byte* ptr) = 0;
+        virtual void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members, std::byte* ptr) = 0;
+
+        virtual void deserializeInfer (ISerializableBase& serializable, std::byte* ptr) = 0;
     };
 
     class IArrayDeserializer {
-    protected:
-        virtual void next (ISerializableBase& serializable, std::byte* obj) = 0;
     public:
         virtual ~IArrayDeserializer () = default;
 
@@ -445,11 +447,12 @@ namespace phenyl::core {
         void next (ISerializable<T>& serializable, T& obj) {
             next(serializable, reinterpret_cast<std::byte*>(&obj));
         }
+
+    protected:
+        virtual void next (ISerializableBase& serializable, std::byte* obj) = 0;
     };
 
     class IObjectDeserializer {
-    protected:
-        virtual void nextValue (ISerializableBase& serializable, std::byte* obj) = 0;
     public:
         virtual ~IObjectDeserializer () = default;
 
@@ -476,11 +479,12 @@ namespace phenyl::core {
         }
 
         virtual void ignoreNextValue () = 0;
+
+    protected:
+        virtual void nextValue (ISerializableBase& serializable, std::byte* obj) = 0;
     };
 
     class IStructDeserializer {
-    protected:
-        virtual void next (ISerializableBase& serializable, std::byte* obj) = 0;
     public:
         virtual ~IStructDeserializer() = default;
 
@@ -512,5 +516,8 @@ namespace phenyl::core {
         bool next (std::string_view member, T& obj) {
             return next(member, detail::GetSerializable<T>(), obj);
         }
+
+    protected:
+        virtual void next (ISerializableBase& serializable, std::byte* obj) = 0;
     };
 }

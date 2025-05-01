@@ -28,18 +28,7 @@ namespace phenyl::graphics {
             UP,
             DOWN
         };
-    private:
-        Axis m_axis;
-        LayoutArrangement m_arrangement;
-        LayoutAlignment m_alignment;
-        std::vector<std::unique_ptr<Widget>> m_children;
-        std::vector<glm::vec2> m_childOff;
-        std::unordered_set<Widget*> m_widgetsToDelete;
 
-        float measureChildren (glm::vec2 dims, glm::vec2 mainAxis, glm::vec2 secondAxis);
-        Widget* insert (std::size_t pos, std::unique_ptr<Widget> child);
-        Widget* pushBack (std::unique_ptr<Widget> child);
-    public:
         LayoutWidget (Axis axis, LayoutArrangement arrangement, LayoutAlignment alignment, const Modifier& modifier = {});
 
         template <std::derived_from<Widget> T>
@@ -74,6 +63,18 @@ namespace phenyl::graphics {
         void queueChildDestroy (Widget* child) override;
         bool pointerUpdate (glm::vec2 pointer) override;
         void pointerLeave () override;
+
+    private:
+        Axis m_axis;
+        LayoutArrangement m_arrangement;
+        LayoutAlignment m_alignment;
+        std::vector<std::unique_ptr<Widget>> m_children;
+        std::vector<glm::vec2> m_childOff;
+        std::unordered_set<Widget*> m_widgetsToDelete;
+
+        float measureChildren (glm::vec2 dims, glm::vec2 mainAxis, glm::vec2 secondAxis);
+        Widget* insert (std::size_t pos, std::unique_ptr<Widget> child);
+        Widget* pushBack (std::unique_ptr<Widget> child);
     };
 
     enum class ColumnDirection {

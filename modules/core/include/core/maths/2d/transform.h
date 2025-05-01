@@ -5,14 +5,6 @@
 
 namespace phenyl::core {
     class Transform2D {
-    private:
-        glm::vec2 m_position{0, 0};
-        glm::vec2 m_scale{1.0f, 1.0f};
-        glm::vec2 m_complexRotation{1.0f, 0.0f};
-
-        Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec);
-
-        PHENYL_SERIALIZABLE_INTRUSIVE(Transform2D)
     public:
         Transform2D () = default;
 
@@ -52,5 +44,14 @@ namespace phenyl::core {
         [[nodiscard]] inline glm::vec2 apply (glm::vec2 vec) const {
             return getMatrix() * vec + position();
         }
+
+    private:
+        glm::vec2 m_position{0, 0};
+        glm::vec2 m_scale{1.0f, 1.0f};
+        glm::vec2 m_complexRotation{1.0f, 0.0f};
+
+        Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec);
+
+        PHENYL_SERIALIZABLE_INTRUSIVE(Transform2D)
     };
 }

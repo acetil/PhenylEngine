@@ -10,6 +10,22 @@
 
 namespace phenyl::core {
     class AbstractStage {
+    public:
+        AbstractStage (std::string name, PhenylRuntime& runtime);
+        virtual ~AbstractStage ();
+
+        void run ();
+
+        void addChildStage (AbstractStage* stage);
+        void runBefore (AbstractStage* stage);
+        void runAfter (AbstractStage* stage);
+
+        [[nodiscard]] virtual std::size_t id () const noexcept = 0;
+
+        const std::string& name () const noexcept {
+            return m_name;
+        }
+
     protected:
         std::string m_name;
         PhenylRuntime& m_runtime;
@@ -26,21 +42,6 @@ namespace phenyl::core {
         void orderStages ();
         void orderSystemsRecursive (IRunnableSystem* system, std::unordered_set<IRunnableSystem*>& visited, std::unordered_set<IRunnableSystem*>& visiting);
         void orderStagesRecursive (AbstractStage* stage, std::unordered_set<AbstractStage*>& visited, std::unordered_set<AbstractStage*>& visiting);
-    public:
-        AbstractStage (std::string name, PhenylRuntime& runtime);
-        virtual ~AbstractStage ();
-
-        void run ();
-
-        void addChildStage (AbstractStage* stage);
-        void runBefore (AbstractStage* stage);
-        void runAfter (AbstractStage* stage);
-
-        [[nodiscard]] virtual std::size_t id () const noexcept = 0;
-
-        const std::string& name () const noexcept {
-            return m_name;
-        }
     };
 
     template <typename S>

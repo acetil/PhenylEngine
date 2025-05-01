@@ -4,6 +4,13 @@
 
 namespace phenyl::vulkan {
     class VulkanDescriptorPool {
+    public:
+        explicit VulkanDescriptorPool (VkDevice device, std::size_t poolUniformSize = 32);
+        ~VulkanDescriptorPool();
+
+        VkDescriptorSet makeDescriptorSet (VkDescriptorSetLayout layout);
+        void reset ();
+
     private:
         VkDevice m_device;
         std::vector<VkDescriptorPool> m_pools;
@@ -12,11 +19,5 @@ namespace phenyl::vulkan {
         std::size_t m_poolCapacity;
 
         void guaranteePool ();
-    public:
-        explicit VulkanDescriptorPool (VkDevice device, std::size_t poolUniformSize = 32);
-        ~VulkanDescriptorPool();
-
-        VkDescriptorSet makeDescriptorSet (VkDescriptorSetLayout layout);
-        void reset ();
     };
 }

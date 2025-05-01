@@ -14,9 +14,6 @@ namespace phenyl {
     using Camera3D = graphics::Camera3D;
 
     class PhenylEngine {
-    private:
-        std::unique_ptr<engine::Engine> m_internal;
-
     public:
         PhenylEngine (const logging::LoggingProperties& = {});
         ~PhenylEngine();
@@ -27,5 +24,8 @@ namespace phenyl {
         }
 
         void run (std::unique_ptr<engine::ApplicationBase> app);
+
+    private:
+        std::unique_ptr<engine::Engine> m_internal;
     };
 }

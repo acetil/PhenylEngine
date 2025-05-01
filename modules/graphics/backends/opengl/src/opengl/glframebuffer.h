@@ -8,10 +8,6 @@
 
 namespace phenyl::opengl {
     class AbstractGlFrameBuffer : public graphics::IFrameBuffer {
-    protected:
-        GLuint m_id{};
-        glm::ivec2 m_dimensions;
-
     public:
         AbstractGlFrameBuffer (GLuint fbId, glm::ivec2 dimensions);
         AbstractGlFrameBuffer (glm::ivec2 dimensions);
@@ -33,13 +29,13 @@ namespace phenyl::opengl {
         }
 
         glm::ivec2 getDimensions () const noexcept override;
+
+    protected:
+        GLuint m_id{};
+        glm::ivec2 m_dimensions;
     };
 
     class GlFrameBuffer : public AbstractGlFrameBuffer {
-    private:
-        std::optional<GlSampler> m_colorSampler;
-        std::optional<GlSampler> m_depthSampler;
-        bool m_valid;
     public:
         GlFrameBuffer (glm::ivec2 dimensions, const graphics::FrameBufferProperties& properties);
 
@@ -49,6 +45,11 @@ namespace phenyl::opengl {
 
         graphics::ISampler* getSampler () noexcept override;
         graphics::ISampler* getDepthSampler() noexcept override;
+
+    private:
+        std::optional<GlSampler> m_colorSampler;
+        std::optional<GlSampler> m_depthSampler;
+        bool m_valid;
     };
 
     class GlWindowFrameBuffer : public AbstractGlFrameBuffer, public graphics::IViewportUpdateHandler {

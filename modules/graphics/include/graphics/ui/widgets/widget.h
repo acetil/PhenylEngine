@@ -20,9 +20,6 @@ namespace phenyl::graphics {
 
         template <typename T>
         class UIEventListeners : public IUIEventListeners {
-        private:
-            std::vector<std::function<bool(const T&)>> listeners;
-
         public:
             void addHandler (std::function<bool(const T&)> listener) {
                 listeners.emplace_back(std::move(listener));
@@ -40,6 +37,9 @@ namespace phenyl::graphics {
 
                 return result;
             }
+
+        private:
+            std::vector<std::function<bool(const T&)>> listeners;
         };
     }
     class Canvas;
@@ -101,31 +101,6 @@ namespace phenyl::graphics {
 
 
     class Widget {
-    private:
-        Modifier m_modifier;
-        Widget* m_parent = nullptr;
-        glm::vec2 m_size = {0, 0};
-        glm::vec2 m_offset = {0, 0};
-        std::optional<glm::vec2> m_oldPointerPos = std::nullopt;
-        std::unordered_map<std::size_t, std::unique_ptr<detail::IUIEventListeners>> m_listeners;
-
-        bool bubbleUp (const UIEvent& event);
-
-        template <typename T>
-        detail::UIEventListeners<T>& getListeners () {
-            auto typeIndex = meta::type_index<T>();
-            auto it = m_listeners.find(typeIndex);
-            if (it == m_listeners.end()) {
-                it = m_listeners.emplace(typeIndex, std::make_unique<detail::UIEventListeners<T>>()).first;
-            }
-
-            return static_cast<detail::UIEventListeners<T>&>(*it->second);
-        }
-    protected:
-        bool handle (const UIEvent& event);
-        virtual void queueChildDestroy (Widget* child);
-        void setModifier (const Modifier& modifier);
-        void setDimensions (glm::vec2 newDims);
     public:
         explicit Widget (const Modifier& modifier = Modifier{});
         Widget (const Widget&) = delete;
@@ -185,6 +160,33 @@ namespace phenyl::graphics {
         template <typename F>
         void addListener (F&& f) {
             addListener(std::function{std::forward<F>(f)});
+        }
+
+    protected:
+        bool handle (const UIEvent& event);
+        virtual void queueChildDestroy (Widget* child);
+        void setModifier (const Modifier& modifier);
+        void setDimensions (glm::vec2 newDims);
+
+    private:
+        Modifier m_modifier;
+        Widget* m_parent = nullptr;
+        glm::vec2 m_size = {0, 0};
+        glm::vec2 m_offset = {0, 0};
+        std::optional<glm::vec2> m_oldPointerPos = std::nullopt;
+        std::unordered_map<std::size_t, std::unique_ptr<detail::IUIEventListeners>> m_listeners;
+
+        bool bubbleUp (const UIEvent& event);
+
+        template <typename T>
+        detail::UIEventListeners<T>& getListeners () {
+            auto typeIndex = meta::type_index<T>();
+            auto it = m_listeners.find(typeIndex);
+            if (it == m_listeners.end()) {
+                it = m_listeners.emplace(typeIndex, std::make_unique<detail::UIEventListeners<T>>()).first;
+            }
+
+            return static_cast<detail::UIEventListeners<T>&>(*it->second);
         }
     };
 }

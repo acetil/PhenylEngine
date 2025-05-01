@@ -9,6 +9,15 @@ namespace phenyl::graphics {
     class ParticleManager2D;
 
     class ParticleRenderLayer : public AbstractRenderLayer {
+    public:
+        ParticleRenderLayer ();
+
+        [[nodiscard]] std::string_view getName () const override;
+        void init (Renderer& renderer) override;
+        void render () override;
+
+        void bufferData (const Camera2D& camera, const ParticleManager2D& manager);
+
     private:
         struct Uniform {
             glm::mat4 camera;
@@ -18,13 +27,5 @@ namespace phenyl::graphics {
         Buffer<glm::vec2> m_posBuffer;
         Buffer<glm::vec4> m_colorBuffer;
         UniformBuffer<Uniform> m_uniformBuffer;
-    public:
-        ParticleRenderLayer ();
-
-        [[nodiscard]] std::string_view getName () const override;
-        void init (Renderer& renderer) override;
-        void render () override;
-
-        void bufferData (const Camera2D& camera, const ParticleManager2D& manager);
     };
 }

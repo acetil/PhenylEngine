@@ -6,7 +6,6 @@
 
 namespace phenyl::physics {
     class Physics2D {
-    private:
     public:
         void addComponents(core::PhenylRuntime& runtime);
 

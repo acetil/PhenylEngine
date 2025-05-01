@@ -116,9 +116,6 @@ namespace phenyl::graphics {
     };
 
     class Shader {
-    private:
-        std::unique_ptr<IShader> m_shader;
-        std::size_t m_hash{0};
     public:
         Shader () = default;
         explicit Shader (std::unique_ptr<IShader> shader) : m_shader{std::move(shader)}, m_hash{this->m_shader ? this->m_shader->hash() : 0} {}
@@ -156,6 +153,10 @@ namespace phenyl::graphics {
             PHENYL_DASSERT(m_shader);
             return *m_shader;
         }
+
+    private:
+        std::unique_ptr<IShader> m_shader;
+        std::size_t m_hash{0};
     };
 }
 

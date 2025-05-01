@@ -8,8 +8,6 @@ namespace phenyl::engine {
     class ApplicationBase;
 
     class AppPlugin : public core::IPlugin {
-    private:
-        std::unique_ptr<ApplicationBase> m_app;
     public:
         explicit AppPlugin (std::unique_ptr<ApplicationBase> app);
 
@@ -18,5 +16,8 @@ namespace phenyl::engine {
         //void update (runtime::PhenylRuntime &runtime, double deltaTime) override;
         //void fixedUpdate (runtime::PhenylRuntime &runtime, double deltaTime) override;
         void shutdown (core::PhenylRuntime &runtime) override;
+
+    private:
+        std::unique_ptr<ApplicationBase> m_app;
     };
 }

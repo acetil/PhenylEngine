@@ -42,10 +42,7 @@ namespace phenyl::vulkan {
     class VulkanResource {
     public:
         using DestructorFunc = std::function<void(T&&)>;
-    private:
-        T m_obj{};
-        DestructorFunc m_destructor;
-    public:
+
         VulkanResource () = default;
         VulkanResource (T obj, DestructorFunc destructor) : m_obj{std::move(obj)}, m_destructor{std::move(destructor)} {}
 
@@ -96,19 +93,45 @@ namespace phenyl::vulkan {
             PHENYL_ASSERT(static_cast<bool>(*this));
             return &m_obj;
         }
+
+    private:
+        T m_obj{};
+        DestructorFunc m_destructor;
     };
 
     class VulkanDevice;
     struct DeviceProperties;
 
     class VulkanResources {
-    private:
+    public:
+        VulkanResources (VkInstance instance, VulkanDevice& device, std::uint64_t maxFramesInFlight);
+        ~VulkanResources ();
+
+        [[nodiscard]] VkDevice getDevice () const noexcept;
+        [[nodiscard]] VkQueue getGraphicsQueue () const noexcept;
+        [[nodiscard]] const DeviceProperties& getDeviceProperties () const noexcept;
+
+        VulkanResource<VulkanBufferInfo> makeBuffer (const VkBufferCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
+
+        VulkanResource<VulkanImageInfo> makeImage (const VkImageCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
+        VulkanResource<VkImageView> makeImageView (const VkImageViewCreateInfo& createInfo);
+        VulkanResource<VkSampler> makeSampler (const VkSamplerCreateInfo& createInfo);
+
+        VulkanResource<VkDescriptorSetLayout> makeDescriptorSetLayout (const VkDescriptorSetLayoutCreateInfo& layoutInfo);
+        VulkanResource<VkPipelineLayout> makePipelineLayout (const VkPipelineLayoutCreateInfo& layoutInfo);
+        VulkanResource<VkPipeline> makePipeline (const VkGraphicsPipelineCreateInfo& createInfo);
+
+        VulkanResource<VkCommandPool> makeCommandPool (VkCommandPoolCreateFlags usage = 0);
+        VulkanResource<VulkanCommandBufferInfo> makeCommandBuffer (VkCommandPool pool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        VulkanResource<VkSemaphore> makeSemaphore ();
+        VulkanResource<VkFence> makeFence (const VkFenceCreateInfo& createInfo);
+
+        void onFrame (std::uint64_t frameNum);
+
+        private:
         template <typename T>
         class DestructionQueue {
-        private:
-            std::function<void(T)> m_destructor;
-            std::queue<std::pair<T, std::uint64_t>> m_queuedDestructions;
-
         public:
             explicit DestructionQueue (std::function<void(T)> destructor) : m_destructor{std::move(destructor)} {}
 
@@ -140,6 +163,10 @@ namespace phenyl::vulkan {
                     m_destructor(obj);
                 }
             }
+
+        private:
+            std::function<void(T)> m_destructor;
+            std::queue<std::pair<T, std::uint64_t>> m_queuedDestructions;
         };
 
         VulkanDevice& m_device;
@@ -165,31 +192,5 @@ namespace phenyl::vulkan {
         std::uint64_t m_maxFramesInFlight;
 
         [[nodiscard]] std::uint64_t getDestructionFrame () const noexcept;
-    public:
-        VulkanResources (VkInstance instance, VulkanDevice& device, std::uint64_t maxFramesInFlight);
-        ~VulkanResources ();
-
-        [[nodiscard]] VkDevice getDevice () const noexcept;
-        [[nodiscard]] VkQueue getGraphicsQueue () const noexcept;
-        [[nodiscard]] const DeviceProperties& getDeviceProperties () const noexcept;
-
-        VulkanResource<VulkanBufferInfo> makeBuffer (const VkBufferCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
-
-        VulkanResource<VulkanImageInfo> makeImage (const VkImageCreateInfo& createInfo, const VmaAllocationCreateInfo& allocCreateInfo);
-        VulkanResource<VkImageView> makeImageView (const VkImageViewCreateInfo& createInfo);
-        VulkanResource<VkSampler> makeSampler (const VkSamplerCreateInfo& createInfo);
-
-        VulkanResource<VkDescriptorSetLayout> makeDescriptorSetLayout (const VkDescriptorSetLayoutCreateInfo& layoutInfo);
-        VulkanResource<VkPipelineLayout> makePipelineLayout (const VkPipelineLayoutCreateInfo& layoutInfo);
-        VulkanResource<VkPipeline> makePipeline (const VkGraphicsPipelineCreateInfo& createInfo);
-
-        VulkanResource<VkCommandPool> makeCommandPool (VkCommandPoolCreateFlags usage = 0);
-        VulkanResource<VulkanCommandBufferInfo> makeCommandBuffer (VkCommandPool pool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-        VulkanResource<VkSemaphore> makeSemaphore ();
-        VulkanResource<VkFence> makeFence (const VkFenceCreateInfo& createInfo);
-
-        void onFrame (std::uint64_t frameNum);
-
     };
 }

@@ -10,11 +10,6 @@ namespace phenyl::audio {
     class AudioSystem;
 
     class AudioSource {
-    private:
-        AudioSystem* m_audioSystem;
-        std::size_t m_id;
-        AudioSource (AudioSystem* audioSystem, std::size_t sourceId) : m_audioSystem{audioSystem}, m_id{sourceId} {}
-        friend class AudioSystem;
     public:
         AudioSource () : m_audioSystem{nullptr}, m_id{0} {}
 
@@ -35,5 +30,11 @@ namespace phenyl::audio {
         void setGain (float gain);
 
         ~AudioSource();
+
+    private:
+        AudioSystem* m_audioSystem;
+        std::size_t m_id;
+        AudioSource (AudioSystem* audioSystem, std::size_t sourceId) : m_audioSystem{audioSystem}, m_id{sourceId} {}
+        friend class AudioSystem;
     };
 }

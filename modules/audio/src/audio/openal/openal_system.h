@@ -12,12 +12,6 @@
 
 namespace phenyl::audio {
     class OpenALSystem : public AudioBackend {
-    private:
-        ALCdevice* m_device{nullptr};
-        ALCcontext* m_context{nullptr};
-
-        util::FLVector<OpenALSource> m_sources;
-        util::FLVector<OpenALBuffer> m_buffers;
     public:
         OpenALSystem ();
         ~OpenALSystem() override;
@@ -42,5 +36,12 @@ namespace phenyl::audio {
         void setSourceGain (std::size_t id, float gain) override;
         void stopSource (std::size_t id) override;
         bool isSourceStopped (std::size_t id) override;
+
+    private:
+        ALCdevice* m_device{nullptr};
+        ALCcontext* m_context{nullptr};
+
+        util::FLVector<OpenALSource> m_sources;
+        util::FLVector<OpenALBuffer> m_buffers;
     };
 }
