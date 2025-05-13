@@ -1,52 +1,43 @@
-#include <iostream>
-#include <utility>
-#include <phenyl/application.h>
-#include <phenyl/asset.h>
-#include <phenyl/input.h>
-#include <phenyl/transform.h>
-#include <phenyl/world.h>
-
-#include <phenyl/components/3D/global_transform.h>
-#include <phenyl/components/3D/mesh_renderer.h>
-
-#include <phenyl/graphics/mesh.h>
-
-#include <phenyl/maths.h>
-
-#include "phenyl/entrypoint.h"
 #include "phenyl/components/3D/lighting.h"
+#include "phenyl/entrypoint.h"
 #include "phenyl/graphics/material.h"
 #include "util/random.h"
+
+#include <iostream>
+#include <phenyl/application.h>
+#include <phenyl/asset.h>
+#include <phenyl/components/3D/global_transform.h>
+#include <phenyl/components/3D/mesh_renderer.h>
+#include <phenyl/graphics/mesh.h>
+#include <phenyl/input.h>
+#include <phenyl/maths.h>
+#include <phenyl/transform.h>
+#include <phenyl/world.h>
+#include <utility>
 
 class ModelViewer : public phenyl::Application3D {
 public:
     explicit ModelViewer (phenyl::ApplicationProperties properties) : Application{std::move(properties)} {}
 
-    void init () override {
-
-    }
+    void init () override {}
 
     void scene1 () {
         m_entities.emplace_back(runtime().world().create());
 
-        m_entities.back().insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f})
-        });
-        m_entities.back().insert(phenyl::MeshRenderer3D{
-            //.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj")
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")
-        });
+        m_entities.back().insert(
+            phenyl::GlobalTransform3D{.transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f})});
+        m_entities.back().insert(
+            phenyl::MeshRenderer3D{//.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj")
+              .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj"),
+              .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")});
         m_rotationSpeeds.emplace_back(60.0f * std::numbers::pi / 180);
 
         m_entities.emplace_back(runtime().world().create());
         m_entities.back().insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f}).translate(glm::vec3{0.8f, 0, -0.0f})
-        });
-        m_entities.back().insert(phenyl::MeshRenderer3D{
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
-        });
+          .transform = phenyl::Transform3D{}.setScale(glm::vec3{0.2f}).translate(glm::vec3{0.8f, 0, -0.0f})});
+        m_entities.back().insert(
+            phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+              .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
         m_rotationSpeeds.emplace_back(-90.0f * std::numbers::pi / 180);
 
         // auto light1 = runtime().world().create();
@@ -69,7 +60,8 @@ public:
 
         // auto light3 = runtime().world().create();
         // light3.insert(phenyl::GlobalTransform3D{
-        //     .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({1.0f, 0.0f, 0.0f}))
+        //     .transform = phenyl::Transform3D{}.setRotation(phenyl::Quaternion::LookAt({1.0f,
+        //     0.0f, 0.0f}))
         // });
         // light3.insert(phenyl::DirectionalLight3D{
         //     .color = {1.0f, 1.0f, 1.0f},
@@ -78,18 +70,14 @@ public:
         // });
         //
         auto light4 = runtime().world().create();
-        light4.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-                         .setPosition({-1.0f, 0.0f, 0.0f})
-                         .setRotation(phenyl::Quaternion::LookAt({-1.0f, 0.0f, 0.0f}))
-        });
-        light4.insert(phenyl::SpotLight3D{
-            .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 10.0f,
-            .innerAngle = 8.0f / 180.0f * std::numbers::pi,
-            .outerAngle = 9.0f / 180.0f * std::numbers::pi,
-            .castShadows = false
-        });
+        light4.insert(phenyl::GlobalTransform3D{.transform = phenyl::Transform3D{}
+                                                    .setPosition({-1.0f, 0.0f, 0.0f})
+                                                    .setRotation(phenyl::Quaternion::LookAt({-1.0f, 0.0f, 0.0f}))});
+        light4.insert(phenyl::SpotLight3D{.color = {1.0f, 1.0f, 1.0f},
+          .brightness = 10.0f,
+          .innerAngle = 8.0f / 180.0f * std::numbers::pi,
+          .outerAngle = 9.0f / 180.0f * std::numbers::pi,
+          .castShadows = false});
 
         runtime().addSystem<phenyl::Update>("ModelViewer::rotate", this, &ModelViewer::rotate);
         runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 0, -2.0f});
@@ -99,63 +87,43 @@ public:
     void scene2 () {
         auto plane = runtime().world().create();
         plane.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-                .withTranslation({0, -0.6f, 0})
-                .withScale({25.0f, 0.2f, 25.0f})
-        });
-        plane.insert(phenyl::MeshRenderer3D{
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")
-        });
+          .transform = phenyl::Transform3D{}.withTranslation({0, -0.6f, 0}).withScale({25.0f, 0.2f, 25.0f})});
+        plane.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")});
 
         auto cube1 = runtime().world().create();
         cube1.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-                .withTranslation({0, 1.5f, 0})
-                .withScale({0.5f, 0.5f, 0.5f})
-        });
-        cube1.insert(phenyl::MeshRenderer3D{
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
-        });
+          .transform = phenyl::Transform3D{}.withTranslation({0, 1.5f, 0}).withScale({0.5f, 0.5f, 0.5f})});
+        cube1.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
 
         auto cube2 = runtime().world().create();
         cube2.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-                .withTranslation({2.0f, 0.0f, 1.0f})
-                .withScale({0.5f, 0.5f, 0.5f})
-        });
-        cube2.insert(phenyl::MeshRenderer3D{
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
-        });
+          .transform = phenyl::Transform3D{}.withTranslation({2.0f, 0.0f, 1.0f}).withScale({0.5f, 0.5f, 0.5f})});
+        cube2.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
 
         auto cube3 = runtime().world().create();
         cube3.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-                .withTranslation({-1.0f, 0.0f, 2.0f})
-                .withScale({0.5f, 0.5f, 0.5f})
-                .withRotation(phenyl::Quaternion::Rotation(glm::normalize(glm::vec3{1.0, 0.0, 1.0}), 60.0f * std::numbers::pi / 180.0f))
-        });
-        cube3.insert(phenyl::MeshRenderer3D{
-            .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-            .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")
-        });
+          .transform = phenyl::Transform3D{}
+              .withTranslation({-1.0f, 0.0f, 2.0f})
+              .withScale({0.5f, 0.5f, 0.5f})
+              .withRotation(phenyl::Quaternion::Rotation(glm::normalize(glm::vec3{1.0, 0.0, 1.0}),
+                  60.0f * std::numbers::pi / 180.0f))});
+        cube3.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
 
         auto light = runtime().world().create();
-        light.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-            .setPosition({6, 6.0f, -3})
-            .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{-2.0f, -1.5f, 1.0f}))
-        });
+        light.insert(
+            phenyl::GlobalTransform3D{.transform = phenyl::Transform3D{}
+                                          .setPosition({6, 6.0f, -3})
+                                          .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{-2.0f, -1.5f, 1.0f}))});
 
-        light.insert(phenyl::SpotLight3D{
-            .color = {1.0f, 1.0f, 1.0f},
-            .brightness = 10.0f,
-            .innerAngle = 20.0f * std::numbers::pi / 180.0f,
-            .outerAngle = 21.0f * std::numbers::pi / 180.0f,
-            .castShadows = true
-        });
+        light.insert(phenyl::SpotLight3D{.color = {1.0f, 1.0f, 1.0f},
+          .brightness = 10.0f,
+          .innerAngle = 20.0f * std::numbers::pi / 180.0f,
+          .outerAngle = 21.0f * std::numbers::pi / 180.0f,
+          .castShadows = true});
         // light.insert(phenyl::PointLight3D{
         //     .color = {1.0f, 1.0f, 1.0f},
         //     .brightness = 20.0f
@@ -167,33 +135,30 @@ public:
         // });
 
         auto light2 = runtime().world().create();
-        light2.insert(phenyl::GlobalTransform3D{
-            .transform = phenyl::Transform3D{}
-            .setPosition({0, 8.0f, -7})
-            .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{0.0f, -7.0f, 6.0f}))
-        });
+        light2.insert(
+            phenyl::GlobalTransform3D{.transform = phenyl::Transform3D{}
+                                          .setPosition({0, 8.0f, -7})
+                                          .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{0.0f, -7.0f, 6.0f}))});
 
-        light2.insert(phenyl::SpotLight3D{
-            .color = {1.0f, 0.0f, 0.0f},
-            .brightness = 25.0f,
-            .innerAngle = 10.0f * std::numbers::pi / 180.0f,
-            .outerAngle = 11.0f * std::numbers::pi / 180.0f,
-            .castShadows = true
-        });
+        light2.insert(phenyl::SpotLight3D{.color = {1.0f, 0.0f, 0.0f},
+          .brightness = 25.0f,
+          .innerAngle = 10.0f * std::numbers::pi / 180.0f,
+          .outerAngle = 11.0f * std::numbers::pi / 180.0f,
+          .castShadows = true});
 
-        runtime().resource<phenyl::Camera3D>().transform
-            .translate(glm::vec3{0.0f, 4.0f, 10.0f});
+        runtime().resource<phenyl::Camera3D>().transform.translate(glm::vec3{0.0f, 4.0f, 10.0f});
         runtime().resource<phenyl::Camera3D>().lookAt({0, 0, 0});
 
         // runtime().resource<phenyl::Camera3D>().transform
         //     .translate(glm::vec3{0.0f, 4.0f, 0.0f})
-        //     .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{1.0f, -2.0f, 0.0f}, phenyl::Quaternion::ForwardVector));
+        //     .setRotation(phenyl::Quaternion::LookAt(-glm::vec3{1.0f, -2.0f, 0.0f},
+        //     phenyl::Quaternion::ForwardVector));
         // runtime().resource<phenyl::Camera3D>().fov = 40.0f;
-        //runtime().resource<phenyl::Camera3D>().lookAt({0, 0, 0});
+        // runtime().resource<phenyl::Camera3D>().lookAt({0, 0, 0});
     }
 
-    void postInit() override {
-        //scene1();
+    void postInit () override {
+        // scene1();
         scene2();
 
         auto& input = runtime().resource<phenyl::GameInput>();
@@ -215,8 +180,8 @@ public:
         const auto& deltaTime = runtime().resource<phenyl::DeltaTime>();
 
         for (std::size_t i = 0; i < m_entities.size(); i++) {
-            m_entities[i].get<phenyl::GlobalTransform3D>()->transform
-                .rotateBy(phenyl::Quaternion::Rotation(m_axis, static_cast<float>(m_rotationSpeeds[i] * deltaTime())));
+            m_entities[i].get<phenyl::GlobalTransform3D>()->transform.rotateBy(
+                phenyl::Quaternion::Rotation(m_axis, static_cast<float>(m_rotationSpeeds[i] * deltaTime())));
         }
 
         m_remainingTime -= deltaTime();

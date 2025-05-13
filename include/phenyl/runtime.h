@@ -5,17 +5,17 @@
 #include "core/stages.h"
 
 namespace phenyl {
-    using PhenylRuntime = core::PhenylRuntime;
+using PhenylRuntime = core::PhenylRuntime;
 
-    template <typename ...Args>
-    using Resources = core::Resources<Args...>;
+template<typename... Args>
+using Resources = core::Resources<Args...>;
 
-    using PostInit = core::PostInit;
-    using FrameBegin = core::FrameBegin;
-    using Update = core::Update;
-    using Render = core::Render;
-    using FixedUpdate = core::FixedUpdate;
+using PostInit = core::PostInit;
+using FrameBegin = core::FrameBegin;
+using Update = core::Update;
+using Render = core::Render;
+using FixedUpdate = core::FixedUpdate;
 
-    using DeltaTime = core::DeltaTime;
-    using FixedDelta = core::FixedDelta;
-}
+using DeltaTime = core::DeltaTime;
+using FixedDelta = core::FixedDelta;
+} // namespace phenyl

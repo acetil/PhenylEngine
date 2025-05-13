@@ -1,8 +1,7 @@
 #include "graphics/renderlayer/canvas_layer.h"
-#include "graphics/font/glyph_atlas.h"
 
 #include "core/assets/assets.h"
-
+#include "graphics/font/glyph_atlas.h"
 #include "logging/logging.h"
 
 using namespace phenyl::graphics;
@@ -20,15 +19,15 @@ void CanvasRenderLayer::init (Renderer& renderer) {
     BufferBinding textBinding;
     auto textShader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/canvas");
     m_pipeline = renderer.buildPipeline()
-                       .withShader(textShader)
-                       .withBuffer<Vertex>(textBinding)
-                       .withAttrib<glm::vec2>(0, textBinding, offsetof(Vertex, pos))
-                       .withAttrib<glm::vec3>(1, textBinding, offsetof(Vertex, uv))
-                       .withAttrib<glm::vec4>(2, textBinding, offsetof(Vertex, colour))
-                       .withSampler2D(textShader->samplerLocation("textureSampler").value(), m_samplerBinding)
-                       .withUniform<Uniform>(textShader->uniformLocation("Uniform").value(), m_uniformBinding)
-                       .withBlending(BlendMode::ALPHA_BLEND)
-                       .build();
+                     .withShader(textShader)
+                     .withBuffer<Vertex>(textBinding)
+                     .withAttrib<glm::vec2>(0, textBinding, offsetof(Vertex, pos))
+                     .withAttrib<glm::vec3>(1, textBinding, offsetof(Vertex, uv))
+                     .withAttrib<glm::vec4>(2, textBinding, offsetof(Vertex, colour))
+                     .withSampler2D(textShader->samplerLocation("textureSampler").value(), m_samplerBinding)
+                     .withUniform<Uniform>(textShader->uniformLocation("Uniform").value(), m_uniformBinding)
+                     .withBlending(BlendMode::ALPHA_BLEND)
+                     .build();
 
     m_buffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE, BufferStorageHint::DYNAMIC);
     m_indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, BufferStorageHint::DYNAMIC, true);
@@ -65,26 +64,16 @@ void CanvasRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec
     auto topLeft = pos;
     auto bottomRight = pos + glyph.size;
 
-    auto startIndex = m_buffer.emplace(Vertex{
-            .pos = topLeft,
-            .uv = glm::vec3{glyph.uvStart, glyph.atlasLayer},
-            .colour = glm::vec4{colour, 1.0f}
-    });
-    m_buffer.emplace(Vertex{
-            .pos = glm::vec2{bottomRight.x, topLeft.y},
-            .uv = glm::vec3{glyph.uvEnd.x, glyph.uvStart.y, glyph.atlasLayer},
-            .colour = glm::vec4{colour, 1.0f}
-    });
-    m_buffer.emplace(Vertex{
-            .pos = glm::vec2{topLeft.x, bottomRight.y},
-            .uv = glm::vec3{glyph.uvStart.x, glyph.uvEnd.y, glyph.atlasLayer},
-            .colour = glm::vec4{colour, 1.0f}
-    });
-    m_buffer.emplace(Vertex{
-            .pos = bottomRight,
-            .uv = glm::vec3{glyph.uvEnd, glyph.atlasLayer},
-            .colour = glm::vec4{colour, 1.0f}
-    });
+    auto startIndex = m_buffer.emplace(
+        Vertex{.pos = topLeft, .uv = glm::vec3{glyph.uvStart, glyph.atlasLayer}, .colour = glm::vec4{colour, 1.0f}});
+    m_buffer.emplace(Vertex{.pos = glm::vec2{bottomRight.x, topLeft.y},
+      .uv = glm::vec3{glyph.uvEnd.x, glyph.uvStart.y, glyph.atlasLayer},
+      .colour = glm::vec4{colour, 1.0f}});
+    m_buffer.emplace(Vertex{.pos = glm::vec2{topLeft.x, bottomRight.y},
+      .uv = glm::vec3{glyph.uvStart.x, glyph.uvEnd.y, glyph.atlasLayer},
+      .colour = glm::vec4{colour, 1.0f}});
+    m_buffer.emplace(
+        Vertex{.pos = bottomRight, .uv = glm::vec3{glyph.uvEnd, glyph.atlasLayer}, .colour = glm::vec4{colour, 1.0f}});
 
     m_indices.emplace(startIndex + 0);
     m_indices.emplace(startIndex + 1);
@@ -102,23 +91,11 @@ void CanvasRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4
 
     // Render out in fan from start index
     const glm::vec3 opaque = m_glyphAtlas.opaque();
-    std::uint16_t startIndex = m_buffer.emplace(Vertex{
-        .pos = points[0],
-        .uv = opaque,
-        .colour = colour
-    });
-    std::uint16_t lastIndex = m_buffer.emplace(Vertex{
-        .pos = points[1],
-        .uv = opaque,
-        .colour = colour
-    });
+    std::uint16_t startIndex = m_buffer.emplace(Vertex{.pos = points[0], .uv = opaque, .colour = colour});
+    std::uint16_t lastIndex = m_buffer.emplace(Vertex{.pos = points[1], .uv = opaque, .colour = colour});
 
     for (std::size_t i = 2; i < points.size(); i++) {
-        std::uint16_t index = m_buffer.emplace(Vertex{
-            .pos = points[i],
-            .uv = opaque,
-            .colour = colour
-        });
+        std::uint16_t index = m_buffer.emplace(Vertex{.pos = points[i], .uv = opaque, .colour = colour});
 
         // Add next fan triangle
         m_indices.emplace(startIndex);
@@ -148,16 +125,10 @@ void CanvasRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::ve
         auto n2 = util::SafeNormalize({-(next.y - curr.y), next.x - curr.x});
         auto miter = -util::SafeNormalize(n1 + n2);
 
-        std::uint16_t index = m_buffer.emplace(Vertex{
-            .pos = curr - miter * widthAA,
-            .uv = opaque,
-            .colour = colour
-        });
-        m_buffer.emplace(Vertex{
-            .pos = curr + miter * widthAA,
-            .uv = opaque,
-            .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-        });
+        std::uint16_t index = m_buffer.emplace(Vertex{.pos = curr - miter * widthAA, .uv = opaque, .colour = colour});
+        m_buffer.emplace(Vertex{.pos = curr + miter * widthAA,
+          .uv = opaque,
+          .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
 
         if (i == 0) {
             startIndex = index;
@@ -192,7 +163,6 @@ void CanvasRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::ve
     m_indices.emplace(startIndex + 1);
 }
 
-
 void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed) {
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;
@@ -204,8 +174,11 @@ void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 c
     std::uint16_t lastIndex;
     for (std::size_t i = 0; i < points.size(); i++) {
         auto curr = points[i];
-        auto prev = i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
-        auto next = i != points.size() - 1 ? points[i + 1] : (closed ? points.front() : curr); // wrap around if closed, otherwise use curr
+        auto prev =
+            i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
+        auto next = i != points.size() - 1 ?
+            points[i + 1] :
+            (closed ? points.front() : curr); // wrap around if closed, otherwise use curr
 
         auto n1 = util::SafeNormalize(glm::vec2{-(curr.y - prev.y), curr.x - prev.x});
         auto n2 = util::SafeNormalize(glm::vec2{-(next.y - curr.y), next.x - curr.x});
@@ -217,41 +190,17 @@ void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 c
         std::uint16_t nextIndex;
         if (miterMult <= MITER_LIMIT) {
             // Miter small enough, put in
-            prevIndex = m_buffer.emplace(Vertex{
-                   .pos = curr - miter * miterLen,
-                   .uv = opaque,
-                   .colour = colour
-               });
-            m_buffer.emplace(Vertex{
-                .pos = curr + miter * miterLen,
-                .uv = opaque,
-                .colour = colour
-            });
+            prevIndex = m_buffer.emplace(Vertex{.pos = curr - miter * miterLen, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr + miter * miterLen, .uv = opaque, .colour = colour});
 
             nextIndex = prevIndex;
         } else {
             // Miter too large, use bevel joint
-            prevIndex = m_buffer.emplace(Vertex{
-                .pos = curr - n1 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                .pos = curr + n1 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
+            prevIndex = m_buffer.emplace(Vertex{.pos = curr - n1 * halfWidth, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr + n1 * halfWidth, .uv = opaque, .colour = colour});
 
-            nextIndex = m_buffer.emplace(Vertex{
-                .pos = curr - n2 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                .pos = curr + n2 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
+            nextIndex = m_buffer.emplace(Vertex{.pos = curr - n2 * halfWidth, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr + n2 * halfWidth, .uv = opaque, .colour = colour});
 
             // Add join geometry
             m_indices.emplace(prevIndex);
@@ -291,7 +240,8 @@ void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 c
     }
 }
 
-void CanvasRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed, float widthAA) {
+void CanvasRenderLayer::renderPolyLineAA (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed,
+    float widthAA) {
     // Doesnt do AA for non-closed lines properly
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;
@@ -305,8 +255,11 @@ void CanvasRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 
     std::uint16_t lastIndex;
     for (std::size_t i = 0; i < points.size(); i++) {
         auto curr = points[i];
-        auto prev = i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
-        auto next = i != points.size() - 1 ? points[i + 1] : (closed ? points.front() : curr); // wrap around if closed, otherwise use curr
+        auto prev =
+            i != 0 ? points[i - 1] : (closed ? points.back() : curr); // wrap around if closed, otherwise use curr
+        auto next = i != points.size() - 1 ?
+            points[i + 1] :
+            (closed ? points.front() : curr); // wrap around if closed, otherwise use curr
 
         auto n1 = util::SafeNormalize(glm::vec2{-(curr.y - prev.y), curr.x - prev.x});
         auto n2 = util::SafeNormalize(glm::vec2{-(next.y - curr.y), next.x - curr.x});
@@ -319,73 +272,37 @@ void CanvasRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 
         std::uint16_t nextIndex;
         if (miterMult <= MITER_LIMIT) {
             // Miter small enough, put in
-            prevIndex = m_buffer.emplace(Vertex{
-                   .pos = curr - miter * miterLen,
-                   .uv = opaque,
-                   .colour = colour
-               });
-            m_buffer.emplace(Vertex{
-                   .pos = curr - miter * miterLenAA,
-                   .uv = opaque,
-                   .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-               });
-            m_buffer.emplace(Vertex{
-                .pos = curr + miter * miterLen,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                   .pos = curr + miter * miterLenAA,
-                   .uv = opaque,
-                   .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-               });
+            prevIndex = m_buffer.emplace(Vertex{.pos = curr - miter * miterLen, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr - miter * miterLenAA,
+              .uv = opaque,
+              .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
+            m_buffer.emplace(Vertex{.pos = curr + miter * miterLen, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr + miter * miterLenAA,
+              .uv = opaque,
+              .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
 
             nextIndex = prevIndex;
         } else {
             // Miter too large, use bevel joint
-            prevIndex = m_buffer.emplace(Vertex{
-                .pos = curr - n1 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                .pos = curr - n1 * halfWidthAA,
-                .uv = opaque,
-                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-            });
+            prevIndex = m_buffer.emplace(Vertex{.pos = curr - n1 * halfWidth, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr - n1 * halfWidthAA,
+              .uv = opaque,
+              .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
 
-            m_buffer.emplace(Vertex{
-                .pos = curr + n1 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                .pos = curr + n1 * halfWidthAA,
-                .uv = opaque,
-                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-            });
+            m_buffer.emplace(Vertex{.pos = curr + n1 * halfWidth, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr + n1 * halfWidthAA,
+              .uv = opaque,
+              .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
 
-            nextIndex = m_buffer.emplace(Vertex{
-                .pos = curr - n2 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                .pos = curr - n2 * halfWidthAA,
-                .uv = opaque,
-                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-            });
+            nextIndex = m_buffer.emplace(Vertex{.pos = curr - n2 * halfWidth, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr - n2 * halfWidthAA,
+              .uv = opaque,
+              .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
 
-            m_buffer.emplace(Vertex{
-                .pos = curr + n2 * halfWidth,
-                .uv = opaque,
-                .colour = colour
-            });
-            m_buffer.emplace(Vertex{
-                .pos = curr + n2 * halfWidthAA,
-                .uv = opaque,
-                .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}
-            });
+            m_buffer.emplace(Vertex{.pos = curr + n2 * halfWidth, .uv = opaque, .colour = colour});
+            m_buffer.emplace(Vertex{.pos = curr + n2 * halfWidthAA,
+              .uv = opaque,
+              .colour = glm::vec4{colour.r, colour.g, colour.b, 0.0f}});
 
             // Add join geometry
             m_indices.emplace(prevIndex);
@@ -443,7 +360,6 @@ void CanvasRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 
             m_indices.emplace(lastIndex + 2 + 1);
             m_indices.emplace(prevIndex + 2);
             m_indices.emplace(prevIndex + 2 + 1);
-
         }
         lastIndex = nextIndex;
     }
@@ -476,4 +392,3 @@ void CanvasRenderLayer::renderPolyLineAA(std::span<glm::vec2> points, glm::vec4 
         m_indices.emplace(startIndex + 2 + 1);
     }
 }
-

@@ -25,16 +25,12 @@ Widget* RootWidget::pick (glm::vec2 pointer) noexcept {
 
 void RootWidget::measure (const WidgetConstraints& constraints) {
     for (auto& i : m_children) {
-        i->measure(WidgetConstraints{
-            .maxSize = constraints.maxSize - i->modifier().offset
-        });
+        i->measure(WidgetConstraints{.maxSize = constraints.maxSize - i->modifier().offset});
     }
 }
 
 void RootWidget::update () {
-    std::erase_if(m_children, [this] (const auto& w) {
-        return m_widgetsToDelete.contains(w.get());
-    });
+    std::erase_if(m_children, [this] (const auto& w) { return m_widgetsToDelete.contains(w.get()); });
     m_widgetsToDelete.clear();
 
     for (auto& i : m_children) {
@@ -64,7 +60,7 @@ bool RootWidget::pointerUpdate (glm::vec2 pointer) {
         }
     }
 
-    for ( ; it != m_children.rend(); ++it) {
+    for (; it != m_children.rend(); ++it) {
         (*it)->pointerLeave();
     }
 

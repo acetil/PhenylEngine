@@ -3,49 +3,49 @@
 #include <string>
 
 namespace phenyl::graphics {
-    class GraphicsProperties {
-    public:
-        GraphicsProperties () = default;
+class GraphicsProperties {
+public:
+    GraphicsProperties () = default;
 
-        GraphicsProperties& withWindowSize (int width, int height) {
-            m_windowWidth = width;
-            m_windowHeight = height;
+    GraphicsProperties& withWindowSize (int width, int height) {
+        m_windowWidth = width;
+        m_windowHeight = height;
 
-            return *this;
-        }
+        return *this;
+    }
 
-        GraphicsProperties& withWindowTitle (std::string title) {
-            m_windowTitle = std::move(title);
+    GraphicsProperties& withWindowTitle (std::string title) {
+        m_windowTitle = std::move(title);
 
-            return *this;
-        }
+        return *this;
+    }
 
-        GraphicsProperties& withVsync (bool doVsync) {
-            m_vsync = doVsync;
+    GraphicsProperties& withVsync (bool doVsync) {
+        m_vsync = doVsync;
 
-            return *this;
-        }
+        return *this;
+    }
 
-        [[nodiscard]] int getWindowWidth () const {
-            return m_windowWidth;
-        }
+    [[nodiscard]] int getWindowWidth () const {
+        return m_windowWidth;
+    }
 
-        [[nodiscard]] int getWindowHeight () const {
-            return m_windowHeight;
-        }
+    [[nodiscard]] int getWindowHeight () const {
+        return m_windowHeight;
+    }
 
-        [[nodiscard]] const std::string& getWindowTitle () const {
-            return m_windowTitle;
-        }
+    [[nodiscard]] const std::string& getWindowTitle () const {
+        return m_windowTitle;
+    }
 
-        bool getVsync () const {
-            return m_vsync;
-        }
+    bool getVsync () const {
+        return m_vsync;
+    }
 
-    private:
-        int m_windowWidth = 800;
-        int m_windowHeight = 600;
-        std::string m_windowTitle = "Phenyl Engine";
-        bool m_vsync = false;
-    };
-}
+private:
+    int m_windowWidth = 800;
+    int m_windowHeight = 600;
+    std::string m_windowTitle = "Phenyl Engine";
+    bool m_vsync = false;
+};
+} // namespace phenyl::graphics

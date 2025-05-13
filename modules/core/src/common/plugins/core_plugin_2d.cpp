@@ -1,7 +1,7 @@
-#include "core/runtime.h"
+#include "core/plugins/core_plugin_2d.h"
 
 #include "core/components/2d/global_transform.h"
-#include "core/plugins/core_plugin_2d.h"
+#include "core/runtime.h"
 
 using namespace phenyl::core;
 

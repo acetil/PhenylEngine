@@ -1,10 +1,10 @@
+#include "graphics/plugins/particle_plugin.h"
+
 #include "graphics/backend/renderer.h"
 #include "graphics/components/2d/particle_emitter.h"
 #include "graphics/particles/particle_manager.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/particle_layer.h"
-
-#include "graphics/plugins/particle_plugin.h"
 
 using namespace phenyl::graphics;
 
@@ -13,7 +13,7 @@ struct ParticleData : public phenyl::core::IResource {
 
     ParticleData (ParticleRenderLayer* layer) : layer{layer} {}
 
-    [[nodiscard]] std::string_view getName() const noexcept override {
+    [[nodiscard]] std::string_view getName () const noexcept override {
         return "ParticleData";
     }
 };
@@ -42,8 +42,8 @@ void Particle2DPlugin::init (core::PhenylRuntime& runtime) {
 
     runtime.addComponent<ParticleEmitter2D>("ParticleEmitter2D");
 
-    //manager = std::make_unique<ParticleManager2D>(256);
-    //manager->selfRegister();
+    // manager = std::make_unique<ParticleManager2D>(256);
+    // manager->selfRegister();
     runtime.addResource<ParticleManager2D>(256);
     runtime.resource<ParticleManager2D>().selfRegister();
 

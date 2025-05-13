@@ -1,46 +1,45 @@
 {
-  "components" : {
-    "GlobalTransform2D" : {
-      "transform": {
-        "position": [0.7, -0.9],
-        "scale" : [0.189453125, 0.05],
-        "rotation": 0.0
-      }
-    },
-    "Sprite2D" : {
-      "texture" : "resources/images/paddle.png"
-    },
-    "RigidBody2D" : {
-      "momentum": [0.0, 0.0],
-      "gravity": [0.0, 0.0],
-      "mass": 1.0,
-      "inertial_moment": 0.0,
-      "drag": 0,
-      "angular_drag": 0,
-      "angular_momentum" : 0
-    },
-    "BoxCollider2D": {
-      "Collider2D": {
-        "layers": 1,
-        "mask": 1,
-        "elasticity": 1.0
-      },
-      "scale" : [0.189453125, 0.05]
-    },
-    "Paddle" : {
-      "has_ball" : true,
-      "speed" : 1.8,
-      "width" : 0.43,
-      "min_x" : -0.975,
-      "max_x" : 0.975,
-      "ball_prefab" : "resources/prefabs/ball",
-      "ball_speed" : 1.5,
-      "emitter_prefab" : "resources/prefabs/paddle_collision_emitter",
-      "bounce_sample" : "resources/audio/bounce.wav"
-    },
-    "AudioPlayer" :
-    {
-      "gain" : 0.5
+    "components" : {
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.7, -0.9],
+                "scale" : [0.189453125, 0.05],
+                "rotation" : 0.0
+            }
+        },
+        "Sprite2D" : {
+            "texture" : "resources/images/paddle.png"
+        },
+        "RigidBody2D" : {
+            "momentum" : [0.0, 0.0],
+            "gravity" : [0.0, 0.0],
+            "mass" : 1.0,
+            "inertial_moment" : 0.0,
+            "drag" : 0,
+            "angular_drag" : 0,
+            "angular_momentum" : 0
+        },
+        "BoxCollider2D" : {
+            "Collider2D" : {
+                "layers" : 1,
+                "mask" : 1,
+                "elasticity" : 1.0
+            },
+            "scale" : [0.189453125, 0.05]
+        },
+        "Paddle" : {
+            "has_ball" : true,
+            "speed" : 1.8,
+            "width" : 0.43,
+            "min_x" : -0.975,
+            "max_x" : 0.975,
+            "ball_prefab" : "resources/prefabs/ball",
+            "ball_speed" : 1.5,
+            "emitter_prefab" : "resources/prefabs/paddle_collision_emitter",
+            "bounce_sample" : "resources/audio/bounce.wav"
+        },
+        "AudioPlayer" : {
+            "gain" : 0.5
+        }
     }
-  }
 }

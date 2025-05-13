@@ -44,4 +44,3 @@ bool MeshManager::isBinary () const {
 void MeshManager::queueUnload (std::size_t id) {
     // TODO
 }
-

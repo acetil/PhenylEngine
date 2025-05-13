@@ -1,7 +1,7 @@
-#include "logging/logging.h"
+#include "core/input/game_input.h"
 
 #include "core/detail/loggers.h"
-#include "core/input/game_input.h"
+#include "logging/logging.h"
 
 using namespace phenyl::core;
 

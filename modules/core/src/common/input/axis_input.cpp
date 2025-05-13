@@ -1,6 +1,5 @@
-#include "logging/logging.h"
-
 #include "core/input/axis_action.h"
+#include "logging/logging.h"
 
 using namespace phenyl::core;
 

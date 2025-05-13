@@ -1,12 +1,12 @@
 #include "graphics/plugins/mesh_3d_plugin.h"
 
-#include "material_instance_manager.h"
-#include "material_manager.h"
-#include "mesh_manager.h"
 #include "core/runtime.h"
 #include "graphics/components/3d/lighting.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/mesh_layer.h"
+#include "material_instance_manager.h"
+#include "material_manager.h"
+#include "mesh_manager.h"
 
 using namespace phenyl::graphics;
 

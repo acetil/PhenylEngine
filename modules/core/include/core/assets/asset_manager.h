@@ -1,49 +1,53 @@
 #pragma once
 
-#include <cstddef>
-#include <iosfwd>
-
 #include "forward.h"
 #include "util/meta.h"
 
+#include <cstddef>
+#include <iosfwd>
+
 namespace phenyl::core {
-    class Assets;
-    namespace detail {
-        class AssetManagerBase {
-        public:
-            virtual ~AssetManagerBase () = default;
+class Assets;
 
-        private:
-            virtual void queueUnload (std::size_t id) = 0;
-            [[nodiscard]] virtual const char* getFileType () const = 0;
-            virtual bool isBinary () const {
-                return false;
-            }
-
-            static bool OnUnloadUntyped (std::size_t typeIndex, std::size_t id);
-
-            static std::size_t onVirtualLoadUntyped (std::size_t typeIndex, const std::string& virtualPath, std::byte* data);
-
-            friend class core::Assets;
-            template <typename T>
-            friend class core::AssetManager;
-        };
-    }
-
-    template <typename T>
-    class AssetManager : public detail::AssetManagerBase {
-    protected:
-        virtual T* load (std::ifstream& data, std::size_t id) = 0;
-        virtual T* load (T&& obj, std::size_t id) = 0;
-        bool onUnload (std::size_t id) {
-            return detail::AssetManagerBase::OnUnloadUntyped(meta::type_index<T>(), id);
-        }
-
-        std::size_t onVirtualLoad (const std::string& virtualPath, T* data) {
-            return onVirtualLoadUntyped(meta::type_index<T>(), virtualPath, (std::byte*)data);
-        }
+namespace detail {
+    class AssetManagerBase {
+    public:
+        virtual ~AssetManagerBase () = default;
 
     private:
-        friend class Assets;
+        virtual void queueUnload (std::size_t id) = 0;
+        [[nodiscard]] virtual const char* getFileType () const = 0;
+
+        virtual bool isBinary () const {
+            return false;
+        }
+
+        static bool OnUnloadUntyped (std::size_t typeIndex, std::size_t id);
+
+        static std::size_t onVirtualLoadUntyped (std::size_t typeIndex, const std::string& virtualPath,
+            std::byte* data);
+
+        friend class core::Assets;
+        template<typename T>
+        friend class core::AssetManager;
     };
-}
+} // namespace detail
+
+template<typename T>
+class AssetManager : public detail::AssetManagerBase {
+protected:
+    virtual T* load (std::ifstream& data, std::size_t id) = 0;
+    virtual T* load (T&& obj, std::size_t id) = 0;
+
+    bool onUnload (std::size_t id) {
+        return detail::AssetManagerBase::OnUnloadUntyped(meta::type_index<T>(), id);
+    }
+
+    std::size_t onVirtualLoad (const std::string& virtualPath, T* data) {
+        return onVirtualLoadUntyped(meta::type_index<T>(), virtualPath, (std::byte*) data);
+    }
+
+private:
+    friend class Assets;
+};
+} // namespace phenyl::core

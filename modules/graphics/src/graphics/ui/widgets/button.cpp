@@ -4,13 +4,9 @@ using namespace phenyl::graphics;
 
 ButtonWidget::ButtonWidget (const Modifier& modifier) : Widget{modifier}, m_container{modifier} {
     m_container.setParent(this);
-    addListener([this] (const MouseEnterEvent&) {
-        onHover();
-    });
+    addListener([this] (const MouseEnterEvent&) { onHover(); });
 
-    addListener([this] (const MouseExitEvent&) {
-        onUnhover();
-    });
+    addListener([this] (const MouseExitEvent&) { onUnhover(); });
 
     addListener([this] (const MousePressEvent&) {
         onPress();
@@ -69,58 +65,56 @@ void ButtonWidget::pointerLeave () {
 
 void ButtonWidget::onHover () {
     switch (m_state) {
-        case ButtonState::UNPRESSED:
-            m_state = ButtonState::HOVERED;
-            m_container.setBgColor(m_hoverBgColor);
-            break;
-        case ButtonState::PRESSED_UNHOVER:
-            m_state = ButtonState::PRESSED;
-            break;
-        default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onHover on {}", static_cast<int>(m_state));
-            break;
+    case ButtonState::UNPRESSED:
+        m_state = ButtonState::HOVERED;
+        m_container.setBgColor(m_hoverBgColor);
+        break;
+    case ButtonState::PRESSED_UNHOVER:
+        m_state = ButtonState::PRESSED;
+        break;
+    default:
+        PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onHover on {}", static_cast<int>(m_state));
+        break;
     }
 }
 
 void ButtonWidget::onUnhover () {
     switch (m_state) {
-        case ButtonState::HOVERED:
-            m_state = ButtonState::UNPRESSED;
-            m_container.setBgColor(m_defaultBgColor);
-            break;
-        case ButtonState::PRESSED:
-            m_state = ButtonState::PRESSED_UNHOVER;
-            break;
-        default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onUnhover on {}", static_cast<int>(m_state));
+    case ButtonState::HOVERED:
+        m_state = ButtonState::UNPRESSED;
+        m_container.setBgColor(m_defaultBgColor);
+        break;
+    case ButtonState::PRESSED:
+        m_state = ButtonState::PRESSED_UNHOVER;
+        break;
+    default:
+        PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onUnhover on {}", static_cast<int>(m_state));
     }
 }
 
 void ButtonWidget::onPress () {
     switch (m_state) {
-        case ButtonState::HOVERED:
-            m_state = ButtonState::PRESSED;
-            m_container.setBgColor(m_pressBgColor);
-            break;
-        default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onPress on {}", static_cast<int>(m_state));
+    case ButtonState::HOVERED:
+        m_state = ButtonState::PRESSED;
+        m_container.setBgColor(m_pressBgColor);
+        break;
+    default:
+        PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onPress on {}", static_cast<int>(m_state));
     }
 }
 
 void ButtonWidget::onRelease () {
     switch (m_state) {
-        case ButtonState::PRESSED:
-            raise(UIEvent{ButtonPressEvent{}});
-            m_state = ButtonState::HOVERED;
-            m_container.setBgColor(m_hoverBgColor);
-            break;
-        case ButtonState::PRESSED_UNHOVER:
-            m_state = ButtonState::UNPRESSED;
-            m_container.setBgColor(m_defaultBgColor);
-            break;
-        default:
-            PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onRelease on {}", static_cast<int>(m_state));
+    case ButtonState::PRESSED:
+        raise(UIEvent{ButtonPressEvent{}});
+        m_state = ButtonState::HOVERED;
+        m_container.setBgColor(m_hoverBgColor);
+        break;
+    case ButtonState::PRESSED_UNHOVER:
+        m_state = ButtonState::UNPRESSED;
+        m_container.setBgColor(m_defaultBgColor);
+        break;
+    default:
+        PHENYL_DASSERT_MSG(false, "Disallowed state transition for button: onRelease on {}", static_cast<int>(m_state));
     }
 }
-
-

@@ -2,11 +2,21 @@
 
 using namespace phenyl::core;
 
-UntypedComponentVector::UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize, std::size_t startCapacity) : m_type{typeIndex}, m_compSize{dataSize}, m_size{0}, m_capacity{startCapacity} {
+UntypedComponentVector::UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize,
+    std::size_t startCapacity) :
+    m_type{typeIndex},
+    m_compSize{dataSize},
+    m_size{0},
+    m_capacity{startCapacity} {
     m_memory = std::make_unique<std::byte[]>(dataSize * startCapacity);
 }
 
-UntypedComponentVector::UntypedComponentVector (UntypedComponentVector&& other) noexcept : m_type{other.m_type}, m_memory{std::move(other.m_memory)}, m_compSize{other.m_compSize}, m_size{other.m_size}, m_capacity{other.m_capacity} {
+UntypedComponentVector::UntypedComponentVector (UntypedComponentVector&& other) noexcept :
+    m_type{other.m_type},
+    m_memory{std::move(other.m_memory)},
+    m_compSize{other.m_compSize},
+    m_size{other.m_size},
+    m_capacity{other.m_capacity} {
     other.m_compSize = 0;
     other.m_size = 0;
     other.m_capacity = 0;
@@ -54,7 +64,7 @@ void UntypedComponentVector::remove (std::size_t pos) {
     m_size--;
 }
 
-void UntypedComponentVector::clear() {
+void UntypedComponentVector::clear () {
     deleteAllComps(m_memory.get(), m_memory.get() + m_size * m_compSize);
     m_size = 0;
 }

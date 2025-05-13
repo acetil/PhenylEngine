@@ -1,23 +1,24 @@
-#include "core/assets/assets.h"
-#include "core/world.h"
-#include "core/serialization/component_serializer.h"
-#include "core/serialization/serializer_impl.h"
-
 #include "audio/audio_system.h"
-#include "filetypes/wav.h"
-#include "openal/openal_system.h"
+
 #include "audio/components/audio_player.h"
 #include "audio/detail/loggers.h"
+#include "core/assets/assets.h"
+#include "core/serialization/component_serializer.h"
+#include "core/serialization/serializer_impl.h"
+#include "core/world.h"
+#include "filetypes/wav.h"
+#include "openal/openal_system.h"
 
 namespace phenyl::audio {
-    PHENYL_SERIALIZABLE(AudioPlayer, PHENYL_SERIALIZABLE_MEMBER_NAMED(m_gain, "gain"))
+PHENYL_SERIALIZABLE(AudioPlayer, PHENYL_SERIALIZABLE_MEMBER_NAMED(m_gain, "gain"))
 }
 
 using namespace phenyl::audio;
 
 static phenyl::Logger LOGGER{"AUDIO_SYSTEM", detail::AUDIO_LOGGER};
 
-AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) : m_backend{std::move(backend)} {
+AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources) :
+    m_backend{std::move(backend)} {
     PHENYL_LOGD(LOGGER, "Attempting to provision {} sources", maxBackendSources);
     m_backendSources.reserve(maxBackendSources);
     for (std::size_t i = 0; i < maxBackendSources; i++) {
@@ -27,7 +28,7 @@ AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t max
             break;
         }
 
-        m_backendSources.emplace_back(BackendSource{.backendId=id});
+        m_backendSources.emplace_back(BackendSource{.backendId = id});
     }
 
     PHENYL_LOGI(LOGGER, "Initialising audio system with {} backend sources", m_backendSources.size());
@@ -60,7 +61,8 @@ AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
         return nullptr;
     }
 
-    m_samples[id] = std::unique_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(wavOpt.getUnsafe()))); // cpp is trash
+    m_samples[id] = std::unique_ptr<AudioSample>(
+        new AudioSample(this, m_backend->makeWAVSample(wavOpt.getUnsafe()))); // cpp is trash
 
     return m_samples[id].get();
 }
@@ -148,7 +150,7 @@ void AudioSystem::destroySample (std::size_t id) {
 void AudioSystem::playSample (AudioSource& source, const AudioSample& sample) {
     auto virtualIndex = getVirtualSource(source);
     if (virtualIndex == EMPTY_INDEX) {
-        //logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");
+        // logging::log(LEVEL_ERROR, "Attempted to play to invalid source!");
         PHENYL_LOGE(LOGGER, "Attepted to play sample {} to empty source {}", sample.m_id, source.m_id);
         return;
     }

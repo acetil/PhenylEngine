@@ -1,46 +1,44 @@
 #pragma once
 
 #include <cstdint>
-
 #include <phenyl/asset.h>
-#include <phenyl/world.h>
 #include <phenyl/maths.h>
 #include <phenyl/prefab.h>
 #include <phenyl/runtime.h>
 #include <phenyl/serialization_fwd.h>
 #include <phenyl/ui/label.h>
 #include <phenyl/ui/ui.h>
+#include <phenyl/world.h>
 
 namespace breakout {
-    class BreakoutApp;
+class BreakoutApp;
 
-    struct TileController {
-        std::size_t rows{};
-        std::size_t columns{};
+struct TileController {
+    std::size_t rows{};
+    std::size_t columns{};
 
-        glm::vec2 startOffset{};
-        glm::vec2 endOffset{};
-        glm::vec2 labelPos{};
+    glm::vec2 startOffset{};
+    glm::vec2 endOffset{};
+    glm::vec2 labelPos{};
 
-        phenyl::Asset<phenyl::Prefab> tile;
+    phenyl::Asset<phenyl::Prefab> tile;
 
+    BreakoutApp* app = nullptr;
+    std::size_t tilesRemaining = 0;
+    int points = 0;
+    // phenyl::ui::Label pointsLabel{"label"};
+    phenyl::ui::LabelWidget* pointsLabel = nullptr;
 
-        BreakoutApp* app = nullptr;
-        std::size_t tilesRemaining = 0;
-        int points = 0;
-        //phenyl::ui::Label pointsLabel{"label"};
-        phenyl::ui::LabelWidget* pointsLabel = nullptr;
+    TileController () = default;
+    static void Init (BreakoutApp* app, phenyl::PhenylRuntime& runtime);
 
-        TileController () = default;
-        static void Init (BreakoutApp* app, phenyl::PhenylRuntime& runtime);
+    void onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::UIManager& uiManager);
+    void onTileBreak (int tilePoints);
+};
 
-        void onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::UIManager& uiManager);
-        void onTileBreak (int tilePoints);
-    };
+struct OnTileBreak {
+    int points;
+};
 
-    struct OnTileBreak {
-        int points;
-    };
-
-    PHENYL_DECLARE_SERIALIZABLE(TileController)
-}
+PHENYL_DECLARE_SERIALIZABLE(TileController)
+} // namespace breakout

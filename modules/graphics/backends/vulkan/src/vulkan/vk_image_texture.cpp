@@ -4,7 +4,11 @@ using namespace phenyl::vulkan;
 
 static phenyl::Logger LOGGER{"VK_IMAGE_TEXTURE", detail::VULKAN_LOGGER};
 
-VulkanImageTexture::VulkanImageTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties) : m_resources{resources}, m_transferManager{transferManager}, m_combinedSampler{resources, properties} {}
+VulkanImageTexture::VulkanImageTexture (VulkanResources& resources, TransferManager& transferManager,
+    const graphics::TextureProperties& properties) :
+    m_resources{resources},
+    m_transferManager{transferManager},
+    m_combinedSampler{resources, properties} {}
 
 std::uint32_t VulkanImageTexture::width () const noexcept {
     return m_combinedSampler ? m_combinedSampler.image().width() : 0;
@@ -50,6 +54,7 @@ void VulkanImageTexture::recreateIfNecessary (VkFormat format, std::uint32_t wid
 void VulkanImageTexture::recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height) {
     PHENYL_LOGD(LOGGER, "Recreating VulkanImage with dimensions {}x{} and format {}", width, height, imageFormat);
 
-    VulkanImage newImage{m_resources, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, width, height};
+    VulkanImage newImage{m_resources, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, width,
+      height};
     m_combinedSampler.recreate(m_resources, std::move(newImage));
 }

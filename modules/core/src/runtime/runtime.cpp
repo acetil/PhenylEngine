@@ -1,19 +1,19 @@
-#include "logging/logging.h"
-#include "util/random.h"
-
-#include "core/iresource.h"
-#include "core/runtime/resource_manager.h"
 #include "core/runtime.h"
-#include "core/stages.h"
 
 #include "core/delta_time.h"
+#include "core/iresource.h"
+#include "core/runtime/resource_manager.h"
+#include "core/stages.h"
+#include "logging/logging.h"
+#include "util/random.h"
 
 using namespace phenyl::core;
 
 static phenyl::Logger LOGGER{"RUNTIME", phenyl::PHENYL_LOGGER};
 
 void ResourceManager::registerResource (std::size_t typeIndex, IResource* resource) {
-    PHENYL_ASSERT_MSG(!m_resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!", resource->getName());
+    PHENYL_ASSERT_MSG(!m_resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!",
+        resource->getName());
 
     m_resources.emplace(typeIndex, resource);
     PHENYL_LOGI(LOGGER, "Registered resource \"{}\"", resource->getName());
@@ -100,8 +100,8 @@ void PhenylRuntime::shutdown () {
         plugin->shutdown(*this);
     }
 
-    //PHENYL_TRACE(LOGGER, "Clearing rest of component manager");
-    //manager().clearAll(); // TODO: try to get rid of this
+    // PHENYL_TRACE(LOGGER, "Clearing rest of component manager");
+    // manager().clearAll(); // TODO: try to get rid of this
 
     PHENYL_TRACE(LOGGER, "Destructing plugins");
     m_plugins.clear();

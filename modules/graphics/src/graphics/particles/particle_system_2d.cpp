@@ -1,38 +1,39 @@
-#include "core/serialization/serializer_impl.h"
-#include "util/random.h"
-
 #include "graphics/particles/particle_system_2d.h"
 
 #include "core/serialization/backends.h"
+#include "core/serialization/serializer_impl.h"
 #include "graphics/detail/loggers.h"
+#include "util/random.h"
 
 namespace phenyl::graphics {
-    PHENYL_SERIALIZABLE(ParticleProperties2D,
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(lifetimeMin, "lifetime_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(lifetimeMax, "lifetime_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(velocityMin, "velocity_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(velocityMax, "velocity_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(gravity, "gravity"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeStartMin, "size_start_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeStartMax, "size_start_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeEndMin, "size_end_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeEndMax, "size_end_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourStartMin, "color_start_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourStartMax, "color_start_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourEndMin, "color_end_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(colourEndMax, "color_end_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(directionSpread, "spread"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(angleMin, "angle_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(angleMax, "angle_max"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularVelMin, "angular_vel_min"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularVelMax, "angular_vel_max"))
+PHENYL_SERIALIZABLE(ParticleProperties2D, PHENYL_SERIALIZABLE_MEMBER_NAMED(lifetimeMin, "lifetime_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(lifetimeMax, "lifetime_max"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(velocityMin, "velocity_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(velocityMax, "velocity_max"), PHENYL_SERIALIZABLE_MEMBER_NAMED(gravity, "gravity"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeStartMin, "size_start_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeStartMax, "size_start_max"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeEndMin, "size_end_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(sizeEndMax, "size_end_max"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(colourStartMin, "color_start_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(colourStartMax, "color_start_max"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(colourEndMin, "color_end_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(colourEndMax, "color_end_max"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(directionSpread, "spread"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(angleMin, "angle_min"), PHENYL_SERIALIZABLE_MEMBER_NAMED(angleMax, "angle_max"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(angularVelMin, "angular_vel_min"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(angularVelMax, "angular_vel_max"))
 }
 
 using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"PARTICLE_SYSTEM2D", detail::GRAPHICS_LOGGER};
 
-ParticleSystem2D::ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles) : m_properties{properties}, m_particles{maxParticles}, m_startIndex{0}, m_size{0}, m_activeNum{0} {}
+ParticleSystem2D::ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles) :
+    m_properties{properties},
+    m_particles{maxParticles},
+    m_startIndex{0},
+    m_size{0},
+    m_activeNum{0} {}
 
 void ParticleSystem2D::emit (glm::vec2 worldPos, glm::vec2 direction) {
     if (m_size < m_particles.size()) {
@@ -62,7 +63,8 @@ void ParticleSystem2D::addParticle (glm::vec2 worldPos, glm::vec2 direction, std
     Particle& particle = m_particles[index];
 
     float dirAngle = std::atan2(direction.y, direction.x);
-    float newDirAngle = util::Random::Rand(dirAngle - m_properties.directionSpread / 180 * std::numbers::pi_v<float>, dirAngle + m_properties.directionSpread / 180 * std::numbers::pi_v<float>);
+    float newDirAngle = util::Random::Rand(dirAngle - m_properties.directionSpread / 180 * std::numbers::pi_v<float>,
+        dirAngle + m_properties.directionSpread / 180 * std::numbers::pi_v<float>);
     direction = glm::vec2{glm::cos(newDirAngle), glm::sin(newDirAngle)};
 
     particle.lifetime = util::Random::Rand(m_properties.lifetimeMin, m_properties.lifetimeMax);
@@ -81,7 +83,8 @@ void ParticleSystem2D::addParticle (glm::vec2 worldPos, glm::vec2 direction, std
     particle.size = particle.sizeStart;
 
     particle.angle = util::Random::Rand(m_properties.angleMin, m_properties.angleMax) / 180 * std::numbers::pi_v<float>;
-    particle.angularVel = util::Random::Rand(m_properties.angularVelMin, m_properties.angularVelMax) / 180 * std::numbers::pi_v<float>;
+    particle.angularVel =
+        util::Random::Rand(m_properties.angularVelMin, m_properties.angularVelMax) / 180 * std::numbers::pi_v<float>;
 
     particle.active = true;
 }
@@ -118,20 +121,18 @@ void ParticleSystem2D::update (float deltaTime) {
 
         particle.angle += particle.angularVel * deltaTime;
 
-        particle.colour = (particle.colourEnd - particle.colourStart) * (particle.lifetime - particle.remainingTime) / particle.lifetime + particle.colourStart;
-        particle.size = (particle.sizeEnd - particle.sizeStart) * (particle.lifetime - particle.remainingTime) / particle.lifetime + particle.sizeStart;
+        particle.colour = (particle.colourEnd - particle.colourStart) * (particle.lifetime - particle.remainingTime) /
+                particle.lifetime +
+            particle.colourStart;
+        particle.size =
+            (particle.sizeEnd - particle.sizeStart) * (particle.lifetime - particle.remainingTime) / particle.lifetime +
+            particle.sizeStart;
     }
 }
 
 void ParticleSystem2D::bufferPos (Buffer<glm::vec2>& buffer) const {
-    static glm::vec2 vertices[] = {
-            {-1.0f, -1.0f},
-            {1.0f, -1.0f},
-            {-1.0f, 1.0f},
-            {1.0f, 1.0f},
-            {-1.0f, 1.0f},
-            {1.0f, -1.0f}
-    };
+    static glm::vec2 vertices[] = {{-1.0f, -1.0f}, {1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {-1.0f, 1.0f},
+      {1.0f, -1.0f}};
 
     for (std::size_t i = 0; i < m_size; i++) {
         auto index = (m_startIndex + i) % m_particles.size();
@@ -141,7 +142,9 @@ void ParticleSystem2D::bufferPos (Buffer<glm::vec2>& buffer) const {
             continue;
         }
 
-        glm::mat2 mat = glm::mat2{{glm::cos(particle.angle), glm::sin(particle.angle)}, {-glm::sin(particle.angle), glm::cos(particle.angle)}} * glm::mat2{{particle.size, 0}, {0, particle.size}};
+        glm::mat2 mat = glm::mat2{{glm::cos(particle.angle), glm::sin(particle.angle)},
+                          {-glm::sin(particle.angle), glm::cos(particle.angle)}} *
+            glm::mat2{{particle.size, 0}, {0, particle.size}};
 
         for (auto v : vertices) {
             buffer.emplace(mat * v + particle.pos);

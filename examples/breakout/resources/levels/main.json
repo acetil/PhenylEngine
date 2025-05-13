@@ -1,108 +1,102 @@
 {
-  "entities": [
-    {
-      "components" :
-      {
+    "entities" : [
+        {
+            "components" : {
 
-      },
-      "prefab" : "resources/prefabs/paddle"
-    },
-    {
-      "components" :
-      {
-        "GlobalTransform2D" : {
-          "transform": {
-            "position": [1.0, 0.0],
-            "scale": [0.05, 1.0],
-            "rotation": 0.0
-          }
+            },
+            "prefab" : "resources/prefabs/paddle"
         },
-        "BoxCollider2D": {
-          "Collider2D": {
-            "layers": 2,
-            "mask": 1,
-            "elasticity": 1.0
-          },
-          "scale" : [0.05, 1.0]
-        }
-      },
-      "prefab" : "resources/prefabs/wall"
-    },
-    {
-      "components" :
-      {
-        "GlobalTransform2D" : {
-          "transform": {
-            "position": [-1.0, 0.0],
-            "scale": [0.05, 1.0],
-            "rotation": 0.0
-          }
+        {
+            "components" : {
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [1.0, 0.0],
+                        "scale" : [0.05, 1.0],
+                        "rotation" : 0.0
+                    }
+                },
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 2,
+                        "mask" : 1,
+                        "elasticity" : 1.0
+                    },
+                    "scale" : [0.05, 1.0]
+                }
+            },
+            "prefab" : "resources/prefabs/wall"
         },
-        "BoxCollider2D": {
-          "Collider2D": {
-            "layers": 2,
-            "mask": 1,
-            "elasticity": 1.0
-          },
-          "scale" : [0.05, 1.0]
-        }
-      },
-      "prefab" : "resources/prefabs/wall"
-    },
-    {
-      "components" :
-      {
-        "GlobalTransform2D" : {
-          "transform": {
-            "position": [0.0, 1.0],
-            "scale": [1.0, 0.05],
-            "rotation": 0.0
-          }
+        {
+            "components" : {
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [-1.0, 0.0],
+                        "scale" : [0.05, 1.0],
+                        "rotation" : 0.0
+                    }
+                },
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 2,
+                        "mask" : 1,
+                        "elasticity" : 1.0
+                    },
+                    "scale" : [0.05, 1.0]
+                }
+            },
+            "prefab" : "resources/prefabs/wall"
         },
-        "BoxCollider2D": {
-          "Collider2D": {
-            "layers": 2,
-            "mask": 1,
-            "elasticity": 1.0
-          },
-          "scale" : [1.0, 0.05]
-        }
-      },
-      "prefab" : "resources/prefabs/wall"
-    },
-    {
-      "components" :
-      {
-        "GlobalTransform2D" : {
-          "transform": {
-            "position": [0.0, -1.0],
-            "scale": [1.0, 1.0],
-            "rotation": 0.0
-          }
+        {
+            "components" : {
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [0.0, 1.0],
+                        "scale" : [1.0, 0.05],
+                        "rotation" : 0.0
+                    }
+                },
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 2,
+                        "mask" : 1,
+                        "elasticity" : 1.0
+                    },
+                    "scale" : [1.0, 0.05]
+                }
+            },
+            "prefab" : "resources/prefabs/wall"
         },
-        "BoxCollider2D": {
-          "Collider2D": {
-            "layers": 4,
-            "mask": 4,
-            "elasticity": 1.0
-          },
-          "scale" : [1.0, 0.025]
+        {
+            "components" : {
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [0.0, -1.0],
+                        "scale" : [1.0, 1.0],
+                        "rotation" : 0.0
+                    }
+                },
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 4,
+                        "mask" : 4,
+                        "elasticity" : 1.0
+                    },
+                    "scale" : [1.0, 0.025]
+                }
+            },
+            "prefab" : "resources/prefabs/floor"
+        },
+        {
+            "components" : {
+                "TileController" : {
+                    "rows" : 8,
+                    "columns" : 7,
+                    "start_offset" : [-0.755, 0.885],
+                    "end_offset" : [0.985, 0.175],
+                    "tile" : "resources/prefabs/tile",
+                    "label_pos" : [180, 30]
+                }
+            }
         }
-      },
-      "prefab" : "resources/prefabs/floor"
-    },
-    {
-      "components" :
-      {
-        "TileController" : {
-          "rows" : 8,
-          "columns" : 7,
-          "start_offset" : [-0.755, 0.885],
-          "end_offset" : [0.985, 0.175],
-          "tile" : "resources/prefabs/tile",
-          "label_pos" : [180, 30]
-        }
-      }
-    }
-  ]
+    ]
 }

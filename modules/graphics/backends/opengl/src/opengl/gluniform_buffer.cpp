@@ -1,4 +1,5 @@
 #include "gluniform_buffer.h"
+
 #include "logging/logging.h"
 
 using namespace phenyl::opengl;
@@ -7,7 +8,10 @@ GlUniformBuffer::GlUniformBuffer (bool readable) : m_id{}, m_readable{readable} 
     glCreateBuffers(1, &m_id);
 }
 
-GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept : m_id{other.m_id}, m_data{other.m_data}, m_readable{other.m_readable} {
+GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept :
+    m_id{other.m_id},
+    m_data{other.m_data},
+    m_readable{other.m_readable} {
     other.m_id = 0;
     other.m_data = {};
 }

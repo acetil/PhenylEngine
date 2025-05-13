@@ -6,20 +6,19 @@ VulkanSemaphore::VulkanSemaphore (VulkanResources& resources) : m_sem{resources.
     PHENYL_ASSERT_MSG(m_sem, "Failed to create semaphore");
 }
 
-
 VkSemaphoreSubmitInfo VulkanSemaphore::getSubmitInfo (VkPipelineStageFlags2 flags) const {
     return VkSemaphoreSubmitInfo{
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-        .semaphore = *m_sem,
-        .value = 1,
-        .stageMask = flags,
-        .deviceIndex = 0,
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+      .semaphore = *m_sem,
+      .value = 1,
+      .stageMask = flags,
+      .deviceIndex = 0,
     };
 }
 
 VulkanFence::VulkanFence (VulkanResources& resources, bool signaled) : m_device{resources.getDevice()} {
     VkFenceCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
     };
 
     if (signaled) {

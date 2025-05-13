@@ -1,9 +1,12 @@
 #include "audio/audio_sample.h"
+
 #include "audio/audio_system.h"
 
 using namespace phenyl::audio;
 
-AudioSample::AudioSample (phenyl::audio::AudioSample&& other) noexcept : m_audioSystem{other.m_audioSystem}, m_id{other.m_id} {
+AudioSample::AudioSample (phenyl::audio::AudioSample&& other) noexcept :
+    m_audioSystem{other.m_audioSystem},
+    m_id{other.m_id} {
     other.m_audioSystem = nullptr;
     other.m_id = 0;
 }

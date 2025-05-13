@@ -8,10 +8,14 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"LABEL", detail::GRAPHICS_LOGGER};
 
-LabelWidget::LabelWidget (std::string text, unsigned int textSize, core::Asset<Font> font, const Modifier& modifier) : Widget{modifier}, m_text{std::move(text)}, m_textSize{textSize} {
+LabelWidget::LabelWidget (std::string text, unsigned int textSize, core::Asset<Font> font, const Modifier& modifier) :
+    Widget{modifier},
+    m_text{std::move(text)},
+    m_textSize{textSize} {
     m_font = std::move(font);
     updateModifier();
 }
+
 // LabelWidget::~LabelWidget () = default;
 
 void LabelWidget::render (Canvas& canvas) {

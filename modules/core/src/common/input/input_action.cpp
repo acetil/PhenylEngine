@@ -1,8 +1,9 @@
-#include <numeric>
-
 #include "core/input/input_action.h"
+
 #include "core/input/input_source.h"
 #include "logging/logging.h"
+
+#include <numeric>
 
 using namespace phenyl::core;
 

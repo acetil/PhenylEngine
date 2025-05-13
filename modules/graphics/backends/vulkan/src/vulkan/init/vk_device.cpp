@@ -1,18 +1,16 @@
 #include "vk_device.h"
+
+#include <algorithm>
 #include <cstring>
 #include <ranges>
 #include <unordered_set>
-#include <algorithm>
 
 using namespace phenyl::vulkan;
 
 static phenyl::Logger LOGGER{"VK_DEVICE", detail::VULKAN_LOGGER};
 
 VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
-    std::vector deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
-    };
+    std::vector deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
 
     choosePhysicalDevice(instance, surface, deviceExtensions);
     m_logicalDevice = createLogicalDevice(deviceExtensions);
@@ -32,11 +30,9 @@ std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surfa
 }
 
 VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
-    VkCommandPoolCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .flags = usage,
-        .queueFamilyIndex = m_queueFamilies.graphicsFamily
-    };
+    VkCommandPoolCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .flags = usage,
+      .queueFamilyIndex = m_queueFamilies.graphicsFamily};
     VkCommandPool pool = nullptr;
     auto result = vkCreateCommandPool(m_logicalDevice, &createInfo, nullptr, &pool);
     PHENYL_LOGE_IF(result != VK_SUCCESS, LOGGER, "Failed to create VkCommandPool: {}", result);
@@ -45,12 +41,10 @@ VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
 }
 
 VmaAllocator VulkanDevice::makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion) {
-    VmaAllocatorCreateInfo allocatorInfo{
-        .physicalDevice = m_physicalDevice,
-        .device = m_logicalDevice,
-        .instance = instance,
-        .vulkanApiVersion = vkVersion
-    };
+    VmaAllocatorCreateInfo allocatorInfo{.physicalDevice = m_physicalDevice,
+      .device = m_logicalDevice,
+      .instance = instance,
+      .vulkanApiVersion = vkVersion};
 
     VmaAllocator allocator;
     auto result = vmaCreateAllocator(&allocatorInfo, &allocator);
@@ -63,7 +57,8 @@ VulkanDevice::~VulkanDevice () {
     vkDestroyDevice(m_logicalDevice, nullptr);
 }
 
-void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions) {
+void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface,
+    const std::vector<const char*>& deviceExtensions) {
     auto devices = Enumerate<VkPhysicalDevice>(vkEnumeratePhysicalDevices, instance);
     PHENYL_ASSERT_MSG(!devices.empty(), "Failed to find physical devices with Vulkan support");
 
@@ -71,14 +66,15 @@ void VulkanDevice::choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surfa
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-        PHENYL_LOGI(LOGGER, "Found physical device \"{}\" (API version: {}, driver version: {})", deviceProperties.deviceName,
-            VulkanVersion::FromPacked(deviceProperties.apiVersion), deviceProperties.driverVersion);
+        PHENYL_LOGI(LOGGER, "Found physical device \"{}\" (API version: {}, driver version: {})",
+            deviceProperties.deviceName, VulkanVersion::FromPacked(deviceProperties.apiVersion),
+            deviceProperties.driverVersion);
     }
 
-    //VulkanQueueFamilies queueFamilies{};
+    // VulkanQueueFamilies queueFamilies{};
     for (auto device : devices) {
         if (!CheckDeviceExtensionSupport(device, deviceExtensions)) {
-             continue;
+            continue;
         }
 
         if (!CheckDeviceFeatures(device)) {
@@ -112,38 +108,32 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
 
     std::unordered_set familyIndexes{m_queueFamilies.graphicsFamily, m_queueFamilies.presentFanily};
     float priority = 1.0f;
-    auto queueCreateInfos = familyIndexes
-        | std::views::transform([&] (auto i) {
-                return VkDeviceQueueCreateInfo{
-                    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-                    .queueFamilyIndex = i,
-                    .queueCount = 1,
-                    .pQueuePriorities = &priority
-                };
-            })
-        | std::ranges::to<std::vector>();
+    auto queueCreateInfos = familyIndexes | std::views::transform([&] (auto i) {
+        return VkDeviceQueueCreateInfo{.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+          .queueFamilyIndex = i,
+          .queueCount = 1,
+          .pQueuePriorities = &priority};
+    }) | std::ranges::to<std::vector>();
 
     VkPhysicalDeviceVulkan13Features vulkan13Features{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .synchronization2 = true,
-        .dynamicRendering = true,
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+      .synchronization2 = true,
+      .dynamicRendering = true,
     };
 
     VkPhysicalDeviceFeatures2 deviceFeatures2{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        .pNext = &vulkan13Features,
-        .features = {
-            .samplerAnisotropy = true
-        },
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+      .pNext = &vulkan13Features,
+      .features = {.samplerAnisotropy = true},
     };
 
     VkDeviceCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &deviceFeatures2,
-        .queueCreateInfoCount = static_cast<std::uint32_t>(queueCreateInfos.size()),
-        .pQueueCreateInfos = queueCreateInfos.data(),
-        .enabledExtensionCount = static_cast<std::uint32_t>(deviceExtensions.size()),
-        .ppEnabledExtensionNames = deviceExtensions.data(),
+      .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .pNext = &deviceFeatures2,
+      .queueCreateInfoCount = static_cast<std::uint32_t>(queueCreateInfos.size()),
+      .pQueueCreateInfos = queueCreateInfos.data(),
+      .enabledExtensionCount = static_cast<std::uint32_t>(deviceExtensions.size()),
+      .ppEnabledExtensionNames = deviceExtensions.data(),
     };
 
     VkDevice device;
@@ -161,7 +151,6 @@ VkQueue VulkanDevice::makeQueue (std::uint32_t queueFamilyIndex) {
 
     return queue;
 }
-
 
 std::optional<VulkanQueueFamilies> VulkanDevice::GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface) {
     constexpr std::uint32_t REQUIRED_NUM_FAMILIES = 2;
@@ -194,10 +183,7 @@ std::optional<VulkanQueueFamilies> VulkanDevice::GetDeviceFamilies (VkPhysicalDe
     }
 
     if (queueFamilyCount == REQUIRED_NUM_FAMILIES) {
-        return VulkanQueueFamilies{
-            .graphicsFamily = *graphicsFamily,
-            .presentFanily = *presentFamily
-        };
+        return VulkanQueueFamilies{.graphicsFamily = *graphicsFamily, .presentFanily = *presentFamily};
     }
     return std::nullopt;
 }
@@ -209,12 +195,12 @@ bool VulkanDevice::CheckDeviceExtensionSupport (VkPhysicalDevice device, const s
     auto deviceExtensions = Enumerate<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties, device, nullptr);
     bool allPresent = true;
     for (auto i : extensions) {
-        bool present = std::ranges::any_of(deviceExtensions, [&] (const VkExtensionProperties& x) {
-            return std::strcmp(i, x.extensionName) == 0;
-        });
+        bool present = std::ranges::any_of(deviceExtensions,
+            [&] (const VkExtensionProperties& x) { return std::strcmp(i, x.extensionName) == 0; });
 
         if (!present) {
-            PHENYL_LOGD(detail::VULKAN_LOGGER, "Extension {} not supported by physical device \"{}\"", i, deviceProperties.deviceName);
+            PHENYL_LOGD(detail::VULKAN_LOGGER, "Extension {} not supported by physical device \"{}\"", i,
+                deviceProperties.deviceName);
             allPresent = false;
         }
     }
@@ -222,44 +208,37 @@ bool VulkanDevice::CheckDeviceExtensionSupport (VkPhysicalDevice device, const s
     return allPresent;
 }
 
-std::optional<VulkanSwapChainDetails> VulkanDevice::GetDeviceSwapChainDetails (VkPhysicalDevice device, VkSurfaceKHR surface) {
+std::optional<VulkanSwapChainDetails> VulkanDevice::GetDeviceSwapChainDetails (VkPhysicalDevice device,
+    VkSurfaceKHR surface) {
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities);
 
     auto formats = Enumerate<VkSurfaceFormatKHR>(vkGetPhysicalDeviceSurfaceFormatsKHR, device, surface);
-    auto presentModes = Enumerate<VkPresentModeKHR>(vkGetPhysicalDeviceSurfacePresentModesKHR,
-        device, surface);
+    auto presentModes = Enumerate<VkPresentModeKHR>(vkGetPhysicalDeviceSurfacePresentModesKHR, device, surface);
 
     if (formats.empty() || presentModes.empty()) {
         return std::nullopt;
     }
 
-    return VulkanSwapChainDetails{
-        .capabilities = capabilities,
-        .formats = std::move(formats),
-        .presentModes = std::move(presentModes)
-    };
+    return VulkanSwapChainDetails{.capabilities = capabilities,
+      .formats = std::move(formats),
+      .presentModes = std::move(presentModes)};
 }
 
 bool VulkanDevice::CheckDeviceFeatures (VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    VkPhysicalDeviceVulkan13Features vk13Features{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES
-    };
+    VkPhysicalDeviceVulkan13Features vk13Features{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
 
-    VkPhysicalDeviceFeatures2 features2{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        .pNext = &vk13Features
-    };
+    VkPhysicalDeviceFeatures2 features2{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, .pNext = &vk13Features};
     vkGetPhysicalDeviceFeatures2(device, &features2);
 
     const auto& features = features2.features;
 
     // if (!vk13Features) {
-    //     PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing Vulkan 1.3 features", deviceProperties.deviceName);
-    //     return false;
+    //     PHENYL_LOGD(LOGGER, "Physical device \"{}\" missing Vulkan 1.3 features",
+    //     deviceProperties.deviceName); return false;
     // }
 
     if (!features.samplerAnisotropy) {
@@ -284,9 +263,7 @@ DeviceProperties VulkanDevice::GetDeviceProperties (VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    return {
-        .deviceName = deviceProperties.deviceName,
-        .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy,
-        .minUniformAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment
-    };
+    return {.deviceName = deviceProperties.deviceName,
+      .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy,
+      .minUniformAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment};
 }

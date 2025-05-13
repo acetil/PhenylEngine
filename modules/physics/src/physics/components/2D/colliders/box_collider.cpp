@@ -1,14 +1,13 @@
-#include "core/serialization/serializer_impl.h"
-
 #include "physics/components/2D/colliders/box_collider.h"
+
+#include "core/serialization/serializer_impl.h"
 #include "physics/2d/collisions_2d.h"
 
 using namespace phenyl;
 
 namespace phenyl::physics {
-    PHENYL_SERIALIZABLE(BoxCollider2D,
-        PHENYL_SERIALIZABLE_INHERITS_NAMED(Collider2D, "Collider2D"),
-        PHENYL_SERIALIZABLE_MEMBER(m_scale))
+PHENYL_SERIALIZABLE(BoxCollider2D, PHENYL_SERIALIZABLE_INHERITS_NAMED(Collider2D, "Collider2D"),
+    PHENYL_SERIALIZABLE_MEMBER(m_scale))
 }
 
 static float calculateRadius (glm::mat2 scaleMatrix) {
@@ -32,9 +31,7 @@ static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float 
     float minAxis = std::numeric_limits<float>::max();
     float maxAxis = -std::numeric_limits<float>::max();
 
-    glm::vec2 boxPoints[] = {
-            {1, 1}, {-1, 1}, {1, -1}, {-1, -1}
-    };
+    glm::vec2 boxPoints[] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 
     for (auto i : boxPoints) {
         glm::vec2 boxVec = box2Mat * i + disp;
@@ -57,9 +54,7 @@ static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float 
 util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const physics::BoxCollider2D& other) {
     auto disp = getDisplacement(other);
 
-    glm::vec2 basisVecs[] = {
-            {1, 0}, {0, 1}
-    };
+    glm::vec2 basisVecs[] = {{1, 0}, {0, 1}};
 
     float minSep = std::numeric_limits<float>::max();
     glm::vec2 minAxis = {0, 0};
@@ -107,7 +102,9 @@ util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const phys
         minAxis *= -1;
     }
 
-    return std::abs(minSepSqSize) > std::numeric_limits<float>::epsilon() ? util::Optional{SATResult2D{.normal=minAxis, .depth=minSep}} : util::NullOpt;
+    return std::abs(minSepSqSize) > std::numeric_limits<float>::epsilon() ?
+        util::Optional{SATResult2D{.normal = minAxis, .depth = minSep}} :
+        util::NullOpt;
 }
 
 static inline glm::vec2 calcSegmentNormal (glm::vec2 start, glm::vec2 end) {
@@ -117,9 +114,7 @@ static inline glm::vec2 calcSegmentNormal (glm::vec2 start, glm::vec2 end) {
 }
 
 physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
-    glm::vec2 boxPoints[] = {
-            {1, 1}, {-1, 1}, {-1, -1}, {1, -1}
-    };
+    glm::vec2 boxPoints[] = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
 
     glm::vec2 furthestVertex = {0, 0};
     float furthestDistance = -std::numeric_limits<float>::max();
@@ -135,7 +130,8 @@ physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
     }
 
     auto vec1 = m_frameTransform * boxPoints[(pointIndex + 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
-    auto vec2 = m_frameTransform * boxPoints[(pointIndex + (sizeof(boxPoints) / sizeof(glm::vec2)) - 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
+    auto vec2 = m_frameTransform *
+        boxPoints[(pointIndex + (sizeof(boxPoints) / sizeof(glm::vec2)) - 1) % (sizeof(boxPoints) / sizeof(glm::vec2))];
 
     auto norm1 = -calcSegmentNormal(furthestVertex, vec1);
     auto norm2 = -calcSegmentNormal(vec2, furthestVertex);
@@ -143,8 +139,8 @@ physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
     auto dot1 = glm::dot(norm1, normal);
     auto dot2 = glm::dot(norm2, normal);
 
-    //PHENYL_DASSERT(dot1 >= 0);
-    //PHENYL_DASSERT(dot2 >= 0);
+    // PHENYL_DASSERT(dot1 >= 0);
+    // PHENYL_DASSERT(dot2 >= 0);
 
     if (dot1 < 0) {
         norm1 *= -1;
@@ -156,6 +152,6 @@ physics::Face2D physics::BoxCollider2D::getSignificantFace (glm::vec2 normal) {
         dot2 *= -1;
     }
 
-    return dot1 >= dot2 ? Face2D{.vertices={furthestVertex + getPosition(), vec1 + getPosition()}, .normal=norm1} : Face2D{.vertices={vec2 + getPosition(), furthestVertex + getPosition()}, .normal=norm2};
-
+    return dot1 >= dot2 ? Face2D{.vertices = {furthestVertex + getPosition(), vec1 + getPosition()}, .normal = norm1} :
+                          Face2D{.vertices = {vec2 + getPosition(), furthestVertex + getPosition()}, .normal = norm2};
 }

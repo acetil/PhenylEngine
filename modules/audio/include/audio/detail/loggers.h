@@ -3,5 +3,5 @@
 #include "logging/logging.h"
 
 namespace phenyl::audio::detail {
-    extern Logger AUDIO_LOGGER;
+extern Logger AUDIO_LOGGER;
 }

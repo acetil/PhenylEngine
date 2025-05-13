@@ -1,6 +1,6 @@
-#include <nlohmann/json.hpp>
-
 #include "core/serialization/backends.h"
+
+#include <nlohmann/json.hpp>
 
 using namespace phenyl::core;
 
@@ -34,7 +34,7 @@ public:
         return *m_objSerializer;
     }
 
-    IArraySerializer& serializeArr() override {
+    IArraySerializer& serializeArr () override {
         PHENYL_DASSERT(!m_arrSerializer);
         PHENYL_DASSERT(!m_objSerializer);
 
@@ -86,7 +86,8 @@ private:
             PHENYL_DASSERT(serializer);
         }
 
-        void serializeMember (std::string_view memberName, ISerializableBase& serializable, const std::byte* ptr) override {
+        void serializeMember (std::string_view memberName, ISerializableBase& serializable,
+            const std::byte* ptr) override {
             JsonSerializer serializer;
             serializable.serialize(serializer, ptr);
 
@@ -155,7 +156,7 @@ public:
         serializable.deserializeUint64(ptr, deserializeUint<std::uint64_t>("std::uint64_t"));
     }
 
-    void deserializeFloat(ISerializableBase& serializable, std::byte* ptr) override {
+    void deserializeFloat (ISerializableBase& serializable, std::byte* ptr) override {
         if (m_json.is_number()) {
             serializable.deserializeFloat(ptr, m_json.get<float>());
         } else {
@@ -197,7 +198,8 @@ public:
         }
     }
 
-    void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members, std::byte* ptr) override {
+    void deserializeStruct (ISerializableBase& serializable, std::span<const std::string> members,
+        std::byte* ptr) override {
         if (m_json.is_object()) {
             Struct obj{*m_json.get<const nlohmann::json::object_t*>(), members};
             serializable.deserializeStruct(ptr, obj);
@@ -208,43 +210,44 @@ public:
 
     void deserializeInfer (ISerializableBase& serializable, std::byte* ptr) override {
         switch (m_json.type()) {
-            case nlohmann::detail::value_t::null:
-                throw JsonException("Failed to deserialize json: received null value");
-                break;
-            case nlohmann::detail::value_t::object:
-                deserializeObject(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::array:
-                deserializeArray(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::string:
-                deserializeString(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::boolean:
-                deserializeBool(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::number_integer:
-                deserializeInt64(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::number_unsigned:
-                deserializeUint64(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::number_float:
-                deserializeObject(serializable, ptr);
-                break;
-            case nlohmann::detail::value_t::binary:
-                throw JsonException("Failed to deserialize json: binary arrays are not supported");
-                break;
-            case nlohmann::detail::value_t::discarded:
-                throw JsonException("Failed to deserialize json: received error in parsing!");
-                break;
+        case nlohmann::detail::value_t::null:
+            throw JsonException("Failed to deserialize json: received null value");
+            break;
+        case nlohmann::detail::value_t::object:
+            deserializeObject(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::array:
+            deserializeArray(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::string:
+            deserializeString(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::boolean:
+            deserializeBool(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::number_integer:
+            deserializeInt64(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::number_unsigned:
+            deserializeUint64(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::number_float:
+            deserializeObject(serializable, ptr);
+            break;
+        case nlohmann::detail::value_t::binary:
+            throw JsonException("Failed to deserialize json: binary arrays are not supported");
+            break;
+        case nlohmann::detail::value_t::discarded:
+            throw JsonException("Failed to deserialize json: received error in parsing!");
+            break;
         }
     }
 
-    private:
+private:
     class Array : public IArrayDeserializer {
     public:
         using ArrType = nlohmann::json::array_t;
+
         Array (const ArrType& arr) : m_arr{arr}, m_it{arr.begin()} {}
 
         bool hasNext () const override {
@@ -266,6 +269,7 @@ public:
     class Object : public IObjectDeserializer {
     public:
         using ObjectType = nlohmann::json::object_t;
+
         explicit Object (const ObjectType& obj) : m_obj{obj}, m_it{obj.begin()} {}
 
         [[nodiscard]] bool hasNext () const override {
@@ -291,7 +295,6 @@ public:
         }
 
     private:
-
         const ObjectType& m_obj;
         ObjectType::const_iterator m_it;
     };
@@ -299,7 +302,11 @@ public:
     class Struct : public IStructDeserializer {
     public:
         using ObjectType = nlohmann::json::object_t;
-        Struct (const ObjectType& obj, std::span<const std::string> members) : m_obj{obj}, m_members{members}, m_memberIt{members.begin()} {
+
+        Struct (const ObjectType& obj, std::span<const std::string> members) :
+            m_obj{obj},
+            m_members{members},
+            m_memberIt{members.begin()} {
             advanceToNext();
         }
 
@@ -332,7 +339,7 @@ public:
 
     const nlohmann::json& m_json;
 
-    template <std::integral T>
+    template<std::integral T>
     T deserializeInt (std::string_view typeName) {
         if (m_json.is_number_integer()) {
             auto i = m_json.get<nlohmann::json::number_integer_t>();
@@ -340,14 +347,15 @@ public:
             if (std::in_range<T>(i)) {
                 return static_cast<T>(i);
             } else {
-                throw JsonException(std::format("Failed to deserialize integer: {} out of bounds of type {}", i, typeName));
+                throw JsonException(
+                    std::format("Failed to deserialize integer: {} out of bounds of type {}", i, typeName));
             }
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected int, got {}", m_json.type_name()));
         }
     }
 
-    template <std::unsigned_integral T>
+    template<std::unsigned_integral T>
     T deserializeUint (std::string_view typeName) {
         if (m_json.is_number_unsigned()) {
             auto i = m_json.get<nlohmann::json::number_unsigned_t>();
@@ -355,7 +363,8 @@ public:
             if (std::in_range<T>(i)) {
                 return static_cast<T>(i);
             } else {
-                throw JsonException(std::format("Failed to deserialize unsigned integer: {} out of bounds of type {}", i, typeName));
+                throw JsonException(
+                    std::format("Failed to deserialize unsigned integer: {} out of bounds of type {}", i, typeName));
             }
         } else {
             throw JsonException(std::format("Failed to deserialize json: expected uint, got {}", m_json.type_name()));
@@ -363,7 +372,8 @@ public:
     }
 };
 
-void phenyl::core::SerializeToJson (std::ostream& stream, ISerializableBase& serializable, const std::byte* ptr, bool pretty) {
+void phenyl::core::SerializeToJson (std::ostream& stream, ISerializableBase& serializable, const std::byte* ptr,
+    bool pretty) {
     JsonSerializer serializer{};
     serializable.serialize(serializer, ptr);
 

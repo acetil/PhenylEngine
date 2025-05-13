@@ -1,4 +1,5 @@
 #include "glpipeline.h"
+
 #include "glbuffer.h"
 #include "glframebuffer.h"
 #include "glimage_texture.h"
@@ -14,8 +15,11 @@ GlPipeline::GlPipeline (GlWindowFrameBuffer* fb) : m_vao{0}, m_windowFrameBuffer
     glCreateVertexArrays(1, &m_vao);
 }
 
-
-GlPipeline::GlPipeline (GlPipeline&& other) noexcept : m_vao{other.m_vao}, m_windowFrameBuffer{other.m_windowFrameBuffer}, m_bufferTypes{std::move(other.m_bufferTypes)}, m_uniformTypes{std::move(other.m_uniformTypes)} {
+GlPipeline::GlPipeline (GlPipeline&& other) noexcept :
+    m_vao{other.m_vao},
+    m_windowFrameBuffer{other.m_windowFrameBuffer},
+    m_bufferTypes{std::move(other.m_bufferTypes)},
+    m_uniformTypes{std::move(other.m_uniformTypes)} {
     other.m_vao = 0;
 }
 
@@ -40,44 +44,42 @@ GlPipeline::~GlPipeline () {
 }
 
 void GlPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) {
-    PHENYL_DASSERT_MSG(binding < m_bufferTypes.size(), "Attempted to bind buffer to binding {} which does not exist!", binding);
-    PHENYL_DASSERT_MSG(type == m_bufferTypes[binding], "Attempted to bind buffer to binding {} with invalid type", binding);
+    PHENYL_DASSERT_MSG(binding < m_bufferTypes.size(), "Attempted to bind buffer to binding {} which does not exist!",
+        binding);
+    PHENYL_DASSERT_MSG(type == m_bufferTypes[binding], "Attempted to bind buffer to binding {} with invalid type",
+        binding);
     auto& glBuffer = reinterpret_cast<const GlBuffer&>(buffer);
 
-    glVertexArrayVertexBuffer(m_vao, binding, glBuffer.id(), static_cast<GLintptr>(offset), static_cast<GLsizei>(glBuffer.stride()));
+    glVertexArrayVertexBuffer(m_vao, binding, glBuffer.id(), static_cast<GLintptr>(offset),
+        static_cast<GLsizei>(glBuffer.stride()));
 }
 
-void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer, std::size_t offset, std::size_t size) {
-    PHENYL_DASSERT_MSG(m_uniformTypes.contains(binding), "Attempted to bind uniform to binding {} which does not exist!", binding);
-    PHENYL_DASSERT_MSG(type == m_uniformTypes[binding], "Attempted to bind uniform to binding {} with invalid type", binding);
+void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer,
+    std::size_t offset, std::size_t size) {
+    PHENYL_DASSERT_MSG(m_uniformTypes.contains(binding),
+        "Attempted to bind uniform to binding {} which does not exist!", binding);
+    PHENYL_DASSERT_MSG(type == m_uniformTypes[binding], "Attempted to bind uniform to binding {} with invalid type",
+        binding);
 
     auto& glBuffer = reinterpret_cast<const GlUniformBuffer&>(buffer);
 
-    glBindBufferRange(GL_UNIFORM_BUFFER, binding, glBuffer.id(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
+    glBindBufferRange(GL_UNIFORM_BUFFER, binding, glBuffer.id(), static_cast<GLintptr>(offset),
+        static_cast<GLsizeiptr>(size));
 }
 
 void GlPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) {
     switch (type) {
-        case ShaderIndexType::UBYTE:
-            m_indexType = PipelineIndex{
-                .typeEnum = GL_UNSIGNED_BYTE,
-                .typeSize = sizeof(std::uint8_t)
-            };
-            break;
-        case ShaderIndexType::USHORT:
-            m_indexType = PipelineIndex{
-                .typeEnum = GL_UNSIGNED_SHORT,
-                .typeSize = sizeof(std::uint16_t)
-            };
-            break;
-        case ShaderIndexType::UINT:
-            m_indexType = PipelineIndex{
-                .typeEnum = GL_UNSIGNED_INT,
-                .typeSize = sizeof(std::uint32_t)
-            };
-            break;
-        default:
-            PHENYL_ABORT("Invalid shader index type: {}", static_cast<unsigned int>(type));
+    case ShaderIndexType::UBYTE:
+        m_indexType = PipelineIndex{.typeEnum = GL_UNSIGNED_BYTE, .typeSize = sizeof(std::uint8_t)};
+        break;
+    case ShaderIndexType::USHORT:
+        m_indexType = PipelineIndex{.typeEnum = GL_UNSIGNED_SHORT, .typeSize = sizeof(std::uint16_t)};
+        break;
+    case ShaderIndexType::UINT:
+        m_indexType = PipelineIndex{.typeEnum = GL_UNSIGNED_INT, .typeSize = sizeof(std::uint32_t)};
+        break;
+    default:
+        PHENYL_ABORT("Invalid shader index type: {}", static_cast<unsigned int>(type));
     }
 
     auto& glBuffer = reinterpret_cast<const GlBuffer&>(buffer);
@@ -101,20 +103,22 @@ void GlPipeline::render (IFrameBuffer* frameBuffer, std::size_t vertices, std::s
     getShader().bind();
     glBindVertexArray(m_vao);
 
-    //setBlending();
+    // setBlending();
 
     bindFrameBuffer(frameBuffer);
     setCulling();
     updateDepthMask();
 
     if (m_indexType) {
-        glDrawElements(m_renderMode, static_cast<GLsizei>(vertices), m_indexType->typeEnum, reinterpret_cast<void*>(offset * m_indexType->typeSize));
+        glDrawElements(m_renderMode, static_cast<GLsizei>(vertices), m_indexType->typeEnum,
+            reinterpret_cast<void*>(offset * m_indexType->typeSize));
     } else {
         glDrawArrays(m_renderMode, static_cast<GLsizei>(offset), static_cast<GLsizei>(vertices));
     }
 }
 
-void GlPipeline::renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInstances, std::size_t vertices, std::size_t offset) {
+void GlPipeline::renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInstances, std::size_t vertices,
+    std::size_t offset) {
     PHENYL_DASSERT(m_shader);
 
     getShader().bind();
@@ -125,9 +129,11 @@ void GlPipeline::renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInst
     updateDepthMask();
 
     if (m_indexType) {
-        glDrawElementsInstanced(m_renderMode, static_cast<GLsizei>(vertices), m_indexType->typeEnum, reinterpret_cast<void*>(offset * m_indexType->typeSize), static_cast<GLsizei>(numInstances));
+        glDrawElementsInstanced(m_renderMode, static_cast<GLsizei>(vertices), m_indexType->typeEnum,
+            reinterpret_cast<void*>(offset * m_indexType->typeSize), static_cast<GLsizei>(numInstances));
     } else {
-        glDrawArraysInstanced(m_renderMode, static_cast<GLsizei>(offset), static_cast<GLsizei>(vertices), static_cast<GLsizei>(numInstances));
+        glDrawArraysInstanced(m_renderMode, static_cast<GLsizei>(offset), static_cast<GLsizei>(vertices),
+            static_cast<GLsizei>(numInstances));
     }
 }
 
@@ -198,33 +204,33 @@ void GlPipeline::updateDepthMask () {
 
 void GlPipeline::setBlending (const AbstractGlFrameBuffer& fb) {
     switch (m_blendMode) {
-        case BlendMode::ALPHA_BLEND:
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            break;
-        case BlendMode::ADDITIVE:
-            //glBlendFunci(fb.id(), GL_ONE, GL_ONE);
-            glEnable(GL_BLEND);
-            glBlendEquation(GL_FUNC_ADD);
+    case BlendMode::ALPHA_BLEND:
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        break;
+    case BlendMode::ADDITIVE:
+        // glBlendFunci(fb.id(), GL_ONE, GL_ONE);
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
 
-            glBlendFunc(GL_ONE, GL_ONE);
-            break;
+        glBlendFunc(GL_ONE, GL_ONE);
+        break;
     }
 }
 
 void GlPipeline::setCulling () {
     switch (m_cullMode) {
-        case CullMode::FRONT_FACE:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
-            break;
-        case CullMode::BACK_FACE:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-            break;
-        case CullMode::NONE:
-            glDisable(GL_CULL_FACE);
-            break;
+    case CullMode::FRONT_FACE:
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        break;
+    case CullMode::BACK_FACE:
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        break;
+    case CullMode::NONE:
+        glDisable(GL_CULL_FACE);
+        break;
     }
 }
 
@@ -245,12 +251,12 @@ void GlPipelineBuilder::withGeometryType (GeometryType type) {
     PHENYL_DASSERT(m_pipeline);
 
     switch (type) {
-        case GeometryType::TRIANGLES:
-            m_pipeline->setRenderMode(GL_TRIANGLES);
-            break;
-        case GeometryType::LINES:
-            m_pipeline->setRenderMode(GL_LINES);
-            break;
+    case GeometryType::TRIANGLES:
+        m_pipeline->setRenderMode(GL_TRIANGLES);
+        break;
+    case GeometryType::LINES:
+        m_pipeline->setRenderMode(GL_LINES);
+        break;
     }
 }
 
@@ -266,42 +272,43 @@ BufferBinding GlPipelineBuilder::withBuffer (std::size_t type, std::size_t size,
     return m_pipeline->addBuffer(type, divisor);
 }
 
-void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, BufferBinding binding, std::size_t offset) {
+void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, BufferBinding binding,
+    std::size_t offset) {
     PHENYL_DASSERT(m_pipeline);
     switch (type) {
-        case ShaderDataType::FLOAT32:
-            m_pipeline->addAttrib(GL_FLOAT, 1, location, binding, offset);
-            break;
-        case ShaderDataType::INT32:
-            m_pipeline->addAttrib(GL_INT, 1, location, binding, offset);
-            break;
-        case ShaderDataType::VEC2F:
-            m_pipeline->addAttrib(GL_FLOAT, 2, location, binding, offset);
-            break;
-        case ShaderDataType::VEC3F:
-            m_pipeline->addAttrib(GL_FLOAT, 3, location, binding, offset);
-            break;
-        case ShaderDataType::VEC4F:
-            m_pipeline->addAttrib(GL_FLOAT, 4, location, binding, offset);
-            break;
-        case ShaderDataType::MAT2F:
-            m_pipeline->addAttrib(GL_FLOAT, 2, location, binding, offset);
-            m_pipeline->addAttrib(GL_FLOAT, 2, location + 1, binding, offset + sizeof(glm::vec2));
-            break;
-        case ShaderDataType::MAT3F:
-            m_pipeline->addAttrib(GL_FLOAT, 3, location, binding, offset);
-            m_pipeline->addAttrib(GL_FLOAT, 3, location + 1, binding, offset + sizeof(glm::vec3));
-            m_pipeline->addAttrib(GL_FLOAT, 3, location + 1, binding, offset + sizeof(glm::vec3) * 2);
-            break;
-        case ShaderDataType::MAT4F:
-            m_pipeline->addAttrib(GL_FLOAT, 4, location, binding, offset);
-            m_pipeline->addAttrib(GL_FLOAT, 4, location + 1, binding, offset + sizeof(glm::vec4));
-            m_pipeline->addAttrib(GL_FLOAT, 4, location + 2, binding, offset + sizeof(glm::vec4) * 2);
-            m_pipeline->addAttrib(GL_FLOAT, 4, location + 3, binding, offset + sizeof(glm::vec4) * 3);
-            break;
-        default:
-            PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", static_cast<unsigned int>(type));
-            break;
+    case ShaderDataType::FLOAT32:
+        m_pipeline->addAttrib(GL_FLOAT, 1, location, binding, offset);
+        break;
+    case ShaderDataType::INT32:
+        m_pipeline->addAttrib(GL_INT, 1, location, binding, offset);
+        break;
+    case ShaderDataType::VEC2F:
+        m_pipeline->addAttrib(GL_FLOAT, 2, location, binding, offset);
+        break;
+    case ShaderDataType::VEC3F:
+        m_pipeline->addAttrib(GL_FLOAT, 3, location, binding, offset);
+        break;
+    case ShaderDataType::VEC4F:
+        m_pipeline->addAttrib(GL_FLOAT, 4, location, binding, offset);
+        break;
+    case ShaderDataType::MAT2F:
+        m_pipeline->addAttrib(GL_FLOAT, 2, location, binding, offset);
+        m_pipeline->addAttrib(GL_FLOAT, 2, location + 1, binding, offset + sizeof(glm::vec2));
+        break;
+    case ShaderDataType::MAT3F:
+        m_pipeline->addAttrib(GL_FLOAT, 3, location, binding, offset);
+        m_pipeline->addAttrib(GL_FLOAT, 3, location + 1, binding, offset + sizeof(glm::vec3));
+        m_pipeline->addAttrib(GL_FLOAT, 3, location + 1, binding, offset + sizeof(glm::vec3) * 2);
+        break;
+    case ShaderDataType::MAT4F:
+        m_pipeline->addAttrib(GL_FLOAT, 4, location, binding, offset);
+        m_pipeline->addAttrib(GL_FLOAT, 4, location + 1, binding, offset + sizeof(glm::vec4));
+        m_pipeline->addAttrib(GL_FLOAT, 4, location + 2, binding, offset + sizeof(glm::vec4) * 2);
+        m_pipeline->addAttrib(GL_FLOAT, 4, location + 3, binding, offset + sizeof(glm::vec4) * 3);
+        break;
+    default:
+        PHENYL_LOGE(LOGGER, "Unable to setup attrib pointer for shader data type {}", static_cast<unsigned int>(type));
+        break;
     }
 }
 

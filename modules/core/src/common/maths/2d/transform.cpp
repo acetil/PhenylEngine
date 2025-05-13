@@ -1,13 +1,13 @@
 #include "core/maths/2d/transform.h"
+
 #include "core/serialization/serializer_impl.h"
 
 using namespace phenyl::core;
 
 namespace phenyl::core {
-    PHENYL_SERIALIZABLE(Transform2D,
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_position, "position"),
-        PHENYL_SERIALIZABLE_METHOD("rotation", &Transform2D::rotationAngle, &Transform2D::setRotation),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_scale, "scale"));
+PHENYL_SERIALIZABLE(Transform2D, PHENYL_SERIALIZABLE_MEMBER_NAMED(m_position, "position"),
+    PHENYL_SERIALIZABLE_METHOD("rotation", &Transform2D::rotationAngle, &Transform2D::setRotation),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(m_scale, "scale"));
 }
 
 static inline glm::vec2 rotationCompose (glm::vec2 cRot1, glm::vec2 cRot2) {
@@ -22,7 +22,10 @@ float Transform2D::rotationAngle () const {
     return glm::atan(m_complexRotation.y, m_complexRotation.x);
 }
 
-Transform2D::Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec) : m_position{posVec}, m_scale{scaleVec}, m_complexRotation{rotVec} {}
+Transform2D::Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec) :
+    m_position{posVec},
+    m_scale{scaleVec},
+    m_complexRotation{rotVec} {}
 
 Transform2D& Transform2D::translate (glm::vec2 deltaPos) {
     m_position += deltaPos;

@@ -1,8 +1,8 @@
-#include "logging/logging.h"
-
 #include "audio/audio_source.h"
+
 #include "audio/audio_system.h"
 #include "audio/detail/loggers.h"
+#include "logging/logging.h"
 
 using namespace phenyl;
 
@@ -14,7 +14,9 @@ audio::AudioSource::~AudioSource () {
     }
 }
 
-audio::AudioSource::AudioSource (audio::AudioSource&& other) noexcept : m_audioSystem{other.m_audioSystem}, m_id{other.m_id} {
+audio::AudioSource::AudioSource (audio::AudioSource&& other) noexcept :
+    m_audioSystem{other.m_audioSystem},
+    m_id{other.m_id} {
     other.m_audioSystem = nullptr;
     other.m_id = 0;
 }

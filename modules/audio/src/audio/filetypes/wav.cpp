@@ -18,9 +18,9 @@ struct WAVHeader {
 };
 
 static constexpr std::uint32_t MAGIC_TAG = 0x46464952; // "RIFF" 52494646
-static constexpr std::uint32_t WAV_TAG = 0x45564157; // "WAVE"
+static constexpr std::uint32_t WAV_TAG = 0x45564157;   // "WAVE"
 static constexpr std::uint32_t FMT_TAG = 0x20746d66;   // "fmt " 666d7420
-static constexpr std::uint32_t DATA_TAG = 0x61746164; // "data" 64617461
+static constexpr std::uint32_t DATA_TAG = 0x61746164;  // "data" 64617461
 
 static constexpr std::uint32_t HEADER_SIZE = 44 - 8;
 static constexpr std::uint32_t FORMAT_SIZE = 16;
@@ -30,8 +30,13 @@ static Logger LOGGER{"WAV_FILE", audio::detail::AUDIO_LOGGER};
 
 static util::Optional<WAVHeader> readHeader (std::istream& file);
 
-audio::WAVFile::WAVFile (std::unique_ptr<std::byte[]> data, std::uint32_t sampleRate, std::uint16_t bitDepth, std::uint16_t channels, std::uint32_t dataSize) :
-        m_data{std::move(data)}, m_sampleRate{sampleRate}, m_bitDepth{bitDepth}, m_channels{channels}, m_dataSize{dataSize} {}
+audio::WAVFile::WAVFile (std::unique_ptr<std::byte[]> data, std::uint32_t sampleRate, std::uint16_t bitDepth,
+    std::uint16_t channels, std::uint32_t dataSize) :
+    m_data{std::move(data)},
+    m_sampleRate{sampleRate},
+    m_bitDepth{bitDepth},
+    m_channels{channels},
+    m_dataSize{dataSize} {}
 
 std::uint32_t audio::WAVFile::sampleRate () const {
     return m_sampleRate;
@@ -63,7 +68,7 @@ util::Optional<audio::WAVFile> audio::WAVFile::Load (std::istream& file) {
     auto header = headerOpt.getUnsafe();
     auto data = std::make_unique<std::byte[]>(header.dataSize);
 
-    if (!file.read((char*)data.get(), header.dataSize)) {
+    if (!file.read((char*) data.get(), header.dataSize)) {
         PHENYL_LOGE(LOGGER, "Failed to read WAV file data!");
         return util::NullOpt;
     }
@@ -98,7 +103,6 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
         PHENYL_LOGE(LOGGER, "Invalid WAV format tag: {} (expected {})", wavTag, WAV_TAG);
         return util::NullOpt;
     }
-
 
     std::uint32_t fmtTag;
     if (!util::BinaryReadLittle(file, fmtTag)) {
@@ -152,12 +156,14 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
     }
 
     if (header.byteRate != header.sampleRate * header.channels * header.sampleBits / 8) {
-        PHENYL_LOGE(LOGGER, "Invalid byte rate {} (sample rate: {}, channels: {}, sample bits: {})", header.byteRate, header.sampleRate, header.channels, header.sampleBits);
+        PHENYL_LOGE(LOGGER, "Invalid byte rate {} (sample rate: {}, channels: {}, sample bits: {})", header.byteRate,
+            header.sampleRate, header.channels, header.sampleBits);
         return util::NullOpt;
     }
 
     if (header.blockAlign != header.channels * header.sampleBits / 8) {
-        PHENYL_LOGE(LOGGER, "Invalid block align {} (channels: {}, sample bits: {})", header.blockAlign, header.channels, header.sampleBits);
+        PHENYL_LOGE(LOGGER, "Invalid block align {} (channels: {}, sample bits: {})", header.blockAlign,
+            header.channels, header.sampleBits);
         return util::NullOpt;
     }
 
@@ -174,14 +180,17 @@ static util::Optional<WAVHeader> readHeader (std::istream& file) {
         PHENYL_LOGE(LOGGER, "Failed to read WAV data size!");
         return util::NullOpt;
     } else if (header.dataSize != header.fileSize - HEADER_SIZE) {
-        PHENYL_LOGE(LOGGER, "Invalid WAV data size: {} (file size: {}, header size: {})", header.dataSize, header.fileSize, HEADER_SIZE);
+        PHENYL_LOGE(LOGGER, "Invalid WAV data size: {} (file size: {}, header size: {})", header.dataSize,
+            header.fileSize, HEADER_SIZE);
         return util::NullOpt;
     }
 
-    PHENYL_TRACE(LOGGER, "Read WAV header: fileSize={}, formatType={}, channels={}, sampleRate={}, byteRate={}, blockAlign={}, sampleBits={}, dataSize={}", header.fileSize, header.formatType, header.channels, header.sampleRate,
-            header.byteRate, header.blockAlign, header.sampleBits, header.dataSize);
+    PHENYL_TRACE(LOGGER,
+        "Read WAV header: fileSize={}, formatType={}, channels={}, sampleRate={}, byteRate={}, "
+        "blockAlign={}, "
+        "sampleBits={}, dataSize={}",
+        header.fileSize, header.formatType, header.channels, header.sampleRate, header.byteRate, header.blockAlign,
+        header.sampleBits, header.dataSize);
 
     return header;
 }
-
-

@@ -3,13 +3,13 @@
 #include <logging/log_sink.h>
 
 namespace phenyl::logging {
-    class StreamSink : public LogSink {
-    public:
-        StreamSink (std::ostream& file, std::string path);
+class StreamSink : public LogSink {
+public:
+    StreamSink (std::ostream& file, std::string path);
 
-        void log(const std::string& prefix, const std::string& logText) override;
+    void log (const std::string& prefix, const std::string& logText) override;
 
-    private:
-        std::ostream& m_file;
-    };
-}
+private:
+    std::ostream& m_file;
+};
+} // namespace phenyl::logging

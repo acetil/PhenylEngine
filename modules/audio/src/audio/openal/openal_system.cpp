@@ -47,7 +47,9 @@ phenyl::audio::OpenALSystem::~OpenALSystem () {
     alcCloseDevice(m_device);
 }
 
-phenyl::audio::OpenALSystem::OpenALSystem (phenyl::audio::OpenALSystem&& other) noexcept : m_device{other.m_device}, m_context{other.m_context} {
+phenyl::audio::OpenALSystem::OpenALSystem (phenyl::audio::OpenALSystem&& other) noexcept :
+    m_device{other.m_device},
+    m_context{other.m_context} {
     other.m_device = nullptr;
     other.m_context = nullptr;
 }
@@ -83,6 +85,7 @@ std::size_t phenyl::audio::OpenALSystem::makeSource () {
     PHENYL_TRACE(LOGGER, "Initialised source with sourceId={}", sourceId + 1);
     return sourceId + 1;
 }
+
 std::size_t phenyl::audio::OpenALSystem::makeWAVSample (const phenyl::audio::WAVFile& wavFile) {
     PHENYL_TRACE(LOGGER, "Making sample");
     OpenALBuffer buffer{wavFile};
@@ -96,7 +99,6 @@ std::size_t phenyl::audio::OpenALSystem::makeWAVSample (const phenyl::audio::WAV
     PHENYL_TRACE(LOGGER, "Initialised buffer with bufId={}", bufId + 1);
     return bufId + 1;
 }
-
 
 void phenyl::audio::OpenALSystem::destroySource (std::size_t id) {
     PHENYL_ASSERT_MSG(id, "Attempted to destroy empty source!");

@@ -1,7 +1,7 @@
-#include "logging/logging.h"
+#include "openal_source.h"
 
 #include "audio/detail/loggers.h"
-#include "openal_source.h"
+#include "logging/logging.h"
 #include "openal_buffer.h"
 
 using namespace phenyl::audio;
@@ -50,7 +50,7 @@ void OpenALSource::playBuffer (const OpenALBuffer& buffer) {
     PHENYL_TRACE(LOGGER, "Source id={} playing buffer id={}", m_id, buffer.id());
 
     alGetError();
-    alSourcei(m_id, AL_BUFFER, (ALint)buffer.id());
+    alSourcei(m_id, AL_BUFFER, (ALint) buffer.id());
     ALenum err;
     if ((err = alGetError())) {
         PHENYL_LOGE(LOGGER, "Failed to play sample {} to source {}: {}", buffer.id(), m_id, ALStrError(err));

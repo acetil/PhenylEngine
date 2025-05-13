@@ -1,15 +1,15 @@
 #include "phenyl/plugins/default_2d_plugin.h"
 
-#include "core/runtime.h"
-#include "phenyl/plugins/level_plugin.h"
-#include "phenyl/plugins/prefab_plugin.h"
-#include "graphics/plugins/graphics_2d_plugin.h"
-#include "physics/physics.h"
 #include "audio/audio_plugin.h"
-#include "graphics/ui/debug_ui.h"
 #include "core/plugins/core_plugin_2d.h"
 #include "core/plugins/input_plugin.h"
 #include "core/plugins/timed_lifetime_plugin.h"
+#include "core/runtime.h"
+#include "graphics/plugins/graphics_2d_plugin.h"
+#include "graphics/ui/debug_ui.h"
+#include "phenyl/plugins/level_plugin.h"
+#include "phenyl/plugins/prefab_plugin.h"
+#include "physics/physics.h"
 
 using namespace phenyl;
 

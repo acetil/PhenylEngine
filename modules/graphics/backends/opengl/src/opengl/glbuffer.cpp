@@ -4,14 +4,20 @@ using namespace phenyl::opengl;
 
 static phenyl::Logger LOGGER{"GL_BUFFER", detail::OPENGL_LOGGER};
 
-GlBuffer::GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint) : m_capacity{0}, m_stride{elemSize}, m_usageHint{usageHint} {
+GlBuffer::GlBuffer (std::size_t capacity, std::size_t elemSize, GLenum usageHint) :
+    m_capacity{0},
+    m_stride{elemSize},
+    m_usageHint{usageHint} {
     glCreateBuffers(1, &m_id);
     PHENYL_TRACE(LOGGER, "Initialised buffer id={}", m_id);
 
     ensureCapacity(capacity);
 }
 
-GlBuffer::GlBuffer (GlBuffer&& other) noexcept : m_id{other.m_id}, m_capacity{other.m_capacity}, m_usageHint{other.m_usageHint} {
+GlBuffer::GlBuffer (GlBuffer&& other) noexcept :
+    m_id{other.m_id},
+    m_capacity{other.m_capacity},
+    m_usageHint{other.m_usageHint} {
     other.m_id = 0;
     other.m_capacity = 0;
 }

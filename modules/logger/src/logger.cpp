@@ -1,15 +1,14 @@
 #ifndef NDEBUG
-#include <cpptrace/cpptrace.hpp>
+    #include <cpptrace/cpptrace.hpp>
 #endif
 
+#include "log_manager.h"
 #include "logging/logger.h"
 #include "logging/logging.h"
 
-#include "log_manager.h"
-
 using namespace phenyl::logging;
 
-void Logger::initSink() {
+void Logger::initSink () {
     if (m_sink) {
         return;
     }

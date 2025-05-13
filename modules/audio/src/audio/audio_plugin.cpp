@@ -1,6 +1,6 @@
-#include "audio/audio_system.h"
 #include "audio/audio_plugin.h"
 
+#include "audio/audio_system.h"
 #include "core/delta_time.h"
 #include "core/runtime.h"
 
@@ -12,6 +12,7 @@ static void AudioUpdateSystem (const phenyl::core::Resources<AudioSystem, phenyl
 }
 
 AudioPlugin::AudioPlugin () : m_audioSystem(MakeOpenALSystem()) {}
+
 AudioPlugin::~AudioPlugin () = default;
 
 std::string_view AudioPlugin::getName () const noexcept {
@@ -26,5 +27,3 @@ void AudioPlugin::init (core::PhenylRuntime& runtime) {
 
     runtime.addSystem<phenyl::core::Update>("AudioSystem::Update", AudioUpdateSystem);
 }
-
-

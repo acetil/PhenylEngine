@@ -1,4 +1,5 @@
 #include "physics/components/2D/rigid_body.h"
+
 #include "core/components/2d/global_transform.h"
 
 #define MIN_ANGULAR_VEL 0.01f
@@ -7,15 +8,12 @@
 using namespace phenyl::physics;
 
 namespace phenyl::physics {
-    PHENYL_SERIALIZABLE(RigidBody2D,
-        PHENYL_SERIALIZABLE_MEMBER(m_momentum),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(m_angularMomentum, "angular_momentum"),
-        PHENYL_SERIALIZABLE_METHOD("mass", &RigidBody2D::mass, &RigidBody2D::setMass),
-        PHENYL_SERIALIZABLE_METHOD("inertial_moment", &RigidBody2D::inertia, &RigidBody2D::setInertia),
-        PHENYL_SERIALIZABLE_MEMBER(drag),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(angularDrag, "angular_drag"),
-        PHENYL_SERIALIZABLE_MEMBER(gravity)
-    )
+PHENYL_SERIALIZABLE(RigidBody2D, PHENYL_SERIALIZABLE_MEMBER(m_momentum),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(m_angularMomentum, "angular_momentum"),
+    PHENYL_SERIALIZABLE_METHOD("mass", &RigidBody2D::mass, &RigidBody2D::setMass),
+    PHENYL_SERIALIZABLE_METHOD("inertial_moment", &RigidBody2D::inertia, &RigidBody2D::setInertia),
+    PHENYL_SERIALIZABLE_MEMBER(drag), PHENYL_SERIALIZABLE_MEMBER_NAMED(angularDrag, "angular_drag"),
+    PHENYL_SERIALIZABLE_MEMBER(gravity))
 }
 
 inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
@@ -31,7 +29,8 @@ void RigidBody2D::doMotion (core::GlobalTransform2D& transform2D, float deltaTim
     m_momentum += m_netForce * 0.5f * deltaTime;
     m_netForce = {0, 0};
 
-    m_angularMomentum = glm::clamp(m_angularMomentum + m_torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * m_mass, MAX_ANGULAR_VEL * m_mass);
+    m_angularMomentum = glm::clamp(m_angularMomentum + m_torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * m_mass,
+        MAX_ANGULAR_VEL * m_mass);
     transform2D.transform2D.rotateBy(m_angularMomentum * m_invInertialMoment);
     m_angularMomentum = m_angularMomentum + m_torque * 0.5f * deltaTime; // Will be clamped before rotation next step
 

@@ -1,11 +1,12 @@
-#include <spirv_cross.hpp>
-
 #include "vk_shader_reflection.h"
+
+#include <spirv_cross.hpp>
 
 using namespace phenyl::vulkan;
 using namespace spirv_cross;
 
-ShaderReflection::ShaderReflection (const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources) {
+ShaderReflection::ShaderReflection (
+    const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources) {
     for (const auto& [type, source] : sources) {
         spirv_cross::Compiler compiler{source.data(), source.size()};
 
@@ -39,7 +40,8 @@ void ShaderReflection::addAttribs (const Compiler& compiler, const ShaderResourc
             auto rows = type.vecsize;
             auto cols = type.columns;
 
-            PHENYL_ASSERT_MSG((cols == 1 || rows == cols) && rows <= 4, "Unimplemented matrix dimensions: {}x{}", rows, cols);
+            PHENYL_ASSERT_MSG((cols == 1 || rows == cols) && rows <= 4, "Unimplemented matrix dimensions: {}x{}", rows,
+                cols);
 
             if (cols == 1) {
                 if (rows == 1) {
@@ -91,12 +93,7 @@ void ShaderReflection::addUniformBlocks (const Compiler& compiler, const ShaderR
             memberOffsets.emplace(memberName, memberOff);
         }
 
-        UniformBlock block{
-            .size = size,
-            .set = set,
-            .location = binding,
-            .memberOffsets = std::move(memberOffsets)
-        };
+        UniformBlock block{.size = size, .set = set, .location = binding, .memberOffsets = std::move(memberOffsets)};
 
         if (auto it = m_uniformBlocks.find(i.name); it == m_uniformBlocks.end()) {
             PHENYL_LOGD(PHENYL_LOGGER, "Adding uniform block \"{}\"", i.name);
@@ -114,10 +111,7 @@ void ShaderReflection::addSamplers (const Compiler& compiler, const ShaderResour
         PHENYL_LOGD(PHENYL_LOGGER, "Found sampler: {}, binding: {}, set: {}", i.name, binding, set);
         // TODO: types
 
-        Sampler sampler{
-            .set = set,
-            .location = binding
-        };
+        Sampler sampler{.set = set, .location = binding};
 
         if (auto it = m_samplers.find(i.name); it == m_samplers.end()) {
             m_samplers.emplace(i.name, sampler);
@@ -133,7 +127,7 @@ const ShaderReflection::VertexInput* ShaderReflection::getAttrib (const std::str
 }
 
 const ShaderReflection::FragmentOutput* ShaderReflection::getOutput (const std::string& name) const noexcept {
-    auto it = std::ranges::find_if(m_outputs,[&] (const auto& x) { return x.name == name; });
+    auto it = std::ranges::find_if(m_outputs, [&] (const auto& x) { return x.name == name; });
     return it != m_outputs.end() ? &*it : nullptr;
 }
 

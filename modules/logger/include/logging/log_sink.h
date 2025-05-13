@@ -1,42 +1,42 @@
 #pragma once
 
+#include "forward.h"
+
 #include <source_location>
 #include <string>
 #include <vector>
 
-#include "forward.h"
-
 namespace phenyl::logging {
-    class LogSink {
-    public:
-        LogSink (std::string path);
-        virtual ~LogSink() = default;
+class LogSink {
+public:
+    LogSink (std::string path);
+    virtual ~LogSink () = default;
 
-        void log (std::source_location sourceLoc, int level, const std::string& logText);
+    void log (std::source_location sourceLoc, int level, const std::string& logText);
 
-        [[nodiscard]] const std::string& getPath () const {
-            return m_path;
-        }
+    [[nodiscard]] const std::string& getPath () const {
+        return m_path;
+    }
 
-        int getMinLogLevel () const {
-            return m_minLogLevel;
-        }
-        void setMinLogLevel (int logLevel, bool propagate=true);
+    int getMinLogLevel () const {
+        return m_minLogLevel;
+    }
 
-        void setName (std::string name);
+    void setMinLogLevel (int logLevel, bool propagate = true);
 
-        void addChild (LogSink* childSink);
+    void setName (std::string name);
 
-    protected:
-        virtual void log (const std::string& prefix, const std::string& logText) = 0;
+    void addChild (LogSink* childSink);
 
-    private:
-        std::string m_name;
-        std::string m_path;
+protected:
+    virtual void log (const std::string& prefix, const std::string& logText) = 0;
 
-        std::vector<LogSink*> m_children;
+private:
+    std::string m_name;
+    std::string m_path;
 
-        int m_minLogLevel = LEVEL_DEBUG;
+    std::vector<LogSink*> m_children;
 
-    };
-}
+    int m_minLogLevel = LEVEL_DEBUG;
+};
+} // namespace phenyl::logging

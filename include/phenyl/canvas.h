@@ -4,11 +4,11 @@
 #include "graphics/canvas/canvas_shapes.h"
 
 namespace phenyl {
-    using Canvas = graphics::Canvas;
+using Canvas = graphics::Canvas;
 
-    using CanvasRect = graphics::CanvasRect;
-    using CanvasRoundedRect = graphics::CanvasRoundedRect;
+using CanvasRect = graphics::CanvasRect;
+using CanvasRoundedRect = graphics::CanvasRoundedRect;
 
-    using CanvasFill = graphics::CanvasFill;
-    using CanvasStyle = graphics::CanvasStyle;
-}
+using CanvasFill = graphics::CanvasFill;
+using CanvasStyle = graphics::CanvasStyle;
+} // namespace phenyl

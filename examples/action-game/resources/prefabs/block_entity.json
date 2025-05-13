@@ -1,31 +1,31 @@
 {
-  "components" : {
-    "GlobalTransform2D": {
-      "transform": {
-        "position": [0.0, 0.0],
-        "scale": [0.1, 0.1],
-        "rotation": 0.0
-      }
-    },
-    "Sprite2D":  {
-      "texture" : "resources/images/test/test_texture.png"
-    },
-    "RigidBody2D": {
-      "momentum": [0.0, 0.0],
-      "gravity": [0.0, -2.0],
-      "mass": 1.0,
-      "inertial_moment": 3.0,
-      "drag": 1.0,
-      "angular_drag": 0.25,
-      "angular_momentum" : 0
-    },
-    "BoxCollider2D": {
-      "Collider2D": {
-        "layers": 2,
-        "mask": 7,
-        "elasticity": 0.7
-      },
-      "scale" : [0.1, 0.1]
+    "components" : {
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.0, 0.0],
+                "scale" : [0.1, 0.1],
+                "rotation" : 0.0
+            }
+        },
+        "Sprite2D" : {
+            "texture" : "resources/images/test/test_texture.png"
+        },
+        "RigidBody2D" : {
+            "momentum" : [0.0, 0.0],
+            "gravity" : [0.0, -2.0],
+            "mass" : 1.0,
+            "inertial_moment" : 3.0,
+            "drag" : 1.0,
+            "angular_drag" : 0.25,
+            "angular_momentum" : 0
+        },
+        "BoxCollider2D" : {
+            "Collider2D" : {
+                "layers" : 2,
+                "mask" : 7,
+                "elasticity" : 0.7
+            },
+            "scale" : [0.1, 0.1]
+        }
     }
-  }
 }

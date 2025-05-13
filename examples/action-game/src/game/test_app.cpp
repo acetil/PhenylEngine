@@ -1,3 +1,11 @@
+#include "test_app.h"
+
+#include "entity/bullet.h"
+#include "entity/player.h"
+#include "phenyl/ui/container.h"
+#include "phenyl/ui/widget.h"
+#include "util/debug_console.h"
+
 #include <phenyl/asset.h>
 #include <phenyl/canvas.h>
 #include <phenyl/debug.h>
@@ -5,20 +13,10 @@
 #include <phenyl/level.h>
 #include <phenyl/ui/ui.h>
 
-#include "test_app.h"
-#include "entity/bullet.h"
-#include "entity/player.h"
-#include "phenyl/ui/container.h"
-#include "phenyl/ui/widget.h"
-#include "util/debug_console.h"
-
 static phenyl::Logger LOGGER{"TEST_APP"};
 
 test::TestApp::TestApp (phenyl::ApplicationProperties properties) :
-    phenyl::Application2D(properties
-        .withResolution(800, 600)
-        .withWindowTitle("Action Game")
-        .withVsync(false)) {}
+    phenyl::Application2D(properties.withResolution(800, 600).withWindowTitle("Action Game").withVsync(false)) {}
 
 void test::TestApp::init () {
     InitBullet(this, world());
@@ -41,34 +39,31 @@ void test::TestApp::postInit () {
     auto& uiManager = runtime().resource<phenyl::UIManager>();
     // uiManager.addUIComp(button4, {500, 300});
     // uiManager.addUIComp(button5, {500, 385});
-    m_button1 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(phenyl::ui::Modifier{}
-            .withSize({100, 80})
-            .withOffset({500, 300}));
+    m_button1 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(
+        phenyl::ui::Modifier{}.withSize({100, 80}).withOffset({500, 300}));
     m_button1->setDefaultBgColor({1.0, 0.0, 0.0, 1.0});
     m_button1->setHoverBgColor({0.0, 1.0, 0.0, 1.0});
     m_button1->setPressBgColor({0.0, 0.0, 1.0, 1.0});
-    m_button1->addListener([&] (const phenyl::ui::ButtonPressEvent&) {
-        addLabel();
-    });
+    m_button1->addListener([&] (const phenyl::ui::ButtonPressEvent&) { addLabel(); });
 
-    m_button2 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(phenyl::ui::Modifier{}
-            .withSize({100, 80})
-            .withOffset({500, 385}));
+    m_button2 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(
+        phenyl::ui::Modifier{}.withSize({100, 80}).withOffset({500, 385}));
     m_button2->setDefaultBgColor({1.0, 0.0, 0.0, 1.0});
     m_button2->setHoverBgColor({0.0, 1.0, 0.0, 1.0});
     m_button2->setPressBgColor({0.0, 0.0, 1.0, 1.0});
-    m_button2->addListener([&] (const phenyl::ui::ButtonPressEvent&) {
-        removeLabel();
-    });
+    m_button2->addListener([&] (const phenyl::ui::ButtonPressEvent&) { removeLabel(); });
 
-    auto* container = uiManager.root().emplace<phenyl::ui::ContainerWidget>(phenyl::ui::Modifier{}.withSize({200, 300}).withOffset({0, 100}));
+    auto* container = uiManager.root().emplace<phenyl::ui::ContainerWidget>(
+        phenyl::ui::Modifier{}.withSize({200, 300}).withOffset({0, 100}));
     container->setBorderColor({1.0f, 1.0f, 1.0f, 1.0f});
     container->setBorderSize(2);
-    m_column = container->emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN, phenyl::ui::LayoutArrangement::START, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{});
+    m_column = container->emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN,
+        phenyl::ui::LayoutArrangement::START, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{});
 
-    /*column = uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN, phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{}
-        .withSize({0, 0}, {200, 300})
-        .withOffset({200, 100}));*/
+    /*column =
+       uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN,
+       phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START,
+       phenyl::ui::Modifier{} .withSize({0, 0}, {200, 300}) .withOffset({200, 100}));*/
     auto* labelWidget = m_column->emplaceBack<phenyl::ui::LabelWidget>("Hello World 2!");
     labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
 

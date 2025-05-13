@@ -28,11 +28,12 @@ OpenALBuffer::OpenALBuffer (const phenyl::audio::WAVFile& wavFile) {
     } else if (wavFile.numChannels() == 2 && wavFile.bitDepth() == 16) {
         format = AL_FORMAT_STEREO16;
     } else {
-        PHENYL_LOGE(LOGGER, "Unsupported WAV file settings: channels={}, bit depth={}", wavFile.numChannels(), wavFile.bitDepth());
+        PHENYL_LOGE(LOGGER, "Unsupported WAV file settings: channels={}, bit depth={}", wavFile.numChannels(),
+            wavFile.bitDepth());
         return;
     }
 
-    alBufferData(m_id, format, wavFile.data(), (int)wavFile.dataSize(), (int)wavFile.sampleRate());
+    alBufferData(m_id, format, wavFile.data(), (int) wavFile.dataSize(), (int) wavFile.sampleRate());
     if ((err = alGetError())) {
         PHENYL_LOGE(LOGGER, "Failed to buffer data to OpenAL buffer: {}", ALStrError(err));
         return;

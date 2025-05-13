@@ -1,36 +1,35 @@
 {
-  "components" :
-  {
-    "GlobalTransform2D" : {
-      "transform": {
-        "position": [0.0, 0.0],
-        "scale": [0.03125, 0.03125],
-        "rotation": 0.0
-      }
-    },
-    "Sprite2D" : {
-      "texture" : "resources/images/ball.png"
-    },
-    "RigidBody2D" : {
-      "momentum": [0.0, 0.0],
-      "gravity": [0.0, 0.0],
-      "mass": 0.001,
-      "inertial_moment": 0.0,
-      "drag": 0,
-      "angular_drag": 0,
-      "angular_momentum" : 0
-    },
-    "BoxCollider2D": {
-      "Collider2D": {
-        "layers": 15,
-        "mask": 15,
-        "elasticity": 0.95
-      },
-      "scale" : [0.03125, 0.03125]
-    },
-    "Ball" : {
-      "max_speed" : 3.5,
-      "applied_drag" : 0.7
+    "components" : {
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.0, 0.0],
+                "scale" : [0.03125, 0.03125],
+                "rotation" : 0.0
+            }
+        },
+        "Sprite2D" : {
+            "texture" : "resources/images/ball.png"
+        },
+        "RigidBody2D" : {
+            "momentum" : [0.0, 0.0],
+            "gravity" : [0.0, 0.0],
+            "mass" : 0.001,
+            "inertial_moment" : 0.0,
+            "drag" : 0,
+            "angular_drag" : 0,
+            "angular_momentum" : 0
+        },
+        "BoxCollider2D" : {
+            "Collider2D" : {
+                "layers" : 15,
+                "mask" : 15,
+                "elasticity" : 0.95
+            },
+            "scale" : [0.03125, 0.03125]
+        },
+        "Ball" : {
+            "max_speed" : 3.5,
+            "applied_drag" : 0.7
+        }
     }
-  }
 }

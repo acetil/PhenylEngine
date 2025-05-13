@@ -13,15 +13,15 @@ void QueryArchetypes::onNewArchetype (Archetype* archetype) {
     }
 }
 
-void QueryArchetypes::lock() {
+void QueryArchetypes::lock () {
     m_world.defer();
 }
 
-void QueryArchetypes::unlock() {
+void QueryArchetypes::unlock () {
     m_world.deferEnd();
 }
 
-QueryArchetypes::Iterator::Iterator() = default;
+QueryArchetypes::Iterator::Iterator () = default;
 
 QueryArchetypes::Iterator::Iterator (std::unordered_set<Archetype*>::const_iterator it) : m_it{it} {}
 

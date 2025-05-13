@@ -1,12 +1,11 @@
-#include <logging/logging.h>
-
 #include "log_manager.h"
 
-#include <algorithm>
-#include <ranges>
-
-#include "stream_sink.h"
 #include "logging/properties.h"
+#include "stream_sink.h"
+
+#include <algorithm>
+#include <logging/logging.h>
+#include <ranges>
 
 using namespace phenyl::logging;
 

@@ -3,5 +3,5 @@
 #include "core/iresource.h"
 
 namespace phenyl {
-    using IResource = runtime::IResource;
+using IResource = runtime::IResource;
 }

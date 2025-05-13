@@ -1,8 +1,10 @@
-#include <cassert>
 #include "core/component/detail/entity_id_list.h"
-#include "core/entity_id.h"
+
 #include "core/detail/loggers.h"
+#include "core/entity_id.h"
 #include "logging/logging.h"
+
+#include <cassert>
 
 using namespace phenyl::core::detail;
 
@@ -111,7 +113,9 @@ EntityIdList::const_iterator EntityIdList::cend () const {
     return const_iterator{this, idSlots.size()};
 }
 
-EntityIdList::IdIterator::IdIterator (const detail::EntityIdList* idList, std::size_t slotPos) : m_idList{idList}, m_pos{slotPos} {
+EntityIdList::IdIterator::IdIterator (const detail::EntityIdList* idList, std::size_t slotPos) :
+    m_idList{idList},
+    m_pos{slotPos} {
     if (slotPos != idList->idSlots.size() && (idList->idSlots[slotPos] & EMPTY_BIT)) {
         next();
     }
@@ -165,4 +169,3 @@ EntityIdList::IdIterator EntityIdList::IdIterator::operator-- (int) {
 bool EntityIdList::IdIterator::operator== (const detail::EntityIdList::IdIterator& other) const {
     return m_idList == other.m_idList && m_pos == other.m_pos;
 }
-

@@ -1,9 +1,10 @@
-#include "util/set.h"
-#include "util/map.h"
 #include "logging/logging.h"
+#include "util/map.h"
+#include "util/set.h"
+
 #include <cassert>
-#include <string>
 #include <iterator>
+#include <string>
 #include <unordered_set>
 
 using namespace phenyl::util;

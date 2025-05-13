@@ -1,16 +1,16 @@
+#include "glfw_viewport.h"
+
 #include "core/input/game_input.h"
 #include "logging/logging.h"
 #include "util/profiler.h"
-
-#include "glfw_viewport.h"
-
 
 using namespace phenyl::glfw;
 
 phenyl::Logger detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
 
-GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback) {
-    //glewExperimental = true;
+GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties,
+    const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback) {
+    // glewExperimental = true;
 
     if (!glfwInit()) {
         const char* glfwError;
@@ -25,7 +25,8 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, cons
     glfwWindowHint(GLFW_SAMPLES, 4);
     windowHintCallback();
 
-    m_window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(), properties.getWindowTitle().c_str(), nullptr, nullptr);
+    m_window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(),
+        properties.getWindowTitle().c_str(), nullptr, nullptr);
     if (!m_window) {
         const char* glfwError;
         int code;
@@ -64,7 +65,6 @@ GLFWViewport::~GLFWViewport () {
         glfwTerminate();
     }
 }
-
 
 GLFWViewport::operator bool () const {
     return m_window;
@@ -110,11 +110,11 @@ void GLFWViewport::onWindowSizeCallback (glm::ivec2 newRes) {
 }
 
 void GLFWViewport::onKeyChange (int scancode, int action, int mods) {
-    //keyInput->onButtonChange(scancode, action, mods);
+    // keyInput->onButtonChange(scancode, action, mods);
 }
 
 void GLFWViewport::onButtonChange (int button, int action, int mods) {
-    //mouseInput->onButtonChange(button, action, mods);
+    // mouseInput->onButtonChange(button, action, mods);
 }
 
 std::string_view GLFWViewport::getName () const noexcept {
@@ -122,11 +122,11 @@ std::string_view GLFWViewport::getName () const noexcept {
 }
 
 void GLFWViewport::setupCallbacks () {
-    glfwSetWindowUserPointer(m_window, (void*)this);
+    glfwSetWindowUserPointer(m_window, (void*) this);
 
     glfwSetCursorPosCallback(m_window, [] (GLFWwindow* window, double xPos, double yPos) {
         PHENYL_DASSERT(window);
-         auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
+        auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
         PHENYL_DASSERT(ptr);
 
         ptr->onCursorPosCallback({xPos, yPos});

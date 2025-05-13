@@ -1,12 +1,12 @@
-#include <iostream>
-
 #include "core/component/prefab_asset_manager.h"
-#include "core/prefab.h"
-#include "core/serialization/component_serializer.h"
-#include "core/detail/loggers.h"
 
-#include "core/serialization/backends.h"
 #include "core/assets/assets.h"
+#include "core/detail/loggers.h"
+#include "core/prefab.h"
+#include "core/serialization/backends.h"
+#include "core/serialization/component_serializer.h"
+
+#include <iostream>
 
 using namespace phenyl;
 
@@ -22,8 +22,10 @@ private:
     class ChildrenSerializable : public core::ISerializable<core::PrefabBuilder> {
     private:
         PrefabSerializable& prefabSerializable;
+
     public:
-        explicit ChildrenSerializable (PrefabSerializable& prefabSerializable) : prefabSerializable{prefabSerializable} {}
+        explicit ChildrenSerializable (PrefabSerializable& prefabSerializable) :
+            prefabSerializable{prefabSerializable} {}
 
         std::string_view name () const noexcept override {
             return "phenyl::Prefab::Children";
@@ -45,14 +47,17 @@ private:
             }
         }
     };
+
 public:
-    PrefabSerializable (core::World& world, core::EntityComponentSerializer& compSerializer) : world{world}, compSerializer{compSerializer} {}
+    PrefabSerializable (core::World& world, core::EntityComponentSerializer& compSerializer) :
+        world{world},
+        compSerializer{compSerializer} {}
 
     std::string_view name () const noexcept override {
         return "phenyl::Prefab";
     }
 
-    void serialize(core::ISerializer& serializer, const core::Prefab& obj) override {
+    void serialize (core::ISerializer& serializer, const core::Prefab& obj) override {
         PHENYL_ABORT("Prefab serialization not supported!");
     }
 

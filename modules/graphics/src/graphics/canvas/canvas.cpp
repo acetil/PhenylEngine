@@ -1,15 +1,16 @@
-#include "graphics/font/font_manager.h"
-#include "graphics/renderlayer/canvas_layer.h"
 #include "graphics/canvas/canvas.h"
 
 #include "core/assets/assets.h"
 #include "graphics/detail/loggers.h"
+#include "graphics/font/font_manager.h"
+#include "graphics/renderlayer/canvas_layer.h"
 
 using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"CANVAS", detail::GRAPHICS_LOGGER};
 
-static void addCurve (std::vector<glm::vec2>& points, glm::vec2 start, glm::vec2 end, glm::vec2 centre, unsigned int quanta) {
+static void addCurve (std::vector<glm::vec2>& points, glm::vec2 start, glm::vec2 end, glm::vec2 centre,
+    unsigned int quanta) {
     auto d1 = start - centre;
     auto d2 = end - centre;
 
@@ -45,7 +46,10 @@ void Canvas::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolutio
     m_layer.setScreenSize(newResolution);
 }
 
-Canvas::Canvas (Renderer& renderer) : m_atlas{renderer}, m_layer{renderer.addLayer<CanvasRenderLayer>(m_atlas)}, m_fontManager{std::make_unique<FontManager>(renderer.getViewport(), m_atlas)} {
+Canvas::Canvas (Renderer& renderer) :
+    m_atlas{renderer},
+    m_layer{renderer.addLayer<CanvasRenderLayer>(m_atlas)},
+    m_fontManager{std::make_unique<FontManager>(renderer.getViewport(), m_atlas)} {
     m_fontManager->selfRegister();
     m_resolution = renderer.getViewport().getResolution();
     m_layer.setScreenSize(m_resolution);
@@ -54,13 +58,13 @@ Canvas::Canvas (Renderer& renderer) : m_atlas{renderer}, m_layer{renderer.addLay
 
     m_defaultFont = core::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");
 }
+
 Canvas::~Canvas () = default;
 
 void Canvas::render (glm::vec2 pos, const CanvasRect& rect, const CanvasStyle& style) {
     auto offPos = offset() + pos;
-    glm::vec2 vertices[] = {
-        offPos, offPos + glm::vec2{rect.size.x, 0}, offPos + glm::vec2{rect.size}, offPos + glm::vec2{0, rect.size.y}
-    };
+    glm::vec2 vertices[] = {offPos, offPos + glm::vec2{rect.size.x, 0}, offPos + glm::vec2{rect.size},
+      offPos + glm::vec2{0, rect.size.y}};
     submitVertices(vertices, style);
 }
 
@@ -74,15 +78,21 @@ void Canvas::render (glm::vec2 pos, const CanvasRoundedRect& rect, const CanvasS
     std::vector<glm::vec2> vertices;
 
     auto size = rect.rect.size;
-    addCurve(vertices, offPos + glm::vec2{0, rect.rounding}, offPos + glm::vec2{rect.rounding, 0}, offPos + glm::vec2{rect.rounding, rect.rounding}, style.quanta / 4);
-    addCurve(vertices, offPos + glm::vec2{size.x - rect.rounding, 0.0f}, offPos + glm::vec2{size.x, rect.rounding}, offPos + glm::vec2{size.x - rect.rounding, rect.rounding}, style.quanta / 4);
-    addCurve(vertices, offPos + glm::vec2{size.x, size.y - rect.rounding}, offPos + glm::vec2{size.x - rect.rounding, size.y}, offPos + glm::vec2{size.x - rect.rounding, size.y - rect.rounding}, style.quanta / 4);
-    addCurve(vertices, offPos + glm::vec2{rect.rounding, size.y}, offPos + glm::vec2{0.0f, size.y - rect.rounding}, offPos + glm::vec2{rect.rounding, size.y - rect.rounding}, style.quanta / 4);
+    addCurve(vertices, offPos + glm::vec2{0, rect.rounding}, offPos + glm::vec2{rect.rounding, 0},
+        offPos + glm::vec2{rect.rounding, rect.rounding}, style.quanta / 4);
+    addCurve(vertices, offPos + glm::vec2{size.x - rect.rounding, 0.0f}, offPos + glm::vec2{size.x, rect.rounding},
+        offPos + glm::vec2{size.x - rect.rounding, rect.rounding}, style.quanta / 4);
+    addCurve(vertices, offPos + glm::vec2{size.x, size.y - rect.rounding},
+        offPos + glm::vec2{size.x - rect.rounding, size.y},
+        offPos + glm::vec2{size.x - rect.rounding, size.y - rect.rounding}, style.quanta / 4);
+    addCurve(vertices, offPos + glm::vec2{rect.rounding, size.y}, offPos + glm::vec2{0.0f, size.y - rect.rounding},
+        offPos + glm::vec2{rect.rounding, size.y - rect.rounding}, style.quanta / 4);
 
     submitVertices(vertices, style);
 }
 
-void Canvas::renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text, glm::vec3 colour) {
+void Canvas::renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text,
+    glm::vec3 colour) {
     font->renderText(m_layer, size, text, offset() + pos, colour);
 }
 
@@ -103,5 +113,3 @@ void Canvas::popOffset () {
 std::string_view Canvas::getName () const noexcept {
     return "Canvas";
 }
-
-

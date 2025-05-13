@@ -1,13 +1,12 @@
-#include "util/random.h"
-
-#include "core/runtime/stage.h"
-
 #include "core/runtime.h"
+#include "core/runtime/stage.h"
 #include "core/runtime/system.h"
+#include "util/random.h"
 
 using namespace phenyl::core;
 
 AbstractStage::AbstractStage (std::string name, PhenylRuntime& runtime) : m_name{std::move(name)}, m_runtime{runtime} {}
+
 AbstractStage::~AbstractStage () = default;
 
 void AbstractStage::addSystemUntyped (IRunnableSystem* system) {
@@ -61,9 +60,7 @@ void AbstractStage::runAfter (AbstractStage* stage) {
 void AbstractStage::orderSystems () {
     m_orderedSystems.clear();
 
-    PHENYL_DEBUG({
-        util::Random::Shuffle(m_systems.begin(), m_systems.end());
-    })
+    PHENYL_DEBUG({ util::Random::Shuffle(m_systems.begin(), m_systems.end()); })
 
     std::unordered_set<IRunnableSystem*> visited{};
     std::unordered_set<IRunnableSystem*> visiting{};
@@ -76,9 +73,7 @@ void AbstractStage::orderStages () {
     std::vector<AbstractStage*> stages = m_childStages;
     m_childStages.clear();
 
-    PHENYL_DEBUG({
-        util::Random::Shuffle(stages.begin(), stages.end());
-    })
+    PHENYL_DEBUG({ util::Random::Shuffle(stages.begin(), stages.end()); })
 
     std::unordered_set<AbstractStage*> visited{};
     std::unordered_set<AbstractStage*> visiting{};
@@ -87,7 +82,8 @@ void AbstractStage::orderStages () {
     }
 }
 
-void AbstractStage::orderSystemsRecursive (IRunnableSystem* system, std::unordered_set<IRunnableSystem*>& visited, std::unordered_set<IRunnableSystem*>& visiting) {
+void AbstractStage::orderSystemsRecursive (IRunnableSystem* system, std::unordered_set<IRunnableSystem*>& visited,
+    std::unordered_set<IRunnableSystem*>& visiting) {
     PHENYL_ASSERT_MSG(!visiting.contains(system), "Detected cycle in system ordering!");
     if (visited.contains(system)) {
         return;
@@ -103,7 +99,8 @@ void AbstractStage::orderSystemsRecursive (IRunnableSystem* system, std::unorder
     visiting.erase(system);
 }
 
-void AbstractStage::orderStagesRecursive (AbstractStage* stage, std::unordered_set<AbstractStage*>& visited, std::unordered_set<AbstractStage*>& visiting) {
+void AbstractStage::orderStagesRecursive (AbstractStage* stage, std::unordered_set<AbstractStage*>& visited,
+    std::unordered_set<AbstractStage*>& visiting) {
     PHENYL_ASSERT_MSG(!visiting.contains(stage), "Detected cycle in stage ordering!");
     if (visited.contains(stage)) {
         return;

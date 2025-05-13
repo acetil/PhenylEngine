@@ -1,4 +1,5 @@
 #include "logging/properties.h"
+
 #include "log_manager.h"
 
 using namespace phenyl::logging;
@@ -15,7 +16,7 @@ LoggingProperties& LoggingProperties::withLogLevel (const std::string& logger, c
     return *this;
 }
 
-LoggingProperties& LoggingProperties::withRootLogLevel(const int level) {
+LoggingProperties& LoggingProperties::withRootLogLevel (const int level) {
     m_rootLogLevel = level;
 
     return *this;

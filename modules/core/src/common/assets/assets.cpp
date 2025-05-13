@@ -1,5 +1,6 @@
-#include "core/assets/asset.h"
 #include "core/assets/assets.h"
+
+#include "core/assets/asset.h"
 #include "core/assets/asset_manager.h"
 
 using namespace phenyl::core;
@@ -11,7 +12,7 @@ bool detail::AssetManagerBase::OnUnloadUntyped (std::size_t typeIndex, std::size
 }
 
 std::size_t detail::AssetManagerBase::onVirtualLoadUntyped (std::size_t typeIndex, const std::string& virtualPath,
-                                                            std::byte* data) {
+    std::byte* data) {
     return 0;
 }
 

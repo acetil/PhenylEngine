@@ -1,6 +1,6 @@
-#include "glfw/glfw_headers.h"
 #include "glfw_key_input.h"
 
+#include "glfw/glfw_headers.h"
 #include "logging/logging.h"
 
 using namespace phenyl::glfw;

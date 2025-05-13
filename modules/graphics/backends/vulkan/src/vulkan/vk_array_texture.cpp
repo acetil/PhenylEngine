@@ -4,9 +4,17 @@
 
 using namespace phenyl::vulkan;
 
-VulkanArrayTexture::VulkanArrayTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties, std::uint32_t texWidth,
-    std::uint32_t texHeight) : m_resources{resources}, m_transferManager{transferManager}, m_properties{properties}, m_combinedSampler{resources, properties}, m_width{texWidth}, m_height{texHeight} {
-    m_combinedSampler.recreate(resources, VulkanImage{resources, FormatToVulkan(properties.format), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, texWidth, texHeight, static_cast<std::uint32_t>(m_capacity)});
+VulkanArrayTexture::VulkanArrayTexture (VulkanResources& resources, TransferManager& transferManager,
+    const graphics::TextureProperties& properties, std::uint32_t texWidth, std::uint32_t texHeight) :
+    m_resources{resources},
+    m_transferManager{transferManager},
+    m_properties{properties},
+    m_combinedSampler{resources, properties},
+    m_width{texWidth},
+    m_height{texHeight} {
+    m_combinedSampler.recreate(resources,
+        VulkanImage{resources, FormatToVulkan(properties.format), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT,
+          texWidth, texHeight, static_cast<std::uint32_t>(m_capacity)});
 }
 
 std::uint32_t VulkanArrayTexture::width () const noexcept {
@@ -27,7 +35,8 @@ void VulkanArrayTexture::reserve (std::uint32_t capacity) {
     }
 
     auto newCapacity = static_cast<std::uint32_t>(m_capacity * RESIZE_FACTOR);
-    VulkanImage newImage{m_resources, FormatToVulkan(m_properties.format), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_USAGE_SAMPLED_BIT, width(), height(), newCapacity};
+    VulkanImage newImage{m_resources, FormatToVulkan(m_properties.format), VK_IMAGE_ASPECT_COLOR_BIT,
+      VK_IMAGE_USAGE_SAMPLED_BIT, width(), height(), newCapacity};
 
     newImage.copy(m_transferManager, m_combinedSampler.image());
 
@@ -40,7 +49,8 @@ std::uint32_t VulkanArrayTexture::append () {
 }
 
 void VulkanArrayTexture::upload (std::uint32_t index, const graphics::Image& image) {
-    PHENYL_ASSERT_MSG(index < m_size, "Attempted to upload image to invalid layer index {} (num layers: {})!", index, size());
+    PHENYL_ASSERT_MSG(index < m_size, "Attempted to upload image to invalid layer index {} (num layers: {})!", index,
+        size());
     m_combinedSampler.image().loadImage(m_transferManager, image, index);
 }
 

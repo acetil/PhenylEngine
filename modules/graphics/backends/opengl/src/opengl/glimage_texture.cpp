@@ -11,7 +11,9 @@ GlImageTexture::GlImageTexture (const graphics::TextureProperties& properties) :
 void GlImageTexture::upload (const graphics::Image& image) {
     // texSampler.bind();
     //
-    // glTexImage2D(texSampler.type(), 0, texSampler.format(), static_cast<GLsizei>(image.width()), static_cast<GLsizei>(image.height()), 0, GetGlFormat(image.format()),
+    // glTexImage2D(texSampler.type(), 0, texSampler.format(),
+    // static_cast<GLsizei>(image.width()), static_cast<GLsizei>(image.height()), 0,
+    // GetGlFormat(image.format()),
     //              GetGlFormatType(image.format()), image.data().data());
     //
     // if (texSampler.properties().useMipmapping) {

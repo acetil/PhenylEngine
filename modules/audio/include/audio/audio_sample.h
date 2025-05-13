@@ -3,31 +3,33 @@
 #include <cstddef>
 
 namespace phenyl::audio {
-    class AudioSystem;
-    class AudioSample {
-    public:
-        AudioSample () = default;
+class AudioSystem;
 
-        AudioSample (const AudioSample&) = delete;
-        AudioSample (AudioSample&& other) noexcept;
+class AudioSample {
+public:
+    AudioSample () = default;
 
-        AudioSample& operator= (const AudioSample&) = delete;
-        AudioSample& operator= (AudioSample&& other) noexcept;
+    AudioSample (const AudioSample&) = delete;
+    AudioSample (AudioSample&& other) noexcept;
 
-        explicit operator bool () const {
-            return m_audioSystem && m_id;
-        }
+    AudioSample& operator= (const AudioSample&) = delete;
+    AudioSample& operator= (AudioSample&& other) noexcept;
 
-        [[nodiscard]] float duration () const;
+    explicit operator bool () const {
+        return m_audioSystem && m_id;
+    }
 
-        ~AudioSample();
+    [[nodiscard]] float duration () const;
 
-    private:
-        AudioSystem* m_audioSystem{nullptr};
-        std::size_t m_id{0};
+    ~AudioSample ();
 
-        friend AudioSystem;
-        friend class AudioSource;
-        AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : m_audioSystem{audioSystem}, m_id{sampleId} {}
-    };
-}
+private:
+    AudioSystem* m_audioSystem{nullptr};
+    std::size_t m_id{0};
+
+    friend AudioSystem;
+    friend class AudioSource;
+
+    AudioSample (AudioSystem* audioSystem, std::size_t sampleId) : m_audioSystem{audioSystem}, m_id{sampleId} {}
+};
+} // namespace phenyl::audio

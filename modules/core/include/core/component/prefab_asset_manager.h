@@ -1,31 +1,33 @@
 #pragma once
 
-#include "util/map.h"
-
 #include "core/assets/asset_manager.h"
 #include "core/prefab.h"
 #include "forward.h"
+#include "util/map.h"
 
 namespace phenyl::core {
-    class EntityComponentSerializer;
+class EntityComponentSerializer;
 
-    class PrefabAssetManager : public core::AssetManager<Prefab> {
-    public:
-        explicit PrefabAssetManager (World& world, EntityComponentSerializer& serializer) : m_serializer{serializer}, m_world{world} {}
-        ~PrefabAssetManager() override;
+class PrefabAssetManager : public core::AssetManager<Prefab> {
+public:
+    explicit PrefabAssetManager (World& world, EntityComponentSerializer& serializer) :
+        m_serializer{serializer},
+        m_world{world} {}
 
-        Prefab* load (std::ifstream& data, std::size_t id) override;
-        Prefab* load (phenyl::core::Prefab&& obj, std::size_t id) override;
+    ~PrefabAssetManager () override;
 
-        void queueUnload(std::size_t id) override;
-        [[nodiscard]] const char* getFileType () const override;
+    Prefab* load (std::ifstream& data, std::size_t id) override;
+    Prefab* load (phenyl::core::Prefab&& obj, std::size_t id) override;
 
-        void selfRegister ();
-        void clear ();
+    void queueUnload (std::size_t id) override;
+    [[nodiscard]] const char* getFileType () const override;
 
-    private:
-        util::Map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
-        EntityComponentSerializer& m_serializer;
-        World& m_world;
-    };
-}
+    void selfRegister ();
+    void clear ();
+
+private:
+    util::Map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
+    EntityComponentSerializer& m_serializer;
+    World& m_world;
+};
+} // namespace phenyl::core

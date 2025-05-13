@@ -1,79 +1,82 @@
 #pragma once
 
+#include "logging/logging.h"
+#include "texture.h"
+
 #include <memory>
 
-#include "texture.h"
-#include "logging/logging.h"
-
 namespace phenyl::graphics {
-    // enum class DepthStencilFormat {
-    //
-    // };
+// enum class DepthStencilFormat {
+//
+// };
 
-    struct FrameBufferProperties {
-        std::optional<ImageFormat> format = std::nullopt;
-        std::optional<ImageFormat> depthFormat = std::nullopt;
+struct FrameBufferProperties {
+    std::optional<ImageFormat> format = std::nullopt;
+    std::optional<ImageFormat> depthFormat = std::nullopt;
 
-        // TODO: move to per pipeline
-        TextureWrapping wrapping = TextureWrapping::REPEAT;
-        TextureBorderColor borderColor = TextureBorderColor::TRANSPARENT;
-        float depthBorder = 1.0f;
-    };
+    // TODO: move to per pipeline
+    TextureWrapping wrapping = TextureWrapping::REPEAT;
+    TextureBorderColor borderColor = TextureBorderColor::TRANSPARENT;
+    float depthBorder = 1.0f;
+};
 
-    class IFrameBuffer {
-    public:
-        virtual ~IFrameBuffer () = default;
+class IFrameBuffer {
+public:
+    virtual ~IFrameBuffer () = default;
 
-        virtual void clear (glm::vec4 clearColor) = 0;
-        virtual ISampler* getSampler () noexcept = 0;
-        virtual ISampler* getDepthSampler () noexcept = 0;
-        virtual glm::ivec2 getDimensions () const noexcept = 0;
-    };
+    virtual void clear (glm::vec4 clearColor) = 0;
+    virtual ISampler* getSampler () noexcept = 0;
+    virtual ISampler* getDepthSampler () noexcept = 0;
+    virtual glm::ivec2 getDimensions () const noexcept = 0;
+};
 
-    class FrameBuffer {
-    public:
-        FrameBuffer () : m_framebuffer{nullptr} {}
-        explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : m_framebuffer{std::move(fb)} {}
+class FrameBuffer {
+public:
+    FrameBuffer () : m_framebuffer{nullptr} {}
 
-        IFrameBuffer& getUnderlying () noexcept {
-            PHENYL_DASSERT(m_framebuffer);
-            return *m_framebuffer;
-        }
+    explicit FrameBuffer (std::unique_ptr<IFrameBuffer> fb) : m_framebuffer{std::move(fb)} {}
 
-        const IFrameBuffer& getUnderlying () const noexcept {
-            PHENYL_DASSERT(m_framebuffer);
-            return *m_framebuffer;
-        }
+    IFrameBuffer& getUnderlying () noexcept {
+        PHENYL_DASSERT(m_framebuffer);
+        return *m_framebuffer;
+    }
 
-        ISampler& sampler () const noexcept {
-            PHENYL_DASSERT_MSG(m_framebuffer->getSampler(), "Attempted to get sampler from framebuffer without color attachment!");
-            return *m_framebuffer->getSampler();
-        }
+    const IFrameBuffer& getUnderlying () const noexcept {
+        PHENYL_DASSERT(m_framebuffer);
+        return *m_framebuffer;
+    }
 
-        ISampler& depthSampler () const noexcept {
-            PHENYL_DASSERT_MSG(m_framebuffer->getDepthSampler(), "Attempted to get depth sampler from framebuffer without depth attachment!");
-            return *m_framebuffer->getDepthSampler();
-        }
+    ISampler& sampler () const noexcept {
+        PHENYL_DASSERT_MSG(m_framebuffer->getSampler(),
+            "Attempted to get sampler from framebuffer without color attachment!");
+        return *m_framebuffer->getSampler();
+    }
 
-        glm::ivec2 dimensions () const noexcept {
-            PHENYL_DASSERT(m_framebuffer);
-            return m_framebuffer->getDimensions();
-        }
+    ISampler& depthSampler () const noexcept {
+        PHENYL_DASSERT_MSG(m_framebuffer->getDepthSampler(),
+            "Attempted to get depth sampler from framebuffer without depth attachment!");
+        return *m_framebuffer->getDepthSampler();
+    }
 
-        std::size_t width () const noexcept {
-            return dimensions().x;
-        }
+    glm::ivec2 dimensions () const noexcept {
+        PHENYL_DASSERT(m_framebuffer);
+        return m_framebuffer->getDimensions();
+    }
 
-        std::size_t height () const noexcept {
-            return dimensions().y;
-        }
+    std::size_t width () const noexcept {
+        return dimensions().x;
+    }
 
-        void clear (glm::vec4 clearColor = {0.0f, 0.0f, 0.0f, 1.0f}) {
-            PHENYL_DASSERT(m_framebuffer);
-            m_framebuffer->clear(clearColor);
-        }
+    std::size_t height () const noexcept {
+        return dimensions().y;
+    }
 
-    private:
-        std::unique_ptr<IFrameBuffer> m_framebuffer;
-    };
-}
+    void clear (glm::vec4 clearColor = {0.0f, 0.0f, 0.0f, 1.0f}) {
+        PHENYL_DASSERT(m_framebuffer);
+        m_framebuffer->clear(clearColor);
+    }
+
+private:
+    std::unique_ptr<IFrameBuffer> m_framebuffer;
+};
+} // namespace phenyl::graphics

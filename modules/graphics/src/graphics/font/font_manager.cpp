@@ -1,20 +1,26 @@
-#include <iostream>
-
-#include "core/assets/assets.h"
-#include "graphics/font/harfbuzz_headers.h"
 #include "graphics/font/font_manager.h"
 
+#include "core/assets/assets.h"
 #include "graphics/detail/loggers.h"
+#include "graphics/font/harfbuzz_headers.h"
+
+#include <iostream>
 
 using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"FONT_MANAGER", detail::GRAPHICS_LOGGER};
 
-FontManager::FontManager (const Viewport& viewport, GlyphAtlas& glyphAtlas) : m_viewport{viewport},  m_glyphAtlas{glyphAtlas} {
+FontManager::FontManager (const Viewport& viewport, GlyphAtlas& glyphAtlas) :
+    m_viewport{viewport},
+    m_glyphAtlas{glyphAtlas} {
     FT_Init_FreeType(&m_library);
 }
 
-FontManager::FontManager (FontManager&& other) noexcept : m_viewport{other.m_viewport}, m_library{other.m_library}, m_glyphAtlas{other.m_glyphAtlas}, m_fonts{std::move(other.m_fonts)} {
+FontManager::FontManager (FontManager&& other) noexcept :
+    m_viewport{other.m_viewport},
+    m_library{other.m_library},
+    m_glyphAtlas{other.m_glyphAtlas},
+    m_fonts{std::move(other.m_fonts)} {
     other.m_library = nullptr;
 }
 
@@ -51,13 +57,14 @@ Font* FontManager::load (std::ifstream& data, std::size_t id) {
 
     FT_Face face;
     auto error = FT_New_Memory_Face(m_library, reinterpret_cast<const FT_Byte*>(fontData.get()),
-                                    static_cast<FT_Long>(dataSize), 0, &face);
+        static_cast<FT_Long>(dataSize), 0, &face);
     if (error) {
         PHENYL_LOGE(LOGGER, "FreeType error on FT_New_Memory_Face ({}): {}", error, FT_Error_String(error));
         return nullptr;
     }
 
-    auto font = std::make_unique<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++, m_viewport.getContentScale() * glm::vec2{96, 96});
+    auto font = std::make_unique<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
+        m_viewport.getContentScale() * glm::vec2{96, 96});
     auto* ptr = font.get();
     m_fonts.emplace(id, std::move(font));
 

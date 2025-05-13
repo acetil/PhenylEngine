@@ -1,24 +1,21 @@
-#include "vk_renderer.h"
-
 #include "vk_uniform_buffer.h"
 
+#include "vk_renderer.h"
 
 using namespace phenyl::vulkan;
 
-VulkanUniformBuffer::VulkanUniformBuffer (VulkanResources& resources) : m_resources{resources}, m_buffer{}, m_bufferInfo{} {
-
-}
+VulkanUniformBuffer::VulkanUniformBuffer (VulkanResources& resources) :
+    m_resources{resources},
+    m_buffer{},
+    m_bufferInfo{} {}
 
 std::span<std::byte> VulkanUniformBuffer::allocate (std::size_t size) {
     m_data = std::make_unique<std::byte[]>(size);
     this->m_size = size;
     m_buffer = VulkanBuffer{m_resources, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, size};
 
-    m_bufferInfo = VkDescriptorBufferInfo{
-        .buffer = m_buffer.get(),
-        .offset = 0,
-        .range = static_cast<VkDeviceSize>(size)
-    };
+    m_bufferInfo =
+        VkDescriptorBufferInfo{.buffer = m_buffer.get(), .offset = 0, .range = static_cast<VkDeviceSize>(size)};
 
     return {m_data.get(), size};
 }
@@ -45,9 +42,7 @@ VkBuffer VulkanUniformBuffer::getBuffer () const {
 
 VkDescriptorBufferInfo VulkanUniformBuffer::getBufferInfo (std::size_t offset, std::size_t size) const noexcept {
     PHENYL_ASSERT_MSG(offset + size <= this->m_size, "Attempted to bind uniform buffer out of bounds!");
-    return VkDescriptorBufferInfo{
-        .buffer = m_buffer.get(),
-        .offset = static_cast<VkDeviceSize>(offset),
-        .range = static_cast<VkDeviceSize>(size)
-    };
+    return VkDescriptorBufferInfo{.buffer = m_buffer.get(),
+      .offset = static_cast<VkDeviceSize>(offset),
+      .range = static_cast<VkDeviceSize>(size)};
 }

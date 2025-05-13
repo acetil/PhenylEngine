@@ -4,5 +4,5 @@
 #include "graphics_properties.h"
 
 namespace phenyl::graphics {
-    std::unique_ptr<Renderer> MakeGLRenderer (const GraphicsProperties& properties);
+std::unique_ptr<Renderer> MakeGLRenderer (const GraphicsProperties& properties);
 }

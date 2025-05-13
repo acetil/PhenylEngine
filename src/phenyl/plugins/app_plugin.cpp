@@ -1,11 +1,10 @@
 #include "app_plugin.h"
+
 #include "phenyl/application.h"
 
 using namespace phenyl::engine;
 
-AppPlugin::AppPlugin (std::unique_ptr<ApplicationBase> app) : m_app{std::move(app)} {
-
-}
+AppPlugin::AppPlugin (std::unique_ptr<ApplicationBase> app) : m_app{std::move(app)} {}
 
 std::string_view AppPlugin::getName () const noexcept {
     return "AppPlugin";
@@ -21,5 +20,3 @@ void AppPlugin::init (core::PhenylRuntime& runtime) {
 void AppPlugin::shutdown (phenyl::core::PhenylRuntime& runtime) {
     m_app->shutdown();
 }
-
-

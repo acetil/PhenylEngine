@@ -1,13 +1,18 @@
 #include "core/component/archetype.h"
+
 #include "core/world.h"
 
 using namespace phenyl::core;
 
-Archetype::Archetype(detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) : m_manager{manager}, m_key{components | std::ranges::views::keys}, m_components{std::move(components)} {}
+Archetype::Archetype (detail::IArchetypeManager& manager,
+    std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) :
+    m_manager{manager},
+    m_key{components | std::ranges::views::keys},
+    m_components{std::move(components)} {}
 
 Archetype::Archetype (detail::IArchetypeManager& manager) : m_manager{manager} {}
 
-std::size_t Archetype::addEntity(EntityId id) {
+std::size_t Archetype::addEntity (EntityId id) {
     auto pos = m_entityIds.size();
     m_entityIds.emplace_back(id);
 
@@ -29,7 +34,7 @@ void Archetype::remove (std::size_t pos) {
     m_entityIds.pop_back();
 }
 
-void Archetype::clear() {
+void Archetype::clear () {
     for (auto& [_, vec] : m_components) {
         vec->clear();
     }
@@ -67,7 +72,7 @@ std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
         }
     }
 
-   // manager.updateEntityEntry(entityIds.back(), this, newPos);
+    // manager.updateEntityEntry(entityIds.back(), this, newPos);
     return newPos;
 }
 

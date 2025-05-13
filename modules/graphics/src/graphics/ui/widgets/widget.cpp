@@ -6,15 +6,19 @@
 using namespace phenyl::graphics;
 
 Widget::Widget (const Modifier& modifier) : m_modifier{modifier} {}
+
 Widget::~Widget () = default;
 
 Widget* Widget::pick (glm::vec2 pointer) noexcept {
-    return pointer.x >= 0.0f && pointer.x < dimensions().x && pointer.y >= 0.0f && pointer.y < dimensions().y ? this : nullptr;
+    return pointer.x >= 0.0f && pointer.x < dimensions().x && pointer.y >= 0.0f && pointer.y < dimensions().y ? this :
+                                                                                                                nullptr;
 }
 
 void Widget::measure (const WidgetConstraints& constraints) {
-    float maxWidth = modifier().maxWidth ? std::min(*modifier().maxWidth, constraints.maxSize.x) : constraints.maxSize.x;
-    float maxHeight = modifier().maxHeight ? std::min(*modifier().maxHeight, constraints.maxSize.y) : constraints.maxSize.y;
+    float maxWidth =
+        modifier().maxWidth ? std::min(*modifier().maxWidth, constraints.maxSize.x) : constraints.maxSize.x;
+    float maxHeight =
+        modifier().maxHeight ? std::min(*modifier().maxHeight, constraints.maxSize.y) : constraints.maxSize.y;
     setDimensions(glm::vec2{maxWidth, maxHeight});
 }
 
@@ -60,7 +64,6 @@ void Widget::pointerLeave () {
 void Widget::raise (const UIEvent& event) {
     bubbleUp(event);
 }
-
 
 bool Widget::bubbleUp (const UIEvent& event) {
     if (handle(event)) {

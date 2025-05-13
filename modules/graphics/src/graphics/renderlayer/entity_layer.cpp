@@ -1,12 +1,13 @@
 #include "entity_layer.h"
+
 #include "core/assets/assets.h"
 #include "core/components/2d/global_transform.h"
+#include "core/runtime.h"
 #include "graphics/backend/renderer.h"
 #include "graphics/components/2d/sprite.h"
-#include "core/runtime.h"
 
 #define MAX_ENTITIES 512
-#define BUFFER_SIZE (MAX_ENTITIES * 2 * 6)
+#define BUFFER_SIZE  (MAX_ENTITIES * 2 * 6)
 
 using namespace phenyl::graphics;
 
@@ -20,7 +21,8 @@ struct EntityRenderData2D : public phenyl::core::IResource {
     }
 };
 
-static void PushEntitySystem (const phenyl::core::Resources<EntityRenderData2D>& resources, const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
+static void PushEntitySystem (const phenyl::core::Resources<EntityRenderData2D>& resources,
+    const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
     auto& [data] = resources;
     data.layer.pushEntity(transform, sprite);
 }
@@ -40,13 +42,13 @@ void EntityRenderLayer::init (Renderer& renderer) {
     BufferBinding vertexBinding;
     auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/sprite");
     m_pipeline = renderer.buildPipeline()
-           .withShader(shader)
-           .withBuffer<Vertex>(vertexBinding)
-           .withAttrib<glm::vec2>(0, vertexBinding, offsetof(Vertex, pos))
-           .withAttrib<glm::vec2>(1, vertexBinding, offsetof(Vertex, uv))
-           .withUniform<Uniform>(shader->uniformLocation("Camera").value(), m_uniformBinding)
-           .withSampler2D(shader->samplerLocation("textureSampler").value(), m_samplerBinding)
-           .build();
+                     .withShader(shader)
+                     .withBuffer<Vertex>(vertexBinding)
+                     .withAttrib<glm::vec2>(0, vertexBinding, offsetof(Vertex, pos))
+                     .withAttrib<glm::vec2>(1, vertexBinding, offsetof(Vertex, uv))
+                     .withUniform<Uniform>(shader->uniformLocation("Camera").value(), m_uniformBinding)
+                     .withSampler2D(shader->samplerLocation("textureSampler").value(), m_samplerBinding)
+                     .build();
 
     m_vertexBuffer = renderer.makeBuffer<Vertex>(BUFFER_SIZE, BufferStorageHint::DYNAMIC);
     m_indices = renderer.makeBuffer<std::uint16_t>(BUFFER_SIZE, BufferStorageHint::DYNAMIC, true);
@@ -75,22 +77,13 @@ void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, co
         return;
     }
 
-    auto startIndex = m_vertexBuffer.emplace(Vertex{
-        .pos = transform.transform2D.apply({-1.0f, 1.0f}),
-        .uv = sprite.uvStart
-    });
-    m_vertexBuffer.emplace(Vertex{
-        .pos = transform.transform2D.apply({1.0f, 1.0f}),
-        .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}
-    });
-    m_vertexBuffer.emplace(Vertex{
-        .pos = transform.transform2D.apply({1.0f, -1.0f}),
-        .uv = sprite.uvEnd
-    });
-    m_vertexBuffer.emplace(Vertex{
-        .pos = transform.transform2D.apply({-1.0f, -1.0f}),
-        .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}
-    });
+    auto startIndex =
+        m_vertexBuffer.emplace(Vertex{.pos = transform.transform2D.apply({-1.0f, 1.0f}), .uv = sprite.uvStart});
+    m_vertexBuffer.emplace(
+        Vertex{.pos = transform.transform2D.apply({1.0f, 1.0f}), .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}});
+    m_vertexBuffer.emplace(Vertex{.pos = transform.transform2D.apply({1.0f, -1.0f}), .uv = sprite.uvEnd});
+    m_vertexBuffer.emplace(
+        Vertex{.pos = transform.transform2D.apply({-1.0f, -1.0f}), .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}});
 
     m_samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
 }
@@ -101,11 +94,7 @@ void EntityRenderLayer::bufferEntities (const Camera2D& camera) {
     const ISampler* currSampler = nullptr;
     for (const auto& [sampler, startIndex] : m_samplerStartIndices) {
         if (sampler != currSampler) {
-            m_samplerRenders.emplace_back(SamplerRender{
-                .indexOffset = offset,
-                .size = 0,
-                .sampler = sampler
-            });
+            m_samplerRenders.emplace_back(SamplerRender{.indexOffset = offset, .size = 0, .sampler = sampler});
             currSampler = sampler;
         }
 
@@ -128,10 +117,10 @@ void EntityRenderLayer::bufferEntities (const Camera2D& camera) {
     m_uniformBuffer.upload();
 }
 
-
 // void EntityRenderLayer::bufferData (phenyl::core::World& world, const Camera2D& camera) {
 //
-//     world.query<phenyl::core::GlobalTransform2D, Sprite2D>().each([&] (const phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
+//     world.query<phenyl::core::GlobalTransform2D, Sprite2D>().each([&] (const
+//     phenyl::core::GlobalTransform2D& transform, const Sprite2D& sprite) {
 //         if (!sprite.texture) {
 //             return;
 //         }

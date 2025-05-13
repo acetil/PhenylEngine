@@ -3,5 +3,5 @@
 #include <graphics/renderer.h>
 
 namespace phenyl {
-    using Renderer = graphics::Renderer;
+using Renderer = graphics::Renderer;
 }

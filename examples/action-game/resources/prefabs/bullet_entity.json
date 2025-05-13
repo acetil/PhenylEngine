@@ -1,41 +1,35 @@
 {
-  "components" : {
-    "Bullet": {
-      "particle_prefab" : "resources/prefabs/bullet_particle_entity"
-    },
-    "GlobalTransform2D": {
-      "transform": {
-        "position": [0.0, 0.0],
-        "scale": [0.03, 0.03],
-        "rotation": 0.0
-      }
-    },
-    "RigidBody2D": {
-      "momentum": [
-        0.0,
-        0.0
-      ],
-      "angular_momentum": 0,
-      "inertial_moment": 0,
-      "drag": 0,
-      "mass": 1,
-      "angular_drag": 0,
-      "gravity": [
-        0.0,
-        0.0
-      ]
-    },
+    "components" : {
+        "Bullet" : {
+            "particle_prefab" : "resources/prefabs/bullet_particle_entity"
+        },
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.0, 0.0],
+                "scale" : [0.03, 0.03],
+                "rotation" : 0.0
+            }
+        },
+        "RigidBody2D" : {
+            "momentum" : [0.0, 0.0],
+            "angular_momentum" : 0,
+            "inertial_moment" : 0,
+            "drag" : 0,
+            "mass" : 1,
+            "angular_drag" : 0,
+            "gravity" : [0.0, 0.0]
+        },
 
-    "BoxCollider2D": {
-      "Collider2D": {
-        "layers": 4,
-        "mask": 2,
-        "elasticity": 1.0
-      },
-      "scale" : [0.03, 0.03]
-    },
-    "Sprite2D": {
-      "texture" : "resources/images/test/bullet2.png"
+        "BoxCollider2D" : {
+            "Collider2D" : {
+                "layers" : 4,
+                "mask" : 2,
+                "elasticity" : 1.0
+            },
+            "scale" : [0.03, 0.03]
+        },
+        "Sprite2D" : {
+            "texture" : "resources/images/test/bullet2.png"
+        }
     }
-  }
 }

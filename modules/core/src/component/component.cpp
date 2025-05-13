@@ -1,20 +1,23 @@
-#include "core/world.h"
-#include "core/signals/children_update.h"
 #include "core/detail/loggers.h"
+#include "core/signals/children_update.h"
+#include "core/world.h"
 
 using namespace phenyl::core;
 
 static phenyl::Logger LOGGER{"MANAGER", phenyl::core::detail::COMPONENT_LOGGER};
 
-World::World (std::size_t capacity) : m_idList{capacity}, m_relationships{capacity}, m_prefabManager{std::make_shared<PrefabManager>(*this)} {
+World::World (std::size_t capacity) :
+    m_idList{capacity},
+    m_relationships{capacity},
+    m_prefabManager{std::make_shared<PrefabManager>(*this)} {
     auto empty = std::make_unique<EmptyArchetype>(static_cast<detail::IArchetypeManager&>(*this));
     m_emptyArchetype = empty.get();
     m_archetypes.emplace_back(std::move(empty));
 }
 
-World::~World() = default;
+World::~World () = default;
 
-Entity World::create (EntityId parent)  {
+Entity World::create (EntityId parent) {
     auto id = m_idList.newId();
 
     if (id.pos() == m_entityEntries.size()) {
@@ -30,7 +33,7 @@ Entity World::create (EntityId parent)  {
     return Entity{id, this};
 }
 
-void World::remove (EntityId id)  {
+void World::remove (EntityId id) {
     if (!m_idList.check(id)) {
         PHENYL_LOGE(LOGGER, "Attempted to delete invalid entity {}!", id.value());
         return;
@@ -43,7 +46,7 @@ void World::remove (EntityId id)  {
     }
 }
 
-void World::reparent (EntityId id, EntityId parent)  {
+void World::reparent (EntityId id, EntityId parent) {
     auto oldParent = m_relationships.parent(id);
     if (oldParent) {
         entity(oldParent).raise(OnRemoveChild{entity(id)});
@@ -57,7 +60,7 @@ void World::reparent (EntityId id, EntityId parent)  {
     }
 }
 
-void World::clear() {
+void World::clear () {
     PHENYL_ASSERT(!m_deferCount);
     PHENYL_ASSERT(!m_removeDeferCount);
 
@@ -153,11 +156,11 @@ void World::deferSignalsEnd () {
     deferRemoveEnd();
 }
 
-void World::deferRemove() {
+void World::deferRemove () {
     m_removeDeferCount++;
 }
 
-void World::deferRemoveEnd() {
+void World::deferRemoveEnd () {
     if (--m_removeDeferCount) {
         return;
     }
@@ -183,7 +186,7 @@ World::iterator World::end () {
     return iterator{this, m_idList.cend()};
 }
 
-void World::completeCreation(EntityId id, EntityId parent) {
+void World::completeCreation (EntityId id, EntityId parent) {
     m_relationships.add(id, parent);
 
     // Entities start out in empty archetype
@@ -224,9 +227,7 @@ void World::removeInt (EntityId id, bool updateParent) {
 }
 
 Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
-    auto it = std::ranges::find_if(m_archetypes, [&] (const auto& arch) {
-        return arch->getKey() == key;
-    });
+    auto it = std::ranges::find_if(m_archetypes, [&] (const auto& arch) { return arch->getKey() == key; });
 
     if (it != m_archetypes.end()) {
         return it->get();
@@ -285,7 +286,7 @@ void World::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
     comp->deferComp(id, ptr);
 }
 
-void World::deferErase(EntityId id, std::size_t compType) {
+void World::deferErase (EntityId id, std::size_t compType) {
     PHENYL_DASSERT(m_deferCount);
     PHENYL_DASSERT(m_components.contains(compType));
     auto& comp = m_components[compType];
@@ -331,9 +332,7 @@ std::shared_ptr<QueryArchetypes> World::makeQueryArchetypes (detail::ArchetypeKe
 }
 
 void World::cleanupQueryArchetypes () {
-    std::erase_if(m_queryArchetypes, [] (const auto& x) {
-        return x.expired();
-    });
+    std::erase_if(m_queryArchetypes, [] (const auto& x) { return x.expired(); });
 }
 
 World::EntityIterator::value_type World::EntityIterator::operator* () const {
@@ -345,7 +344,6 @@ World::EntityIterator& World::EntityIterator::operator++ () {
     ++m_it;
     return *this;
 }
-
 
 World::EntityIterator World::EntityIterator::operator++ (int) {
     auto copy = *this;

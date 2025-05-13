@@ -1,31 +1,26 @@
 {
-  "components" :
-  {
-    "GlobalTransform2D" :
-    {
-      "transform": {
-        "position": [0.0, 0.0],
-        "scale": [1.0, 1.0],
-        "rotation": 0.0
-      }
-    },
-    "ParticleEmitter2D" :
-    {
-      "system" : "resources/particles/tile_break",
-      "direction" : [0.0, 1.0],
-      "duration" : 1.0,
-      "explosiveness" : 1.0,
-      "num_particles" : 12,
-      "one_shot" : true,
-      "enabled" : true
-    },
-    "TimedLifetime" :
-    {
-      "lifetime" : 0.5
-    },
-    "AudioPlayer" :
-    {
-      "gain" : 0.5
+    "components" : {
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.0, 0.0],
+                "scale" : [1.0, 1.0],
+                "rotation" : 0.0
+            }
+        },
+        "ParticleEmitter2D" : {
+            "system" : "resources/particles/tile_break",
+            "direction" : [0.0, 1.0],
+            "duration" : 1.0,
+            "explosiveness" : 1.0,
+            "num_particles" : 12,
+            "one_shot" : true,
+            "enabled" : true
+        },
+        "TimedLifetime" : {
+            "lifetime" : 0.5
+        },
+        "AudioPlayer" : {
+            "gain" : 0.5
+        }
     }
-  }
 }

@@ -1,5 +1,5 @@
 #pragma once
 
 namespace phenyl::graphics {
-    class UIManager;
+class UIManager;
 }

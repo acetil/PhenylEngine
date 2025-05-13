@@ -1,6 +1,6 @@
-#include "core/detail/loggers.h"
 #include "core/prefab.h"
 
+#include "core/detail/loggers.h"
 #include "core/world.h"
 
 using namespace phenyl::core;
@@ -8,7 +8,10 @@ using namespace phenyl::core;
 static phenyl::Logger LOGGER{"PREFAB", phenyl::core::detail::COMPONENT_LOGGER};
 
 Prefab::Prefab () : m_id{0} {}
-Prefab::Prefab (std::size_t prefabId, std::weak_ptr<PrefabManager> manager) : m_id{prefabId}, m_manager{std::move(manager)} {
+
+Prefab::Prefab (std::size_t prefabId, std::weak_ptr<PrefabManager> manager) :
+    m_id{prefabId},
+    m_manager{std::move(manager)} {
     PHENYL_DASSERT(this->m_manager.lock());
 }
 
@@ -85,11 +88,12 @@ Prefab PrefabManager::makePrefab (detail::PrefabFactories factories, std::vector
     }
 
     auto id = m_nextPrefabId++;
-    m_entries.emplace(id, PrefabEntry{
-        .factories = std::move(factories),
-        .childEntries = std::move(children),
-        .refCount = 1,
-    });
+    m_entries.emplace(id,
+        PrefabEntry{
+          .factories = std::move(factories),
+          .childEntries = std::move(children),
+          .refCount = 1,
+        });
 
     return Prefab{id, weak_from_this()};
 }

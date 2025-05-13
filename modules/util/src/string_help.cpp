@@ -1,9 +1,9 @@
-#include <cctype>
-#include <sstream>
-
 #include "util/string_help.h"
 
 #include "logging/logging.h"
+
+#include <cctype>
+#include <sstream>
 
 using namespace phenyl;
 
@@ -81,10 +81,12 @@ util::detail::StringSplitter util::StringSplit (std::string_view s, std::string_
     return detail::StringSplitter{s, delim, maxSplits};
 }
 
-
 static_assert(std::ranges::range<util::detail::StringSplitter>);
 
-util::detail::StringSplitter::StringSplitter (std::string_view s, std::string_view delim, std::size_t maxSplits) : m_str{s}, m_delim{delim}, m_maxSplits{maxSplits} {}
+util::detail::StringSplitter::StringSplitter (std::string_view s, std::string_view delim, std::size_t maxSplits) :
+    m_str{s},
+    m_delim{delim},
+    m_maxSplits{maxSplits} {}
 
 util::detail::StringSplitter::iterator util::detail::StringSplitter::begin () const {
     return Iterator{this};

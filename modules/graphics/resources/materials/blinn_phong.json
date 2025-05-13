@@ -1,25 +1,25 @@
 {
-  "shader" : "phenyl/shaders/blinn_phong",
-  "uniforms" : [
-    {
-      "name" : "Material_color",
-      "type" : "vec3f"
-    },
-    {
-      "name" : "Material_specular_color",
-      "type" : "vec3f"
-    },
-    {
-      "name" : "Material_ambient",
-      "type" : "float"
-    },
-    {
-      "name" : "Material_specular",
-      "type" : "float"
-    },
-    {
-      "name" : "Material_alpha",
-      "type" : "float"
-    }
-  ]
+    "shader" : "phenyl/shaders/blinn_phong",
+    "uniforms" : [
+        {
+            "name" : "Material_color",
+            "type" : "vec3f"
+        },
+        {
+            "name" : "Material_specular_color",
+            "type" : "vec3f"
+        },
+        {
+            "name" : "Material_ambient",
+            "type" : "float"
+        },
+        {
+            "name" : "Material_specular",
+            "type" : "float"
+        },
+        {
+            "name" : "Material_alpha",
+            "type" : "float"
+        }
+    ]
 }

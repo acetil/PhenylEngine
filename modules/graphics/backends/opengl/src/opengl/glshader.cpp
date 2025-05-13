@@ -1,10 +1,9 @@
-#include <fstream>
-
-#include <nlohmann/json.hpp>
+#include "glshader.h"
 
 #include "core/assets/assets.h"
 
-#include "glshader.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace phenyl::graphics;
 using namespace phenyl::opengl;
@@ -17,7 +16,8 @@ static std::optional<GLuint> LinkShader (const std::unordered_map<ShaderSourceTy
 static std::optional<std::string> ReadFromPath (const std::string& path);
 
 GlShader::Builder& GlShader::Builder::withSource (ShaderSourceType type, std::string source) {
-    PHENYL_DASSERT_MSG(!m_sources.contains(type), "Attempted to add source to shader of type {} twice!", (unsigned int)type);
+    PHENYL_DASSERT_MSG(!m_sources.contains(type), "Attempted to add source to shader of type {} twice!",
+        (unsigned int) type);
 
     auto shader = LoadShader(GetGlShaderType(type), source);
     if (shader) {
@@ -34,14 +34,16 @@ GlShader::Builder& GlShader::Builder::withAttrib (ShaderDataType type, std::stri
 }
 
 GlShader::Builder& GlShader::Builder::withUniformBlock (std::string uniformName) {
-    PHENYL_DASSERT_MSG(!m_uniformBlocks.contains(uniformName), "Attempted to add uniform \"{}\" to shader twice!", uniformName);
+    PHENYL_DASSERT_MSG(!m_uniformBlocks.contains(uniformName), "Attempted to add uniform \"{}\" to shader twice!",
+        uniformName);
 
     m_uniformBlocks.emplace(std::move(uniformName));
     return *this;
 }
 
 GlShader::Builder& GlShader::Builder::withSampler (std::string samplerName) {
-    PHENYL_DASSERT_MSG(!m_samplers.contains(samplerName), "Attempted to add sampler \"{}\" to shader twice!", samplerName);
+    PHENYL_DASSERT_MSG(!m_samplers.contains(samplerName), "Attempted to add sampler \"{}\" to shader twice!",
+        samplerName);
 
     m_samplers.emplace(samplerName);
     return *this;
@@ -84,7 +86,10 @@ GlShader::GlShader (GLuint programId) : m_program{programId} {
     PHENYL_DASSERT(programId);
 }
 
-GlShader::GlShader (GlShader&& other) noexcept : m_program{other.m_program}, m_uniformBlocks{std::move(other.m_uniformBlocks)}, m_samplers{std::move(other.m_samplers)} {
+GlShader::GlShader (GlShader&& other) noexcept :
+    m_program{other.m_program},
+    m_uniformBlocks{std::move(other.m_uniformBlocks)},
+    m_samplers{std::move(other.m_samplers)} {
     other.m_program = 0;
 }
 
@@ -393,10 +398,10 @@ static std::optional<std::string> ReadFromPath (const std::string& path) {
 
 static GLenum GetGlShaderType (ShaderSourceType type) {
     switch (type) {
-        case ShaderSourceType::FRAGMENT:
-            return GL_FRAGMENT_SHADER;
-        case ShaderSourceType::VERTEX:
-            return GL_VERTEX_SHADER;
+    case ShaderSourceType::FRAGMENT:
+        return GL_FRAGMENT_SHADER;
+    case ShaderSourceType::VERTEX:
+        return GL_VERTEX_SHADER;
     }
 
     PHENYL_ABORT("Invalid shader type: {}", static_cast<unsigned int>(type));

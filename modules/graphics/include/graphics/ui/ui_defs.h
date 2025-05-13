@@ -3,12 +3,12 @@
 #include "graphics/maths_headers.h"
 
 namespace phenyl::graphics::ui {
-    enum class Axis {
-        UP,
-        DOWN,
-        LEFT,
-        RIGHT
-    };
+enum class Axis {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+};
 
-    glm::vec2 getAxisVec (Axis axis);
-}
+glm::vec2 getAxisVec (Axis axis);
+} // namespace phenyl::graphics::ui

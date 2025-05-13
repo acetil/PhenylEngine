@@ -1,123 +1,125 @@
 #pragma once
 
+#include "util/meta.h"
+#include "util/range_utils.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <vector>
 
-#include "util/meta.h"
-#include "util/range_utils.h"
-
 namespace phenyl::core::detail {
-    class ArchetypeKey {
-    public:
-        ArchetypeKey () = default;
-        explicit ArchetypeKey (std::vector<std::size_t> compIds) : m_compIds{std::move(compIds)} {}
+class ArchetypeKey {
+public:
+    ArchetypeKey () = default;
 
-        template <std::forward_iterator It, std::sentinel_for<It> S>
-        explicit ArchetypeKey (It first, S last) : ArchetypeKey{std::vector<std::size_t>{first, last}} {}
-        template <std::ranges::forward_range R>
-        explicit ArchetypeKey (R&& range) : ArchetypeKey{range.begin(), range.end()} {}
+    explicit ArchetypeKey (std::vector<std::size_t> compIds) : m_compIds{std::move(compIds)} {}
 
-        template <typename ...Args>
-        static ArchetypeKey Make () {
-            std::vector<std::size_t> ids{meta::type_index<std::remove_cvref_t<Args>>()...};
-            std::ranges::sort(ids);
+    template<std::forward_iterator It, std::sentinel_for<It> S>
+    explicit ArchetypeKey(It first, S last) : ArchetypeKey{std::vector<std::size_t>{first, last}} {}
 
-            return ArchetypeKey{std::move(ids)};
-        }
+    template<std::ranges::forward_range R>
+    explicit ArchetypeKey(R&& range) : ArchetypeKey{range.begin(), range.end()} {}
 
-        [[nodiscard]] bool has (std::size_t id) const noexcept {
-            return std::ranges::binary_search(m_compIds, id);
-        }
+    template<typename... Args>
+    static ArchetypeKey Make () {
+        std::vector<std::size_t> ids{meta::type_index<std::remove_cvref_t<Args>>()...};
+        std::ranges::sort(ids);
 
-        template <typename T>
-        [[nodiscard]] bool has () const noexcept {
-            return has(meta::type_index<std::remove_cvref_t<T>>());
-        }
+        return ArchetypeKey{std::move(ids)};
+    }
 
-        [[nodiscard]] ArchetypeKey with (std::size_t id) const {
-            std::vector<std::size_t> newIds;
-            newIds.reserve(m_compIds.size() + 1);
-            std::ranges::set_union(m_compIds, std::array{id}, std::back_inserter(newIds));
-            return ArchetypeKey{std::move(newIds)};
-        }
+    [[nodiscard]] bool has (std::size_t id) const noexcept {
+        return std::ranges::binary_search(m_compIds, id);
+    }
 
-        template <std::forward_iterator It, std::sentinel_for<It> S>
-        ArchetypeKey with (It it, S last) {
-            std::vector<std::size_t> newIds;
-            std::set_union(m_compIds.begin(), m_compIds.end(), it, last, std::back_inserter(newIds));
-            return ArchetypeKey{std::move(newIds)};
-        }
+    template<typename T>
+    [[nodiscard]] bool has () const noexcept {
+        return has(meta::type_index<std::remove_cvref_t<T>>());
+    }
 
-        template <std::ranges::forward_range R>
-        ArchetypeKey with (R&& range) {
-            std::vector<std::size_t> newIds;
-            std::ranges::set_union(m_compIds, range, std::back_inserter(newIds));
-            return ArchetypeKey{std::move(newIds)};
-        }
+    [[nodiscard]] ArchetypeKey with (std::size_t id) const {
+        std::vector<std::size_t> newIds;
+        newIds.reserve(m_compIds.size() + 1);
+        std::ranges::set_union(m_compIds, std::array{id}, std::back_inserter(newIds));
+        return ArchetypeKey{std::move(newIds)};
+    }
 
-        template <typename T>
-        [[nodiscard]] ArchetypeKey with () const {
-            return with(meta::type_index<std::remove_cvref_t<T>>());
-        }
+    template<std::forward_iterator It, std::sentinel_for<It> S>
+    ArchetypeKey with (It it, S last) {
+        std::vector<std::size_t> newIds;
+        std::set_union(m_compIds.begin(), m_compIds.end(), it, last, std::back_inserter(newIds));
+        return ArchetypeKey{std::move(newIds)};
+    }
 
-        [[nodiscard]] ArchetypeKey without (std::size_t id) const {
-            std::vector<std::size_t> newIds;
-            newIds.reserve(m_compIds.size() - 1);
-            std::ranges::copy_if(m_compIds, std::back_inserter(newIds), [id] (auto x) { return x != id; });
+    template<std::ranges::forward_range R>
+    ArchetypeKey with (R&& range) {
+        std::vector<std::size_t> newIds;
+        std::ranges::set_union(m_compIds, range, std::back_inserter(newIds));
+        return ArchetypeKey{std::move(newIds)};
+    }
 
-            return ArchetypeKey{std::move(newIds)};
-        }
+    template<typename T>
+    [[nodiscard]] ArchetypeKey with () const {
+        return with(meta::type_index<std::remove_cvref_t<T>>());
+    }
 
-        template <typename T>
-        [[nodiscard]] ArchetypeKey without () const {
-            return without(meta::type_index<std::remove_cvref_t<T>>());
-        }
+    [[nodiscard]] ArchetypeKey without (std::size_t id) const {
+        std::vector<std::size_t> newIds;
+        newIds.reserve(m_compIds.size() - 1);
+        std::ranges::copy_if(m_compIds, std::back_inserter(newIds), [id] (auto x) { return x != id; });
 
-        [[nodiscard]] ArchetypeKey keyUnion (const ArchetypeKey& other) const {
-            std::vector<std::size_t> newIds;
-            std::ranges::set_union(m_compIds, other.m_compIds, std::back_inserter(newIds));
+        return ArchetypeKey{std::move(newIds)};
+    }
 
-            return ArchetypeKey{std::move(newIds)};
-        }
+    template<typename T>
+    [[nodiscard]] ArchetypeKey without () const {
+        return without(meta::type_index<std::remove_cvref_t<T>>());
+    }
 
-        [[nodiscard]] ArchetypeKey keyIntersection (const ArchetypeKey& other) const {
-            std::vector<std::size_t> newIds;
-            std::ranges::set_intersection(m_compIds, other.m_compIds, std::back_inserter(newIds));
+    [[nodiscard]] ArchetypeKey keyUnion (const ArchetypeKey& other) const {
+        std::vector<std::size_t> newIds;
+        std::ranges::set_union(m_compIds, other.m_compIds, std::back_inserter(newIds));
 
-            return ArchetypeKey{std::move(newIds)};
-        }
+        return ArchetypeKey{std::move(newIds)};
+    }
 
-        [[nodiscard]] bool subsetOf (const ArchetypeKey& other) const noexcept {
-            return std::ranges::includes(m_compIds, other.m_compIds);
-        }
+    [[nodiscard]] ArchetypeKey keyIntersection (const ArchetypeKey& other) const {
+        std::vector<std::size_t> newIds;
+        std::ranges::set_intersection(m_compIds, other.m_compIds, std::back_inserter(newIds));
 
-        [[nodiscard]] std::ranges::forward_range auto intersectionView (const ArchetypeKey& other) const noexcept {
-            return util::RangeIntersection{m_compIds, other.m_compIds};
-        }
+        return ArchetypeKey{std::move(newIds)};
+    }
 
-        bool operator== (const ArchetypeKey& other) const {
-            return m_compIds == other.m_compIds;
-        }
+    [[nodiscard]] bool subsetOf (const ArchetypeKey& other) const noexcept {
+        return std::ranges::includes(m_compIds, other.m_compIds);
+    }
 
-        auto begin () const {
-            return m_compIds.begin();
-        }
+    [[nodiscard]] std::ranges::forward_range auto intersectionView (const ArchetypeKey& other) const noexcept {
+        return util::RangeIntersection{m_compIds, other.m_compIds};
+    }
 
-        auto cbegin () const {
-            return m_compIds.cbegin();
-        }
+    bool operator== (const ArchetypeKey& other) const {
+        return m_compIds == other.m_compIds;
+    }
 
-        auto end () const {
-            return m_compIds.end();
-        }
+    auto begin () const {
+        return m_compIds.begin();
+    }
 
-        auto cend () const {
-            return m_compIds.cend();
-        }
+    auto cbegin () const {
+        return m_compIds.cbegin();
+    }
 
-    private:
-        // Sorted vector of component type ids
-        std::vector<std::size_t> m_compIds;
-    };
-}
+    auto end () const {
+        return m_compIds.end();
+    }
+
+    auto cend () const {
+        return m_compIds.cend();
+    }
+
+private:
+    // Sorted vector of component type ids
+    std::vector<std::size_t> m_compIds;
+};
+} // namespace phenyl::core::detail

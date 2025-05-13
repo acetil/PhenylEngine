@@ -1,16 +1,16 @@
+#include "phenyl/engine.h"
+
+#include "core/runtime.h"
+#include "graphics/backend/renderer.h"
+#include "graphics/phenyl_graphics.h"
+#include "logging/logging.h"
+#include "plugins/app_plugin.h"
+#include "util/profiler.h"
+
 #include <chrono>
 #include <exception>
 #include <fstream>
 #include <thread>
-
-#include "graphics/phenyl_graphics.h"
-#include "graphics/backend/renderer.h"
-#include "logging/logging.h"
-#include "plugins/app_plugin.h"
-#include "core/runtime.h"
-#include "util/profiler.h"
-
-#include "phenyl/engine.h"
 
 #define FIXED_FPS 60.0
 
@@ -20,9 +20,12 @@ static Logger LOGGER{"ENGINE", PHENYL_LOGGER};
 
 class engine::Engine {
 public:
-    explicit Engine (const ApplicationProperties& properties) : m_renderer{graphics::MakeVulkanRenderer(properties.m_graphics)}, m_runtime(), m_lastTime{m_renderer->getCurrentTime()} {}
+    explicit Engine (const ApplicationProperties& properties) :
+        m_renderer{graphics::MakeVulkanRenderer(properties.m_graphics)},
+        m_runtime(),
+        m_lastTime{m_renderer->getCurrentTime()} {}
 
-    ~Engine() {
+    ~Engine () {
         PHENYL_LOGI(LOGGER, "Shutting down!");
         m_runtime.shutdown();
         m_renderer->clearLayers();
@@ -41,7 +44,7 @@ public:
     }
 
     void gameloop (ApplicationBase* app) {
-        //double deltaPhysicsFrame = 0.0f;
+        // double deltaPhysicsFrame = 0.0f;
         PHENYL_LOGD(LOGGER, "Starting loop!");
         while (!m_renderer->getViewport().shouldClose()) {
             PHENYL_TRACE(LOGGER, "Frame start");
@@ -49,7 +52,7 @@ public:
 
             m_runtime.runFrameBegin();
 
-            //double deltaTime = graphics->getDeltaTime();
+            // double deltaTime = graphics->getDeltaTime();
             m_fixedTimeSlop += m_deltaTime * app->getFixedTimeScale();
 
             util::startProfile("physics");
@@ -79,6 +82,7 @@ public:
         m_runtime.runVariableTimestep(deltaTime);
         PHENYL_TRACE(LOGGER, "Update end");
     }
+
     void fixedUpdate () {
         PHENYL_TRACE(LOGGER, "Fixed update start");
         m_runtime.runFixedTimestep(1.0 / FIXED_FPS);
@@ -110,7 +114,6 @@ private:
     double m_fixedTimeSlop{0.0};
 };
 
-
 PhenylEngine::PhenylEngine (const logging::LoggingProperties& properties) {
     InitLogging(properties);
 }
@@ -120,7 +123,7 @@ PhenylEngine::~PhenylEngine () {
 }
 
 void PhenylEngine::run (std::unique_ptr<engine::ApplicationBase> app) {
-    //InitLogging(app->getProperties().loggingProperties);
+    // InitLogging(app->getProperties().loggingProperties);
 
     auto* appPtr = app.get();
     m_internal = std::make_unique<engine::Engine>(app->getProperties());

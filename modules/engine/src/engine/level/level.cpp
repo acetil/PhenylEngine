@@ -1,14 +1,12 @@
-#include "core/world.h"
-#include "core/serialization/component_serializer.h"
-
-#include "logging/logging.h"
-#include "core/assets/asset.h"
-#include "core/assets/assets.h"
-
 #include "engine/level/level.h"
 
+#include "core/assets/asset.h"
+#include "core/assets/assets.h"
 #include "core/serialization/backends.h"
+#include "core/serialization/component_serializer.h"
+#include "core/world.h"
 #include "engine/level/level_manager.h"
+#include "logging/logging.h"
 
 using namespace phenyl::game;
 
@@ -23,6 +21,7 @@ private:
     class ChildrenSerializable : public phenyl::core::ISerializable<phenyl::core::Entity> {
     private:
         LevelEntitySerializable& m_serializable;
+
     public:
         ChildrenSerializable (LevelEntitySerializable& serializable) : m_serializable{serializable} {}
 
@@ -50,8 +49,10 @@ private:
             }
         }
     };
+
 public:
-    explicit LevelEntitySerializable (phenyl::core::EntityComponentSerializer& compSerializer) : m_serializer{compSerializer} {}
+    explicit LevelEntitySerializable (phenyl::core::EntityComponentSerializer& compSerializer) :
+        m_serializer{compSerializer} {}
 
     std::string_view name () const noexcept override {
         return "phenyl::Entity";
@@ -62,14 +63,13 @@ public:
         auto& objSerializer = serializer.serializeObj();
 
         objSerializer.serializeMember("components", compSerializable, obj);
-
     }
 
     void deserialize (phenyl::core::IDeserializer& deserializer, phenyl::core::Entity& obj) override {
         deserializer.deserializeStruct(*this, MEMBERS, obj);
     }
 
-    void deserializeStruct(phenyl::core::Entity& obj, phenyl::core::IStructDeserializer& deserializer) override {
+    void deserializeStruct (phenyl::core::Entity& obj, phenyl::core::IStructDeserializer& deserializer) override {
         auto entitySerializable = m_serializer.entity();
         if (!deserializer.next("components", entitySerializable, obj)) {
             throw phenyl::DeserializeException("Failed to deserialize entity components");
@@ -94,8 +94,11 @@ private:
     private:
         phenyl::core::World& m_world;
         LevelEntitySerializable& m_serializable;
+
     public:
-        EntitiesSerializable (phenyl::core::World& world, LevelEntitySerializable& serializable) : m_world{world}, m_serializable{serializable} {}
+        EntitiesSerializable (phenyl::core::World& world, LevelEntitySerializable& serializable) :
+            m_world{world},
+            m_serializable{serializable} {}
 
         std::string_view name () const noexcept override {
             return "phenyl::Level::Entities";
@@ -119,10 +122,14 @@ private:
             }
         }
     };
+
     LevelEntitySerializable m_entitySerializable;
     EntitiesSerializable m_entitiesSerializable;
+
 public:
-    LevelSerializable (phenyl::core::World& world, phenyl::core::EntityComponentSerializer& compSerializer) : m_entitySerializable{compSerializer}, m_entitiesSerializable{world, m_entitySerializable} {}
+    LevelSerializable (phenyl::core::World& world, phenyl::core::EntityComponentSerializer& compSerializer) :
+        m_entitySerializable{compSerializer},
+        m_entitiesSerializable{world, m_entitySerializable} {}
 
     std::string_view name () const noexcept override {
         return "phenyl::Level";
@@ -144,7 +151,10 @@ public:
     }
 };
 
-LevelManager::LevelManager (core::World& world, core::EntityComponentSerializer& serializer) : m_world{world}, m_serializer{serializer} {}
+LevelManager::LevelManager (core::World& world, core::EntityComponentSerializer& serializer) :
+    m_world{world},
+    m_serializer{serializer} {}
+
 LevelManager::~LevelManager () = default;
 
 Level* LevelManager::load (std::ifstream& data, std::size_t id) {
@@ -169,7 +179,8 @@ void LevelManager::selfRegister () {
 
 void LevelManager::queueLoad (core::Asset<Level> level, bool additive) {
     if (!additive) {
-        PHENYL_LOGI_IF((!m_queuedLoads.empty()), LOGGER, "Dropping {} queued loads because of non-additive load", m_queuedLoads.size());
+        PHENYL_LOGI_IF((!m_queuedLoads.empty()), LOGGER, "Dropping {} queued loads because of non-additive load",
+            m_queuedLoads.size());
         m_queuedLoads.clear();
         m_queuedClear = true;
     }

@@ -1,11 +1,12 @@
+#include "phenyl/application.h"
+
 #include <cassert>
 #include <utility>
 
-#include "phenyl/application.h"
-
 using namespace phenyl;
 
-engine::ApplicationBase::ApplicationBase (phenyl::ApplicationProperties properties) : m_properties{std::move(properties)} {}
+engine::ApplicationBase::ApplicationBase (phenyl::ApplicationProperties properties) :
+    m_properties{std::move(properties)} {}
 
 core::PhenylRuntime& engine::ApplicationBase::runtime () {
     PHENYL_DASSERT(m_runtime);

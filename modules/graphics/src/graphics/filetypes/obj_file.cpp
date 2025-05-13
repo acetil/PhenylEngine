@@ -1,8 +1,8 @@
+#include "obj_file.h"
+
+#include "graphics/detail/loggers.h"
 #include "util/map.h"
 #include "util/string_help.h"
-#include "graphics/detail/loggers.h"
-
-#include "obj_file.h"
 
 using namespace phenyl::graphics;
 
@@ -16,7 +16,7 @@ struct ObjFaceVertex {
     bool operator== (const ObjFaceVertex&) const = default;
 };
 
-template <>
+template<>
 struct std::hash<ObjFaceVertex> {
     std::size_t operator() (const ObjFaceVertex& v) const noexcept {
         return phenyl::util::HashAll(v.v, v.vt, v.vn);
@@ -51,7 +51,8 @@ ObjFile::ObjFile (std::istream& file) {
             int i = 0;
             while (i < 4 && it != split.end()) {
                 auto curr = *it;
-                PHENYL_ASSERT_MSG(std::from_chars(curr.begin(), curr.end(), v[i]).ec == std::errc{}, "Failed to parse vertex component {}", curr);
+                PHENYL_ASSERT_MSG(std::from_chars(curr.begin(), curr.end(), v[i]).ec == std::errc{},
+                    "Failed to parse vertex component {}", curr);
 
                 i++;
                 ++it;
@@ -65,7 +66,8 @@ ObjFile::ObjFile (std::istream& file) {
             int i = 0;
             while (i < 2 && it != split.end()) {
                 auto curr = *it;
-                PHENYL_ASSERT_MSG(std::from_chars(curr.begin(), curr.end(), v[i]).ec == std::errc{}, "Failed to parse vertex texture component {}", curr);
+                PHENYL_ASSERT_MSG(std::from_chars(curr.begin(), curr.end(), v[i]).ec == std::errc{},
+                    "Failed to parse vertex texture component {}", curr);
 
                 i++;
                 ++it;
@@ -79,7 +81,8 @@ ObjFile::ObjFile (std::istream& file) {
             int i = 0;
             while (i < 3 && it != split.end()) {
                 auto curr = *it;
-                PHENYL_ASSERT_MSG(std::from_chars(curr.begin(), curr.end(), v[i]).ec == std::errc{}, "Failed to parse vertex normal component {}", curr);
+                PHENYL_ASSERT_MSG(std::from_chars(curr.begin(), curr.end(), v[i]).ec == std::errc{},
+                    "Failed to parse vertex normal component {}", curr);
 
                 i++;
                 ++it;
@@ -89,7 +92,7 @@ ObjFile::ObjFile (std::istream& file) {
             objNorms.emplace_back(v);
         } else if (first == "f") {
             std::vector<ObjFaceVertex> faceVertices;
-            for ( ; it != split.end(); ++it) {
+            for (; it != split.end(); ++it) {
                 ObjFaceVertex f;
                 auto curr = *it;
 
@@ -101,7 +104,8 @@ ObjFile::ObjFile (std::istream& file) {
                     }
 
                     std::size_t index;
-                    PHENYL_ASSERT_MSG(std::from_chars(v.begin(), v.end(), index).ec == std::errc{}, "Failed to parse face index {}", v);
+                    PHENYL_ASSERT_MSG(std::from_chars(v.begin(), v.end(), index).ec == std::errc{},
+                        "Failed to parse face index {}", v);
 
                     if (i == 0) {
                         f.v = index - 1;
@@ -127,10 +131,10 @@ ObjFile::ObjFile (std::istream& file) {
     bool hasNorm = static_cast<bool>(objFaces[0][0].vn);
 
     if (!std::all_of(objFaces.begin(), objFaces.end(), [&] (const std::vector<ObjFaceVertex>& f) {
-        return std::all_of(f.begin(), f.end(), [&] (const ObjFaceVertex& v) {
-            return static_cast<bool>(v.vn) == hasNorm && static_cast<bool>(v.vt) == hasTex;
-        });
-    })) {
+            return std::all_of(f.begin(), f.end(), [&] (const ObjFaceVertex& v) {
+                return static_cast<bool>(v.vn) == hasNorm && static_cast<bool>(v.vt) == hasTex;
+            });
+        })) {
         PHENYL_ABORT("Obj faces have inconsistent vertex and texture norms!");
     }
 

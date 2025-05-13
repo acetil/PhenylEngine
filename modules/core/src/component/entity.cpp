@@ -1,6 +1,7 @@
 #include "core/entity.h"
-#include "core/world.h"
+
 #include "core/detail/loggers.h"
+#include "core/world.h"
 
 using namespace phenyl::core;
 
@@ -21,27 +22,27 @@ bool Entity::shouldDefer () {
     return m_world->m_deferCount;
 }
 
-void Entity::deferInsert(std::size_t compType, std::byte* ptr) {
+void Entity::deferInsert (std::size_t compType, std::byte* ptr) {
     m_world->deferInsert(id(), compType, ptr);
 }
 
-void Entity::deferErase(std::size_t compType) {
+void Entity::deferErase (std::size_t compType) {
     m_world->deferErase(id(), compType);
 }
 
-void Entity::deferApply(std::function<void(Entity)> applyFunc) {
+void Entity::deferApply (std::function<void(Entity)> applyFunc) {
     m_world->deferApply(id(), std::move(applyFunc));
 }
 
 bool Entity::exists () const noexcept {
-    return (bool)m_id && m_world && m_world->exists(m_id);
+    return (bool) m_id && m_world && m_world->exists(m_id);
 }
 
 Entity Entity::parent () const {
     return m_world->parent(id());
 }
 
-ChildrenView Entity::children() const noexcept {
+ChildrenView Entity::children () const noexcept {
     return ChildrenView{m_id, m_world};
 }
 

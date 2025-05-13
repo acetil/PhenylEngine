@@ -1,6 +1,6 @@
-#include "logging/logging.h"
-
 #include "glfw_mouse_input.h"
+
+#include "logging/logging.h"
 
 using namespace phenyl::glfw;
 

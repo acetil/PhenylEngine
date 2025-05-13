@@ -4,7 +4,11 @@ using namespace phenyl::vulkan;
 
 static VkBufferUsageFlags GetUsage (bool isIndex);
 
-VulkanStorageBuffer::VulkanStorageBuffer (VulkanResources& resources, std::size_t newSize, bool isIndex) : m_resources{resources}, m_size{newSize}, m_capacity{newSize}, m_isIndex{isIndex} {
+VulkanStorageBuffer::VulkanStorageBuffer (VulkanResources& resources, std::size_t newSize, bool isIndex) :
+    m_resources{resources},
+    m_size{newSize},
+    m_capacity{newSize},
+    m_isIndex{isIndex} {
     if (m_size > 0) {
         m_buffer = VulkanBuffer{resources, GetUsage(isIndex), m_capacity};
     }
@@ -29,7 +33,11 @@ VkBuffer VulkanStorageBuffer::getBuffer () const noexcept {
     return m_buffer ? m_buffer.get() : nullptr;
 }
 
-VulkanStaticStorageBuffer::VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex) : m_resources{resources}, m_transferManager{transferManager}, m_isIndex{isIndex} {}
+VulkanStaticStorageBuffer::VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager,
+    bool isIndex) :
+    m_resources{resources},
+    m_transferManager{transferManager},
+    m_isIndex{isIndex} {}
 
 void VulkanStaticStorageBuffer::upload (std::span<const std::byte> data) {
     if (data.empty()) {
