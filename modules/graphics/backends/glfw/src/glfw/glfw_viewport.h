@@ -6,6 +6,8 @@
 #include "input/glfw_key_input.h"
 #include "input/glfw_mouse_input.h"
 
+#include <functional>
+
 namespace phenyl::glfw {
 class GLFWViewport : public graphics::Viewport {
 public:

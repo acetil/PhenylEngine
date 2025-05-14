@@ -4,7 +4,7 @@
 #include "graphics/image.h"
 #include "graphics/maths_headers.h"
 #include "harfbuzz_typedefs.h"
-#include "util/map.h"
+#include "util/hash.h"
 
 #include <cstdint>
 #include <unordered_map>
@@ -48,7 +48,7 @@ private:
     std::uint32_t m_size = 0;
 
     std::unordered_map<char32_t, std::uint32_t> m_indexCache;
-    std::unordered_map<std::uint32_t, std::unordered_map<std::pair<char32_t, char32_t>, float>> m_kernCache;
+    std::unordered_map<std::uint32_t, util::HashMap<std::pair<char32_t, char32_t>, float>> m_kernCache;
     std::unordered_map<std::uint32_t, std::unordered_map<char32_t, Glyph>> m_glyphMap;
 
     void setSize (std::uint32_t size);

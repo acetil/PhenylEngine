@@ -1,7 +1,6 @@
 #pragma once
 
 #include "graphics/maths_headers.h"
-#include "util/optional.h"
 
 #include <memory>
 #include <string>
@@ -20,7 +19,7 @@ public:
     static std::uint32_t FormatComps (ImageFormat format);
     static std::size_t FormatSize (ImageFormat format);
 
-    static util::Optional<Image> Load (std::istream& file, ImageFormat format = ImageFormat::RGBA);
+    static std::optional<Image> Load (std::istream& file, ImageFormat format = ImageFormat::RGBA);
     static Image MakeNonOwning (std::span<std::byte> data, std::uint32_t width, std::uint32_t height,
         ImageFormat format);
 

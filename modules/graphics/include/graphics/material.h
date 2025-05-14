@@ -6,7 +6,6 @@
 #include "graphics/backend/renderer.h"
 #include "graphics/backend/shader.h"
 #include "mesh/mesh.h"
-#include "util/map.h"
 
 namespace phenyl::graphics {
 class MaterialInstance;

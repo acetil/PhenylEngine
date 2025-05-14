@@ -3,7 +3,6 @@
 #include "core/assets/asset_manager.h"
 #include "graphics/backend/renderer.h"
 #include "graphics/mesh/mesh.h"
-#include "util/map.h"
 
 namespace phenyl::graphics {
 class MeshManager : public core::AssetManager<Mesh> {

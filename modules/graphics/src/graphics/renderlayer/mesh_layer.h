@@ -10,7 +10,6 @@
 #include "graphics/components/3d/mesh_renderer.h"
 #include "graphics/material.h"
 #include "graphics/mesh/mesh.h"
-#include "util/map.h"
 
 namespace phenyl::graphics {
 struct MeshGlobalUniform {

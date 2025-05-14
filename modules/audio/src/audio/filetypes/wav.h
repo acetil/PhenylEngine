@@ -1,15 +1,14 @@
 #pragma once
 
-#include "util/optional.h"
-
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
+#include <optional>
 
 namespace phenyl::audio {
 class WAVFile {
 public:
-    static util::Optional<WAVFile> Load (std::istream& file);
+    static std::optional<WAVFile> Load (std::istream& file);
 
     [[nodiscard]] std::uint32_t sampleRate () const;
     [[nodiscard]] std::uint16_t bitDepth () const;

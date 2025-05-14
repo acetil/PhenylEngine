@@ -19,11 +19,13 @@ Texture* TextureManager::load (std::ifstream& data, std::size_t id) {
         return nullptr;
     }
 
-    TextureProperties properties{.format = image.getUnsafe().format(),
+    TextureProperties properties{
+      .format = image->format(),
       .filter = TextureFilter::POINT,
-      .useMipmapping = true};
+      .useMipmapping = true,
+    };
 
-    m_textures.emplace(id, std::make_unique<ImageTexture>(m_renderer.makeTexture(properties, image.getUnsafe())));
+    m_textures.emplace(id, std::make_unique<ImageTexture>(m_renderer.makeTexture(properties, *image)));
     return m_textures[id].get();
 }
 

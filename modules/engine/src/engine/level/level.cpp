@@ -165,7 +165,7 @@ Level* LevelManager::load (std::ifstream& data, std::size_t id) {
 
 void LevelManager::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        m_levels.remove(id);
+        m_levels.erase(id);
     }
 }
 

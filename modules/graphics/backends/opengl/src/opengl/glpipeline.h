@@ -5,7 +5,6 @@
 #include "graphics/backend/pipeline.h"
 #include "graphics/backend/shader.h"
 #include "opengl_headers.h"
-#include "util/map.h"
 
 namespace phenyl::opengl {
 class GlPipeline : public graphics::IPipeline {
@@ -55,7 +54,7 @@ private:
     GlWindowFrameBuffer* m_windowFrameBuffer;
     core::Asset<graphics::Shader> m_shader;
     std::vector<std::size_t> m_bufferTypes;
-    util::Map<graphics::UniformBinding, std::size_t> m_uniformTypes;
+    std::unordered_map<graphics::UniformBinding, std::size_t> m_uniformTypes;
     std::optional<PipelineIndex> m_indexType = std::nullopt;
 
     bool m_doDepthTest = false;

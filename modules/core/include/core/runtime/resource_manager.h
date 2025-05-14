@@ -2,7 +2,6 @@
 
 #include "forward.h"
 #include "logging/logging.h"
-#include "util/map.h"
 #include "util/meta.h"
 
 #include <memory>
@@ -53,7 +52,7 @@ public:
 
 private:
     std::vector<std::unique_ptr<IResource>> m_ownedResources;
-    util::Map<std::size_t, IResource*> m_resources;
+    std::unordered_map<std::size_t, IResource*> m_resources;
 
     void registerResource (std::size_t typeIndex, IResource* resource);
 };

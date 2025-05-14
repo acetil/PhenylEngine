@@ -2,6 +2,8 @@
 
 #include "core/assets/assets.h"
 
+#include <ranges>
+
 const char* phenyl::graphics::ParticleManager2D::getFileType () const {
     return ".json";
 }
@@ -12,7 +14,7 @@ phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (s
         return nullptr;
     }
 
-    auto prop = propOpt.getUnsafe();
+    auto prop = *propOpt;
 
     m_systems[id] = std::make_unique<ParticleSystem2D>(prop, m_maxParticles);
 
@@ -31,23 +33,23 @@ phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (p
 
 void phenyl::graphics::ParticleManager2D::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        m_systems.remove(id);
+        m_systems.erase(id);
     }
 }
 
 void phenyl::graphics::ParticleManager2D::update (float deltaTime) {
-    for (auto [_, system] : m_systems.kv()) {
+    for (const auto& system : m_systems | std::views::values) {
         system->update(deltaTime);
     }
 }
 
 void phenyl::graphics::ParticleManager2D::buffer (phenyl::graphics::Buffer<glm::vec2>& posBuffer,
     phenyl::graphics::Buffer<glm::vec4>& colourBuffer) const {
-    for (auto [_, system] : m_systems.kv()) {
+    for (const auto& system : m_systems | std::views::values) {
         system->bufferPos(posBuffer);
     }
 
-    for (auto [_, system] : m_systems.kv()) {
+    for (const auto& system : m_systems | std::views::values) {
         system->bufferColour(colourBuffer);
     }
 }

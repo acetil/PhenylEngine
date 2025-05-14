@@ -95,7 +95,7 @@ void PhenylRuntime::shutdown () {
     world().clear();
 
     PHENYL_TRACE(LOGGER, "Running plugin shutdown()");
-    for (auto [_, plugin] : m_plugins.kv()) {
+    for (const auto& plugin : m_plugins | std::views::values) {
         PHENYL_TRACE(LOGGER, "Running shutdown() for {}", plugin->getName());
         plugin->shutdown(*this);
     }

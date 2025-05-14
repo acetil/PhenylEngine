@@ -4,7 +4,6 @@
 #include "core/serialization/serializer.h"
 #include "core/world.h"
 #include "util/hash.h"
-#include "util/map.h"
 
 namespace phenyl::core {
 class IComponentSerializer {

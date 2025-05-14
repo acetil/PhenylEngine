@@ -52,7 +52,9 @@ static void CollisionCheck2DSystem (
         return;
     }
 
-    box1.collide(box2).ifPresent([&] (SATResult2D result) {
+    auto collision = box1.collide(box2);
+    if (collision) {
+        auto result = *collision;
         auto face1 = box1.getSignificantFace(result.normal);
         auto face2 = box2.getSignificantFace(-result.normal);
 
@@ -75,7 +77,7 @@ static void CollisionCheck2DSystem (
                 OnCollision{entity2.id(), (std::uint32_t) (box2.layers & box1.mask), contactPoint, result.normal});
             // events.emplace_back(info1.id(), info2.id(), box2.layers & box1.mask);
         }
-    });
+    }
 }
 
 static void Constraints2DSolveSystem (const phenyl::core::Resources<Constraints2D>& resources) {

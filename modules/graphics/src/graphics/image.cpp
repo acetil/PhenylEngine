@@ -48,7 +48,7 @@ std::size_t Image::FormatSize (ImageFormat format) {
     PHENYL_ABORT("Invalid format: {}", static_cast<std::uint32_t>(format));
 }
 
-phenyl::util::Optional<Image> Image::Load (std::istream& file, ImageFormat format) {
+std::optional<Image> Image::Load (std::istream& file, ImageFormat format) {
     std::vector<unsigned char> contents{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 
     int width;
@@ -59,7 +59,7 @@ phenyl::util::Optional<Image> Image::Load (std::istream& file, ImageFormat forma
         static_cast<int>(FormatComps(format)));
     if (!baseData) {
         PHENYL_LOGE(LOGGER, "Failed to load image from istream!");
-        return util::NullOpt;
+        return std::nullopt;
     }
 
     DataPtr data{reinterpret_cast<std::byte*>(baseData), [] (std::byte* data) {

@@ -8,7 +8,7 @@
 using namespace phenyl::physics;
 
 namespace phenyl::physics {
-PHENYL_SERIALIZABLE(RigidBody2D, PHENYL_SERIALIZABLE_MEMBER(m_momentum),
+PHENYL_SERIALIZABLE(RigidBody2D, PHENYL_SERIALIZABLE_MEMBER_NAMED(m_momentum, "momentum"),
     PHENYL_SERIALIZABLE_MEMBER_NAMED(m_angularMomentum, "angular_momentum"),
     PHENYL_SERIALIZABLE_METHOD("mass", &RigidBody2D::mass, &RigidBody2D::setMass),
     PHENYL_SERIALIZABLE_METHOD("inertial_moment", &RigidBody2D::inertia, &RigidBody2D::setInertia),

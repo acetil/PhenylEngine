@@ -7,7 +7,7 @@ using namespace phenyl;
 
 namespace phenyl::physics {
 PHENYL_SERIALIZABLE(BoxCollider2D, PHENYL_SERIALIZABLE_INHERITS_NAMED(Collider2D, "Collider2D"),
-    PHENYL_SERIALIZABLE_MEMBER(m_scale))
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(m_scale, "scale"))
 }
 
 static float calculateRadius (glm::mat2 scaleMatrix) {
@@ -25,7 +25,7 @@ void physics::BoxCollider2D::applyFrameTransform (glm::mat2 transform) {
     setOuterRadius(calculateRadius(m_frameTransform));
 }
 
-static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
+static std::optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float box1Axis, const glm::mat2& box2Mat) {
     PHENYL_DASSERT(box1Axis >= 0);
 
     float minAxis = std::numeric_limits<float>::max();
@@ -42,16 +42,16 @@ static util::Optional<float> testAxisNew (glm::vec2 axis, glm::vec2 disp, float 
     }
 
     if (minAxis >= box1Axis || maxAxis <= -box1Axis) {
-        return util::NullOpt;
+        return std::nullopt;
     } else {
         auto minDisp = box1Axis - minAxis;
         auto maxDisp = (-box1Axis) - maxAxis;
 
-        return minDisp <= -maxDisp ? util::Optional{minDisp} : util::Optional{maxDisp};
+        return minDisp <= -maxDisp ? std::optional{minDisp} : std::optional{maxDisp};
     }
 }
 
-util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const physics::BoxCollider2D& other) {
+std::optional<physics::SATResult2D> physics::BoxCollider2D::collide (const physics::BoxCollider2D& other) {
     auto disp = getDisplacement(other);
 
     glm::vec2 basisVecs[] = {{1, 0}, {0, 1}};
@@ -66,10 +66,10 @@ util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const phys
         auto axisOpt = testAxisNew(normAxis, disp, glm::dot(scaledAxis, normAxis), other.m_frameTransform);
 
         if (!axisOpt) {
-            return util::NullOpt;
+            return std::nullopt;
         }
 
-        float sep = axisOpt.getUnsafe();
+        float sep = axisOpt.value();
         auto sqSepSize = sep * sep;
         if (sqSepSize < minSepSqSize) {
             minSep = sep;
@@ -84,10 +84,10 @@ util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const phys
         auto axisOpt = testAxisNew(normAxis, -disp, glm::dot(scaledAxis, normAxis), m_frameTransform);
 
         if (!axisOpt) {
-            return util::NullOpt;
+            return std::nullopt;
         }
 
-        float sep = axisOpt.getUnsafe();
+        float sep = axisOpt.value();
         auto sqSepSize = sep * sep;
         if (sqSepSize < minSepSqSize) {
             minSep = sep;
@@ -103,8 +103,8 @@ util::Optional<physics::SATResult2D> physics::BoxCollider2D::collide (const phys
     }
 
     return std::abs(minSepSqSize) > std::numeric_limits<float>::epsilon() ?
-        util::Optional{SATResult2D{.normal = minAxis, .depth = minSep}} :
-        util::NullOpt;
+        std::optional{SATResult2D{.normal = minAxis, .depth = minSep}} :
+        std::nullopt;
 }
 
 static inline glm::vec2 calcSegmentNormal (glm::vec2 start, glm::vec2 end) {

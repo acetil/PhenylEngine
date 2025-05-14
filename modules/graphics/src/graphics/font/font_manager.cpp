@@ -4,6 +4,7 @@
 #include "graphics/detail/loggers.h"
 #include "graphics/font/harfbuzz_headers.h"
 
+#include <cstring>
 #include <iostream>
 
 using namespace phenyl::graphics;
@@ -50,10 +51,10 @@ const char* FontManager::getFileType () const {
 }
 
 Font* FontManager::load (std::ifstream& data, std::size_t id) {
-    std::vector<char> bytes{std::istreambuf_iterator<char>{data}, std::istreambuf_iterator<char>{}};
+    std::vector<char> bytes{std::istreambuf_iterator{data}, std::istreambuf_iterator<char>{}};
     auto dataSize = bytes.size();
     auto fontData = std::make_unique<std::byte[]>(bytes.size());
-    std::memcpy(fontData.get(), bytes.data(), bytes.size());
+    std::ranges::copy(bytes, reinterpret_cast<char*>(fontData.get()));
 
     FT_Face face;
     auto error = FT_New_Memory_Face(m_library, reinterpret_cast<const FT_Byte*>(fontData.get()),

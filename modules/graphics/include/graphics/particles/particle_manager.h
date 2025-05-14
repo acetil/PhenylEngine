@@ -3,7 +3,6 @@
 #include "core/assets/asset_manager.h"
 #include "core/iresource.h"
 #include "graphics/particles/particle_system_2d.h"
-#include "util/map.h"
 
 namespace phenyl::graphics {
 class ParticleManager2D : public phenyl::core::AssetManager<ParticleSystem2D>, public core::IResource {
@@ -26,7 +25,7 @@ protected:
     void queueUnload (std::size_t id) override;
 
 private:
-    util::Map<std::size_t, std::unique_ptr<ParticleSystem2D>> m_systems;
+    std::unordered_map<std::size_t, std::unique_ptr<ParticleSystem2D>> m_systems;
     std::size_t m_maxParticles;
 };
 } // namespace phenyl::graphics

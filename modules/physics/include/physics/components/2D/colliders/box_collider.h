@@ -2,7 +2,6 @@
 
 #include "core/serialization/serializer_forward.h"
 #include "physics/components/2D/collider.h"
-#include "util/optional.h"
 
 namespace phenyl::physics {
 class SATResult2D;
@@ -10,7 +9,7 @@ class Face2D;
 
 class BoxCollider2D : public Collider2D {
 public:
-    util::Optional<SATResult2D> collide (const BoxCollider2D& other);
+    std::optional<SATResult2D> collide (const BoxCollider2D& other);
     Face2D getSignificantFace (glm::vec2 normal);
     void applyFrameTransform (glm::mat2 transform);
 

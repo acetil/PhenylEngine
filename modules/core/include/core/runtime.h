@@ -7,7 +7,6 @@
 #include "runtime/stage.h"
 #include "runtime/system.h"
 #include "stages.h"
-#include "util/set.h"
 
 #include <concepts>
 
@@ -166,8 +165,8 @@ private:
 
     ResourceManager m_resourceManager;
 
-    util::Set<std::size_t> m_initPlugins;
-    util::Map<std::size_t, std::unique_ptr<IPlugin>> m_plugins;
+    std::unordered_set<std::size_t> m_initPlugins;
+    std::unordered_map<std::size_t, std::unique_ptr<IPlugin>> m_plugins;
 
     std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> m_systems;
     std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> m_stages;

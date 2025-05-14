@@ -5,7 +5,6 @@
 #include "core/detail/loggers.h"
 #include "forward.h"
 #include "util/fl_vector.h"
-#include "util/map.h"
 #include "util/meta.h"
 
 #include <fstream>
@@ -96,7 +95,7 @@ namespace detail {
 
         void forceRemoveEntry (std::size_t id) {
             PHENYL_DASSERT(id && m_cache.present(id - 1));
-            m_pathMap.remove(m_cache.at(id - 1).path);
+            m_pathMap.erase(m_cache.at(id - 1).path);
             m_cache.remove(id - 1);
         }
 
@@ -111,7 +110,7 @@ namespace detail {
     private:
         static constexpr std::string_view UnknownPath = "";
 
-        util::Map<std::string, std::size_t> m_pathMap;
+        std::unordered_map<std::string, std::size_t> m_pathMap;
         util::FLVector<AssetEntry<T>> m_cache;
     };
 } // namespace detail
@@ -149,7 +148,7 @@ private:
         return INSTANCE;
     }
 
-    util::Map<std::size_t, std::unique_ptr<detail::AssetCacheBase>> m_caches;
+    std::unordered_map<std::size_t, std::unique_ptr<detail::AssetCacheBase>> m_caches;
 
     void incrementRefCount (std::size_t typeIndex, std::size_t id) {
         PHENYL_DASSERT(m_caches.contains(typeIndex));
@@ -260,7 +259,7 @@ private:
             return;
         }
 
-        m_caches.remove(meta::type_index<T>());
+        m_caches.erase(meta::type_index<T>());
     }
 
     std::string_view getPath (std::size_t typeIndex, std::size_t id) {

@@ -10,7 +10,6 @@
 #include "shader.h"
 #include "texture.h"
 #include "uniform_buffer.h"
-#include "util/optional.h"
 
 #include <memory>
 #include <optional>

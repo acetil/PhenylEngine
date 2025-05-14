@@ -2,7 +2,6 @@
 
 #include "graphics/backend/buffer.h"
 #include "graphics/maths_headers.h"
-#include "util/optional.h"
 
 #include <iosfwd>
 #include <random>
@@ -82,5 +81,5 @@ private:
     void addParticle (glm::vec2 worldPos, glm::vec2 direction, std::size_t index);
 };
 
-util::Optional<ParticleProperties2D> LoadParticleProperties2D (std::istream& file);
+std::optional<ParticleProperties2D> LoadParticleProperties2D (std::istream& file);
 } // namespace phenyl::graphics

@@ -5,7 +5,6 @@
 #include "core/entity.h"
 #include "core/iresource.h"
 #include "engine/level/level.h"
-#include "util/map.h"
 
 #include <iosfwd>
 #include <memory>
@@ -31,7 +30,7 @@ protected:
     Level* load (phenyl::game::Level&& obj, std::size_t id) override;
 
 private:
-    util::Map<std::size_t, std::unique_ptr<Level>> m_levels;
+    std::unordered_map<std::size_t, std::unique_ptr<Level>> m_levels;
     core::World& m_world;
     core::EntityComponentSerializer& m_serializer;
 

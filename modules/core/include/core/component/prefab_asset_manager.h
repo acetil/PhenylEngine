@@ -3,7 +3,6 @@
 #include "core/assets/asset_manager.h"
 #include "core/prefab.h"
 #include "forward.h"
-#include "util/map.h"
 
 namespace phenyl::core {
 class EntityComponentSerializer;
@@ -26,7 +25,7 @@ public:
     void clear ();
 
 private:
-    util::Map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
+    std::unordered_map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
     EntityComponentSerializer& m_serializer;
     World& m_world;
 };

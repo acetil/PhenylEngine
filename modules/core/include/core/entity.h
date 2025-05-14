@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/component/archetype.h"
-#include "util/optional.h"
 
 namespace phenyl::core {
 class Archetype;

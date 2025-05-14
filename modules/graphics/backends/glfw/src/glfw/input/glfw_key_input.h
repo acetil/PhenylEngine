@@ -3,7 +3,7 @@
 #include "core/input/input_device.h"
 #include "glfw/glfw_headers.h"
 #include "logging/logging.h"
-#include "util/map.h"
+#include "util/hash.h"
 
 // TODO
 namespace phenyl::graphics::detail {

@@ -167,7 +167,7 @@ void ParticleSystem2D::bufferColour (Buffer<glm::vec4>& buffer) const {
     }
 }
 
-phenyl::util::Optional<ParticleProperties2D> phenyl::graphics::LoadParticleProperties2D (std::istream& file) {
+std::optional<ParticleProperties2D> phenyl::graphics::LoadParticleProperties2D (std::istream& file) {
     /*nlohmann::json json;
     file >> json;
     phenyl::common::JsonDeserializer deserializer{json};
@@ -177,6 +177,6 @@ phenyl::util::Optional<ParticleProperties2D> phenyl::graphics::LoadParticlePrope
         return phenyl::core::DeserializeFromJson<ParticleProperties2D>(file);
     } catch (const DeserializeException& e) {
         PHENYL_LOGE(LOGGER, "Failed to deserialize particle properties: {}", e.what());
-        return util::NullOpt;
+        return std::nullopt;
     }
 }

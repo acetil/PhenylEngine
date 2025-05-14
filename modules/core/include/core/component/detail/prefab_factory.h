@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <functional>
+#include <map>
+#include <memory>
 
 namespace phenyl::core::detail {
 class IPrefabFactory {

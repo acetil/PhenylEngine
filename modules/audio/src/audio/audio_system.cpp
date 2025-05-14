@@ -61,8 +61,8 @@ AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
         return nullptr;
     }
 
-    m_samples[id] = std::unique_ptr<AudioSample>(
-        new AudioSample(this, m_backend->makeWAVSample(wavOpt.getUnsafe()))); // cpp is trash
+    m_samples[id] =
+        std::unique_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(*wavOpt))); // cpp is trash
 
     return m_samples[id].get();
 }
@@ -75,7 +75,7 @@ AudioSample* AudioSystem::load (AudioSample&& obj, std::size_t id) {
 
 void AudioSystem::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        m_samples.remove(id);
+        m_samples.erase(id);
     }
 }
 

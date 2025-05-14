@@ -6,35 +6,30 @@
 #include <fstream>
 #include <limits>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace phenyl::util {
-std::vector<std::string> stringSplit (const std::string& str, const std::string& delim = " ",
-    int maxSplits = INT32_MAX);
-std::vector<std::string> readLines (std::ifstream& file, int maxLines = INT32_MAX);
+template<std::forward_iterator It, std::sentinel_for<It> S>
+std::string JoinStrings (std::string_view joinStr, It begin, S end) {
+    if (begin == end) {
+        return "";
+    }
 
-std::string joinStrings (const std::string& joinStr, const std::vector<std::string>& strs);
-
-// Be very careful about endianness if storing/reading result of this!
-template<typename T>
-std::string binToString (T data) {
-    void* ptr = &data;
-
-    return std::string((unsigned char*) ptr, ((unsigned char*) ptr) + sizeof(T));
+    auto it = begin;
+    std::stringstream str;
+    str << *(it++);
+    for (; it != end; ++it) {
+        str << joinStr << *it;
+    }
+    return std::move(str).str();
 }
 
-template<typename T>
-std::string_view stringToBin (std::string_view str, T& data) {
-    if (str.size() < sizeof(T)) {
-        return str;
-    }
-    void* dataPtr = &data;
-
-    memcpy(dataPtr, str.data(), sizeof(T));
-
-    return str.substr(sizeof(T));
+template<std::ranges::range R>
+std::string JoinStrings (std::string_view joinStr, const R& range) {
+    return JoinStrings(joinStr, range.begin(), range.end());
 }
 
 inline std::string ToLower (std::string str) {

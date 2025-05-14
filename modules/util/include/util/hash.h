@@ -3,6 +3,7 @@
 #include <concepts>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace phenyl::util {
@@ -67,6 +68,9 @@ template<typename T, typename... Args>
 constexpr std::size_t HashAll (const T& obj, const Args&... args) noexcept {
     return HashAllInternal((typename Hasher<T>::HashFunc) {}(obj), args...);
 }
+
+template<typename Key, typename Value>
+using HashMap = std::unordered_map<Key, Value, typename Hasher<Key>::HashFunc, typename Hasher<Key>::KeyEq>;
 } // namespace phenyl::util
 
 template<typename T, typename U>

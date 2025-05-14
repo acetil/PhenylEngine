@@ -4,7 +4,7 @@
 #include "core/iresource.h"
 #include "input_action.h"
 #include "input_device.h"
-#include "util/map.h"
+#include "util/hash.h"
 
 #include <memory>
 #include <string>

@@ -1,4 +1,4 @@
-add_library(util OBJECT src/profiler.cpp src/string_help.cpp include/util/optional.h include/util/detail/memory.h include/util/fixed_stack.h include/util/set.h src/set_test.cpp include/util/fake_bool.h include/util/callback_member.h include/util/bitfield.h include/util/fl_vector.h include/util/game_id.h include/util/iterable.h
+add_library(util OBJECT src/profiler.cpp src/string_help.cpp include/util/fl_vector.h include/util/iterable.h
         include/util/random.h
         src/random.cpp
         include/util/endian.h

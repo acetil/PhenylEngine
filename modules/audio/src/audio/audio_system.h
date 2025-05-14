@@ -6,7 +6,6 @@
 #include "core/assets/asset_manager.h"
 #include "core/iresource.h"
 #include "util/fl_vector.h"
-#include "util/map.h"
 
 #include <memory>
 
@@ -71,7 +70,7 @@ private:
         bool active{false};
     };
 
-    util::Map<std::size_t, std::unique_ptr<AudioSample>> m_samples;
+    std::unordered_map<std::size_t, std::unique_ptr<AudioSample>> m_samples;
     std::unique_ptr<AudioBackend> m_backend;
 
     util::FLVector<VirtualSource> m_virtualSources;
