@@ -1,7 +1,7 @@
 #pragma once
 #include "core/component/detail/prefab_factory.h"
 #include "entity.h"
-#include "util/meta.h"
+#include "util/type_index.h"
 
 #include <map>
 #include <memory>
@@ -69,15 +69,16 @@ private:
 
 class PrefabBuilder {
 public:
-    template<typename T>
+    template <typename T>
     PrefabBuilder& with (T&& comp) {
-        factories.emplace(meta::type_index<T>(), std::make_unique<detail::CopyPrefabFactory<T>>(std::forward<T>(comp)));
+        factories.emplace(meta::TypeIndex::Get<T>(),
+            std::make_unique<detail::CopyPrefabFactory<T>>(std::forward<T>(comp)));
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     PrefabBuilder& with (std::function<T()> func) {
-        factories.emplace(meta::type_index<T>(), std::make_unique<detail::FuncPrefabFactory<T>>(std::move(func)));
+        factories.emplace(meta::TypeIndex::Get<T>(), std::make_unique<detail::FuncPrefabFactory<T>>(std::move(func)));
         return *this;
     }
 

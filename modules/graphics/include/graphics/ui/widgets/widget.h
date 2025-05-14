@@ -18,7 +18,7 @@ namespace detail {
         virtual bool handle (const UIEvent& event) = 0;
     };
 
-    template<typename T>
+    template <typename T>
     class UIEventListeners : public IUIEventListeners {
     public:
         void addHandler (std::function<bool(const T&)> listener) {
@@ -145,7 +145,7 @@ public:
         return static_cast<bool>(m_oldPointerPos);
     }
 
-    template<typename T>
+    template <typename T>
     void addListener (std::function<void(const T&)>&& listener) {
         addListener([func = std::move(listener)] (const T& event) {
             func(event);
@@ -153,12 +153,12 @@ public:
         });
     }
 
-    template<typename T>
+    template <typename T>
     void addListener (std::function<bool(const T&)>&& listener) {
         getListeners<T>().addHandler(std::move(listener));
     }
 
-    template<typename F>
+    template <typename F>
     void addListener (F&& f) {
         addListener(std::function{std::forward<F>(f)});
     }
@@ -175,13 +175,13 @@ private:
     glm::vec2 m_size = {0, 0};
     glm::vec2 m_offset = {0, 0};
     std::optional<glm::vec2> m_oldPointerPos = std::nullopt;
-    std::unordered_map<std::size_t, std::unique_ptr<detail::IUIEventListeners>> m_listeners;
+    std::unordered_map<meta::TypeIndex, std::unique_ptr<detail::IUIEventListeners>> m_listeners;
 
     bool bubbleUp (const UIEvent& event);
 
-    template<typename T>
+    template <typename T>
     detail::UIEventListeners<T>& getListeners () {
-        auto typeIndex = meta::type_index<T>();
+        auto typeIndex = meta::TypeIndex::Get<T>();
         auto it = m_listeners.find(typeIndex);
         if (it == m_listeners.end()) {
             it = m_listeners.emplace(typeIndex, std::make_unique<detail::UIEventListeners<T>>()).first;

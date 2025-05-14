@@ -6,7 +6,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "uniform_buffer.h"
-#include "util/meta.h"
+#include "util/type_index.h"
 
 namespace phenyl::graphics {
 enum class GeometryType {
@@ -36,10 +36,10 @@ enum class CullMode {
     NONE
 };
 
-template<typename T> concept IndexType =
+template <typename T> concept IndexType =
     std::unsigned_integral<T> && (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4);
 
-template<IndexType T>
+template <IndexType T>
 inline constexpr ShaderIndexType GetIndexType () {
     if constexpr (sizeof(T) == 1) {
         return ShaderIndexType::UBYTE;
@@ -58,9 +58,10 @@ class IPipeline {
 public:
     virtual ~IPipeline () = default;
 
-    virtual void bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) = 0;
+    virtual void bindBuffer (meta::TypeIndex type, BufferBinding binding, const IBuffer& buffer,
+        std::size_t offset) = 0;
     virtual void bindIndexBuffer (ShaderIndexType type, const IBuffer& buffer) = 0;
-    virtual void bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer,
+    virtual void bindUniform (meta::TypeIndex type, UniformBinding binding, const IUniformBuffer& buffer,
         std::size_t offset, std::size_t size) = 0;
     virtual void bindSampler (SamplerBinding binding, ISampler& sampler) = 0;
     virtual void unbindIndexBuffer () = 0;
@@ -82,20 +83,20 @@ public:
 
     Pipeline& bindBuffer (BufferBinding binding, const RawBuffer& buffer, std::size_t offset = 0) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->bindBuffer(0, binding, buffer.getUnderlying(), offset);
+        m_pipeline->bindBuffer(meta::TypeIndex{}, binding, buffer.getUnderlying(), offset);
 
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     Pipeline& bindBuffer (BufferBinding binding, const Buffer<T>& buffer, std::size_t offset = 0) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->bindBuffer(meta::type_index<T>(), binding, buffer.getUnderlying(), offset * sizeof(T));
+        m_pipeline->bindBuffer(meta::TypeIndex::Get<T>(), binding, buffer.getUnderlying(), offset * sizeof(T));
 
         return *this;
     }
 
-    template<IndexType T>
+    template <IndexType T>
     Pipeline& bindIndexBuffer (const Buffer<T>& buffer) {
         PHENYL_DASSERT(m_pipeline);
         m_pipeline->bindIndexBuffer(GetIndexType<T>(), buffer.getUnderlying());
@@ -110,18 +111,18 @@ public:
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     Pipeline& bindUniform (UniformBinding binding, const UniformBuffer<T>& buffer) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), 0, sizeof(T));
+        m_pipeline->bindUniform(meta::TypeIndex::Get<T>(), binding, buffer.getUnderlying(), 0, sizeof(T));
 
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     Pipeline& bindUniform (UniformBinding binding, const UniformArrayBuffer<T>& buffer, std::size_t index) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->bindUniform(meta::type_index<T>(), binding, buffer.getUnderlying(), index * buffer.stride(),
+        m_pipeline->bindUniform(meta::TypeIndex::Get<T>(), binding, buffer.getUnderlying(), index * buffer.stride(),
             sizeof(T));
 
         return *this;
@@ -129,7 +130,7 @@ public:
 
     Pipeline& bindUniform (UniformBinding binding, const RawUniformBuffer& buffer) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->bindUniform(0, binding, buffer.getUnderlying(), 0, buffer.size());
+        m_pipeline->bindUniform(meta::TypeIndex{}, binding, buffer.getUnderlying(), 0, buffer.size());
 
         return *this;
     }
@@ -190,10 +191,10 @@ public:
     virtual void withGeometryType (GeometryType type) = 0;
     virtual void withShader (core::Asset<Shader> shader) = 0;
 
-    virtual BufferBinding withBuffer (std::size_t type, std::size_t size, BufferInputRate inputRate) = 0;
+    virtual BufferBinding withBuffer (meta::TypeIndex type, std::size_t size, BufferInputRate inputRate) = 0;
     virtual void withAttrib (ShaderDataType type, unsigned int location, BufferBinding binding, std::size_t offset) = 0;
 
-    virtual UniformBinding withUniform (std::size_t type, unsigned int location) = 0;
+    virtual UniformBinding withUniform (meta::TypeIndex type, unsigned int location) = 0;
     virtual SamplerBinding withSampler (unsigned int location) = 0;
 
     virtual std::unique_ptr<IPipeline> build () = 0;
@@ -220,15 +221,15 @@ public:
     PipelineBuilder& withRawBuffer (BufferBinding& bindingOut, std::size_t stride,
         BufferInputRate inputRate = BufferInputRate::VERTEX) {
         PHENYL_DASSERT(m_builder);
-        bindingOut = m_builder->withBuffer(0, stride, inputRate);
+        bindingOut = m_builder->withBuffer(meta::TypeIndex{}, stride, inputRate);
 
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     PipelineBuilder& withBuffer (BufferBinding& bindingOut, BufferInputRate inputRate = BufferInputRate::VERTEX) {
         PHENYL_DASSERT(m_builder);
-        bindingOut = m_builder->withBuffer(meta::type_index<T>(), sizeof(T), inputRate);
+        bindingOut = m_builder->withBuffer(meta::TypeIndex::Get<T>(), sizeof(T), inputRate);
 
         return *this;
     }
@@ -241,7 +242,7 @@ public:
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     PipelineBuilder& withAttrib (unsigned int location, BufferBinding binding, std::size_t offset = 0) {
         PHENYL_DASSERT(m_builder);
         m_builder->withAttrib(GetShaderDataType<T>(), location, binding, offset);
@@ -249,17 +250,17 @@ public:
         return *this;
     }
 
-    template<typename T>
+    template <typename T>
     PipelineBuilder& withUniform (unsigned int location, UniformBinding& bindingOut) {
         PHENYL_DASSERT(m_builder);
-        bindingOut = m_builder->withUniform(meta::type_index<T>(), location);
+        bindingOut = m_builder->withUniform(meta::TypeIndex::Get<T>(), location);
 
         return *this;
     }
 
     PipelineBuilder& withRawUniform (unsigned int location, UniformBinding& bindingOut) {
         PHENYL_DASSERT(m_builder);
-        bindingOut = m_builder->withUniform(0, location);
+        bindingOut = m_builder->withUniform(meta::TypeIndex{}, location);
 
         return *this;
     }

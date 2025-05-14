@@ -1,7 +1,7 @@
 #pragma once
 
 #include "forward.h"
-#include "util/meta.h"
+#include "util/type_index.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -22,29 +22,29 @@ namespace detail {
             return false;
         }
 
-        static bool OnUnloadUntyped (std::size_t typeIndex, std::size_t id);
+        static bool OnUnloadUntyped (meta::TypeIndex typeIndex, std::size_t id);
 
-        static std::size_t onVirtualLoadUntyped (std::size_t typeIndex, const std::string& virtualPath,
+        static std::size_t onVirtualLoadUntyped (meta::TypeIndex typeIndex, const std::string& virtualPath,
             std::byte* data);
 
         friend class core::Assets;
-        template<typename T>
+        template <typename T>
         friend class core::AssetManager;
     };
 } // namespace detail
 
-template<typename T>
+template <typename T>
 class AssetManager : public detail::AssetManagerBase {
 protected:
     virtual T* load (std::ifstream& data, std::size_t id) = 0;
     virtual T* load (T&& obj, std::size_t id) = 0;
 
     bool onUnload (std::size_t id) {
-        return detail::AssetManagerBase::OnUnloadUntyped(meta::type_index<T>(), id);
+        return detail::AssetManagerBase::OnUnloadUntyped(meta::TypeIndex::Get<T>(), id);
     }
 
     std::size_t onVirtualLoad (const std::string& virtualPath, T* data) {
-        return onVirtualLoadUntyped(meta::type_index<T>(), virtualPath, (std::byte*) data);
+        return onVirtualLoadUntyped(meta::TypeIndex::Get<T>(), virtualPath, (std::byte*) data);
     }
 
 private:

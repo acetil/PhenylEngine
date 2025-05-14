@@ -43,7 +43,7 @@ GlPipeline::~GlPipeline () {
     }
 }
 
-void GlPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) {
+void GlPipeline::bindBuffer (meta::TypeIndex type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) {
     PHENYL_DASSERT_MSG(binding < m_bufferTypes.size(), "Attempted to bind buffer to binding {} which does not exist!",
         binding);
     PHENYL_DASSERT_MSG(type == m_bufferTypes[binding], "Attempted to bind buffer to binding {} with invalid type",
@@ -54,7 +54,7 @@ void GlPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuf
         static_cast<GLsizei>(glBuffer.stride()));
 }
 
-void GlPipeline::bindUniform (std::size_t type, UniformBinding binding, const IUniformBuffer& buffer,
+void GlPipeline::bindUniform (meta::TypeIndex type, UniformBinding binding, const IUniformBuffer& buffer,
     std::size_t offset, std::size_t size) {
     PHENYL_DASSERT_MSG(m_uniformTypes.contains(binding),
         "Attempted to bind uniform to binding {} which does not exist!", binding);
@@ -145,7 +145,7 @@ void GlPipeline::setShader (phenyl::core::Asset<Shader> shader) {
     this->m_shader = std::move(shader);
 }
 
-BufferBinding GlPipeline::addBuffer (std::size_t type, GLuint divisor) {
+BufferBinding GlPipeline::addBuffer (meta::TypeIndex type, GLuint divisor) {
     PHENYL_ASSERT(m_bufferTypes.size() < GL_MAX_VERTEX_ATTRIB_BINDINGS);
 
     auto nextBinding = static_cast<BufferBinding>(m_bufferTypes.size());
@@ -164,7 +164,7 @@ void GlPipeline::addAttrib (GLenum type, GLint size, GLuint location, BufferBind
     glVertexArrayAttribBinding(m_vao, location, binding);
 }
 
-UniformBinding GlPipeline::addUniform (std::size_t type, unsigned int location) {
+UniformBinding GlPipeline::addUniform (meta::TypeIndex type, unsigned int location) {
     m_uniformTypes.emplace(location, type);
 
     return location;
@@ -265,7 +265,7 @@ void GlPipelineBuilder::withShader (core::Asset<Shader> shader) {
     m_pipeline->setShader(std::move(shader));
 }
 
-BufferBinding GlPipelineBuilder::withBuffer (std::size_t type, std::size_t size, BufferInputRate inputRate) {
+BufferBinding GlPipelineBuilder::withBuffer (meta::TypeIndex type, std::size_t size, BufferInputRate inputRate) {
     PHENYL_DASSERT(m_pipeline);
     GLuint divisor = inputRate == BufferInputRate::INSTANCE ? 1 : 0;
 
@@ -312,7 +312,7 @@ void GlPipelineBuilder::withAttrib (ShaderDataType type, unsigned int location, 
     }
 }
 
-UniformBinding GlPipelineBuilder::withUniform (std::size_t type, unsigned int location) {
+UniformBinding GlPipelineBuilder::withUniform (meta::TypeIndex type, unsigned int location) {
     PHENYL_DASSERT(m_pipeline);
     return m_pipeline->addUniform(type, location);
 }

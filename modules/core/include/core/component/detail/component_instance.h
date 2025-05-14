@@ -14,14 +14,14 @@ class World;
 namespace phenyl::core::detail {
 class UntypedComponent {
 public:
-    explicit UntypedComponent (World* world, std::string compName, std::size_t typeIndex) :
+    explicit UntypedComponent (World* world, std::string compName, meta::TypeIndex typeIndex) :
         m_world{world},
         m_name{std::move(compName)},
         m_type{typeIndex} {}
 
     virtual ~UntypedComponent () = default;
 
-    [[nodiscard]] std::size_t type () const noexcept {
+    [[nodiscard]] meta::TypeIndex type () const noexcept {
         return m_type;
     }
 
@@ -45,13 +45,13 @@ protected:
 private:
     World* m_world;
     std::string m_name;
-    std::size_t m_type;
+    meta::TypeIndex m_type;
 };
 
-template<typename T>
+template <typename T>
 class Component : public UntypedComponent {
 public:
-    Component (World* world, std::string name) : UntypedComponent(world, std::move(name), meta::type_index<T>()) {}
+    Component (World* world, std::string name) : UntypedComponent(world, std::move(name), meta::TypeIndex::Get<T>()) {}
 
     std::unique_ptr<UntypedComponentVector> makeVector () override {
         return std::make_unique<ComponentVector<T>>();

@@ -3,42 +3,42 @@
 #include "core/serialization/serializer.h"
 #include "forward.h"
 #include "logging/logging.h"
-#include "util/meta.h"
+#include "util/type_index.h"
 
 #include <cassert>
 #include <cstddef>
 #include <string>
 
 namespace phenyl::core {
-template<typename T>
+template <typename T>
 class IAssetType;
 
 namespace detail {
-    template<typename T>
+    template <typename T>
     class AssetCache;
 
     class AssetBase {
     private:
-        static void IncRefCount (std::size_t typeIndex, std::size_t id);
-        static void DecRefCount (std::size_t typeIndex, std::size_t id);
+        static void IncRefCount (meta::TypeIndex typeIndex, std::size_t id);
+        static void DecRefCount (meta::TypeIndex typeIndex, std::size_t id);
 
-        static std::string_view GetPath (std::size_t typeIndex, std::size_t id);
+        static std::string_view GetPath (meta::TypeIndex typeIndex, std::size_t id);
 
-        template<typename T>
+        template <typename T>
         friend class core::Asset;
 
-        template<typename T>
+        template <typename T>
         friend class core::IAssetType;
     };
 } // namespace detail
 
-template<typename T>
+template <typename T>
 class Asset {
 public:
     Asset () : m_id{0}, m_ptr{nullptr} {}
 
     Asset (const Asset<T>& other) : m_id{other.m_id}, m_ptr{other.m_ptr} {
-        detail::AssetBase::IncRefCount(meta::type_index<T>(), m_id);
+        detail::AssetBase::IncRefCount(meta::TypeIndex::Get<T>(), m_id);
     }
 
     Asset (Asset<T>&& other) noexcept : m_id{other.m_id}, m_ptr{other.m_ptr} {
@@ -52,18 +52,18 @@ public:
         }
 
         if (m_id) {
-            detail::AssetBase::DecRefCount(meta::type_index<T>(), m_id);
+            detail::AssetBase::DecRefCount(meta::TypeIndex::Get<T>(), m_id);
         }
 
         m_id = other.m_id;
         m_ptr = other.m_ptr;
-        detail::AssetBase::IncRefCount(meta::type_index<T>(), m_id);
+        detail::AssetBase::IncRefCount(meta::TypeIndex::Get<T>(), m_id);
         return *this;
     }
 
     Asset<T>& operator= (Asset<T>&& other) noexcept {
         if (m_id) {
-            detail::AssetBase::DecRefCount(meta::type_index<T>(), m_id);
+            detail::AssetBase::DecRefCount(meta::TypeIndex::Get<T>(), m_id);
         }
 
         m_id = other.m_id;
@@ -75,7 +75,7 @@ public:
 
     ~Asset () noexcept {
         if (m_id) {
-            detail::AssetBase::DecRefCount(meta::type_index<T>(), m_id);
+            detail::AssetBase::DecRefCount(meta::TypeIndex::Get<T>(), m_id);
         }
     }
 
@@ -110,7 +110,7 @@ public:
     }
 
     [[nodiscard]] std::string_view path () const {
-        return detail::AssetBase::GetPath(meta::type_index<T>(), m_id);
+        return detail::AssetBase::GetPath(meta::TypeIndex::Get<T>(), m_id);
     }
 
 private:
@@ -124,7 +124,7 @@ private:
     Asset (std::size_t id, T* ptr) : m_id{id}, m_ptr{ptr} {}
 };
 
-template<typename T>
+template <typename T>
 class IAssetType {
 public:
     virtual ~IAssetType () = default;
@@ -134,7 +134,7 @@ public:
             return Asset<T>{};
         }
 
-        detail::AssetBase::IncRefCount(meta::type_index<T>(), *m_id);
+        detail::AssetBase::IncRefCount(meta::TypeIndex::Get<T>(), *m_id);
 
         return Asset<T>{*m_id, static_cast<T*>(this)};
     }
@@ -145,6 +145,6 @@ private:
     std::optional<std::size_t> m_id = 0;
 };
 
-template<typename T>
+template <typename T>
 ISerializable<Asset<T>>& phenyl_GetSerializable(detail::SerializableMarker<Asset<T>>);
 } // namespace phenyl::core

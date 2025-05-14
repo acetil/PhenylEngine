@@ -18,10 +18,10 @@ public:
 
     ~GlPipeline () override;
 
-    void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer,
+    void bindBuffer (meta::TypeIndex type, graphics::BufferBinding binding, const graphics::IBuffer& buffer,
         std::size_t offset) override;
     void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
-    void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer,
+    void bindUniform (meta::TypeIndex, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer,
         std::size_t offset, std::size_t size) override;
     void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
     void unbindIndexBuffer () override;
@@ -33,10 +33,10 @@ public:
     void setRenderMode (GLenum renderMode);
     void setShader (core::Asset<graphics::Shader> shader);
 
-    graphics::BufferBinding addBuffer (std::size_t type, GLuint divisor);
+    graphics::BufferBinding addBuffer (meta::TypeIndex type, GLuint divisor);
     void addAttrib (GLenum type, GLint size, GLuint location, graphics::BufferBinding binding, std::size_t offset);
 
-    graphics::UniformBinding addUniform (std::size_t type, unsigned int location);
+    graphics::UniformBinding addUniform (meta::TypeIndex type, unsigned int location);
     graphics::SamplerBinding addSampler (unsigned int location);
 
     void setDepthTest (bool doMask);
@@ -53,8 +53,8 @@ private:
     GLenum m_renderMode = GL_TRIANGLES;
     GlWindowFrameBuffer* m_windowFrameBuffer;
     core::Asset<graphics::Shader> m_shader;
-    std::vector<std::size_t> m_bufferTypes;
-    std::unordered_map<graphics::UniformBinding, std::size_t> m_uniformTypes;
+    std::vector<meta::TypeIndex> m_bufferTypes;
+    std::unordered_map<graphics::UniformBinding, meta::TypeIndex> m_uniformTypes;
     std::optional<PipelineIndex> m_indexType = std::nullopt;
 
     bool m_doDepthTest = false;
@@ -76,12 +76,12 @@ public:
     void withGeometryType (graphics::GeometryType type) override;
     void withShader (core::Asset<graphics::Shader> shader) override;
 
-    graphics::BufferBinding withBuffer (std::size_t type, std::size_t size,
+    graphics::BufferBinding withBuffer (meta::TypeIndex type, std::size_t size,
         graphics::BufferInputRate inputRate) override;
     void withAttrib (graphics::ShaderDataType type, unsigned int location, graphics::BufferBinding binding,
         std::size_t offset) override;
 
-    graphics::UniformBinding withUniform (std::size_t type, unsigned int location) override;
+    graphics::UniformBinding withUniform (meta::TypeIndex type, unsigned int location) override;
     graphics::SamplerBinding withSampler (unsigned int location) override;
 
     void withCullMode (graphics::CullMode mode) override;

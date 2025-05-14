@@ -52,9 +52,9 @@ public:
     World& operator= (const World&) = delete;
     World& operator= (World&&) = default;
 
-    template<typename T>
+    template <typename T>
     void addComponent (std::string name) {
-        PHENYL_ASSERT_MSG(!m_components.contains(meta::type_index<T>()), "Attempted to add component \"{}\" twice",
+        PHENYL_ASSERT_MSG(!m_components.contains(meta::TypeIndex::Get<T>()), "Attempted to add component \"{}\" twice",
             name);
 
         auto comp = std::make_unique<detail::Component<T>>(this, std::move(name));
@@ -77,53 +77,52 @@ public:
 
     [[nodiscard]] Entity parent (EntityId id) noexcept;
 
-    template<typename... Args>
+    template <typename... Args>
     Query<Args...> query () {
         return Query<Args...>{makeQueryArchetypes(detail::ArchetypeKey::Make<Args...>()), this};
     }
 
-    template<typename T>
+    template <typename T>
     void addHandler (std::function<void(const OnInsert<T>&, Entity)> handler) {
-        auto it = m_components.find(meta::type_index<T>());
+        auto it = m_components.find(meta::TypeIndex::Get<T>());
         PHENYL_ASSERT_MSG(it != m_components.end(), "Failed to find component in addHandler()");
 
         auto& component = static_cast<detail::Component<T>&>(*it->second);
         component.addHandler(std::move(handler));
     }
 
-    template<typename T>
+    template <typename T>
     void addHandler (std::function<void(const OnRemove<T>&, Entity)> handler) {
-        auto it = m_components.find(meta::type_index<T>());
+        auto it = m_components.find(meta::TypeIndex::Get<T>());
         PHENYL_ASSERT_MSG(it != m_components.end(), "Failed to find component in addHandler()");
 
         auto& component = static_cast<detail::Component<T>&>(*it->second);
         component.addHandler(std::move(handler));
     }
 
-    template<typename Signal, typename... Args>
+    template <typename Signal, typename... Args>
     void addHandler (std::function<void(const Signal&, const Bundle<Args...>& bundle)> handler) {
         detail::SignalHandlerVector<Signal>* handlerVec;
-        auto vecIt = m_signalHandlerVectors.find(meta::type_index<Signal>());
+        auto vecIt = m_signalHandlerVectors.find(meta::TypeIndex::Get<Signal>());
         if (vecIt != m_signalHandlerVectors.end()) {
             handlerVec = static_cast<detail::SignalHandlerVector<Signal>*>(vecIt->second.get());
         } else {
             auto newVec = std::make_unique<detail::SignalHandlerVector<Signal>>(*this);
             handlerVec = newVec.get();
-            m_signalHandlerVectors.emplace(meta::type_index<Signal>(), std::move(newVec));
+            m_signalHandlerVectors.emplace(meta::TypeIndex::Get<Signal>(), std::move(newVec));
         }
 
         handlerVec->addHandler(
             std::make_unique<detail::SignalHandler2<Signal, Args...>>(query<Args...>(), std::move(handler)));
     }
 
-    template<typename Signal, typename... Args>
-    void addHandler (auto&& fn) requires meta::callable<decltype(fn), void, const Signal&, const Bundle<Args...>&>
-    {
+    template <typename Signal, typename... Args>
+    void addHandler (std::invocable<const Signal&, const Bundle<Args...>&> auto&& fn) {
         addHandler<Signal, Args...>(
             std::function<void(const Signal&, const Bundle<Args...>&)>{std::forward<decltype(fn)>(fn)});
     }
 
-    template<typename Signal, typename... Args>
+    template <typename Signal, typename... Args>
     void addHandler (std::function<void(const Signal&, std::remove_reference_t<Args>&... args)> handler) {
         addHandler(std::function<void(const Signal&, const Bundle<Args...>&)>{
           [handler = std::move(handler)] (const Signal& signal, const Bundle<Args...>& bundle) {
@@ -131,10 +130,8 @@ public:
           }});
     }
 
-    template<typename Signal, typename... Args>
-    void addHandler (auto&& fn)
-        requires meta::callable<decltype(fn), void, const Signal&, std::remove_reference_t<Args>&...>
-    {
+    template <typename Signal, typename... Args>
+    void addHandler (std::invocable<const Signal&, std::remove_reference_t<Args>&...> auto&& fn) {
         addHandler<Signal, Args...>(
             std::function<void(const Signal&, std::remove_reference_t<Args>&...)>{std::forward<decltype(fn)>(fn)});
     }
@@ -150,7 +147,7 @@ public:
     iterator end ();
 
 private:
-    std::unordered_map<std::size_t, std::unique_ptr<detail::UntypedComponent>> m_components;
+    std::unordered_map<meta::TypeIndex, std::unique_ptr<detail::UntypedComponent>> m_components;
 
     detail::EntityIdList m_idList;
     detail::RelationshipManager m_relationships;
@@ -161,7 +158,7 @@ private:
 
     std::vector<std::weak_ptr<QueryArchetypes>> m_queryArchetypes;
 
-    std::unordered_map<std::size_t, std::unique_ptr<detail::IHandlerVector>> m_signalHandlerVectors;
+    std::unordered_map<meta::TypeIndex, std::unique_ptr<detail::IHandlerVector>> m_signalHandlerVectors;
 
     std::shared_ptr<PrefabManager> m_prefabManager;
 
@@ -182,16 +179,16 @@ private:
     Archetype* findArchetype (const detail::ArchetypeKey& key) override;
     void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
 
-    void onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) override;
-    void onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) override;
+    void onComponentInsert (EntityId id, meta::TypeIndex compType, std::byte* ptr) override;
+    void onComponentRemove (EntityId id, meta::TypeIndex compType, std::byte* ptr) override;
 
-    void deferInsert (EntityId id, std::size_t compType, std::byte* ptr);
-    void deferErase (EntityId id, std::size_t compType);
+    void deferInsert (EntityId id, meta::TypeIndex compType, std::byte* ptr);
+    void deferErase (EntityId id, meta::TypeIndex compType);
     void deferApply (EntityId id, std::function<void(Entity)> applyFunc);
 
     void instantiatePrefab (EntityId id, const detail::PrefabFactories& factories);
 
-    void raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr);
+    void raiseSignal (EntityId id, meta::TypeIndex signalType, std::byte* ptr);
 
     void deferRemove ();
     void deferRemoveEnd ();

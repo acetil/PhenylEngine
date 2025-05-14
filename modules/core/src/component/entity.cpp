@@ -14,7 +14,7 @@ const detail::EntityEntry& Entity::entry () const {
     return m_world->m_entityEntries[id().pos()];
 }
 
-void Entity::raiseUntyped (std::size_t signalType, std::byte* ptr) {
+void Entity::raiseUntyped (meta::TypeIndex signalType, std::byte* ptr) {
     m_world->raiseSignal(id(), signalType, ptr);
 }
 
@@ -22,11 +22,11 @@ bool Entity::shouldDefer () {
     return m_world->m_deferCount;
 }
 
-void Entity::deferInsert (std::size_t compType, std::byte* ptr) {
+void Entity::deferInsert (meta::TypeIndex compType, std::byte* ptr) {
     m_world->deferInsert(id(), compType, ptr);
 }
 
-void Entity::deferErase (std::size_t compType) {
+void Entity::deferErase (meta::TypeIndex compType) {
     m_world->deferErase(id(), compType);
 }
 

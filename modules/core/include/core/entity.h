@@ -24,7 +24,7 @@ public:
     [[nodiscard]] ChildrenView children () const noexcept;
     void remove ();
 
-    template<typename T>
+    template <typename T>
     T* get () {
         if (!exists()) {
             PHENYL_LOGE(LOGGER, "Attempted to get component from non-existent entity {}", id().value());
@@ -35,7 +35,7 @@ public:
         return e.archetype->tryGet<T>(e.pos);
     }
 
-    template<typename T>
+    template <typename T>
     const T* get () const {
         if (!exists()) {
             PHENYL_LOGE(LOGGER, "Attempted to get component from non-existent entity {}", id().value());
@@ -46,12 +46,12 @@ public:
         return e.archetype->tryGet<T>(e.pos);
     }
 
-    template<typename T>
+    template <typename T>
     void insert (T&& comp) {
         emplace<T>(std::forward<T>(comp));
     }
 
-    template<typename T, typename... Args>
+    template <typename T, typename... Args>
     void emplace (Args&&... args) {
         if (!exists()) {
             PHENYL_LOGE(LOGGER, "Attempted to add component to non-existent entity {}", id().value());
@@ -66,13 +66,13 @@ public:
 
         if (shouldDefer()) {
             T comp{std::forward<Args>(args)...};
-            deferInsert(meta::type_index<T>(), reinterpret_cast<std::byte*>(&comp));
+            deferInsert(meta::TypeIndex::Get<T>(), reinterpret_cast<std::byte*>(&comp));
         } else {
             e.archetype->addComponent<T>(e.pos, std::forward<Args>(args)...);
         }
     }
 
-    template<typename T>
+    template <typename T>
     void erase () {
         if (!exists()) {
             PHENYL_LOGE(LOGGER, "Attempted to erase component from non-existent entity {}", id().value());
@@ -80,14 +80,14 @@ public:
         }
 
         if (shouldDefer()) {
-            deferErase(meta::type_index<T>());
+            deferErase(meta::TypeIndex::Get<T>());
         } else {
             auto& e = entry();
             e.archetype->removeComponent<T>(e.pos);
         }
     }
 
-    template<typename T>
+    template <typename T>
     bool has () const {
         if (!exists()) {
             PHENYL_LOGE(LOGGER, "Attempted to check component existence of non-existent entity {}", id().value());
@@ -97,12 +97,12 @@ public:
         return entry().archetype->has<T>();
     }
 
-    template<typename Signal>
+    template <typename Signal>
     void raise (Signal signal) {
-        raiseUntyped(meta::type_index<Signal>(), reinterpret_cast<std::byte*>(&signal));
+        raiseUntyped(meta::TypeIndex::Get<Signal>(), reinterpret_cast<std::byte*>(&signal));
     }
 
-    template<typename T>
+    template <typename T>
     void apply (std::function<void(T&)> applyFunc) {
         if (shouldDefer()) {
             deferApply([func = std::move(applyFunc)] (Entity entity) { entity.apply(std::move(func)); });
@@ -139,16 +139,16 @@ private:
     World* m_world = nullptr;
 
     [[nodiscard]] const detail::EntityEntry& entry () const;
-    void raiseUntyped (std::size_t signalType, std::byte* ptr);
+    void raiseUntyped (meta::TypeIndex signalType, std::byte* ptr);
     bool shouldDefer ();
-    void deferInsert (std::size_t compType, std::byte* ptr);
-    void deferErase (std::size_t compType);
+    void deferInsert (meta::TypeIndex compType, std::byte* ptr);
+    void deferErase (meta::TypeIndex compType);
     void deferApply (std::function<void(Entity)> applyFunc);
 
     friend World;
-    template<typename... Args>
+    template <typename... Args>
     friend class ArchetypeView;
-    template<typename... Args>
+    template <typename... Args>
     friend class Query;
 };
 } // namespace phenyl::core

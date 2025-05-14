@@ -2,7 +2,7 @@
 
 using namespace phenyl::core;
 
-UntypedComponentVector::UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize,
+UntypedComponentVector::UntypedComponentVector (meta::TypeIndex typeIndex, std::size_t dataSize,
     std::size_t startCapacity) :
     m_type{typeIndex},
     m_compSize{dataSize},

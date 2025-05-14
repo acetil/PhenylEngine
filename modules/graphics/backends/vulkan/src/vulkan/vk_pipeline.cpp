@@ -32,8 +32,8 @@ static VkIndexType GetIndexType (ShaderIndexType type) {
 
 VulkanPipeline::VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory,
     VulkanResource<VkDescriptorSetLayout> descriptorSetLayout, TestFramebuffer* framebuffer,
-    VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes,
-    std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes,
+    VulkanWindowFrameBuffer* windowFb, std::vector<meta::TypeIndex> vertexBindingTypes,
+    std::unordered_map<graphics::UniformBinding, meta::TypeIndex> uniformTypes,
     std::unordered_set<graphics::SamplerBinding> validSamplers) :
     m_device{device},
     m_pipelineFactory{std::move(pipelineFactory)},
@@ -49,7 +49,8 @@ VulkanPipeline::VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineF
     PHENYL_DASSERT(windowFb);
 }
 
-void VulkanPipeline::bindBuffer (std::size_t type, BufferBinding binding, const IBuffer& buffer, std::size_t offset) {
+void VulkanPipeline::bindBuffer (meta::TypeIndex type, BufferBinding binding, const IBuffer& buffer,
+    std::size_t offset) {
     std::size_t index = binding;
     const auto* storageBuffer = reinterpret_cast<const IVulkanStorageBuffer*>(&buffer);
     PHENYL_ASSERT_MSG(index < m_vertexBindingTypes.size(), "Attempted to bind to invalid binding!");
@@ -67,7 +68,7 @@ void VulkanPipeline::bindIndexBuffer (ShaderIndexType type, const IBuffer& buffe
     PHENYL_DASSERT(m_indexBuffer);
 }
 
-void VulkanPipeline::bindUniform (std::size_t type, graphics::UniformBinding binding,
+void VulkanPipeline::bindUniform (meta::TypeIndex type, graphics::UniformBinding binding,
     const graphics::IUniformBuffer& buffer, std::size_t offset, std::size_t size) {
     const auto& uniformBuffer = reinterpret_cast<const VulkanUniformBuffer&>(buffer);
 
@@ -347,7 +348,7 @@ void VulkanPipelineBuilder::withShader (core::Asset<graphics::Shader> shader) {
     this->shader = std::move(shader);
 }
 
-phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (std::size_t type, std::size_t size,
+phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (meta::TypeIndex type, std::size_t size,
     graphics::BufferInputRate inputRate) {
     VkVertexInputRate vkInputRate;
     switch (inputRate) {
@@ -420,7 +421,7 @@ void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned 
     }
 }
 
-UniformBinding VulkanPipelineBuilder::withUniform (std::size_t type, unsigned int location) {
+UniformBinding VulkanPipelineBuilder::withUniform (meta::TypeIndex type, unsigned int location) {
     PHENYL_ASSERT_MSG(location < MAX_DESCRIPTOR_BINDING, "Uniform binding {} larger than defined maximum of {}!",
         location, MAX_DESCRIPTOR_BINDING);
     descriptorBindings.push_back(VkDescriptorSetLayoutBinding{

@@ -30,38 +30,38 @@ public:
         return m_serializer;
     }
 
-    template<std::derived_from<IResource> T>
+    template <std::derived_from<IResource> T>
     T& resource () {
         return m_resourceManager.resource<T>();
     }
 
-    template<std::derived_from<IResource> T>
+    template <std::derived_from<IResource> T>
     const T& resource () const {
         return m_resourceManager.resource<T>();
     }
 
-    template<std::derived_from<IResource> T>
+    template <std::derived_from<IResource> T>
     T* resourceMaybe () {
         return m_resourceManager.resourceMaybe<T>();
     }
 
-    template<std::derived_from<IResource> T>
+    template <std::derived_from<IResource> T>
     const T* resourceMaybe () const {
         return m_resourceManager.resourceMaybe<T>();
     }
 
-    template<std::derived_from<IResource> T, typename... Args>
+    template <std::derived_from<IResource> T, typename... Args>
     void addResource (Args&&... args) requires (std::constructible_from<T, Args...>)
     {
         m_resourceManager.addResource<T>(std::forward<Args>(args)...);
     }
 
-    template<std::derived_from<IResource> T>
+    template <std::derived_from<IResource> T>
     void addResource (T&& res) {
         m_resourceManager.addResource<T>(std::forward<T>(res));
     }
 
-    template<std::derived_from<IResource> T>
+    template <std::derived_from<IResource> T>
     void addResource (T* resource) {
         m_resourceManager.addResource(resource);
     }
@@ -70,10 +70,10 @@ public:
         return m_resourceManager;
     }
 
-    template<std::derived_from<IPlugin> T>
+    template <std::derived_from<IPlugin> T>
     void addPlugin () requires std::is_default_constructible_v<T>
     {
-        auto typeIndex = meta::type_index<T>();
+        auto typeIndex = meta::TypeIndex::Get<T>();
         if (m_plugins.contains(typeIndex)) {
             // Do not add plugins twice
             return;
@@ -82,10 +82,10 @@ public:
         registerPlugin(typeIndex, std::make_unique<T>());
     }
 
-    template<std::derived_from<IInitPlugin> T>
+    template <std::derived_from<IInitPlugin> T>
     void addPlugin () requires std::is_default_constructible_v<T>
     {
-        auto typeIndex = meta::type_index<T>();
+        auto typeIndex = meta::TypeIndex::Get<T>();
         if (m_initPlugins.contains(typeIndex)) {
             // Do not add plugins twice
             return;
@@ -95,23 +95,23 @@ public:
         registerPlugin(typeIndex, plugin);
     }
 
-    template<std::derived_from<IPlugin> T>
+    template <std::derived_from<IPlugin> T>
     void registerPlugin (std::unique_ptr<T> plugin) {
-        registerPlugin(meta::type_index<T>(), std::move(plugin));
+        registerPlugin(meta::TypeIndex::Get<T>(), std::move(plugin));
     }
 
-    template<core::SerializableType T>
+    template <core::SerializableType T>
     void addComponent (std::string name) {
         addUnserializedComponent<T>(std::move(name));
         serializer().addSerializer<T>();
     }
 
-    template<typename T>
+    template <typename T>
     void addUnserializedComponent (std::string name) {
         world().addComponent<T>(std::move(name));
     }
 
-    template<typename S>
+    template <typename S>
     System<S>& addSystem (std::string systemName, auto systemFunc) {
         auto* system = makeSystem<S>(std::move(systemName), systemFunc);
         auto* stage = getStage<S>();
@@ -121,7 +121,7 @@ public:
         return *system;
     }
 
-    template<typename S, typename T, typename... Args>
+    template <typename S, typename T, typename... Args>
     System<S>& addSystem (std::string systemName, T* obj, void (T::*systemFunc)(Args...)) {
         auto* stage = getStage<S>();
         PHENYL_ASSERT(stage);
@@ -132,7 +132,7 @@ public:
         return *system;
     }
 
-    template<typename S, typename Parent>
+    template <typename S, typename Parent>
     void addStage (std::string name) {
         auto* parent = getStage<Parent>();
         PHENYL_ASSERT(parent);
@@ -141,7 +141,7 @@ public:
         parent->addChildStage(stage);
     }
 
-    template<typename Before, typename After>
+    template <typename Before, typename After>
     void runStageBefore () {
         auto* before = getStage<Before>();
         auto* after = getStage<After>();
@@ -165,16 +165,16 @@ private:
 
     ResourceManager m_resourceManager;
 
-    std::unordered_set<std::size_t> m_initPlugins;
-    std::unordered_map<std::size_t, std::unique_ptr<IPlugin>> m_plugins;
+    std::unordered_set<meta::TypeIndex> m_initPlugins;
+    std::unordered_map<meta::TypeIndex, std::unique_ptr<IPlugin>> m_plugins;
 
     std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> m_systems;
-    std::unordered_map<std::size_t, std::unique_ptr<AbstractStage>> m_stages;
+    std::unordered_map<meta::TypeIndex, std::unique_ptr<AbstractStage>> m_stages;
 
-    void registerPlugin (std::size_t typeIndex, IInitPlugin& plugin);
-    void registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin);
+    void registerPlugin (meta::TypeIndex typeIndex, IInitPlugin& plugin);
+    void registerPlugin (meta::TypeIndex typeIndex, std::unique_ptr<IPlugin> plugin);
 
-    template<typename S, typename... Args>
+    template <typename S, typename... Args>
     System<S>* makeSystem (std::string systemName, void (*systemFunc)(Args...)) {
         PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"",
             systemName);
@@ -186,7 +186,7 @@ private:
         return ptr;
     }
 
-    template<typename S, typename T, typename... Args>
+    template <typename S, typename T, typename... Args>
     System<S>* makeSystem (std::string systemName, void (T::*systemFunc)(Args...)) {
         PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"",
             systemName);
@@ -198,7 +198,7 @@ private:
         return ptr;
     }
 
-    template<typename S, typename T>
+    template <typename S, typename T>
     System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)(PhenylRuntime&)) {
         PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"",
             systemName);
@@ -210,7 +210,7 @@ private:
         return ptr;
     }
 
-    template<typename S, typename T>
+    template <typename S, typename T>
     System<S>* makeSystem (std::string systemName, T* obj, void (T::*systemFunc)()) {
         PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"",
             systemName);
@@ -222,9 +222,9 @@ private:
         return ptr;
     }
 
-    template<typename S>
+    template <typename S>
     Stage<S>* getStage () {
-        auto typeIndex = meta::type_index<S>();
+        auto typeIndex = meta::TypeIndex::Get<S>();
 
         auto it = m_stages.find(typeIndex);
         if (it != m_stages.end()) {
@@ -234,9 +234,9 @@ private:
         }
     }
 
-    template<typename S>
+    template <typename S>
     const Stage<S>* getStage () const {
-        auto typeIndex = meta::type_index<S>();
+        auto typeIndex = meta::TypeIndex::Get<S>();
 
         auto it = m_stages.find(typeIndex);
         if (it != m_stages.end()) {
@@ -246,7 +246,7 @@ private:
         }
     }
 
-    template<typename S>
+    template <typename S>
     Stage<S>* initStage (std::string name) {
         auto stage = std::make_unique<Stage<S>>(std::move(name), *this);
         auto* ptr = stage.get();
@@ -255,7 +255,7 @@ private:
         return ptr;
     }
 
-    template<typename S>
+    template <typename S>
     friend class Stage;
     friend class IRunnableSystem;
 };

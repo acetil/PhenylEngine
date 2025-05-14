@@ -1,7 +1,7 @@
 #pragma once
 
 #include "system.h"
-#include "util/meta.h"
+#include "util/type_index.h"
 
 #include <memory>
 #include <unordered_set>
@@ -19,7 +19,7 @@ public:
     void runBefore (AbstractStage* stage);
     void runAfter (AbstractStage* stage);
 
-    [[nodiscard]] virtual std::size_t id () const noexcept = 0;
+    [[nodiscard]] virtual meta::TypeIndex id () const noexcept = 0;
 
     const std::string& name () const noexcept {
         return m_name;
@@ -45,13 +45,13 @@ protected:
         std::unordered_set<AbstractStage*>& visiting);
 };
 
-template<typename S>
+template <typename S>
 class Stage : public AbstractStage {
 public:
     explicit Stage (std::string name, PhenylRuntime& runtime) : AbstractStage{std::move(name), runtime} {}
 
-    [[nodiscard]] std::size_t id () const noexcept override {
-        return meta::type_index<S>();
+    [[nodiscard]] meta::TypeIndex id () const noexcept override {
+        return meta::TypeIndex::Get<S>();
     }
 
     void addSystem (System<S>* system) {

@@ -236,7 +236,7 @@ Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
     // Build new archetype
 
     // Create component vectors
-    std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> compVecs;
+    std::map<meta::TypeIndex, std::unique_ptr<UntypedComponentVector>> compVecs;
     for (auto i : key) {
         auto compIt = m_components.find(i);
         PHENYL_ASSERT_MSG(compIt != m_components.end(), "Failed to find component in findArchetype()");
@@ -264,21 +264,21 @@ void World::updateEntityEntry (EntityId id, Archetype* archetype, std::size_t po
     entry.pos = pos;
 }
 
-void World::onComponentInsert (EntityId id, std::size_t compType, std::byte* ptr) {
+void World::onComponentInsert (EntityId id, meta::TypeIndex compType, std::byte* ptr) {
     PHENYL_DASSERT(m_components.contains(compType));
 
     auto& comp = m_components[compType];
     comp->onInsert(id, ptr);
 }
 
-void World::onComponentRemove (EntityId id, std::size_t compType, std::byte* ptr) {
+void World::onComponentRemove (EntityId id, meta::TypeIndex compType, std::byte* ptr) {
     PHENYL_DASSERT(m_components.contains(compType));
 
     auto& comp = m_components[compType];
     comp->onRemove(id, ptr);
 }
 
-void World::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
+void World::deferInsert (EntityId id, meta::TypeIndex compType, std::byte* ptr) {
     PHENYL_DASSERT(m_deferCount);
     PHENYL_DASSERT(m_components.contains(compType));
 
@@ -286,7 +286,7 @@ void World::deferInsert (EntityId id, std::size_t compType, std::byte* ptr) {
     comp->deferComp(id, ptr);
 }
 
-void World::deferErase (EntityId id, std::size_t compType) {
+void World::deferErase (EntityId id, meta::TypeIndex compType) {
     PHENYL_DASSERT(m_deferCount);
     PHENYL_DASSERT(m_components.contains(compType));
     auto& comp = m_components[compType];
@@ -305,7 +305,7 @@ void World::instantiatePrefab (EntityId id, const detail::PrefabFactories& facto
     entry.archetype->instantiatePrefab(factories, entry.pos);
 }
 
-void World::raiseSignal (EntityId id, std::size_t signalType, std::byte* ptr) {
+void World::raiseSignal (EntityId id, meta::TypeIndex signalType, std::byte* ptr) {
     auto vecIt = m_signalHandlerVectors.find(signalType);
     if (vecIt == m_signalHandlerVectors.end()) {
         PHENYL_TRACE(LOGGER, "Ignored signal type {} for entity {} that has no handlers", signalType, id.value());

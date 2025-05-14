@@ -5,7 +5,7 @@
 using namespace phenyl::core;
 
 Archetype::Archetype (detail::IArchetypeManager& manager,
-    std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) :
+    std::map<meta::TypeIndex, std::unique_ptr<UntypedComponentVector>> components) :
     m_manager{manager},
     m_key{components | std::ranges::views::keys},
     m_components{std::move(components)} {}
@@ -78,7 +78,7 @@ std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
 
 void Archetype::instantiateInto (const detail::PrefabFactories& factories, std::size_t pos) {
     PHENYL_DASSERT(pos == size() - 1);
-    std::vector<std::size_t> newComps;
+    std::vector<meta::TypeIndex> newComps;
 
     auto compIt = m_components.begin();
     auto facIt = factories.begin();

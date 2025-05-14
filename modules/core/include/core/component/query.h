@@ -83,15 +83,14 @@ private:
     std::unordered_set<Archetype*> m_archetypes;
 };
 
-template<typename F, typename... Args> concept Query2Callback =
-    meta::callable<F, void, std::remove_reference_t<Args>&...>;
+template <typename F, typename... Args> concept Query2Callback = std::invocable<F, std::remove_reference_t<Args>&...>;
 
-template<typename F, typename... Args> concept Query2PairCallback =
-    meta::callable<F, void, const Bundle<Args...>&, const Bundle<Args...>&>;
+template <typename F, typename... Args> concept Query2PairCallback =
+    std::invocable<F, const Bundle<Args...>&, const Bundle<Args...>&>;
 
-template<typename F, typename... Args> concept Query2BundleCallback = meta::callable<F, void, const Bundle<Args...>&>;
+template <typename F, typename... Args> concept Query2BundleCallback = std::invocable<F, const Bundle<Args...>&>;
 
-template<typename... Args>
+template <typename... Args>
 class Query {
 public:
     Query () : m_archetypes{nullptr} {}

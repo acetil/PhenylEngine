@@ -54,14 +54,14 @@ private:
 public:
     VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory,
         VulkanResource<VkDescriptorSetLayout> descriptorSetLayout, TestFramebuffer* framebuffer,
-        VulkanWindowFrameBuffer* windowFb, std::vector<std::size_t> vertexBindingTypes,
-        std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes,
+        VulkanWindowFrameBuffer* windowFb, std::vector<meta::TypeIndex> vertexBindingTypes,
+        std::unordered_map<graphics::UniformBinding, meta::TypeIndex> uniformTypes,
         std::unordered_set<graphics::SamplerBinding> validSamplers);
 
-    void bindBuffer (std::size_t type, graphics::BufferBinding binding, const graphics::IBuffer& buffer,
+    void bindBuffer (meta::TypeIndex type, graphics::BufferBinding binding, const graphics::IBuffer& buffer,
         std::size_t offset) override;
     void bindIndexBuffer (graphics::ShaderIndexType type, const graphics::IBuffer& buffer) override;
-    void bindUniform (std::size_t type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer,
+    void bindUniform (meta::TypeIndex type, graphics::UniformBinding binding, const graphics::IUniformBuffer& buffer,
         std::size_t offset, std::size_t size) override;
     void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
 
@@ -84,12 +84,12 @@ public:
     std::unique_ptr<VulkanPipelineFactory> m_pipelineFactory;
 
     VulkanResource<VkDescriptorSetLayout> m_descriptorSetLayout;
-    std::unordered_map<graphics::UniformBinding, std::size_t> m_uniformTypes;
+    std::unordered_map<graphics::UniformBinding, meta::TypeIndex> m_uniformTypes;
     std::unordered_map<graphics::UniformBinding, UniformBufferBinding> m_boundUniformBuffers;
     std::unordered_set<graphics::SamplerBinding> m_validSamplerBindings;
     std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> m_boundSamplers;
 
-    std::vector<std::size_t> m_vertexBindingTypes;
+    std::vector<meta::TypeIndex> m_vertexBindingTypes;
 
     std::vector<const IVulkanStorageBuffer*> m_boundVertexBuffers;
     std::vector<VkBuffer> m_boundVkBuffers;
@@ -114,12 +114,12 @@ public:
 
     void withShader (core::Asset<graphics::Shader> shader) override;
 
-    graphics::BufferBinding withBuffer (std::size_t type, std::size_t size,
+    graphics::BufferBinding withBuffer (meta::TypeIndex type, std::size_t size,
         graphics::BufferInputRate inputRate) override;
     void withAttrib (graphics::ShaderDataType type, unsigned int location, graphics::BufferBinding binding,
         std::size_t offset) override;
 
-    graphics::UniformBinding withUniform (std::size_t type, unsigned int location) override;
+    graphics::UniformBinding withUniform (meta::TypeIndex type, unsigned int location) override;
     graphics::SamplerBinding withSampler (unsigned int location) override;
 
     std::unique_ptr<graphics::IPipeline> build () override;
@@ -135,12 +135,12 @@ private:
     core::Asset<graphics::Shader> shader;
 
     std::vector<VkVertexInputBindingDescription> vertexBindings;
-    std::vector<std::size_t> vertexBindingTypes;
+    std::vector<meta::TypeIndex> vertexBindingTypes;
     std::vector<VkVertexInputAttributeDescription> vertexAttribs;
 
     std::vector<VkDescriptorSetLayoutBinding> descriptorBindings;
 
-    std::unordered_map<graphics::UniformBinding, std::size_t> uniformTypes;
+    std::unordered_map<graphics::UniformBinding, meta::TypeIndex> uniformTypes;
     std::unordered_set<graphics::SamplerBinding> registeredSamplers;
 
     VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;

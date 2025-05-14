@@ -1,14 +1,14 @@
 #pragma once
 
 #include "logging/logging.h"
-#include "util/meta.h"
+#include "util/type_index.h"
 
 #include <memory>
 
 namespace phenyl::core {
 class UntypedComponentVector {
 public:
-    UntypedComponentVector (std::size_t typeIndex, std::size_t dataSize, std::size_t startCapacity);
+    UntypedComponentVector (meta::TypeIndex typeIndex, std::size_t dataSize, std::size_t startCapacity);
     virtual ~UntypedComponentVector () = default;
 
     UntypedComponentVector (UntypedComponentVector&& other) noexcept;
@@ -29,7 +29,7 @@ public:
     void remove (std::size_t pos);
     void clear ();
 
-    [[nodiscard]] std::size_t type () const noexcept {
+    [[nodiscard]] meta::TypeIndex type () const noexcept {
         return m_type;
     }
 
@@ -69,7 +69,7 @@ protected:
 private:
     static constexpr std::size_t RESIZE_FACTOR = 2;
 
-    std::size_t m_type;
+    meta::TypeIndex m_type;
 
     std::unique_ptr<std::byte[]> m_memory;
     std::size_t m_compSize;
@@ -79,14 +79,14 @@ private:
     void guaranteeLength (std::size_t newLen);
 };
 
-template<typename T>
+template <typename T>
 class ComponentVector : public UntypedComponentVector {
 public:
     using iterator = T*;
     using const_iterator = const T*;
 
     explicit ComponentVector (std::size_t startCapacity = 16) :
-        UntypedComponentVector{meta::type_index<T>(), sizeof(T), startCapacity} {}
+        UntypedComponentVector{meta::TypeIndex::Get<T>(), sizeof(T), startCapacity} {}
 
     ~ComponentVector () override {
         auto* start = reinterpret_cast<T*>(beginUntyped());
@@ -97,7 +97,7 @@ public:
         }
     }
 
-    template<typename... Args>
+    template <typename... Args>
     T* emplace (Args&&... args) requires std::constructible_from<T, Args&&...>
     {
         T* ptr = reinterpret_cast<T*>(insertUntyped());
