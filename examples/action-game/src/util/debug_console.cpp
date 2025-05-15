@@ -12,7 +12,7 @@ using namespace phenyl;
 
 static Logger LOGGER{"DEBUG_CONSOLE"};
 
-static void handleProfiler (test::TestApp* app, const std::vector<std::string_view>& args) {
+static void HandleProfiler (test::TestApp* app, const std::vector<std::string_view>& args) {
     if (args.empty()) {
         PHENYL_LOGW(LOGGER, "Missing argument after \"profiler\"");
     } else if (args[0] == "display") {
@@ -27,7 +27,7 @@ static void handleProfiler (test::TestApp* app, const std::vector<std::string_vi
     }
 }
 
-static void doDebugConsole (test::TestApp* app) {
+static void DoDebugConsole (test::TestApp* app) {
     std::cout << ">";
     std::string debugInput;
     std::getline(std::cin, debugInput);
@@ -46,7 +46,7 @@ static void doDebugConsole (test::TestApp* app) {
     args.erase(args.begin());
 
     if (command == "profiler") {
-        handleProfiler(app, args);
+        HandleProfiler(app, args);
     } else if (command == "level") {
         /*if (args.size() == 1 && args[0] == "reload") {
             bus->raise(event::ReloadMapEvent());
@@ -94,8 +94,8 @@ static void doDebugConsole (test::TestApp* app) {
     }
 }
 
-void test::doDebugConsole (test::TestApp* app) {
+void test::DoDebugConsole (test::TestApp* app) {
     app->pause();
-    ::doDebugConsole(app);
+    ::DoDebugConsole(app);
     app->queueResume();
 }

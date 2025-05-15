@@ -92,7 +92,7 @@ void test::TestApp::update () {
     }
 
     if (m_consoleAction.value()) {
-        test::doDebugConsole(this);
+        test::DoDebugConsole(this);
     }
 
     auto& canvas = runtime().resource<phenyl::Canvas>();
