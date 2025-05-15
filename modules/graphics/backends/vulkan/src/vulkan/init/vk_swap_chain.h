@@ -4,50 +4,52 @@
 #include "vulkan/vulkan_headers.h"
 
 namespace phenyl::vulkan {
-    struct VulkanSwapChainDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
+struct VulkanSwapChainDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
 
-    struct VulkanQueueFamilies {
-        std::uint32_t graphicsFamily;
-        std::uint32_t presentFanily;
-    };
+struct VulkanQueueFamilies {
+    std::uint32_t graphicsFamily;
+    std::uint32_t presentFanily;
+};
 
-    struct SwapChainImage {
-        VkImage image;
-        VkImageView view;
-    };
+struct SwapChainImage {
+    VkImage image;
+    VkImageView view;
+};
 
-    class VulkanSwapChain {
-    private:
-        VkDevice device;
-        VkSwapchainKHR swapChain{};
-        std::vector<VkImage> swapChainImages;
-        std::vector<VkImageView> swapChainViews;
-        std::uint32_t currIndex{};
+class VulkanSwapChain {
+public:
+    VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details,
+        const VulkanQueueFamilies& queueFamilies);
+    ~VulkanSwapChain ();
 
-        VkFormat imageFormat;
-        VkExtent2D imageExtent;
+    VkFormat format () const noexcept {
+        return m_format;
+    }
 
-        void createImages ();
-    public:
-        VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies);
-        ~VulkanSwapChain();
+    VkExtent2D extent () const noexcept {
+        return m_extent;
+    }
 
-        VkFormat format () const noexcept {
-            return imageFormat;
-        }
+    VkViewport viewport () const noexcept;
+    VkRect2D scissor () const noexcept;
 
-        VkExtent2D extent () const noexcept {
-            return imageExtent;
-        }
+    std::optional<SwapChainImage> acquireImage (const VulkanSemaphore& signalSem);
+    bool present (VkQueue queue, const VulkanSemaphore& waitSem);
 
-        VkViewport getViewport () const noexcept;
-        VkRect2D getScissor () const noexcept;
+private:
+    VkDevice m_device;
+    VkSwapchainKHR m_swapChain{};
+    std::vector<VkImage> m_images;
+    std::vector<VkImageView> m_imageViews;
+    std::uint32_t m_currIndex{};
 
-        std::optional<SwapChainImage> acquireImage (const VulkanSemaphore& signalSem);
-        bool present (VkQueue queue, const VulkanSemaphore& waitSem);
-    };
-}
+    VkFormat m_format;
+    VkExtent2D m_extent;
+
+    void createImages ();
+};
+} // namespace phenyl::vulkan

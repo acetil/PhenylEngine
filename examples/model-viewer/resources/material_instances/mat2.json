@@ -1,30 +1,30 @@
 {
-  "material" : "resources/phenyl/materials/blinn_phong",
-  "uniforms" : [
-    {
-      "name" : "Material_color",
-      "type" : "vec3f",
-      "val" : [0.0, 1.0, 0.0]
-    },
-    {
-      "name" : "Material_specular_color",
-      "type" : "vec3f",
-      "val" : [1.0, 1.0, 1.0]
-    },
-    {
-      "name" : "Material_ambient",
-      "type" : "float",
-      "val" : 0.02
-    },
-    {
-      "name" : "Material_specular",
-      "type" : "float",
-      "val" : 0.5
-    },
-    {
-      "name" : "Material_alpha",
-      "type" : "float",
-      "val" : 32.0
-    }
-  ]
+    "material" : "resources/phenyl/materials/blinn_phong",
+    "uniforms" : [
+        {
+            "name" : "Material_color",
+            "type" : "vec3f",
+            "val" : [0.0, 1.0, 0.0]
+        },
+        {
+            "name" : "Material_specular_color",
+            "type" : "vec3f",
+            "val" : [1.0, 1.0, 1.0]
+        },
+        {
+            "name" : "Material_ambient",
+            "type" : "float",
+            "val" : 0.02
+        },
+        {
+            "name" : "Material_specular",
+            "type" : "float",
+            "val" : 0.5
+        },
+        {
+            "name" : "Material_alpha",
+            "type" : "float",
+            "val" : 32.0
+        }
+    ]
 }

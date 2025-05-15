@@ -3,36 +3,36 @@
 #include <vector>
 
 namespace phenyl::core {
-    class ButtonInputSource;
+class ButtonInputSource;
 
-    class ButtonInputBinding {
-    private:
-        std::vector<const ButtonInputSource*> sources;
-        bool currState = false;
-    public:
-        void addSource (const ButtonInputSource* source);
-        void poll ();
+class ButtonInputBinding {
+public:
+    void addSource (const ButtonInputSource* source);
+    void poll ();
 
-        [[nodiscard]] bool state () const noexcept {
-            return currState;
-        }
-    };
+    [[nodiscard]] bool state () const noexcept {
+        return m_state;
+    }
 
+private:
+    std::vector<const ButtonInputSource*> m_sources;
+    bool m_state = false;
+};
 
-    class InputAction {
-    private:
-        const ButtonInputBinding* binding = nullptr;
+class InputAction {
+public:
+    InputAction ();
+    explicit InputAction (const ButtonInputBinding* binding);
 
-    public:
-        InputAction ();
-        explicit InputAction (const ButtonInputBinding* binding);
+    explicit operator bool () const noexcept {
+        return m_binding;
+    }
 
-        explicit operator bool () const noexcept {
-            return binding;
-        }
+    [[nodiscard]] bool value () const noexcept {
+        return m_binding->state();
+    }
 
-        [[nodiscard]] bool value () const noexcept {
-            return binding->state();
-        }
-    };
-}
+private:
+    const ButtonInputBinding* m_binding = nullptr;
+};
+} // namespace phenyl::core

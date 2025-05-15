@@ -1,76 +1,79 @@
 #pragma once
 
-#include <memory>
-
+#include "graphics/backend/renderer.h"
+#include "init/vk_device.h"
+#include "init/vk_resources.h"
+#include "init/vk_swap_chain.h"
+#include "memory/vk_buffer.h"
+#include "memory/vk_transfer_manager.h"
+#include "shader/vk_shader.h"
 #include "vk_command_buffer.h"
 #include "vk_frame.h"
 #include "vk_pipeline.h"
 #include "vk_sync.h"
-#include "shader/vk_shader.h"
-#include "init/vk_device.h"
-#include "init/vk_swap_chain.h"
-#include "graphics/backend/renderer.h"
-#include "glfw/glfw_viewport.h"
-
 #include "vulkan_headers.h"
-#include "init/vk_resources.h"
-#include "memory/vk_buffer.h"
-#include "memory/vk_transfer_manager.h"
+
+#include <memory>
 
 namespace phenyl::vulkan {
-    class VulkanViewport;
+class VulkanViewport;
 
-    class VulkanRenderer : public graphics::Renderer {
-    private:
-        static std::vector<const char*> GatherValidationLayers ();
-        static void FilterValidationLayers (std::vector<const char*>& layers);
+class VulkanRenderer : public graphics::Renderer {
+public:
+    VulkanRenderer (const graphics::GraphicsProperties& properties, std::unique_ptr<VulkanViewport> vkViewport);
+    ~VulkanRenderer () override;
 
-        static std::vector<const char*> GatherExtensions (const graphics::GraphicsProperties& properties, const VulkanViewport& viewport);
-        static void CheckExtensions (const std::vector<const char*>& extensions);
+    double getCurrentTime () override;
+    void clearWindow () override;
+    void render () override;
+    void finishRender () override;
+    graphics::PipelineBuilder buildPipeline () override;
+    void loadDefaultShaders () override;
+    graphics::Viewport& getViewport () override;
+    const graphics::Viewport& getViewport () const override;
+    std::string_view getName () const noexcept override;
 
-        std::unique_ptr<VulkanViewport> viewport;
-        VkInstance instance{};
-        VkSurfaceKHR surface{};
-        std::unique_ptr<VulkanDevice> device;
-        std::unique_ptr<VulkanResources> resources;
-        FrameBufferLayoutManager fbLayoutManager{};
+protected:
+    std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize,
+        graphics::BufferStorageHint storageHint, bool isIndex) override;
+    std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
+    std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (
+        const graphics::TextureProperties& properties) override;
+    std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture (
+        const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
+    std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties,
+        std::uint32_t width, std::uint32_t height) override;
 
-        std::unique_ptr<VulkanSwapChain> swapChain;
-        std::unique_ptr<VulkanWindowFrameBuffer> windowFrameBuffer;
+private:
+    static std::vector<const char*> GatherValidationLayers ();
+    static void FilterValidationLayers (std::vector<const char*>& layers);
 
-        VkDebugUtilsMessengerEXT debugMessenger{};
+    static std::vector<const char*> GatherExtensions (const graphics::GraphicsProperties& properties,
+        const VulkanViewport& viewport);
+    static void CheckExtensions (const std::vector<const char*>& extensions);
 
-        std::unique_ptr<VulkanShaderManager> shaderManager;
-        std::unique_ptr<FrameManager> frameManager;
-        std::unique_ptr<TransferManager> transferManager;
-        TestFramebuffer framebuffer{};
+    std::unique_ptr<VulkanViewport> m_viewport;
+    VkInstance m_instance{};
+    VkSurfaceKHR m_surface{};
+    std::unique_ptr<VulkanDevice> m_device;
+    std::unique_ptr<VulkanResources> m_resources;
+    FrameBufferLayoutManager m_fbLayoutManager{};
 
+    std::unique_ptr<VulkanSwapChain> m_swapChain;
+    std::unique_ptr<VulkanWindowFrameBuffer> m_windowFrameBuffer;
 
-        VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
-        void recreateSwapChain ();
+    VkDebugUtilsMessengerEXT m_debugMessenger{};
 
-        VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
-        void setupDebugMessenger ();
-        void destroyDebugMessenger ();
-    protected:
-        std::unique_ptr<graphics::IBuffer> makeRendererBuffer (std::size_t startCapacity, std::size_t elementSize, graphics::BufferStorageHint storageHint, bool isIndex) override;
-        std::unique_ptr<graphics::IUniformBuffer> makeRendererUniformBuffer (bool readable) override;
-        std::unique_ptr<graphics::IImageTexture> makeRendererImageTexture (const graphics::TextureProperties& properties) override;
-        std::unique_ptr<graphics::IImageArrayTexture> makeRendererArrayTexture (const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
-        std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height) override;
+    std::unique_ptr<VulkanShaderManager> m_shaderManager;
+    std::unique_ptr<FrameManager> m_frameManager;
+    std::unique_ptr<TransferManager> m_transferManager;
+    TestFramebuffer m_framebuffer{};
 
-    public:
-        VulkanRenderer (const graphics::GraphicsProperties& properties, std::unique_ptr<VulkanViewport> vkViewport);
-        ~VulkanRenderer () override;
+    VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
+    void recreateSwapChain ();
 
-        double getCurrentTime () override;
-        void clearWindow () override;
-        void render() override;
-        void finishRender () override;
-        graphics::PipelineBuilder buildPipeline () override;
-        void loadDefaultShaders () override;
-        graphics::Viewport& getViewport () override;
-        const graphics::Viewport& getViewport() const override;
-        std::string_view getName() const noexcept override;
-    };
-}
+    VkDebugUtilsMessengerCreateInfoEXT getDebugMessengerCreateInfo ();
+    void setupDebugMessenger ();
+    void destroyDebugMessenger ();
+};
+} // namespace phenyl::vulkan

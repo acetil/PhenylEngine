@@ -1,26 +1,27 @@
 #pragma once
 
-#include <phenyl/audio.h>
 #include <phenyl/asset.h>
-#include <phenyl/world.h>
+#include <phenyl/audio.h>
 #include <phenyl/engine.h>
 #include <phenyl/input.h>
 #include <phenyl/prefab.h>
 #include <phenyl/runtime.h>
 #include <phenyl/serialization.h>
+#include <phenyl/world.h>
 
 namespace test {
-    class TestApp;
-    struct Player {
-        phenyl::Asset<phenyl::Prefab> bulletPrefab;
-        phenyl::Asset<phenyl::AudioSample> gunshotSample;
+class TestApp;
 
-        bool hasShot{false};
-        bool gainPressed{false};
-    };
+struct Player {
+    phenyl::Asset<phenyl::Prefab> bulletPrefab;
+    phenyl::Asset<phenyl::AudioSample> gunshotSample;
 
-    PHENYL_DECLARE_SERIALIZABLE(Player)
-}
+    bool hasShot{false};
+    bool gainPressed{false};
+};
+
+PHENYL_DECLARE_SERIALIZABLE(Player)
+} // namespace test
 
 void InitPlayer (test::TestApp* app);
 void InputSetup (phenyl::GameInput& input);

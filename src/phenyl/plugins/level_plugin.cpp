@@ -1,12 +1,12 @@
-#include "engine/level/level_manager.h"
 #include "phenyl/plugins/level_plugin.h"
+
+#include "engine/level/level_manager.h"
 #include "phenyl/plugins/prefab_plugin.h"
 
 using namespace phenyl;
 
 LevelPlugin::LevelPlugin () = default;
 LevelPlugin::~LevelPlugin () = default;
-
 
 std::string_view LevelPlugin::getName () const noexcept {
     return "LevelPlugin";

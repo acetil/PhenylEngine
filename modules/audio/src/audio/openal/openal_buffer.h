@@ -1,34 +1,34 @@
 #pragma once
 
 #include "audio/filetypes/wav.h"
-
 #include "openal_headers.h"
 
 namespace phenyl::audio {
-    class OpenALBuffer {
-    private:
-        ALuint bufferId{0};
-        bool valid{false};
-    public:
-        OpenALBuffer () = default;
-        explicit OpenALBuffer (const WAVFile& wavFile);
+class OpenALBuffer {
+public:
+    OpenALBuffer () = default;
+    explicit OpenALBuffer (const WAVFile& wavFile);
 
-        OpenALBuffer (const OpenALBuffer&) = delete;
-        OpenALBuffer (OpenALBuffer&& other) noexcept;
+    OpenALBuffer (const OpenALBuffer&) = delete;
+    OpenALBuffer (OpenALBuffer&& other) noexcept;
 
-        OpenALBuffer& operator= (const OpenALBuffer&) = delete;
-        OpenALBuffer& operator= (OpenALBuffer&& other) noexcept;
+    OpenALBuffer& operator= (const OpenALBuffer&) = delete;
+    OpenALBuffer& operator= (OpenALBuffer&& other) noexcept;
 
-        explicit operator bool () const {
-            return valid;
-        }
+    explicit operator bool () const {
+        return m_valid;
+    }
 
-        [[nodiscard]] ALuint id () const {
-            return bufferId;
-        }
+    [[nodiscard]] ALuint id () const {
+        return m_id;
+    }
 
-        [[nodiscard]] float duration () const;
+    [[nodiscard]] float duration () const;
 
-        ~OpenALBuffer ();
-    };
-}
+    ~OpenALBuffer ();
+
+private:
+    ALuint m_id{0};
+    bool m_valid{false};
+};
+} // namespace phenyl::audio

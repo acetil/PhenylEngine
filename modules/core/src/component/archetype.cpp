@@ -1,45 +1,50 @@
 #include "core/component/archetype.h"
+
 #include "core/world.h"
 
 using namespace phenyl::core;
 
-Archetype::Archetype(detail::IArchetypeManager& manager, std::map<std::size_t, std::unique_ptr<UntypedComponentVector>> components) : manager{manager}, key{components | std::ranges::views::keys}, components{std::move(components)} {}
+Archetype::Archetype (detail::IArchetypeManager& manager,
+    std::map<meta::TypeIndex, std::unique_ptr<UntypedComponentVector>> components) :
+    m_manager{manager},
+    m_key{components | std::ranges::views::keys},
+    m_components{std::move(components)} {}
 
-Archetype::Archetype (detail::IArchetypeManager& manager) : manager{manager} {}
+Archetype::Archetype (detail::IArchetypeManager& manager) : m_manager{manager} {}
 
-std::size_t Archetype::addEntity(EntityId id) {
-    auto pos = entityIds.size();
-    entityIds.emplace_back(id);
+std::size_t Archetype::addEntity (EntityId id) {
+    auto pos = m_entityIds.size();
+    m_entityIds.emplace_back(id);
 
-    manager.updateEntityEntry(id, this, pos);
+    m_manager.updateEntityEntry(id, this, pos);
     return pos;
 }
 
 void Archetype::remove (std::size_t pos) {
     PHENYL_DASSERT(pos < size());
 
-    for (auto& [_, vec] : components) {
+    for (auto& [_, vec] : m_components) {
         vec->remove(pos);
     }
 
     if (pos != size() - 1) {
-        entityIds[pos] = entityIds.back();
-        manager.updateEntityEntry(entityIds[pos], this, pos);
+        m_entityIds[pos] = m_entityIds.back();
+        m_manager.updateEntityEntry(m_entityIds[pos], this, pos);
     }
-    entityIds.pop_back();
+    m_entityIds.pop_back();
 }
 
-void Archetype::clear() {
-    for (auto& [_, vec] : components) {
+void Archetype::clear () {
+    for (auto& [_, vec] : m_components) {
         vec->clear();
     }
-    entityIds.clear();
+    m_entityIds.clear();
 }
 
 void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std::size_t pos) {
     PHENYL_DASSERT(pos < size());
 
-    auto* archetype = manager.findArchetype(key.with(factories | std::ranges::views::keys));
+    auto* archetype = m_manager.findArchetype(m_key.with(factories | std::ranges::views::keys));
     PHENYL_DASSERT(archetype);
     auto newPos = archetype->moveFrom(*this, pos);
     remove(pos);
@@ -47,11 +52,11 @@ void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std
 }
 
 std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
-    auto newPos = addEntity(other.entityIds[pos]);
+    auto newPos = addEntity(other.m_entityIds[pos]);
 
-    auto it = components.begin();
-    auto otherIt = other.components.begin();
-    while (it != components.end() && otherIt != other.components.end()) {
+    auto it = m_components.begin();
+    auto otherIt = other.m_components.begin();
+    while (it != m_components.end() && otherIt != other.m_components.end()) {
         if (it->first < otherIt->first) {
             // Not in other archetype, skip
             ++it;
@@ -60,24 +65,24 @@ std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {
             ++otherIt;
         } else {
             it->second->moveFrom(*otherIt->second, pos);
-            PHENYL_DASSERT(entityIds.size() == it->second->size());
+            PHENYL_DASSERT(m_entityIds.size() == it->second->size());
 
             ++it;
             ++otherIt;
         }
     }
 
-   // manager.updateEntityEntry(entityIds.back(), this, newPos);
+    // manager.updateEntityEntry(entityIds.back(), this, newPos);
     return newPos;
 }
 
 void Archetype::instantiateInto (const detail::PrefabFactories& factories, std::size_t pos) {
     PHENYL_DASSERT(pos == size() - 1);
-    std::vector<std::size_t> newComps;
+    std::vector<meta::TypeIndex> newComps;
 
-    auto compIt = components.begin();
+    auto compIt = m_components.begin();
     auto facIt = factories.begin();
-    while (compIt != components.end() && facIt != factories.end()) {
+    while (compIt != m_components.end() && facIt != factories.end()) {
         if (compIt->first < facIt->first) {
             // Component not in factories, skip
             ++compIt;
@@ -97,7 +102,7 @@ void Archetype::instantiateInto (const detail::PrefabFactories& factories, std::
 
     // Raise insert signals for only new components
     for (auto c : newComps) {
-        manager.onComponentInsert(entityIds.back(), c, components[c]->getUntyped(pos));
+        m_manager.onComponentInsert(m_entityIds.back(), c, m_components[c]->getUntyped(pos));
     }
 }
 

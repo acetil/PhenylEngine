@@ -1,56 +1,57 @@
 #pragma once
 
-#include <phenyl/audio.h>
+#include "phenyl/font.h"
+
 #include <phenyl/application.h>
 #include <phenyl/asset.h>
+#include <phenyl/audio.h>
 #include <phenyl/input.h>
-#include "phenyl/font.h"
-#include <phenyl/ui/ui.h>
-
 #include <phenyl/ui/layout.h>
+#include <phenyl/ui/ui.h>
 #include <phenyl/ui/widget.h>
 
 namespace test {
-    class TestApp : public phenyl::Application2D {
-    private:
-        // std::vector<phenyl::ui::Label> extraLabels;
-        std::vector<phenyl::ui::Widget*> extraWidgets;
-        // phenyl::ui::Label label{"label"};
-        // phenyl::ui::Flexbox flexBoxC{"flex_box"};
+class TestApp : public phenyl::Application2D {
+public:
+    TestApp (phenyl::ApplicationProperties properties);
 
-        phenyl::ui::ColumnWidget* column = nullptr;
+    void init () override;
+    void postInit () override;
+    void update ();
+    void fixedUpdate ();
 
-        phenyl::ui::ButtonWidget* button1 = nullptr;
-        phenyl::ui::ButtonWidget* button2 = nullptr;
+    void queueResume ();
+    void startStepping ();
+    void stopStepping ();
+    void step ();
 
-        phenyl::InputAction stepAction;
-        phenyl::InputAction consoleAction;
-        phenyl::Asset<phenyl::Font> testFont;
+    void updateDebugRender (bool doRender);
+    void updateProfileRender (bool doRender);
+    void dumpLevel (const std::string& path);
 
-        int numPresses = 0;
-        bool isButtonDown = false;
-        bool isButtonDown2 = false;
-        int resumeFrames = 0;
-        bool isStepping = false;
-        bool stepDown = false;
+private:
+    // std::vector<phenyl::ui::Label> extraLabels;
+    std::vector<phenyl::ui::Widget*> m_extraWidgets;
+    // phenyl::ui::Label label{"label"};
+    // phenyl::ui::Flexbox flexBoxC{"flex_box"};
 
-        void addLabel ();
-        void removeLabel ();
-    public:
-        TestApp (phenyl::ApplicationProperties properties);
+    phenyl::ui::ColumnWidget* m_column = nullptr;
 
-        void init () override;
-        void postInit() override;
-        void update ();
-        void fixedUpdate ();
+    phenyl::ui::ButtonWidget* m_button1 = nullptr;
+    phenyl::ui::ButtonWidget* m_button2 = nullptr;
 
-        void queueResume ();
-        void startStepping ();
-        void stopStepping ();
-        void step ();
+    phenyl::InputAction m_stepAction;
+    phenyl::InputAction m_consoleAction;
+    phenyl::Asset<phenyl::Font> m_testFont;
 
-        void updateDebugRender (bool doRender);
-        void updateProfileRender (bool doRender);
-        void dumpLevel (const std::string& path);
-    };
-}
+    int m_numPresses = 0;
+    bool m_isButtonDown = false;
+    bool m_isButtonDown2 = false;
+    int m_resumeFrames = 0;
+    bool m_isStepping = false;
+    bool m_stepDown = false;
+
+    void addLabel ();
+    void removeLabel ();
+};
+} // namespace test

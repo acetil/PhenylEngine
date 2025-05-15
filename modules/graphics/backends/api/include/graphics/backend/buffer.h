@@ -1,112 +1,116 @@
 #pragma once
 
+#include "logging/logging.h"
+
 #include <memory>
 #include <vector>
 
-#include "logging/logging.h"
-
 namespace phenyl::graphics {
-    enum class BufferStorageHint {
-        STATIC,
-        DYNAMIC
-    };
+enum class BufferStorageHint {
+    STATIC,
+    DYNAMIC
+};
 
-    class IBuffer {
-    public:
-        virtual ~IBuffer() = default;
+class IBuffer {
+public:
+    virtual ~IBuffer () = default;
 
-        virtual void upload (std::span<const std::byte> data) = 0;
-    };
+    virtual void upload (std::span<const std::byte> data) = 0;
+};
 
-    template <typename T>
-    class Buffer {
-    private:
-        std::unique_ptr<IBuffer> rendererBuffer;
-        std::vector<T> data;
-    public:
-        Buffer () : rendererBuffer{}, data{} {}
-        explicit Buffer (std::unique_ptr<IBuffer> rendererBuffer) : rendererBuffer{std::move(rendererBuffer)}, data{} {}
+template <typename T>
+class Buffer {
+public:
+    Buffer () : m_buffer{}, m_data{} {}
 
-        explicit operator bool () const {
-            return (bool)rendererBuffer;
-        }
+    explicit Buffer (std::unique_ptr<IBuffer> rendererBuffer) : m_buffer{std::move(rendererBuffer)}, m_data{} {}
 
-        template <typename ...Args>
-        std::size_t emplace (Args&&... args) {
-            auto index = size();
-            data.emplace_back(std::forward<Args>(args)...);
-            return index;
-        }
+    explicit operator bool () const {
+        return (bool) m_buffer;
+    }
 
-        template <std::input_iterator It>
-        std::size_t insertRange (It begin, It end) {
-            auto startIndex = size();
-            data.insert(data.end(), begin, end);
-            return startIndex;
-        }
+    template <typename... Args>
+    std::size_t emplace (Args&&... args) {
+        auto index = size();
+        m_data.emplace_back(std::forward<Args>(args)...);
+        return index;
+    }
 
-        void reserve (std::size_t newSize) {
-            data.reserve(newSize);
-        }
+    template <std::input_iterator It>
+    std::size_t insertRange (It begin, It end) {
+        auto startIndex = size();
+        m_data.insert(m_data.end(), begin, end);
+        return startIndex;
+    }
 
-        std::size_t size () const {
-            return data.size();
-        }
+    void reserve (std::size_t newSize) {
+        m_data.reserve(newSize);
+    }
 
-        void clear () {
-            data.clear();
-        }
+    std::size_t size () const {
+        return m_data.size();
+    }
 
-        void upload () {
-            rendererBuffer->upload(std::as_bytes(std::span{data}));
-        }
+    void clear () {
+        m_data.clear();
+    }
 
-        IBuffer& getUnderlying () {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
-        }
+    void upload () {
+        m_buffer->upload(std::as_bytes(std::span{m_data}));
+    }
 
-        const IBuffer& getUnderlying () const {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
-        }
-    };
+    IBuffer& getUnderlying () {
+        PHENYL_DASSERT(m_buffer);
+        return *m_buffer;
+    }
 
-    class RawBuffer {
-    private:
-        std::unique_ptr<IBuffer> rendererBuffer;
-        std::size_t bufSize = 0;
-    public:
-        RawBuffer () = default;
-        explicit RawBuffer (std::unique_ptr<IBuffer> rendererBuffer) : rendererBuffer{std::move(rendererBuffer)} {}
+    const IBuffer& getUnderlying () const {
+        PHENYL_DASSERT(m_buffer);
+        return *m_buffer;
+    }
 
-        RawBuffer (const RawBuffer&) = delete;
-        RawBuffer (RawBuffer&&) = default;
+private:
+    std::unique_ptr<IBuffer> m_buffer;
+    std::vector<T> m_data;
+};
 
-        RawBuffer& operator= (const RawBuffer&) = delete;
-        RawBuffer& operator= (RawBuffer&&) = default;
+class RawBuffer {
+public:
+    RawBuffer () = default;
 
-        explicit operator bool () const noexcept {
-            return static_cast<bool>(rendererBuffer);
-        }
+    explicit RawBuffer (std::unique_ptr<IBuffer> rendererBuffer) : m_buffer{std::move(rendererBuffer)} {}
 
-        void upload (std::span<const std::byte> data) {
-            rendererBuffer->upload(data);
-            this->bufSize = data.size();
-        }
+    RawBuffer (const RawBuffer&) = delete;
+    RawBuffer (RawBuffer&&) = default;
 
-        std::size_t size () const noexcept {
-            return bufSize;
-        }
+    RawBuffer& operator= (const RawBuffer&) = delete;
+    RawBuffer& operator= (RawBuffer&&) = default;
 
-        IBuffer& getUnderlying () noexcept {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
-        }
+    explicit operator bool () const noexcept {
+        return static_cast<bool>(m_buffer);
+    }
 
-        const IBuffer& getUnderlying () const noexcept {
-            PHENYL_DASSERT(rendererBuffer);
-            return *rendererBuffer;
-        }
-    };
-}
+    void upload (std::span<const std::byte> data) {
+        m_buffer->upload(data);
+        this->m_size = data.size();
+    }
+
+    std::size_t size () const noexcept {
+        return m_size;
+    }
+
+    IBuffer& getUnderlying () noexcept {
+        PHENYL_DASSERT(m_buffer);
+        return *m_buffer;
+    }
+
+    const IBuffer& getUnderlying () const noexcept {
+        PHENYL_DASSERT(m_buffer);
+        return *m_buffer;
+    }
+
+private:
+    std::unique_ptr<IBuffer> m_buffer;
+    std::size_t m_size = 0;
+};
+} // namespace phenyl::graphics

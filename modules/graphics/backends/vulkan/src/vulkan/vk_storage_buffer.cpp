@@ -4,40 +4,48 @@ using namespace phenyl::vulkan;
 
 static VkBufferUsageFlags GetUsage (bool isIndex);
 
-VulkanStorageBuffer::VulkanStorageBuffer (VulkanResources& resources, std::size_t newSize, bool isIndex) : resources{resources}, currSize{newSize}, capacity{newSize}, isIndex{isIndex} {
-    if (currSize > 0) {
-        buffer = VulkanBuffer{resources, GetUsage(isIndex), capacity};
+VulkanStorageBuffer::VulkanStorageBuffer (VulkanResources& resources, std::size_t newSize, bool isIndex) :
+    m_resources{resources},
+    m_size{newSize},
+    m_capacity{newSize},
+    m_isIndex{isIndex} {
+    if (m_size > 0) {
+        m_buffer = VulkanBuffer{resources, GetUsage(isIndex), m_capacity};
     }
 }
 
 void VulkanStorageBuffer::upload (std::span<const std::byte> data) {
     if (data.empty()) {
-        currSize = 0;
+        m_size = 0;
         return;
     }
 
-    if (!buffer || data.size() > capacity) {
-        buffer = VulkanBuffer{resources, GetUsage(isIndex), data.size()};
-        capacity = data.size();
+    if (!m_buffer || data.size() > m_capacity) {
+        m_buffer = VulkanBuffer{m_resources, GetUsage(m_isIndex), data.size()};
+        m_capacity = data.size();
     }
 
-    buffer.copyIn(data);
-    currSize = data.size();
+    m_buffer.copyIn(data);
+    m_size = data.size();
 }
 
 VkBuffer VulkanStorageBuffer::getBuffer () const noexcept {
-    return buffer ? buffer.get() : nullptr;
+    return m_buffer ? m_buffer.get() : nullptr;
 }
 
-VulkanStaticStorageBuffer::VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager, bool isIndex) : resources{resources}, transferManager{transferManager}, isIndex{isIndex} {}
+VulkanStaticStorageBuffer::VulkanStaticStorageBuffer (VulkanResources& resources, TransferManager& transferManager,
+    bool isIndex) :
+    m_resources{resources},
+    m_transferManager{transferManager},
+    m_isIndex{isIndex} {}
 
 void VulkanStaticStorageBuffer::upload (std::span<const std::byte> data) {
     if (data.empty()) {
-        buffer = VulkanStaticBuffer{};
+        m_buffer = VulkanStaticBuffer{};
         return;
     }
 
-    buffer = VulkanStaticBuffer{resources, transferManager, GetUsage(isIndex), data};
+    m_buffer = VulkanStaticBuffer{m_resources, m_transferManager, GetUsage(m_isIndex), data};
 }
 
 static VkBufferUsageFlags GetUsage (bool isIndex) {

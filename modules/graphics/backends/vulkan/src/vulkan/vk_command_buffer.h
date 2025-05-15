@@ -4,101 +4,108 @@
 #include "vulkan_headers.h"
 
 namespace phenyl::vulkan {
-    class IVulkanFrameBuffer;
+class IVulkanFrameBuffer;
 
-    class VulkanCommandBuffer2 {
-    private:
-        IVulkanFrameBuffer* currentFrameBuffer = nullptr;
+class VulkanCommandBuffer2 {
+public:
+    virtual ~VulkanCommandBuffer2 () = default;
 
-        VkPipeline currPipeline = nullptr;
-        std::optional<VkViewport> currViewport{};
-        std::optional<VkRect2D> currScissor;
+    explicit operator bool () const noexcept {
+        return m_commandBuffer;
+    }
 
-    protected:
-        VkCommandBuffer commandBuffer;
+    void doImageTransition (VkImage image, VkImageAspectFlags aspect, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-        VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage);
-    public:
-        virtual ~VulkanCommandBuffer2 () = default;
+    void copyBuffer (VkBuffer srcBuffer, std::size_t srcOffset, VkBuffer dstBuffer, std::size_t dstOffset,
+        std::size_t size);
 
-        explicit operator bool () const noexcept {
-            return commandBuffer;
-        }
+    void copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout,
+        VkExtent3D imageExtent, std::uint32_t numLayers = 1);
+    void copyBufferToImage (VkBuffer buffer, VkImage image, VkImageLayout layout, VkExtent3D imageExtent,
+        std::uint32_t layer = 0);
 
-        void doImageTransition (VkImage image, VkImageAspectFlags aspect, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void beginRendering (IVulkanFrameBuffer& frameBuffer);
+    void endRendering ();
 
-        void copyBuffer (VkBuffer srcBuffer, std::size_t srcOffset, VkBuffer dstBuffer, std::size_t dstOffset, std::size_t size);
+    void setPipeline (VkPipeline pipeline, VkViewport viewport, VkRect2D scissor);
 
-        void copyImage (VkImage fromImage, VkImageLayout fromLayout, VkImage toImage, VkImageLayout toLayout, VkExtent3D imageExtent, std::uint32_t numLayers = 1);
-        void copyBufferToImage (VkBuffer buffer, VkImage image, VkImageLayout layout, VkExtent3D imageExtent, std::uint32_t layer = 0);
+    void bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets);
+    void bindIndexBuffer (VkBuffer buffer, VkIndexType indexType);
 
-        void beginRendering (IVulkanFrameBuffer& frameBuffer);
-        void endRendering ();
+    void bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets);
 
-        void setPipeline (VkPipeline pipeline, VkViewport viewport, VkRect2D scissor);
+    void draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex);
+    void draw (std::uint32_t vertexCount, std::uint32_t firstVertex);
 
-        void bindVertexBuffers (std::span<VkBuffer> buffers, std::span<VkDeviceSize> offsets);
-        void bindIndexBuffer (VkBuffer buffer, VkIndexType indexType);
+    void drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex);
+    void drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex);
 
-        void bindDescriptorSets (VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets);
+protected:
+    VkCommandBuffer m_commandBuffer;
 
-        void draw (std::uint32_t instanceCount, std::uint32_t vertexCount, std::uint32_t firstVertex);
-        void draw (std::uint32_t vertexCount, std::uint32_t firstVertex);
+    VulkanCommandBuffer2 (VkCommandBuffer commandBuffer, VkCommandBufferUsageFlags usage);
 
-        void drawIndexed (std::uint32_t instanceCount, std::uint32_t indexCount, std::uint32_t firstIndex);
-        void drawIndexed (std::uint32_t indexCount, std::uint32_t firstIndex);
-    };
+private:
+    IVulkanFrameBuffer* m_currFrameBuffer = nullptr;
 
-    class VulkanSingleUseCommandBuffer : public VulkanCommandBuffer2 {
-    private:
-        VkQueue bufferQueue;
-    public:
-        VulkanSingleUseCommandBuffer (VkQueue bufferQueue, VkCommandBuffer commandBuffer);
+    VkPipeline m_currPipeline = nullptr;
+    std::optional<VkViewport> m_currViewport{};
+    std::optional<VkRect2D> m_currScissor;
+};
 
-        void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
-    };
+class VulkanSingleUseCommandBuffer : public VulkanCommandBuffer2 {
+public:
+    VulkanSingleUseCommandBuffer (VkQueue bufferQueue, VkCommandBuffer commandBuffer);
 
-    class VulkanTransientCommandBuffer : public VulkanCommandBuffer2 {
-    private:
-        VkQueue bufferQueue;
-        VulkanResource<VulkanCommandBufferInfo> cbInfo;
-        bool recorded = false;
-    public:
-        VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo);
+    void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
 
-        void record ();
-        void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
-    };
+private:
+    VkQueue m_queue;
+};
 
-    class VulkanCommandPool {
-    private:
-        VkDevice device;
-        VkQueue poolQueue;
-        VulkanResource<VkCommandPool> pool;
+class VulkanTransientCommandBuffer : public VulkanCommandBuffer2 {
+public:
+    VulkanTransientCommandBuffer (VkQueue bufferQueue, VulkanResource<VulkanCommandBufferInfo> cbInfo);
 
-        std::vector<VkCommandBuffer> availableBuffers;
-        std::vector<VkCommandBuffer> usedBuffers;
+    void record ();
+    void submit (const VulkanSemaphore* waitSem, const VulkanSemaphore* signalSem, const VulkanFence* fence);
 
-        void addBuffers (std::size_t count);
-    public:
-        explicit VulkanCommandPool (VulkanResources& resources, std::size_t capacity = 1);
+private:
+    VkQueue m_queue;
+    VulkanResource<VulkanCommandBufferInfo> m_info;
+    bool m_recorded = false;
+};
 
-        VulkanSingleUseCommandBuffer getBuffer ();
-        void reset ();
+class VulkanCommandPool {
+public:
+    explicit VulkanCommandPool (VulkanResources& resources, std::size_t capacity = 1);
 
-        void reserve (std::size_t capacity);
-    };
+    VulkanSingleUseCommandBuffer getBuffer ();
+    void reset ();
 
-    class VulkanTransientCommandPool {
-    private:
-        VkDevice device;
-        VkQueue poolQueue;
-        VulkanResources* resources;
-        VulkanResource<VkCommandPool> pool;
+    void reserve (std::size_t capacity);
 
-    public:
-        explicit VulkanTransientCommandPool (VulkanResources& resources);
+private:
+    VkDevice m_device;
+    VkQueue m_queue;
+    VulkanResource<VkCommandPool> m_pool;
 
-        VulkanTransientCommandBuffer getBuffer ();
-    };
-}
+    std::vector<VkCommandBuffer> m_availableBuffers;
+    std::vector<VkCommandBuffer> m_usedBuffers;
+
+    void addBuffers (std::size_t count);
+};
+
+class VulkanTransientCommandPool {
+public:
+    explicit VulkanTransientCommandPool (VulkanResources& resources);
+
+    VulkanTransientCommandBuffer getBuffer ();
+
+private:
+    VkDevice m_device;
+    VkQueue m_poolQueue;
+    VulkanResources* m_resources;
+    VulkanResource<VkCommandPool> m_pool;
+};
+} // namespace phenyl::vulkan

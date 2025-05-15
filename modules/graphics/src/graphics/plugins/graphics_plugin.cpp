@@ -1,20 +1,19 @@
-#include "core/input/game_input.h"
-#include "core/runtime.h"
-
 #include "graphics/plugins/graphics_plugin.h"
-#include "graphics/renderlayer/debug_layer.h"
 
+#include "core/input/game_input.h"
+#include "core/plugins/input_plugin.h"
+#include "core/runtime.h"
+#include "graphics/camera_3d.h"
+#include "graphics/renderlayer/debug_layer.h"
 #include "mesh_manager.h"
 #include "texture_manager.h"
-#include "core/plugins/input_plugin.h"
-#include "graphics/camera_3d.h"
 
 using namespace phenyl::graphics;
 
 struct GraphicsData : public phenyl::core::IResource {
     DebugLayer* layer;
 
-    [[nodiscard]] std::string_view getName() const noexcept override {
+    [[nodiscard]] std::string_view getName () const noexcept override {
         return "GraphicsData";
     }
 
@@ -25,8 +24,6 @@ static void DebugRenderSystem (const phenyl::core::Resources<const Viewport, con
     auto& [viewport, camera, data] = resources;
     data.layer->bufferData(camera, viewport.getResolution());
 }
-
-
 
 GraphicsPlugin::GraphicsPlugin () = default;
 GraphicsPlugin::~GraphicsPlugin () = default;
@@ -48,8 +45,8 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     renderer.getViewport().addUpdateHandler(&runtime.resource<Camera3D>());
 
     renderer.loadDefaultShaders();
-    textureManager = std::make_unique<TextureManager>(renderer);
-    textureManager->selfRegister();
+    m_textureManager = std::make_unique<TextureManager>(renderer);
+    m_textureManager->selfRegister();
 
     auto* debugLayer = &renderer.addLayer<DebugLayer>();
     runtime.addResource<GraphicsData>(debugLayer);
@@ -61,6 +58,4 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addSystem<core::Render>("Graphics::DebugRender", DebugRenderSystem);
 }
 
-void GraphicsPlugin::postInit (core::PhenylRuntime& runtime) {
-
-}
+void GraphicsPlugin::postInit (core::PhenylRuntime& runtime) {}

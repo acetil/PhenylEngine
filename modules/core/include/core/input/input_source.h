@@ -3,29 +3,31 @@
 #include "graphics/maths_headers.h"
 
 namespace phenyl::core {
-    class ButtonInputSource {
-    private:
-        bool currState = false;
-    public:
-        [[nodiscard]] bool state () const noexcept {
-            return currState;
-        }
+class ButtonInputSource {
+public:
+    [[nodiscard]] bool state () const noexcept {
+        return m_currState;
+    }
 
-        void setState (bool newState) noexcept {
-            currState = newState;
-        }
-    };
+    void setState (bool newState) noexcept {
+        m_currState = newState;
+    }
 
-    class Axis2DInputSource {
-    private:
-        glm::vec2 axis{};
-    public:
-        [[nodiscard]] glm::vec2 state () const noexcept {
-            return axis;
-        }
+private:
+    bool m_currState = false;
+};
 
-        void setState (glm::vec2 newAxis) noexcept {
-            axis = newAxis;
-        }
-    };
-}
+class Axis2DInputSource {
+public:
+    [[nodiscard]] glm::vec2 state () const noexcept {
+        return m_axis;
+    }
+
+    void setState (glm::vec2 newAxis) noexcept {
+        m_axis = newAxis;
+    }
+
+private:
+    glm::vec2 m_axis{};
+};
+} // namespace phenyl::core

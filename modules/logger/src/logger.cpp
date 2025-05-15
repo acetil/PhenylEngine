@@ -1,28 +1,27 @@
 #ifndef NDEBUG
-#include <cpptrace/cpptrace.hpp>
+    #include <cpptrace/cpptrace.hpp>
 #endif
 
+#include "log_manager.h"
 #include "logging/logger.h"
 #include "logging/logging.h"
 
-#include "log_manager.h"
-
 using namespace phenyl::logging;
 
-void Logger::initSink() {
-    if (logSink) {
+void Logger::initSink () {
+    if (m_sink) {
         return;
     }
 
-    logSink = LOG_MANAGER.getSink(this, parent);
+    m_sink = LOG_MANAGER.getSink(this, m_parent);
 }
 
-Logger::Logger (const std::string_view name) : name{name}, parent{nullptr} {}
+Logger::Logger (const std::string_view name) : m_name{name}, m_parent{nullptr} {}
 
-Logger::Logger (const std::string_view name, Logger& parent) : name{name}, parent{&parent} {}
+Logger::Logger (const std::string_view name, Logger& parent) : m_name{name}, m_parent{&parent} {}
 
 void Logger::setMinLevel (const int level) {
-    logSink->setMinLogLevel(level);
+    m_sink->setMinLogLevel(level);
 }
 
 void phenyl::PrintStackTrace () {

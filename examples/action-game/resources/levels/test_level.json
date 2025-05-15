@@ -1,12 +1,12 @@
 {
-    "entities": [
+    "entities" : [
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [-0.7, 0.0],
-                        "scale": [0.1, 0.1],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [-0.7, 0.0],
+                        "scale" : [0.1, 0.1],
+                        "rotation" : 0.0
                     }
                 }
             },
@@ -14,18 +14,18 @@
         },
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [-0.4, 0.0],
-                        "scale": [0.08, 0.5],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [-0.4, 0.0],
+                        "scale" : [0.08, 0.5],
+                        "rotation" : 0.0
                     }
                 },
-                "BoxCollider2D": {
-                    "Collider2D": {
-                        "layers": 2,
-                        "mask": 0,
-                        "elasticity": 1.0
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 2,
+                        "mask" : 0,
+                        "elasticity" : 1.0
                     },
                     "scale" : [0.08, 0.5]
                 }
@@ -34,18 +34,18 @@
         },
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [0.4, 0.0],
-                        "scale": [0.08, 0.5],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [0.4, 0.0],
+                        "scale" : [0.08, 0.5],
+                        "rotation" : 0.0
                     }
                 },
-                "BoxCollider2D": {
-                    "Collider2D": {
-                        "layers": 2,
-                        "mask": 0,
-                        "elasticity": 1.0
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 2,
+                        "mask" : 0,
+                        "elasticity" : 1.0
                     },
                     "scale" : [0.08, 0.5]
                 }
@@ -54,18 +54,18 @@
         },
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [0.0, -0.5],
-                        "scale": [0.48, 0.08],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [0.0, -0.5],
+                        "scale" : [0.48, 0.08],
+                        "rotation" : 0.0
                     }
                 },
-                "BoxCollider2D": {
-                    "Collider2D": {
-                        "layers": 2,
-                        "mask": 0,
-                        "elasticity": 1.0
+                "BoxCollider2D" : {
+                    "Collider2D" : {
+                        "layers" : 2,
+                        "mask" : 0,
+                        "elasticity" : 1.0
                     },
                     "scale" : [0.48, 0.08]
                 }
@@ -74,11 +74,11 @@
         },
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [-0.2, 0.0],
-                        "scale": [0.1, 0.1],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [-0.2, 0.0],
+                        "scale" : [0.1, 0.1],
+                        "rotation" : 0.0
                     }
                 }
             },
@@ -86,11 +86,11 @@
         },
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [-0.2, 0.5],
-                        "scale": [0.1, 0.1],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [-0.2, 0.5],
+                        "scale" : [0.1, 0.1],
+                        "rotation" : 0.0
                     }
                 }
             },
@@ -98,11 +98,11 @@
         },
         {
             "components" : {
-                "GlobalTransform2D": {
-                    "transform": {
-                        "position": [-0.2, 1],
-                        "scale": [0.1, 0.1],
-                        "rotation": 0.0
+                "GlobalTransform2D" : {
+                    "transform" : {
+                        "position" : [-0.2, 1],
+                        "scale" : [0.1, 0.1],
+                        "rotation" : 0.0
                     }
                 }
             },

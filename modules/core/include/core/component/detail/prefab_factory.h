@@ -1,43 +1,49 @@
 #pragma once
 
+#include "util/type_index.h"
+
 #include <cstddef>
 #include <functional>
+#include <map>
+#include <memory>
 
 namespace phenyl::core::detail {
-    class IPrefabFactory {
-    public:
-        virtual ~IPrefabFactory() = default;
+class IPrefabFactory {
+public:
+    virtual ~IPrefabFactory () = default;
 
-        virtual void make (std::byte* ptr) const = 0;
-    };
+    virtual void make (std::byte* ptr) const = 0;
+};
 
-    template <typename T>
-    class CopyPrefabFactory : public IPrefabFactory {
-    private:
-        T obj;
-    public:
-        explicit CopyPrefabFactory (T&& obj) : obj{std::move(obj)} {}
+template <typename T>
+class CopyPrefabFactory : public IPrefabFactory {
+public:
+    explicit CopyPrefabFactory (T&& obj) : obj{std::move(obj)} {}
 
-        void make (std::byte* ptr) const override {
-            T* tPtr = reinterpret_cast<T*>(ptr);
+    void make (std::byte* ptr) const override {
+        T* tPtr = reinterpret_cast<T*>(ptr);
 
-            new (tPtr) T(obj);
-        }
-    };
+        new (tPtr) T(obj);
+    }
 
-    template <typename T>
-    class FuncPrefabFactory : public IPrefabFactory {
-    private:
-        std::function<T()> factory;
-    public:
-        explicit FuncPrefabFactory (std::function<T()> factory) : factory{std::move(factory)} {}
+private:
+    T obj;
+};
 
-        void make (std::byte* ptr) const override {
-            T* tPtr = reinterpret_cast<T*>(ptr);
+template <typename T>
+class FuncPrefabFactory : public IPrefabFactory {
+public:
+    explicit FuncPrefabFactory (std::function<T()> factory) : m_factory{std::move(factory)} {}
 
-            new (tPtr) T(factory());
-        }
-    };
+    void make (std::byte* ptr) const override {
+        T* tPtr = reinterpret_cast<T*>(ptr);
 
-    using PrefabFactories = std::map<std::size_t, std::unique_ptr<IPrefabFactory>>;
-}
+        new (tPtr) T(m_factory());
+    }
+
+private:
+    std::function<T()> m_factory;
+};
+
+using PrefabFactories = std::map<meta::TypeIndex, std::unique_ptr<IPrefabFactory>>;
+} // namespace phenyl::core::detail

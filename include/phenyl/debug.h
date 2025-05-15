@@ -3,5 +3,5 @@
 #include "core/debug.h"
 
 namespace phenyl {
-    using DebugRenderConfig = core::DebugRenderConfig;
+using DebugRenderConfig = core::DebugRenderConfig;
 }

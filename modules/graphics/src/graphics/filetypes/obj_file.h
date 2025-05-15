@@ -1,23 +1,23 @@
 #pragma once
 
-#include <iosfwd>
-#include <vector>
 #include "graphics/backend/renderer.h"
+#include "graphics/maths_headers.h"
 #include "graphics/mesh/mesh.h"
 
-#include "graphics/maths_headers.h"
+#include <iosfwd>
+#include <vector>
 
 namespace phenyl::graphics {
-    class ObjFile {
-    private:
-        std::vector<glm::vec4> positions;
-        std::vector<glm::vec2> uvs;
-        std::vector<glm::vec3> normals;
-        std::vector<std::uint32_t> indices;
+class ObjFile {
+public:
+    explicit ObjFile (std::istream& file);
 
-    public:
-        explicit ObjFile (std::istream& file);
+    std::unique_ptr<Mesh> makeMesh (Renderer& renderer, bool includeW = false);
 
-        std::unique_ptr<Mesh> makeMesh (Renderer& renderer, bool includeW = false);
-    };
-}
+private:
+    std::vector<glm::vec4> m_positions;
+    std::vector<glm::vec2> m_uvs;
+    std::vector<glm::vec3> m_normals;
+    std::vector<std::uint32_t> m_indices;
+};
+} // namespace phenyl::graphics

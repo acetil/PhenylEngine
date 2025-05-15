@@ -3,20 +3,21 @@
 #include "vulkan_headers.h"
 
 namespace phenyl::vulkan {
-    class VulkanDescriptorPool {
-    private:
-        VkDevice device;
-        std::vector<VkDescriptorPool> pools;
-        std::size_t setsAllocated = 0;
+class VulkanDescriptorPool {
+public:
+    explicit VulkanDescriptorPool (VkDevice device, std::size_t poolUniformSize = 32);
+    ~VulkanDescriptorPool ();
 
-        std::size_t poolUniformSize;
+    VkDescriptorSet makeDescriptorSet (VkDescriptorSetLayout layout);
+    void reset ();
 
-        void guaranteePool ();
-    public:
-        explicit VulkanDescriptorPool (VkDevice device, std::size_t poolUniformSize = 32);
-        ~VulkanDescriptorPool();
+private:
+    VkDevice m_device;
+    std::vector<VkDescriptorPool> m_pools;
+    std::size_t m_numAllocated = 0;
 
-        VkDescriptorSet makeDescriptorSet (VkDescriptorSetLayout layout);
-        void reset ();
-    };
-}
+    std::size_t m_poolCapacity;
+
+    void guaranteePool ();
+};
+} // namespace phenyl::vulkan

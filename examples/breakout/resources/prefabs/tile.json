@@ -1,40 +1,39 @@
 {
-  "components" :
-  {
-    "GlobalTransform2D" : {
-      "transform": {
-        "position": [0.0, 0.0],
-        "scale": [0.12, 0.04],
-        "rotation": 0.0
-      }
-    },
-    "Sprite2D" : {
-      "texture" : "resources/images/tile_1.png"
-    },
-    "RigidBody2D" : {
-      "momentum": [0.0, 0.0],
-      "gravity": [0.0, 0.0],
-      "mass": 0.0,
-      "inertial_moment": 0.0,
-      "drag": 0,
-      "angular_drag": 0,
-      "angular_momentum" : 0
-    },
-    "BoxCollider2D": {
-      "Collider2D": {
-        "layers": 8,
-        "mask": 4,
-        "elasticity": 1.0
-      },
-      "scale" : [0.12, 0.04]
-    },
-    "Tile" : {
-      "points" : 10,
-      "health" : 1,
-      "width" : 0.12,
-      "height" : 0.04,
-      "emitter" : "resources/prefabs/tile_collision_emitter",
-      "break_sample" : "resources/audio/slap.wav"
+    "components" : {
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.0, 0.0],
+                "scale" : [0.12, 0.04],
+                "rotation" : 0.0
+            }
+        },
+        "Sprite2D" : {
+            "texture" : "resources/images/tile_1.png"
+        },
+        "RigidBody2D" : {
+            "momentum" : [0.0, 0.0],
+            "gravity" : [0.0, 0.0],
+            "mass" : 0.0,
+            "inertial_moment" : 0.0,
+            "drag" : 0,
+            "angular_drag" : 0,
+            "angular_momentum" : 0
+        },
+        "BoxCollider2D" : {
+            "Collider2D" : {
+                "layers" : 8,
+                "mask" : 4,
+                "elasticity" : 1.0
+            },
+            "scale" : [0.12, 0.04]
+        },
+        "Tile" : {
+            "points" : 10,
+            "health" : 1,
+            "width" : 0.12,
+            "height" : 0.04,
+            "emitter" : "resources/prefabs/tile_collision_emitter",
+            "break_sample" : "resources/audio/slap.wav"
+        }
     }
-  }
 }

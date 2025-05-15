@@ -4,22 +4,24 @@
 #include "texture/vk_image.h"
 
 namespace phenyl::vulkan {
-    class VulkanImageTexture : public graphics::IImageTexture {
-    private:
-        VulkanResources& resources;
-        TransferManager& transferManager;
+class VulkanImageTexture : public graphics::IImageTexture {
+public:
+    VulkanImageTexture (VulkanResources& resources, TransferManager& transferManager,
+        const graphics::TextureProperties& properties);
 
-        CombinedSampler combinedSampler;
+    std::uint32_t width () const noexcept override;
+    std::uint32_t height () const noexcept override;
 
-        void recreateIfNecessary (VkFormat format, std::uint32_t width, std::uint32_t height);
-        void recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height);
-    public:
-        VulkanImageTexture (VulkanResources& resources, TransferManager& transferManager, const graphics::TextureProperties& properties);
+    void upload (const graphics::Image& image) override;
+    graphics::ISampler& sampler () noexcept override;
 
-        std::uint32_t width () const noexcept override;
-        std::uint32_t height () const noexcept override;
+private:
+    VulkanResources& m_resources;
+    TransferManager& m_transferManager;
 
-        void upload (const graphics::Image& image) override;
-        graphics::ISampler& sampler () noexcept override;
-    };
-}
+    CombinedSampler m_combinedSampler;
+
+    void recreateIfNecessary (VkFormat format, std::uint32_t width, std::uint32_t height);
+    void recreateSampler (VkFormat imageFormat, std::uint32_t width, std::uint32_t height);
+};
+} // namespace phenyl::vulkan

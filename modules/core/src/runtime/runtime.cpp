@@ -1,25 +1,25 @@
-#include "logging/logging.h"
-#include "util/random.h"
-
-#include "core/iresource.h"
-#include "core/runtime/resource_manager.h"
 #include "core/runtime.h"
-#include "core/stages.h"
 
 #include "core/delta_time.h"
+#include "core/iresource.h"
+#include "core/runtime/resource_manager.h"
+#include "core/stages.h"
+#include "logging/logging.h"
+#include "util/random.h"
 
 using namespace phenyl::core;
 
 static phenyl::Logger LOGGER{"RUNTIME", phenyl::PHENYL_LOGGER};
 
-void ResourceManager::registerResource (std::size_t typeIndex, IResource* resource) {
-    PHENYL_ASSERT_MSG(!resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!", resource->getName());
+void ResourceManager::registerResource (meta::TypeIndex typeIndex, IResource* resource) {
+    PHENYL_ASSERT_MSG(!m_resources.contains(typeIndex), "Attempted to add resource \"{}\" but has already been added!",
+        resource->getName());
 
-    resources.emplace(typeIndex, resource);
+    m_resources.emplace(typeIndex, resource);
     PHENYL_LOGI(LOGGER, "Registered resource \"{}\"", resource->getName());
 }
 
-PhenylRuntime::PhenylRuntime () : runtimeWorld{} {
+PhenylRuntime::PhenylRuntime () : m_world{} {
     PHENYL_LOGI(LOGGER, "Initialised Phenyl runtime");
     initStage<PostInit>("PostInit");
     initStage<FrameBegin>("FrameBegin");
@@ -39,23 +39,23 @@ PhenylRuntime::PhenylRuntime () : runtimeWorld{} {
 
 PhenylRuntime::~PhenylRuntime () = default;
 
-void PhenylRuntime::registerPlugin (std::size_t typeIndex, std::unique_ptr<IPlugin> plugin) {
-    PHENYL_DASSERT(!plugins.contains(typeIndex));
+void PhenylRuntime::registerPlugin (meta::TypeIndex typeIndex, std::unique_ptr<IPlugin> plugin) {
+    PHENYL_DASSERT(!m_plugins.contains(typeIndex));
     PHENYL_TRACE(LOGGER, "Starting registration of plugin \"{}\"", plugin->getName());
 
     auto& pluginRef = *plugin;
 
-    plugins.emplace(typeIndex, std::move(plugin));
+    m_plugins.emplace(typeIndex, std::move(plugin));
 
     pluginRef.init(*this);
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", pluginRef.getName());
 }
 
-void PhenylRuntime::registerPlugin (std::size_t typeIndex, IInitPlugin& plugin) {
-    PHENYL_DASSERT(!initPlugins.contains(typeIndex));
+void PhenylRuntime::registerPlugin (meta::TypeIndex typeIndex, IInitPlugin& plugin) {
+    PHENYL_DASSERT(!m_initPlugins.contains(typeIndex));
     PHENYL_TRACE(LOGGER, "Starting registration of init plugin \"{}\"", plugin.getName());
 
-    initPlugins.emplace(typeIndex);
+    m_initPlugins.emplace(typeIndex);
 
     plugin.init(*this);
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", plugin.getName());
@@ -95,14 +95,14 @@ void PhenylRuntime::shutdown () {
     world().clear();
 
     PHENYL_TRACE(LOGGER, "Running plugin shutdown()");
-    for (auto [_, plugin] : plugins.kv()) {
+    for (const auto& plugin : m_plugins | std::views::values) {
         PHENYL_TRACE(LOGGER, "Running shutdown() for {}", plugin->getName());
         plugin->shutdown(*this);
     }
 
-    //PHENYL_TRACE(LOGGER, "Clearing rest of component manager");
-    //manager().clearAll(); // TODO: try to get rid of this
+    // PHENYL_TRACE(LOGGER, "Clearing rest of component manager");
+    // manager().clearAll(); // TODO: try to get rid of this
 
     PHENYL_TRACE(LOGGER, "Destructing plugins");
-    plugins.clear();
+    m_plugins.clear();
 }

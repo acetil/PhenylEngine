@@ -1,35 +1,36 @@
 #pragma once
 
-#include "vulkan_headers.h"
 #include "init/vk_resources.h"
+#include "vulkan_headers.h"
 
 namespace phenyl::vulkan {
-    class VulkanSemaphore {
-    private:
-        VulkanResource<VkSemaphore> sem;
+class VulkanSemaphore {
+public:
+    VulkanSemaphore (VulkanResources& resources);
 
-    public:
-        VulkanSemaphore (VulkanResources& resources);
+    VkSemaphore get () const noexcept {
+        return *m_sem;
+    }
 
-        VkSemaphore get () const noexcept {
-            return *sem;
-        }
+    VkSemaphoreSubmitInfo getSubmitInfo (VkPipelineStageFlags2 flags) const;
 
-        VkSemaphoreSubmitInfo getSubmitInfo (VkPipelineStageFlags2 flags) const;
-    };
+private:
+    VulkanResource<VkSemaphore> m_sem;
+};
 
-    class VulkanFence {
-    private:
-        VkDevice device;
-        VulkanResource<VkFence> fence;
+class VulkanFence {
+public:
+    VulkanFence (VulkanResources& resources, bool signaled);
 
-    public:
-        VulkanFence (VulkanResources& resources, bool signaled);
+    bool wait (std::uint64_t timeout);
+    void reset ();
 
-        bool wait (std::uint64_t timeout);
-        void reset ();
-        VkFence get () const noexcept {
-            return *fence;
-        }
-    };
-}
+    VkFence get () const noexcept {
+        return *m_fence;
+    }
+
+private:
+    VkDevice m_device;
+    VulkanResource<VkFence> m_fence;
+};
+} // namespace phenyl::vulkan

@@ -1,51 +1,54 @@
 #pragma once
 
+#include "graphics/maths_headers.h"
+#include "util/type_index.h"
+
 #include <any>
 
-#include "graphics/maths_headers.h"
-#include "util/meta.h"
-
 namespace phenyl::graphics {
-    class UIEvent {
-    private:
-        std::any event;
-        std::size_t eventType;
-    public:
-        template <typename T> requires (!std::same_as<T, UIEvent>)
-        explicit UIEvent (T&& event) : event{std::forward<T>(event)}, eventType{meta::type_index<T>()} {}
+class UIEvent {
+public:
+    template <typename T>
+    requires (!std::same_as<T, UIEvent>)
+    explicit UIEvent(T&& event) : m_event{std::forward<T>(event)}, m_type{meta::TypeIndex::Get<T>()} {}
 
-        UIEvent (const UIEvent&) = delete;
-        UIEvent (UIEvent&&) = default;
+    UIEvent (const UIEvent&) = delete;
+    UIEvent (UIEvent&&) = default;
 
-        UIEvent& operator= (const UIEvent&) = delete;
-        UIEvent& operator= (UIEvent&&) = default;
+    UIEvent& operator= (const UIEvent&) = delete;
+    UIEvent& operator= (UIEvent&&) = default;
 
-        template <typename T>
-        const T* get () const noexcept {
-            return std::any_cast<const T>(&event);
-        }
+    template <typename T>
+    const T* get () const noexcept {
+        return std::any_cast<const T>(&m_event);
+    }
 
-        template <typename T>
-        [[nodiscard]] bool is () const noexcept {
-            return get<T>();
-        }
+    template <typename T>
+    [[nodiscard]] bool is () const noexcept {
+        return get<T>();
+    }
 
-        std::size_t type () const noexcept {
-            return eventType;
-        }
-    };
+    meta::TypeIndex type () const noexcept {
+        return m_type;
+    }
 
-    struct MouseEnterEvent {
-        glm::vec2 pos{};
-    };
+private:
+    std::any m_event;
+    meta::TypeIndex m_type;
+};
 
-    struct MouseMoveEvent {
-        glm::vec2 oldPos{};
-        glm::vec2 newPos{};
-    };
+struct MouseEnterEvent {
+    glm::vec2 pos{};
+};
 
-    struct MouseExitEvent {};
+struct MouseMoveEvent {
+    glm::vec2 oldPos{};
+    glm::vec2 newPos{};
+};
 
-    struct MousePressEvent {};
-    struct MouseReleaseEvent {};
-}
+struct MouseExitEvent {};
+
+struct MousePressEvent {};
+
+struct MouseReleaseEvent {};
+} // namespace phenyl::graphics

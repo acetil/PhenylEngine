@@ -1,37 +1,37 @@
+#include "util/profiler.h"
+
+#include "logging/logging.h"
+#include "util/detail/loggers.h"
+
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include "util/profiler.h"
-#include "logging/logging.h"
-#include "util/detail/loggers.h"
 
 using namespace phenyl;
 
 static Logger LOGGER{"PROFILER", util::detail::UTIL_LOGGER};
 
 struct Profiler {
-      double lastFrameTime = 0;
-      double frameStartTime = 0;
+    double lastFrameTime = 0;
+    double frameStartTime = 0;
 
-      std::unordered_map<std::string, double> lastProfileTime;
+    std::unordered_map<std::string, double> lastProfileTime;
 
-      std::unordered_map<std::string, double> currentProfileTime;
+    std::unordered_map<std::string, double> currentProfileTime;
 
-      std::unordered_map<std::string, double> profileStartTime;
+    std::unordered_map<std::string, double> profileStartTime;
 
-      std::vector<std::string> activeCategories;
+    std::vector<std::string> activeCategories;
 
-      std::unordered_set<std::string> activeSet;
+    std::unordered_set<std::string> activeSet;
 
-      std::function<double(void)> timeFunc;
-
+    std::function<double(void)> timeFunc;
 };
 
 static Profiler profiler;
 
-void util::setProfilerTimingFunction (std::function<double ()> timeFunc) {
+void util::setProfilerTimingFunction (std::function<double()> timeFunc) {
     profiler.timeFunc = std::move(timeFunc);
 }
 

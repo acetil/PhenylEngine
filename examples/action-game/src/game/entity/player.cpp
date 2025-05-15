@@ -1,29 +1,27 @@
-#include <cmath>
-#include <iostream>
-
-#include <phenyl/world.h>
-#include <phenyl/engine.h>
-#include <phenyl/input.h>
-#include <phenyl/components/audio_player.h>
-#include <phenyl/components/2D/global_transform.h>
-#include <phenyl/components/2D/sprite.h>
-#include <phenyl/components/physics/2D/rigid_body.h>
-
 #include "player.h"
+
 #include "game/test_app.h"
 
-#define SHOOT_DIST (1.1f * 0.1f)
-#define SHOOT_VEL 7.5f
+#include <cmath>
+#include <iostream>
+#include <phenyl/components/2D/global_transform.h>
+#include <phenyl/components/2D/sprite.h>
+#include <phenyl/components/audio_player.h>
+#include <phenyl/components/physics/2D/rigid_body.h>
+#include <phenyl/engine.h>
+#include <phenyl/input.h>
+#include <phenyl/world.h>
+
+#define SHOOT_DIST      (1.1f * 0.1f)
+#define SHOOT_VEL       7.5f
 
 #define FORCE_COMPONENT 6.5f
 
 using namespace phenyl;
 
 namespace test {
-    PHENYL_SERIALIZABLE(Player,
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(bulletPrefab, "bullet_prefab"),
-        PHENYL_SERIALIZABLE_MEMBER_NAMED(gunshotSample, "gunshot_sample")
-    )
+PHENYL_SERIALIZABLE(Player, PHENYL_SERIALIZABLE_MEMBER_NAMED(bulletPrefab, "bullet_prefab"),
+    PHENYL_SERIALIZABLE_MEMBER_NAMED(gunshotSample, "gunshot_sample"))
 }
 
 static phenyl::Axis2DInput PlayerMove;
@@ -34,8 +32,10 @@ static phenyl::InputAction KeyShoot;
 static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
-static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle);
-static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform);
+static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
+    const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle);
+static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player,
+    const phenyl::GlobalTransform2D& transform);
 static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer);
 
 void InputSetup (phenyl::GameInput& input) {
@@ -66,10 +66,10 @@ void InitPlayer (test::TestApp* app) {
     app->runtime().addSystem<FixedUpdate>("Player::FixedUpdate", PlayerFixedUpdateSystem);
     app->runtime().addSystem<Update>("Player::CameraUpdate", PlayerCameraUpdateSystem);
     app->runtime().addSystem<Update>("Player::AudioUpdate", PlayerAudioUpdateSystem);
-
 }
 
-static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources, const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle) {
+static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
+    const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle) {
     auto& [camera] = resources;
     auto& [player, transform, body, audioPlayer] = bundle.comps();
 
@@ -77,7 +77,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
     auto disp = camera.getWorldPos2D(CursorPos.value()) - transform.transform2D.position();
     bool doShoot = KeyShoot.value();
 
-    body.applyForce(forceVec * body.getMass());
+    body.applyForce(forceVec * body.mass());
     auto rot = std::atan2(disp.y, disp.x);
     transform.transform2D.setRotation(rot);
 
@@ -89,16 +89,13 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
         auto bulletEntity = bundle.entity().world().create();
         player.bulletPrefab->instantiate(bulletEntity);
 
-        bulletEntity.apply<phenyl::GlobalTransform2D>([pos, rot] (auto& transform) {
-            transform.transform2D
-                     .setPosition(pos)
-                     .setRotation(rot);
-        });
-        bulletEntity.apply<phenyl::RigidBody2D>([bulletVel] (auto& body) {
-            body.applyImpulse(bulletVel * body.getMass());
-        });
+        bulletEntity.apply<phenyl::GlobalTransform2D>(
+            [pos, rot] (auto& transform) { transform.transform2D.setPosition(pos).setRotation(rot); });
+        bulletEntity.apply<phenyl::RigidBody2D>(
+            [bulletVel] (auto& body) { body.applyImpulse(bulletVel * body.mass()); });
 
-        // bulletEntity.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel, rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
+        // bulletEntity.apply<phenyl::GlobalTransform2D, phenyl::RigidBody2D>([pos, bulletVel,
+        // rot] (phenyl::GlobalTransform2D& transform, phenyl::RigidBody2D& body) {
         //     transform.transform2D
         //              .setPosition(pos)
         //              .setRotation(rot);
@@ -114,7 +111,8 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
     }
 }
 
-static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player, const phenyl::GlobalTransform2D& transform) {
+static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player,
+    const phenyl::GlobalTransform2D& transform) {
     auto& [camera] = resources;
     camera.setPos2D(transform.transform2D.position());
 }

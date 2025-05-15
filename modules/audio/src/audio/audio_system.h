@@ -1,92 +1,92 @@
 #pragma once
 
-#include <memory>
-
+#include "audio/audio_backend.h"
+#include "audio/audio_sample.h"
+#include "audio/audio_source.h"
 #include "core/assets/asset_manager.h"
-#include "util/map.h"
+#include "core/iresource.h"
 #include "util/fl_vector.h"
 
-#include "audio/audio_source.h"
-#include "audio/audio_sample.h"
-#include "audio/audio_backend.h"
-#include "core/iresource.h"
+#include <memory>
 
 namespace phenyl::core {
-    class World;
-    class EntityComponentSerializer;
-}
+class World;
+class EntityComponentSerializer;
+} // namespace phenyl::core
 
 namespace phenyl::audio {
-    class WAVFile;
+class WAVFile;
 
-    class AudioSystem : public core::AssetManager<AudioSample>, public core::IResource {
-    private:
-        static constexpr std::size_t EMPTY_INDEX = static_cast<std::size_t>(-1);
-        struct VirtualSource {
-            float gain{1.0f};
+class AudioSystem : public core::AssetManager<AudioSample>, public core::IResource {
+public:
+    explicit AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources = 32);
+    ~AudioSystem () override;
 
-            std::size_t sourcesStart{EMPTY_INDEX};
-        };
+    AudioSample* load (std::ifstream& data, std::size_t id) override;
+    AudioSample* load (phenyl::audio::AudioSample&& obj, std::size_t id) override;
+    void queueUnload (std::size_t id) override;
+    [[nodiscard]] const char* getFileType () const override;
+    bool isBinary () const override;
 
-        struct BackendSource {
-            std::size_t backendId{};
-            std::size_t ownerId{EMPTY_INDEX};
+    // virtual AudioSource createSource () = 0;
+    AudioSource createSource ();
 
-            std::size_t next{EMPTY_INDEX};
-            std::size_t prev{EMPTY_INDEX};
+    void selfRegister ();
+    void addComponents (core::World& world, core::EntityComponentSerializer& serializer);
 
-            std::size_t nextLRU{EMPTY_INDEX};
-            std::size_t prevLRU{EMPTY_INDEX};
+    void playSample (AudioSource& source, const AudioSample& sample);
 
-            float remainingDuration{0.0f};
-            bool active{false};
-        };
+    [[nodiscard]] float getSourceGain (const AudioSource& source) const;
+    void setSourceGain (AudioSource& source, float gain);
 
-        util::Map<std::size_t, std::unique_ptr<AudioSample>> samples;
-        std::unique_ptr<AudioBackend> backend;
+    void update (float deltaTime);
 
-        util::FLVector<VirtualSource> virtualSources;
-        std::vector<BackendSource> backendSources;
+    std::string_view getName () const noexcept override;
 
-        std::size_t sourceFreeList;
-        std::size_t LRUHead;
-        std::size_t LRUTail;
+protected:
+    void destroySource (std::size_t id);
+    void destroySample (std::size_t id);
 
+private:
+    static constexpr std::size_t EMPTY_INDEX = static_cast<std::size_t>(-1);
 
-        std::size_t provisionSource (std::size_t virtualId);
-        [[nodiscard]] std::size_t getVirtualSource (const AudioSource& source) const;
-        [[nodiscard]] float getSampleDuration (const AudioSample& sample) const;
-    protected:
-        void destroySource (std::size_t id);
-        void destroySample (std::size_t id);
+    struct VirtualSource {
+        float gain{1.0f};
 
-        friend AudioSource;
-        friend AudioSample;
-    public:
-        explicit AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources=32);
-        ~AudioSystem() override;
-
-        AudioSample* load (std::ifstream &data, std::size_t id) override;
-        AudioSample* load (phenyl::audio::AudioSample &&obj, std::size_t id) override;
-        void queueUnload(std::size_t id) override;
-        [[nodiscard]] const char* getFileType() const override;
-        bool isBinary() const override;
-
-        //virtual AudioSource createSource () = 0;
-        AudioSource createSource ();
-
-        void selfRegister ();
-        void addComponents (core::World& world, core::EntityComponentSerializer& serializer);
-
-        void playSample (AudioSource& source, const AudioSample& sample);
-
-        [[nodiscard]] float getSourceGain (const AudioSource& source) const;
-        void setSourceGain (AudioSource& source, float gain);
-
-        void update (float deltaTime);
-
-        std::string_view getName () const noexcept override;
+        std::size_t sourcesStart{EMPTY_INDEX};
     };
 
-    std::unique_ptr<AudioSystem> MakeOpenALSystem ();
-}
+    struct BackendSource {
+        std::size_t backendId{};
+        std::size_t ownerId{EMPTY_INDEX};
+
+        std::size_t next{EMPTY_INDEX};
+        std::size_t prev{EMPTY_INDEX};
+
+        std::size_t nextLRU{EMPTY_INDEX};
+        std::size_t prevLRU{EMPTY_INDEX};
+
+        float remainingDuration{0.0f};
+        bool active{false};
+    };
+
+    std::unordered_map<std::size_t, std::unique_ptr<AudioSample>> m_samples;
+    std::unique_ptr<AudioBackend> m_backend;
+
+    util::FLVector<VirtualSource> m_virtualSources;
+    std::vector<BackendSource> m_backendSources;
+
+    std::size_t m_sourceFreeList;
+    std::size_t m_lruHead;
+    std::size_t m_lruTail;
+
+    std::size_t provisionSource (std::size_t virtualId);
+    [[nodiscard]] std::size_t getVirtualSource (const AudioSource& source) const;
+    [[nodiscard]] float getSampleDuration (const AudioSample& sample) const;
+
+    friend AudioSource;
+    friend AudioSample;
+};
+
+std::unique_ptr<AudioSystem> MakeOpenALSystem ();
+} // namespace phenyl::audio

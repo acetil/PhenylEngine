@@ -1,22 +1,23 @@
 #pragma once
 
 namespace phenyl::util {
-    template <typename T>
-    class Iterable {
-    private:
-        T beginIt;
-        T endIt;
-    public:
-        using iterator = T;
+template <typename T>
+class Iterable {
+public:
+    using iterator = T;
 
-        Iterable (T beginIt, T endIt) : beginIt{beginIt}, endIt{endIt} {}
+    Iterable (T beginIt, T endIt) : m_begin{beginIt}, m_end{endIt} {}
 
-        T begin () const {
-            return beginIt;
-        }
+    T begin () const {
+        return m_begin;
+    }
 
-        T end () const {
-            return endIt;
-        }
-    };
-}
+    T end () const {
+        return m_end;
+    }
+
+private:
+    T m_begin;
+    T m_end;
+};
+} // namespace phenyl::util

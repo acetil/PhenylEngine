@@ -5,8 +5,8 @@
 #include "core/input/input_action.h"
 
 namespace phenyl {
-    using GameInput = phenyl::core::GameInput;
+using GameInput = phenyl::core::GameInput;
 
-    using Axis2DInput = core::Axis2DInput;
-    using InputAction = phenyl::core::InputAction;
-}
+using Axis2DInput = core::Axis2DInput;
+using InputAction = phenyl::core::InputAction;
+} // namespace phenyl

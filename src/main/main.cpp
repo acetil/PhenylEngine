@@ -1,15 +1,12 @@
 #include <iostream>
-
 #include <phenyl/entrypoint.h>
 #include <phenyl/platform.h>
 
 int main (int argc, char* argv[]) {
     // TODO: parse cmdline args
-    //phenyl_app_entrypoint(&engine, &properties);
+    // phenyl_app_entrypoint(&engine, &properties);
     phenyl::ApplicationProperties properties;
-    auto props = phenyl::ApplicationProperties{}
-        .withLogFile("debug.log")
-        .withRootLogLevel(LEVEL_DEBUG);
+    auto props = phenyl::ApplicationProperties{}.withLogFile("debug.log").withRootLogLevel(LEVEL_DEBUG);
     phenyl::PhenylEngine engine{props.logging()};
 
     phenyl::os::DynamicLibrary library{PHENYL_APP_LIB};

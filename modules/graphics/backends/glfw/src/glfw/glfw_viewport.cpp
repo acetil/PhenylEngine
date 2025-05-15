@@ -1,16 +1,16 @@
+#include "glfw_viewport.h"
+
 #include "core/input/game_input.h"
 #include "logging/logging.h"
 #include "util/profiler.h"
-
-#include "glfw_viewport.h"
-
 
 using namespace phenyl::glfw;
 
 phenyl::Logger detail::GLFW_LOGGER{"GLFW", phenyl::PHENYL_LOGGER};
 
-GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback) {
-    //glewExperimental = true;
+GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties,
+    const std::function<void()>& windowHintCallback, const std::function<void(GLFWwindow*)>& postInitCallback) {
+    // glewExperimental = true;
 
     if (!glfwInit()) {
         const char* glfwError;
@@ -25,8 +25,9 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, cons
     glfwWindowHint(GLFW_SAMPLES, 4);
     windowHintCallback();
 
-    window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(), properties.getWindowTitle().c_str(), nullptr, nullptr);
-    if (!window) {
+    m_window = glfwCreateWindow(properties.getWindowWidth(), properties.getWindowHeight(),
+        properties.getWindowTitle().c_str(), nullptr, nullptr);
+    if (!m_window) {
         const char* glfwError;
         int code;
         if ((code = glfwGetError(&glfwError)) != GLFW_NO_ERROR) {
@@ -36,21 +37,21 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, cons
         PHENYL_ABORT("Failed to open GLFW window!");
     }
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(m_window);
 
     glfwSwapInterval(properties.getVsync() ? 1 : 0); // TODO: handle enable/disable vsync
-    resolution = {properties.getWindowWidth(), properties.getWindowHeight()};
+    m_resolution = {properties.getWindowWidth(), properties.getWindowHeight()};
 
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+    glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GLFW_TRUE);
 
-    keyInput = std::make_unique<GLFWKeyInput>(window);
-    mouseInput = std::make_unique<GLFWMouseInput>(window);
+    m_keyInput = std::make_unique<GLFWKeyInput>(m_window);
+    m_mouseInput = std::make_unique<GLFWMouseInput>(m_window);
 
     double cursorX, cursorY;
-    glfwGetCursorPos(window, &cursorX, &cursorY);
-    cursorPos = glm::vec2{cursorX, cursorY};
+    glfwGetCursorPos(m_window, &cursorX, &cursorY);
+    m_cursorPos = glm::vec2{cursorX, cursorY};
 
-    postInitCallback(window);
+    postInitCallback(m_window);
     PHENYL_LOGI(detail::GLFW_LOGGER, "Initialised GLFW viewport");
     setupCallbacks();
 
@@ -58,20 +59,19 @@ GLFWViewport::GLFWViewport (const graphics::GraphicsProperties& properties, cons
 }
 
 GLFWViewport::~GLFWViewport () {
-    if (window) {
+    if (m_window) {
         PHENYL_LOGI(detail::GLFW_LOGGER, "Destroying GLFW viewport");
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(m_window);
         glfwTerminate();
     }
 }
 
-
 GLFWViewport::operator bool () const {
-    return window;
+    return m_window;
 }
 
 bool GLFWViewport::shouldClose () const {
-    return glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(m_window);
 }
 
 void GLFWViewport::poll () {
@@ -83,38 +83,38 @@ double GLFWViewport::getTime () const {
 }
 
 void GLFWViewport::swapBuffers () {
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(m_window);
 }
 
 glm::ivec2 GLFWViewport::getResolution () const {
-    return resolution;
+    return m_resolution;
 }
 
 glm::vec2 GLFWViewport::getContentScale () const {
     glm::vec2 scale;
-    glfwGetWindowContentScale(window, &scale.x, &scale.y);
+    glfwGetWindowContentScale(m_window, &scale.x, &scale.y);
     return scale;
 }
 
 void GLFWViewport::onCursorPosCallback (glm::vec2 pos) {
-    cursorPos = pos;
+    m_cursorPos = pos;
 }
 
 void GLFWViewport::onWindowSizeCallback (glm::ivec2 newRes) {
-    auto oldRes = resolution;
-    resolution = newRes;
+    auto oldRes = m_resolution;
+    m_resolution = newRes;
 
-    for (auto* handler : updateHandlers) {
-        handler->onViewportResize(oldRes, resolution);
+    for (auto* handler : m_updateHandlers) {
+        handler->onViewportResize(oldRes, m_resolution);
     }
 }
 
 void GLFWViewport::onKeyChange (int scancode, int action, int mods) {
-    //keyInput->onButtonChange(scancode, action, mods);
+    // keyInput->onButtonChange(scancode, action, mods);
 }
 
 void GLFWViewport::onButtonChange (int button, int action, int mods) {
-    //mouseInput->onButtonChange(button, action, mods);
+    // mouseInput->onButtonChange(button, action, mods);
 }
 
 std::string_view GLFWViewport::getName () const noexcept {
@@ -122,17 +122,17 @@ std::string_view GLFWViewport::getName () const noexcept {
 }
 
 void GLFWViewport::setupCallbacks () {
-    glfwSetWindowUserPointer(window, (void*)this);
+    glfwSetWindowUserPointer(m_window, (void*) this);
 
-    glfwSetCursorPosCallback(window, [] (GLFWwindow* window, double xPos, double yPos) {
+    glfwSetCursorPosCallback(m_window, [] (GLFWwindow* window, double xPos, double yPos) {
         PHENYL_DASSERT(window);
-         auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
+        auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
         PHENYL_DASSERT(ptr);
 
         ptr->onCursorPosCallback({xPos, yPos});
     });
 
-    glfwSetWindowSizeCallback(window, [] (GLFWwindow* window, int width, int height) {
+    glfwSetWindowSizeCallback(m_window, [] (GLFWwindow* window, int width, int height) {
         PHENYL_DASSERT(window);
         auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
         PHENYL_DASSERT(ptr);
@@ -140,7 +140,7 @@ void GLFWViewport::setupCallbacks () {
         ptr->onWindowSizeCallback({width, height});
     });
 
-    glfwSetKeyCallback(window, [] (GLFWwindow* window, int key, int scancode, int action, int mods) {
+    glfwSetKeyCallback(m_window, [] (GLFWwindow* window, int key, int scancode, int action, int mods) {
         PHENYL_DASSERT(window);
         auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
         PHENYL_DASSERT(ptr);
@@ -148,7 +148,7 @@ void GLFWViewport::setupCallbacks () {
         ptr->onKeyChange(scancode, action, mods);
     });
 
-    glfwSetMouseButtonCallback(window, [] (GLFWwindow* window, int button, int action, int mods) {
+    glfwSetMouseButtonCallback(m_window, [] (GLFWwindow* window, int button, int action, int mods) {
         PHENYL_DASSERT(window);
         auto* ptr = static_cast<GLFWViewport*>(glfwGetWindowUserPointer(window));
         PHENYL_DASSERT(ptr);
@@ -159,10 +159,10 @@ void GLFWViewport::setupCallbacks () {
 
 void GLFWViewport::addUpdateHandler (graphics::IViewportUpdateHandler* handler) {
     PHENYL_DASSERT(handler);
-    updateHandlers.emplace_back(handler);
+    m_updateHandlers.emplace_back(handler);
 }
 
 void GLFWViewport::addInputDevices (core::GameInput& manager) {
-    manager.addDevice(keyInput.get());
-    manager.addDevice(mouseInput.get());
+    manager.addDevice(m_keyInput.get());
+    manager.addDevice(m_mouseInput.get());
 }

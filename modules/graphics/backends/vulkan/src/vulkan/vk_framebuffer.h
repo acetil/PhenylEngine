@@ -1,30 +1,27 @@
 #pragma once
 
-#include <unordered_set>
-
-#include "util/hash.h"
-
-#include "vulkan_headers.h"
-
 #include "graphics/backend/framebuffer.h"
 #include "init/vk_swap_chain.h"
 #include "memory/vk_transfer_manager.h"
 #include "texture/vk_image.h"
+#include "util/hash.h"
+#include "vulkan_headers.h"
+
+#include <unordered_set>
 
 namespace phenyl::vulkan {
-    struct FrameBufferLayout {
-        std::vector<VkFormat> colorFormats{};
-        VkFormat depthFormat = VK_FORMAT_UNDEFINED;
-        VkFormat stencilFormat = VK_FORMAT_UNDEFINED;
+struct FrameBufferLayout {
+    std::vector<VkFormat> colorFormats{};
+    VkFormat depthFormat = VK_FORMAT_UNDEFINED;
+    VkFormat stencilFormat = VK_FORMAT_UNDEFINED;
 
-        bool operator== (const FrameBufferLayout&) const = default;
+    bool operator== (const FrameBufferLayout&) const = default;
 
-        VkPipelineRenderingCreateInfo getInfo () const noexcept;
-    };
-}
+    VkPipelineRenderingCreateInfo getInfo () const noexcept;
+};
+} // namespace phenyl::vulkan
 
-
-template<>
+template <>
 struct std::hash<phenyl::vulkan::FrameBufferLayout> {
     std::size_t operator() (const phenyl::vulkan::FrameBufferLayout& layout) const noexcept {
         return phenyl::util::HashAll(layout.colorFormats, layout.depthFormat, layout.stencilFormat);
@@ -32,101 +29,106 @@ struct std::hash<phenyl::vulkan::FrameBufferLayout> {
 };
 
 namespace phenyl::vulkan {
-    class VulkanCommandBuffer2;
+class VulkanCommandBuffer2;
 
-    class IVulkanFrameBuffer {
-    private:
-        const FrameBufferLayout* fbLayout;
-    public:
-        IVulkanFrameBuffer (const FrameBufferLayout* fbLayout) : fbLayout{fbLayout} {
-            PHENYL_DASSERT(fbLayout);
-        }
-        virtual ~IVulkanFrameBuffer () = default;
+class IVulkanFrameBuffer {
+public:
+    IVulkanFrameBuffer (const FrameBufferLayout* fbLayout) : m_layout{fbLayout} {
+        PHENYL_DASSERT(fbLayout);
+    }
 
-        const FrameBufferLayout* layout () const noexcept {
-            return fbLayout;
-        }
+    virtual ~IVulkanFrameBuffer () = default;
 
-        virtual void prepareRendering (VulkanCommandBuffer2& cmd) = 0;
-        virtual const VkRenderingInfo* getRenderingInfo () const noexcept = 0;
+    const FrameBufferLayout* layout () const noexcept {
+        return m_layout;
+    }
 
-        virtual VkViewport viewport () const noexcept = 0;
-        virtual VkRect2D scissor () const noexcept = 0;
-    };
+    virtual void prepareRendering (VulkanCommandBuffer2& cmd) = 0;
+    virtual const VkRenderingInfo* getRenderingInfo () const noexcept = 0;
 
-    class FrameBufferLayoutManager {
-    private:
-        std::unordered_set<FrameBufferLayout> layoutCache;
+    virtual VkViewport viewport () const noexcept = 0;
+    virtual VkRect2D scissor () const noexcept = 0;
 
-    public:
-        FrameBufferLayoutManager ();
+private:
+    const FrameBufferLayout* m_layout;
+};
 
-        const FrameBufferLayout* cacheLayout (FrameBufferLayout&& layout);
-    };
+class FrameBufferLayoutManager {
+public:
+    FrameBufferLayoutManager ();
 
-    class VulkanFrameBuffer : public graphics::IFrameBuffer, public IVulkanFrameBuffer {
-    private:
-        struct FrameBufferSampler {
-        };
+    const FrameBufferLayout* cacheLayout (FrameBufferLayout&& layout);
 
-        std::vector<CombinedSampler> colorSamplers;
-        std::vector<VkRenderingAttachmentInfo> colorAttachments;
+private:
+    std::unordered_set<FrameBufferLayout> m_layoutCache;
+};
 
-        std::optional<CombinedSampler> depthSampler;
-        VkRenderingAttachmentInfo depthAttachment;
+class VulkanFrameBuffer : public graphics::IFrameBuffer, public IVulkanFrameBuffer {
+public:
+    VulkanFrameBuffer (VulkanResources& resources, FrameBufferLayoutManager& layoutManager,
+        const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height);
 
-        VkExtent2D extent;
-        std::optional<VkClearColorValue> clearColor;
+    void prepareRendering (VulkanCommandBuffer2& cmd) override;
+    const VkRenderingInfo* getRenderingInfo () const noexcept override;
+    VkViewport viewport () const noexcept override;
+    VkRect2D scissor () const noexcept override;
 
-        VkRenderingInfo renderingInfo{};
-    public:
-        VulkanFrameBuffer (VulkanResources& resources, FrameBufferLayoutManager& layoutManager, const graphics::FrameBufferProperties& properties, std::uint32_t width, std::uint32_t height);
+    void clear (glm::vec4 clearColor) override;
 
-        void prepareRendering (VulkanCommandBuffer2& cmd) override;
-        const VkRenderingInfo* getRenderingInfo () const noexcept override;
-        VkViewport viewport () const noexcept override;
-        VkRect2D scissor () const noexcept override;
+    graphics::ISampler* getSampler () noexcept override;
 
-        void clear (glm::vec4 clearColor) override;
+    graphics::ISampler* getDepthSampler () noexcept override;
 
-        graphics::ISampler* getSampler () noexcept override;
+    glm::ivec2 getDimensions () const noexcept override;
 
-        graphics::ISampler* getDepthSampler() noexcept override;
+private:
+    struct FrameBufferSampler {};
 
-        glm::ivec2 getDimensions() const noexcept override;
-    };
+    std::vector<CombinedSampler> m_colorSamplers;
+    std::vector<VkRenderingAttachmentInfo> m_colorAttachments;
 
-    class VulkanWindowFrameBuffer : public IVulkanFrameBuffer {
-    private:
-        VulkanResources& resources;
-        TransferManager& transferManager;
+    std::optional<CombinedSampler> m_depthSampler;
+    VkRenderingAttachmentInfo m_depthAttachment;
 
-        VulkanSwapChain* swapChain;
+    VkExtent2D m_extent;
+    std::optional<VkClearColorValue> m_clearColor;
 
-        SwapChainImage swapChainImage;
-        VkImageLayout currLayout;
+    VkRenderingInfo m_renderingInfo{};
+};
 
-        VulkanImage depthImage{};
-        VulkanImageView depthImageView{};
+class VulkanWindowFrameBuffer : public IVulkanFrameBuffer {
+public:
+    VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager,
+        FrameBufferLayoutManager& layoutManager, VkFormat colorFormat);
 
-        bool isFirstRender = true;
+    VkViewport viewport () const noexcept override;
+    VkRect2D scissor () const noexcept override;
 
-        VkRenderingAttachmentInfo colorAttachment;
-        VkRenderingAttachmentInfo depthAttachment;
-        VkRenderingInfo renderingInfo;
-    public:
-        VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager, FrameBufferLayoutManager& layoutManager, VkFormat colorFormat);
+    bool acquireFrame (const VulkanSemaphore& waitSem);
+    void onSwapChainRecreate (VulkanSwapChain* newSwapChain);
+    void doPresentTransition (VulkanCommandBuffer2& cmd);
 
-        VkViewport viewport () const noexcept override;
-        VkRect2D scissor () const noexcept override;
+    void setClearColor (glm::vec4 color);
 
-        bool acquireFrame (const VulkanSemaphore& waitSem);
-        void onSwapChainRecreate (VulkanSwapChain* newSwapChain);
-        void doPresentTransition (VulkanCommandBuffer2& cmd);
+    void prepareRendering (VulkanCommandBuffer2& cmd) override;
+    const VkRenderingInfo* getRenderingInfo () const noexcept override;
 
-        void setClearColor (glm::vec4 color);
+private:
+    VulkanResources& m_resources;
+    TransferManager& m_transferManager;
 
-        void prepareRendering (VulkanCommandBuffer2& cmd) override;
-        const VkRenderingInfo* getRenderingInfo () const noexcept override;
-    };
-}
+    VulkanSwapChain* m_swapChain;
+
+    SwapChainImage m_swapChainImage;
+    VkImageLayout m_currLayout;
+
+    VulkanImage m_depthImage{};
+    VulkanImageView m_depthImageView{};
+
+    bool m_isFirstRender = true;
+
+    VkRenderingAttachmentInfo m_colorAttachment;
+    VkRenderingAttachmentInfo m_depthAttachment;
+    VkRenderingInfo m_renderingInfo;
+};
+} // namespace phenyl::vulkan

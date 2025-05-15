@@ -4,12 +4,12 @@
 #include "phenyl/runtime.h"
 
 namespace phenyl {
-    class LevelPlugin : public IInitPlugin {
-    public:
-        LevelPlugin ();
-        ~LevelPlugin() override;
+class LevelPlugin : public IInitPlugin {
+public:
+    LevelPlugin ();
+    ~LevelPlugin () override;
 
-        [[nodiscard]] std::string_view getName() const noexcept override;
-        void init (PhenylRuntime& runtime) override;
-    };
-}
+    [[nodiscard]] std::string_view getName () const noexcept override;
+    void init (PhenylRuntime& runtime) override;
+};
+} // namespace phenyl

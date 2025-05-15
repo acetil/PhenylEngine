@@ -1,149 +1,150 @@
 #pragma once
 
+#include "core/serialization/serializer.h"
+#include "forward.h"
+#include "logging/logging.h"
+#include "util/type_index.h"
+
 #include <cassert>
 #include <cstddef>
 #include <string>
 
-#include "logging/logging.h"
-#include "util/meta.h"
-#include "forward.h"
-#include "core/serialization/serializer.h"
-
 namespace phenyl::core {
+template <typename T>
+class IAssetType;
+
+namespace detail {
     template <typename T>
-    class IAssetType;
+    class AssetCache;
 
-    namespace detail {
+    class AssetBase {
+    private:
+        static void IncRefCount (meta::TypeIndex typeIndex, std::size_t id);
+        static void DecRefCount (meta::TypeIndex typeIndex, std::size_t id);
+
+        static std::string_view GetPath (meta::TypeIndex typeIndex, std::size_t id);
+
         template <typename T>
-        class AssetCache;
+        friend class core::Asset;
 
-        class AssetBase {
-        private:
-            static void IncRefCount (std::size_t typeIndex, std::size_t id);
-            static void DecRefCount (std::size_t typeIndex, std::size_t id);
+        template <typename T>
+        friend class core::IAssetType;
+    };
+} // namespace detail
 
-            static std::string_view GetPath (std::size_t typeIndex, std::size_t id);
+template <typename T>
+class Asset {
+public:
+    Asset () : m_id{0}, m_ptr{nullptr} {}
 
-            template <typename T>
-            friend class core::Asset;
-
-            template <typename T>
-            friend class core::IAssetType;
-        };
+    Asset (const Asset<T>& other) : m_id{other.m_id}, m_ptr{other.m_ptr} {
+        detail::AssetBase::IncRefCount(meta::TypeIndex::Get<T>(), m_id);
     }
 
-    template <typename T>
-    class Asset {
-    private:
-        std::size_t rId;
-        T* ptr;
+    Asset (Asset<T>&& other) noexcept : m_id{other.m_id}, m_ptr{other.m_ptr} {
+        other.m_id = 0;
+        other.m_ptr = nullptr;
+    }
 
-        friend class Assets;
-        friend class IAssetType<T>;
-        friend class detail::AssetCache<T>;
-        Asset (std::size_t id, T* ptr) : rId{id}, ptr{ptr} {}
-    public:
-        Asset () : rId{0}, ptr{nullptr} {}
-
-        Asset (const Asset<T>& other) : rId{other.rId}, ptr{other.ptr} {
-            detail::AssetBase::IncRefCount(meta::type_index<T>(), rId);
-        }
-        Asset (Asset<T>&& other) noexcept : rId{other.rId}, ptr{other.ptr} {
-            other.rId = 0;
-            other.ptr = nullptr;
-        }
-
-        Asset<T>& operator= (const Asset<T>& other) {
-            if (&other == this) {
-                return *this;
-            }
-
-            if (rId) {
-                detail::AssetBase::DecRefCount(meta::type_index<T>(), rId);
-            }
-
-            rId = other.rId;
-            ptr = other.ptr;
-            detail::AssetBase::IncRefCount(meta::type_index<T>(), rId);
-            return *this;
-        }
-        Asset<T>& operator= (Asset<T>&& other) noexcept {
-            if (rId) {
-                detail::AssetBase::DecRefCount(meta::type_index<T>(), rId);
-            }
-
-            rId = other.rId;
-            ptr = other.ptr;
-            other.rId = 0;
-            other.ptr = nullptr;
+    Asset<T>& operator= (const Asset<T>& other) {
+        if (&other == this) {
             return *this;
         }
 
-        ~Asset () noexcept {
-            if (rId) {
-                detail::AssetBase::DecRefCount(meta::type_index<T>(), rId);
-            }
+        if (m_id) {
+            detail::AssetBase::DecRefCount(meta::TypeIndex::Get<T>(), m_id);
         }
 
-        explicit operator bool () const {
-            return rId && ptr;
+        m_id = other.m_id;
+        m_ptr = other.m_ptr;
+        detail::AssetBase::IncRefCount(meta::TypeIndex::Get<T>(), m_id);
+        return *this;
+    }
+
+    Asset<T>& operator= (Asset<T>&& other) noexcept {
+        if (m_id) {
+            detail::AssetBase::DecRefCount(meta::TypeIndex::Get<T>(), m_id);
         }
 
-        T& operator* () {
-            PHENYL_DASSERT(ptr);
-            return *ptr;
+        m_id = other.m_id;
+        m_ptr = other.m_ptr;
+        other.m_id = 0;
+        other.m_ptr = nullptr;
+        return *this;
+    }
+
+    ~Asset () noexcept {
+        if (m_id) {
+            detail::AssetBase::DecRefCount(meta::TypeIndex::Get<T>(), m_id);
+        }
+    }
+
+    explicit operator bool () const {
+        return m_id && m_ptr;
+    }
+
+    T& operator* () {
+        PHENYL_DASSERT(m_ptr);
+        return *m_ptr;
+    }
+
+    const T& operator* () const {
+        PHENYL_DASSERT(m_ptr);
+        return *m_ptr;
+    }
+
+    T* operator->() const {
+        return m_ptr;
+    }
+
+    T* get () {
+        return m_ptr;
+    }
+
+    const T* get () const {
+        return m_ptr;
+    }
+
+    [[nodiscard]] std::size_t id () const {
+        return m_id;
+    }
+
+    [[nodiscard]] std::string_view path () const {
+        return detail::AssetBase::GetPath(meta::TypeIndex::Get<T>(), m_id);
+    }
+
+private:
+    std::size_t m_id;
+    T* m_ptr;
+
+    friend class Assets;
+    friend class IAssetType<T>;
+    friend class detail::AssetCache<T>;
+
+    Asset (std::size_t id, T* ptr) : m_id{id}, m_ptr{ptr} {}
+};
+
+template <typename T>
+class IAssetType {
+public:
+    virtual ~IAssetType () = default;
+
+    Asset<T> assetFromThis () {
+        if (!m_id) {
+            return Asset<T>{};
         }
 
-        const T& operator* () const {
-            PHENYL_DASSERT(ptr);
-            return *ptr;
-        }
+        detail::AssetBase::IncRefCount(meta::TypeIndex::Get<T>(), *m_id);
 
-        /*T* operator-> () {
-            return ptr;
-        }*/
+        return Asset<T>{*m_id, static_cast<T*>(this)};
+    }
 
-        T* operator-> () const {
-            return ptr;
-        }
+    friend class Assets;
 
-        T* get () {
-            return ptr;
-        }
+private:
+    std::optional<std::size_t> m_id = 0;
+};
 
-        const T* get () const {
-            return ptr;
-        }
-
-        [[nodiscard]] std::size_t id () const {
-            return rId;
-        }
-
-        [[nodiscard]] std::string_view path () const {
-            return detail::AssetBase::GetPath(meta::type_index<T>(), rId);
-        }
-    };
-
-    template <typename T>
-    class IAssetType {
-    private:
-        std::optional<std::size_t> rId = 0;
-    public:
-        virtual ~IAssetType () = default;
-
-        Asset<T> assetFromThis () {
-            if (!rId) {
-                return Asset<T>{};
-            }
-
-            detail::AssetBase::IncRefCount(meta::type_index<T>(), *rId);
-
-            return Asset<T>{*rId, static_cast<T*>(this)};
-        }
-
-        friend class Assets;
-    };
-
-    template <typename T>
-    ISerializable<Asset<T>>& phenyl_GetSerializable (detail::SerializableMarker<Asset<T>>);
-}
+template <typename T>
+ISerializable<Asset<T>>& phenyl_GetSerializable(detail::SerializableMarker<Asset<T>>);
+} // namespace phenyl::core

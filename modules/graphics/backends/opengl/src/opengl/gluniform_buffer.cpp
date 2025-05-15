@@ -1,32 +1,36 @@
 #include "gluniform_buffer.h"
+
 #include "logging/logging.h"
 
 using namespace phenyl::opengl;
 
-GlUniformBuffer::GlUniformBuffer (bool readable) : bufferId{}, readable{readable} {
-    glCreateBuffers(1, &bufferId);
+GlUniformBuffer::GlUniformBuffer (bool readable) : m_id{}, m_readable{readable} {
+    glCreateBuffers(1, &m_id);
 }
 
-GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept : bufferId{other.bufferId}, data{other.data}, readable{other.readable} {
-    other.bufferId = 0;
-    other.data = {};
+GlUniformBuffer::GlUniformBuffer (GlUniformBuffer&& other) noexcept :
+    m_id{other.m_id},
+    m_data{other.m_data},
+    m_readable{other.m_readable} {
+    other.m_id = 0;
+    other.m_data = {};
 }
 
 GlUniformBuffer& GlUniformBuffer::operator= (GlUniformBuffer&& other) noexcept {
-    if (!data.empty()) {
-        glUnmapBuffer(bufferId);
+    if (!m_data.empty()) {
+        glUnmapBuffer(m_id);
     }
 
-    if (bufferId) {
-        glDeleteBuffers(1, &bufferId);
+    if (m_id) {
+        glDeleteBuffers(1, &m_id);
     }
 
-    bufferId = other.bufferId;
-    data = other.data;
-    readable = other.readable;
+    m_id = other.m_id;
+    m_data = other.m_data;
+    m_readable = other.m_readable;
 
-    other.bufferId = 0;
-    other.data = {};
+    other.m_id = 0;
+    other.m_data = {};
 
     return *this;
 }
@@ -36,27 +40,27 @@ GlUniformBuffer::~GlUniformBuffer () {
         glUnmapBuffer(bufferId);
     }*/
 
-    if (bufferId) {
-        glDeleteBuffers(1, &bufferId);
+    if (m_id) {
+        glDeleteBuffers(1, &m_id);
     }
 }
 
 std::span<std::byte> GlUniformBuffer::allocate (std::size_t requestSize) {
     PHENYL_DASSERT(requestSize > 0);
 
-    if (data.size() >= requestSize) {
-        return data.subspan(0, requestSize);
+    if (m_data.size() >= requestSize) {
+        return m_data.subspan(0, requestSize);
     }
 
     GLbitfield flags = GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_WRITE_BIT;
-    if (readable) {
+    if (m_readable) {
         flags |= GL_MAP_READ_BIT;
     }
-    glNamedBufferStorage(bufferId, static_cast<GLsizeiptr>(requestSize), nullptr, flags);
-    void* ptr = glMapNamedBufferRange(bufferId, 0, static_cast<GLsizeiptr>(requestSize), flags);
+    glNamedBufferStorage(m_id, static_cast<GLsizeiptr>(requestSize), nullptr, flags);
+    void* ptr = glMapNamedBufferRange(m_id, 0, static_cast<GLsizeiptr>(requestSize), flags);
 
-    data = std::span{static_cast<std::byte*>(ptr), requestSize};
-    return data;
+    m_data = std::span{static_cast<std::byte*>(ptr), requestSize};
+    return m_data;
 }
 
 void GlUniformBuffer::upload () {
@@ -64,7 +68,7 @@ void GlUniformBuffer::upload () {
 }
 
 bool GlUniformBuffer::isReadable () const {
-    return readable;
+    return m_readable;
 }
 
 std::size_t GlUniformBuffer::getMinAlignment () const noexcept {

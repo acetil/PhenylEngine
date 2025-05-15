@@ -1,38 +1,38 @@
 {
-  "components" : {
-    "Player": {
-      "bullet_prefab" : "resources/prefabs/bullet_entity",
-      "gunshot_sample" : "resources/audio/blastoff.wav"
-    },
-    "GlobalTransform2D": {
-      "transform": {
-        "position": [0.7, 0.0],
-        "scale": [0.1, 0.1],
-        "rotation": 0.0
-      }
-    },
-    "Sprite2D": {
-      "texture" : "resources/images/test/manBlue_gun.png"
-    },
-    "RigidBody2D": {
-      "momentum": [0.0, 0.0],
-      "gravity": [0.0, 0.0],
-      "mass": 1.0,
-      "inertial_moment": 5.0,
-      "drag": 8.3,
-      "angular_drag": 0.7,
-      "angular_momentum" : 0
-    },
-    "BoxCollider2D": {
-      "Collider2D": {
-        "layers": 1,
-        "mask": 2,
-        "elasticity": 0.0
-      },
-      "scale" : [0.1, 0.1]
-    },
-    "AudioPlayer" : {
-      "gain" : 0.5
+    "components" : {
+        "Player" : {
+            "bullet_prefab" : "resources/prefabs/bullet_entity",
+            "gunshot_sample" : "resources/audio/blastoff.wav"
+        },
+        "GlobalTransform2D" : {
+            "transform" : {
+                "position" : [0.7, 0.0],
+                "scale" : [0.1, 0.1],
+                "rotation" : 0.0
+            }
+        },
+        "Sprite2D" : {
+            "texture" : "resources/images/test/manBlue_gun.png"
+        },
+        "RigidBody2D" : {
+            "momentum" : [0.0, 0.0],
+            "gravity" : [0.0, 0.0],
+            "mass" : 1.0,
+            "inertial_moment" : 5.0,
+            "drag" : 8.3,
+            "angular_drag" : 0.7,
+            "angular_momentum" : 0
+        },
+        "BoxCollider2D" : {
+            "Collider2D" : {
+                "layers" : 1,
+                "mask" : 2,
+                "elasticity" : 0.0
+            },
+            "scale" : [0.1, 0.1]
+        },
+        "AudioPlayer" : {
+            "gain" : 0.5
+        }
     }
-  }
 }

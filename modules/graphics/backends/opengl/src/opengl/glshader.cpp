@@ -1,10 +1,9 @@
-#include <fstream>
-
-#include <nlohmann/json.hpp>
+#include "glshader.h"
 
 #include "core/assets/assets.h"
 
-#include "glshader.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace phenyl::graphics;
 using namespace phenyl::opengl;
@@ -17,59 +16,62 @@ static std::optional<GLuint> LinkShader (const std::unordered_map<ShaderSourceTy
 static std::optional<std::string> ReadFromPath (const std::string& path);
 
 GlShader::Builder& GlShader::Builder::withSource (ShaderSourceType type, std::string source) {
-    PHENYL_DASSERT_MSG(!shaderSources.contains(type), "Attempted to add source to shader of type {} twice!", (unsigned int)type);
+    PHENYL_DASSERT_MSG(!m_sources.contains(type), "Attempted to add source to shader of type {} twice!",
+        (unsigned int) type);
 
     auto shader = LoadShader(GetGlShaderType(type), source);
     if (shader) {
-        shaderSources.emplace(type, *shader);
+        m_sources.emplace(type, *shader);
     }
     return *this;
 }
 
 GlShader::Builder& GlShader::Builder::withAttrib (ShaderDataType type, std::string attrib) {
-    PHENYL_DASSERT_MSG(!attribs.contains(attrib), "Attempted to add vertex attrib \"{}\" to shader twice!", attrib);
+    PHENYL_DASSERT_MSG(!m_attribs.contains(attrib), "Attempted to add vertex attrib \"{}\" to shader twice!", attrib);
 
-    attribs.emplace(std::move(attrib), type);
+    m_attribs.emplace(std::move(attrib), type);
     return *this;
 }
 
 GlShader::Builder& GlShader::Builder::withUniformBlock (std::string uniformName) {
-    PHENYL_DASSERT_MSG(!uniformBlocks.contains(uniformName), "Attempted to add uniform \"{}\" to shader twice!", uniformName);
+    PHENYL_DASSERT_MSG(!m_uniformBlocks.contains(uniformName), "Attempted to add uniform \"{}\" to shader twice!",
+        uniformName);
 
-    uniformBlocks.emplace(std::move(uniformName));
+    m_uniformBlocks.emplace(std::move(uniformName));
     return *this;
 }
 
 GlShader::Builder& GlShader::Builder::withSampler (std::string samplerName) {
-    PHENYL_DASSERT_MSG(!samplers.contains(samplerName), "Attempted to add sampler \"{}\" to shader twice!", samplerName);
+    PHENYL_DASSERT_MSG(!m_samplers.contains(samplerName), "Attempted to add sampler \"{}\" to shader twice!",
+        samplerName);
 
-    samplers.emplace(samplerName);
+    m_samplers.emplace(samplerName);
     return *this;
 }
 
 std::unique_ptr<GlShader> GlShader::Builder::build () {
-    auto programId = LinkShader(shaderSources);
+    auto programId = LinkShader(m_sources);
     if (!programId) {
         PHENYL_LOGE(LOGGER, "Failed to build shader: link error");
         return nullptr;
     }
 
     auto shader = std::make_unique<GlShader>(*programId);
-    for (const auto& [attrib, type] : attribs) {
+    for (const auto& [attrib, type] : m_attribs) {
         if (!shader->addAttrib(type, attrib)) {
             PHENYL_LOGE(LOGGER, "Failed to build shader: missing attrib \"{}\"", attrib);
             return nullptr;
         }
     }
 
-    for (const auto& uniform : uniformBlocks) {
+    for (const auto& uniform : m_uniformBlocks) {
         if (!shader->addUniformBlock(uniform)) {
             PHENYL_LOGE(LOGGER, "Failed to build shader: missing uniform \"{}\"", uniform);
             return nullptr;
         }
     }
 
-    for (const auto& sampler : samplers) {
+    for (const auto& sampler : m_samplers) {
         if (!shader->addSampler(sampler)) {
             PHENYL_LOGE(LOGGER, "Failed to build shader: missing sampler \"{}\"", sampler);
             return nullptr;
@@ -80,74 +82,77 @@ std::unique_ptr<GlShader> GlShader::Builder::build () {
     return shader;
 }
 
-GlShader::GlShader (GLuint programId) : programId{programId} {
+GlShader::GlShader (GLuint programId) : m_program{programId} {
     PHENYL_DASSERT(programId);
 }
 
-GlShader::GlShader (GlShader&& other) noexcept : programId{other.programId}, uniformBlocks{std::move(other.uniformBlocks)}, samplers{std::move(other.samplers)} {
-    other.programId = 0;
+GlShader::GlShader (GlShader&& other) noexcept :
+    m_program{other.m_program},
+    m_uniformBlocks{std::move(other.m_uniformBlocks)},
+    m_samplers{std::move(other.m_samplers)} {
+    other.m_program = 0;
 }
 
 GlShader& GlShader::operator= (GlShader&& other) noexcept {
-    if (programId) {
-        glDeleteProgram(programId);
+    if (m_program) {
+        glDeleteProgram(m_program);
     }
 
-    programId = other.programId;
-    uniformBlocks = std::move(other.uniformBlocks);
-    samplers = std::move(other.samplers);
+    m_program = other.m_program;
+    m_uniformBlocks = std::move(other.m_uniformBlocks);
+    m_samplers = std::move(other.m_samplers);
 
-    other.programId = 0;
+    other.m_program = 0;
 
     return *this;
 }
 
 GlShader::~GlShader () {
-    if (programId) {
-        glDeleteProgram(programId);
+    if (m_program) {
+        glDeleteProgram(m_program);
     }
 }
 
 bool GlShader::addAttrib (ShaderDataType type, const std::string& attrib) {
-    PHENYL_ASSERT(!attribs.contains(attrib));
+    PHENYL_ASSERT(!m_attribs.contains(attrib));
 
-    auto location = glGetAttribLocation(programId, attrib.c_str());
+    auto location = glGetAttribLocation(m_program, attrib.c_str());
     if (location == -1) {
         PHENYL_LOGW(LOGGER, "Failed to find vertex attrib \"{}\"", attrib);
         return true;
     }
 
     PHENYL_TRACE(LOGGER, "Located vertex attrib \"{}\" at location={}", attrib, location);
-    attribs[attrib] = location;
+    m_attribs[attrib] = location;
     return true;
 }
 
 bool GlShader::addUniformBlock (const std::string& uniform) {
-    PHENYL_ASSERT(!uniformBlocks.contains(uniform));
+    PHENYL_ASSERT(!m_uniformBlocks.contains(uniform));
 
-    unsigned int location = uniformBlocks.size();
+    unsigned int location = m_uniformBlocks.size();
     PHENYL_ASSERT_MSG(location < GL_MAX_UNIFORM_BUFFER_BINDINGS, "Attempted to add too many uniform blocks to shader!");
 
     PHENYL_TRACE(LOGGER, "Adding uniform block \"{}\" at location={}", uniform, location);
-    auto blockIndex = glGetUniformBlockIndex(programId, uniform.c_str());
+    auto blockIndex = glGetUniformBlockIndex(m_program, uniform.c_str());
     if (blockIndex == GL_INVALID_INDEX) {
         PHENYL_LOGE(LOGGER, "Failed to find uniform \"{}\"", uniform);
         return false;
     }
 
     bind();
-    glUniformBlockBinding(programId, blockIndex, location);
-    uniformBlocks[uniform] = location;
+    glUniformBlockBinding(m_program, blockIndex, location);
+    m_uniformBlocks[uniform] = location;
     return true;
 }
 
 bool GlShader::addSampler (const std::string& sampler) {
-    PHENYL_ASSERT(!samplers.contains(sampler));
+    PHENYL_ASSERT(!m_samplers.contains(sampler));
 
-    unsigned int samplerId = samplers.size();
+    unsigned int samplerId = m_samplers.size();
 
     PHENYL_TRACE(LOGGER, "Adding sampler \"{}\" at id={}", sampler, samplerId);
-    auto samplerUniform = glGetUniformLocation(programId, sampler.c_str());
+    auto samplerUniform = glGetUniformLocation(m_program, sampler.c_str());
     if (samplerUniform == -1) {
         PHENYL_LOGE(LOGGER, "Failed to find sampler \"{}\"", sampler);
         return false;
@@ -155,57 +160,57 @@ bool GlShader::addSampler (const std::string& sampler) {
 
     bind();
     glUniform1i(samplerUniform, static_cast<GLint>(samplerId));
-    samplers[sampler] = samplerId;
+    m_samplers[sampler] = samplerId;
     return true;
 }
 
 std::size_t GlShader::hash () const noexcept {
-    return static_cast<std::size_t>(programId);
+    return static_cast<std::size_t>(m_program);
 }
 
 std::optional<unsigned int> GlShader::getAttribLocation (const std::string& attrib) const noexcept {
-    auto it = attribs.find(attrib);
-    return it != attribs.end() ? std::optional{it->second} : std::nullopt;
+    auto it = m_attribs.find(attrib);
+    return it != m_attribs.end() ? std::optional{it->second} : std::nullopt;
 }
 
 std::optional<unsigned int> GlShader::getUniformLocation (const std::string& uniform) const noexcept {
-    auto uniformIt = uniformBlocks.find(uniform);
-    return uniformIt != uniformBlocks.end() ? std::optional{uniformIt->second} : std::nullopt;
+    auto uniformIt = m_uniformBlocks.find(uniform);
+    return uniformIt != m_uniformBlocks.end() ? std::optional{uniformIt->second} : std::nullopt;
 }
 
 std::optional<unsigned int> GlShader::getSamplerLocation (const std::string& sampler) const noexcept {
-    auto samplerIt = samplers.find(sampler);
-    return samplerIt != samplers.end() ? std::optional{samplerIt->second} : std::nullopt;
+    auto samplerIt = m_samplers.find(sampler);
+    return samplerIt != m_samplers.end() ? std::optional{samplerIt->second} : std::nullopt;
 }
 
 std::optional<std::size_t> GlShader::getUniformOffset (const std::string& uniformBlock,
     const std::string& uniform) const noexcept {
-    auto index = glGetProgramResourceIndex(programId, GL_UNIFORM, uniform.c_str());
+    auto index = glGetProgramResourceIndex(m_program, GL_UNIFORM, uniform.c_str());
     if (index == GL_INVALID_INDEX) {
         return std::nullopt;
     }
 
     GLenum prop = GL_OFFSET;
     GLint offset = 0;
-    glGetProgramResourceiv(programId, GL_UNIFORM, index, 1, &prop, 1, nullptr, &offset);
+    glGetProgramResourceiv(m_program, GL_UNIFORM, index, 1, &prop, 1, nullptr, &offset);
 
     return static_cast<std::size_t>(offset);
 }
 
 std::optional<std::size_t> GlShader::getUniformBlockSize (const std::string& uniformBlock) const noexcept {
-    auto index = glGetProgramResourceIndex(programId, GL_UNIFORM_BLOCK, uniformBlock.c_str());
+    auto index = glGetProgramResourceIndex(m_program, GL_UNIFORM_BLOCK, uniformBlock.c_str());
     if (index == GL_INVALID_INDEX) {
         return std::nullopt;
     }
 
     GLenum prop = GL_BUFFER_DATA_SIZE;
     GLint size = 0;
-    glGetProgramResourceiv(programId, GL_UNIFORM_BLOCK, index, 1, &prop, 1, nullptr, &size);
+    glGetProgramResourceiv(m_program, GL_UNIFORM_BLOCK, index, 1, &prop, 1, nullptr, &size);
     return static_cast<std::size_t>(size);
 }
 
 void GlShader::bind () {
-    glUseProgram(programId);
+    glUseProgram(m_program);
 }
 
 const char* GlShaderManager::getFileType () const {
@@ -292,20 +297,20 @@ Shader* GlShaderManager::load (std::ifstream& data, std::size_t id) {
     }
 
     PHENYL_TRACE(LOGGER, "Successfully built shader");
-    PHENYL_DASSERT(!shaders.contains(id));
-    shaders[id] = Shader{std::move(shader)};
-    return &shaders[id];
+    PHENYL_DASSERT(!m_shaders.contains(id));
+    m_shaders[id] = Shader{std::move(shader)};
+    return &m_shaders[id];
 }
 
 Shader* GlShaderManager::load (Shader&& obj, std::size_t id) {
-    PHENYL_DASSERT(!shaders.contains(id));
-    shaders[id] = std::move(obj);
-    return &shaders[id];
+    PHENYL_DASSERT(!m_shaders.contains(id));
+    m_shaders[id] = std::move(obj);
+    return &m_shaders[id];
 }
 
 void GlShaderManager::queueUnload (std::size_t id) {
     if (onUnload(id)) {
-        shaders.erase(id);
+        m_shaders.erase(id);
     }
 }
 
@@ -393,10 +398,10 @@ static std::optional<std::string> ReadFromPath (const std::string& path) {
 
 static GLenum GetGlShaderType (ShaderSourceType type) {
     switch (type) {
-        case ShaderSourceType::FRAGMENT:
-            return GL_FRAGMENT_SHADER;
-        case ShaderSourceType::VERTEX:
-            return GL_VERTEX_SHADER;
+    case ShaderSourceType::FRAGMENT:
+        return GL_FRAGMENT_SHADER;
+    case ShaderSourceType::VERTEX:
+        return GL_VERTEX_SHADER;
     }
 
     PHENYL_ABORT("Invalid shader type: {}", static_cast<unsigned int>(type));

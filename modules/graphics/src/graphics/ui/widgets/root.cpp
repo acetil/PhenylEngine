@@ -8,14 +8,14 @@ RootWidget::RootWidget () = default;
 
 Widget* RootWidget::insert (std::unique_ptr<Widget> widget) {
     auto* ptr = widget.get();
-    children.emplace_back(std::move(widget));
+    m_children.emplace_back(std::move(widget));
     ptr->setParent(this);
     ptr->setOffset({0, 0});
     return ptr;
 }
 
 Widget* RootWidget::pick (glm::vec2 pointer) noexcept {
-    for (auto it = children.rbegin(); it != children.rend(); ++it) {
+    for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
         if (auto* ptr = (*it)->pick(pointer - (*it)->modifier().offset)) {
             return ptr;
         }
@@ -24,26 +24,22 @@ Widget* RootWidget::pick (glm::vec2 pointer) noexcept {
 }
 
 void RootWidget::measure (const WidgetConstraints& constraints) {
-    for (auto& i : children) {
-        i->measure(WidgetConstraints{
-            .maxSize = constraints.maxSize - i->modifier().offset
-        });
+    for (auto& i : m_children) {
+        i->measure(WidgetConstraints{.maxSize = constraints.maxSize - i->modifier().offset});
     }
 }
 
 void RootWidget::update () {
-    std::erase_if(children, [this] (const auto& w) {
-        return widgetsToDelete.contains(w.get());
-    });
-    widgetsToDelete.clear();
+    std::erase_if(m_children, [this] (const auto& w) { return m_widgetsToDelete.contains(w.get()); });
+    m_widgetsToDelete.clear();
 
-    for (auto& i : children) {
+    for (auto& i : m_children) {
         i->update();
     }
 }
 
 void RootWidget::render (Canvas& canvas) {
-    for (auto& i : children) {
+    for (auto& i : m_children) {
         canvas.pushOffset(i->modifier().offset);
         i->render(canvas);
         canvas.popOffset();
@@ -51,12 +47,12 @@ void RootWidget::render (Canvas& canvas) {
 }
 
 void RootWidget::queueChildDestroy (Widget* child) {
-    widgetsToDelete.emplace(child);
+    m_widgetsToDelete.emplace(child);
 }
 
 bool RootWidget::pointerUpdate (glm::vec2 pointer) {
-    auto it = children.rbegin();
-    while (it != children.rend()) {
+    auto it = m_children.rbegin();
+    while (it != m_children.rend()) {
         bool childResult = (*it)->pointerUpdate(pointer - (*it)->modifier().offset);
         ++it;
         if (childResult) {
@@ -64,7 +60,7 @@ bool RootWidget::pointerUpdate (glm::vec2 pointer) {
         }
     }
 
-    for ( ; it != children.rend(); ++it) {
+    for (; it != m_children.rend(); ++it) {
         (*it)->pointerLeave();
     }
 
@@ -73,7 +69,7 @@ bool RootWidget::pointerUpdate (glm::vec2 pointer) {
 
 void RootWidget::pointerLeave () {
     // Should never occur
-    for (auto& i : children) {
+    for (auto& i : m_children) {
         i->pointerLeave();
     }
     Widget::pointerLeave();

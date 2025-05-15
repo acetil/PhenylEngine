@@ -1,64 +1,65 @@
 #pragma once
 
-#include "logging/properties.h"
 #include "../../modules/graphics/backends/api/include/graphics/graphics_properties.h"
+#include "logging/properties.h"
 
 namespace phenyl {
-    class PhenylEngine;
+class PhenylEngine;
 
-    namespace engine {
-        class Engine;
+namespace engine {
+    class Engine;
+}
+
+class ApplicationProperties {
+private:
+    graphics::GraphicsProperties m_graphics;
+    logging::LoggingProperties m_logging;
+
+    friend class engine::Engine;
+    friend class PhenylEngine;
+
+public:
+    ApplicationProperties () = default;
+
+    ApplicationProperties& withResolution (const int width, const int height) {
+        m_graphics.withWindowSize(width, height);
+
+        return *this;
     }
 
-    class ApplicationProperties {
-    private:
-        graphics::GraphicsProperties graphicsProperties;
-        logging::LoggingProperties loggingProperties;
+    ApplicationProperties& withWindowTitle (std::string title) {
+        m_graphics.withWindowTitle(std::move(title));
 
-        friend class engine::Engine;
-        friend class PhenylEngine;
-    public:
-        ApplicationProperties () = default;
+        return *this;
+    }
 
-        ApplicationProperties& withResolution (const int width, const int height) {
-            graphicsProperties.withWindowSize(width, height);
+    ApplicationProperties& withVsync (const bool vsync) {
+        m_graphics.withVsync(vsync);
 
-            return *this;
-        }
+        return *this;
+    }
 
-        ApplicationProperties& withWindowTitle (std::string title) {
-            graphicsProperties.withWindowTitle(std::move(title));
+    ApplicationProperties& withLogFile (std::string logFile) {
+        m_logging.withLogFile(std::move(logFile));
 
-            return *this;
-        }
+        return *this;
+    }
 
-        ApplicationProperties& withVsync (const bool vsync) {
-            graphicsProperties.withVsync(vsync);
+    ApplicationProperties& withLogLevel (const std::string& logger, const int level) {
+        m_logging.withLogLevel(logger, level);
 
-            return *this;
-        }
+        return *this;
+    }
 
-        ApplicationProperties& withLogFile (std::string logFile) {
-            loggingProperties.withLogFile(std::move(logFile));
+    ApplicationProperties& withRootLogLevel (const int level) {
+        m_logging.withRootLogLevel(level);
 
-            return *this;
-        }
+        return *this;
+    }
 
-        ApplicationProperties& withLogLevel (const std::string& logger, const int level) {
-            loggingProperties.withLogLevel(logger, level);
-
-            return *this;
-        }
-
-        ApplicationProperties& withRootLogLevel (const int level) {
-            loggingProperties.withRootLogLevel(level);
-
-            return *this;
-        }
-
-        // TODO: nicer design
-        const logging::LoggingProperties& logging () const noexcept {
-            return loggingProperties;
-        }
-    };
-}
+    // TODO: nicer design
+    const logging::LoggingProperties& logging () const noexcept {
+        return m_logging;
+    }
+};
+} // namespace phenyl

@@ -1,7 +1,7 @@
-#include "core/input/game_input.h"
 #include "core/plugins/input_plugin.h"
-#include "core/runtime.h"
 
+#include "core/input/game_input.h"
+#include "core/runtime.h"
 
 using namespace phenyl::core;
 

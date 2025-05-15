@@ -1,60 +1,63 @@
 #pragma once
 
-#include <memory>
-#include "vulkan/vk_command_buffer.h"
-
-#include "vulkan/vulkan_headers.h"
 #include "vk_swap_chain.h"
+#include "vulkan/vk_command_buffer.h"
+#include "vulkan/vulkan_headers.h"
+
+#include <memory>
 
 namespace phenyl::vulkan {
-    struct DeviceProperties {
-        std::string deviceName;
-        float maxAnisotropy;
+struct DeviceProperties {
+    std::string deviceName;
+    float maxAnisotropy;
 
-        VkDeviceSize minUniformAlignment;
-    };
+    VkDeviceSize minUniformAlignment;
+};
 
-    class VulkanDevice {
-    private:
-        static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface);
-        static bool CheckDeviceExtensionSupport (VkPhysicalDevice device, const std::vector<const char*>& extensions);
-        static std::optional<VulkanSwapChainDetails> GetDeviceSwapChainDetails (VkPhysicalDevice device, VkSurfaceKHR surface);
-        static bool CheckDeviceFeatures (VkPhysicalDevice device);
-        static DeviceProperties GetDeviceProperties (VkPhysicalDevice device);
+class VulkanDevice {
+public:
+    explicit VulkanDevice (VkInstance instance, VkSurfaceKHR surface);
 
-        VkPhysicalDevice physicalDevice{};
-        VkDevice logicalDevice{};
+    std::unique_ptr<VulkanSwapChain> makeSwapChain (VkSurfaceKHR surface);
+    VkCommandPool makeCommandPool (VkCommandPoolCreateFlags usage);
 
-        VulkanQueueFamilies queueFamilies{};
-        VulkanSwapChainDetails swapChainDetails{};
-        DeviceProperties devProperties{};
+    VmaAllocator makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion);
 
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
+    VkDevice device () const noexcept {
+        return m_logicalDevice;
+    }
 
-        void choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions);
-        VkDevice createLogicalDevice (const std::vector<const char*>& deviceExtensions);
-        VkQueue makeQueue (std::uint32_t queueFamilyIndex);
-    public:
-        explicit VulkanDevice (VkInstance instance, VkSurfaceKHR surface);
+    const DeviceProperties& properties () const noexcept {
+        return m_properties;
+    }
 
-        std::unique_ptr<VulkanSwapChain> makeSwapChain (VkSurfaceKHR surface);
-        VkCommandPool makeCommandPool (VkCommandPoolCreateFlags usage);
+    VkQueue graphicsQueue () const noexcept {
+        return m_graphicsQueue;
+    }
 
-        VmaAllocator makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion);
+    ~VulkanDevice ();
 
-        VkDevice device () const noexcept {
-            return logicalDevice;
-        }
+private:
+    static std::optional<VulkanQueueFamilies> GetDeviceFamilies (VkPhysicalDevice device, VkSurfaceKHR surface);
+    static bool CheckDeviceExtensionSupport (VkPhysicalDevice device, const std::vector<const char*>& extensions);
+    static std::optional<VulkanSwapChainDetails> GetDeviceSwapChainDetails (VkPhysicalDevice device,
+        VkSurfaceKHR surface);
+    static bool CheckDeviceFeatures (VkPhysicalDevice device);
+    static DeviceProperties GetDeviceProperties (VkPhysicalDevice device);
 
-        const DeviceProperties& properties () const noexcept {
-            return devProperties;
-        }
+    VkPhysicalDevice m_physicalDevice{};
+    VkDevice m_logicalDevice{};
 
-        VkQueue getGraphicsQueue () const noexcept {
-            return graphicsQueue;
-        }
+    VulkanQueueFamilies m_queueFamilies{};
+    VulkanSwapChainDetails m_swapChainDetails{};
+    DeviceProperties m_properties{};
 
-        ~VulkanDevice ();
-    };
-}
+    VkQueue m_graphicsQueue;
+    VkQueue m_presentQueue;
+
+    void choosePhysicalDevice (VkInstance instance, VkSurfaceKHR surface,
+        const std::vector<const char*>& deviceExtensions);
+    VkDevice createLogicalDevice (const std::vector<const char*>& deviceExtensions);
+    VkQueue makeQueue (std::uint32_t queueFamilyIndex);
+};
+} // namespace phenyl::vulkan

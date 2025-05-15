@@ -1,4 +1,5 @@
 #include "core/maths/3d/quaternion.h"
+
 #include "core/serialization/serializer_impl.h"
 
 using namespace phenyl::core;
@@ -36,8 +37,8 @@ public:
 };
 
 namespace phenyl::core {
-    ISerializable<Quaternion>& phenyl_GetSerializable (detail::SerializableMarker<Quaternion>) {
-        static QuaternionSerializable serializable{};
-        return serializable;
-    }
+ISerializable<Quaternion>& phenyl_GetSerializable (detail::SerializableMarker<Quaternion>) {
+    static QuaternionSerializable serializable{};
+    return serializable;
 }
+} // namespace phenyl::core

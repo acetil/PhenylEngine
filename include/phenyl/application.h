@@ -1,110 +1,111 @@
 #pragma once
 
-#include "properties.h"
 #include "plugin.h"
-
 #include "plugins/default_2d_plugin.h"
 #include "plugins/default_3d_plugin.h"
+#include "properties.h"
 
 namespace phenyl {
-    template <PluginType ...Plugins>
-    class Application;
+template <PluginType... Plugins>
+class Application;
 
-    namespace engine {
-        class AppPlugin;
+namespace engine {
+    class AppPlugin;
 
+    class ApplicationBase {
+    public:
+        virtual ~ApplicationBase () = default;
 
-        class ApplicationBase {
-        private:
-            ApplicationProperties properties;
-            core::PhenylRuntime* engineRuntime = nullptr;
-            double targetFrameTime{1.0 / 60};
-            double targetFps{60};
-            double fixedTimeScale{1.0};
+        virtual void postInit () {}
 
-            virtual void _init () = 0;
-            ApplicationBase (ApplicationProperties properties);
+        virtual void shutdown () {}
 
-            friend class AppPlugin;
-            template <PluginType ...Plugins>
-            friend class ::phenyl::Application;
-        protected:
-            core::World& world ();
+        void pause ();
+        void resume ();
 
-            void setTargetFPS (double fps);
-            void setFixedTimeScale (double newTimeScale);
-        public:
-            virtual ~ApplicationBase() = default;
+        template <phenyl::core::SerializableType T>
+        void addComponent (std::string name) {
+            runtime().template addComponent<T>(std::move(name));
+        }
 
-            virtual void postInit () {}
-            virtual void shutdown () {
+        template <typename T>
+        void addUnserializedComponent () {
+            runtime().template addUnserializedComponent<T>();
+        }
 
-            }
+        core::PhenylRuntime& runtime ();
 
-            void pause ();
-            void resume ();
+        const ApplicationProperties& getProperties () const {
+            return m_properties;
+        }
 
-            template <phenyl::core::SerializableType T>
-            void addComponent (std::string name) {
-                runtime().template addComponent<T>(std::move(name));
-            };
+        double getFixedTimeScale () const {
+            return m_fixedTimeScale;
+        }
 
-            template <typename T>
-            void addUnserializedComponent () {
-                runtime().template addUnserializedComponent<T>();
-            }
+        double getTargetFps () const {
+            return m_targetFps;
+        }
 
-            core::PhenylRuntime& runtime ();
+    protected:
+        core::World& world ();
 
-            const ApplicationProperties& getProperties () const {
-                return properties;
-            }
+        void setTargetFPS (double fps);
+        void setFixedTimeScale (double newTimeScale);
 
-            double getFixedTimeScale () const {
-                return fixedTimeScale;
-            }
+    private:
+        ApplicationProperties m_properties;
+        core::PhenylRuntime* m_runtime = nullptr;
+        double m_targetFrameTime{1.0 / 60};
+        double m_targetFps{60};
+        double m_fixedTimeScale{1.0};
 
-            double getTargetFps () const {
-                return targetFps;
-            }
-        };
+        virtual void _init () = 0;
+        ApplicationBase (ApplicationProperties properties);
+
+        friend class AppPlugin;
+        template <PluginType... Plugins>
+        friend class ::phenyl::Application;
+    };
+} // namespace engine
+
+template <PluginType... Plugins>
+class Application : public engine::ApplicationBase {
+public:
+    explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
+
+    virtual void init () = 0;
+
+private:
+    template <PluginType T, PluginType... Args>
+    static void InitPlugins (core::PhenylRuntime& runtime) {
+        runtime.addPlugin<T>();
+
+        if constexpr (sizeof...(Args) > 0) {
+            InitPlugins<Args...>();
+        }
     }
 
-    template <PluginType ...Plugins>
-    class Application : public engine::ApplicationBase {
-    private:
-        template <PluginType T, PluginType ...Args>
-        static void InitPlugins (core::PhenylRuntime& runtime) {
-            runtime.addPlugin<T>();
+    void _init () final {
+        InitPlugins<Plugins...>(runtime());
 
-            if constexpr (sizeof...(Args) > 0) {
-                InitPlugins<Args...>();
-            }
-        }
+        init();
+    }
+};
 
-        void _init() final {
-            InitPlugins<Plugins...>(runtime());
+template <>
+class Application<> : public engine::ApplicationBase {
+public:
+    explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
 
-            init();
-        }
-    public:
-        explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
+    virtual void init () = 0;
 
-        virtual void init () = 0;
-    };
+private:
+    void _init () final {
+        init();
+    }
+};
 
-    template <>
-    class Application<> : public engine::ApplicationBase {
-    private:
-        void _init() final {
-            init();
-        }
-    public:
-        explicit Application (ApplicationProperties properties) : ApplicationBase{std::move(properties)} {}
-
-        virtual void init () = 0;
-    };
-
-    using Application2D = Application<Default2DPlugin>;
-    using Application3D = Application<Default3DPlugin>;
-}
+using Application2D = Application<Default2DPlugin>;
+using Application3D = Application<Default3DPlugin>;
+} // namespace phenyl

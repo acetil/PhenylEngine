@@ -1,9 +1,9 @@
 #pragma once
 
 namespace phenyl::engine {
-    class PhenylEngine;
+class PhenylEngine;
 }
 
 namespace phenyl::game {
-    class Level;
+class Level;
 }

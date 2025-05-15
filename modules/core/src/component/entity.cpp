@@ -1,58 +1,59 @@
 #include "core/entity.h"
-#include "core/world.h"
+
 #include "core/detail/loggers.h"
+#include "core/world.h"
 
 using namespace phenyl::core;
 
 phenyl::Logger Entity::LOGGER{"ENTITY", phenyl::core::detail::COMPONENT_LOGGER};
 
-Entity::Entity (EntityId id, World* entityWorld) : entityId{id}, entityWorld{entityWorld} {}
+Entity::Entity (EntityId id, World* entityWorld) : m_id{id}, m_world{entityWorld} {}
 
 const detail::EntityEntry& Entity::entry () const {
     PHENYL_DASSERT(exists());
-    return entityWorld->entityEntries[id().pos()];
+    return m_world->m_entityEntries[id().pos()];
 }
 
-void Entity::raiseUntyped (std::size_t signalType, std::byte* ptr) {
-    entityWorld->raiseSignal(id(), signalType, ptr);
+void Entity::raiseUntyped (meta::TypeIndex signalType, std::byte* ptr) {
+    m_world->raiseSignal(id(), signalType, ptr);
 }
 
 bool Entity::shouldDefer () {
-    return entityWorld->deferCount;
+    return m_world->m_deferCount;
 }
 
-void Entity::deferInsert(std::size_t compType, std::byte* ptr) {
-    entityWorld->deferInsert(id(), compType, ptr);
+void Entity::deferInsert (meta::TypeIndex compType, std::byte* ptr) {
+    m_world->deferInsert(id(), compType, ptr);
 }
 
-void Entity::deferErase(std::size_t compType) {
-    entityWorld->deferErase(id(), compType);
+void Entity::deferErase (meta::TypeIndex compType) {
+    m_world->deferErase(id(), compType);
 }
 
-void Entity::deferApply(std::function<void(Entity)> applyFunc) {
-    entityWorld->deferApply(id(), std::move(applyFunc));
+void Entity::deferApply (std::function<void(Entity)> applyFunc) {
+    m_world->deferApply(id(), std::move(applyFunc));
 }
 
 bool Entity::exists () const noexcept {
-    return (bool)entityId && entityWorld && entityWorld->exists(entityId);
+    return (bool) m_id && m_world && m_world->exists(m_id);
 }
 
 Entity Entity::parent () const {
-    return entityWorld->parent(id());
+    return m_world->parent(id());
 }
 
-ChildrenView Entity::children() const noexcept {
-    return ChildrenView{entityId, entityWorld};
+ChildrenView Entity::children () const noexcept {
+    return ChildrenView{m_id, m_world};
 }
 
 void Entity::remove () {
-    entityWorld->remove(entityId);
+    m_world->remove(m_id);
 }
 
 void Entity::addChild (Entity child) {
-    entityWorld->reparent(child.id(), id());
+    m_world->reparent(child.id(), id());
 }
 
 Entity Entity::createChild () {
-    return entityWorld->create(id());
+    return m_world->create(id());
 }

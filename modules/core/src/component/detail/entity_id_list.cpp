@@ -1,8 +1,10 @@
-#include <cassert>
 #include "core/component/detail/entity_id_list.h"
-#include "core/entity_id.h"
+
 #include "core/detail/loggers.h"
+#include "core/entity_id.h"
 #include "logging/logging.h"
+
+#include <cassert>
 
 using namespace phenyl::core::detail;
 
@@ -45,19 +47,19 @@ phenyl::core::EntityId EntityIdList::newId () {
 }
 
 bool EntityIdList::check (EntityId id) const {
-    if (id.id == 0 || id.id > idSlots.size()) {
+    if (id.m_id == 0 || id.m_id > idSlots.size()) {
         return false;
     }
 
-    return (idSlots[id.id - 1] & EMPTY_BIT) == 0 && idSlots[id.id - 1] == id.generation;
+    return (idSlots[id.m_id - 1] & EMPTY_BIT) == 0 && idSlots[id.m_id - 1] == id.m_generation;
 }
 
 void EntityIdList::removeId (EntityId id) {
-    PHENYL_DASSERT(id && id.id <= idSlots.size());
+    PHENYL_DASSERT(id && id.m_id <= idSlots.size());
     PHENYL_DASSERT(check(id));
 
-    idSlots[id.id - 1] |= EMPTY_BIT | (freeListStart << GEN_BITS);
-    freeListStart = id.id;
+    idSlots[id.m_id - 1] |= EMPTY_BIT | (freeListStart << GEN_BITS);
+    freeListStart = id.m_id;
     numEntities--;
 }
 
@@ -111,31 +113,33 @@ EntityIdList::const_iterator EntityIdList::cend () const {
     return const_iterator{this, idSlots.size()};
 }
 
-EntityIdList::IdIterator::IdIterator (const detail::EntityIdList* idList, std::size_t slotPos) : idList{idList}, slotPos{slotPos} {
+EntityIdList::IdIterator::IdIterator (const detail::EntityIdList* idList, std::size_t slotPos) :
+    m_idList{idList},
+    m_pos{slotPos} {
     if (slotPos != idList->idSlots.size() && (idList->idSlots[slotPos] & EMPTY_BIT)) {
         next();
     }
 }
 
 void EntityIdList::IdIterator::next () {
-    if (slotPos == idList->idSlots.size()) {
+    if (m_pos == m_idList->idSlots.size()) {
         return;
     }
 
-    while (++slotPos < idList->idSlots.size() && (idList->idSlots[slotPos] & EMPTY_BIT)) {}
+    while (++m_pos < m_idList->idSlots.size() && (m_idList->idSlots[m_pos] & EMPTY_BIT)) {}
 }
 
 void EntityIdList::IdIterator::prev () {
-    if (slotPos == 0) {
+    if (m_pos == 0) {
         return;
     }
 
-    while (--slotPos > 0 && (idList->idSlots[slotPos] & EMPTY_BIT)) {}
+    while (--m_pos > 0 && (m_idList->idSlots[m_pos] & EMPTY_BIT)) {}
 }
 
 EntityIdList::IdIterator::value_type EntityIdList::IdIterator::operator* () const {
-    PHENYL_DASSERT((idList->idSlots[slotPos] & EMPTY_BIT) == 0);
-    return EntityId{static_cast<unsigned int>(idList->idSlots[slotPos]), static_cast<unsigned int>(slotPos + 1)};
+    PHENYL_DASSERT((m_idList->idSlots[m_pos] & EMPTY_BIT) == 0);
+    return EntityId{static_cast<unsigned int>(m_idList->idSlots[m_pos]), static_cast<unsigned int>(m_pos + 1)};
 }
 
 EntityIdList::IdIterator& EntityIdList::IdIterator::operator++ () {
@@ -163,6 +167,5 @@ EntityIdList::IdIterator EntityIdList::IdIterator::operator-- (int) {
 }
 
 bool EntityIdList::IdIterator::operator== (const detail::EntityIdList::IdIterator& other) const {
-    return idList == other.idList && slotPos == other.slotPos;
+    return m_idList == other.m_idList && m_pos == other.m_pos;
 }
-

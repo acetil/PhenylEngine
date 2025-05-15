@@ -1,22 +1,21 @@
 #pragma once
 
 #include <functional>
-
 #include <string>
 
 namespace phenyl::util {
-    void setProfilerTimingFunction (std::function<double(void)> timeFunc);
+void setProfilerTimingFunction (std::function<double(void)> timeFunc);
 
-    void startProfileFrame ();
+void startProfileFrame ();
 
-    void endProfileFrame ();
+void endProfileFrame ();
 
-    void startProfile (const std::string& category);
+void startProfile (const std::string& category);
 
-    void endProfile ();
+void endProfile ();
 
-    double getProfileTime (const std::string& category);
+double getProfileTime (const std::string& category);
 
-    double getProfileFrameTime ();
+double getProfileFrameTime ();
 
-}
+} // namespace phenyl::util

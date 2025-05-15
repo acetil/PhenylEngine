@@ -1,10 +1,10 @@
 # Phenyl Game Engine
-A WIP game engine written in C++, mainly focusing on 2D using an ECS design. 
+A WIP game engine written in C++, mainly focusing on 2D using an ECS design.
 It features custom graphics using OpenGL as well as a custom physics system.
 
 ## Build instructions
 ### Requirements
-Phenyl uses cmake with vcpkg in manifest mode for dependency management. Ensure that vcpkg is 
+Phenyl uses cmake with vcpkg in manifest mode for dependency management. Ensure that vcpkg is
 appropriately set up for your environment.
 
 ### Instructions

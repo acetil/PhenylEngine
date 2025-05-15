@@ -3,41 +3,43 @@
 #include "iresource.h"
 
 namespace phenyl::core {
-    struct DeltaTime : public IResource {
-    private:
-        double value = 0.0;
-    public:
-        DeltaTime () = default;
+struct DeltaTime : public IResource {
+public:
+    DeltaTime () = default;
 
-        [[nodiscard]] double operator() () const noexcept {
-            return value;
-        }
+    [[nodiscard]] double operator() () const noexcept {
+        return m_value;
+    }
 
-        void set (const double value) noexcept {
-            this->value = value;
-        }
+    void set (const double value) noexcept {
+        this->m_value = value;
+    }
 
-        [[nodiscard]] std::string_view getName () const noexcept override {
-            return "DeltaTime";
-        }
-    };
+    [[nodiscard]] std::string_view getName () const noexcept override {
+        return "DeltaTime";
+    }
 
-    struct FixedDelta : public IResource {
-    private:
-        double value = 0.0;
-    public:
-        FixedDelta () = default;
+private:
+    double m_value = 0.0;
+};
 
-        [[nodiscard]] double operator() () const noexcept {
-            return value;
-        }
+struct FixedDelta : public IResource {
+public:
+    FixedDelta () = default;
 
-        void set (const double value) noexcept {
-            this->value = value;
-        }
+    [[nodiscard]] double operator() () const noexcept {
+        return m_value;
+    }
 
-        std::string_view getName () const noexcept override {
-            return "FixedDelta";
-        }
-    };
-}
+    void set (const double value) noexcept {
+        this->m_value = value;
+    }
+
+    std::string_view getName () const noexcept override {
+        return "FixedDelta";
+    }
+
+private:
+    double m_value = 0.0;
+};
+} // namespace phenyl::core

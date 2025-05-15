@@ -1,12 +1,12 @@
 #include "graphics/plugins/mesh_3d_plugin.h"
 
-#include "material_instance_manager.h"
-#include "material_manager.h"
-#include "mesh_manager.h"
 #include "core/runtime.h"
 #include "graphics/components/3d/lighting.h"
 #include "graphics/plugins/graphics_plugin.h"
 #include "graphics/renderlayer/mesh_layer.h"
+#include "material_instance_manager.h"
+#include "material_manager.h"
+#include "mesh_manager.h"
 
 using namespace phenyl::graphics;
 
@@ -21,14 +21,14 @@ void Mesh3DPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<GraphicsPlugin>();
 
     auto& renderer = runtime.resource<Renderer>();
-    materialManager = std::make_unique<MaterialManager>(renderer);
-    materialManager->selfRegister();
+    m_materialManager = std::make_unique<MaterialManager>(renderer);
+    m_materialManager->selfRegister();
 
-    materialInstanceManager = std::make_unique<MaterialInstanceManager>();
-    materialInstanceManager->selfRegister();
+    m_materialInstanceManager = std::make_unique<MaterialInstanceManager>();
+    m_materialInstanceManager->selfRegister();
 
-    meshManager = std::make_unique<MeshManager>(renderer);
-    meshManager->selfRegister();
+    m_meshManager = std::make_unique<MeshManager>(renderer);
+    m_meshManager->selfRegister();
 
     auto& layer = renderer.addLayer<MeshRenderLayer>(runtime.world());
     layer.addSystems(runtime);

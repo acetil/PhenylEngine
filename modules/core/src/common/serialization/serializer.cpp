@@ -1,208 +1,216 @@
 #include "core/serialization/serializer.h"
+
 #include "core/serialization/serializer_impl.h"
 
 using namespace phenyl::core;
 
 namespace {
-    class BoolSerializable : public ISerializable<bool> {
-        std::string_view name () const noexcept override {
-            return "bool";
+class BoolSerializable : public ISerializable<bool> {
+    std::string_view name () const noexcept override {
+        return "bool";
+    }
+
+    void serialize (ISerializer& serializer, const bool& obj) override {
+        serializer.serialize(obj);
+    }
+
+    void deserialize (IDeserializer& deserializer, bool& obj) override {
+        deserializer.deserializeBool(*this, obj);
+    }
+
+    void deserializeBool (bool& obj, bool val) override {
+        obj = val;
+    }
+};
+
+template <std::integral T>
+class IntSerializable : public ISerializable<T> {
+private:
+    template <std::integral U>
+    void deserializeOther (T& obj, U val) {
+        if (!std::in_range<T>(val)) {
+            throw phenyl::DeserializeException(std::format("Integer {} out of range", val));
         }
 
-        void serialize (ISerializer& serializer, const bool& obj) override {
-            serializer.serialize(obj);
-        }
+        obj = static_cast<T>(val);
+    }
 
-        void deserialize (IDeserializer& deserializer, bool& obj) override {
-            deserializer.deserializeBool(*this, obj);
-        }
+public:
+    void serialize (ISerializer& serializer, const T& obj) final {
+        serializer.serialize(obj);
+    }
 
-        void deserializeBool (bool& obj, bool val) override {
-            obj = val;
-        }
-    };
+    void deserializeInt8 (T& obj, std::int8_t val) override {
+        deserializeOther(obj, val);
+    }
 
-    template <std::integral T>
-    class IntSerializable : public ISerializable<T> {
-    private:
-        template <std::integral U>
-        void deserializeOther (T& obj, U val) {
-            if (!std::in_range<T>(val)) {
-                throw phenyl::DeserializeException(std::format("Integer {} out of range", val));
-            }
+    void deserializeInt16 (T& obj, std::int16_t val) override {
+        deserializeOther(obj, val);
+    }
 
-            obj = static_cast<T>(val);
-        }
-    public:
-        void serialize (ISerializer& serializer, const T& obj) final {
-            serializer.serialize(obj);
-        }
+    void deserializeInt32 (T& obj, std::int32_t val) override {
+        deserializeOther(obj, val);
+    }
 
-        void deserializeInt8 (T& obj, std::int8_t val) override {
-            deserializeOther(obj, val);
-        }
-        void deserializeInt16 (T& obj, std::int16_t val) override {
-            deserializeOther(obj, val);
-        }
-        void deserializeInt32 (T& obj, std::int32_t val) override {
-            deserializeOther(obj, val);
-        }
-        void deserializeInt64 (T& obj, std::int64_t val) override {
-            deserializeOther(obj, val);
-        }
+    void deserializeInt64 (T& obj, std::int64_t val) override {
+        deserializeOther(obj, val);
+    }
 
-        void deserializeUint8 (T& obj, std::uint8_t val) override {
-            deserializeOther(obj, val);
-        }
-        void deserializeUint16 (T& obj, std::uint16_t val) override {
-            deserializeOther(obj, val);
-        }
-        void deserializeUint32 (T& obj, std::uint32_t val) override {
-            deserializeOther(obj, val);
-        }
-        void deserializeUint64 (T& obj, std::uint64_t val) override {
-            deserializeOther(obj, val);
-        }
-    };
+    void deserializeUint8 (T& obj, std::uint8_t val) override {
+        deserializeOther(obj, val);
+    }
 
-    class Int8Serializable : public IntSerializable<std::int8_t> {
-        std::string_view name () const noexcept override {
-            return "std::int8_t";
-        }
+    void deserializeUint16 (T& obj, std::uint16_t val) override {
+        deserializeOther(obj, val);
+    }
 
-        void deserialize (IDeserializer& deserializer, std::int8_t& obj) override {
-            deserializer.deserializeInt8(*this, obj);
-        }
-    };
+    void deserializeUint32 (T& obj, std::uint32_t val) override {
+        deserializeOther(obj, val);
+    }
 
-    class Uint8Serializable : public IntSerializable<std::uint8_t> {
-        std::string_view name () const noexcept override {
-            return "std::uint8_t";
-        }
+    void deserializeUint64 (T& obj, std::uint64_t val) override {
+        deserializeOther(obj, val);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::uint8_t& obj) override {
-            deserializer.deserializeUint8(*this, obj);
-        }
-    };
+class Int8Serializable : public IntSerializable<std::int8_t> {
+    std::string_view name () const noexcept override {
+        return "std::int8_t";
+    }
 
-    class Int16Serializable : public IntSerializable<std::int16_t> {
-        std::string_view name () const noexcept override {
-            return "std::int16_t";
-        }
+    void deserialize (IDeserializer& deserializer, std::int8_t& obj) override {
+        deserializer.deserializeInt8(*this, obj);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::int16_t& obj) override {
-            deserializer.deserializeInt16(*this, obj);
-        }
-    };
+class Uint8Serializable : public IntSerializable<std::uint8_t> {
+    std::string_view name () const noexcept override {
+        return "std::uint8_t";
+    }
 
-    class Uint16Serializable : public IntSerializable<std::uint16_t> {
-        std::string_view name () const noexcept override {
-            return "std::uint16_t";
-        }
+    void deserialize (IDeserializer& deserializer, std::uint8_t& obj) override {
+        deserializer.deserializeUint8(*this, obj);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::uint16_t& obj) override {
-            deserializer.deserializeUint16(*this, obj);
-        }
-    };
+class Int16Serializable : public IntSerializable<std::int16_t> {
+    std::string_view name () const noexcept override {
+        return "std::int16_t";
+    }
 
-    class Int32Serializable : public IntSerializable<std::int32_t> {
-        std::string_view name () const noexcept override {
-            return "std::int32_t";
-        }
+    void deserialize (IDeserializer& deserializer, std::int16_t& obj) override {
+        deserializer.deserializeInt16(*this, obj);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::int32_t& obj) override {
-            deserializer.deserializeInt32(*this, obj);
-        }
-    };
+class Uint16Serializable : public IntSerializable<std::uint16_t> {
+    std::string_view name () const noexcept override {
+        return "std::uint16_t";
+    }
 
-    class Uint32Serializable : public IntSerializable<std::uint32_t> {
-        std::string_view name () const noexcept override {
-            return "std::uint32_t";
-        }
+    void deserialize (IDeserializer& deserializer, std::uint16_t& obj) override {
+        deserializer.deserializeUint16(*this, obj);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::uint32_t& obj) override {
-            deserializer.deserializeUint32(*this, obj);
-        }
-    };
+class Int32Serializable : public IntSerializable<std::int32_t> {
+    std::string_view name () const noexcept override {
+        return "std::int32_t";
+    }
 
-    class Int64Serializable : public IntSerializable<std::int64_t> {
-        std::string_view name () const noexcept override {
-            return "std::int64_t";
-        }
+    void deserialize (IDeserializer& deserializer, std::int32_t& obj) override {
+        deserializer.deserializeInt32(*this, obj);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::int64_t& obj) override {
-            deserializer.deserializeInt64(*this, obj);
-        }
-    };
+class Uint32Serializable : public IntSerializable<std::uint32_t> {
+    std::string_view name () const noexcept override {
+        return "std::uint32_t";
+    }
 
-    class Uint64Serializable : public IntSerializable<std::uint64_t> {
-        std::string_view name () const noexcept override {
-            return "std::uint64_t";
-        }
+    void deserialize (IDeserializer& deserializer, std::uint32_t& obj) override {
+        deserializer.deserializeUint32(*this, obj);
+    }
+};
 
-        void deserialize (IDeserializer& deserializer, std::uint64_t& obj) override {
-            deserializer.deserializeUint64(*this, obj);
-        }
-    };
+class Int64Serializable : public IntSerializable<std::int64_t> {
+    std::string_view name () const noexcept override {
+        return "std::int64_t";
+    }
 
-    class FloatSerializable : public ISerializable<float> {
-        std::string_view name () const noexcept override {
-            return "float";
-        }
+    void deserialize (IDeserializer& deserializer, std::int64_t& obj) override {
+        deserializer.deserializeInt64(*this, obj);
+    }
+};
 
-        void serialize (ISerializer& serializer, const float& obj) override {
-            serializer.serialize(obj);
-        }
+class Uint64Serializable : public IntSerializable<std::uint64_t> {
+    std::string_view name () const noexcept override {
+        return "std::uint64_t";
+    }
 
-        void deserialize (IDeserializer& deserializer, float& obj) override {
-            deserializer.deserializeFloat(*this, obj);
-        }
+    void deserialize (IDeserializer& deserializer, std::uint64_t& obj) override {
+        deserializer.deserializeUint64(*this, obj);
+    }
+};
 
-        void deserializeFloat (float& obj, float val) override {
-            obj = val;
-        }
+class FloatSerializable : public ISerializable<float> {
+    std::string_view name () const noexcept override {
+        return "float";
+    }
 
-        void deserializeDouble (float& obj, double val) override {
-            obj = static_cast<float>(val);
-        }
-    };
+    void serialize (ISerializer& serializer, const float& obj) override {
+        serializer.serialize(obj);
+    }
 
-    class DoubleSerializable : public ISerializable<double> {
-        std::string_view name () const noexcept override {
-            return "double";
-        }
+    void deserialize (IDeserializer& deserializer, float& obj) override {
+        deserializer.deserializeFloat(*this, obj);
+    }
 
-        void serialize (ISerializer& serializer, const double& obj) override {
-            serializer.serialize(obj);
-        }
+    void deserializeFloat (float& obj, float val) override {
+        obj = val;
+    }
 
-        void deserialize (IDeserializer& deserializer, double& obj) override {
-            deserializer.deserializeDouble(*this, obj);
-        }
+    void deserializeDouble (float& obj, double val) override {
+        obj = static_cast<float>(val);
+    }
+};
 
-        void deserializeDouble (double& obj, double val) override {
-            obj = val;
-        }
-    };
+class DoubleSerializable : public ISerializable<double> {
+    std::string_view name () const noexcept override {
+        return "double";
+    }
 
-    class StringSerializable : public ISerializable<std::string> {
-        std::string_view name () const noexcept override {
-            return "std::string";
-        }
+    void serialize (ISerializer& serializer, const double& obj) override {
+        serializer.serialize(obj);
+    }
 
-        void serialize (ISerializer& serializer, const std::string& obj) override {
-            serializer.serialize(obj);
-        }
+    void deserialize (IDeserializer& deserializer, double& obj) override {
+        deserializer.deserializeDouble(*this, obj);
+    }
 
-        void deserialize (IDeserializer& deserializer, std::string& obj) override {
-            deserializer.deserializeString(*this, obj);
-        }
+    void deserializeDouble (double& obj, double val) override {
+        obj = val;
+    }
+};
 
-        void deserializeString (std::string& obj, std::string_view val) override {
-            obj = val;
-        }
-    };
-}
+class StringSerializable : public ISerializable<std::string> {
+    std::string_view name () const noexcept override {
+        return "std::string";
+    }
+
+    void serialize (ISerializer& serializer, const std::string& obj) override {
+        serializer.serialize(obj);
+    }
+
+    void deserialize (IDeserializer& deserializer, std::string& obj) override {
+        deserializer.deserializeString(*this, obj);
+    }
+
+    void deserializeString (std::string& obj, std::string_view val) override {
+        obj = val;
+    }
+};
+} // namespace
 
 ISerializable<bool>& detail::phenyl_GetSerializable (SerializableMarker<bool>) {
     static BoolSerializable serializable{};

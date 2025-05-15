@@ -1,137 +1,143 @@
 #pragma once
-#include "vulkan/memory/vk_transfer_manager.h"
-#include "graphics/image.h"
 #include "graphics/backend/framebuffer.h"
 #include "graphics/backend/texture.h"
-#include "vulkan/vk_command_buffer.h"
+#include "graphics/image.h"
 #include "vulkan/init/vk_resources.h"
+#include "vulkan/memory/vk_transfer_manager.h"
+#include "vulkan/vk_command_buffer.h"
 
 namespace phenyl::vulkan {
-    VkFormat FormatToVulkan (graphics::ImageFormat imageFormat);
+VkFormat FormatToVulkan (graphics::ImageFormat imageFormat);
 
-    class VulkanImage {
-    private:
-        VulkanResource<VulkanImageInfo> imageInfo{};
-        VulkanResources* resources = nullptr;
+class VulkanImage {
+public:
+    VulkanImage () = default;
+    VulkanImage (VulkanResources& resources, VkFormat format, VkImageAspectFlags aspect, VkImageUsageFlags usage,
+        std::uint32_t width, std::uint32_t height, std::uint32_t layers = 1);
 
-        VkFormat imgFormat = VK_FORMAT_UNDEFINED;
-        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_NONE;
-        std::uint32_t imgWidth = 0;
-        std::uint32_t imgHeight = 0;
-        std::uint32_t imgLayers = 0;
+    explicit operator bool () const noexcept {
+        return static_cast<bool>(m_imageInfo);
+    }
 
-        VkImageLayout currLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    public:
-        VulkanImage () = default;
-        VulkanImage (VulkanResources& resources, VkFormat format, VkImageAspectFlags aspect, VkImageUsageFlags usage, std::uint32_t width, std::uint32_t height, std::uint32_t layers = 1);
+    VkImage get () const noexcept {
+        return m_imageInfo->image;
+    }
 
-        explicit operator bool () const noexcept {
-            return static_cast<bool>(imageInfo);
-        }
+    VkImageLayout layout () const noexcept {
+        return m_layout;
+    }
 
-        VkImage get () const noexcept {
-            return imageInfo->image;
-        }
+    VkFormat format () const noexcept {
+        return m_format;
+    }
 
-        VkImageLayout layout () const noexcept {
-            return currLayout;
-        }
+    std::uint32_t width () const noexcept {
+        return m_width;
+    }
 
-        VkFormat format () const noexcept {
-            return imgFormat;
-        }
+    std::uint32_t height () const noexcept {
+        return m_height;
+    }
 
-        std::uint32_t width () const noexcept {
-            return imgWidth;
-        }
+    std::uint32_t layers () const noexcept {
+        return m_layers;
+    }
 
-        std::uint32_t height () const noexcept {
-            return imgHeight;
-        }
+    bool isArray () const noexcept {
+        return layers() > 1;
+    }
 
-        std::uint32_t layers () const noexcept {
-            return imgLayers;
-        }
+    void layoutTransition (VulkanCommandBuffer2& cmd, VkImageLayout newLayout);
 
-        bool isArray () const noexcept {
-            return layers() > 1;
-        }
+    void loadImage (TransferManager& transferManager, const graphics::Image& image, std::uint32_t layer = 0);
+    void copy (TransferManager& transferManager, VulkanImage& srcImage);
 
-        void layoutTransition (VulkanCommandBuffer2& cmd, VkImageLayout newLayout);
+private:
+    VulkanResource<VulkanImageInfo> m_imageInfo{};
+    VulkanResources* m_resources = nullptr;
 
-        void loadImage (TransferManager& transferManager, const graphics::Image& image, std::uint32_t layer = 0);
-        void copy (TransferManager& transferManager, VulkanImage& srcImage);
-    };
+    VkFormat m_format = VK_FORMAT_UNDEFINED;
+    VkImageAspectFlags m_aspect = VK_IMAGE_ASPECT_NONE;
+    std::uint32_t m_width = 0;
+    std::uint32_t m_height = 0;
+    std::uint32_t m_layers = 0;
 
-    class VulkanImageView {
-    private:
-        VulkanResource<VkImageView> imageView{};
-        VkImageAspectFlags imageAspect;
+    VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+};
 
-    public:
-        VulkanImageView () = default;
-        VulkanImageView (VulkanResources& resources, const VulkanImage& image, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
+class VulkanImageView {
+public:
+    VulkanImageView () = default;
+    VulkanImageView (VulkanResources& resources, const VulkanImage& image,
+        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
 
-        explicit operator bool () const noexcept {
-            return static_cast<bool>(imageView);
-        }
+    explicit operator bool () const noexcept {
+        return static_cast<bool>(m_view);
+    }
 
-        VkImageView get () const noexcept {
-            return *imageView;
-        }
-    };
+    VkImageView get () const noexcept {
+        return *m_view;
+    }
 
-    class VulkanSampler {
-    private:
-        VulkanResource<VkSampler> sampler;
+private:
+    VulkanResource<VkImageView> m_view{};
+    VkImageAspectFlags m_aspect;
+};
 
-    public:
-        VulkanSampler (VulkanResources& resources, const graphics::TextureProperties& properties);
-        VulkanSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties);
+class VulkanSampler {
+public:
+    VulkanSampler (VulkanResources& resources, const graphics::TextureProperties& properties);
+    VulkanSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties);
 
-        VkSampler get () const noexcept {
-            return *sampler;
-        }
-    };
+    VkSampler get () const noexcept {
+        return *m_sampler;
+    }
 
-    class IVulkanCombinedSampler : public graphics::ISampler {
-    public:
-        virtual void prepareSampler (VulkanCommandBuffer2& cmd) = 0;
-        virtual VkDescriptorImageInfo getDescriptor () const noexcept = 0;
-    };
+private:
+    VulkanResource<VkSampler> m_sampler;
+};
 
-    class CombinedSampler : public IVulkanCombinedSampler {
-    private:
-        VulkanImage samplerImage{};
-        VulkanImageView samplerImageView{};
-        VulkanSampler sampler;
-        VkImageLayout samplerLayout;
+class IVulkanCombinedSampler : public graphics::ISampler {
+public:
+    virtual void prepareSampler (VulkanCommandBuffer2& cmd) = 0;
+    virtual VkDescriptorImageInfo getDescriptor () const noexcept = 0;
+};
 
-    public:
-        CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties, VkImageLayout samplerLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
-        CombinedSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties, VkImageLayout samplerLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+class CombinedSampler : public IVulkanCombinedSampler {
+public:
+    CombinedSampler (VulkanResources& resources, const graphics::TextureProperties& properties,
+        VkImageLayout samplerLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+    CombinedSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties,
+        VkImageLayout samplerLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
 
-        VulkanImage& image () noexcept {
-            return samplerImage;
-        }
+    VulkanImage& image () noexcept {
+        return m_image;
+    }
 
-        const VulkanImage& image () const noexcept {
-            return samplerImage;
-        }
+    const VulkanImage& image () const noexcept {
+        return m_image;
+    }
 
-        VkImageView view () const noexcept {
-            return samplerImageView.get();
-        }
+    VkImageView view () const noexcept {
+        return m_imageView.get();
+    }
 
-        explicit operator bool () const noexcept {
-            return samplerImage && samplerImageView;
-        }
+    explicit operator bool () const noexcept {
+        return m_image && m_imageView;
+    }
 
-        void recreate (VulkanResources& resources, VulkanImage&& newImage, VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
+    void recreate (VulkanResources& resources, VulkanImage&& newImage,
+        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
 
-        [[nodiscard]] std::size_t hash () const noexcept override;
+    [[nodiscard]] std::size_t hash () const noexcept override;
 
-        void prepareSampler (VulkanCommandBuffer2& cmd) override;
-        VkDescriptorImageInfo getDescriptor () const noexcept override;
-    };
-}
+    void prepareSampler (VulkanCommandBuffer2& cmd) override;
+    VkDescriptorImageInfo getDescriptor () const noexcept override;
+
+private:
+    VulkanImage m_image{};
+    VulkanImageView m_imageView{};
+    VulkanSampler m_sampler;
+    VkImageLayout m_samplerLayout;
+};
+} // namespace phenyl::vulkan

@@ -1,11 +1,11 @@
 #pragma once
 
 namespace phenyl::core {
-    class Assets;
+class Assets;
 
-    template <typename T>
-    class Asset;
+template <typename T>
+class Asset;
 
-    template <typename T>
-    class AssetManager;
-}
+template <typename T>
+class AssetManager;
+} // namespace phenyl::core

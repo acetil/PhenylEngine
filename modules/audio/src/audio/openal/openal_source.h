@@ -3,36 +3,38 @@
 #include "openal_headers.h"
 
 namespace phenyl::audio {
-    class OpenALBuffer;
-    class OpenALSource {
-    private:
-        ALuint sourceId;
-        bool valid;
-    public:
-        OpenALSource ();
+class OpenALBuffer;
 
-        explicit operator bool () const {
-            return valid;
-        }
+class OpenALSource {
+public:
+    OpenALSource ();
 
-        OpenALSource (const OpenALSource&) = delete;
-        OpenALSource (OpenALSource&& other) noexcept;
+    OpenALSource (const OpenALSource&) = delete;
+    OpenALSource (OpenALSource&& other) noexcept;
 
-        OpenALSource& operator= (const OpenALSource&) = delete;
-        OpenALSource& operator= (OpenALSource&& other) noexcept;
+    OpenALSource& operator= (const OpenALSource&) = delete;
+    OpenALSource& operator= (OpenALSource&& other) noexcept;
 
-        [[nodiscard]] ALuint id () const {
-            return sourceId;
-        }
+    ~OpenALSource ();
 
-        void playBuffer (const OpenALBuffer& buffer);
+    explicit operator bool () const {
+        return m_valid;
+    }
 
-        [[nodiscard]] float getGain () const;
-        void setGain (float gain);
+    [[nodiscard]] ALuint id () const {
+        return m_id;
+    }
 
-        void stop ();
-        bool stopped () const;
+    void playBuffer (const OpenALBuffer& buffer);
 
-        ~OpenALSource();
-    };
-}
+    [[nodiscard]] float getGain () const;
+    void setGain (float gain);
+
+    void stop ();
+    bool stopped () const;
+
+private:
+    ALuint m_id;
+    bool m_valid;
+};
+} // namespace phenyl::audio
