@@ -1,5 +1,6 @@
 #pragma once
 
+#include "affine_transform.h"
 #include "core/serialization/serializer_impl.h"
 #include "graphics/maths_headers.h"
 
@@ -47,6 +48,8 @@ public:
     [[nodiscard]] inline glm::vec2 apply (glm::vec2 vec) const {
         return getMatrix() * vec + position();
     }
+
+    explicit operator AffineTransform2D () const noexcept;
 
 private:
     glm::vec2 m_position{0, 0};

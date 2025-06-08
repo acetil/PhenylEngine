@@ -8,12 +8,10 @@
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [1.0, 0.0],
-                        "scale" : [0.05, 1.0],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [1.0, 0.0],
+                    "scale" : [0.05, 1.0],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {
@@ -28,12 +26,10 @@
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [-1.0, 0.0],
-                        "scale" : [0.05, 1.0],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [-1.0, 0.0],
+                    "scale" : [0.05, 1.0],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {
@@ -48,12 +44,10 @@
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [0.0, 1.0],
-                        "scale" : [1.0, 0.05],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [0.0, 1.0],
+                    "scale" : [1.0, 0.05],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {
@@ -68,12 +62,10 @@
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [0.0, -1.0],
-                        "scale" : [1.0, 1.0],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [0.0, -1.0],
+                    "scale" : [1.0, 1.0],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {

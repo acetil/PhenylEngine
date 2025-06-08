@@ -1,5 +1,6 @@
 {
     "components" : {
+        "GlobalTransform2D" : {},
         "Sprite2D" : {
             "texture" : "resources/images/test/test_wall.png"
         },

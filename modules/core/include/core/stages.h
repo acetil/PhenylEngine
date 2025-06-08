@@ -11,6 +11,8 @@ struct GlobalVariableTimestep {};
 
 struct Update {};
 
+struct PostUpdate {};
+
 struct Render {};
 
 struct FixedUpdate {};

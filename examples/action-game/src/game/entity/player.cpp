@@ -33,7 +33,8 @@ static phenyl::InputAction GainUp;
 static phenyl::InputAction GainDown;
 
 static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
-    const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle);
+    const phenyl::Bundle<test::Player, const phenyl::GlobalTransform2D, phenyl::Transform2D, phenyl::RigidBody2D,
+        phenyl::AudioPlayer>& bundle);
 static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player,
     const phenyl::GlobalTransform2D& transform);
 static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer);
@@ -69,28 +70,29 @@ void InitPlayer (test::TestApp* app) {
 }
 
 static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
-    const phenyl::Bundle<test::Player, phenyl::GlobalTransform2D, phenyl::RigidBody2D, phenyl::AudioPlayer>& bundle) {
+    const phenyl::Bundle<test::Player, const phenyl::GlobalTransform2D, phenyl::Transform2D, phenyl::RigidBody2D,
+        phenyl::AudioPlayer>& bundle) {
     auto& [camera] = resources;
-    auto& [player, transform, body, audioPlayer] = bundle.comps();
+    auto& [player, globalTransform, transform, body, audioPlayer] = bundle.comps();
 
     auto forceVec = PlayerMove.value() * FORCE_COMPONENT;
-    auto disp = camera.getWorldPos2D(CursorPos.value()) - transform.transform2D.position();
+    auto disp = camera.getWorldPos2D(CursorPos.value()) - globalTransform.position();
     bool doShoot = KeyShoot.value();
 
     body.applyForce(forceVec * body.mass());
     auto rot = std::atan2(disp.y, disp.x);
-    transform.transform2D.setRotation(rot);
+    transform.setRotation(rot);
 
     if (doShoot && !player.hasShot) {
         glm::vec2 rotVec = glm::vec2{std::cos(rot), std::sin(rot)};
-        glm::vec2 pos = rotVec * SHOOT_DIST + transform.transform2D.position();
+        glm::vec2 pos = rotVec * SHOOT_DIST + globalTransform.position();
         glm::vec2 bulletVel = rotVec * SHOOT_VEL;
 
         auto bulletEntity = bundle.entity().world().create();
         player.bulletPrefab->instantiate(bulletEntity);
 
-        bulletEntity.apply<phenyl::GlobalTransform2D>(
-            [pos, rot] (auto& transform) { transform.transform2D.setPosition(pos).setRotation(rot); });
+        bulletEntity.apply<phenyl::Transform2D>(
+            [pos, rot] (auto& transform) { transform.setPosition(pos).setRotation(rot); });
         bulletEntity.apply<phenyl::RigidBody2D>(
             [bulletVel] (auto& body) { body.applyImpulse(bulletVel * body.mass()); });
 
@@ -114,7 +116,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
 static void PlayerCameraUpdateSystem (const Resources<Camera2D>& resources, const test::Player& player,
     const phenyl::GlobalTransform2D& transform) {
     auto& [camera] = resources;
-    camera.setPos2D(transform.transform2D.position());
+    camera.setPos2D(transform.position());
 }
 
 static void PlayerAudioUpdateSystem (test::Player& player, phenyl::AudioPlayer& audioPlayer) {

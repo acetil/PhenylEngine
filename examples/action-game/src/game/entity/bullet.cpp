@@ -15,13 +15,13 @@ PHENYL_SERIALIZABLE(Bullet, PHENYL_SERIALIZABLE_MEMBER_NAMED(particlePrefab, "pa
 void test::InitBullet (TestApp* app, World& world) {
     app->addComponent<Bullet>("Bullet");
 
-    world.addHandler<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D>(
-        [] (const physics::OnCollision& signal, const phenyl::Bundle<Bullet, const phenyl::GlobalTransform2D>& bundle) {
-            auto& [bullet, transform] = bundle.comps();
+    world.addHandler<physics::OnCollision, Bullet, const phenyl::GlobalTransform2D, const Transform2D>(
+        [] (const physics::OnCollision& signal,
+            const phenyl::Bundle<Bullet, const phenyl::GlobalTransform2D, const phenyl::Transform2D>& bundle) {
+            auto& [bullet, globalTransform, transform] = bundle.comps();
 
-            GlobalTransform2D particleTransform{};
-            particleTransform.transform2D.setPosition(transform.transform2D.position())
-                .setRotation(transform.transform2D.rotationAngle());
+            Transform2D particleTransform{};
+            particleTransform.setPosition(globalTransform.position()).setRotation(transform.rotationAngle());
 
             auto particleEntity = bundle.entity().world().create();
             particleEntity.insert(particleTransform);

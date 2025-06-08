@@ -29,7 +29,7 @@ void ParticleEmitter2D::updateInternal (double deltaTime, const core::GlobalTran
 
     while (particlesEmitted < particlesPerLoop &&
         (float) particlesEmitted * (duration / (float) particlesPerLoop) * (1 - explosiveness) <= timeInLoop) {
-        system->emit(transform.transform2D.position(), transform.transform2D.rotMatrix() * direction);
+        system->emit(transform.position(), transform.transform.rotation() * direction);
         particlesEmitted++;
     }
 

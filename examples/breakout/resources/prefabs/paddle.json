@@ -1,11 +1,10 @@
 {
     "components" : {
-        "GlobalTransform2D" : {
-            "transform" : {
-                "position" : [0.7, -0.9],
-                "scale" : [0.189453125, 0.05],
-                "rotation" : 0.0
-            }
+        "GlobalTransform2D" : {},
+        "Transform2D" : {
+            "position" : [0.7, -0.9],
+            "scale" : [0.189453125, 0.05],
+            "rotation" : 0.0
         },
         "Sprite2D" : {
             "texture" : "resources/images/paddle.png"

@@ -158,10 +158,10 @@ public:
         m_archetypes->unlock();
     }
 
-    void hierachical (const QueryHierachicalCallback<Args...> auto& fn) const {
+    void hierarchical (const QueryHierachicalCallback<Args...> auto& fn) const {
         PHENYL_DASSERT(*this);
         m_archetypes->lock();
-        hierachicalIter(fn, Entity{EntityId{}, m_world}, nullptr);
+        hierarchicalIter(fn, Entity{EntityId{}, m_world}, nullptr);
         m_archetypes->unlock();
     }
 
@@ -198,16 +198,16 @@ private:
         }
     }
 
-    void hierachicalIter (const QueryHierachicalCallback<Args...> auto& fn, Entity parent,
-        const Bundle<Args...>* parentBundle) {
+    void hierarchicalIter (const QueryHierachicalCallback<Args...> auto& fn, Entity parent,
+        const Bundle<Args...>* parentBundle) const {
         for (auto child : parent.children()) {
             auto childBundle = entityBundle(child);
             if (!childBundle) {
                 continue;
             }
 
-            fn(parentBundle, childBundle);
-            hierachicalIter(fn, child, &*childBundle);
+            fn(parentBundle, *childBundle);
+            hierarchicalIter(fn, child, &*childBundle);
         }
     }
 

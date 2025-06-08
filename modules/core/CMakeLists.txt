@@ -48,6 +48,7 @@ add_library(core OBJECT include/core/maths/2d/transform.h src/common/maths/2d/tr
         include/core/plugins/core_plugin_3d.h
         src/common/plugins/core_plugin_3d.cpp
         src/common/maths/3d/quaternion.cpp
+        include/core/maths/2d/affine_transform.h
 )
 
 find_package(nlohmann_json REQUIRED)

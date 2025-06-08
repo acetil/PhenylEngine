@@ -239,7 +239,7 @@ private:
             systemName);
         auto system = MakeHierachicalSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
         auto* ptr = system.get();
-        m_systems(ptr->getName()) = std::move(system);
+        m_systems[ptr->getName()] = std::move(system);
 
         return ptr;
     }

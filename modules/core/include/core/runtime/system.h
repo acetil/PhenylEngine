@@ -262,7 +262,7 @@ std::unique_ptr<System<Stage>> MakeHierachicalSystem (std::string systemName,
     ResourceManager& resManager) {
     auto query = world.query<std::remove_reference_t<Components>...>();
     std::function<void()> func1 = [query = std::move(query), func] () {
-        query.hierachical(func);
+        query.hierarchical(func);
     };
 
     return std::make_unique<FunctionSystem<Stage>>(std::move(systemName), std::move(func1));
@@ -276,7 +276,7 @@ std::unique_ptr<System<Stage>> MakeHierachicalSystem (std::string systemName,
     auto query = world.query<std::remove_reference_t<Components>...>();
     std::function<void()> func1 = [query = std::move(query), func, &resManager] () {
         Resources<ResourceTypes...> resources{resManager};
-        query.hierachical([&] (const Bundle<Components...>* parentBundle, const Bundle<Components...>& childBundle) {
+        query.hierarchical([&] (const Bundle<Components...>* parentBundle, const Bundle<Components...>& childBundle) {
             func(resources, parentBundle, childBundle);
         });
     };
