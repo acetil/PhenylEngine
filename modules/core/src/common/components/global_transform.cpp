@@ -19,5 +19,27 @@ void GlobalTransform2D::PropagateTransforms (const Bundle<const Transform2D, Glo
     }
 }
 
-PHENYL_SERIALIZABLE(GlobalTransform3D, PHENYL_SERIALIZABLE_MEMBER(transform))
+PHENYL_SERIALIZABLE(GlobalTransform3D)
+
+Quaternion GlobalTransform3D::rotation () const {
+    glm::mat3 mat = {
+      glm::normalize(glm::vec3{transform[0]}),
+      glm::normalize(glm::vec3{transform[1]}),
+      glm::normalize(glm::vec3{transform[2]}),
+    };
+
+    return Quaternion{mat};
+}
+
+void GlobalTransform3D::PropagateTransforms (const Bundle<const Transform3D, GlobalTransform3D>* parent,
+    const Bundle<const Transform3D, GlobalTransform3D>& child) {
+    auto& [childTransform, childGlobalTransform] = child.comps();
+    if (parent) {
+        auto& [_, parentGlobalTransform] = parent->comps();
+        childGlobalTransform.transform = parentGlobalTransform.transform * childTransform.transformMatrx();
+    } else {
+        childGlobalTransform.transform = childTransform.transformMatrx();
+    }
+}
+
 } // namespace phenyl::core

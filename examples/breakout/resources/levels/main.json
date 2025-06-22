@@ -19,7 +19,7 @@
                         "mask" : 1,
                         "elasticity" : 1.0
                     },
-                    "scale" : [0.05, 1.0]
+                    "scale" : [1.0, 1.0]
                 }
             },
             "prefab" : "resources/prefabs/wall"
@@ -37,7 +37,7 @@
                         "mask" : 1,
                         "elasticity" : 1.0
                     },
-                    "scale" : [0.05, 1.0]
+                    "scale" : [1.0, 1.0]
                 }
             },
             "prefab" : "resources/prefabs/wall"
@@ -55,7 +55,7 @@
                         "mask" : 1,
                         "elasticity" : 1.0
                     },
-                    "scale" : [1.0, 0.05]
+                    "scale" : [1.0, 1.0]
                 }
             },
             "prefab" : "resources/prefabs/wall"
@@ -80,6 +80,12 @@
         },
         {
             "components" : {
+                "GlobalTransform2D" : {},
+                "Transform2D" : {
+                    "position" : [0, 0],
+                    "scale" : [1.0, 1.0],
+                    "rotation" : 0.0
+                },
                 "TileController" : {
                     "rows" : 8,
                     "columns" : 7,

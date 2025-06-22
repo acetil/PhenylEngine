@@ -24,7 +24,7 @@
                 "mask" : 1,
                 "elasticity" : 1.0
             },
-            "scale" : [0.189453125, 0.05]
+            "scale" : [1.0, 1.0]
         },
         "Paddle" : {
             "has_ball" : true,

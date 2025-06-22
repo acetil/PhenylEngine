@@ -29,8 +29,6 @@ void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
                 // app->addPoints(tile.points);
                 entity.parent().raise(OnTileBreak{tile.points});
 
-                phenyl::GlobalTransform2D emitterTransform{};
-                emitterTransform.transform2D.setPosition(transform.transform2D.position());
                 /*tile.emitter->instantiate()
                     .with(emitterTransform)
                     .complete()
@@ -41,7 +39,7 @@ void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
                    player) { player.play(sample);
                     });*/
                 auto emitterEntity = entity.world().create();
-                emitterEntity.insert(emitterTransform);
+                emitterEntity.insert(phenyl::Transform2D{}.setPosition(transform.position()));
                 tile.emitter->instantiate(emitterEntity);
                 emitterEntity.apply<phenyl::ParticleEmitter2D>(
                     [normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) { emitter.direction = -normal; });

@@ -24,7 +24,7 @@
                 "mask" : 15,
                 "elasticity" : 0.95
             },
-            "scale" : [0.03125, 0.03125]
+            "scale" : [1.0, 1.0]
         },
         "Ball" : {
             "max_speed" : 3.5,

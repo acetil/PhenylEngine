@@ -46,11 +46,8 @@ void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
             auto& [paddle, audioPlayer] = bundle.comps();
             auto& world = bundle.entity().world();
 
-            phenyl::GlobalTransform2D emitterTransform{};
-            emitterTransform.transform2D.setPosition(signal.worldContactPoint);
-
             auto emitterEntity = world.create();
-            emitterEntity.insert(emitterTransform);
+            emitterEntity.insert(phenyl::Transform2D{}.setPosition(signal.worldContactPoint));
             paddle.emitterPrefab->instantiate(emitterEntity);
             emitterEntity.apply<phenyl::ParticleEmitter2D>(
                 [normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) { emitter.direction = normal; });
@@ -73,16 +70,16 @@ void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const pheny
     auto& [camera, deltaTime] = resources;
 
     auto vel = PlayerMove.value() * speed;
-    auto newPos = vel * static_cast<float>(deltaTime()) + transform.transform2D.position();
+    auto newPos = vel * static_cast<float>(deltaTime()) + transform.position();
 
-    vel.x = (glm::clamp(newPos.x, minX + width / 2, maxX - width / 2) - transform.transform2D.position().x) /
+    vel.x = (glm::clamp(newPos.x, minX + width / 2, maxX - width / 2) - transform.position().x) /
         static_cast<float>(deltaTime());
 
     body.applyImpulse(vel * body.mass() - body.momentum());
 
     if (BallShoot.value() && hasBall) {
         hasBall = false;
-        auto pos = transform.transform2D.position() + glm::vec2{0, 0.1};
+        auto pos = transform.position() + glm::vec2{0, 0.1};
 
         auto mousePos = camera.getWorldPos2D(CursorPos.value());
         auto ballVel = /*vel + */ glm::normalize(mousePos - pos) * ballSpeed;
@@ -97,8 +94,7 @@ void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const pheny
 
         auto ballEntity = bundle.entity().world().create();
         ballPrefab->instantiate(ballEntity);
-        ballEntity.apply<phenyl::GlobalTransform2D>(
-            [pos] (phenyl::GlobalTransform2D& transform) { transform.transform2D.setPosition(pos); });
+        ballEntity.apply<phenyl::Transform2D>([pos] (phenyl::Transform2D& transform) { transform.setPosition(pos); });
         ballEntity.apply<phenyl::RigidBody2D>(
             [ballVel] (phenyl::RigidBody2D& body) { body.applyImpulse(body.mass() * ballVel); });
 

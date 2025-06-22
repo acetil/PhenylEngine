@@ -107,7 +107,7 @@ void MeshRenderLayer::gatherGeometry () {
         m_requests.emplace_back(MeshRenderRequest{.layout = mesh->layout().layoutId,
           .mesh = mesh,
           .materialInstance = matInstance,
-          .transform = transform.transform.transformMatrx()});
+          .transform = transform.transform});
     });
 
     std::ranges::sort(m_requests, [] (const MeshRenderRequest& lhs, const MeshRenderRequest& rhs) {
@@ -142,8 +142,8 @@ void MeshRenderLayer::gatherGeometry () {
 
 void MeshRenderLayer::gatherLights () {
     m_dirLightQuery.each([&] (const core::GlobalTransform3D& transform, const DirectionalLight3D& light) {
-        m_pointLights.emplace_back(MeshLight{.pos = transform.transform.position(),
-          .dir = transform.transform.rotation(),
+        m_pointLights.emplace_back(MeshLight{.pos = transform.position(),
+          .dir = transform.rotation(),
           .color = light.color,
           .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
           .brightness = light.brightness,
@@ -152,7 +152,7 @@ void MeshRenderLayer::gatherLights () {
     });
 
     m_pointLightQuery.each([&] (const core::GlobalTransform3D& transform, const PointLight3D& light) {
-        m_pointLights.emplace_back(MeshLight{.pos = transform.transform.position(),
+        m_pointLights.emplace_back(MeshLight{.pos = transform.position(),
           .color = light.color,
           .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
           .brightness = light.brightness,
@@ -161,8 +161,8 @@ void MeshRenderLayer::gatherLights () {
     });
 
     m_spotLightQuery.each([&] (const core::GlobalTransform3D& transform, const SpotLight3D& light) {
-        m_pointLights.emplace_back(MeshLight{.pos = transform.transform.position(),
-          .dir = transform.transform.rotation(),
+        m_pointLights.emplace_back(MeshLight{.pos = transform.position(),
+          .dir = transform.rotation(),
           .color = light.color,
           .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
           .brightness = light.brightness,

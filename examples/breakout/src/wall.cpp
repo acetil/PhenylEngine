@@ -17,14 +17,11 @@ void breakout::InitWall (BreakoutApp* app, phenyl::World& world) {
 
     world.addHandler<phenyl::signals::OnCollision, phenyl::AudioPlayer, const Wall>(
         [] (const phenyl::signals::OnCollision& signal, const phenyl::Bundle<phenyl::AudioPlayer, const Wall>& bundle) {
-            phenyl::GlobalTransform2D emitterTransform{};
-            emitterTransform.transform2D.setPosition(signal.worldContactPoint);
-
             auto& [audioPlayer, wall] = bundle.comps();
             auto& world = bundle.entity().world();
 
             auto emitterEntity = world.create();
-            emitterEntity.insert(emitterTransform);
+            emitterEntity.insert(phenyl::Transform2D{}.setPosition(signal.worldContactPoint));
             wall.emitter->instantiate(emitterEntity);
             emitterEntity.apply<phenyl::ParticleEmitter2D>(
                 [normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) { emitter.direction = normal; });

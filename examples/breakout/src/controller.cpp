@@ -42,8 +42,8 @@ void TileController::onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::
         for (std::size_t j = 0; j < columns; j++) {
             auto tileEntity = entity.createChild();
             tile->instantiate(tileEntity);
-            tileEntity.apply<phenyl::GlobalTransform2D>(
-                [pos] (phenyl::GlobalTransform2D& transform) { transform.transform2D.setPosition(pos); });
+            tileEntity.apply<phenyl::Transform2D>(
+                [pos] (phenyl::Transform2D& transform) { transform.setPosition(pos); });
 
             pos += glm::vec2{xIncrement, 0};
         }

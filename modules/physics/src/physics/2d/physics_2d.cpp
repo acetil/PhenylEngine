@@ -117,7 +117,7 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
     runtime.addResource<Constraints2D>();
     auto& motionSystem = runtime.addSystem<core::PhysicsUpdate>("RigidBody2D::Update", RigidBody2DMotionSystem);
 
-    auto& propagateSystem = runtime.addHierarchicalSystem<core::PhysicsUpdate>("GlobalTransform2D::PropagateTransforms",
+    auto& propagateSystem = runtime.addHierarchicalSystem<core::PhysicsUpdate>("Physics2D::PropagateTransforms",
         &core::GlobalTransform2D::PropagateTransforms);
 
     auto& syncSystem = runtime.addSystem<core::PhysicsUpdate>("Collider2D::Sync", Collider2DSyncSystem);
@@ -128,8 +128,8 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
         runtime.addSystem<core::PhysicsUpdate>("Physics2D::ConstraintsSolve", Constraints2DSolveSystem);
     auto& collUpdateSystem =
         runtime.addSystem<core::PhysicsUpdate>("Collider2D::PostCollision", Collider2DUpdateSystem);
-    auto& propagateSystemEnd = runtime.addHierarchicalSystem<core::PhysicsUpdate>(
-        "GlobalTransform2D::PropagateTransformsEnd", &core::GlobalTransform2D::PropagateTransforms);
+    auto& propagateSystemEnd = runtime.addHierarchicalSystem<core::PhysicsUpdate>("Physics2D::PropagateTransformsEnd",
+        &core::GlobalTransform2D::PropagateTransforms);
 
     motionSystem.runBefore(propagateSystem);
     propagateSystem.runBefore(syncSystem);

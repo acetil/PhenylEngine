@@ -11,5 +11,9 @@ std::string_view Core3DPlugin::getName () const noexcept {
 }
 
 void Core3DPlugin::init (PhenylRuntime& runtime) {
+    runtime.addComponent<Transform3D>("Transform3D");
     runtime.addComponent<GlobalTransform3D>("GlobalTransform3D");
+
+    runtime.addHierarchicalSystem<PostUpdate>("GlobalTransform3D::PropagateTransforms",
+        &GlobalTransform3D::PropagateTransforms);
 }
