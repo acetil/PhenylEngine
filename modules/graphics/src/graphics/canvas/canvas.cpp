@@ -20,7 +20,7 @@ static void addCurve (std::vector<glm::vec2>& points, glm::vec2 start, glm::vec2
     }
 }
 
-void Canvas::submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style) {
+void Canvas::submitVertices (std::span<const glm::vec2> vertices, const CanvasStyle& style) {
     if (style.fill == CanvasFill::FILLED) {
         if (style.useAA) {
             m_layer.renderConvexPolyAA(vertices, style.colour);
@@ -94,6 +94,10 @@ void Canvas::render (glm::vec2 pos, const CanvasRoundedRect& rect, const CanvasS
 void Canvas::renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text,
     glm::vec3 colour) {
     font->renderText(m_layer, size, text, offset() + pos, colour);
+}
+
+void Canvas::renderPolygon (std::span<const glm::vec2> vertices, const CanvasStyle& style) {
+    submitVertices(vertices, style);
 }
 
 void Canvas::pushOffset (glm::vec2 off) {

@@ -30,6 +30,8 @@ public:
     void renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text,
         glm::vec3 colour = {1.0f, 1.0f, 1.0f});
 
+    void renderPolygon (std::span<const glm::vec2> vertices, const CanvasStyle& style);
+
     core::Asset<Font>& defaultFont () noexcept {
         return m_defaultFont;
     }
@@ -52,7 +54,7 @@ private:
     std::vector<glm::vec2> m_offsetStack;
     glm::ivec2 m_resolution;
 
-    void submitVertices (std::span<glm::vec2> vertices, const CanvasStyle& style);
+    void submitVertices (std::span<const glm::vec2> vertices, const CanvasStyle& style);
     [[nodiscard]] glm::vec2 offset () const;
 
     void onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) override;

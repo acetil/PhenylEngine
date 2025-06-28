@@ -68,6 +68,7 @@ void test::TestApp::postInit () {
     labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
 
     m_testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
+    updateDebugRender(true);
 }
 
 void test::TestApp::fixedUpdate () {

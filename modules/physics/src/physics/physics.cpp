@@ -19,12 +19,12 @@ void physics::Physics2DPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<core::Core2DPlugin>();
 
     m_physics->addComponents(runtime);
-    runtime.addSystem<core::Render>("Physics2d::DebugRender", this, &Physics2DPlugin::render);
+    runtime.addSystem<core::Update>("Physics2d::DebugRender", this, &Physics2DPlugin::render);
 }
 
 void physics::Physics2DPlugin::render (core::PhenylRuntime& runtime) {
     auto* config = runtime.resourceMaybe<core::DebugRenderConfig>();
     if (config && config->doPhysicsRender) {
-        m_physics->debugRender(runtime.world());
+        m_physics->debugRender(runtime.world(), runtime.resource<core::Debug>());
     }
 }

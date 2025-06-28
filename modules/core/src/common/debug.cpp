@@ -1,49 +1,39 @@
 #include "core/debug.h"
 
+#include "logging/logging.h"
+
+#include <utility>
+
 using namespace phenyl;
 
-void core::debugWorldRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour, glm::vec4 outlineColour) {
-    debugWorldRect(topLeft, glm::vec2{bottomRight.x, topLeft.y}, glm::vec2{topLeft.x, bottomRight.y}, bottomRight,
-        colour, outlineColour);
+void core::Debug::setRenderer (IDebugRenderer* renderer) {
+    m_renderer = renderer;
 }
 
-void core::debugWorldRect (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 colour,
-    glm::vec4 outlineColour) {
-    graphics::debugWorldRect(pos1, pos2, pos3, pos4, colour, outlineColour);
+void core::Debug::displayWorldRect (const DebugRect& rect, glm::vec4 color, bool outline) {
+    if (!m_renderer) {
+        return;
+    }
+
+    m_renderer->renderRect(rect, color, outline, true);
 }
 
-void core::debugWorldRectOutline (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4,
-    glm::vec4 outlineColour) {
-    debugWorldRect(pos1, pos2, pos3, pos4, glm::vec4{}, outlineColour);
+void core::Debug::displayScreenRect (const DebugRect& rect, glm::vec4 color, bool outline) {
+    if (!m_renderer) {
+        return;
+    }
+
+    m_renderer->renderRect(rect, color, outline, false);
 }
 
-void core::debugWorldRectOutline (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 outlineColour) {
-    // graphics::debugWorldRect(topLeft, bottomRight, {0, 0, 0, 0}, outlineColour);
-    debugWorldRect(topLeft, bottomRight, glm::vec4{0, 0, 0, 0}, outlineColour);
+void core::Debug::debugText (glm::vec2 pos, std::uint32_t size, std::string text) {
+    debugText(pos, size, glm::vec4{1.0, 1.0, 1.0, 0.0}, std::move(text));
 }
 
-void core::debugRect (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 colour, glm::vec4 outlineColour) {
-    debugRect(topLeft, glm::vec2{bottomRight.x, topLeft.y}, glm::vec2{topLeft.x, bottomRight.y}, bottomRight, colour,
-        outlineColour);
-}
+void core::Debug::debugText (glm::vec2 pos, std::uint32_t size, glm::vec4 color, std::string text) {
+    if (!m_renderer) {
+        return;
+    }
 
-void core::debugRectOutline (glm::vec2 topLeft, glm::vec2 bottomRight, glm::vec4 outlineColour) {
-    debugRect(topLeft, bottomRight, glm::vec4{}, outlineColour);
-}
-
-void core::debugRect (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 colour,
-    glm::vec4 outlineColour) {
-    graphics::debugScreenRect(pos1, pos2, pos3, pos4, colour, outlineColour);
-}
-
-void core::debugRectOutline (glm::vec2 pos1, glm::vec2 pos2, glm::vec2 pos3, glm::vec2 pos4, glm::vec4 outlineColour) {
-    debugRect(pos1, pos2, pos3, pos4, glm::vec4{}, outlineColour);
-}
-
-void core::debugWorldLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour) {
-    graphics::debugWorldLine(start, end, colour);
-}
-
-void core::debugLine (glm::vec2 start, glm::vec2 end, glm::vec4 colour) {
-    graphics::debugScreenLine(start, end, colour);
+    m_renderer->renderText(pos, size, color, std::move(text));
 }

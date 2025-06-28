@@ -140,15 +140,19 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
     collUpdateSystem.runBefore(propagateSystemEnd);
 }
 
-void Physics2D::debugRender (core::World& world) {
+void Physics2D::debugRender (core::World& world, core::Debug& debug) {
     // Debug render
     world.query<core::GlobalTransform2D, BoxCollider2D>().each(
-        [] (const core::GlobalTransform2D& transform, const BoxCollider2D& box) {
-            auto pos1 = box.m_frameTransform * glm::vec2{-1, -1} + transform.position();
-            auto pos2 = box.m_frameTransform * glm::vec2{1, -1} + transform.position();
-            auto pos3 = box.m_frameTransform * glm::vec2{1, 1} + transform.position();
-            auto pos4 = box.m_frameTransform * glm::vec2{-1, 1} + transform.position();
+        [&debug] (const core::GlobalTransform2D& transform, const BoxCollider2D& box) {
+            // auto pos1 = box.m_frameTransform * glm::vec2{-1, -1} + transform.position();
+            // auto pos2 = box.m_frameTransform * glm::vec2{1, -1} + transform.position();
+            // auto pos3 = box.m_frameTransform * glm::vec2{1, 1} + transform.position();
+            // auto pos4 = box.m_frameTransform * glm::vec2{-1, 1} + transform.position();
+            auto start = box.m_frameTransform * glm::vec2{-1, -1} + transform.position();
+            auto widthVec = box.m_frameTransform * glm::vec2{2, 0};
+            auto heightVec = box.m_frameTransform * glm::vec2{0, 2};
 
-            core::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+            // core::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+            debug.displayWorldRect(core::DebugRect::Create(start, widthVec, heightVec), glm::vec4{0, 0, 1, 1}, true);
         });
 }
