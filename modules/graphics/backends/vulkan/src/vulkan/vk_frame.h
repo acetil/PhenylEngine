@@ -11,7 +11,6 @@
 namespace phenyl::vulkan {
 struct FrameSync {
     VulkanSemaphore imageAvailable;
-    VulkanSemaphore renderFinished;
     VulkanFence inFlight;
 };
 

@@ -24,9 +24,9 @@ VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
     PHENYL_LOGI(LOGGER, "Created logical device with 2 queues");
 }
 
-std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VkSurfaceKHR surface) {
+std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VulkanResources& resources, VkSurfaceKHR surface) {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface, &m_swapChainDetails.capabilities);
-    return std::make_unique<VulkanSwapChain>(m_logicalDevice, surface, m_swapChainDetails, m_queueFamilies);
+    return std::make_unique<VulkanSwapChain>(resources, surface, m_swapChainDetails, m_queueFamilies);
 }
 
 VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {

@@ -13,9 +13,10 @@ FrameManager::FrameManager (VulkanDevice& device, VulkanResources& resources, st
     for (auto i = 0; i < maxInFlight; i++) {
         m_commandPools.emplace_back(resources);
         m_descriptorPools.emplace_back(device.device());
-        m_syncs.push_back(FrameSync{.imageAvailable = VulkanSemaphore{resources},
-          .renderFinished = VulkanSemaphore{resources},
-          .inFlight = VulkanFence{resources, true}});
+        m_syncs.push_back(FrameSync{
+          .imageAvailable = VulkanSemaphore{resources},
+          .inFlight = VulkanFence{resources, true},
+        });
     }
 }
 
