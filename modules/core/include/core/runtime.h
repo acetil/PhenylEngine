@@ -132,6 +132,17 @@ public:
         return *system;
     }
 
+    template <typename S, typename... Args>
+    System<S>& addHierarchicalSystem (std::string systemName, void (*systemFunc)(Args...)) {
+        auto* stage = getStage<S>();
+        PHENYL_ASSERT(stage);
+
+        auto* system = makeHierarchicalSystem<S>(std::move(systemName), systemFunc);
+        stage->addSystem(system);
+
+        return *system;
+    }
+
     template <typename S, typename Parent>
     void addStage (std::string name) {
         auto* parent = getStage<Parent>();
@@ -216,6 +227,17 @@ private:
             systemName);
         auto system = std::make_unique<ExclusiveFunctionSystem<S, T>>(std::move(systemName),
             [obj, systemFunc] (PhenylRuntime& runtime) { return (obj->*systemFunc)(); });
+        auto* ptr = system.get();
+        m_systems[ptr->getName()] = std::move(system);
+
+        return ptr;
+    }
+
+    template <typename S, typename... Args>
+    System<S>* makeHierarchicalSystem (std::string systemName, void (*systemFunc)(Args...)) {
+        PHENYL_DASSERT_MSG(!m_systems.contains(systemName), "Attempted to add duplicate system with name \"{}\"",
+            systemName);
+        auto system = MakeHierachicalSystem<S>(std::move(systemName), systemFunc, world(), m_resourceManager);
         auto* ptr = system.get();
         m_systems[ptr->getName()] = std::move(system);
 

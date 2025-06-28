@@ -77,13 +77,17 @@ void EntityRenderLayer::pushEntity (const core::GlobalTransform2D& transform, co
         return;
     }
 
-    auto startIndex =
-        m_vertexBuffer.emplace(Vertex{.pos = transform.transform2D.apply({-1.0f, 1.0f}), .uv = sprite.uvStart});
-    m_vertexBuffer.emplace(
-        Vertex{.pos = transform.transform2D.apply({1.0f, 1.0f}), .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y}});
-    m_vertexBuffer.emplace(Vertex{.pos = transform.transform2D.apply({1.0f, -1.0f}), .uv = sprite.uvEnd});
-    m_vertexBuffer.emplace(
-        Vertex{.pos = transform.transform2D.apply({-1.0f, -1.0f}), .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}});
+    auto startIndex = m_vertexBuffer.emplace(Vertex{
+      .pos = transform.transform * glm::vec2{-1.0f, 1.0f},
+      .uv = sprite.uvStart,
+    });
+    m_vertexBuffer.emplace(Vertex{
+      .pos = transform.transform * glm::vec2{1.0f, 1.0f},
+      .uv = glm::vec2{sprite.uvEnd.x, sprite.uvStart.y},
+    });
+    m_vertexBuffer.emplace(Vertex{.pos = transform.transform * glm::vec2{1.0f, -1.0f}, .uv = sprite.uvEnd});
+    m_vertexBuffer.emplace(Vertex{.pos = transform.transform * glm::vec2{-1.0f, -1.0f},
+      .uv = glm::vec2{sprite.uvStart.x, sprite.uvEnd.y}});
 
     m_samplerStartIndices.emplace_back(&sprite.texture->sampler(), startIndex);
 }

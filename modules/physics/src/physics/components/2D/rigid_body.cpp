@@ -20,18 +20,18 @@ inline float vec2dCross (glm::vec2 vec1, glm::vec2 vec2) {
     return vec1.x * vec2.y - vec1.y * vec2.x;
 }
 
-void RigidBody2D::doMotion (core::GlobalTransform2D& transform2D, float deltaTime) {
+void RigidBody2D::doMotion (core::Transform2D& transform2D, float deltaTime) {
     applyFriction();
     m_netForce += gravity * m_mass;
 
     m_momentum += m_netForce * 0.5f * deltaTime;
-    transform2D.transform2D.translate(m_momentum * m_invMass * deltaTime);
+    transform2D.translate(m_momentum * m_invMass * deltaTime);
     m_momentum += m_netForce * 0.5f * deltaTime;
     m_netForce = {0, 0};
 
     m_angularMomentum = glm::clamp(m_angularMomentum + m_torque * 0.5f * deltaTime, -MAX_ANGULAR_VEL * m_mass,
         MAX_ANGULAR_VEL * m_mass);
-    transform2D.transform2D.rotateBy(m_angularMomentum * m_invInertialMoment);
+    transform2D.rotateBy(m_angularMomentum * m_invInertialMoment);
     m_angularMomentum = m_angularMomentum + m_torque * 0.5f * deltaTime; // Will be clamped before rotation next step
 
     if (glm::abs(m_angularMomentum * m_invInertialMoment) < MIN_ANGULAR_VEL) {

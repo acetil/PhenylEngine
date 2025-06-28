@@ -23,7 +23,7 @@ struct Constraints2D : public phenyl::core::IResource {
 };
 
 static void RigidBody2DMotionSystem (const phenyl::core::Resources<const phenyl::core::FixedDelta>& resources,
-    phenyl::core::GlobalTransform2D& transform, RigidBody2D& body) {
+    phenyl::core::Transform2D& transform, RigidBody2D& body) {
     auto& [delta] = resources;
 
     body.doMotion(transform, static_cast<float>(delta()));
@@ -31,12 +31,12 @@ static void RigidBody2DMotionSystem (const phenyl::core::Resources<const phenyl:
 
 static void Collider2DSyncSystem (const phenyl::core::GlobalTransform2D& transform, const RigidBody2D& body,
     BoxCollider2D& collider) {
-    collider.syncUpdates(body, transform.transform2D.position());
+    collider.syncUpdates(body, transform.position());
 }
 
 static void BoxCollider2DFrameTransformSystem (const phenyl::core::GlobalTransform2D& transform,
     BoxCollider2D& collider) {
-    collider.applyFrameTransform(transform.transform2D.rotMatrix());
+    collider.applyFrameTransform(transform.transform.linearTransform());
 }
 
 static void CollisionCheck2DSystem (
@@ -116,6 +116,10 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
 
     runtime.addResource<Constraints2D>();
     auto& motionSystem = runtime.addSystem<core::PhysicsUpdate>("RigidBody2D::Update", RigidBody2DMotionSystem);
+
+    auto& propagateSystem = runtime.addHierarchicalSystem<core::PhysicsUpdate>("Physics2D::PropagateTransforms",
+        &core::GlobalTransform2D::PropagateTransforms);
+
     auto& syncSystem = runtime.addSystem<core::PhysicsUpdate>("Collider2D::Sync", Collider2DSyncSystem);
     auto& boxTransformSystem =
         runtime.addSystem<core::PhysicsUpdate>("BoxCollider2D::FrameTransform", BoxCollider2DFrameTransformSystem);
@@ -124,23 +128,31 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
         runtime.addSystem<core::PhysicsUpdate>("Physics2D::ConstraintsSolve", Constraints2DSolveSystem);
     auto& collUpdateSystem =
         runtime.addSystem<core::PhysicsUpdate>("Collider2D::PostCollision", Collider2DUpdateSystem);
+    auto& propagateSystemEnd = runtime.addHierarchicalSystem<core::PhysicsUpdate>("Physics2D::PropagateTransformsEnd",
+        &core::GlobalTransform2D::PropagateTransforms);
 
-    motionSystem.runBefore(syncSystem);
+    motionSystem.runBefore(propagateSystem);
+    propagateSystem.runBefore(syncSystem);
     syncSystem.runBefore(boxTransformSystem);
     boxTransformSystem.runBefore(collCheckSystem);
     collCheckSystem.runBefore(constraintSolveSystem);
     constraintSolveSystem.runBefore(collUpdateSystem);
+    collUpdateSystem.runBefore(propagateSystemEnd);
 }
 
-void Physics2D::debugRender (core::World& world) {
+void Physics2D::debugRender (core::World& world, core::Debug& debug) {
     // Debug render
     world.query<core::GlobalTransform2D, BoxCollider2D>().each(
-        [] (const core::GlobalTransform2D& transform, const BoxCollider2D& box) {
-            auto pos1 = box.m_frameTransform * glm::vec2{-1, -1} + transform.transform2D.position();
-            auto pos2 = box.m_frameTransform * glm::vec2{1, -1} + transform.transform2D.position();
-            auto pos3 = box.m_frameTransform * glm::vec2{1, 1} + transform.transform2D.position();
-            auto pos4 = box.m_frameTransform * glm::vec2{-1, 1} + transform.transform2D.position();
+        [&debug] (const core::GlobalTransform2D& transform, const BoxCollider2D& box) {
+            // auto pos1 = box.m_frameTransform * glm::vec2{-1, -1} + transform.position();
+            // auto pos2 = box.m_frameTransform * glm::vec2{1, -1} + transform.position();
+            // auto pos3 = box.m_frameTransform * glm::vec2{1, 1} + transform.position();
+            // auto pos4 = box.m_frameTransform * glm::vec2{-1, 1} + transform.position();
+            auto start = box.m_frameTransform * glm::vec2{-1, -1} + transform.position();
+            auto widthVec = box.m_frameTransform * glm::vec2{2, 0};
+            auto heightVec = box.m_frameTransform * glm::vec2{0, 2};
 
-            core::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+            // core::debugWorldRectOutline(pos1, pos2, pos3, pos4, {0, 0, 1, 1});
+            debug.displayWorldRect(core::DebugRect::Create(start, widthVec, heightVec), glm::vec4{0, 0, 1, 1}, true);
         });
 }

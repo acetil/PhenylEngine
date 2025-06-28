@@ -17,10 +17,10 @@ public:
     void setScreenSize (glm::vec2 screenSize);
 
     void renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec3 colour) override;
-    void renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour);
-    void renderConvexPolyAA (std::span<glm::vec2> points, glm::vec4 colour, float widthAA = 1.0f);
-    void renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed);
-    void renderPolyLineAA (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed,
+    void renderConvexPoly (std::span<const glm::vec2> points, glm::vec4 colour);
+    void renderConvexPolyAA (std::span<const glm::vec2> points, glm::vec4 colour, float widthAA = 1.0f);
+    void renderPolyLine (std::span<const glm::vec2> points, glm::vec4 colour, float width, bool closed);
+    void renderPolyLineAA (std::span<const glm::vec2> points, glm::vec4 colour, float width, bool closed,
         float widthAA = 1.0f);
 
 private:

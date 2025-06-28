@@ -1,11 +1,10 @@
 {
     "components" : {
-        "GlobalTransform2D" : {
-            "transform" : {
-                "position" : [0.0, 0.0],
-                "scale" : [0.1, 0.1],
-                "rotation" : 0.0
-            }
+        "GlobalTransform2D" : {},
+        "Transform2D" : {
+            "position" : [0.0, 0.0],
+            "scale" : [0.1, 0.1],
+            "rotation" : 0.0
         },
         "ParticleEmitter2D" : {
             "system" : "resources/particles/test_system",

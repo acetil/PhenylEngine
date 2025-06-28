@@ -1,4 +1,4 @@
-add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/ui/ui_defs.h src/graphics/renderlayer/debug_layer.cpp src/graphics/renderlayer/debug_layer.h
+add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/ui/ui_defs.h
         include/graphics/components/2d/sprite.h
         include/graphics/ui/forward.h
         include/graphics/particles/particle_system_2d.h

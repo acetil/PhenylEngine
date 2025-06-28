@@ -32,6 +32,8 @@ PhenylRuntime::PhenylRuntime () : m_world{} {
     runStageBefore<FixedUpdate, PhysicsUpdate>();
 
     addStage<Update, GlobalVariableTimestep>("Update");
+    addStage<PostUpdate, GlobalVariableTimestep>("PostUpdate");
+    runStageBefore<Update, PostUpdate>();
 
     addResource<DeltaTime>();
     addResource<FixedDelta>();

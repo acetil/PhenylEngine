@@ -84,7 +84,7 @@ void CanvasRenderLayer::renderGlyph (const Glyph& glyph, glm::vec2 pos, glm::vec
     m_indices.emplace(startIndex + 3);
 }
 
-void CanvasRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4 colour) {
+void CanvasRenderLayer::renderConvexPoly (std::span<const glm::vec2> points, glm::vec4 colour) {
     if (points.size() < 3 || colour.a <= 0.0f) {
         return;
     }
@@ -106,7 +106,7 @@ void CanvasRenderLayer::renderConvexPoly (std::span<glm::vec2> points, glm::vec4
     }
 }
 
-void CanvasRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::vec4 colour, float widthAA) {
+void CanvasRenderLayer::renderConvexPolyAA (std::span<const glm::vec2> points, glm::vec4 colour, float widthAA) {
     if (points.size() < 3 || colour.a <= 0.0f) {
         return;
     }
@@ -163,7 +163,7 @@ void CanvasRenderLayer::renderConvexPolyAA (std::span<glm::vec2> points, glm::ve
     m_indices.emplace(startIndex + 1);
 }
 
-void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed) {
+void CanvasRenderLayer::renderPolyLine (std::span<const glm::vec2> points, glm::vec4 colour, float width, bool closed) {
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {
         return;
     }
@@ -240,7 +240,7 @@ void CanvasRenderLayer::renderPolyLine (std::span<glm::vec2> points, glm::vec4 c
     }
 }
 
-void CanvasRenderLayer::renderPolyLineAA (std::span<glm::vec2> points, glm::vec4 colour, float width, bool closed,
+void CanvasRenderLayer::renderPolyLineAA (std::span<const glm::vec2> points, glm::vec4 colour, float width, bool closed,
     float widthAA) {
     // Doesnt do AA for non-closed lines properly
     if (points.size() <= 2 || colour.a <= 0.0f || width <= 0.0f) {

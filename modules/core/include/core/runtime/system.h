@@ -254,4 +254,33 @@ std::unique_ptr<System<Stage>> MakeSystem (std::string systemName, void (*func)(
 
     return std::make_unique<FunctionSystem<Stage>>(std::move(systemName), std::move(func1));
 }
+
+template <typename Stage, ComponentType... Components>
+requires (sizeof...(Components) > 0)
+std::unique_ptr<System<Stage>> MakeHierachicalSystem (std::string systemName,
+    void (*func)(const Bundle<Components...>*, const Bundle<Components...>&), World& world,
+    ResourceManager& resManager) {
+    auto query = world.query<std::remove_reference_t<Components>...>();
+    std::function<void()> func1 = [query = std::move(query), func] () {
+        query.hierarchical(func);
+    };
+
+    return std::make_unique<FunctionSystem<Stage>>(std::move(systemName), std::move(func1));
+}
+
+template <typename Stage, ResourceType... ResourceTypes, ComponentType... Components>
+requires (sizeof...(Components) > 0)
+std::unique_ptr<System<Stage>> MakeHierachicalSystem (std::string systemName,
+    void (*func)(const Resources<ResourceTypes...>&, const Bundle<Components...>*, const Bundle<Components...>&),
+    World& world, ResourceManager& resManager) {
+    auto query = world.query<std::remove_reference_t<Components>...>();
+    std::function<void()> func1 = [query = std::move(query), func, &resManager] () {
+        Resources<ResourceTypes...> resources{resManager};
+        query.hierarchical([&] (const Bundle<Components...>* parentBundle, const Bundle<Components...>& childBundle) {
+            func(resources, parentBundle, childBundle);
+        });
+    };
+
+    return std::make_unique<FunctionSystem<Stage>>(std::move(systemName), std::move(func1));
+}
 } // namespace phenyl::core

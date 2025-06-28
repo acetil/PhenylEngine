@@ -1,11 +1,10 @@
 {
     "components" : {
-        "GlobalTransform2D" : {
-            "transform" : {
-                "position" : [0.0, 0.0],
-                "scale" : [0.1, 0.1],
-                "rotation" : 0.0
-            }
+        "GlobalTransform2D" : {},
+        "Transform2D" : {
+            "position" : [0.0, 0.0],
+            "scale" : [0.1, 0.1],
+            "rotation" : 0.0
         },
         "Sprite2D" : {
             "texture" : "resources/images/test/test_texture.png"
@@ -25,7 +24,37 @@
                 "mask" : 7,
                 "elasticity" : 0.7
             },
-            "scale" : [0.1, 0.1]
+            "scale" : [1, 1]
         }
-    }
+    },
+    "children" : [
+        {
+            "components" : {
+                "GlobalTransform2D" : {},
+                "Transform2D" : {
+                    "position" : [0.0, 1],
+                    "scale" : [0.5, 0.5],
+                    "rotation" : 0.0
+                },
+                "Sprite2D" : {
+                    "texture" : "resources/images/test/test_texture.png"
+                }
+            },
+            "children" : [
+                {
+                    "components" : {
+                        "GlobalTransform2D" : {},
+                        "Transform2D" : {
+                            "position" : [1.0, 0],
+                            "scale" : [1.0, 0.5],
+                            "rotation" : 45.0
+                        },
+                        "Sprite2D" : {
+                            "texture" : "resources/images/test/test_texture.png"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
 }

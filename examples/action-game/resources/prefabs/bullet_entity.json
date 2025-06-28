@@ -3,12 +3,11 @@
         "Bullet" : {
             "particle_prefab" : "resources/prefabs/bullet_particle_entity"
         },
-        "GlobalTransform2D" : {
-            "transform" : {
-                "position" : [0.0, 0.0],
-                "scale" : [0.03, 0.03],
-                "rotation" : 0.0
-            }
+        "GlobalTransform2D" : {},
+        "Transform2D" : {
+            "position" : [0.0, 0.0],
+            "scale" : [0.03, 0.03],
+            "rotation" : 0.0
         },
         "RigidBody2D" : {
             "momentum" : [0.0, 0.0],
@@ -26,7 +25,7 @@
                 "mask" : 2,
                 "elasticity" : 1.0
             },
-            "scale" : [0.03, 0.03]
+            "scale" : [1, 1]
         },
         "Sprite2D" : {
             "texture" : "resources/images/test/bullet2.png"

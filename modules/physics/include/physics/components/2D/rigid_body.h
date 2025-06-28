@@ -1,12 +1,9 @@
 #pragma once
 
+#include "core/maths/2d/transform.h"
 #include "core/serialization/serializer_impl.h"
 #include "graphics/maths_headers.h"
 #include "physics/physics.h"
-
-namespace phenyl::core {
-class GlobalTransform2D;
-}
 
 namespace phenyl::physics {
 struct RigidBody2D {
@@ -42,7 +39,7 @@ public:
         m_invInertialMoment = inertia != 0 ? 1 / inertia : 0.0f;
     }
 
-    void doMotion (core::GlobalTransform2D& transform2D, float deltaTime);
+    void doMotion (core::Transform2D& transform2D, float deltaTime);
 
     void applyForce (glm::vec2 force);
     void applyForce (glm::vec2 force, glm::vec2 worldDisplacement);

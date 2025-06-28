@@ -27,6 +27,15 @@ Transform2D::Transform2D (glm::vec2 posVec, glm::vec2 scaleVec, glm::vec2 rotVec
     m_scale{scaleVec},
     m_complexRotation{rotVec} {}
 
+Transform2D::operator AffineTransform2D () const noexcept {
+    auto scaleRotMat = getMatrix();
+    auto off = position();
+    glm::mat3 mat = {{scaleRotMat[0][0], scaleRotMat[0][1], 0}, {scaleRotMat[1][0], scaleRotMat[1][1], 0},
+      {off.x, off.y, 1.0f}};
+
+    return AffineTransform2D{mat};
+}
+
 Transform2D& Transform2D::translate (glm::vec2 deltaPos) {
     m_position += deltaPos;
     return *this;

@@ -10,6 +10,12 @@ layout(std140, binding = 0) uniform Camera {
 layout(location = 0) out vec4 fragColour;
 
 void main () {
-    gl_Position = camera * vec4(pos, 0, 1);
+    mat4 coordFix = mat4(
+        vec4(1, 0, 0, 0),
+        vec4(0, -1, 0, 0),
+        vec4(0, 0, 1, 0),
+        vec4(0, 0, 0, 1)
+    );
+    gl_Position = coordFix * camera * vec4(pos, 0, 1);
     fragColour = colourIn;
 }

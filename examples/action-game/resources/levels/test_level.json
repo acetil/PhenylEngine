@@ -2,24 +2,20 @@
     "entities" : [
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [-0.7, 0.0],
-                        "scale" : [0.1, 0.1],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [-0.7, 0.0],
+                    "scale" : [0.1, 0.1],
+                    "rotation" : 0.0
                 }
             },
             "prefab" : "resources/prefabs/test_entity"
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [-0.4, 0.0],
-                        "scale" : [0.08, 0.5],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [-0.4, 0.0],
+                    "scale" : [0.08, 0.5],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {
@@ -27,19 +23,17 @@
                         "mask" : 0,
                         "elasticity" : 1.0
                     },
-                    "scale" : [0.08, 0.5]
+                    "scale" : [1, 1]
                 }
             },
             "prefab" : "resources/prefabs/wall_entity"
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [0.4, 0.0],
-                        "scale" : [0.08, 0.5],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [0.4, 0.0],
+                    "scale" : [0.08, 0.5],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {
@@ -47,19 +41,17 @@
                         "mask" : 0,
                         "elasticity" : 1.0
                     },
-                    "scale" : [0.08, 0.5]
+                    "scale" : [1, 1]
                 }
             },
             "prefab" : "resources/prefabs/wall_entity"
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [0.0, -0.5],
-                        "scale" : [0.48, 0.08],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [0.0, -0.5],
+                    "scale" : [0.48, 0.08],
+                    "rotation" : 0.0
                 },
                 "BoxCollider2D" : {
                     "Collider2D" : {
@@ -67,43 +59,37 @@
                         "mask" : 0,
                         "elasticity" : 1.0
                     },
-                    "scale" : [0.48, 0.08]
+                    "scale" : [1, 1]
                 }
             },
             "prefab" : "resources/prefabs/wall_entity"
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [-0.2, 0.0],
-                        "scale" : [0.1, 0.1],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [-0.2, 0.0],
+                    "scale" : [0.1, 0.1],
+                    "rotation" : 0.0
                 }
             },
             "prefab" : "resources/prefabs/block_entity"
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [-0.2, 0.5],
-                        "scale" : [0.1, 0.1],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [-0.2, 0.5],
+                    "scale" : [0.1, 0.1],
+                    "rotation" : 0.0
                 }
             },
             "prefab" : "resources/prefabs/block_entity"
         },
         {
             "components" : {
-                "GlobalTransform2D" : {
-                    "transform" : {
-                        "position" : [-0.2, 1],
-                        "scale" : [0.1, 0.1],
-                        "rotation" : 0.0
-                    }
+                "Transform2D" : {
+                    "position" : [-0.2, 1],
+                    "scale" : [0.1, 0.1],
+                    "rotation" : 0.0
                 }
             },
             "prefab" : "resources/prefabs/block_entity"

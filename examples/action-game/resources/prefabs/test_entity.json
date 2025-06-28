@@ -4,12 +4,11 @@
             "bullet_prefab" : "resources/prefabs/bullet_entity",
             "gunshot_sample" : "resources/audio/blastoff.wav"
         },
-        "GlobalTransform2D" : {
-            "transform" : {
-                "position" : [0.7, 0.0],
-                "scale" : [0.1, 0.1],
-                "rotation" : 0.0
-            }
+        "GlobalTransform2D" : {},
+        "Transform2D" : {
+            "position" : [0.7, 0.0],
+            "scale" : [0.1, 0.1],
+            "rotation" : 0.0
         },
         "Sprite2D" : {
             "texture" : "resources/images/test/manBlue_gun.png"
@@ -29,7 +28,7 @@
                 "mask" : 2,
                 "elasticity" : 0.0
             },
-            "scale" : [0.1, 0.1]
+            "scale" : [1, 1]
         },
         "AudioPlayer" : {
             "gain" : 0.5

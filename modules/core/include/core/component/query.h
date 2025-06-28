@@ -2,6 +2,7 @@
 
 #include "archetype.h"
 #include "archetype_view.h"
+#include "children_view.h"
 
 #include <memory>
 #include <unordered_set>
@@ -88,6 +89,9 @@ template <typename F, typename... Args> concept Query2Callback = std::invocable<
 template <typename F, typename... Args> concept Query2PairCallback =
     std::invocable<F, const Bundle<Args...>&, const Bundle<Args...>&>;
 
+template <typename F, typename... Args> concept QueryHierachicalCallback =
+    std::invocable<F, const Bundle<Args...>*, const Bundle<Args...>&>;
+
 template <typename F, typename... Args> concept Query2BundleCallback = std::invocable<F, const Bundle<Args...>&>;
 
 template <typename... Args>
@@ -124,14 +128,18 @@ public:
 
     void entity (Entity entity, const Query2BundleCallback<Args...> auto& fn) const {
         PHENYL_DASSERT(*this);
-        const auto& entry = entity.entry();
-
-        if (!m_archetypes->contains(entry.archetype)) {
-            return;
+        // const auto& entry = entity.entry();
+        //
+        // if (!m_archetypes->contains(entry.archetype)) {
+        //     return;
+        // }
+        //
+        // ArchetypeView<Args...> view{*entry.archetype, m_world};
+        // fn(view.bundle(entry.pos));
+        auto bundle = entityBundle(entity);
+        if (bundle) {
+            fn(*bundle);
         }
-
-        ArchetypeView<Args...> view{*entry.archetype, m_world};
-        fn(view.bundle(entry.pos));
     }
 
     void pairs (const Query2PairCallback<Args...> auto& fn) const {
@@ -147,6 +155,13 @@ public:
                 pairsIter2(fn, view1, view2);
             }
         }
+        m_archetypes->unlock();
+    }
+
+    void hierarchical (const QueryHierachicalCallback<Args...> auto& fn) const {
+        PHENYL_DASSERT(*this);
+        m_archetypes->lock();
+        hierarchicalIter(fn, Entity{EntityId{}, m_world}, nullptr);
         m_archetypes->unlock();
     }
 
@@ -181,6 +196,29 @@ private:
                 fn(b1, b2);
             }
         }
+    }
+
+    void hierarchicalIter (const QueryHierachicalCallback<Args...> auto& fn, Entity parent,
+        const Bundle<Args...>* parentBundle) const {
+        for (auto child : parent.children()) {
+            auto childBundle = entityBundle(child);
+            if (!childBundle) {
+                continue;
+            }
+
+            fn(parentBundle, *childBundle);
+            hierarchicalIter(fn, child, &*childBundle);
+        }
+    }
+
+    std::optional<Bundle<Args...>> entityBundle (Entity entity) const {
+        const auto& entry = entity.entry();
+        auto* archetype = entry.archetype;
+        if (!m_archetypes->contains(archetype)) {
+            return std::nullopt;
+        }
+
+        return ArchetypeView<Args...>{*archetype, m_world}.bundle(entry.pos);
     }
 };
 } // namespace phenyl::core
