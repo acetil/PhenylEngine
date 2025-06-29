@@ -31,13 +31,15 @@ static VkIndexType GetIndexType (ShaderIndexType type) {
 }
 
 VulkanPipeline::VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory,
-    VulkanResource<VkDescriptorSetLayout> descriptorSetLayout, TestFramebuffer* framebuffer,
+    VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
+    std::unique_ptr<FramePool<VulkanDescriptorPool>> descriptorPools, TestFramebuffer* framebuffer,
     VulkanWindowFrameBuffer* windowFb, std::vector<meta::TypeIndex> vertexBindingTypes,
     std::unordered_map<graphics::UniformBinding, meta::TypeIndex> uniformTypes,
     std::unordered_set<graphics::SamplerBinding> validSamplers) :
     m_device{device},
     m_pipelineFactory{std::move(pipelineFactory)},
     m_descriptorSetLayout{std::move(descriptorSetLayout)},
+    m_descriptorPools{std::move(descriptorPools)},
     m_testFramebuffer{framebuffer},
     m_windowFrameBuffer{windowFb},
     m_vertexBindingTypes{std::move(vertexBindingTypes)},
@@ -133,21 +135,23 @@ VulkanPipelineFactory::VulkanPipelineFactory (VulkanResources& resources, core::
     m_attribs{std::move(vertexAttribs)},
     m_colorBlendState{blendAttachment},
     m_depthStencilInfo{depthStencilInfo} {
-    m_inputAssemblyInfo =
-        VkPipelineInputAssemblyStateCreateInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-          .topology = topology,
-          .primitiveRestartEnable = VK_FALSE};
+    m_inputAssemblyInfo = VkPipelineInputAssemblyStateCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      .topology = topology,
+      .primitiveRestartEnable = VK_FALSE,
+    };
 
-    m_rasterizerInfo =
-        VkPipelineRasterizationStateCreateInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-          .depthClampEnable = VK_FALSE, // TODO
-          .rasterizerDiscardEnable = VK_FALSE,
-          .polygonMode = VK_POLYGON_MODE_FILL,
-          .cullMode = cullMode,
-          .frontFace = VK_FRONT_FACE_CLOCKWISE, // TODO
+    m_rasterizerInfo = VkPipelineRasterizationStateCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      .depthClampEnable = VK_FALSE, // TODO
+      .rasterizerDiscardEnable = VK_FALSE,
+      .polygonMode = VK_POLYGON_MODE_FILL,
+      .cullMode = cullMode,
+      .frontFace = VK_FRONT_FACE_CLOCKWISE, // TODO
 
-          .depthBiasEnable = VK_FALSE,
-          .lineWidth = 1.0f};
+      .depthBiasEnable = VK_FALSE,
+      .lineWidth = 1.0f,
+    };
 }
 
 VkPipeline VulkanPipelineFactory::get (const FrameBufferLayout* layout) {
@@ -158,32 +162,40 @@ VkPipeline VulkanPipelineFactory::get (const FrameBufferLayout* layout) {
         return *it->second;
     }
 
-    VkPipelineVertexInputStateCreateInfo vertexInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+    VkPipelineVertexInputStateCreateInfo vertexInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
       .vertexBindingDescriptionCount = static_cast<std::uint32_t>(m_vertexBindings.size()),
       .pVertexBindingDescriptions = m_vertexBindings.data(),
       .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(m_attribs.size()),
-      .pVertexAttributeDescriptions = m_attribs.data()};
+      .pVertexAttributeDescriptions = m_attribs.data(),
+    };
 
     std::array dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
-    VkPipelineDynamicStateCreateInfo dynamicStateInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+    VkPipelineDynamicStateCreateInfo dynamicStateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
       .dynamicStateCount = static_cast<std::uint32_t>(dynamicStates.size()),
-      .pDynamicStates = dynamicStates.data()};
+      .pDynamicStates = dynamicStates.data(),
+    };
 
-    VkPipelineViewportStateCreateInfo viewportStateInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+    VkPipelineViewportStateCreateInfo viewportStateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
       .viewportCount = 1,
-      .scissorCount = 1};
+      .scissorCount = 1,
+    };
 
-    VkPipelineMultisampleStateCreateInfo multisampleInfo{.sType =
-                                                             VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+    VkPipelineMultisampleStateCreateInfo multisampleInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
       .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-      .sampleShadingEnable = VK_FALSE};
+      .sampleShadingEnable = VK_FALSE,
+    };
 
-    VkPipelineColorBlendStateCreateInfo colorBlendInfo{.sType =
-                                                           VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+    VkPipelineColorBlendStateCreateInfo colorBlendInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
       .logicOpEnable = VK_FALSE,
       .attachmentCount = 1,
-      .pAttachments = &m_colorBlendState};
+      .pAttachments = &m_colorBlendState,
+    };
 
     PHENYL_ASSERT(m_shader);
     auto& vkShader = reinterpret_cast<VulkanShader&>(m_shader->getUnderlying());
@@ -236,10 +248,8 @@ void VulkanPipeline::prepareRender (VulkanCommandBuffer2& cmd, IVulkanFrameBuffe
 VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
     // TODO: only allocate when necessary
     // TODO: incremental updates
-    PHENYL_DASSERT(m_testFramebuffer);
-    PHENYL_DASSERT(m_testFramebuffer->descriptorPool);
+    auto set = m_descriptorPools->get().makeDescriptorSet(*m_descriptorSetLayout);
 
-    auto set = m_testFramebuffer->descriptorPool->makeDescriptorSet(*m_descriptorSetLayout);
     std::vector<VkWriteDescriptorSet> writes;
     writes.reserve(m_boundUniformBuffers.size());
 
@@ -247,13 +257,15 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
     bufferDescriptors.reserve(m_boundUniformBuffers.size());
     for (const auto& [binding, bufferInfo] : m_boundUniformBuffers) {
         bufferDescriptors.push_back(bufferInfo.buffer->getBufferInfo(bufferInfo.offset, bufferInfo.size));
-        writes.push_back(VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        writes.push_back(VkWriteDescriptorSet{
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
           .dstSet = set,
           .dstBinding = binding,
           .dstArrayElement = 0,
           .descriptorCount = 1,
           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          .pBufferInfo = &bufferDescriptors.back()});
+          .pBufferInfo = &bufferDescriptors.back(),
+        });
     }
 
     std::vector<VkDescriptorImageInfo> imageDescriptors;
@@ -262,13 +274,15 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
         sampler->prepareSampler(cmd);
 
         imageDescriptors.push_back(sampler->getDescriptor());
-        writes.push_back(VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        writes.push_back(VkWriteDescriptorSet{
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
           .dstSet = set,
           .dstBinding = binding,
           .dstArrayElement = 0,
           .descriptorCount = 1,
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-          .pImageInfo = &imageDescriptors.back()});
+          .pImageInfo = &imageDescriptors.back(),
+        });
     }
 
     vkUpdateDescriptorSets(m_device, writes.size(), writes.data(), 0, nullptr);
@@ -276,9 +290,10 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
     return set;
 }
 
-VulkanPipelineBuilder::VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat,
-    TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb) :
+VulkanPipelineBuilder::VulkanPipelineBuilder (VulkanResources& resources, FrameManager& frameManager,
+    VkFormat swapChainFormat, TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb) :
     resources{resources},
+    frameManager{frameManager},
     colorFormat{swapChainFormat},
     framebuffer{framebuffer},
     windowFb{windowFb} {
@@ -289,26 +304,30 @@ VulkanPipelineBuilder::VulkanPipelineBuilder (VulkanResources& resources, VkForm
 void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
     switch (mode) {
     case graphics::BlendMode::ALPHA_BLEND:
-        blendAttachment = VkPipelineColorBlendAttachmentState{.blendEnable = VK_TRUE,
+        blendAttachment = VkPipelineColorBlendAttachmentState{
+          .blendEnable = VK_TRUE,
           .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
           .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
           .colorBlendOp = VK_BLEND_OP_ADD,
           .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
           .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
           .alphaBlendOp = VK_BLEND_OP_ADD,
-          .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-              VK_COLOR_COMPONENT_A_BIT};
+          .colorWriteMask =
+              VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+        };
         break;
     case graphics::BlendMode::ADDITIVE:
-        blendAttachment = VkPipelineColorBlendAttachmentState{.blendEnable = VK_TRUE,
+        blendAttachment = VkPipelineColorBlendAttachmentState{
+          .blendEnable = VK_TRUE,
           .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
           .dstColorBlendFactor = VK_BLEND_FACTOR_ONE,
           .colorBlendOp = VK_BLEND_OP_ADD,
           .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
           .dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
           .alphaBlendOp = VK_BLEND_OP_ADD,
-          .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-              VK_COLOR_COMPONENT_A_BIT};
+          .colorWriteMask =
+              VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+        };
         break;
     }
 }
@@ -363,9 +382,11 @@ phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (meta::TypeInd
     }
 
     auto binding = static_cast<std::uint32_t>(vertexBindings.size());
-    vertexBindings.push_back(VkVertexInputBindingDescription{.binding = binding,
+    vertexBindings.push_back(VkVertexInputBindingDescription{
+      .binding = binding,
       .stride = static_cast<std::uint32_t>(size),
-      .inputRate = vkInputRate});
+      .inputRate = vkInputRate,
+    });
     vertexBindingTypes.emplace_back(type);
 
     return graphics::BufferBinding{binding};
@@ -428,7 +449,7 @@ UniformBinding VulkanPipelineBuilder::withUniform (meta::TypeIndex type, unsigne
       .binding = location,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, // TODO
       .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS // TODO
+      .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS, // TODO
     });
     uniformTypes[UniformBinding{location}] = type;
 
@@ -442,7 +463,7 @@ SamplerBinding VulkanPipelineBuilder::withSampler (unsigned int location) {
       .binding = location,
       .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS // TODO
+      .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS, // TODO
     });
     registeredSamplers.emplace(location);
 
@@ -450,83 +471,31 @@ SamplerBinding VulkanPipelineBuilder::withSampler (unsigned int location) {
 }
 
 std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
-    // VkPipelineVertexInputStateCreateInfo vertexInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-    //     .vertexBindingDescriptionCount = static_cast<std::uint32_t>(vertexBindings.size()),
-    //     .pVertexBindingDescriptions = vertexBindings.data(),
-    //     .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(vertexAttribs.size()),
-    //     .pVertexAttributeDescriptions = vertexAttribs.data()
-    // };
-    //
-    // VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo {
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-    //     .topology = topology,
-    //     .primitiveRestartEnable = VK_FALSE
-    // };
-    //
-    // std::array dynamicStates = {
-    //     VK_DYNAMIC_STATE_VIEWPORT,
-    //     VK_DYNAMIC_STATE_SCISSOR
-    // };
-    //
-    // VkPipelineDynamicStateCreateInfo dynamicStateInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-    //     .dynamicStateCount = static_cast<std::uint32_t>(dynamicStates.size()),
-    //     .pDynamicStates = dynamicStates.data()
-    // };
-    //
-    // VkPipelineViewportStateCreateInfo viewportStateInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-    //     .viewportCount = 1,
-    //     .scissorCount = 1
-    // };
-    //
-    // VkPipelineRasterizationStateCreateInfo rasterizerInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-    //     .depthClampEnable = VK_FALSE, // TODO
-    //     .rasterizerDiscardEnable = VK_FALSE,
-    //     .polygonMode = VK_POLYGON_MODE_FILL,
-    //     .cullMode = cullMode,
-    //     .frontFace = VK_FRONT_FACE_CLOCKWISE, // TODO
-    //
-    //     .depthBiasEnable = VK_FALSE,
-    //     .lineWidth = 1.0f
-    // };
-    //
-    //
-    // VkPipelineMultisampleStateCreateInfo multisampleInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-    //     .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-    //     .sampleShadingEnable = VK_FALSE
-    // };
-
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
       .depthTestEnable = depthTest ? VK_TRUE : VK_FALSE,
       .depthWriteEnable = depthTest && depthWrite ? VK_TRUE : VK_FALSE,
       .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
       .depthBoundsTestEnable = VK_FALSE,
-      .stencilTestEnable = VK_FALSE};
+      .stencilTestEnable = VK_FALSE,
+    };
 
-    // VkPipelineColorBlendStateCreateInfo colorBlendInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-    //     .logicOpEnable = VK_FALSE,
-    //     .attachmentCount = 1,
-    //     .pAttachments = &blendAttachment
-    // };
-    //
-    // VkPipelineRenderingCreateInfo renderInfo{
-    //     .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
-    //     .colorAttachmentCount = 1,
-    //     .pColorAttachmentFormats = &colorFormat,
-    //     .depthAttachmentFormat = VK_FORMAT_D24_UNORM_S8_UINT, // TODO
-    //     .stencilAttachmentFormat = VK_FORMAT_UNDEFINED
-    // };
+    DescriptorSizes descriptorSizes{
+      .uniforms = static_cast<std::uint32_t>(uniformTypes.size()),
+      .samplers = static_cast<std::uint32_t>(registeredSamplers.size()),
+    };
+    auto poolFactory = [descriptorSizes, resources = &resources] () {
+        return VulkanDescriptorPool{*resources, descriptorSizes};
+    };
+    auto descriptorPools = std::make_unique<FramePool<VulkanDescriptorPool>>(frameManager, std::move(poolFactory),
+        [] (auto& pool) { pool.reset(); });
 
     // TODO: multiple sets
-    VkDescriptorSetLayoutCreateInfo layoutInfo{.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    VkDescriptorSetLayoutCreateInfo layoutInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
       .bindingCount = static_cast<std::uint32_t>(descriptorBindings.size()),
-      .pBindings = descriptorBindings.data()};
+      .pBindings = descriptorBindings.data(),
+    };
     auto descriptorSetLayout = resources.makeDescriptorSetLayout(layoutInfo);
     if (!descriptorSetLayout) {
         PHENYL_LOGE(LOGGER, "Failed to build pipeline");
@@ -535,9 +504,11 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
 
     VkDescriptorSetLayout dsLayout = *descriptorSetLayout;
     // TODO
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount = 1,
-      .pSetLayouts = &dsLayout};
+      .pSetLayouts = &dsLayout,
+    };
 
     auto pipelineLayout = resources.makePipelineLayout(pipelineLayoutInfo);
     if (!pipelineLayout) {
@@ -550,40 +521,12 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
     auto& vkShader = reinterpret_cast<VulkanShader&>(shader->getUnderlying());
     auto shaderStages = vkShader.getStageInfo();
 
-    // VkGraphicsPipelineCreateInfo pipelineInfo{
-    //     .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-    //     .pNext = &renderInfo,
-    //     .stageCount = static_cast<std::uint32_t>(shaderStages.size()),
-    //     .pStages = shaderStages.data(),
-    //
-    //     .pVertexInputState = &vertexInfo,
-    //     .pInputAssemblyState = &inputAssemblyInfo,
-    //     .pViewportState = &viewportStateInfo,
-    //     .pRasterizationState = &rasterizerInfo,
-    //     .pMultisampleState = &multisampleInfo,
-    //     .pDepthStencilState = &depthStencilInfo,
-    //     .pColorBlendState = &colorBlendInfo,
-    //     .pDynamicState = &dynamicStateInfo,
-    //     .layout = *pipelineLayout,
-    // };
-
-    // auto pipeline = resources.makePipeline(pipelineInfo);
-    // if (!pipeline) {
-    //     PHENYL_LOGE(LOGGER, "Failed to build pipeline");
-    //     return nullptr;
-    // }
-
-    // PHENYL_LOGD(LOGGER, "Constructed pipeline");
-    // return std::make_unique<VulkanPipeline>(resources.getDevice(), std::move(pipeline),
-    // std::move(pipelineLayout), std::move(descriptorSetLayout), framebuffer, windowFb,
-    // std::move(vertexBindingTypes), std::move(uniformTypes), std::move(registeredSamplers));
-
     auto pipelineFactory =
         std::make_unique<VulkanPipelineFactory>(resources, std::move(shader), std::move(pipelineLayout),
             std::move(vertexBindings), std::move(vertexAttribs), topology, cullMode, blendAttachment, depthStencilInfo);
     return std::make_unique<VulkanPipeline>(resources.getDevice(), std::move(pipelineFactory),
-        std::move(descriptorSetLayout), framebuffer, windowFb, std::move(vertexBindingTypes), std::move(uniformTypes),
-        std::move(registeredSamplers));
+        std::move(descriptorSetLayout), std::move(descriptorPools), framebuffer, windowFb,
+        std::move(vertexBindingTypes), std::move(uniformTypes), std::move(registeredSamplers));
 }
 
 static VkVertexInputAttributeDescription MakeAttrib (phenyl::graphics::BufferBinding binding, unsigned int location,

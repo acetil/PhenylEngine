@@ -47,17 +47,6 @@ std::optional<std::vector<std::uint32_t>> VulkanShaderCompiler::compile (graphic
 
     auto* resources = GetDefaultResources();
 
-    // std::string str;
-    // glslang::TShader::ForbidIncluder includer{};
-    // if (!shader.preprocess(resources, DEFAULT_CLIENT_VERSION, ENoProfile, false, true,
-    // messageFilter, &str, includer)) {
-    //     PHENYL_LOGW(LOGGER, "Shader preprocess error");
-    //     if (shader)
-    //     PHENYL_LOGW(LOGGER, "glslang info log: {}", shader.getInfoLog());
-    //     PHENYL_LOGW(LOGGER, "glslang debug log: {}", shader.getInfoDebugLog());
-    //     return std::nullopt;
-    // }
-
     if (!shader.parse(resources, DEFAULT_CLIENT_VERSION, true, messageFilter)) {
         PHENYL_LOGW(LOGGER, "Shader parse error in {} shader", shaderType);
         PHENYL_LOGW(LOGGER, "glslang info log: {}", shader.getInfoLog());
@@ -65,14 +54,6 @@ std::optional<std::vector<std::uint32_t>> VulkanShaderCompiler::compile (graphic
 
         return std::nullopt;
     }
-
-    //
-    // if (shader.getInfoLog()) {
-    //     PHENYL_LOGD(LOGGER, "glslang info log: {}", shader.getInfoLog());
-    // }
-    // if (shader.getInfoDebugLog()) {
-    //     PHENYL_LOGD(LOGGER, "glslang debug log: {}", shader.getInfoDebugLog());
-    // }
 
     glslang::TProgram program;
     program.addShader(&shader);
@@ -93,11 +74,13 @@ std::optional<std::vector<std::uint32_t>> VulkanShaderCompiler::compile (graphic
         return std::nullopt;
     }
 
-    glslang::SpvOptions spvOptions{.generateDebugInfo = true,
+    glslang::SpvOptions spvOptions{
+      .generateDebugInfo = true,
       .stripDebugInfo = false,
       .disableOptimizer = true,
       .validate = true,
-      .emitNonSemanticShaderDebugInfo = true};
+      .emitNonSemanticShaderDebugInfo = true,
+    };
 
     spv::SpvBuildLogger spvLogger;
     std::vector<std::uint32_t> spirvBytecode;

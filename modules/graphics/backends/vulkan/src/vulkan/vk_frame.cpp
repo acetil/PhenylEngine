@@ -12,7 +12,6 @@ FrameManager::FrameManager (VulkanDevice& device, VulkanResources& resources, st
 
     for (auto i = 0; i < maxInFlight; i++) {
         m_commandPools.emplace_back(resources);
-        m_descriptorPools.emplace_back(device.device());
         m_syncs.push_back(FrameSync{
           .imageAvailable = VulkanSemaphore{resources},
           .inFlight = VulkanFence{resources, true},
@@ -21,8 +20,7 @@ FrameManager::FrameManager (VulkanDevice& device, VulkanResources& resources, st
 }
 
 bool FrameManager::onNewFrame (VulkanWindowFrameBuffer& windowFrameBuffer) {
-    m_frameCount++;
-    auto& sync = getFrameSync();
+    auto& sync = m_syncs[(m_frameCount + 1) % m_maxInFlight];
 
     PHENYL_ASSERT(sync.inFlight.wait(1000000000));
 
@@ -31,11 +29,25 @@ bool FrameManager::onNewFrame (VulkanWindowFrameBuffer& windowFrameBuffer) {
         return false;
     }
 
+    m_frameCount++;
+    for (auto* i : m_listeners) {
+        i->onFrameUpdate(flightNum());
+    }
     // frameImage = *frameImageOpt;
     sync.inFlight.reset();
 
     getCommandPool().reset();
-    getDescriptorPool().reset();
 
     return true;
+}
+
+void FrameManager::addFrameListener (IFrameListener* listener) {
+    PHENYL_DASSERT(listener);
+    m_listeners.emplace(listener);
+    listener->onMaxFramesUpdate(m_maxInFlight);
+    listener->onFrameUpdate(flightNum());
+}
+
+void FrameManager::removeFrameListener (IFrameListener* listener) {
+    m_listeners.erase(listener);
 }

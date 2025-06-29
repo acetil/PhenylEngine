@@ -93,7 +93,12 @@ void ShaderReflection::addUniformBlocks (const Compiler& compiler, const ShaderR
             memberOffsets.emplace(memberName, memberOff);
         }
 
-        UniformBlock block{.size = size, .set = set, .location = binding, .memberOffsets = std::move(memberOffsets)};
+        UniformBlock block{
+          .size = size,
+          .set = set,
+          .location = binding,
+          .memberOffsets = std::move(memberOffsets),
+        };
 
         if (auto it = m_uniformBlocks.find(i.name); it == m_uniformBlocks.end()) {
             PHENYL_LOGD(PHENYL_LOGGER, "Adding uniform block \"{}\"", i.name);
@@ -111,7 +116,10 @@ void ShaderReflection::addSamplers (const Compiler& compiler, const ShaderResour
         PHENYL_LOGD(PHENYL_LOGGER, "Found sampler: {}, binding: {}, set: {}", i.name, binding, set);
         // TODO: types
 
-        Sampler sampler{.set = set, .location = binding};
+        Sampler sampler{
+          .set = set,
+          .location = binding,
+        };
 
         if (auto it = m_samplers.find(i.name); it == m_samplers.end()) {
             m_samplers.emplace(i.name, sampler);

@@ -85,7 +85,8 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageAspectFlags 
     PHENYL_TRACE(LOGGER, "Performing image transition: {} -> {}", oldLayout, newLayout);
     endRendering();
 
-    VkImageMemoryBarrier2 imageBarrier{.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+    VkImageMemoryBarrier2 imageBarrier{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
       .srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
       .srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT,
       .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
@@ -93,9 +94,13 @@ void VulkanCommandBuffer2::doImageTransition (VkImage image, VkImageAspectFlags 
       .oldLayout = oldLayout,
       .newLayout = newLayout,
       .image = image,
-      .subresourceRange = VkImageSubresourceRange{.aspectMask = aspect, // TODO
-        .levelCount = VK_REMAINING_MIP_LEVELS,
-        .layerCount = VK_REMAINING_ARRAY_LAYERS}};
+      .subresourceRange =
+          VkImageSubresourceRange{
+            .aspectMask = aspect, // TODO
+            .levelCount = VK_REMAINING_MIP_LEVELS,
+            .layerCount = VK_REMAINING_ARRAY_LAYERS,
+          },
+    };
 
     if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
         imageBarrier.srcStageMask = 0;

@@ -46,7 +46,7 @@ VulkanSwapChain::VulkanSwapChain (VulkanResources& resources, VkSurfaceKHR surfa
       .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
       .presentMode = presentMode,
       .clipped = VK_TRUE,
-      .oldSwapchain = VK_NULL_HANDLE // TODO
+      .oldSwapchain = VK_NULL_HANDLE, // TODO
     };
 
     VkSwapchainKHR swapchainKhr;
@@ -68,12 +68,14 @@ VulkanSwapChain::~VulkanSwapChain () {
 }
 
 VkViewport VulkanSwapChain::viewport () const noexcept {
-    return VkViewport{.x = 0,
+    return VkViewport{
+      .x = 0,
       .y = 0,
       .width = static_cast<float>(extent().width),
       .height = static_cast<float>(extent().height),
       .minDepth = 0.0f,
-      .maxDepth = 1.0f};
+      .maxDepth = 1.0f,
+    };
 }
 
 VkRect2D VulkanSwapChain::scissor () const noexcept {
@@ -112,12 +114,14 @@ const VulkanSemaphore* VulkanSwapChain::imageSemaphore () const {
 bool VulkanSwapChain::present (VkQueue queue) {
     VkSemaphore sem = m_semaphores.at(m_currIndex).get();
 
-    VkPresentInfoKHR presentInfo{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+    VkPresentInfoKHR presentInfo{
+      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &sem,
       .swapchainCount = 1,
       .pSwapchains = &m_swapChain,
-      .pImageIndices = &m_currIndex};
+      .pImageIndices = &m_currIndex,
+    };
 
     auto result = vkQueuePresentKHR(queue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
@@ -134,23 +138,29 @@ void VulkanSwapChain::createImages (VulkanResources& resources) {
 
     // TODO: abstract away into class
     for (const auto& image : m_images) {
-        VkComponentMapping components{.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+        VkComponentMapping components{
+          .r = VK_COMPONENT_SWIZZLE_IDENTITY,
           .g = VK_COMPONENT_SWIZZLE_IDENTITY,
           .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-          .a = VK_COMPONENT_SWIZZLE_IDENTITY};
+          .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+        };
 
-        VkImageSubresourceRange subresourceRange{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        VkImageSubresourceRange subresourceRange{
+          .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
           .baseMipLevel = 0,
           .levelCount = 1,
           .baseArrayLayer = 0,
-          .layerCount = 1};
+          .layerCount = 1,
+        };
 
-        VkImageViewCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        VkImageViewCreateInfo createInfo{
+          .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
           .image = image,
           .viewType = VK_IMAGE_VIEW_TYPE_2D,
           .format = m_format,
           .components = components,
-          .subresourceRange = subresourceRange};
+          .subresourceRange = subresourceRange,
+        };
 
         VkImageView imageView;
         auto result = vkCreateImageView(m_device, &createInfo, nullptr, &imageView);

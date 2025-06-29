@@ -16,6 +16,9 @@ VulkanResources::VulkanResources (VkInstance instance, VulkanDevice& device, std
     m_descriptorSetLayoutQueue{[&] (VkDescriptorSetLayout layout) {
         vkDestroyDescriptorSetLayout(device.device(), layout, nullptr);
     }},
+    m_descriptorPoolQueue{[&] (VkDescriptorPool pool) {
+        vkDestroyDescriptorPool(device.device(), pool, nullptr);
+    }},
     m_pipelineLayoutQueue{[&] (VkPipelineLayout layout) {
         vkDestroyPipelineLayout(device.device(), layout, nullptr);
     }},
@@ -144,6 +147,20 @@ VulkanResource<VkDescriptorSetLayout> VulkanResources::makeDescriptorSetLayout (
             }};
 }
 
+VulkanResource<VkDescriptorPool> VulkanResources::makeDescriptorPool (const VkDescriptorPoolCreateInfo& createInfo) {
+    VkDescriptorPool descriptorPool;
+    if (auto result = vkCreateDescriptorPool(m_device.device(), &createInfo, nullptr, &descriptorPool);
+        result != VK_SUCCESS) {
+        PHENYL_LOGE(LOGGER, "Failed to create VkDescriptorPool: {}", result);
+        return {};
+    }
+    PHENYL_DASSERT(descriptorPool);
+
+    return {descriptorPool, [&] (VkDescriptorPool&& pool) {
+                m_descriptorPoolQueue.queueDestruction(pool, getDestructionFrame());
+            }};
+}
+
 VulkanResource<VkPipelineLayout> VulkanResources::makePipelineLayout (const VkPipelineLayoutCreateInfo& layoutInfo) {
     VkPipelineLayout pipelineLayout;
     if (auto result = vkCreatePipelineLayout(m_device.device(), &layoutInfo, nullptr, &pipelineLayout);
@@ -232,18 +249,20 @@ VulkanResource<VkFence> VulkanResources::makeFence (const VkFenceCreateInfo& cre
 void VulkanResources::onFrame (std::uint64_t frameNum) {
     m_bufferQueue.onFrame(frameNum);
 
-    m_samplerQueue.onFrame(frameNum);
-    m_imageViewQueue.onFrame(frameNum);
     m_imageQueue.onFrame(frameNum);
+    m_imageViewQueue.onFrame(frameNum);
+    m_samplerQueue.onFrame(frameNum);
 
-    m_pipelineQueue.onFrame(frameNum);
-    m_pipelineLayoutQueue.onFrame(frameNum);
     m_descriptorSetLayoutQueue.onFrame(frameNum);
+    m_descriptorPoolQueue.onFrame(frameNum);
+    m_pipelineLayoutQueue.onFrame(frameNum);
+    m_pipelineQueue.onFrame(frameNum);
 
     m_semaphoreQueue.onFrame(frameNum);
     m_fenceQueue.onFrame(frameNum);
 
     m_commandPoolQueue.onFrame(frameNum);
+    m_commandBufferQueue.onFrame(frameNum);
 
     this->m_frameNum = frameNum;
 }

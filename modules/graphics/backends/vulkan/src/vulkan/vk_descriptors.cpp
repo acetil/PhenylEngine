@@ -2,25 +2,23 @@
 
 using namespace phenyl::vulkan;
 
-VulkanDescriptorPool::VulkanDescriptorPool (VkDevice device, std::size_t poolUniformSize) :
-    m_device{device},
-    m_poolCapacity{poolUniformSize} {}
-
-VulkanDescriptorPool::~VulkanDescriptorPool () {
-    for (auto i : m_pools) {
-        vkDestroyDescriptorPool(m_device, i, nullptr);
-    }
-}
+VulkanDescriptorPool::VulkanDescriptorPool (VulkanResources& resources, DescriptorSizes sizes,
+    std::size_t poolCapacity) :
+    m_resources{resources},
+    m_sizes{sizes},
+    m_poolCapacity{poolCapacity} {}
 
 VkDescriptorSet VulkanDescriptorPool::makeDescriptorSet (VkDescriptorSetLayout layout) {
     guaranteePool();
 
-    VkDescriptorSetAllocateInfo allocInfo{.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = m_pools.back(),
+    VkDescriptorSetAllocateInfo allocInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = *m_pools.back(),
       .descriptorSetCount = 1,
-      .pSetLayouts = &layout};
+      .pSetLayouts = &layout,
+    };
     VkDescriptorSet set;
-    if (auto result = vkAllocateDescriptorSets(m_device, &allocInfo, &set); result != VK_SUCCESS) {
+    if (auto result = vkAllocateDescriptorSets(m_resources.getDevice(), &allocInfo, &set); result != VK_SUCCESS) {
         PHENYL_ABORT("Failed to allocate VkDescriptorSet: {}", result);
     }
     PHENYL_DASSERT(set);
@@ -30,8 +28,8 @@ VkDescriptorSet VulkanDescriptorPool::makeDescriptorSet (VkDescriptorSetLayout l
 }
 
 void VulkanDescriptorPool::reset () {
-    for (auto i : m_pools) {
-        vkResetDescriptorPool(m_device, i, 0);
+    for (const auto& i : m_pools) {
+        vkResetDescriptorPool(m_resources.getDevice(), *i, 0);
     }
 
     m_numAllocated = 0;
@@ -42,29 +40,20 @@ void VulkanDescriptorPool::guaranteePool () {
         return;
     }
 
-    // TODO: more pools
-    VkDescriptorPoolSize uniformPool{
-      .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = static_cast<std::uint32_t>(m_poolCapacity) * 8 // TODO
-    };
-
-    VkDescriptorPoolSize samplerPool{
-      .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      .descriptorCount = static_cast<std::uint32_t>(m_poolCapacity) * 8 // TODO
-    };
-
-    std::array poolSizes{uniformPool, samplerPool};
+    std::vector<VkDescriptorPoolSize> poolSizes;
+    if (m_sizes.uniforms > 0) {
+        poolSizes.emplace_back(VkDescriptorPoolSize{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .descriptorCount = m_sizes.uniforms * static_cast<std::uint32_t>(m_poolCapacity)});
+    }
+    if (m_sizes.samplers > 0) {
+        poolSizes.emplace_back(VkDescriptorPoolSize{.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .descriptorCount = m_sizes.samplers * static_cast<std::uint32_t>(m_poolCapacity)});
+    }
 
     VkDescriptorPoolCreateInfo poolInfo{.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .maxSets = static_cast<std::uint32_t>(m_poolCapacity),
       .poolSizeCount = static_cast<std::uint32_t>(poolSizes.size()),
       .pPoolSizes = poolSizes.data()};
-
-    VkDescriptorPool pool;
-    if (auto result = vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &pool); result != VK_SUCCESS) {
-        PHENYL_ABORT("Error allocating VkDescriptorPool: {}", result);
-    }
-    PHENYL_DASSERT(pool);
-
-    m_pools.emplace_back(pool);
+    m_pools.emplace_back(m_resources.makeDescriptorPool(poolInfo));
+    PHENYL_ASSERT(m_pools.back());
 }

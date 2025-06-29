@@ -120,7 +120,6 @@ void VulkanRenderer::render () {
     auto commandBuffer = m_frameManager->getCommandPool().getBuffer();
 
     m_framebuffer.renderingRecorder = &commandBuffer;
-    m_framebuffer.descriptorPool = &m_frameManager->getDescriptorPool();
 
     layerRender();
 
@@ -179,8 +178,8 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
 }
 
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*m_resources, m_swapChain->format(), &m_framebuffer,
-        m_windowFrameBuffer.get())};
+    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*m_resources, *m_frameManager, m_swapChain->format(),
+        &m_framebuffer, m_windowFrameBuffer.get())};
 }
 
 void VulkanRenderer::loadDefaultShaders () {

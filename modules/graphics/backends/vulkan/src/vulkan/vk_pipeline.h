@@ -4,6 +4,7 @@
 #include "texture/vk_image.h"
 #include "vk_command_buffer.h"
 #include "vk_descriptors.h"
+#include "vk_frame.h"
 #include "vk_framebuffer.h"
 #include "vk_uniform_buffer.h"
 
@@ -12,7 +13,6 @@
 namespace phenyl::vulkan {
 struct TestFramebuffer {
     VulkanCommandBuffer2* renderingRecorder;
-    VulkanDescriptorPool* descriptorPool;
 };
 
 class IVulkanStorageBuffer;
@@ -53,7 +53,8 @@ class VulkanPipeline : public graphics::IPipeline {
 private:
 public:
     VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory,
-        VulkanResource<VkDescriptorSetLayout> descriptorSetLayout, TestFramebuffer* framebuffer,
+        VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
+        std::unique_ptr<FramePool<VulkanDescriptorPool>> descriptorPools, TestFramebuffer* framebuffer,
         VulkanWindowFrameBuffer* windowFb, std::vector<meta::TypeIndex> vertexBindingTypes,
         std::unordered_map<graphics::UniformBinding, meta::TypeIndex> uniformTypes,
         std::unordered_set<graphics::SamplerBinding> validSamplers);
@@ -71,6 +72,7 @@ public:
     void renderInstanced (graphics::IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
         std::size_t offset) override;
 
+private:
     struct UniformBufferBinding {
         const VulkanUniformBuffer* buffer;
         std::size_t offset;
@@ -84,6 +86,8 @@ public:
     std::unique_ptr<VulkanPipelineFactory> m_pipelineFactory;
 
     VulkanResource<VkDescriptorSetLayout> m_descriptorSetLayout;
+    std::unique_ptr<FramePool<VulkanDescriptorPool>> m_descriptorPools;
+
     std::unordered_map<graphics::UniformBinding, meta::TypeIndex> m_uniformTypes;
     std::unordered_map<graphics::UniformBinding, UniformBufferBinding> m_boundUniformBuffers;
     std::unordered_set<graphics::SamplerBinding> m_validSamplerBindings;
@@ -104,8 +108,8 @@ public:
 
 class VulkanPipelineBuilder : public graphics::IPipelineBuilder {
 public:
-    VulkanPipelineBuilder (VulkanResources& resources, VkFormat swapChainFormat, TestFramebuffer* framebuffer,
-        VulkanWindowFrameBuffer* windowFb);
+    VulkanPipelineBuilder (VulkanResources& resources, FrameManager& frameManager, VkFormat swapChainFormat,
+        TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb);
 
     void withBlendMode (graphics::BlendMode mode) override;
     void withCullMode (graphics::CullMode mode) override;
@@ -126,6 +130,7 @@ public:
 
 private:
     VulkanResources& resources;
+    FrameManager& frameManager;
 
     VkFormat colorFormat;
 
