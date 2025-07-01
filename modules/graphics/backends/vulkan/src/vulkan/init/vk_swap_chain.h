@@ -24,7 +24,7 @@ struct SwapChainImage {
 class VulkanSwapChain {
 public:
     VulkanSwapChain (VulkanResources& resources, VkSurfaceKHR surface, const VulkanSwapChainDetails& details,
-        const VulkanQueueFamilies& queueFamilies);
+        const VulkanQueueFamilies& queueFamilies, VulkanSwapChain* old);
     ~VulkanSwapChain ();
 
     VkFormat format () const noexcept {

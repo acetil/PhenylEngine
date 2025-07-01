@@ -58,12 +58,13 @@ void EntityRenderLayer::init (Renderer& renderer) {
     m_pipeline.bindBuffer(vertexBinding, m_vertexBuffer);
 }
 
-void EntityRenderLayer::render () {
+void EntityRenderLayer::render (Renderer& renderer) {
+    auto cmdList = renderer.getCommandList();
     m_pipeline.bindUniform(m_uniformBinding, m_uniformBuffer);
 
     for (const auto& [off, size, sampler] : m_samplerRenders) {
         m_pipeline.bindSampler(m_samplerBinding, *sampler);
-        m_pipeline.render(size, off);
+        m_pipeline.render(cmdList, size, off);
     }
 
     m_vertexBuffer.clear();

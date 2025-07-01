@@ -12,7 +12,7 @@ public:
 
     [[nodiscard]] std::string_view getName () const override;
     void init (Renderer& renderer) override;
-    void render () override;
+    void render (Renderer& renderer) override;
 
     void setScreenSize (glm::vec2 screenSize);
 

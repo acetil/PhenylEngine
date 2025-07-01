@@ -13,7 +13,7 @@ public:
 
     [[nodiscard]] std::string_view getName () const override;
     void init (Renderer& renderer) override;
-    void render () override;
+    void render (Renderer& renderer) override;
 
     void bufferData (const Camera2D& camera, const ParticleManager2D& manager);
 

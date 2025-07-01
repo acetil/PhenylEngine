@@ -36,7 +36,7 @@ public:
 
     void init (Renderer& renderer) override;
 
-    void render () override;
+    void render (Renderer& renderer) override;
 
     void pushEntity (const core::GlobalTransform2D& transform, const Sprite2D& sprite);
     void bufferEntities (const Camera2D& camera);

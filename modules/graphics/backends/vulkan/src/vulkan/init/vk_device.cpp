@@ -24,15 +24,18 @@ VulkanDevice::VulkanDevice (VkInstance instance, VkSurfaceKHR surface) {
     PHENYL_LOGI(LOGGER, "Created logical device with 2 queues");
 }
 
-std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VulkanResources& resources, VkSurfaceKHR surface) {
+std::unique_ptr<VulkanSwapChain> VulkanDevice::makeSwapChain (VulkanResources& resources, VkSurfaceKHR surface,
+    VulkanSwapChain* oldSwapChain) {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface, &m_swapChainDetails.capabilities);
-    return std::make_unique<VulkanSwapChain>(resources, surface, m_swapChainDetails, m_queueFamilies);
+    return std::make_unique<VulkanSwapChain>(resources, surface, m_swapChainDetails, m_queueFamilies, oldSwapChain);
 }
 
 VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
-    VkCommandPoolCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+    VkCommandPoolCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .flags = usage,
-      .queueFamilyIndex = m_queueFamilies.graphicsFamily};
+      .queueFamilyIndex = m_queueFamilies.graphicsFamily,
+    };
     VkCommandPool pool = nullptr;
     auto result = vkCreateCommandPool(m_logicalDevice, &createInfo, nullptr, &pool);
     PHENYL_LOGE_IF(result != VK_SUCCESS, LOGGER, "Failed to create VkCommandPool: {}", result);
@@ -41,10 +44,12 @@ VkCommandPool VulkanDevice::makeCommandPool (VkCommandPoolCreateFlags usage) {
 }
 
 VmaAllocator VulkanDevice::makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion) {
-    VmaAllocatorCreateInfo allocatorInfo{.physicalDevice = m_physicalDevice,
+    VmaAllocatorCreateInfo allocatorInfo{
+      .physicalDevice = m_physicalDevice,
       .device = m_logicalDevice,
       .instance = instance,
-      .vulkanApiVersion = vkVersion};
+      .vulkanApiVersion = vkVersion,
+    };
 
     VmaAllocator allocator;
     auto result = vmaCreateAllocator(&allocatorInfo, &allocator);
@@ -109,10 +114,12 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
     std::unordered_set familyIndexes{m_queueFamilies.graphicsFamily, m_queueFamilies.presentFanily};
     float priority = 1.0f;
     auto queueCreateInfos = familyIndexes | std::views::transform([&] (auto i) {
-        return VkDeviceQueueCreateInfo{.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        return VkDeviceQueueCreateInfo{
+          .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
           .queueFamilyIndex = i,
           .queueCount = 1,
-          .pQueuePriorities = &priority};
+          .pQueuePriorities = &priority,
+        };
     }) | std::ranges::to<std::vector>();
 
     VkPhysicalDeviceVulkan13Features vulkan13Features{
@@ -124,7 +131,10 @@ VkDevice VulkanDevice::createLogicalDevice (const std::vector<const char*>& devi
     VkPhysicalDeviceFeatures2 deviceFeatures2{
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
       .pNext = &vulkan13Features,
-      .features = {.samplerAnisotropy = true},
+      .features =
+          {
+            .samplerAnisotropy = true,
+          },
     };
 
     VkDeviceCreateInfo createInfo{
@@ -183,7 +193,10 @@ std::optional<VulkanQueueFamilies> VulkanDevice::GetDeviceFamilies (VkPhysicalDe
     }
 
     if (queueFamilyCount == REQUIRED_NUM_FAMILIES) {
-        return VulkanQueueFamilies{.graphicsFamily = *graphicsFamily, .presentFanily = *presentFamily};
+        return VulkanQueueFamilies{
+          .graphicsFamily = *graphicsFamily,
+          .presentFanily = *presentFamily,
+        };
     }
     return std::nullopt;
 }
@@ -220,18 +233,25 @@ std::optional<VulkanSwapChainDetails> VulkanDevice::GetDeviceSwapChainDetails (V
         return std::nullopt;
     }
 
-    return VulkanSwapChainDetails{.capabilities = capabilities,
+    return VulkanSwapChainDetails{
+      .capabilities = capabilities,
       .formats = std::move(formats),
-      .presentModes = std::move(presentModes)};
+      .presentModes = std::move(presentModes),
+    };
 }
 
 bool VulkanDevice::CheckDeviceFeatures (VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    VkPhysicalDeviceVulkan13Features vk13Features{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    VkPhysicalDeviceVulkan13Features vk13Features{
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+    };
 
-    VkPhysicalDeviceFeatures2 features2{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, .pNext = &vk13Features};
+    VkPhysicalDeviceFeatures2 features2{
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+      .pNext = &vk13Features,
+    };
     vkGetPhysicalDeviceFeatures2(device, &features2);
 
     const auto& features = features2.features;
@@ -263,7 +283,9 @@ DeviceProperties VulkanDevice::GetDeviceProperties (VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    return {.deviceName = deviceProperties.deviceName,
+    return {
+      .deviceName = deviceProperties.deviceName,
       .maxAnisotropy = deviceProperties.limits.maxSamplerAnisotropy,
-      .minUniformAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment};
+      .minUniformAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment,
+    };
 }

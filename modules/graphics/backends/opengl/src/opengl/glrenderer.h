@@ -10,6 +10,8 @@
 #include <unordered_map>
 
 namespace phenyl::opengl {
+class GLNoopCommandList : public graphics::ICommandList {};
+
 class GLRenderer : public graphics::Renderer, public graphics::IViewportUpdateHandler {
 public:
     static std::unique_ptr<GLRenderer> Make (const graphics::GraphicsProperties& properties);
@@ -43,6 +45,7 @@ protected:
         const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
     std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties,
         std::uint32_t width, std::uint32_t height) override;
+    graphics::ICommandList* makeCommandList () override;
 
 private:
     std::unique_ptr<glfw::GLFWViewport> m_viewport;
@@ -50,6 +53,7 @@ private:
     glm::vec4 m_clearColor;
 
     GlShaderManager m_shaderManager;
+    GLNoopCommandList m_noopCommandList{};
 
     core::Asset<graphics::Shader> m_boxShader;
     core::Asset<graphics::Shader> m_debugShader;

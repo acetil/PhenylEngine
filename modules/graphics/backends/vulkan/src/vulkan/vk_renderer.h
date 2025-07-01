@@ -8,6 +8,7 @@
 #include "memory/vk_transfer_manager.h"
 #include "shader/vk_shader.h"
 #include "vk_command_buffer.h"
+#include "vk_command_list.h"
 #include "vk_frame.h"
 #include "vk_pipeline.h"
 #include "vk_sync.h"
@@ -43,6 +44,7 @@ protected:
         const graphics::TextureProperties& properties, std::uint32_t width, std::uint32_t height) override;
     std::unique_ptr<graphics::IFrameBuffer> makeRendererFrameBuffer (const graphics::FrameBufferProperties& properties,
         std::uint32_t width, std::uint32_t height) override;
+    graphics::ICommandList* makeCommandList () override;
 
 private:
     static std::vector<const char*> GatherValidationLayers ();
@@ -67,7 +69,7 @@ private:
     std::unique_ptr<VulkanShaderManager> m_shaderManager;
     std::unique_ptr<FrameManager> m_frameManager;
     std::unique_ptr<TransferManager> m_transferManager;
-    TestFramebuffer m_framebuffer{};
+    std::optional<CommandList> m_commandList;
 
     VkInstance createVkInstance (const graphics::GraphicsProperties& properties);
     void recreateSwapChain ();

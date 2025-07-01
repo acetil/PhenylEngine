@@ -245,5 +245,9 @@ void CombinedSampler::prepareSampler (VulkanCommandBuffer2& cmd) {
 }
 
 VkDescriptorImageInfo CombinedSampler::getDescriptor () const noexcept {
-    return {.sampler = m_sampler.get(), .imageView = m_imageView.get(), .imageLayout = image().layout()};
+    return {
+      .sampler = m_sampler.get(),
+      .imageView = m_imageView.get(),
+      .imageLayout = image().layout(),
+    };
 }

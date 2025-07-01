@@ -32,22 +32,20 @@ static VkIndexType GetIndexType (ShaderIndexType type) {
 
 VulkanPipeline::VulkanPipeline (VkDevice device, std::unique_ptr<VulkanPipelineFactory> pipelineFactory,
     VulkanResource<VkDescriptorSetLayout> descriptorSetLayout,
-    std::unique_ptr<FramePool<VulkanDescriptorPool>> descriptorPools, TestFramebuffer* framebuffer,
-    VulkanWindowFrameBuffer* windowFb, std::vector<meta::TypeIndex> vertexBindingTypes,
+    std::unique_ptr<FramePool<VulkanDescriptorPool>> descriptorPools, VulkanWindowFrameBuffer* windowFb,
+    std::vector<meta::TypeIndex> vertexBindingTypes,
     std::unordered_map<graphics::UniformBinding, meta::TypeIndex> uniformTypes,
     std::unordered_set<graphics::SamplerBinding> validSamplers) :
     m_device{device},
     m_pipelineFactory{std::move(pipelineFactory)},
     m_descriptorSetLayout{std::move(descriptorSetLayout)},
     m_descriptorPools{std::move(descriptorPools)},
-    m_testFramebuffer{framebuffer},
     m_windowFrameBuffer{windowFb},
     m_vertexBindingTypes{std::move(vertexBindingTypes)},
     m_boundVertexBuffers(this->m_vertexBindingTypes.size()),
     m_vertexBufferOffsets(this->m_vertexBindingTypes.size()),
     m_uniformTypes{std::move(uniformTypes)},
     m_validSamplerBindings{std::move(validSamplers)} {
-    PHENYL_ASSERT(m_testFramebuffer);
     PHENYL_DASSERT(windowFb);
 }
 
@@ -99,27 +97,28 @@ void VulkanPipeline::unbindIndexBuffer () {
     m_indexBufferType = VK_INDEX_TYPE_NONE_KHR;
 }
 
-void VulkanPipeline::render (IFrameBuffer* fb, std::size_t vertices, std::size_t offset) {
-    renderInstanced(fb, 1, vertices, offset);
+void VulkanPipeline::render (graphics::ICommandList& list, IFrameBuffer* fb, std::size_t vertices, std::size_t offset) {
+    renderInstanced(list, fb, 1, vertices, offset);
 }
 
-void VulkanPipeline::renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
-    std::size_t offset) {
-    PHENYL_ASSERT(m_testFramebuffer->renderingRecorder);
-    auto& cmd = *m_testFramebuffer->renderingRecorder;
+void VulkanPipeline::renderInstanced (graphics::ICommandList& list, IFrameBuffer* fb, std::size_t numInstances,
+    std::size_t vertices, std::size_t offset) {
+    // PHENYL_ASSERT(m_testFramebuffer->renderingRecorder);
+    // auto& cmd = *m_testFramebuffer->renderingRecorder;
+    auto& cmdList = static_cast<CommandList&>(list);
 
     if (fb) {
-        prepareRender(cmd, reinterpret_cast<VulkanFrameBuffer&>(*fb));
+        prepareRender(cmdList.cmd, reinterpret_cast<VulkanFrameBuffer&>(*fb));
     } else {
-        prepareRender(cmd, *m_windowFrameBuffer);
+        prepareRender(cmdList.cmd, *m_windowFrameBuffer);
     }
 
     if (m_indexBuffer) {
         PHENYL_ASSERT(m_indexBuffer->getBuffer());
-        cmd.bindIndexBuffer(m_indexBuffer->getBuffer(), m_indexBufferType);
-        cmd.drawIndexed(numInstances, vertices, offset);
+        cmdList.cmd.bindIndexBuffer(m_indexBuffer->getBuffer(), m_indexBufferType);
+        cmdList.cmd.drawIndexed(numInstances, vertices, offset);
     } else {
-        cmd.draw(numInstances, vertices, offset);
+        cmdList.cmd.draw(numInstances, vertices, offset);
     }
 }
 
@@ -291,20 +290,17 @@ VkDescriptorSet VulkanPipeline::getDescriptorSet (VulkanCommandBuffer2& cmd) {
 }
 
 VulkanPipelineBuilder::VulkanPipelineBuilder (VulkanResources& resources, FrameManager& frameManager,
-    VkFormat swapChainFormat, TestFramebuffer* framebuffer, VulkanWindowFrameBuffer* windowFb) :
-    resources{resources},
-    frameManager{frameManager},
-    colorFormat{swapChainFormat},
-    framebuffer{framebuffer},
-    windowFb{windowFb} {
-    PHENYL_DASSERT(framebuffer);
+    VulkanWindowFrameBuffer* windowFb) :
+    m_resources{resources},
+    m_frameManager{frameManager},
+    m_windowFb{windowFb} {
     PHENYL_DASSERT(windowFb);
 }
 
 void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
     switch (mode) {
     case graphics::BlendMode::ALPHA_BLEND:
-        blendAttachment = VkPipelineColorBlendAttachmentState{
+        m_blendAttachment = VkPipelineColorBlendAttachmentState{
           .blendEnable = VK_TRUE,
           .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
           .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -317,7 +313,7 @@ void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
         };
         break;
     case graphics::BlendMode::ADDITIVE:
-        blendAttachment = VkPipelineColorBlendAttachmentState{
+        m_blendAttachment = VkPipelineColorBlendAttachmentState{
           .blendEnable = VK_TRUE,
           .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
           .dstColorBlendFactor = VK_BLEND_FACTOR_ONE,
@@ -335,36 +331,36 @@ void VulkanPipelineBuilder::withBlendMode (graphics::BlendMode mode) {
 void VulkanPipelineBuilder::withCullMode (CullMode mode) {
     switch (mode) {
     case graphics::CullMode::FRONT_FACE:
-        cullMode = VK_CULL_MODE_FRONT_BIT;
+        m_cullMode = VK_CULL_MODE_FRONT_BIT;
         break;
     case graphics::CullMode::BACK_FACE:
-        cullMode = VK_CULL_MODE_BACK_BIT;
+        m_cullMode = VK_CULL_MODE_BACK_BIT;
         break;
     case graphics::CullMode::NONE:
-        cullMode = VK_CULL_MODE_NONE;
+        m_cullMode = VK_CULL_MODE_NONE;
         break;
     }
 }
 
 void VulkanPipelineBuilder::withDepthTesting (bool doDepthWrite) {
-    depthTest = true;
-    depthWrite = doDepthWrite;
+    m_depthTest = true;
+    m_depthWrite = doDepthWrite;
 }
 
 void VulkanPipelineBuilder::withGeometryType (graphics::GeometryType type) {
     switch (type) {
     case graphics::GeometryType::TRIANGLES:
-        topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        m_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         break;
     case graphics::GeometryType::LINES:
-        topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        m_topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
         break;
     }
 }
 
 void VulkanPipelineBuilder::withShader (core::Asset<graphics::Shader> shader) {
     PHENYL_ASSERT(shader);
-    this->shader = std::move(shader);
+    this->m_shader = std::move(shader);
 }
 
 phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (meta::TypeIndex type, std::size_t size,
@@ -381,60 +377,61 @@ phenyl::graphics::BufferBinding VulkanPipelineBuilder::withBuffer (meta::TypeInd
         PHENYL_ABORT("Unexpected BufferInputRate value: {}", static_cast<std::uint32_t>(inputRate));
     }
 
-    auto binding = static_cast<std::uint32_t>(vertexBindings.size());
-    vertexBindings.push_back(VkVertexInputBindingDescription{
+    auto binding = static_cast<std::uint32_t>(m_vertexBindings.size());
+    m_vertexBindings.push_back(VkVertexInputBindingDescription{
       .binding = binding,
       .stride = static_cast<std::uint32_t>(size),
       .inputRate = vkInputRate,
     });
-    vertexBindingTypes.emplace_back(type);
+    m_vertexBindingTypes.emplace_back(type);
 
     return graphics::BufferBinding{binding};
 }
 
 void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned int location,
     graphics::BufferBinding binding, std::size_t offset) {
-    PHENYL_ASSERT(binding < vertexBindings.size());
+    PHENYL_ASSERT(binding < m_vertexBindings.size());
     PHENYL_ASSERT_MSG(location < MAX_ATTRIB_LOCATION, "Attrib location {} larger than defined maximum of {}!", location,
         MAX_ATTRIB_LOCATION);
 
     switch (type) {
     case graphics::ShaderDataType::FLOAT32:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32_SFLOAT, offset));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32_SFLOAT, offset));
         break;
     case graphics::ShaderDataType::INT16:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R16_SINT, offset));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R16_SINT, offset));
         break;
     case graphics::ShaderDataType::INT32:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32_SINT, offset));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32_SINT, offset));
         break;
     case graphics::ShaderDataType::VEC2F:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32_SFLOAT, offset));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32_SFLOAT, offset));
         break;
     case graphics::ShaderDataType::VEC3F:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32_SFLOAT, offset));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32_SFLOAT, offset));
         break;
     case graphics::ShaderDataType::VEC4F:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offset));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offset));
         break;
     case graphics::ShaderDataType::MAT2F:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32_SFLOAT, offset));
-        vertexAttribs.push_back(MakeAttrib(binding, location + 1, VK_FORMAT_R32G32_SFLOAT, offset + sizeof(glm::vec2)));
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32_SFLOAT, offset));
+        m_vertexAttribs.push_back(
+            MakeAttrib(binding, location + 1, VK_FORMAT_R32G32_SFLOAT, offset + sizeof(glm::vec2)));
         break;
     case graphics::ShaderDataType::MAT3F:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32_SFLOAT, offset));
-        vertexAttribs.push_back(
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32_SFLOAT, offset));
+        m_vertexAttribs.push_back(
             MakeAttrib(binding, location + 1, VK_FORMAT_R32G32B32_SFLOAT, offset + sizeof(glm::vec3)));
-        vertexAttribs.push_back(
+        m_vertexAttribs.push_back(
             MakeAttrib(binding, location + 2, VK_FORMAT_R32G32B32_SFLOAT, offset + sizeof(glm::vec3) * 2));
         break;
     case graphics::ShaderDataType::MAT4F:
-        vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offset));
-        vertexAttribs.push_back(
+        m_vertexAttribs.push_back(MakeAttrib(binding, location, VK_FORMAT_R32G32B32A32_SFLOAT, offset));
+        m_vertexAttribs.push_back(
             MakeAttrib(binding, location + 1, VK_FORMAT_R32G32B32A32_SFLOAT, offset + sizeof(glm::vec4)));
-        vertexAttribs.push_back(
+        m_vertexAttribs.push_back(
             MakeAttrib(binding, location + 2, VK_FORMAT_R32G32B32A32_SFLOAT, offset + sizeof(glm::vec4) * 2));
-        vertexAttribs.push_back(
+        m_vertexAttribs.push_back(
             MakeAttrib(binding, location + 3, VK_FORMAT_R32G32B32A32_SFLOAT, offset + sizeof(glm::vec4) * 3));
         break;
     default:
@@ -445,13 +442,13 @@ void VulkanPipelineBuilder::withAttrib (graphics::ShaderDataType type, unsigned 
 UniformBinding VulkanPipelineBuilder::withUniform (meta::TypeIndex type, unsigned int location) {
     PHENYL_ASSERT_MSG(location < MAX_DESCRIPTOR_BINDING, "Uniform binding {} larger than defined maximum of {}!",
         location, MAX_DESCRIPTOR_BINDING);
-    descriptorBindings.push_back(VkDescriptorSetLayoutBinding{
+    m_descriptorBindings.push_back(VkDescriptorSetLayoutBinding{
       .binding = location,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, // TODO
       .descriptorCount = 1,
       .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS, // TODO
     });
-    uniformTypes[UniformBinding{location}] = type;
+    m_uniformTypes[UniformBinding{location}] = type;
 
     return UniformBinding{location};
 }
@@ -459,13 +456,13 @@ UniformBinding VulkanPipelineBuilder::withUniform (meta::TypeIndex type, unsigne
 SamplerBinding VulkanPipelineBuilder::withSampler (unsigned int location) {
     PHENYL_ASSERT_MSG(location < MAX_DESCRIPTOR_BINDING, "Sampler binding {} larger than defined maximum of {}!",
         location, MAX_DESCRIPTOR_BINDING);
-    descriptorBindings.push_back(VkDescriptorSetLayoutBinding{
+    m_descriptorBindings.push_back(VkDescriptorSetLayoutBinding{
       .binding = location,
       .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       .descriptorCount = 1,
       .stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS, // TODO
     });
-    registeredSamplers.emplace(location);
+    m_registeredSamplers.emplace(location);
 
     return SamplerBinding{location};
 }
@@ -473,30 +470,30 @@ SamplerBinding VulkanPipelineBuilder::withSampler (unsigned int location) {
 std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-      .depthTestEnable = depthTest ? VK_TRUE : VK_FALSE,
-      .depthWriteEnable = depthTest && depthWrite ? VK_TRUE : VK_FALSE,
+      .depthTestEnable = m_depthTest ? VK_TRUE : VK_FALSE,
+      .depthWriteEnable = m_depthTest && m_depthWrite ? VK_TRUE : VK_FALSE,
       .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
       .depthBoundsTestEnable = VK_FALSE,
       .stencilTestEnable = VK_FALSE,
     };
 
     DescriptorSizes descriptorSizes{
-      .uniforms = static_cast<std::uint32_t>(uniformTypes.size()),
-      .samplers = static_cast<std::uint32_t>(registeredSamplers.size()),
+      .uniforms = static_cast<std::uint32_t>(m_uniformTypes.size()),
+      .samplers = static_cast<std::uint32_t>(m_registeredSamplers.size()),
     };
-    auto poolFactory = [descriptorSizes, resources = &resources] () {
+    auto poolFactory = [descriptorSizes, resources = &m_resources] () {
         return VulkanDescriptorPool{*resources, descriptorSizes};
     };
-    auto descriptorPools = std::make_unique<FramePool<VulkanDescriptorPool>>(frameManager, std::move(poolFactory),
+    auto descriptorPools = std::make_unique<FramePool<VulkanDescriptorPool>>(m_frameManager, std::move(poolFactory),
         [] (auto& pool) { pool.reset(); });
 
     // TODO: multiple sets
     VkDescriptorSetLayoutCreateInfo layoutInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .bindingCount = static_cast<std::uint32_t>(descriptorBindings.size()),
-      .pBindings = descriptorBindings.data(),
+      .bindingCount = static_cast<std::uint32_t>(m_descriptorBindings.size()),
+      .pBindings = m_descriptorBindings.data(),
     };
-    auto descriptorSetLayout = resources.makeDescriptorSetLayout(layoutInfo);
+    auto descriptorSetLayout = m_resources.makeDescriptorSetLayout(layoutInfo);
     if (!descriptorSetLayout) {
         PHENYL_LOGE(LOGGER, "Failed to build pipeline");
         return nullptr;
@@ -510,23 +507,23 @@ std::unique_ptr<phenyl::graphics::IPipeline> VulkanPipelineBuilder::build () {
       .pSetLayouts = &dsLayout,
     };
 
-    auto pipelineLayout = resources.makePipelineLayout(pipelineLayoutInfo);
+    auto pipelineLayout = m_resources.makePipelineLayout(pipelineLayoutInfo);
     if (!pipelineLayout) {
         PHENYL_LOGE(LOGGER, "Failed to build pipeline");
         return nullptr;
     }
     PHENYL_DASSERT(pipelineLayout);
 
-    PHENYL_ASSERT(shader);
-    auto& vkShader = reinterpret_cast<VulkanShader&>(shader->getUnderlying());
+    PHENYL_ASSERT(m_shader);
+    auto& vkShader = reinterpret_cast<VulkanShader&>(m_shader->getUnderlying());
     auto shaderStages = vkShader.getStageInfo();
 
-    auto pipelineFactory =
-        std::make_unique<VulkanPipelineFactory>(resources, std::move(shader), std::move(pipelineLayout),
-            std::move(vertexBindings), std::move(vertexAttribs), topology, cullMode, blendAttachment, depthStencilInfo);
-    return std::make_unique<VulkanPipeline>(resources.getDevice(), std::move(pipelineFactory),
-        std::move(descriptorSetLayout), std::move(descriptorPools), framebuffer, windowFb,
-        std::move(vertexBindingTypes), std::move(uniformTypes), std::move(registeredSamplers));
+    auto pipelineFactory = std::make_unique<VulkanPipelineFactory>(m_resources, std::move(m_shader),
+        std::move(pipelineLayout), std::move(m_vertexBindings), std::move(m_vertexAttribs), m_topology, m_cullMode,
+        m_blendAttachment, depthStencilInfo);
+    return std::make_unique<VulkanPipeline>(m_resources.getDevice(), std::move(pipelineFactory),
+        std::move(descriptorSetLayout), std::move(descriptorPools), m_windowFb, std::move(m_vertexBindingTypes),
+        std::move(m_uniformTypes), std::move(m_registeredSamplers));
 }
 
 static VkVertexInputAttributeDescription MakeAttrib (phenyl::graphics::BufferBinding binding, unsigned int location,

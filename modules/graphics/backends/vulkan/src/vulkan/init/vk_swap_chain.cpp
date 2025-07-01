@@ -10,7 +10,7 @@ static VkExtent2D ChooseExtent (const VulkanSwapChainDetails& details);
 static std::uint32_t ChooseImageCount (const VulkanSwapChainDetails& details);
 
 VulkanSwapChain::VulkanSwapChain (VulkanResources& resources, VkSurfaceKHR surface,
-    const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies) :
+    const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies, VulkanSwapChain* old) :
     m_device{resources.getDevice()},
     m_extent{} {
     PHENYL_LOGI(LOGGER, "Creating swap chain");
@@ -46,7 +46,7 @@ VulkanSwapChain::VulkanSwapChain (VulkanResources& resources, VkSurfaceKHR surfa
       .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
       .presentMode = presentMode,
       .clipped = VK_TRUE,
-      .oldSwapchain = VK_NULL_HANDLE, // TODO
+      .oldSwapchain = old ? old->m_swapChain : VK_NULL_HANDLE, // TODO
     };
 
     VkSwapchainKHR swapchainKhr;

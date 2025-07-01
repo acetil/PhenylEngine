@@ -18,7 +18,7 @@ public:
     }
 
     virtual void init (Renderer& renderer) = 0;
-    virtual void render () = 0;
+    virtual void render (Renderer& renderer) = 0;
 
 private:
     int m_priority;

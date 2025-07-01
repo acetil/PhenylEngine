@@ -26,9 +26,10 @@ public:
     void bindSampler (graphics::SamplerBinding binding, graphics::ISampler& sampler) override;
     void unbindIndexBuffer () override;
 
-    void render (graphics::IFrameBuffer* frameBuffer, std::size_t vertices, std::size_t offset) override;
-    void renderInstanced (graphics::IFrameBuffer* frameBuffer, std::size_t numInstances, std::size_t vertices,
+    void render (graphics::ICommandList& list, graphics::IFrameBuffer* frameBuffer, std::size_t vertices,
         std::size_t offset) override;
+    void renderInstanced (graphics::ICommandList& list, graphics::IFrameBuffer* frameBuffer, std::size_t numInstances,
+        std::size_t vertices, std::size_t offset) override;
 
     void setRenderMode (GLenum renderMode);
     void setShader (core::Asset<graphics::Shader> shader);
