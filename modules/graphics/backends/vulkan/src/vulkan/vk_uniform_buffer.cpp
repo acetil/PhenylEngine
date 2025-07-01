@@ -14,8 +14,11 @@ std::span<std::byte> VulkanUniformBuffer::allocate (std::size_t size) {
     this->m_size = size;
     m_buffer = VulkanBuffer{m_resources, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, size};
 
-    m_bufferInfo =
-        VkDescriptorBufferInfo{.buffer = m_buffer.get(), .offset = 0, .range = static_cast<VkDeviceSize>(size)};
+    m_bufferInfo = VkDescriptorBufferInfo{
+      .buffer = m_buffer.get(),
+      .offset = 0,
+      .range = static_cast<VkDeviceSize>(size),
+    };
 
     return {m_data.get(), size};
 }
@@ -42,7 +45,9 @@ VkBuffer VulkanUniformBuffer::getBuffer () const {
 
 VkDescriptorBufferInfo VulkanUniformBuffer::getBufferInfo (std::size_t offset, std::size_t size) const noexcept {
     PHENYL_ASSERT_MSG(offset + size <= this->m_size, "Attempted to bind uniform buffer out of bounds!");
-    return VkDescriptorBufferInfo{.buffer = m_buffer.get(),
+    return VkDescriptorBufferInfo{
+      .buffer = m_buffer.get(),
       .offset = static_cast<VkDeviceSize>(offset),
-      .range = static_cast<VkDeviceSize>(size)};
+      .range = static_cast<VkDeviceSize>(size),
+    };
 }

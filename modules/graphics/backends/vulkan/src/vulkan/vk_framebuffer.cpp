@@ -112,12 +112,14 @@ const VkRenderingInfo* VulkanFrameBuffer::getRenderingInfo () const noexcept {
 }
 
 VkViewport VulkanFrameBuffer::viewport () const noexcept {
-    return VkViewport{.x = 0,
+    return VkViewport{
+      .x = 0,
       .y = 0,
       .width = static_cast<float>(m_extent.width),
       .height = static_cast<float>(m_extent.height),
       .minDepth = 0.0f,
-      .maxDepth = 1.0f};
+      .maxDepth = 1.0f,
+    };
 }
 
 VkRect2D VulkanFrameBuffer::scissor () const noexcept {
@@ -142,26 +144,35 @@ glm::ivec2 VulkanFrameBuffer::getDimensions () const noexcept {
 
 VulkanWindowFrameBuffer::VulkanWindowFrameBuffer (VulkanResources& resources, TransferManager& transferManager,
     FrameBufferLayoutManager& layoutManager, VkFormat colorFormat) :
-    IVulkanFrameBuffer{layoutManager.cacheLayout(
-        FrameBufferLayout{.colorFormats = {colorFormat}, .depthFormat = VK_FORMAT_D24_UNORM_S8_UINT})},
+    IVulkanFrameBuffer{layoutManager.cacheLayout(FrameBufferLayout{
+      .colorFormats = {colorFormat},
+      .depthFormat = VK_FORMAT_D24_UNORM_S8_UINT,
+    })},
     m_resources{resources},
     m_transferManager{transferManager} {
     m_colorAttachment = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
       .resolveMode = VK_RESOLVE_MODE_NONE,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-      .clearValue = {.color = {0, 0, 0, 0}}};
+      .clearValue = {
+        .color = {0, 0, 0, 0},
+      }};
 
     m_depthAttachment = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
       .resolveMode = VK_RESOLVE_MODE_NONE,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE, // TODO
-      .clearValue = {.depthStencil = {.depth = 1.0f}}};
+      .clearValue = {
+        .depthStencil =
+            VkClearDepthStencilValue{
+              .depth = 1.0f,
+            },
+      }};
 
     m_renderingInfo = {
       .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
       .layerCount = 1,
       .colorAttachmentCount = 1,
       .pColorAttachments = &m_colorAttachment,
-      .pDepthAttachment = &m_depthAttachment
+      .pDepthAttachment = &m_depthAttachment,
 
       // TODO: stencil
     };
@@ -171,12 +182,14 @@ VkViewport VulkanWindowFrameBuffer::viewport () const noexcept {
     PHENYL_ASSERT(m_swapChain);
 
     auto extent = m_swapChain->extent();
-    return VkViewport{.x = 0,
+    return VkViewport{
+      .x = 0,
       .y = 0,
       .width = static_cast<float>(extent.width),
       .height = static_cast<float>(extent.height),
       .minDepth = 0.0f,
-      .maxDepth = 1.0f};
+      .maxDepth = 1.0f,
+    };
 }
 
 VkRect2D VulkanWindowFrameBuffer::scissor () const noexcept {
@@ -205,7 +218,10 @@ void VulkanWindowFrameBuffer::onSwapChainRecreate (VulkanSwapChain* newSwapChain
 
     m_swapChain = newSwapChain;
 
-    m_renderingInfo.renderArea = {.offset = {0, 0}, .extent = m_swapChain->extent()};
+    m_renderingInfo.renderArea = {
+      .offset = {0, 0},
+      .extent = m_swapChain->extent(),
+    };
 
     auto swapExtent = m_swapChain->extent();
     if (swapExtent.width == m_depthImage.width() && swapExtent.height == m_depthImage.height()) {

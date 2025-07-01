@@ -67,7 +67,7 @@ VulkanRenderer::VulkanRenderer (const GraphicsProperties& properties, std::uniqu
     m_device = std::make_unique<VulkanDevice>(m_instance, m_surface);
     m_resources = std::make_unique<VulkanResources>(m_instance, *m_device, MAX_FRAMES_IN_FLIGHT);
 
-    m_swapChain = m_device->makeSwapChain(m_surface);
+    m_swapChain = m_device->makeSwapChain(*m_resources, m_surface);
 
     m_frameManager = std::make_unique<FrameManager>(*m_device, *m_resources, MAX_FRAMES_IN_FLIGHT);
     m_transferManager = std::make_unique<TransferManager>(*m_resources);
@@ -117,21 +117,19 @@ void VulkanRenderer::render () {
     }
 
     auto& frameSync = m_frameManager->getFrameSync();
-    auto commandBuffer = m_frameManager->getCommandPool().getBuffer();
-
-    m_framebuffer.renderingRecorder = &commandBuffer;
-    m_framebuffer.descriptorPool = &m_frameManager->getDescriptorPool();
+    m_commandList = CommandList{m_frameManager->getCommandPool().getBuffer()};
 
     layerRender();
 
-    m_windowFrameBuffer->doPresentTransition(commandBuffer);
+    m_windowFrameBuffer->doPresentTransition(m_commandList->cmd);
 
-    commandBuffer.submit(&frameSync.imageAvailable, &frameSync.renderFinished, &frameSync.inFlight);
+    m_commandList->cmd.submit(&frameSync.imageAvailable, m_swapChain->imageSemaphore(), &frameSync.inFlight);
 
-    if (!m_swapChain->present(m_device->graphicsQueue(), frameSync.renderFinished)) {
+    if (!m_swapChain->present(m_device->graphicsQueue())) {
         PHENYL_LOGD(detail::VULKAN_LOGGER, "Swapchain recreation requested on frame presentation");
         recreateSwapChain();
     }
+    m_commandList = std::nullopt;
 }
 
 void VulkanRenderer::finishRender () {}
@@ -178,9 +176,13 @@ std::unique_ptr<IFrameBuffer> VulkanRenderer::makeRendererFrameBuffer (const Fra
     return std::make_unique<VulkanFrameBuffer>(*m_resources, m_fbLayoutManager, properties, width, height);
 }
 
+ICommandList* VulkanRenderer::makeCommandList () {
+    return m_commandList ? &*m_commandList : nullptr;
+}
+
 PipelineBuilder VulkanRenderer::buildPipeline () {
-    return PipelineBuilder{std::make_unique<VulkanPipelineBuilder>(*m_resources, m_swapChain->format(), &m_framebuffer,
-        m_windowFrameBuffer.get())};
+    return PipelineBuilder{
+      std::make_unique<VulkanPipelineBuilder>(*m_resources, *m_frameManager, m_windowFrameBuffer.get())};
 }
 
 void VulkanRenderer::loadDefaultShaders () {
@@ -267,14 +269,16 @@ void VulkanRenderer::CheckExtensions (const std::vector<const char*>& extensions
 }
 
 VkDebugUtilsMessengerCreateInfoEXT VulkanRenderer::getDebugMessengerCreateInfo () {
-    return {.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+    return {
+      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
       .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
           VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
           VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
       .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
       .pfnUserCallback = DebugMessageCallback,
-      .pUserData = this};
+      .pUserData = this,
+    };
 }
 
 void VulkanRenderer::setupDebugMessenger () {
@@ -298,12 +302,14 @@ void VulkanRenderer::destroyDebugMessenger () {
 }
 
 VkInstance VulkanRenderer::createVkInstance (const GraphicsProperties& properties) {
-    VkApplicationInfo appInfo{.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+    VkApplicationInfo appInfo{
+      .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
       .pApplicationName = "Phenyl Application", // TODO
       .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
       .pEngineName = "Phenyl Engine",
       .engineVersion = VK_MAKE_VERSION(1, 0, 0), // TODO
-      .apiVersion = VK_API_VERSION_1_3};
+      .apiVersion = VK_API_VERSION_1_3,
+    };
 
     auto validationLayers = GatherValidationLayers();
     auto extensions = GatherExtensions(properties, *m_viewport);
@@ -332,8 +338,7 @@ VkInstance VulkanRenderer::createVkInstance (const GraphicsProperties& propertie
 void VulkanRenderer::recreateSwapChain () {
     PHENYL_LOGI(detail::VULKAN_LOGGER, "Recreating swap chain");
     vkDeviceWaitIdle(m_device->device());
-    m_swapChain = nullptr;
-    m_swapChain = m_device->makeSwapChain(m_surface);
+    m_swapChain = m_device->makeSwapChain(*m_resources, m_surface, m_swapChain.get());
 
     m_windowFrameBuffer->onSwapChainRecreate(m_swapChain.get());
 }

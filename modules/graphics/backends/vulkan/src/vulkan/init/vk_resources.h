@@ -123,6 +123,7 @@ public:
     VulkanResource<VkSampler> makeSampler (const VkSamplerCreateInfo& createInfo);
 
     VulkanResource<VkDescriptorSetLayout> makeDescriptorSetLayout (const VkDescriptorSetLayoutCreateInfo& layoutInfo);
+    VulkanResource<VkDescriptorPool> makeDescriptorPool (const VkDescriptorPoolCreateInfo& createInfo);
     VulkanResource<VkPipelineLayout> makePipelineLayout (const VkPipelineLayoutCreateInfo& layoutInfo);
     VulkanResource<VkPipeline> makePipeline (const VkGraphicsPipelineCreateInfo& createInfo);
 
@@ -185,6 +186,7 @@ private:
     DestructionQueue<VkSampler> m_samplerQueue;
 
     DestructionQueue<VkDescriptorSetLayout> m_descriptorSetLayoutQueue;
+    DestructionQueue<VkDescriptorPool> m_descriptorPoolQueue;
     DestructionQueue<VkPipelineLayout> m_pipelineLayoutQueue;
     DestructionQueue<VkPipeline> m_pipelineQueue;
 

@@ -30,6 +30,7 @@ add_library(vulkan_backend OBJECT src/vulkan/vk_renderer.cpp
         src/vulkan/texture/vk_image.cpp
         src/vulkan/memory/vk_transfer_manager.h
         src/vulkan/memory/vk_transfer_manager.cpp
+        src/vulkan/vk_command_list.h
 )
 
 set_property(TARGET vulkan_backend PROPERTY CXX_STANDARD 23)

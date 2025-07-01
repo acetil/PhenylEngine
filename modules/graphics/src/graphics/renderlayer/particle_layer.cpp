@@ -51,6 +51,7 @@ void ParticleRenderLayer::bufferData (const Camera2D& camera, const ParticleMana
     m_uniformBuffer.upload();
 }
 
-void ParticleRenderLayer::render () {
-    m_pipeline.render(m_posBuffer.size());
+void ParticleRenderLayer::render (Renderer& renderer) {
+    auto cmdList = renderer.getCommandList();
+    m_pipeline.render(cmdList, m_posBuffer.size());
 }

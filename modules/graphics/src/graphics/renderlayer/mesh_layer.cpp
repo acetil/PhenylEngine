@@ -22,11 +22,17 @@ void MeshRenderLayer::init (Renderer& renderer) {
     auto& viewport = renderer.getViewport();
 
     m_testFb = renderer.makeFrameBuffer(
-        FrameBufferProperties{.format = ImageFormat::RGBA, .depthFormat = ImageFormat::DEPTH24_STENCIL8},
+        FrameBufferProperties{
+          .format = ImageFormat::RGBA,
+          .depthFormat = ImageFormat::DEPTH24_STENCIL8,
+        },
         viewport.getResolution().x, viewport.getResolution().y);
-    m_shadowFb = renderer.makeFrameBuffer(FrameBufferProperties{.depthFormat = ImageFormat::DEPTH,
-                                            .wrapping = TextureWrapping::CLAMP_BORDER,
-                                            .borderColor = TextureBorderColor::WHITE},
+    m_shadowFb = renderer.makeFrameBuffer(
+        FrameBufferProperties{
+          .depthFormat = ImageFormat::DEPTH,
+          .wrapping = TextureWrapping::CLAMP_BORDER,
+          .borderColor = TextureBorderColor::WHITE,
+        },
         512, 512);
 
     m_instanceBuffer = renderer.makeBuffer<glm::mat4>(512, BufferStorageHint::DYNAMIC);
@@ -79,17 +85,18 @@ void MeshRenderLayer::uploadData (Camera3D& camera) {
     m_globalUniform.upload();
 }
 
-void MeshRenderLayer::render () {
+void MeshRenderLayer::render (Renderer& renderer) {
     PHENYL_DASSERT(m_renderer);
+    auto cmdList = renderer.getCommandList();
 
-    depthPrepass();
+    depthPrepass(cmdList);
 
     bufferLights();
     for (std::size_t i = 0; i < m_pointLights.size(); i++) {
-        renderLight(m_pointLights[i], i);
+        renderLight(cmdList, m_pointLights[i], i);
     }
 
-    postProcessing();
+    postProcessing(cmdList);
 
     m_instances.clear();
     m_pointLights.clear();
@@ -104,10 +111,12 @@ void MeshRenderLayer::gatherGeometry () {
         PHENYL_DASSERT(mesh);
         // requests.emplace_back(mesh->layout().layoutId, mesh,
         // transform.transform.transformMatrx());
-        m_requests.emplace_back(MeshRenderRequest{.layout = mesh->layout().layoutId,
+        m_requests.emplace_back(MeshRenderRequest{
+          .layout = mesh->layout().layoutId,
           .mesh = mesh,
           .materialInstance = matInstance,
-          .transform = transform.transform});
+          .transform = transform.transform,
+        });
     });
 
     std::ranges::sort(m_requests, [] (const MeshRenderRequest& lhs, const MeshRenderRequest& rhs) {
@@ -128,10 +137,12 @@ void MeshRenderLayer::gatherGeometry () {
 
         if (m_instances.empty() || m_instances.back().mesh != req.mesh ||
             m_instances.back().materialInstance != req.materialInstance) {
-            m_instances.emplace_back(MeshInstances{.mesh = req.mesh,
+            m_instances.emplace_back(MeshInstances{
+              .mesh = req.mesh,
               .materialInstance = req.materialInstance,
               .instanceOffset = i,
-              .numInstances = 1});
+              .numInstances = 1,
+            });
         } else {
             m_instances.back().numInstances++;
         }
@@ -142,26 +153,31 @@ void MeshRenderLayer::gatherGeometry () {
 
 void MeshRenderLayer::gatherLights () {
     m_dirLightQuery.each([&] (const core::GlobalTransform3D& transform, const DirectionalLight3D& light) {
-        m_pointLights.emplace_back(MeshLight{.pos = transform.position(),
+        m_pointLights.emplace_back(MeshLight{
+          .pos = transform.position(),
           .dir = transform.rotation(),
           .color = light.color,
           .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
           .brightness = light.brightness,
           .type = LightType::Directional,
-          .castShadows = light.castShadows});
+          .castShadows = light.castShadows,
+        });
     });
 
     m_pointLightQuery.each([&] (const core::GlobalTransform3D& transform, const PointLight3D& light) {
-        m_pointLights.emplace_back(MeshLight{.pos = transform.position(),
+        m_pointLights.emplace_back(MeshLight{
+          .pos = transform.position(),
           .color = light.color,
           .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
           .brightness = light.brightness,
           .type = LightType::Point,
-          .castShadows = light.castShadows});
+          .castShadows = light.castShadows,
+        });
     });
 
     m_spotLightQuery.each([&] (const core::GlobalTransform3D& transform, const SpotLight3D& light) {
-        m_pointLights.emplace_back(MeshLight{.pos = transform.position(),
+        m_pointLights.emplace_back(MeshLight{
+          .pos = transform.position(),
           .dir = transform.rotation(),
           .color = light.color,
           .ambientColor = glm::vec3{1.0f, 1.0f, 1.0f},
@@ -169,11 +185,12 @@ void MeshRenderLayer::gatherLights () {
           .outer = light.outerAngle,
           .inner = light.innerAngle,
           .type = LightType::Spot,
-          .castShadows = light.castShadows});
+          .castShadows = light.castShadows,
+        });
     });
 }
 
-void MeshRenderLayer::depthPrepass () {
+void MeshRenderLayer::depthPrepass (CommandList& cmdList) {
     for (const auto& instance : m_instances) {
         auto& depthPipeline = instance.materialInstance->material()->getDepthPipeline(instance.mesh->layout());
 
@@ -189,7 +206,7 @@ void MeshRenderLayer::depthPrepass () {
         pipeline.bindBuffer(depthPipeline.modelBinding, m_instanceBuffer, instance.instanceOffset);
         pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        pipeline.renderInstanced(m_testFb, instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(cmdList, m_testFb, instance.numInstances, instance.mesh->numVertices());
         // pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
@@ -198,7 +215,8 @@ void MeshRenderLayer::bufferLights () {
     m_bpLights.clear();
     m_bpLights.reserve(m_pointLights.size());
     for (const auto& light : m_pointLights) {
-        m_bpLights.push(BPLightUniform{.lightSpace = getLightSpaceMatrix(light),
+        m_bpLights.push(BPLightUniform{
+          .lightSpace = getLightSpaceMatrix(light),
           .lightPos = light.pos,
           .lightDir = light.dir * core::Quaternion::ForwardVector * -1.0f,
           .lightColor = light.color,
@@ -207,15 +225,16 @@ void MeshRenderLayer::bufferLights () {
           .cosOuter = glm::cos(light.outer),
           .cosInner = glm::cos(light.inner),
           .lightType = static_cast<int>(light.type),
-          .castShadows = light.castShadows});
+          .castShadows = light.castShadows,
+        });
     }
 
     m_bpLights.upload();
 }
 
-void MeshRenderLayer::renderLight (const MeshLight& light, std::size_t index) {
+void MeshRenderLayer::renderLight (CommandList& cmdList, const MeshLight& light, std::size_t index) {
     if (light.castShadows) {
-        renderShadowMap(light, index);
+        renderShadowMap(cmdList, light, index);
     }
 
     for (const auto& instance : m_instances) {
@@ -243,7 +262,7 @@ void MeshRenderLayer::renderLight (const MeshLight& light, std::size_t index) {
 
         matInstance->bind(matPipeline);
 
-        pipeline.renderInstanced(m_testFb, instance.numInstances, instance.mesh->numVertices());
+        pipeline.renderInstanced(cmdList, m_testFb, instance.numInstances, instance.mesh->numVertices());
         // pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
     }
 }
@@ -283,7 +302,7 @@ glm::mat4 MeshRenderLayer::getLightSpaceProj (const MeshLight& light) {
     }
 }
 
-void MeshRenderLayer::renderShadowMap (const MeshLight& light, std::size_t index) {
+void MeshRenderLayer::renderShadowMap (CommandList& cmdList, const MeshLight& light, std::size_t index) {
     m_shadowFb.clear();
     if (light.type == LightType::Directional || light.type == LightType::Spot) {
         for (const auto& instance : m_instances) {
@@ -301,16 +320,16 @@ void MeshRenderLayer::renderShadowMap (const MeshLight& light, std::size_t index
             pipeline.bindBuffer(smPipeline.modelBinding, m_instanceBuffer, instance.instanceOffset);
             pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-            pipeline.renderInstanced(m_shadowFb, instance.numInstances, instance.mesh->numVertices());
+            pipeline.renderInstanced(cmdList, m_shadowFb, instance.numInstances, instance.mesh->numVertices());
         }
     } else {
         // TODO
     }
 }
 
-void MeshRenderLayer::postProcessing () {
+void MeshRenderLayer::postProcessing (CommandList& cmdList) {
     m_postProcessPipeline.bindSampler(m_ppSampler, m_testFb.sampler());
-    m_postProcessPipeline.render(6);
+    m_postProcessPipeline.render(cmdList, 6);
 }
 
 // MeshRenderLayer::MeshPipeline& MeshRenderLayer::getPipeline (const MeshLayout& layout) {

@@ -9,9 +9,9 @@ static VkPresentModeKHR ChoosePresentMode (const VulkanSwapChainDetails& details
 static VkExtent2D ChooseExtent (const VulkanSwapChainDetails& details);
 static std::uint32_t ChooseImageCount (const VulkanSwapChainDetails& details);
 
-VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details,
-    const VulkanQueueFamilies& queueFamilies) :
-    m_device{device},
+VulkanSwapChain::VulkanSwapChain (VulkanResources& resources, VkSurfaceKHR surface,
+    const VulkanSwapChainDetails& details, const VulkanQueueFamilies& queueFamilies, VulkanSwapChain* old) :
+    m_device{resources.getDevice()},
     m_extent{} {
     PHENYL_LOGI(LOGGER, "Creating swap chain");
     auto surfaceFormat = ChooseSurfaceFormat(details);
@@ -46,15 +46,15 @@ VulkanSwapChain::VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const V
       .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
       .presentMode = presentMode,
       .clipped = VK_TRUE,
-      .oldSwapchain = VK_NULL_HANDLE // TODO
+      .oldSwapchain = old ? old->m_swapChain : VK_NULL_HANDLE, // TODO
     };
 
     VkSwapchainKHR swapchainKhr;
-    auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchainKhr);
+    auto result = vkCreateSwapchainKHR(resources.getDevice(), &createInfo, nullptr, &swapchainKhr);
     PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create swapchain!");
 
     m_swapChain = swapchainKhr;
-    createImages();
+    createImages(resources);
 
     PHENYL_LOGI(LOGGER, "Created swap chain");
 }
@@ -68,12 +68,14 @@ VulkanSwapChain::~VulkanSwapChain () {
 }
 
 VkViewport VulkanSwapChain::viewport () const noexcept {
-    return VkViewport{.x = 0,
+    return VkViewport{
+      .x = 0,
       .y = 0,
       .width = static_cast<float>(extent().width),
       .height = static_cast<float>(extent().height),
       .minDepth = 0.0f,
-      .maxDepth = 1.0f};
+      .maxDepth = 1.0f,
+    };
 }
 
 VkRect2D VulkanSwapChain::scissor () const noexcept {
@@ -85,10 +87,18 @@ std::optional<SwapChainImage> VulkanSwapChain::acquireImage (const VulkanSemapho
         signalSem.get(), VK_NULL_HANDLE, &m_currIndex);
 
     if (result == VK_SUCCESS) {
-        return SwapChainImage{.image = m_images.at(m_currIndex), .view = m_imageViews.at(m_currIndex)};
+        return SwapChainImage{
+          .image = m_images.at(m_currIndex),
+          .view = m_imageViews.at(m_currIndex),
+          .semaphore = &m_semaphores.at(m_currIndex),
+        };
     } else if (result == VK_SUBOPTIMAL_KHR) {
         PHENYL_LOGI(LOGGER, "Acquired image with VK_SUBOPTIMAL_KHR mode, ignoring");
-        return SwapChainImage{.image = m_images.at(m_currIndex), .view = m_imageViews.at(m_currIndex)};
+        return SwapChainImage{
+          .image = m_images.at(m_currIndex),
+          .view = m_imageViews.at(m_currIndex),
+          .semaphore = &m_semaphores.at(m_currIndex),
+        };
     } else if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         PHENYL_LOGI(LOGGER, "Swap chain is out of date, recreation required");
         return std::nullopt;
@@ -97,15 +107,21 @@ std::optional<SwapChainImage> VulkanSwapChain::acquireImage (const VulkanSemapho
     PHENYL_ABORT("Failed to acquire image: {}", result);
 }
 
-bool VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
-    VkSemaphore sem = waitSem.get();
+const VulkanSemaphore* VulkanSwapChain::imageSemaphore () const {
+    return &m_semaphores.at(m_currIndex);
+}
 
-    VkPresentInfoKHR presentInfo{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+bool VulkanSwapChain::present (VkQueue queue) {
+    VkSemaphore sem = m_semaphores.at(m_currIndex).get();
+
+    VkPresentInfoKHR presentInfo{
+      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &sem,
       .swapchainCount = 1,
       .pSwapchains = &m_swapChain,
-      .pImageIndices = &m_currIndex};
+      .pImageIndices = &m_currIndex,
+    };
 
     auto result = vkQueuePresentKHR(queue, &presentInfo);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
@@ -116,35 +132,43 @@ bool VulkanSwapChain::present (VkQueue queue, const VulkanSemaphore& waitSem) {
     return true;
 }
 
-void VulkanSwapChain::createImages () {
+void VulkanSwapChain::createImages (VulkanResources& resources) {
     m_images = Enumerate<VkImage>(vkGetSwapchainImagesKHR, m_device, m_swapChain);
     m_imageViews.reserve(m_images.size());
 
     // TODO: abstract away into class
     for (const auto& image : m_images) {
-        VkComponentMapping components{.r = VK_COMPONENT_SWIZZLE_IDENTITY,
+        VkComponentMapping components{
+          .r = VK_COMPONENT_SWIZZLE_IDENTITY,
           .g = VK_COMPONENT_SWIZZLE_IDENTITY,
           .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-          .a = VK_COMPONENT_SWIZZLE_IDENTITY};
+          .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+        };
 
-        VkImageSubresourceRange subresourceRange{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        VkImageSubresourceRange subresourceRange{
+          .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
           .baseMipLevel = 0,
           .levelCount = 1,
           .baseArrayLayer = 0,
-          .layerCount = 1};
+          .layerCount = 1,
+        };
 
-        VkImageViewCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        VkImageViewCreateInfo createInfo{
+          .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
           .image = image,
           .viewType = VK_IMAGE_VIEW_TYPE_2D,
           .format = m_format,
           .components = components,
-          .subresourceRange = subresourceRange};
+          .subresourceRange = subresourceRange,
+        };
 
         VkImageView imageView;
         auto result = vkCreateImageView(m_device, &createInfo, nullptr, &imageView);
         PHENYL_ASSERT_MSG(result == VK_SUCCESS, "Failed to create image view!");
 
         m_imageViews.emplace_back(imageView);
+
+        m_semaphores.emplace_back(VulkanSemaphore{resources});
     }
 
     PHENYL_LOGI(LOGGER, "Created swap chain images");

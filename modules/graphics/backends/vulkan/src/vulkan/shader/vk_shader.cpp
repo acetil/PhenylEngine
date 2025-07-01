@@ -33,9 +33,11 @@ std::unique_ptr<VulkanShader> VulkanShader::Make (VkDevice device,
 
     bool failed = false;
     for (const auto& [type, code] : sources) {
-        VkShaderModuleCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        VkShaderModuleCreateInfo createInfo{
+          .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
           .codeSize = code.size() * sizeof(std::uint32_t),
-          .pCode = code.data()};
+          .pCode = code.data(),
+        };
 
         VkShaderModule shaderModule;
         if (auto result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule); result != VK_SUCCESS) {
@@ -66,10 +68,12 @@ std::vector<VkPipelineShaderStageCreateInfo> VulkanShader::getStageInfo () {
     return m_modules | std::views::transform([] (const auto& p) {
         auto [type, module] = p;
 
-        return VkPipelineShaderStageCreateInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        return VkPipelineShaderStageCreateInfo{
+          .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
           .stage = ConvertShaderType(type),
           .module = module,
-          .pName = "main"};
+          .pName = "main",
+        };
     }) | std::ranges::to<std::vector>();
 }
 

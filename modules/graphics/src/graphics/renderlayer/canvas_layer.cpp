@@ -49,12 +49,13 @@ void CanvasRenderLayer::setScreenSize (glm::vec2 screenSize) {
     m_uniformBuffer.upload();
 }
 
-void CanvasRenderLayer::render () {
+void CanvasRenderLayer::render (Renderer& renderer) {
+    auto cmdList = renderer.getCommandList();
     uploadData();
 
     m_pipeline.bindSampler(m_samplerBinding, m_glyphAtlas.sampler());
     m_pipeline.bindUniform(m_uniformBinding, m_uniformBuffer);
-    m_pipeline.render(m_indices.size());
+    m_pipeline.render(cmdList, m_indices.size());
 
     m_buffer.clear();
     m_indices.clear();

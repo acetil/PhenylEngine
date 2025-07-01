@@ -170,8 +170,8 @@ public:
     }
 
     void postInit () override {
-        scene1();
-        // scene2();
+        // scene1();
+        scene2();
 
         auto& input = runtime().resource<phenyl::GameInput>();
         m_cameraControl = input.addAxis2D("camera_control", true);

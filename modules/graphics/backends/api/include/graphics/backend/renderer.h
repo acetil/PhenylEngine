@@ -2,6 +2,7 @@
 
 #include "abstract_render_layer.h"
 #include "buffer.h"
+#include "command_list.h"
 #include "core/iresource.h"
 #include "graphics/graphics_properties.h"
 #include "graphics/image.h"
@@ -87,6 +88,12 @@ public:
         return FrameBuffer{makeRendererFrameBuffer(properties, width, height)};
     }
 
+    CommandList getCommandList () {
+        auto* list = makeCommandList();
+        PHENYL_DASSERT(list);
+        return CommandList{*list};
+    }
+
     template <std::derived_from<AbstractRenderLayer> T, typename... Args>
     T& addLayer (Args&&... args) requires std::constructible_from<T, Args&&...>
     {
@@ -117,10 +124,11 @@ protected:
         std::uint32_t width, std::uint32_t height) = 0;
     virtual std::unique_ptr<IFrameBuffer> makeRendererFrameBuffer (const FrameBufferProperties& properties,
         std::uint32_t width, std::uint32_t height) = 0;
+    virtual ICommandList* makeCommandList () = 0;
 
     void layerRender () {
         for (auto& i : m_layers) {
-            i->render();
+            i->render(*this);
         }
     }
 

@@ -18,12 +18,13 @@ struct VulkanQueueFamilies {
 struct SwapChainImage {
     VkImage image;
     VkImageView view;
+    VulkanSemaphore* semaphore;
 };
 
 class VulkanSwapChain {
 public:
-    VulkanSwapChain (VkDevice device, VkSurfaceKHR surface, const VulkanSwapChainDetails& details,
-        const VulkanQueueFamilies& queueFamilies);
+    VulkanSwapChain (VulkanResources& resources, VkSurfaceKHR surface, const VulkanSwapChainDetails& details,
+        const VulkanQueueFamilies& queueFamilies, VulkanSwapChain* old);
     ~VulkanSwapChain ();
 
     VkFormat format () const noexcept {
@@ -38,18 +39,20 @@ public:
     VkRect2D scissor () const noexcept;
 
     std::optional<SwapChainImage> acquireImage (const VulkanSemaphore& signalSem);
-    bool present (VkQueue queue, const VulkanSemaphore& waitSem);
+    const VulkanSemaphore* imageSemaphore () const;
+    bool present (VkQueue queue);
 
 private:
     VkDevice m_device;
     VkSwapchainKHR m_swapChain{};
     std::vector<VkImage> m_images;
     std::vector<VkImageView> m_imageViews;
+    std::vector<VulkanSemaphore> m_semaphores;
     std::uint32_t m_currIndex{};
 
     VkFormat m_format;
     VkExtent2D m_extent;
 
-    void createImages ();
+    void createImages (VulkanResources& resources);
 };
 } // namespace phenyl::vulkan

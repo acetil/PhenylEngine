@@ -310,6 +310,10 @@ std::unique_ptr<IFrameBuffer> GLRenderer::makeRendererFrameBuffer (const FrameBu
     return std::make_unique<GlFrameBuffer>(glm::ivec2{width, height}, properties);
 }
 
+ICommandList* GLRenderer::makeCommandList () {
+    return &m_noopCommandList;
+}
+
 void GLRenderer::onViewportResize (glm::ivec2 oldResolution, glm::ivec2 newResolution) {
     // glViewport(0, 0, newResolution.x, newResolution.y);
 }

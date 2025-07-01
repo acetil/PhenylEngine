@@ -42,7 +42,7 @@ public:
     void addSystems (core::PhenylRuntime& runtime);
     void uploadData (Camera3D& camera);
     void uploadSystem (core::PhenylRuntime& runtime);
-    void render () override;
+    void render (Renderer& renderer) override;
 
 private:
     struct MeshRenderRequest {
@@ -107,13 +107,13 @@ private:
     void gatherGeometry ();
     void gatherLights ();
 
-    void depthPrepass ();
+    void depthPrepass (CommandList& cmdList);
     void bufferLights ();
-    void renderLight (const MeshLight& light, std::size_t lightIndex);
+    void renderLight (CommandList& cmdList, const MeshLight& light, std::size_t lightIndex);
     glm::mat4 getLightSpaceView (const MeshLight& light);
     glm::mat4 getLightSpaceProj (const MeshLight& light);
     glm::mat4 getLightSpaceMatrix (const MeshLight& light);
-    void renderShadowMap (const MeshLight& light, std::size_t index);
-    void postProcessing ();
+    void renderShadowMap (CommandList& cmdList, const MeshLight& light, std::size_t index);
+    void postProcessing (CommandList& cmdList);
 };
 } // namespace phenyl::graphics

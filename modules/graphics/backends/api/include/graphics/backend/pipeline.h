@@ -1,6 +1,7 @@
 #pragma once
 
 #include "buffer.h"
+#include "command_list.h"
 #include "core/assets/asset.h"
 #include "framebuffer.h"
 #include "shader.h"
@@ -65,9 +66,9 @@ public:
         std::size_t offset, std::size_t size) = 0;
     virtual void bindSampler (SamplerBinding binding, ISampler& sampler) = 0;
     virtual void unbindIndexBuffer () = 0;
-    virtual void render (IFrameBuffer* fb, std::size_t vertices,
+    virtual void render (ICommandList& list, IFrameBuffer* fb, std::size_t vertices,
         std::size_t offset) = 0; // TODO: command buffer
-    virtual void renderInstanced (IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
+    virtual void renderInstanced (ICommandList& list, IFrameBuffer* fb, std::size_t numInstances, std::size_t vertices,
         std::size_t offset) = 0;
 };
 
@@ -156,25 +157,25 @@ public:
         return *this;
     }
 
-    void render (std::size_t vertices, std::size_t offset = 0) {
+    void render (CommandList& list, std::size_t vertices, std::size_t offset = 0) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->render(nullptr, vertices, offset);
+        m_pipeline->render(list.getUnderlying(), nullptr, vertices, offset);
     }
 
-    void render (FrameBuffer& frameBuffer, std::size_t vertices, std::size_t offset = 0) {
+    void render (CommandList& list, FrameBuffer& frameBuffer, std::size_t vertices, std::size_t offset = 0) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->render(&frameBuffer.getUnderlying(), vertices, offset);
+        m_pipeline->render(list.getUnderlying(), &frameBuffer.getUnderlying(), vertices, offset);
     }
 
-    void renderInstanced (std::size_t numInstances, std::size_t vertices, std::size_t offset = 0) {
+    void renderInstanced (CommandList& list, std::size_t numInstances, std::size_t vertices, std::size_t offset = 0) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->renderInstanced(nullptr, numInstances, vertices, offset);
+        m_pipeline->renderInstanced(list.getUnderlying(), nullptr, numInstances, vertices, offset);
     }
 
-    void renderInstanced (FrameBuffer& frameBuffer, std::size_t numInstances, std::size_t vertices,
+    void renderInstanced (CommandList& list, FrameBuffer& frameBuffer, std::size_t numInstances, std::size_t vertices,
         std::size_t offset = 0) {
         PHENYL_DASSERT(m_pipeline);
-        m_pipeline->renderInstanced(&frameBuffer.getUnderlying(), numInstances, vertices, offset);
+        m_pipeline->renderInstanced(list.getUnderlying(), &frameBuffer.getUnderlying(), numInstances, vertices, offset);
     }
 
 private:

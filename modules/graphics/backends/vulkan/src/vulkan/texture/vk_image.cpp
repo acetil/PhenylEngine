@@ -74,19 +74,28 @@ VulkanImage::VulkanImage (VulkanResources& resources, VkFormat format, VkImageAs
         height);
     PHENYL_ASSERT_MSG(layers > 0, "Attempted to create vulkan image with no layers");
 
-    VkImageCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    VkImageCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format,
-      .extent = VkExtent3D{.width = width, .height = height, .depth = 1},
+      .extent =
+          VkExtent3D{
+            .width = width,
+            .height = height,
+            .depth = 1,
+          },
       .mipLevels = 1, // TODO
       .arrayLayers = layers,
       .samples = VK_SAMPLE_COUNT_1_BIT,
       .tiling = VK_IMAGE_TILING_OPTIMAL,
       .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | usage,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE, // TODO
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED};
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    };
 
-    VmaAllocationCreateInfo allocCreateInfo{.usage = VMA_MEMORY_USAGE_AUTO};
+    VmaAllocationCreateInfo allocCreateInfo{
+      .usage = VMA_MEMORY_USAGE_AUTO,
+    };
 
     m_imageInfo = resources.makeImage(createInfo, allocCreateInfo);
     PHENYL_ASSERT_MSG(m_imageInfo, "Failed to create image!");
@@ -145,23 +154,28 @@ void VulkanImage::copy (TransferManager& transferManager, VulkanImage& srcImage)
 
 VulkanImageView::VulkanImageView (VulkanResources& resources, const VulkanImage& image, VkImageAspectFlags aspect) :
     m_aspect{aspect} {
-    VkImageViewCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    VkImageViewCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
       .image = image.get(),
       .viewType = image.isArray() ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D,
-      .format = image.format(),
-      // TODO
-      .subresourceRange = VkImageSubresourceRange{.aspectMask = aspect,
-        .baseMipLevel = 0,
-        .levelCount = 1,
-        .baseArrayLayer = 0,
-        .layerCount = image.layers()}};
+      .format = image.format(), // TODO
+      .subresourceRange =
+          VkImageSubresourceRange{
+            .aspectMask = aspect,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = image.layers(),
+          },
+    };
 
     m_view = resources.makeImageView(createInfo);
     PHENYL_ASSERT_MSG(m_view, "Failed to create image view");
 }
 
 VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::TextureProperties& properties) {
-    VkSamplerCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+    VkSamplerCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
       .magFilter = MagFilterToVulkan(properties.filter),
       .minFilter = VK_FILTER_NEAREST,              // TODO
       .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR, // TODO
@@ -176,14 +190,16 @@ VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::Textur
       .minLod = 0.0f,
       .maxLod = 0.0f,
       .borderColor = BorderColorToVulkan(properties.borderColor), // TODO
-      .unnormalizedCoordinates = VK_FALSE};
+      .unnormalizedCoordinates = VK_FALSE,
+    };
 
     m_sampler = resources.makeSampler(createInfo);
     PHENYL_ASSERT_MSG(m_sampler, "Failed to create image sampler");
 }
 
 VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::FrameBufferProperties& properties) {
-    VkSamplerCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+    VkSamplerCreateInfo createInfo{
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
       .magFilter = VK_FILTER_NEAREST,
       .minFilter = VK_FILTER_NEAREST,              // TODO
       .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR, // TODO
@@ -198,7 +214,8 @@ VulkanSampler::VulkanSampler (VulkanResources& resources, const graphics::FrameB
       .minLod = 0.0f,
       .maxLod = 0.0f,
       .borderColor = BorderColorToVulkan(properties.borderColor),
-      .unnormalizedCoordinates = VK_FALSE};
+      .unnormalizedCoordinates = VK_FALSE,
+    };
 
     m_sampler = resources.makeSampler(createInfo);
     PHENYL_ASSERT_MSG(m_sampler, "Failed to create image sampler");
@@ -228,5 +245,9 @@ void CombinedSampler::prepareSampler (VulkanCommandBuffer2& cmd) {
 }
 
 VkDescriptorImageInfo CombinedSampler::getDescriptor () const noexcept {
-    return {.sampler = m_sampler.get(), .imageView = m_imageView.get(), .imageLayout = image().layout()};
+    return {
+      .sampler = m_sampler.get(),
+      .imageView = m_imageView.get(),
+      .imageLayout = image().layout(),
+    };
 }

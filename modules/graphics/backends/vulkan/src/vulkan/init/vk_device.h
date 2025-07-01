@@ -18,7 +18,8 @@ class VulkanDevice {
 public:
     explicit VulkanDevice (VkInstance instance, VkSurfaceKHR surface);
 
-    std::unique_ptr<VulkanSwapChain> makeSwapChain (VkSurfaceKHR surface);
+    std::unique_ptr<VulkanSwapChain> makeSwapChain (VulkanResources& resources, VkSurfaceKHR surface,
+        VulkanSwapChain* oldSwapChain = nullptr);
     VkCommandPool makeCommandPool (VkCommandPoolCreateFlags usage);
 
     VmaAllocator makeVmaAllocator (VkInstance instance, std::uint32_t vkVersion);

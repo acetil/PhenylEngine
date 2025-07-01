@@ -97,7 +97,7 @@ void GlPipeline::unbindIndexBuffer () {
     m_indexType = std::nullopt;
 }
 
-void GlPipeline::render (IFrameBuffer* frameBuffer, std::size_t vertices, std::size_t offset) {
+void GlPipeline::render (ICommandList& list, IFrameBuffer* frameBuffer, std::size_t vertices, std::size_t offset) {
     PHENYL_DASSERT(m_shader);
 
     getShader().bind();
@@ -117,8 +117,8 @@ void GlPipeline::render (IFrameBuffer* frameBuffer, std::size_t vertices, std::s
     }
 }
 
-void GlPipeline::renderInstanced (IFrameBuffer* frameBuffer, std::size_t numInstances, std::size_t vertices,
-    std::size_t offset) {
+void GlPipeline::renderInstanced (ICommandList& list, IFrameBuffer* frameBuffer, std::size_t numInstances,
+    std::size_t vertices, std::size_t offset) {
     PHENYL_DASSERT(m_shader);
 
     getShader().bind();
