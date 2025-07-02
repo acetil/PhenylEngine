@@ -226,6 +226,11 @@ void World::removeInt (EntityId id, bool updateParent) {
     m_idList.removeId(id);
 }
 
+detail::UntypedComponent* World::findComponent (meta::TypeIndex compType) {
+    auto it = m_components.find(compType);
+    return it != m_components.end() ? it->second.get() : nullptr;
+}
+
 Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
     auto it = std::ranges::find_if(m_archetypes, [&] (const auto& arch) { return arch->getKey() == key; });
 
