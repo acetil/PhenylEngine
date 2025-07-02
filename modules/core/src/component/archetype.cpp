@@ -13,7 +13,9 @@ Archetype::Archetype (detail::IArchetypeManager& manager,
         auto* instance = m_manager.findComponent(type);
         PHENYL_DASSERT(instance);
 
-        m_interfaces.emplace(type, vec.get());
+        for (auto interface : instance->interfaces()) {
+            m_interfaces.emplace(interface, vec.get());
+        }
     }
 }
 
