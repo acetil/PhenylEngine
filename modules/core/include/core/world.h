@@ -93,7 +93,8 @@ public:
 
     template <typename... Args>
     Query<Args...> query () {
-        return Query<Args...>{makeQueryArchetypes(detail::ArchetypeKey::Make<Args...>()), this};
+        std::array comps{meta::TypeIndex::Get<Args>()...};
+        return Query<Args...>{makeQueryArchetypes(makeQueryKey(comps)), this};
     }
 
     template <typename T>
@@ -187,7 +188,8 @@ private:
     void completeCreation (EntityId id, EntityId parent);
     void removeInt (EntityId id, bool updateParent);
 
-    std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::ArchetypeKey key);
+    detail::QueryKey makeQueryKey (std::span<meta::TypeIndex> types);
+    std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::QueryKey key);
     void cleanupQueryArchetypes ();
 
     detail::UntypedComponent* findComponent (meta::TypeIndex compType) override;
