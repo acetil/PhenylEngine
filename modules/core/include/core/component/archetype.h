@@ -3,6 +3,7 @@
 #include "core/entity_id.h"
 #include "detail/archetype_key.h"
 #include "detail/component_vector.h"
+#include "detail/component_view.h"
 #include "detail/iarchetype_manager.h"
 #include "detail/prefab_factory.h"
 #include "util/type_index.h"
@@ -138,6 +139,18 @@ private:
         auto it = m_components.find(meta::TypeIndex::Get<T>());
         return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) :
                                           nullptr;
+    }
+
+    template <typename T>
+    ComponentView<std::remove_reference_t<T>> getComponentView (meta::TypeIndex type) {
+        PHENYL_DASSERT(m_components.contains(type));
+        return ComponentView<std::remove_reference_t<T>>(*m_components[type]);
+    }
+
+    template <typename T>
+    ComponentView<const std::remove_cvref_t<T>> getComponentView (meta::TypeIndex type) const {
+        PHENYL_DASSERT(m_components.contains(type));
+        return ComponentView<std::remove_cvref_t<T>>(*m_components.at(type));
     }
 
     template <typename T>
