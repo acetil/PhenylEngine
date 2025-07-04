@@ -62,6 +62,20 @@ public:
         m_components.emplace(index, std::move(comp));
     }
 
+    template <typename Interface, std::derived_from<Interface> T>
+    void declareInterface () {
+        // Only empty archetype should exist for interface declaration to be correct
+        PHENYL_ASSERT_MSG(m_archetypes.size() == 1, "Must declare interfaces before any entities are created!");
+
+        auto interfaceType = meta::TypeIndex::Get<std::remove_cvref_t<Interface>>();
+        auto compType = meta::TypeIndex::Get<std::remove_cvref_t<T>>();
+
+        auto it = m_components.find(compType);
+        PHENYL_ASSERT_MSG(it != m_components.end(), "Cannot declare interface of non-existent component");
+
+        it->second->declareInterface(interfaceType);
+    }
+
     Entity create (EntityId parent = EntityId{});
     void remove (EntityId id);
     void reparent (EntityId id, EntityId parent);
@@ -79,7 +93,8 @@ public:
 
     template <typename... Args>
     Query<Args...> query () {
-        return Query<Args...>{makeQueryArchetypes(detail::ArchetypeKey::Make<Args...>()), this};
+        std::array comps{meta::TypeIndex::Get<Args>()...};
+        return Query<Args...>{makeQueryArchetypes(makeQueryKey(comps)), this};
     }
 
     template <typename T>
@@ -173,9 +188,11 @@ private:
     void completeCreation (EntityId id, EntityId parent);
     void removeInt (EntityId id, bool updateParent);
 
-    std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::ArchetypeKey key);
+    detail::QueryKey makeQueryKey (std::span<meta::TypeIndex> types);
+    std::shared_ptr<QueryArchetypes> makeQueryArchetypes (detail::QueryKey key);
     void cleanupQueryArchetypes ();
 
+    detail::UntypedComponent* findComponent (meta::TypeIndex compType) override;
     Archetype* findArchetype (const detail::ArchetypeKey& key) override;
     void updateEntityEntry (EntityId id, Archetype* archetype, std::size_t pos) override;
 

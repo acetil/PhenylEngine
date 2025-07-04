@@ -29,6 +29,16 @@ public:
         return m_name;
     }
 
+    const std::vector<meta::TypeIndex> interfaces () const noexcept {
+        return m_interfaces;
+    }
+
+    void declareInterface (meta::TypeIndex interface) {
+        if (std::ranges::find(m_interfaces, interface) == m_interfaces.end()) {
+            m_interfaces.emplace_back(interface);
+        }
+    }
+
     virtual std::unique_ptr<UntypedComponentVector> makeVector () = 0;
     virtual void onInsert (EntityId id, std::byte* comp) = 0;
     virtual void onRemove (EntityId id, std::byte* comp) = 0;
@@ -46,6 +56,7 @@ private:
     World* m_world;
     std::string m_name;
     meta::TypeIndex m_type;
+    std::vector<meta::TypeIndex> m_interfaces{};
 };
 
 template <typename T>

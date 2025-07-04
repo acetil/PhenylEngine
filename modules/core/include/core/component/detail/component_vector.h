@@ -41,6 +41,10 @@ public:
         return m_capacity;
     }
 
+    [[nodiscard]] std::size_t stride () const noexcept {
+        return m_compSize;
+    }
+
     virtual std::unique_ptr<UntypedComponentVector> makeNew (std::size_t startCapacity = 16) const = 0;
 
 protected:

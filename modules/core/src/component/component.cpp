@@ -226,6 +226,11 @@ void World::removeInt (EntityId id, bool updateParent) {
     m_idList.removeId(id);
 }
 
+detail::UntypedComponent* World::findComponent (meta::TypeIndex compType) {
+    auto it = m_components.find(compType);
+    return it != m_components.end() ? it->second.get() : nullptr;
+}
+
 Archetype* World::findArchetype (const detail::ArchetypeKey& key) {
     auto it = std::ranges::find_if(m_archetypes, [&] (const auto& arch) { return arch->getKey() == key; });
 
@@ -317,7 +322,23 @@ void World::raiseSignal (EntityId id, meta::TypeIndex signalType, std::byte* ptr
     deferRemoveEnd();
 }
 
-std::shared_ptr<QueryArchetypes> World::makeQueryArchetypes (detail::ArchetypeKey key) {
+detail::QueryKey World::makeQueryKey (std::span<meta::TypeIndex> types) {
+    std::ranges::sort(types);
+
+    std::vector<meta::TypeIndex> comps;
+    std::vector<meta::TypeIndex> interfaces;
+    for (auto i : types) {
+        if (m_components.contains(i)) {
+            comps.emplace_back(i);
+        } else {
+            interfaces.emplace_back(i);
+        }
+    }
+
+    return detail::QueryKey{detail::ArchetypeKey{std::move(comps)}, std::move(interfaces)};
+}
+
+std::shared_ptr<QueryArchetypes> World::makeQueryArchetypes (detail::QueryKey key) {
     cleanupQueryArchetypes();
 
     for (const auto& weakArch : m_queryArchetypes) {

@@ -4,10 +4,10 @@
 
 using namespace phenyl::core;
 
-QueryArchetypes::QueryArchetypes (World& world, detail::ArchetypeKey key) : m_world{world}, m_key{std::move(key)} {}
+QueryArchetypes::QueryArchetypes (World& world, detail::QueryKey key) : m_world{world}, m_key{std::move(key)} {}
 
 void QueryArchetypes::onNewArchetype (Archetype* archetype) {
-    if (archetype->getKey().subsetOf(m_key)) {
+    if (m_key.isSatisfied(archetype)) {
         // All components found
         m_archetypes.emplace(archetype);
     }
@@ -20,6 +20,20 @@ void QueryArchetypes::lock () {
 void QueryArchetypes::unlock () {
     m_world.deferEnd();
 }
+
+detail::QueryKey::QueryKey (ArchetypeKey archKey, std::vector<meta::TypeIndex> interfaces) :
+    m_archKey{std::move(archKey)},
+    m_interfaces{std::move(interfaces)} {}
+
+bool detail::QueryKey::isSatisfied (const Archetype* archetype) {
+    if (!archetype->getKey().subsetOf(m_archKey)) {
+        return false;
+    }
+
+    return std::ranges::all_of(m_interfaces, [&] (auto i) { return archetype->hasUntyped(i); });
+}
+
+bool detail::QueryKey::operator== (const QueryKey& other) const = default;
 
 QueryArchetypes::Iterator::Iterator () = default;
 

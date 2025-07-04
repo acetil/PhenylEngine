@@ -46,7 +46,7 @@ public:
         Iterator () = default;
 
         value_type operator* () const {
-            return {(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos]...};
+            return {view->get<Args>()[pos]...};
         }
 
         Iterator& operator++ () {
@@ -98,7 +98,7 @@ public:
         }
 
         value_type operator[] (difference_type n) const {
-            return value_type{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos + n]...};
+            return value_type{view->get<Args>()[pos + n]...};
         }
 
         bool operator== (const Iterator& other) const noexcept {
@@ -131,7 +131,7 @@ public:
 
         value_type operator* () const {
             return value_type{Entity{view->archetype.m_entityIds[pos], view->manager},
-              std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos]...}};
+              std::tuple<Args&...>{view->get<Args>()[pos]...}};
         }
 
         BundleIterator& operator++ () {
@@ -184,8 +184,7 @@ public:
 
         value_type operator[] (difference_type n) const {
             return value_type{Entity{view->archetype.m_entityIds[pos + n], view->manager},
-              std::tuple<Args&...>{
-                (*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(view->components))[pos + n]...}};
+              std::tuple<Args&...>{view->get<Args>()[pos + n]...}};
         }
 
         bool operator== (const BundleIterator& other) const noexcept {
@@ -214,15 +213,14 @@ public:
     explicit ArchetypeView (Archetype& archetype, World* manager) :
         archetype{archetype},
         manager{manager},
-        components{&archetype.getComponent<std::remove_cvref_t<Args>>()...} {}
+        components{archetype.getComponentView<std::remove_reference_t<Args>>(meta::TypeIndex::Get<Args>())...} {}
 
     [[nodiscard]] std::size_t size () const noexcept {
         return archetype.size();
     }
 
     Bundle<Args...> bundle (std::size_t pos) {
-        return {Entity{archetype.m_entityIds[pos], manager},
-          std::tuple<Args&...>{(*std::get<ComponentVector<std::remove_cvref_t<Args>>*>(components))[pos]...}};
+        return {Entity{archetype.m_entityIds[pos], manager}, std::tuple<Args&...>{get<Args>()[pos]...}};
     }
 
     iterator begin () {
@@ -240,6 +238,16 @@ public:
 private:
     Archetype& archetype;
     World* manager;
-    std::tuple<ComponentVector<std::remove_cvref_t<Args>>*...> components;
+    std::tuple<ComponentView<std::remove_reference_t<Args>>...> components;
+
+    template <typename T>
+    ComponentView<T>& get () {
+        return std::get<ComponentView<std::remove_reference_t<T>>>(components);
+    }
+
+    template <typename T>
+    const ComponentView<T>& get () const {
+        return std::get<ComponentView<std::remove_reference_t<T>>>(components);
+    }
 };
 } // namespace phenyl::core

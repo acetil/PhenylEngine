@@ -8,7 +8,16 @@ Archetype::Archetype (detail::IArchetypeManager& manager,
     std::map<meta::TypeIndex, std::unique_ptr<UntypedComponentVector>> components) :
     m_manager{manager},
     m_key{components | std::ranges::views::keys},
-    m_components{std::move(components)} {}
+    m_components{std::move(components)} {
+    for (auto& [type, vec] : m_components) {
+        auto* instance = m_manager.findComponent(type);
+        PHENYL_DASSERT(instance);
+
+        for (auto interface : instance->interfaces()) {
+            m_interfaces.emplace(interface, vec.get());
+        }
+    }
+}
 
 Archetype::Archetype (detail::IArchetypeManager& manager) : m_manager{manager} {}
 
@@ -49,6 +58,16 @@ void Archetype::instantiatePrefab (const detail::PrefabFactories& factories, std
     auto newPos = archetype->moveFrom(*this, pos);
     remove(pos);
     archetype->instantiateInto(factories, newPos);
+}
+
+UntypedComponentVector* Archetype::tryGetVector (meta::TypeIndex type) const {
+    auto compIt = m_components.find(type);
+    if (compIt != m_components.end()) {
+        return compIt->second.get();
+    }
+
+    auto it = m_interfaces.find(type);
+    return it != m_interfaces.end() ? it->second : nullptr;
 }
 
 std::size_t Archetype::moveFrom (Archetype& other, std::size_t pos) {

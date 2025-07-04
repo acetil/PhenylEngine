@@ -30,7 +30,7 @@ static void RigidBody2DMotionSystem (const phenyl::core::Resources<const phenyl:
 }
 
 static void Collider2DSyncSystem (const phenyl::core::GlobalTransform2D& transform, const RigidBody2D& body,
-    BoxCollider2D& collider) {
+    Collider2D& collider) {
     collider.syncUpdates(body, transform.position());
 }
 
@@ -99,7 +99,7 @@ static void Constraints2DSolveSystem (const phenyl::core::Resources<Constraints2
     constraints.constraints.clear();
 }
 
-static void Collider2DUpdateSystem (RigidBody2D& body, const BoxCollider2D& collider) {
+static void Collider2DUpdateSystem (RigidBody2D& body, const Collider2D& collider) {
     collider.updateBody(body);
 }
 
@@ -107,6 +107,7 @@ void Physics2D::addComponents (core::PhenylRuntime& runtime) {
     runtime.addComponent<RigidBody2D>("RigidBody2D");
     // runtime.addUnserializedComponent<Collider2D>("Collider2D");
     runtime.addComponent<BoxCollider2D>("BoxCollider2D");
+    runtime.declareInterface<Collider2D, BoxCollider2D>();
 
     // runtime.manager().inherits<BoxCollider2D, Collider2D>();
 

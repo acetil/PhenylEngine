@@ -3,6 +3,7 @@
 #include "core/entity_id.h"
 #include "detail/archetype_key.h"
 #include "detail/component_vector.h"
+#include "detail/component_view.h"
 #include "detail/iarchetype_manager.h"
 #include "detail/prefab_factory.h"
 #include "util/type_index.h"
@@ -18,7 +19,7 @@ public:
         std::map<meta::TypeIndex, std::unique_ptr<UntypedComponentVector>> components);
 
     bool hasUntyped (meta::TypeIndex typeIndex) const noexcept {
-        return m_components.contains(typeIndex);
+        return m_components.contains(typeIndex) || m_interfaces.contains(typeIndex);
     }
 
     template <typename T>
@@ -41,28 +42,34 @@ public:
 
     template <typename T>
     T& get (std::size_t pos) {
-        PHENYL_DASSERT(pos < size());
-        return getComponent<T>()[pos];
+        auto* obj = tryGet<T>(pos);
+        PHENYL_DASSERT(obj);
+        return *obj;
     }
 
     template <typename T>
     const T& get (std::size_t pos) const {
-        PHENYL_DASSERT(pos < size());
-        return getComponent<T>()[pos];
+        auto* obj = tryGet<T>(pos);
+        PHENYL_DASSERT(obj);
+        return *obj;
     }
 
     template <typename T>
     T* tryGet (std::size_t pos) {
         PHENYL_DASSERT(pos < size());
-        auto* comp = tryGetComponent<T>();
-        return comp ? &(*comp)[pos] : nullptr;
+        // auto* comp = tryGetComponent<T>();
+        // return comp ? &(*comp)[pos] : nullptr;
+        auto* vec = tryGetVector(meta::TypeIndex::Get<T>());
+        return vec ? reinterpret_cast<T*>(vec->getUntyped(pos)) : nullptr;
     }
 
     template <typename T>
     const T* tryGet (std::size_t pos) const {
         PHENYL_DASSERT(pos < size());
-        auto* comp = tryGetComponent<T>();
-        return comp ? &(*comp)[pos] : nullptr;
+        // auto* comp = tryGetComponent<T>();
+        // return comp ? &(*comp)[pos] : nullptr;
+        auto* vec = tryGetVector(meta::TypeIndex::Get<T>());
+        return vec ? reinterpret_cast<T*>(vec->getUntyped(pos)) : nullptr;
     }
 
     void remove (std::size_t pos);
@@ -109,6 +116,7 @@ private:
     detail::ArchetypeKey m_key;
 
     std::map<meta::TypeIndex, std::unique_ptr<UntypedComponentVector>> m_components;
+    std::unordered_map<meta::TypeIndex, UntypedComponentVector*> m_interfaces;
     std::vector<EntityId> m_entityIds;
 
     std::unordered_map<meta::TypeIndex, Archetype*> m_addArchetypes;
@@ -116,29 +124,49 @@ private:
 
     template <typename T>
     ComponentVector<std::remove_cvref_t<T>>& getComponent () {
-        PHENYL_DASSERT(m_components.contains(meta::TypeIndex::Get<T>()));
-        return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*m_components[meta::TypeIndex::Get<T>()]);
+        auto component = tryGetComponent<T>();
+        PHENYL_DASSERT(component);
+        return *component;
     }
 
     template <typename T>
     const ComponentVector<std::remove_cvref_t<T>>& getComponent () const {
-        PHENYL_DASSERT(m_components.contains(meta::TypeIndex::Get<T>()));
-        return static_cast<ComponentVector<std::remove_cvref_t<T>>&>(*m_components.at(meta::TypeIndex::Get<T>()));
+        auto component = tryGetComponent<T>();
+        PHENYL_DASSERT(component);
+        return *component;
     }
 
     template <typename T>
     ComponentVector<std::remove_cvref_t<T>>* tryGetComponent () {
-        auto it = m_components.find(meta::TypeIndex::Get<T>());
-        return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) :
-                                          nullptr;
+        // auto it = m_components.find(meta::TypeIndex::Get<T>());
+        // return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) :
+        //                                   nullptr;
+        return static_cast<ComponentVector<std::remove_cvref_t<T>>*>(tryGetVector(meta::TypeIndex::Get<T>()));
     }
 
     template <typename T>
     const ComponentVector<std::remove_cv_t<T>>* tryGetComponent () const {
-        auto it = m_components.find(meta::TypeIndex::Get<T>());
-        return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) :
-                                          nullptr;
+        // auto it = m_components.find(meta::TypeIndex::Get<T>());
+        // return it != m_components.end() ? static_cast<ComponentVector<std::remove_cvref_t<T>>*>(it->second.get()) :
+        //                                   nullptr;
+        return static_cast<ComponentVector<std::remove_cvref_t<T>>*>(tryGetVector(meta::TypeIndex::Get<T>()));
     }
+
+    template <typename T>
+    ComponentView<std::remove_reference_t<T>> getComponentView (meta::TypeIndex type) {
+        auto* vec = tryGetVector(type);
+        PHENYL_DASSERT(vec);
+        return ComponentView<std::remove_reference_t<T>>(*vec);
+    }
+
+    template <typename T>
+    ComponentView<const std::remove_cvref_t<T>> getComponentView (meta::TypeIndex type) const {
+        auto* vec = tryGetVector(type);
+        PHENYL_DASSERT(vec);
+        return ComponentView<const std::remove_cvref_t<T>>(*vec);
+    }
+
+    UntypedComponentVector* tryGetVector (meta::TypeIndex type) const;
 
     template <typename T>
     Archetype& getWith () {

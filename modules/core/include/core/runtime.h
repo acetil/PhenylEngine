@@ -111,6 +111,11 @@ public:
         world().addComponent<T>(std::move(name));
     }
 
+    template <typename Interface, std::derived_from<Interface> T>
+    void declareInterface () {
+        world().declareInterface<Interface, T>();
+    }
+
     template <typename S>
     System<S>& addSystem (std::string systemName, auto systemFunc) {
         auto* system = makeSystem<S>(std::move(systemName), systemFunc);

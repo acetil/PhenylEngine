@@ -9,9 +9,24 @@
 #include <vector>
 
 namespace phenyl::core {
+namespace detail {
+    class QueryKey {
+    public:
+        QueryKey (ArchetypeKey archKey, std::vector<meta::TypeIndex> interfaces);
+
+        bool isSatisfied (const Archetype* archetype);
+
+        bool operator== (const QueryKey& other) const;
+
+    private:
+        ArchetypeKey m_archKey;
+        std::vector<meta::TypeIndex> m_interfaces;
+    };
+} // namespace detail
+
 class QueryArchetypes {
 public:
-    explicit QueryArchetypes (World& world, detail::ArchetypeKey key);
+    explicit QueryArchetypes (World& world, detail::QueryKey key);
 
     class Iterator {
     public:
@@ -41,7 +56,7 @@ public:
     using const_iterator = Iterator;
     using iterator = Iterator;
 
-    const detail::ArchetypeKey& getKey () const noexcept {
+    const detail::QueryKey& getKey () const noexcept {
         return m_key;
     }
 
@@ -80,7 +95,7 @@ public:
 
 private:
     World& m_world;
-    detail::ArchetypeKey m_key;
+    detail::QueryKey m_key;
     std::unordered_set<Archetype*> m_archetypes;
 };
 
