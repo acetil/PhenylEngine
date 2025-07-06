@@ -20,8 +20,7 @@ FontManager::FontManager (const Viewport& viewport, GlyphAtlas& glyphAtlas) :
 FontManager::FontManager (FontManager&& other) noexcept :
     m_viewport{other.m_viewport},
     m_library{other.m_library},
-    m_glyphAtlas{other.m_glyphAtlas},
-    m_fonts{std::move(other.m_fonts)} {
+    m_glyphAtlas{other.m_glyphAtlas} {
     other.m_library = nullptr;
 }
 
@@ -31,7 +30,6 @@ FontManager& FontManager::operator= (FontManager&& other) noexcept {
     }
 
     m_library = other.m_library;
-    m_fonts = std::move(other.m_fonts);
 
     other.m_library = nullptr;
 
@@ -39,7 +37,7 @@ FontManager& FontManager::operator= (FontManager&& other) noexcept {
 }
 
 FontManager::~FontManager () {
-    m_fonts.clear();
+    m_loadedFonts.clear();
 
     if (m_library) {
         FT_Done_FreeType(m_library);
@@ -50,7 +48,7 @@ const char* FontManager::getFileType () const {
     return ".ttf";
 }
 
-Font* FontManager::load (std::ifstream& data, std::size_t id) {
+std::shared_ptr<Font> FontManager::load (std::ifstream& data) {
     std::vector<char> bytes{std::istreambuf_iterator{data}, std::istreambuf_iterator<char>{}};
     auto dataSize = bytes.size();
     auto fontData = std::make_unique<std::byte[]>(bytes.size());
@@ -64,42 +62,10 @@ Font* FontManager::load (std::ifstream& data, std::size_t id) {
         return nullptr;
     }
 
-    auto font = std::make_unique<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
+    auto font = std::make_shared<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
         m_viewport.getContentScale() * glm::vec2{96, 96});
-    auto* ptr = font.get();
-    m_fonts.emplace(id, std::move(font));
-
-    return ptr;
-}
-
-std::shared_ptr<Font> FontManager::load2 (std::ifstream& data) {
-    std::vector<char> bytes{std::istreambuf_iterator{data}, std::istreambuf_iterator<char>{}};
-    auto dataSize = bytes.size();
-    auto fontData = std::make_unique<std::byte[]>(bytes.size());
-    std::ranges::copy(bytes, reinterpret_cast<char*>(fontData.get()));
-
-    FT_Face face;
-    auto error = FT_New_Memory_Face(m_library, reinterpret_cast<const FT_Byte*>(fontData.get()),
-        static_cast<FT_Long>(dataSize), 0, &face);
-    if (error) {
-        PHENYL_LOGE(LOGGER, "FreeType error on FT_New_Memory_Face ({}): {}", error, FT_Error_String(error));
-        return nullptr;
-    }
-
-    return std::make_shared<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
-        m_viewport.getContentScale() * glm::vec2{96, 96});
-}
-
-Font* FontManager::load (Font&& obj, std::size_t id) {
-    auto font = std::make_unique<Font>(std::move(obj));
-    auto* ptr = font.get();
-    m_fonts.emplace(id, std::move(font));
-
-    return ptr;
-}
-
-void FontManager::queueUnload (std::size_t id) {
-    // Do nothing
+    m_loadedFonts.emplace_back(font); // Unloading not supported yet
+    return font;
 }
 
 void FontManager::selfRegister () {

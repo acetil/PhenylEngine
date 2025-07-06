@@ -119,7 +119,7 @@ public:
     virtual std::optional<std::size_t> getUniformBlockSize (const std::string& uniformBlock) const noexcept = 0;
 };
 
-class Shader : public core::AssetType2<Shader> {
+class Shader : public core::AssetType<Shader> {
 public:
     Shader () = default;
 

@@ -17,7 +17,7 @@ std::string_view CanvasRenderLayer::getName () const {
 
 void CanvasRenderLayer::init (Renderer& renderer) {
     BufferBinding textBinding;
-    auto textShader = phenyl::core::Assets::Load2<Shader>("phenyl/shaders/canvas");
+    auto textShader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/canvas");
     m_pipeline = renderer.buildPipeline()
                      .withShader(textShader)
                      .withBuffer<Vertex>(textBinding)

@@ -255,15 +255,15 @@ void GLRenderer::loadDefaultShaders () {
             .withSampler("frameBuffer")
             .build());
 
-    core::Assets::LoadVirtual2("phenyl/shaders/box", m_boxShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/debug", m_debugShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/sprite", m_spriteShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/canvas", m_textShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/particle", m_particleShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/blinn_phong", m_meshShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/shadow_map", m_shadowMapShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/mesh_prepass", m_prepassShader);
-    core::Assets::LoadVirtual2("phenyl/shaders/postprocess/noop", m_noopPostShader);
+    core::Assets::LoadVirtual("phenyl/shaders/box", m_boxShader);
+    core::Assets::LoadVirtual("phenyl/shaders/debug", m_debugShader);
+    core::Assets::LoadVirtual("phenyl/shaders/sprite", m_spriteShader);
+    core::Assets::LoadVirtual("phenyl/shaders/canvas", m_textShader);
+    core::Assets::LoadVirtual("phenyl/shaders/particle", m_particleShader);
+    core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", m_meshShader);
+    core::Assets::LoadVirtual("phenyl/shaders/shadow_map", m_shadowMapShader);
+    core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", m_prepassShader);
+    core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", m_noopPostShader);
 }
 
 std::string_view GLRenderer::getName () const noexcept {

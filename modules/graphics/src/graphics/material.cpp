@@ -77,7 +77,7 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     auto builder = m_renderer.buildPipeline();
     builder.withBlending(BlendMode::ADDITIVE);
 
-    auto prepassShader = core::Assets::Load2<Shader>("phenyl/shaders/mesh_prepass");
+    auto prepassShader = core::Assets::Load<Shader>("phenyl/shaders/mesh_prepass");
 
     UniformBinding globalUniform;
     BufferBinding model;
@@ -119,7 +119,7 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
 
     auto builder = m_renderer.buildPipeline();
 
-    auto shadowMapShader = core::Assets::Load2<Shader>("phenyl/shaders/shadow_map");
+    auto shadowMapShader = core::Assets::Load<Shader>("phenyl/shaders/shadow_map");
 
     UniformBinding lightUniform;
     BufferBinding model;

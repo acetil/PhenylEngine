@@ -44,7 +44,6 @@ AudioSystem::AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t max
 }
 
 AudioSystem::~AudioSystem () {
-    m_samples.clear();
     for (auto& i : m_backendSources) {
         m_backend->destroySource(i.backendId);
     }
@@ -54,20 +53,7 @@ std::unique_ptr<AudioSystem> phenyl::audio::MakeOpenALSystem () {
     return std::make_unique<AudioSystem>(std::make_unique<OpenALSystem>());
 }
 
-AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
-    // Assume is wav format
-    auto wavOpt = WAVFile::Load(data);
-    if (!wavOpt) {
-        return nullptr;
-    }
-
-    m_samples[id] =
-        std::unique_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(*wavOpt))); // cpp is trash
-
-    return m_samples[id].get();
-}
-
-std::shared_ptr<AudioSample> AudioSystem::load2 (std::ifstream& data) {
+std::shared_ptr<AudioSample> AudioSystem::load (std::ifstream& data) {
     // Assume is wav format
     auto wavOpt = WAVFile::Load(data);
     if (!wavOpt) {
@@ -75,18 +61,6 @@ std::shared_ptr<AudioSample> AudioSystem::load2 (std::ifstream& data) {
     }
 
     return std::shared_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(*wavOpt)));
-}
-
-AudioSample* AudioSystem::load (AudioSample&& obj, std::size_t id) {
-    m_samples[id] = std::make_unique<AudioSample>(std::move(obj));
-
-    return m_samples[id].get();
-}
-
-void AudioSystem::queueUnload (std::size_t id) {
-    if (onUnload(id)) {
-        m_samples.erase(id);
-    }
 }
 
 const char* AudioSystem::getFileType () const {

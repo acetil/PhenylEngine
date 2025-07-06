@@ -41,7 +41,7 @@ void MeshRenderLayer::init (Renderer& renderer) {
 
     // meshMaterial = core::Assets::Load<Material>("resources/phenyl/materials/blinn_phong");
 
-    auto ppShader = core::Assets::Load2<Shader>("phenyl/shaders/postprocess/noop");
+    auto ppShader = core::Assets::Load<Shader>("phenyl/shaders/postprocess/noop");
     BufferBinding vertexBinding;
 
     m_postProcessPipeline = renderer.buildPipeline()

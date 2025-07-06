@@ -217,92 +217,7 @@ const char* GlShaderManager::getFileType () const {
     return ".json";
 }
 
-Shader* GlShaderManager::load (std::ifstream& data, std::size_t id) {
-    PHENYL_TRACE(LOGGER, "Loading shader from file");
-    nlohmann::json json;
-    data >> json;
-    if (!json.is_object()) {
-        PHENYL_LOGE(LOGGER, "Expected object for shader, got {}", json.type_name());
-        return nullptr;
-    }
-
-    if (!json.contains("shaders")) {
-        PHENYL_LOGE(LOGGER, "Failed to find member \"shaders\" of shader!");
-        return nullptr;
-    }
-    const auto& jsonShaders = json.at("shaders");
-    if (!jsonShaders.is_object()) {
-        PHENYL_LOGE(LOGGER, "Expected object for shaders member, got {}!", jsonShaders.type_name());
-        return nullptr;
-    }
-
-    GlShader::Builder builder;
-    for (const auto& [type, path] : jsonShaders.get<nlohmann::json::object_t>()) {
-        if (!path.is_string()) {
-            PHENYL_LOGE(LOGGER, "Expected string for \"{}\" shader path, got {}", type, path.type_name());
-            return nullptr;
-        }
-        auto source = ReadFromPath(path.get<std::string>());
-        if (!source) {
-            PHENYL_LOGE(LOGGER, "Failed to read source for \"{}\" shader", type);
-            return nullptr;
-        }
-
-        if (type == "fragment") {
-            PHENYL_TRACE(LOGGER, "Added fragment shader");
-            builder.withSource(ShaderSourceType::FRAGMENT, std::move(*source));
-        } else if (type == "vertex") {
-            PHENYL_TRACE(LOGGER, "Added vertex shader");
-            builder.withSource(ShaderSourceType::VERTEX, std::move(*source));
-        } else {
-            PHENYL_LOGW(LOGGER, "Unsupported shader type \"{}\", ignoring", type);
-        }
-    }
-
-    if (json.contains("uniforms")) {
-        if (!json["uniforms"].is_array()) {
-            PHENYL_LOGE(LOGGER, "Expected array for uniforms, got {}!", json["uniforms"].type_name());
-            return nullptr;
-        }
-        for (const auto& key : json["uniforms"].get<nlohmann::json::array_t>()) {
-            if (!key.is_string()) {
-                PHENYL_LOGE(LOGGER, "Expected string for uniform name, got {}!", key.type_name());
-                return nullptr;
-            }
-
-            PHENYL_TRACE(LOGGER, "Added uniform block \"{}\"", key.get<std::string>());
-            builder.withUniformBlock(key.get<std::string>());
-        }
-    }
-
-    if (json.contains("samplers")) {
-        if (!json["samplers"].is_array()) {
-            PHENYL_LOGE(LOGGER, "Expected array for samplers, got {}!", json["samplers"].type_name());
-            return nullptr;
-        }
-        for (const auto& key : json["samplers"].get<nlohmann::json::array_t>()) {
-            if (!key.is_string()) {
-                PHENYL_LOGE(LOGGER, "Expected string for sampler name, got {}!", key.type_name());
-                return nullptr;
-            }
-            PHENYL_TRACE(LOGGER, "Added sampler \"{}\"", key.get<std::string>());
-            builder.withSampler(key.get<std::string>());
-        }
-    }
-
-    auto shader = builder.build();
-    if (!shader) {
-        PHENYL_LOGE(LOGGER, "Failed to build shader!");
-        return nullptr;
-    }
-
-    PHENYL_TRACE(LOGGER, "Successfully built shader");
-    PHENYL_DASSERT(!m_shaders.contains(id));
-    m_shaders[id] = Shader{std::move(shader)};
-    return &m_shaders[id];
-}
-
-std::shared_ptr<Shader> GlShaderManager::load2 (std::ifstream& data) {
+std::shared_ptr<Shader> GlShaderManager::load (std::ifstream& data) {
     PHENYL_TRACE(LOGGER, "Loading shader from file");
     nlohmann::json json;
     data >> json;
@@ -383,18 +298,6 @@ std::shared_ptr<Shader> GlShaderManager::load2 (std::ifstream& data) {
 
     PHENYL_TRACE(LOGGER, "Successfully built shader");
     return std::make_shared<Shader>(std::move(shader));
-}
-
-Shader* GlShaderManager::load (Shader&& obj, std::size_t id) {
-    PHENYL_DASSERT(!m_shaders.contains(id));
-    m_shaders[id] = std::move(obj);
-    return &m_shaders[id];
-}
-
-void GlShaderManager::queueUnload (std::size_t id) {
-    if (onUnload(id)) {
-        m_shaders.erase(id);
-    }
 }
 
 void GlShaderManager::selfRegister () {

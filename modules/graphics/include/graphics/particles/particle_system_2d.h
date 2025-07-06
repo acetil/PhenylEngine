@@ -38,7 +38,7 @@ struct ParticleProperties2D {
     glm::vec4 colourEndMax;
 };
 
-class ParticleSystem2D : public core::AssetType2<ParticleSystem2D> {
+class ParticleSystem2D : public core::AssetType<ParticleSystem2D> {
 public:
     ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles);
 

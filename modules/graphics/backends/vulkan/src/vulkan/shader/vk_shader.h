@@ -43,10 +43,7 @@ class VulkanShaderManager : public core::AssetManager<graphics::Shader> {
 public:
     VulkanShaderManager (VkDevice device);
 
-    graphics::Shader* load (std::ifstream& data, std::size_t id) override;
-    std::shared_ptr<graphics::Shader> load2 (std::ifstream& data) override;
-    graphics::Shader* load (graphics::Shader&& obj, std::size_t id) override;
-    void queueUnload (std::size_t id) override;
+    std::shared_ptr<graphics::Shader> load (std::ifstream& data) override;
     bool isBinary () const override;
     const char* getFileType () const override;
 
@@ -57,8 +54,6 @@ public:
 private:
     VkDevice m_device;
     VulkanShaderCompiler m_compiler;
-
-    std::unordered_map<std::size_t, std::unique_ptr<graphics::Shader>> m_shaders;
 
     std::vector<std::shared_ptr<graphics::Shader>> m_defaultShaders;
     void loadDefault (const std::string& path, std::unique_ptr<VulkanShader> shader);

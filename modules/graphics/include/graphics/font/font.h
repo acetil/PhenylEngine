@@ -18,7 +18,7 @@ struct TextBounds {
     glm::ivec2 baselineOffset;
 };
 
-class Font : public core::AssetType2<Font> {
+class Font : public core::AssetType<Font> {
 public:
     Font (GlyphAtlas& atlas, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId,
         glm::ivec2 windowDPI);

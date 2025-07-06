@@ -40,7 +40,7 @@ std::string_view EntityRenderLayer::getName () const {
 
 void EntityRenderLayer::init (Renderer& renderer) {
     BufferBinding vertexBinding;
-    auto shader = phenyl::core::Assets::Load2<Shader>("phenyl/shaders/sprite");
+    auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/sprite");
     m_pipeline = renderer.buildPipeline()
                      .withShader(shader)
                      .withBuffer<Vertex>(vertexBinding)

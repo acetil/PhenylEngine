@@ -157,20 +157,8 @@ LevelManager::LevelManager (core::World& world, core::EntityComponentSerializer&
 
 LevelManager::~LevelManager () = default;
 
-Level* LevelManager::load (std::ifstream& data, std::size_t id) {
-    m_levels[id] = std::make_unique<Level>(Level{std::move(data), *this});
-
-    return m_levels[id].get();
-}
-
-std::shared_ptr<Level> LevelManager::load2 (std::ifstream& data) {
+std::shared_ptr<Level> LevelManager::load (std::ifstream& data) {
     return std::make_shared<Level>(Level{std::move(data), *this});
-}
-
-void LevelManager::queueUnload (std::size_t id) {
-    if (onUnload(id)) {
-        m_levels.erase(id);
-    }
 }
 
 const char* LevelManager::getFileType () const {
@@ -217,12 +205,6 @@ void LevelManager::dump (std::ostream& file) const {
     LevelSerializable serializable{m_world, m_serializer};
     LevelMarker marker{};
     core::SerializeToJson(file, serializable, marker, true);
-}
-
-Level* LevelManager::load (Level&& obj, std::size_t id) {
-    PHENYL_LOGD(LOGGER, "Loading already created level");
-    m_levels[id] = std::make_unique<Level>(std::move(obj));
-    return m_levels[id].get();
 }
 
 std::string_view LevelManager::getName () const noexcept {

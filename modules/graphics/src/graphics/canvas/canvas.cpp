@@ -56,7 +56,7 @@ Canvas::Canvas (Renderer& renderer) :
     renderer.getViewport().addUpdateHandler(this);
     m_offsetStack.emplace_back(0, 0);
 
-    m_defaultFont = core::Assets::Load2<Font>("resources/phenyl/fonts/noto-serif");
+    m_defaultFont = core::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");
 }
 
 Canvas::~Canvas () = default;

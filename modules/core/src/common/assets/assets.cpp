@@ -7,26 +7,14 @@ using namespace phenyl::core;
 
 Assets* Assets::INSTANCE = nullptr;
 
-bool detail::AssetManagerBase::OnUnloadUntyped (meta::TypeIndex typeIndex, std::size_t id) {
-    return Assets::UnloadAsset(typeIndex, id);
-}
-
-std::size_t detail::AssetManagerBase::onVirtualLoadUntyped (meta::TypeIndex, const std::string& virtualPath,
-    std::byte* data) {
-    return 0;
-}
-
-void detail::AssetBase::IncRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-    Assets::IncrementRefCount(typeIndex, id);
-}
-
-void detail::AssetBase::DecRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-    Assets::DecrementRefCount(typeIndex, id);
-}
-
-std::string_view detail::AssetBase::GetPath (meta::TypeIndex typeIndex, std::size_t id) {
-    return Assets::GetPath(typeIndex, id);
-}
+// bool detail::AssetManagerBase::OnUnloadUntyped (meta::TypeIndex typeIndex, std::size_t id) {
+//     return true;
+// }
+//
+// std::size_t detail::AssetManagerBase::onVirtualLoadUntyped (meta::TypeIndex, const std::string& virtualPath,
+//     std::byte* data) {
+//     return 0;
+// }
 
 AssetTypeUntyped::AssetTypeUntyped (meta::TypeIndex type) : m_id{0}, m_type{type} {}
 

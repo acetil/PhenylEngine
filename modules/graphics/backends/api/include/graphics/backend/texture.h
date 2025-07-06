@@ -69,7 +69,7 @@ public:
     [[nodiscard]] virtual ISampler& sampler () noexcept = 0;
 };
 
-class Texture : public core::AssetType2<Texture> {
+class Texture : public core::AssetType<Texture> {
 public:
     Texture () : m_hash{0} {}
 

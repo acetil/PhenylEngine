@@ -26,19 +26,15 @@ public:
     void dump (std::ostream& file) const;
 
 protected:
-    Level* load (std::ifstream& data, std::size_t id) override;
-    std::shared_ptr<Level> load2 (std::ifstream& data) override;
-    Level* load (phenyl::game::Level&& obj, std::size_t id) override;
+    std::shared_ptr<Level> load (std::ifstream& data) override;
 
 private:
-    std::unordered_map<std::size_t, std::unique_ptr<Level>> m_levels;
     core::World& m_world;
     core::EntityComponentSerializer& m_serializer;
 
     std::vector<std::shared_ptr<Level>> m_queuedLoads;
     bool m_queuedClear = false;
 
-    void queueUnload (std::size_t id) override;
     [[nodiscard]] const char* getFileType () const override;
 };
 } // namespace phenyl::game

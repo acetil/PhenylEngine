@@ -136,32 +136,15 @@ public:
 };
 } // namespace
 
-MaterialInstance* MaterialInstanceManager::load (std::ifstream& data, std::size_t id) {
-    std::shared_ptr<MaterialInstance> instance;
-    MaterialInstanceSerializable serializable{};
-    core::DeserializeFromJson(data, serializable, instance);
-
-    auto [it, _] = m_instances.emplace(id, std::move(instance));
-    return it->second.get();
-}
-
-std::shared_ptr<MaterialInstance> MaterialInstanceManager::load2 (std::ifstream& data) {
+std::shared_ptr<MaterialInstance> MaterialInstanceManager::load (std::ifstream& data) {
     std::shared_ptr<MaterialInstance> instance;
     MaterialInstanceSerializable serializable{};
     core::DeserializeFromJson(data, serializable, instance);
     return instance;
 }
 
-MaterialInstance* MaterialInstanceManager::load (MaterialInstance&& obj, std::size_t id) {
-    PHENYL_ABORT("Virtual loading of material instances not supported!");
-}
-
 const char* MaterialInstanceManager::getFileType () const {
     return ".json";
-}
-
-void MaterialInstanceManager::queueUnload (std::size_t id) {
-    // TODO
 }
 
 void MaterialInstanceManager::selfRegister () {
