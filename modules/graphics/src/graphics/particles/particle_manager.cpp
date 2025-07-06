@@ -26,7 +26,9 @@ std::shared_ptr<phenyl::graphics::ParticleSystem2D> phenyl::graphics::ParticleMa
     if (!propOpt) {
         return nullptr;
     }
-    return std::make_shared<ParticleSystem2D>(*propOpt, m_maxParticles);
+    auto system = std::make_shared<ParticleSystem2D>(*propOpt, m_maxParticles);
+    m_systems2.emplace_back(system);
+    return system;
 }
 
 phenyl::graphics::ParticleManager2D::ParticleManager2D (std::size_t systemMaxParticles) :
@@ -49,17 +51,31 @@ void phenyl::graphics::ParticleManager2D::update (float deltaTime) {
     for (const auto& system : m_systems | std::views::values) {
         system->update(deltaTime);
     }
+
+    for (const auto& system : m_systems2) {
+        if (auto ptr = system.lock()) {
+            ptr->update(deltaTime);
+        }
+    }
+
+    std::erase_if(m_systems2, [] (const auto& ptr) { return ptr.expired(); });
 }
 
 void phenyl::graphics::ParticleManager2D::buffer (phenyl::graphics::Buffer<glm::vec2>& posBuffer,
     phenyl::graphics::Buffer<glm::vec4>& colourBuffer) const {
-    for (const auto& system : m_systems | std::views::values) {
-        system->bufferPos(posBuffer);
+    // for (const auto& system : m_systems | std::views::values) {
+    //     system->bufferPos(posBuffer);
+    // }
+    for (const auto& system : m_systems2) {
+        if (auto ptr = system.lock()) {
+            ptr->bufferPos(posBuffer);
+            ptr->bufferColour(colourBuffer);
+        }
     }
-
-    for (const auto& system : m_systems | std::views::values) {
-        system->bufferColour(colourBuffer);
-    }
+    //
+    // for (const auto& system : m_systems | std::views::values) {
+    //     system->bufferColour(colourBuffer);
+    // }
 }
 
 std::string_view phenyl::graphics::ParticleManager2D::getName () const noexcept {

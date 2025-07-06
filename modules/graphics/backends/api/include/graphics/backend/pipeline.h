@@ -190,7 +190,7 @@ public:
     virtual void withDepthTesting (bool doDepthWrite) = 0;
     virtual void withCullMode (CullMode mode) = 0;
     virtual void withGeometryType (GeometryType type) = 0;
-    virtual void withShader (core::Asset<Shader> shader) = 0;
+    virtual void withShader (const std::shared_ptr<Shader>& shader) = 0;
 
     virtual BufferBinding withBuffer (meta::TypeIndex type, std::size_t size, BufferInputRate inputRate) = 0;
     virtual void withAttrib (ShaderDataType type, unsigned int location, BufferBinding binding, std::size_t offset) = 0;
@@ -212,9 +212,9 @@ public:
         return *this;
     }
 
-    PipelineBuilder& withShader (core::Asset<Shader> shader) {
+    PipelineBuilder& withShader (const std::shared_ptr<Shader>& shader) {
         PHENYL_DASSERT(m_builder);
-        m_builder->withShader(std::move(shader));
+        m_builder->withShader(shader);
 
         return *this;
     }

@@ -16,7 +16,7 @@ class VulkanWindowFrameBuffer;
 
 class VulkanPipelineFactory {
 public:
-    VulkanPipelineFactory (VulkanResources& resources, core::Asset<graphics::Shader> shader,
+    VulkanPipelineFactory (VulkanResources& resources, std::shared_ptr<graphics::Shader> shader,
         VulkanResource<VkPipelineLayout> pipelineLayout, std::vector<VkVertexInputBindingDescription> vertexBindings,
         std::vector<VkVertexInputAttributeDescription> vertexAttribs, VkPrimitiveTopology topology,
         VkCullModeFlags cullMode, const VkPipelineColorBlendAttachmentState& blendAttachment,
@@ -32,7 +32,7 @@ private:
     std::unordered_map<const FrameBufferLayout*, VulkanResource<VkPipeline>> m_pipelines;
 
     VulkanResources& m_resources;
-    core::Asset<graphics::Shader> m_shader;
+    std::shared_ptr<graphics::Shader> m_shader;
     VulkanResource<VkPipelineLayout> m_layout;
 
     std::vector<VkVertexInputBindingDescription> m_vertexBindings;
@@ -111,7 +111,7 @@ public:
     void withDepthTesting (bool doDepthWrite) override;
     void withGeometryType (graphics::GeometryType type) override;
 
-    void withShader (core::Asset<graphics::Shader> shader) override;
+    void withShader (const std::shared_ptr<graphics::Shader>& shader) override;
 
     graphics::BufferBinding withBuffer (meta::TypeIndex type, std::size_t size,
         graphics::BufferInputRate inputRate) override;
@@ -129,7 +129,7 @@ private:
 
     VulkanWindowFrameBuffer* m_windowFb;
 
-    core::Asset<graphics::Shader> m_shader;
+    std::shared_ptr<graphics::Shader> m_shader;
 
     std::vector<VkVertexInputBindingDescription> m_vertexBindings;
     std::vector<meta::TypeIndex> m_vertexBindingTypes;

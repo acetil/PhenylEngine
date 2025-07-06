@@ -40,12 +40,6 @@ void audio::AudioSource::play (const audio::AudioSample& sample) {
     m_audioSystem->playSample(*this, sample);
 }
 
-void audio::AudioSource::play (const core::Asset<AudioSample>& sample) {
-    PHENYL_ASSERT_MSG(sample, "Attempted to play empty sample");
-
-    play(*sample);
-}
-
 float audio::AudioSource::getGain () const {
     return m_audioSystem->getSourceGain(*this);
 }

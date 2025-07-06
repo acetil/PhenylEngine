@@ -44,7 +44,7 @@ void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
                 emitterEntity.apply<phenyl::ParticleEmitter2D>(
                     [normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) { emitter.direction = -normal; });
                 emitterEntity.apply<phenyl::AudioPlayer>(
-                    [sample = tile.breakSample] (phenyl::AudioPlayer& player) { player.play(sample); });
+                    [sample = tile.breakSample] (phenyl::AudioPlayer& player) { player.play(*sample); });
 
                 entity.remove();
             }
@@ -52,6 +52,6 @@ void breakout::InitTile (breakout::BreakoutApp* app, phenyl::World& world) {
 
     world.addHandler<phenyl::signals::OnCollision, const Floor, phenyl::AudioPlayer>(
         [] (const phenyl::signals::OnCollision& signal, const Floor& floor, phenyl::AudioPlayer& player) {
-            player.play(floor.sample);
+            player.play(*floor.sample);
         });
 }

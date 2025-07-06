@@ -20,7 +20,7 @@ public:
 
     void selfRegister ();
 
-    void queueLoad (core::Asset<Level> level, bool additive);
+    void queueLoad (std::shared_ptr<Level> level, bool additive);
     void loadLevels ();
 
     void dump (std::ostream& file) const;
@@ -35,7 +35,7 @@ private:
     core::World& m_world;
     core::EntityComponentSerializer& m_serializer;
 
-    std::vector<core::Asset<Level>> m_queuedLoads;
+    std::vector<std::shared_ptr<Level>> m_queuedLoads;
     bool m_queuedClear = false;
 
     void queueUnload (std::size_t id) override;

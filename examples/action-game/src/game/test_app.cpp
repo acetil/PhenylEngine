@@ -34,7 +34,7 @@ void test::TestApp::init () {
 }
 
 void test::TestApp::postInit () {
-    phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
+    phenyl::Assets::Load2<phenyl::Level>("resources/levels/test_level")->load();
 
     auto& uiManager = runtime().resource<phenyl::UIManager>();
     // uiManager.addUIComp(button4, {500, 300});
@@ -65,9 +65,9 @@ void test::TestApp::postInit () {
        phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START,
        phenyl::ui::Modifier{} .withSize({0, 0}, {200, 300}) .withOffset({200, 100}));*/
     auto* labelWidget = m_column->emplaceBack<phenyl::ui::LabelWidget>("Hello World 2!");
-    labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
+    labelWidget->setFont(phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
 
-    m_testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
+    m_testFont = phenyl::Assets::Load2<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
     updateDebugRender(true);
 }
 
@@ -109,7 +109,7 @@ void test::TestApp::addLabel () {
     // extraLabels.emplace_back(std::move(newLabel));
 
     auto* widget = m_column->emplaceBack<phenyl::ui::LabelWidget>(std::format("Pressed {} times!", m_numPresses));
-    widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
+    widget->setFont(phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
     m_extraWidgets.emplace_back(widget);
 }
 

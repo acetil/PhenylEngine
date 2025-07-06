@@ -105,7 +105,7 @@ static void PlayerFixedUpdateSystem (const Resources<const Camera2D>& resources,
         //     body.applyImpulse(bulletVel * body.getMass());
         // });
 
-        audioPlayer.play(player.gunshotSample);
+        audioPlayer.play(*player.gunshotSample);
 
         player.hasShot = true;
     } else if (!doShoot && player.hasShot) {

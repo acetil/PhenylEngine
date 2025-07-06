@@ -8,7 +8,8 @@ using namespace phenyl::graphics;
 
 static phenyl::Logger LOGGER{"LABEL", detail::GRAPHICS_LOGGER};
 
-LabelWidget::LabelWidget (std::string text, unsigned int textSize, core::Asset<Font> font, const Modifier& modifier) :
+LabelWidget::LabelWidget (std::string text, unsigned int textSize, std::shared_ptr<Font> font,
+    const Modifier& modifier) :
     Widget{modifier},
     m_text{std::move(text)},
     m_textSize{textSize} {
@@ -40,7 +41,7 @@ void LabelWidget::setTextColor (glm::vec4 newColour) {
     m_color = newColour;
 }
 
-void LabelWidget::setFont (core::Asset<Font> newFont) {
+void LabelWidget::setFont (std::shared_ptr<Font> newFont) {
     m_font = std::move(newFont);
     updateModifier();
 }

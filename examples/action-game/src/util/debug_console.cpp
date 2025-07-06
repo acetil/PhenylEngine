@@ -56,7 +56,7 @@ static void DoDebugConsole (test::TestApp* app) {
             app->dumpLevel(std::string{args[1]});
         } else if (args.size() == 2 && args[0] == "load") {
             // bus->raise(event::MapLoadRequestEvent(args[1]));
-            auto level = phenyl::Assets::Load<phenyl::Level>(std::string{args[1]});
+            auto level = phenyl::Assets::Load2<phenyl::Level>(std::string{args[1]});
             if (level) {
                 level->load();
             }

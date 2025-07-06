@@ -10,8 +10,8 @@ namespace breakout {
 class BreakoutApp;
 
 struct Wall {
-    phenyl::Asset<phenyl::Prefab> emitter;
-    phenyl::Asset<phenyl::AudioSample> bounceSample;
+    std::shared_ptr<phenyl::Prefab> emitter;
+    std::shared_ptr<phenyl::AudioSample> bounceSample;
 };
 PHENYL_DECLARE_SERIALIZABLE(Wall)
 

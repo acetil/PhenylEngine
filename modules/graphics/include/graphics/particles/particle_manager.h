@@ -27,6 +27,7 @@ protected:
 
 private:
     std::unordered_map<std::size_t, std::unique_ptr<ParticleSystem2D>> m_systems;
+    std::vector<std::weak_ptr<ParticleSystem2D>> m_systems2;
     std::size_t m_maxParticles;
 };
 } // namespace phenyl::graphics

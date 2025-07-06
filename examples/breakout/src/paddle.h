@@ -21,9 +21,9 @@ struct Paddle {
     float minX = 0.0f;
     float maxX = 1.0f;
     float ballSpeed = 1.0f;
-    phenyl::Asset<phenyl::Prefab> ballPrefab;
-    phenyl::Asset<phenyl::Prefab> emitterPrefab;
-    phenyl::Asset<phenyl::AudioSample> bounceSample;
+    std::shared_ptr<phenyl::Prefab> ballPrefab;
+    std::shared_ptr<phenyl::Prefab> emitterPrefab;
+    std::shared_ptr<phenyl::AudioSample> bounceSample;
 
     void update (const phenyl::Resources<const phenyl::Camera2D, const phenyl::FixedDelta>& resources,
         const phenyl::Bundle<const phenyl::GlobalTransform2D, phenyl::RigidBody2D>& bundle);

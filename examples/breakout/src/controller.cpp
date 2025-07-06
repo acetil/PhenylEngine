@@ -52,7 +52,7 @@ void TileController::onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::
     tilesRemaining = rows * columns;
     // pointsLabel->setText(std::format("Points: {}", points);
     pointsLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Points: {}", points), 14,
-        phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+        phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
         phenyl::ui::Modifier{}.withOffset({180, 30}));
     // uiManager.addUIComp(pointsLabel, labelPos);
 }

@@ -9,7 +9,7 @@ namespace test {
 class TestApp;
 
 struct Bullet {
-    phenyl::Asset<phenyl::Prefab> particlePrefab;
+    std::shared_ptr<phenyl::Prefab> particlePrefab;
 };
 PHENYL_DECLARE_SERIALIZABLE(Bullet)
 

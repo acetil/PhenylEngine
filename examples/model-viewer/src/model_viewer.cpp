@@ -27,8 +27,8 @@ public:
         m_entities.back().insert(phenyl::GlobalTransform3D{});
         m_entities.back().insert(phenyl::Transform3D{}.setScale(glm::vec3{0.2f}));
         m_entities.back().insert(phenyl::MeshRenderer3D{
-          .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/suzanne.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1"),
+          .mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/suzanne.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat1"),
         });
         m_rotationSpeeds.emplace_back(60.0f * std::numbers::pi / 180);
 
@@ -36,16 +36,16 @@ public:
         child.insert(phenyl::GlobalTransform3D{});
         child.insert(phenyl::Transform3D{}.setPosition(glm::vec3{2, 0, 0}).setScale(glm::vec3{0.3f}));
         child.insert(phenyl::MeshRenderer3D{
-          .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1"),
+          .mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat1"),
         });
 
         m_entities.emplace_back(runtime().world().create());
         m_entities.back().insert(phenyl::GlobalTransform3D{});
         m_entities.back().insert(phenyl::Transform3D{}.setScale(glm::vec3{0.2f}).translate(glm::vec3{0.8f, 0, -0.0f}));
         m_entities.back().insert(phenyl::MeshRenderer3D{
-          .mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2"),
+          .mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat2"),
         });
         m_rotationSpeeds.emplace_back(-90.0f * std::numbers::pi / 180);
 
@@ -100,20 +100,20 @@ public:
         auto plane = runtime().world().create();
         plane.insert(phenyl::GlobalTransform3D{});
         plane.insert(phenyl::Transform3D{}.withTranslation({0, -0.6f, 0}).withScale({25.0f, 0.2f, 25.0f}));
-        plane.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat1")});
+        plane.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat1")});
 
         auto cube1 = runtime().world().create();
         cube1.insert(phenyl::GlobalTransform3D{});
         cube1.insert(phenyl::Transform3D{}.withTranslation({0, 1.5f, 0}).withScale({0.5f, 0.5f, 0.5f}));
-        cube1.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
+        cube1.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat2")});
 
         auto cube2 = runtime().world().create();
         cube2.insert(phenyl::GlobalTransform3D{});
         cube2.insert(phenyl::Transform3D{}.withTranslation({2.0f, 0.0f, 1.0f}).withScale({0.5f, 0.5f, 0.5f}));
-        cube2.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
+        cube2.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat2")});
 
         auto cube3 = runtime().world().create();
         cube3.insert(phenyl::GlobalTransform3D{});
@@ -122,8 +122,8 @@ public:
                 .withScale({0.5f, 0.5f, 0.5f})
                 .withRotation(phenyl::Quaternion::Rotation(glm::normalize(glm::vec3{1.0, 0.0, 1.0}),
                     60.0f * std::numbers::pi / 180.0f)));
-        cube3.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load<phenyl::Mesh3D>("resources/meshes/cube.obj"),
-          .material = phenyl::Assets::Load<phenyl::MaterialInstance>("resources/material_instances/mat2")});
+        cube3.insert(phenyl::MeshRenderer3D{.mesh = phenyl::Assets::Load2<phenyl::Mesh3D>("resources/meshes/cube.obj"),
+          .material = phenyl::Assets::Load2<phenyl::MaterialInstance>("resources/material_instances/mat2")});
 
         auto light = runtime().world().create();
         light.insert(phenyl::GlobalTransform3D{});

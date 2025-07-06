@@ -59,7 +59,7 @@ void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
             //       (phenyl::ParticleEmitter2D& emitter) {
             //         emitter.direction = normal;
             //     });
-            audioPlayer.play(paddle.bounceSample);
+            audioPlayer.play(*paddle.bounceSample);
         });
     runtime.addSystem<phenyl::FixedUpdate>("Paddle::Update", &Paddle::update);
 }

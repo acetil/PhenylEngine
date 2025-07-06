@@ -16,7 +16,7 @@ class ParticleSystem2D;
 
 struct ParticleEmitter2D {
 public:
-    phenyl::core::Asset<ParticleSystem2D> system;
+    std::shared_ptr<ParticleSystem2D> system;
     glm::vec2 direction{1.0f, 0.0f};
 
     float duration;

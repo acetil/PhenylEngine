@@ -55,15 +55,15 @@ private:
     GlShaderManager m_shaderManager;
     GLNoopCommandList m_noopCommandList{};
 
-    core::Asset<graphics::Shader> m_boxShader;
-    core::Asset<graphics::Shader> m_debugShader;
-    core::Asset<graphics::Shader> m_spriteShader;
-    core::Asset<graphics::Shader> m_textShader;
-    core::Asset<graphics::Shader> m_particleShader;
-    core::Asset<graphics::Shader> m_meshShader;
-    core::Asset<graphics::Shader> m_shadowMapShader;
-    core::Asset<graphics::Shader> m_prepassShader;
+    std::shared_ptr<graphics::Shader> m_boxShader;
+    std::shared_ptr<graphics::Shader> m_debugShader;
+    std::shared_ptr<graphics::Shader> m_spriteShader;
+    std::shared_ptr<graphics::Shader> m_textShader;
+    std::shared_ptr<graphics::Shader> m_particleShader;
+    std::shared_ptr<graphics::Shader> m_meshShader;
+    std::shared_ptr<graphics::Shader> m_shadowMapShader;
+    std::shared_ptr<graphics::Shader> m_prepassShader;
 
-    core::Asset<graphics::Shader> m_noopPostShader;
+    std::shared_ptr<graphics::Shader> m_noopPostShader;
 };
 } // namespace phenyl::opengl

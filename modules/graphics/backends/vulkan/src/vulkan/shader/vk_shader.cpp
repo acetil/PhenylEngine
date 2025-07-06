@@ -152,7 +152,8 @@ void VulkanShaderManager::loadDefault (const std::string& path, std::unique_ptr<
     }
 
     PHENYL_LOGD(LOGGER, "Loaded default shader \"{}\"", path);
-    m_defaultShaders.emplace_back(core::Assets::LoadVirtual(path, graphics::Shader{std::move(shader)}));
+    m_defaultShaders.emplace_back(std::make_shared<graphics::Shader>(std::move(shader)));
+    core::Assets::LoadVirtual2(path, m_defaultShaders.back());
 }
 
 VulkanShaderManager::Builder VulkanShaderManager::builder () {

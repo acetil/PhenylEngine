@@ -7,7 +7,8 @@
 
 using namespace phenyl::graphics;
 
-Material::Material (Renderer& renderer, std::uint32_t id, core::Asset<Shader> shader, MaterialProperties properties) :
+Material::Material (Renderer& renderer, std::uint32_t id, std::shared_ptr<Shader> shader,
+    MaterialProperties properties) :
     m_renderer{renderer},
     m_id{id},
     m_shader{std::move(shader)},
@@ -76,7 +77,7 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     auto builder = m_renderer.buildPipeline();
     builder.withBlending(BlendMode::ADDITIVE);
 
-    auto prepassShader = core::Assets::Load<Shader>("phenyl/shaders/mesh_prepass");
+    auto prepassShader = core::Assets::Load2<Shader>("phenyl/shaders/mesh_prepass");
 
     UniformBinding globalUniform;
     BufferBinding model;
@@ -118,7 +119,7 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
 
     auto builder = m_renderer.buildPipeline();
 
-    auto shadowMapShader = core::Assets::Load<Shader>("phenyl/shaders/shadow_map");
+    auto shadowMapShader = core::Assets::Load2<Shader>("phenyl/shaders/shadow_map");
 
     UniformBinding lightUniform;
     BufferBinding model;
@@ -156,10 +157,10 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
 }
 
 std::shared_ptr<MaterialInstance> Material::instance () {
-    return std::make_shared<MaterialInstance>(m_renderer, assetFromThis(), materialProperties);
+    return std::make_shared<MaterialInstance>(m_renderer, shared_from_this(), materialProperties);
 }
 
-MaterialInstance::MaterialInstance (Renderer& renderer, core::Asset<Material> material,
+MaterialInstance::MaterialInstance (Renderer& renderer, std::shared_ptr<Material> material,
     const MaterialProperties& properties) :
     m_material{std::move(material)} {
     m_data = renderer.makeRawUniformBuffer(properties.uniformBlockSize);

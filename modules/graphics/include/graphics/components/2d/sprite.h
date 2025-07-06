@@ -9,7 +9,7 @@
 
 namespace phenyl::graphics {
 struct Sprite2D {
-    core::Asset<Texture> texture;
+    std::shared_ptr<Texture> texture;
 
     glm::vec2 uvStart{0, 0};
     glm::vec2 uvEnd{1, 1};

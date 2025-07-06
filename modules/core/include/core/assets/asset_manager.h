@@ -36,7 +36,7 @@ namespace detail {
 
 template <typename T>
 class AssetManager : public detail::AssetManagerBase {
-protected:
+public:
     virtual T* load (std::ifstream& data, std::size_t id) = 0;
     virtual std::shared_ptr<T> load2 (std::ifstream& data) = 0;
 

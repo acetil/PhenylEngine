@@ -52,10 +52,10 @@ void BreakoutApp::postInit () {
     auto& uiManager = runtime().resource<phenyl::UIManager>();
 
     m_livesLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Lives: {}", m_lives), 14,
-        phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+        phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
         phenyl::ui::Modifier{}.withOffset({280, 30}));
 
-    phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
+    phenyl::Assets::Load2<phenyl::Level>("resources/levels/main")->load();
 
     auto* renderConfig = runtime().resourceMaybe<phenyl::DebugRenderConfig>();
     if (renderConfig) {
@@ -71,7 +71,7 @@ void BreakoutApp::addPoints (int points) {
     if (m_totalPoints == TileCols * TileRows * 10) {
         runtime().resource<phenyl::UIManager>().root().emplace<phenyl::ui::ContainerWidget>(
             phenyl::ui::LabelWidget{"You Win!", 72,
-              phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
+              phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
             phenyl::ui::Modifier{}.withOffset({240, 250}));
         pause();
     }
@@ -84,7 +84,7 @@ void BreakoutApp::subtractLife () {
     if (!--m_lives) {
         runtime().resource<phenyl::UIManager>().root().emplace<phenyl::ui::ContainerWidget>(
             phenyl::ui::LabelWidget{"You Lose!", 72,
-              phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
+              phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
             phenyl::ui::Modifier{}.withOffset({240, 250}));
         pause();
     }
@@ -96,7 +96,7 @@ void BreakoutApp::onWin () {
     // runtime().resource<phenyl::UIManager>().addUIComp(winLabel.detach(), {240, 250});
     runtime().resource<phenyl::UIManager>().root().emplace<phenyl::ui::ContainerWidget>(
         phenyl::ui::LabelWidget{"You Win!", 72,
-          phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
+          phenyl::Assets::Load2<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
         phenyl::ui::Modifier{}.withOffset({240, 250}));
     pause();
 }

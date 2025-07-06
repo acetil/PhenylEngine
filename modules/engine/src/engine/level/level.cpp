@@ -78,7 +78,7 @@ public:
         ChildrenSerializable serializable{*this};
         deserializer.next("children", serializable, obj);
 
-        if (auto prefabOpt = deserializer.next<phenyl::core::Asset<phenyl::core::Prefab>>("prefab")) {
+        if (auto prefabOpt = deserializer.next<std::shared_ptr<phenyl::core::Prefab>>("prefab")) {
             (*prefabOpt)->instantiate(obj);
         }
     }
@@ -181,7 +181,7 @@ void LevelManager::selfRegister () {
     core::Assets::AddManager(this);
 }
 
-void LevelManager::queueLoad (core::Asset<Level> level, bool additive) {
+void LevelManager::queueLoad (std::shared_ptr<Level> level, bool additive) {
     if (!additive) {
         PHENYL_LOGI_IF((!m_queuedLoads.empty()), LOGGER, "Dropping {} queued loads because of non-additive load",
             m_queuedLoads.size());
@@ -242,18 +242,5 @@ void Level::loadImmediate (core::World& world, core::EntityComponentSerializer& 
 }
 
 void Level::load (bool additive) {
-    // if (!additive) {
-    //     PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
-    //     world.clear();
-    // }
-    //
-    // world.deferSignals();
-    //
-    // file.seekg(startPos);
-    // LevelSerializable serializable{world, serializer};
-    // LevelMarker marker{};
-    // common::DeserializeFromJson(file, serializable, marker);
-    //
-    // world.deferSignalsEnd();
-    m_manager.queueLoad(assetFromThis(), additive);
+    m_manager.queueLoad(shared_from_this(), additive);
 }

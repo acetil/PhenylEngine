@@ -116,7 +116,7 @@ public:
 
     void deserializeStruct (std::shared_ptr<MaterialInstance>& obj,
         phenyl::core::IStructDeserializer& deserializer) override {
-        auto matOpt = deserializer.next<phenyl::core::Asset<Material>>("material");
+        auto matOpt = deserializer.next<std::shared_ptr<Material>>("material");
         if (!matOpt) {
             throw phenyl::DeserializeException("Failed to deserialize parent material of instance");
         }

@@ -141,7 +141,7 @@ void GlPipeline::setRenderMode (GLenum renderMode) {
     this->m_renderMode = renderMode;
 }
 
-void GlPipeline::setShader (phenyl::core::Asset<Shader> shader) {
+void GlPipeline::setShader (std::shared_ptr<Shader> shader) {
     this->m_shader = std::move(shader);
 }
 
@@ -260,9 +260,9 @@ void GlPipelineBuilder::withGeometryType (GeometryType type) {
     }
 }
 
-void GlPipelineBuilder::withShader (core::Asset<Shader> shader) {
+void GlPipelineBuilder::withShader (const std::shared_ptr<Shader>& shader) {
     PHENYL_DASSERT(m_pipeline);
-    m_pipeline->setShader(std::move(shader));
+    m_pipeline->setShader(shader);
 }
 
 BufferBinding GlPipelineBuilder::withBuffer (meta::TypeIndex type, std::size_t size, BufferInputRate inputRate) {

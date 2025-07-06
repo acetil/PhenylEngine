@@ -19,7 +19,7 @@ struct UniformDefinition {
 PHENYL_SERIALIZABLE(UniformDefinition, PHENYL_SERIALIZABLE_MEMBER(name), PHENYL_SERIALIZABLE_MEMBER(type))
 
 struct MaterialDefinition {
-    phenyl::core::Asset<Shader> shader;
+    std::shared_ptr<Shader> shader;
     std::vector<UniformDefinition> uniforms;
 };
 

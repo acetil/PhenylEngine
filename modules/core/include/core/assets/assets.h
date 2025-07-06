@@ -189,35 +189,35 @@ namespace detail {
         void completeLoad (std::string_view path, const std::shared_ptr<T>& ptr) {
             PHENYL_DASSERT(ptr);
             auto id = m_nextId++;
-            ptr->m_id = id;
+            auto& obj = static_cast<AssetTypeUntyped&>(*ptr);
+            obj.m_id = id;
 
             m_pathMap.emplace(path, id);
             m_cache.emplace(id,
                 CacheItem{
                   .obj = ptr,
-                  .path = path,
+                  .path = std::string{path},
                 });
-            return ptr;
         }
     };
 } // namespace detail
 
 class Assets {
 public:
-    template <typename T>
-    static Asset<T> Load (const std::string& path) {
-        return GetInstance()->load<T>(path);
-    }
+    // template <typename T>
+    // static Asset<T> Load (const std::string& path) {
+    //     return GetInstance()->load<T>(path);
+    // }
 
     template <IsAssetType T>
     static std::shared_ptr<T> Load2 (std::string_view path) {
         return GetInstance()->load2<T>(path);
     }
 
-    template <typename T>
-    static Asset<T> LoadVirtual (const std::string& virtualPath, T&& obj) {
-        return GetInstance()->virtualLoad(virtualPath, std::forward<T>(obj));
-    }
+    // template <typename T>
+    // static Asset<T> LoadVirtual (const std::string& virtualPath, T&& obj) {
+    //     return GetInstance()->virtualLoad(virtualPath, std::forward<T>(obj));
+    // }
 
     template <IsAssetType T>
     static void LoadVirtual2 (std::string_view path, const std::shared_ptr<T>& obj) {
@@ -339,12 +339,12 @@ private:
 
         std::ifstream file;
         if (cache.manager().isBinary()) {
-            file = std::ifstream{path + cache.manager().getFileType(), std::ios::binary};
+            file = std::ifstream{std::string{path} + cache.manager().getFileType(), std::ios::binary};
         } else {
-            file = std::ifstream{path + cache.manager().getFileType()};
+            file = std::ifstream{std::string{path} + cache.manager().getFileType()};
         }
         if (!file) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to open file at \"{}\"!", path + cache.manager().getFileType());
+            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to open file at \"{}{}\"!", path, cache.manager().getFileType());
             return nullptr;
         }
 
@@ -443,28 +443,28 @@ private:
 };
 
 namespace detail {
-    template <typename T>
-    class AssetSerializable : public ISerializable<Asset<T>> {
-    public:
-        std::string_view name () const noexcept override {
-            return "Asset";
-        }
-
-        void serialize (ISerializer& serializer, const Asset<T>& obj) override {
-            serializer.serialize(obj.id());
-        }
-
-        void deserialize (IDeserializer& deserializer, Asset<T>& obj) override {
-            deserializer.deserializeString(*this, obj);
-        }
-
-        void deserializeString (Asset<T>& obj, std::string_view string) override {
-            obj = Assets::Load<T>(std::string{string}); // TODO
-            if (!obj) {
-                throw DeserializeException(std::format("Failed to load asset at \"{}\"", string));
-            }
-        }
-    };
+    // template <typename T>
+    // class AssetSerializable : public ISerializable<Asset<T>> {
+    // public:
+    //     std::string_view name () const noexcept override {
+    //         return "Asset";
+    //     }
+    //
+    //     void serialize (ISerializer& serializer, const Asset<T>& obj) override {
+    //         serializer.serialize(obj.id());
+    //     }
+    //
+    //     void deserialize (IDeserializer& deserializer, Asset<T>& obj) override {
+    //         deserializer.deserializeString(*this, obj);
+    //     }
+    //
+    //     void deserializeString (Asset<T>& obj, std::string_view string) override {
+    //         obj = Assets::Load<T>(std::string{string}); // TODO
+    //         if (!obj) {
+    //             throw DeserializeException(std::format("Failed to load asset at \"{}\"", string));
+    //         }
+    //     }
+    // };
 
     template <IsAssetType T>
     class AssetSerializable2 : public ISerializable<std::shared_ptr<T>> {
@@ -490,14 +490,14 @@ namespace detail {
     };
 } // namespace detail
 
-template <typename T>
-ISerializable<Asset<T>>& phenyl_GetSerializable (detail::SerializableMarker<Asset<T>>) {
-    static detail::AssetSerializable<T> serializable;
-    return serializable;
-}
+// template <typename T>
+// ISerializable<Asset<T>>& phenyl_GetSerializable (detail::SerializableMarker<Asset<T>>) {
+//     static detail::AssetSerializable<T> serializable;
+//     return serializable;
+// }
 
 template <IsAssetType T>
-ISerializable<std::shared_ptr<T>> phenyl_GetSerializable (detail::SerializableMarker<std::shared_ptr<T>>) {
+ISerializable<std::shared_ptr<T>>& phenyl_GetSerializable (detail::SerializableMarker<std::shared_ptr<T>>) {
     static detail::AssetSerializable2<T> serializable;
     return serializable;
 }

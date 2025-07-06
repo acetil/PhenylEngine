@@ -20,7 +20,7 @@ void ParticleRenderLayer::init (Renderer& renderer) {
     BufferBinding posBinding;
     BufferBinding colourBinding;
     UniformBinding uniformBinding;
-    auto shader = phenyl::core::Assets::Load<Shader>("phenyl/shaders/particle");
+    auto shader = phenyl::core::Assets::Load2<Shader>("phenyl/shaders/particle");
     m_pipeline = renderer.buildPipeline()
                      .withShader(shader)
                      .withBuffer<glm::vec2>(posBinding)

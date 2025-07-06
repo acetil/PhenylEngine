@@ -56,7 +56,7 @@ Canvas::Canvas (Renderer& renderer) :
     renderer.getViewport().addUpdateHandler(this);
     m_offsetStack.emplace_back(0, 0);
 
-    m_defaultFont = core::Assets::Load<Font>("resources/phenyl/fonts/noto-serif");
+    m_defaultFont = core::Assets::Load2<Font>("resources/phenyl/fonts/noto-serif");
 }
 
 Canvas::~Canvas () = default;
@@ -91,7 +91,7 @@ void Canvas::render (glm::vec2 pos, const CanvasRoundedRect& rect, const CanvasS
     submitVertices(vertices, style);
 }
 
-void Canvas::renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text,
+void Canvas::renderText (glm::vec2 pos, const std::shared_ptr<Font>& font, std::uint32_t size, std::string_view text,
     glm::vec3 colour) {
     font->renderText(m_layer, size, text, offset() + pos, colour);
 }

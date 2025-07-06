@@ -178,10 +178,10 @@ public:
 };
 
 template <typename T> concept IsAssetType = std::derived_from<T, AssetType2<T>>;
-
-template <typename T>
-ISerializable<Asset<T>>& phenyl_GetSerializable(detail::SerializableMarker<Asset<T>>);
+//
+// template <typename T>
+// ISerializable<Asset<T>>& phenyl_GetSerializable(detail::SerializableMarker<Asset<T>>);
 
 template <IsAssetType T>
-ISerializable<std::shared_ptr<T>> phenyl_GetSerializable(detail::SerializableMarker<std::shared_ptr<T>>);
+ISerializable<std::shared_ptr<T>>& phenyl_GetSerializable(detail::SerializableMarker<std::shared_ptr<T>>);
 } // namespace phenyl::core

@@ -11,7 +11,7 @@ class Font;
 
 class LabelWidget : public Widget {
 public:
-    explicit LabelWidget (std::string text = "", unsigned int textSize = 12, core::Asset<Font> font = {},
+    explicit LabelWidget (std::string text = "", unsigned int textSize = 12, std::shared_ptr<Font> font = {},
         const Modifier& modifier = {});
     // LabelWidget (const LabelWidget&) = delete;
     // LabelWidget (LabelWidget&&) = default;
@@ -41,15 +41,15 @@ public:
 
     void setTextColor (glm::vec4 newColour);
 
-    [[nodiscard]] const core::Asset<Font>& font () const noexcept {
+    [[nodiscard]] const std::shared_ptr<Font>& font () const noexcept {
         return m_font;
     }
 
-    void setFont (core::Asset<Font> newFont);
+    void setFont (std::shared_ptr<Font> newFont);
 
 private:
     std::string m_text;
-    core::Asset<Font> m_font;
+    std::shared_ptr<Font> m_font;
     unsigned int m_textSize = 12;
     glm::vec4 m_color = {1.0f, 1.0f, 1.0f, 1.0f};
 

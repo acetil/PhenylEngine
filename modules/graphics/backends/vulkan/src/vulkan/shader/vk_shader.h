@@ -60,7 +60,7 @@ private:
 
     std::unordered_map<std::size_t, std::unique_ptr<graphics::Shader>> m_shaders;
 
-    std::vector<core::Asset<graphics::Shader>> m_defaultShaders;
+    std::vector<std::shared_ptr<graphics::Shader>> m_defaultShaders;
     void loadDefault (const std::string& path, std::unique_ptr<VulkanShader> shader);
 
     class Builder {

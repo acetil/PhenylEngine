@@ -13,8 +13,8 @@ namespace test {
 class TestApp;
 
 struct Player {
-    phenyl::Asset<phenyl::Prefab> bulletPrefab;
-    phenyl::Asset<phenyl::AudioSample> gunshotSample;
+    std::shared_ptr<phenyl::Prefab> bulletPrefab;
+    std::shared_ptr<phenyl::AudioSample> gunshotSample;
 
     bool hasShot{false};
     bool gainPressed{false};

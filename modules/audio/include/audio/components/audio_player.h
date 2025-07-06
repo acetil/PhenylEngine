@@ -14,7 +14,7 @@ public:
     AudioPlayer& operator= (const AudioPlayer& other);
     AudioPlayer& operator= (AudioPlayer&& other) = default;
 
-    void play (const core::Asset<AudioSample>& sample);
+    void play (const AudioSample& sample);
 
     [[nodiscard]] float gain () const;
     void setGain (float gain);

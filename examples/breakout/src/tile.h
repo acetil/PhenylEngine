@@ -10,13 +10,13 @@ namespace breakout {
 struct Tile {
     int points = 10;
     int health = 1;
-    phenyl::Asset<phenyl::Prefab> emitter;
-    phenyl::Asset<phenyl::AudioSample> breakSample;
+    std::shared_ptr<phenyl::Prefab> emitter;
+    std::shared_ptr<phenyl::AudioSample> breakSample;
 };
 PHENYL_DECLARE_SERIALIZABLE(Tile)
 
 struct Floor {
-    phenyl::Asset<phenyl::AudioSample> sample;
+    std::shared_ptr<phenyl::AudioSample> sample;
 };
 PHENYL_DECLARE_SERIALIZABLE(Floor)
 
