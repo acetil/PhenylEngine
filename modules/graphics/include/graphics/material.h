@@ -21,7 +21,7 @@ struct MaterialProperties {
     std::size_t uniformBlockSize;
 };
 
-class Material : public core::IAssetType<Material> {
+class Material : public core::IAssetType<Material>, public core::AssetType2<Material> {
 public:
     struct MatPipeline {
         Pipeline pipeline;
@@ -76,7 +76,7 @@ private:
     MaterialProperties materialProperties;
 };
 
-class MaterialInstance {
+class MaterialInstance : public core::AssetType2<MaterialInstance> {
 public:
     MaterialInstance (Renderer& renderer, core::Asset<Material> material, const MaterialProperties& properties);
 

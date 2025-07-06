@@ -23,6 +23,7 @@ public:
     ~AudioSystem () override;
 
     AudioSample* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<AudioSample> load2 (std::ifstream& data) override;
     AudioSample* load (phenyl::audio::AudioSample&& obj, std::size_t id) override;
     void queueUnload (std::size_t id) override;
     [[nodiscard]] const char* getFileType () const override;

@@ -96,6 +96,19 @@ core::Prefab* core::PrefabAssetManager::load (std::ifstream& data, std::size_t i
     return ptr;
 }
 
+std::shared_ptr<core::Prefab> core::PrefabAssetManager::load2 (std::ifstream& data) {
+    PrefabSerializable serializable{m_world, m_serializer};
+
+    auto prefab = std::make_shared<Prefab>();
+    try {
+        core::DeserializeFromJson(data, serializable, *prefab);
+    } catch (const phenyl::DeserializeException& e) {
+        PHENYL_LOGE(LOGGER, "Failed to deserialize prefab: {}", e.what());
+        return nullptr;
+    }
+    return prefab;
+}
+
 void core::PrefabAssetManager::queueUnload (std::size_t id) {
     PHENYL_TRACE(LOGGER, "Unload requested for prefab {}!", id);
 }

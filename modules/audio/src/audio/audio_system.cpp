@@ -67,6 +67,16 @@ AudioSample* AudioSystem::load (std::ifstream& data, std::size_t id) {
     return m_samples[id].get();
 }
 
+std::shared_ptr<AudioSample> AudioSystem::load2 (std::ifstream& data) {
+    // Assume is wav format
+    auto wavOpt = WAVFile::Load(data);
+    if (!wavOpt) {
+        return nullptr;
+    }
+
+    return std::shared_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(*wavOpt)));
+}
+
 AudioSample* AudioSystem::load (AudioSample&& obj, std::size_t id) {
     m_samples[id] = std::make_unique<AudioSample>(std::move(obj));
 

@@ -21,6 +21,14 @@ phenyl::graphics::ParticleSystem2D* phenyl::graphics::ParticleManager2D::load (s
     return m_systems[id].get();
 }
 
+std::shared_ptr<phenyl::graphics::ParticleSystem2D> phenyl::graphics::ParticleManager2D::load2 (std::ifstream& data) {
+    auto propOpt = LoadParticleProperties2D(data);
+    if (!propOpt) {
+        return nullptr;
+    }
+    return std::make_shared<ParticleSystem2D>(*propOpt, m_maxParticles);
+}
+
 phenyl::graphics::ParticleManager2D::ParticleManager2D (std::size_t systemMaxParticles) :
     m_maxParticles{systemMaxParticles} {}
 

@@ -29,6 +29,22 @@ Texture* TextureManager::load (std::ifstream& data, std::size_t id) {
     return m_textures[id].get();
 }
 
+std::shared_ptr<Texture> TextureManager::load2 (std::ifstream& data) {
+    auto image = Image::Load(data);
+    if (!image) {
+        PHENYL_LOGE(LOGGER, "Failed to load image from file!");
+        return nullptr;
+    }
+
+    TextureProperties properties{
+      .format = image->format(),
+      .filter = TextureFilter::POINT,
+      .useMipmapping = true,
+    };
+
+    return std::make_shared<ImageTexture>(m_renderer.makeTexture(properties, *image));
+}
+
 Texture* TextureManager::load (Texture&& obj, std::size_t id) {
     PHENYL_ABORT("Virtual loading of textures not supported!");
 }

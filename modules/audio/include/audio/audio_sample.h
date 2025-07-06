@@ -1,11 +1,13 @@
 #pragma once
 
+#include "core/assets/asset.h"
+
 #include <cstddef>
 
 namespace phenyl::audio {
 class AudioSystem;
 
-class AudioSample {
+class AudioSample : public core::AssetType2<AudioSample> {
 public:
     AudioSample () = default;
 
@@ -21,7 +23,7 @@ public:
 
     [[nodiscard]] float duration () const;
 
-    ~AudioSample ();
+    ~AudioSample () override;
 
 private:
     AudioSystem* m_audioSystem{nullptr};

@@ -72,6 +72,24 @@ Font* FontManager::load (std::ifstream& data, std::size_t id) {
     return ptr;
 }
 
+std::shared_ptr<Font> FontManager::load2 (std::ifstream& data) {
+    std::vector<char> bytes{std::istreambuf_iterator{data}, std::istreambuf_iterator<char>{}};
+    auto dataSize = bytes.size();
+    auto fontData = std::make_unique<std::byte[]>(bytes.size());
+    std::ranges::copy(bytes, reinterpret_cast<char*>(fontData.get()));
+
+    FT_Face face;
+    auto error = FT_New_Memory_Face(m_library, reinterpret_cast<const FT_Byte*>(fontData.get()),
+        static_cast<FT_Long>(dataSize), 0, &face);
+    if (error) {
+        PHENYL_LOGE(LOGGER, "FreeType error on FT_New_Memory_Face ({}): {}", error, FT_Error_String(error));
+        return nullptr;
+    }
+
+    return std::make_shared<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
+        m_viewport.getContentScale() * glm::vec2{96, 96});
+}
+
 Font* FontManager::load (Font&& obj, std::size_t id) {
     auto font = std::make_unique<Font>(std::move(obj));
     auto* ptr = font.get();

@@ -163,6 +163,10 @@ Level* LevelManager::load (std::ifstream& data, std::size_t id) {
     return m_levels[id].get();
 }
 
+std::shared_ptr<Level> LevelManager::load2 (std::ifstream& data) {
+    return std::make_shared<Level>(Level{std::move(data), *this});
+}
+
 void LevelManager::queueUnload (std::size_t id) {
     if (onUnload(id)) {
         m_levels.erase(id);

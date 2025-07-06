@@ -12,6 +12,7 @@ public:
     void selfRegister ();
 
     Mesh* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<Mesh> load2 (std::ifstream& data) override;
     Mesh* load (Mesh&& obj, std::size_t id) override;
     const char* getFileType () const override;
     bool isBinary () const override;

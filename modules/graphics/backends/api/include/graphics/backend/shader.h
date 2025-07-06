@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/assets/asset.h"
 #include "graphics/maths_headers.h"
 #include "logging/logging.h"
 
@@ -118,7 +119,7 @@ public:
     virtual std::optional<std::size_t> getUniformBlockSize (const std::string& uniformBlock) const noexcept = 0;
 };
 
-class Shader {
+class Shader : public core::AssetType2<Shader> {
 public:
     Shader () = default;
 

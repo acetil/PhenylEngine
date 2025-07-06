@@ -1,4 +1,5 @@
 #pragma once
+#include "assets/asset.h"
 #include "core/component/detail/prefab_factory.h"
 #include "entity.h"
 #include "util/type_index.h"
@@ -13,10 +14,10 @@ class World;
 class PrefabManager;
 class PrefabBuilder;
 
-class Prefab {
+class Prefab : public AssetType2<Prefab> {
 public:
     Prefab ();
-    ~Prefab ();
+    ~Prefab () override;
 
     Prefab (const Prefab& other);
     Prefab (Prefab&& other) noexcept;

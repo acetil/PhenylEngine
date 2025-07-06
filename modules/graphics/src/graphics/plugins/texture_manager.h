@@ -11,6 +11,7 @@ public:
     TextureManager (Renderer& renderer);
 
     Texture* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<Texture> load2 (std::ifstream& data) override;
     Texture* load (Texture&& obj, std::size_t id) override;
 
     const char* getFileType () const override;

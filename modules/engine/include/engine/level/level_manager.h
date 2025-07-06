@@ -27,6 +27,7 @@ public:
 
 protected:
     Level* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<Level> load2 (std::ifstream& data) override;
     Level* load (phenyl::game::Level&& obj, std::size_t id) override;
 
 private:

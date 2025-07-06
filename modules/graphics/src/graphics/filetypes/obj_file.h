@@ -12,7 +12,7 @@ class ObjFile {
 public:
     explicit ObjFile (std::istream& file);
 
-    std::unique_ptr<Mesh> makeMesh (Renderer& renderer, bool includeW = false);
+    Mesh makeMesh (Renderer& renderer, bool includeW = false);
 
 private:
     std::vector<glm::vec4> m_positions;

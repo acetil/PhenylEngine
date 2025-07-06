@@ -15,7 +15,7 @@ Mesh* MeshManager::load (std::ifstream& data, std::size_t id) {
     // Only obj files supported for now
 
     ObjFile objFile{data};
-    auto mesh = objFile.makeMesh(m_renderer);
+    auto mesh = std::make_unique<Mesh>(objFile.makeMesh(m_renderer));
     auto* ptr = mesh.get();
 
     if (auto it = m_layoutIds.find(mesh->layout()); it != m_layoutIds.end()) {
@@ -27,6 +27,21 @@ Mesh* MeshManager::load (std::ifstream& data, std::size_t id) {
 
     m_meshes.emplace(id, std::move(mesh));
     return ptr;
+}
+
+std::shared_ptr<Mesh> MeshManager::load2 (std::ifstream& data) {
+    // Only obj files supported for now
+
+    ObjFile objFile{data};
+    auto mesh = std::make_shared<Mesh>(objFile.makeMesh(m_renderer));
+
+    if (auto it = m_layoutIds.find(mesh->layout()); it != m_layoutIds.end()) {
+        mesh->setLayoutId(it->second);
+    } else {
+        mesh->setLayoutId(m_nextLayoutId);
+        m_layoutIds.emplace(mesh->layout(), m_nextLayoutId++);
+    }
+    return mesh;
 }
 
 Mesh* MeshManager::load (Mesh&& obj, std::size_t id) {

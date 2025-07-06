@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/assets/asset.h"
 #include "graphics/image.h"
 
 #include <memory>
@@ -68,7 +69,7 @@ public:
     [[nodiscard]] virtual ISampler& sampler () noexcept = 0;
 };
 
-class Texture {
+class Texture : public core::AssetType2<Texture> {
 public:
     Texture () : m_hash{0} {}
 

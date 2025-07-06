@@ -121,6 +121,10 @@ phenyl::graphics::Shader* VulkanShaderManager::load (std::ifstream& data, std::s
     PHENYL_ABORT("Unimplemented");
 }
 
+std::shared_ptr<phenyl::graphics::Shader> VulkanShaderManager::load2 (std::ifstream& data) {
+    PHENYL_ABORT("Unimplemented");
+}
+
 phenyl::graphics::Shader* VulkanShaderManager::load (graphics::Shader&& obj, std::size_t id) {
     m_shaders.emplace(id, std::make_unique<graphics::Shader>(std::move(obj)));
 

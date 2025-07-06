@@ -9,6 +9,7 @@ public:
     MaterialManager (Renderer& renderer);
 
     Material* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<Material> load2 (std::ifstream& data) override;
     Material* load (Material&& obj, std::size_t id) override;
     const char* getFileType () const override;
     void queueUnload (std::size_t id) override;

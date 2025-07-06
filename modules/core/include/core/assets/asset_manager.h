@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <memory>
 
 namespace phenyl::core {
 class Assets;
@@ -37,7 +38,11 @@ template <typename T>
 class AssetManager : public detail::AssetManagerBase {
 protected:
     virtual T* load (std::ifstream& data, std::size_t id) = 0;
+    virtual std::shared_ptr<T> load2 (std::ifstream& data) = 0;
+
     virtual T* load (T&& obj, std::size_t id) = 0;
+
+    virtual void onVirtualLoad (std::shared_ptr<T> obj) {}
 
     bool onUnload (std::size_t id) {
         return detail::AssetManagerBase::OnUnloadUntyped(meta::TypeIndex::Get<T>(), id);

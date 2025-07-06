@@ -68,6 +68,7 @@ private:
 public:
     const char* getFileType () const override;
     graphics::Shader* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<graphics::Shader> load2 (std::ifstream& data) override;
     graphics::Shader* load (graphics::Shader&& obj, std::size_t id) override;
     void queueUnload (std::size_t id) override;
 

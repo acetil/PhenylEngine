@@ -17,6 +17,7 @@ public:
 
     Prefab* load (std::ifstream& data, std::size_t id) override;
     Prefab* load (phenyl::core::Prefab&& obj, std::size_t id) override;
+    std::shared_ptr<Prefab> load2 (std::ifstream& data) override;
 
     void queueUnload (std::size_t id) override;
     [[nodiscard]] const char* getFileType () const override;

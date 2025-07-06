@@ -19,6 +19,7 @@ public:
 
     const char* getFileType () const override;
     Font* load (std::ifstream& data, std::size_t id) override;
+    std::shared_ptr<Font> load2 (std::ifstream& data) override;
     Font* load (Font&& obj, std::size_t id) override;
 
     core::Asset<Font> loadFromMemory (std::span<std::byte> faceData, const std::string& virtualPath);
