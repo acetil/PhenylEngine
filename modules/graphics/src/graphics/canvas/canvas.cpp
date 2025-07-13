@@ -91,7 +91,7 @@ void Canvas::render (glm::vec2 pos, const CanvasRoundedRect& rect, const CanvasS
     submitVertices(vertices, style);
 }
 
-void Canvas::renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text,
+void Canvas::renderText (glm::vec2 pos, const std::shared_ptr<Font>& font, std::uint32_t size, std::string_view text,
     glm::vec3 colour) {
     font->renderText(m_layer, size, text, offset() + pos, colour);
 }

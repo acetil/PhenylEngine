@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/assets/asset.h"
 #include "graphics/backend/buffer.h"
 #include "graphics/maths_headers.h"
 
@@ -37,7 +38,7 @@ struct ParticleProperties2D {
     glm::vec4 colourEndMax;
 };
 
-class ParticleSystem2D {
+class ParticleSystem2D : public core::Asset<ParticleSystem2D> {
 public:
     ParticleSystem2D (ParticleProperties2D properties, std::size_t maxParticles);
 

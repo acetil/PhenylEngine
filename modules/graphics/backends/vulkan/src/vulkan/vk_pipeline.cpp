@@ -122,7 +122,7 @@ void VulkanPipeline::renderInstanced (graphics::ICommandList& list, IFrameBuffer
     }
 }
 
-VulkanPipelineFactory::VulkanPipelineFactory (VulkanResources& resources, core::Asset<Shader> shader,
+VulkanPipelineFactory::VulkanPipelineFactory (VulkanResources& resources, std::shared_ptr<graphics::Shader> shader,
     VulkanResource<VkPipelineLayout> pipelineLayout, std::vector<VkVertexInputBindingDescription> vertexBindings,
     std::vector<VkVertexInputAttributeDescription> vertexAttribs, VkPrimitiveTopology topology,
     VkCullModeFlags cullMode, const VkPipelineColorBlendAttachmentState& blendAttachment,
@@ -358,7 +358,7 @@ void VulkanPipelineBuilder::withGeometryType (graphics::GeometryType type) {
     }
 }
 
-void VulkanPipelineBuilder::withShader (core::Asset<graphics::Shader> shader) {
+void VulkanPipelineBuilder::withShader (const std::shared_ptr<graphics::Shader>& shader) {
     PHENYL_ASSERT(shader);
     this->m_shader = std::move(shader);
 }

@@ -78,7 +78,7 @@ public:
         ChildrenSerializable serializable{*this};
         deserializer.next("children", serializable, obj);
 
-        if (auto prefabOpt = deserializer.next<phenyl::core::Asset<phenyl::core::Prefab>>("prefab")) {
+        if (auto prefabOpt = deserializer.next<std::shared_ptr<phenyl::core::Prefab>>("prefab")) {
             (*prefabOpt)->instantiate(obj);
         }
     }
@@ -157,27 +157,15 @@ LevelManager::LevelManager (core::World& world, core::EntityComponentSerializer&
 
 LevelManager::~LevelManager () = default;
 
-Level* LevelManager::load (std::ifstream& data, std::size_t id) {
-    m_levels[id] = std::make_unique<Level>(Level{std::move(data), *this});
-
-    return m_levels[id].get();
-}
-
-void LevelManager::queueUnload (std::size_t id) {
-    if (onUnload(id)) {
-        m_levels.erase(id);
-    }
-}
-
-const char* LevelManager::getFileType () const {
-    return ".json";
+std::shared_ptr<Level> LevelManager::load (core::AssetLoadContext& ctx) {
+    return std::make_shared<Level>(Level{std::move(ctx.withExtension(".json")), *this});
 }
 
 void LevelManager::selfRegister () {
     core::Assets::AddManager(this);
 }
 
-void LevelManager::queueLoad (core::Asset<Level> level, bool additive) {
+void LevelManager::queueLoad (std::shared_ptr<Level> level, bool additive) {
     if (!additive) {
         PHENYL_LOGI_IF((!m_queuedLoads.empty()), LOGGER, "Dropping {} queued loads because of non-additive load",
             m_queuedLoads.size());
@@ -215,41 +203,20 @@ void LevelManager::dump (std::ostream& file) const {
     core::SerializeToJson(file, serializable, marker, true);
 }
 
-Level* LevelManager::load (Level&& obj, std::size_t id) {
-    PHENYL_LOGD(LOGGER, "Loading already created level");
-    m_levels[id] = std::make_unique<Level>(std::move(obj));
-    return m_levels[id].get();
-}
-
 std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (std::ifstream file, LevelManager& manager) : m_file{std::move(file)}, m_manager{manager} {
-    PHENYL_DASSERT(!this->m_file.bad());
-    m_startPos = this->m_file.tellg();
-}
+Level::Level (core::AssetLoadContext loadCtx, LevelManager& manager) :
+    m_loadCtx{std::move(loadCtx)},
+    m_manager{manager} {}
 
 void Level::loadImmediate (core::World& world, core::EntityComponentSerializer& serializer) {
-    m_file.seekg(m_startPos);
     LevelSerializable serializable{world, serializer};
     LevelMarker marker{};
-    core::DeserializeFromJson(m_file, serializable, marker);
+    m_loadCtx.read([&] (std::istream& data) { core::DeserializeFromJson(data, serializable, marker); });
 }
 
 void Level::load (bool additive) {
-    // if (!additive) {
-    //     PHENYL_LOGD(LOGGER, "Clearing entities due to level load");
-    //     world.clear();
-    // }
-    //
-    // world.deferSignals();
-    //
-    // file.seekg(startPos);
-    // LevelSerializable serializable{world, serializer};
-    // LevelMarker marker{};
-    // common::DeserializeFromJson(file, serializable, marker);
-    //
-    // world.deferSignalsEnd();
-    m_manager.queueLoad(assetFromThis(), additive);
+    m_manager.queueLoad(shared_from_this(), additive);
 }

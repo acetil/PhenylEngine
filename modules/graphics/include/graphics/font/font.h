@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/assets/asset.h"
 #include "glyph.h"
 #include "graphics/image.h"
 #include "graphics/maths_headers.h"
@@ -17,7 +18,7 @@ struct TextBounds {
     glm::ivec2 baselineOffset;
 };
 
-class Font {
+class Font : public core::Asset<Font> {
 public:
     Font (GlyphAtlas& atlas, std::unique_ptr<std::byte[]> faceData, FT_Face face, std::size_t fontId,
         glm::ivec2 windowDPI);

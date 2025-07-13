@@ -27,12 +27,12 @@ public:
         render({0, 0}, rect, style);
     }
 
-    void renderText (glm::vec2 pos, core::Asset<Font>& font, std::uint32_t size, std::string_view text,
+    void renderText (glm::vec2 pos, const std::shared_ptr<Font>& font, std::uint32_t size, std::string_view text,
         glm::vec3 colour = {1.0f, 1.0f, 1.0f});
 
     void renderPolygon (std::span<const glm::vec2> vertices, const CanvasStyle& style);
 
-    core::Asset<Font>& defaultFont () noexcept {
+    const std::shared_ptr<Font>& defaultFont () noexcept {
         return m_defaultFont;
     }
 
@@ -49,7 +49,7 @@ private:
     GlyphAtlas m_atlas;
     CanvasRenderLayer& m_layer;
     std::unique_ptr<FontManager> m_fontManager;
-    core::Asset<Font> m_defaultFont;
+    std::shared_ptr<Font> m_defaultFont;
 
     std::vector<glm::vec2> m_offsetStack;
     glm::ivec2 m_resolution;

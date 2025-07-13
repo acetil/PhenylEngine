@@ -7,23 +7,24 @@ using namespace phenyl::core;
 
 Assets* Assets::INSTANCE = nullptr;
 
-bool detail::AssetManagerBase::OnUnloadUntyped (meta::TypeIndex typeIndex, std::size_t id) {
-    return Assets::UnloadAsset(typeIndex, id);
+AssetBase::AssetBase (meta::TypeIndex type) : m_id{0}, m_type{type} {}
+
+AssetBase::AssetBase (const AssetBase& other) : m_id{0}, m_type{other.m_type} {}
+
+AssetBase::AssetBase (AssetBase&& other) noexcept : m_id{0}, m_type{other.m_type} {}
+
+AssetBase& AssetBase::operator= (const AssetBase& other) {
+    // Keep old id
+    return *this;
 }
 
-std::size_t detail::AssetManagerBase::onVirtualLoadUntyped (meta::TypeIndex, const std::string& virtualPath,
-    std::byte* data) {
-    return 0;
+AssetBase& AssetBase::operator= (AssetBase&& other) noexcept {
+    // Keep old id
+    return *this;
 }
 
-void detail::AssetBase::IncRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-    Assets::IncrementRefCount(typeIndex, id);
-}
-
-void detail::AssetBase::DecRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-    Assets::DecrementRefCount(typeIndex, id);
-}
-
-std::string_view detail::AssetBase::GetPath (meta::TypeIndex typeIndex, std::size_t id) {
-    return Assets::GetPath(typeIndex, id);
+AssetBase::~AssetBase () {
+    if (m_id) {
+        Assets::OnUnload(m_type, m_id);
+    }
 }

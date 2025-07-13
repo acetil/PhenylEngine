@@ -15,7 +15,3 @@ void PrefabPlugin::init (PhenylRuntime& runtime) {
     m_manager = std::make_unique<core::PrefabAssetManager>(runtime.world(), runtime.serializer());
     m_manager->selfRegister();
 }
-
-void PrefabPlugin::shutdown (PhenylRuntime& runtime) {
-    m_manager->clear();
-}

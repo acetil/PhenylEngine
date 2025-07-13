@@ -162,7 +162,7 @@ ObjFile::ObjFile (std::istream& file) {
     }
 }
 
-std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
+Mesh ObjFile::makeMesh (Renderer& renderer, bool includeW) {
     MeshLayout layout{};
 
     std::size_t stride = 0;
@@ -238,5 +238,5 @@ std::unique_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
 
     std::vector<RawBuffer> streams;
     streams.emplace_back(std::move(vertexBuffer));
-    return std::make_unique<Mesh>(std::move(layout), std::move(indexBuffer), std::move(streams), m_indices.size());
+    return Mesh{std::move(layout), std::move(indexBuffer), std::move(streams), m_indices.size()};
 }

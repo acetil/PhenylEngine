@@ -21,7 +21,7 @@ struct TileController {
     glm::vec2 endOffset{};
     glm::vec2 labelPos{};
 
-    phenyl::Asset<phenyl::Prefab> tile;
+    std::shared_ptr<phenyl::Prefab> tile;
 
     BreakoutApp* app = nullptr;
     std::size_t tilesRemaining = 0;

@@ -117,24 +117,8 @@ std::optional<std::size_t> VulkanShader::getUniformBlockSize (const std::string&
 
 VulkanShaderManager::VulkanShaderManager (VkDevice device) : m_device{device} {}
 
-phenyl::graphics::Shader* VulkanShaderManager::load (std::ifstream& data, std::size_t id) {
+std::shared_ptr<phenyl::graphics::Shader> VulkanShaderManager::load (core::AssetLoadContext& ctx) {
     PHENYL_ABORT("Unimplemented");
-}
-
-phenyl::graphics::Shader* VulkanShaderManager::load (graphics::Shader&& obj, std::size_t id) {
-    m_shaders.emplace(id, std::make_unique<graphics::Shader>(std::move(obj)));
-
-    return m_shaders[id].get();
-}
-
-void VulkanShaderManager::queueUnload (std::size_t id) {}
-
-bool VulkanShaderManager::isBinary () const {
-    return false;
-}
-
-const char* VulkanShaderManager::getFileType () const {
-    return ""; // TODO
 }
 
 void VulkanShaderManager::selfRegister () {
@@ -148,7 +132,8 @@ void VulkanShaderManager::loadDefault (const std::string& path, std::unique_ptr<
     }
 
     PHENYL_LOGD(LOGGER, "Loaded default shader \"{}\"", path);
-    m_defaultShaders.emplace_back(core::Assets::LoadVirtual(path, graphics::Shader{std::move(shader)}));
+    m_defaultShaders.emplace_back(std::make_shared<graphics::Shader>(std::move(shader)));
+    core::Assets::LoadVirtual(path, m_defaultShaders.back());
 }
 
 VulkanShaderManager::Builder VulkanShaderManager::builder () {

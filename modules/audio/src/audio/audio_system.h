@@ -22,11 +22,7 @@ public:
     explicit AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources = 32);
     ~AudioSystem () override;
 
-    AudioSample* load (std::ifstream& data, std::size_t id) override;
-    AudioSample* load (phenyl::audio::AudioSample&& obj, std::size_t id) override;
-    void queueUnload (std::size_t id) override;
-    [[nodiscard]] const char* getFileType () const override;
-    bool isBinary () const override;
+    std::shared_ptr<AudioSample> load (core::AssetLoadContext& ctx) override;
 
     // virtual AudioSource createSource () = 0;
     AudioSource createSource ();
@@ -70,7 +66,6 @@ private:
         bool active{false};
     };
 
-    std::unordered_map<std::size_t, std::unique_ptr<AudioSample>> m_samples;
     std::unique_ptr<AudioBackend> m_backend;
 
     util::FLVector<VirtualSource> m_virtualSources;

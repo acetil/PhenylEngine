@@ -17,25 +17,14 @@ public:
 
     ~FontManager () override;
 
-    const char* getFileType () const override;
-    Font* load (std::ifstream& data, std::size_t id) override;
-    Font* load (Font&& obj, std::size_t id) override;
-
-    core::Asset<Font> loadFromMemory (std::span<std::byte> faceData, const std::string& virtualPath);
-
-    void queueUnload (std::size_t id) override;
-
-    bool isBinary () const override {
-        return true;
-    }
-
+    std::shared_ptr<Font> load (core::AssetLoadContext& ctx) override;
     void selfRegister ();
 
 private:
     const Viewport& m_viewport;
     FT_Library m_library = nullptr;
     GlyphAtlas& m_glyphAtlas;
-    std::unordered_map<std::size_t, std::unique_ptr<Font>> m_fonts;
+    std::vector<std::shared_ptr<Font>> m_loadedFonts;
     std::size_t m_nextFontId = 1;
 };
 

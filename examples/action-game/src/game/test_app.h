@@ -42,7 +42,7 @@ private:
 
     phenyl::InputAction m_stepAction;
     phenyl::InputAction m_consoleAction;
-    phenyl::Asset<phenyl::Font> m_testFont;
+    std::shared_ptr<phenyl::Font> m_testFont;
 
     int m_numPresses = 0;
     bool m_isButtonDown = false;

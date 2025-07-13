@@ -77,27 +77,9 @@ public:
     }
 };
 
-core::Prefab* core::PrefabAssetManager::load (std::ifstream& data, std::size_t id) {
+std::shared_ptr<core::Prefab> core::PrefabAssetManager::load (AssetLoadContext& ctx) {
     PrefabSerializable serializable{m_world, m_serializer};
-
-    auto prefab = std::make_unique<Prefab>();
-    try {
-        core::DeserializeFromJson(data, serializable, *prefab);
-    } catch (const phenyl::DeserializeException& e) {
-        PHENYL_LOGE(LOGGER, "Failed to deserialize prefab {}: {}", id, e.what());
-        return nullptr;
-    }
-
-    auto* ptr = prefab.get();
-    m_prefabs[id] = std::move(prefab);
-
-    PHENYL_TRACE(LOGGER, "Loaded prefab {}!", id);
-
-    return ptr;
-}
-
-void core::PrefabAssetManager::queueUnload (std::size_t id) {
-    PHENYL_TRACE(LOGGER, "Unload requested for prefab {}!", id);
+    return ctx.withExtension(".json").deserialize(serializable);
 }
 
 void core::PrefabAssetManager::selfRegister () {
@@ -106,17 +88,4 @@ void core::PrefabAssetManager::selfRegister () {
 
 core::PrefabAssetManager::~PrefabAssetManager () {
     core::Assets::RemoveManager(this);
-}
-
-const char* core::PrefabAssetManager::getFileType () const {
-    return ".json";
-}
-
-void core::PrefabAssetManager::clear () {
-    m_prefabs.clear();
-}
-
-core::Prefab* core::PrefabAssetManager::load (core::Prefab&& obj, std::size_t id) {
-    m_prefabs[id] = std::make_unique<core::Prefab>(std::move(obj));
-    return m_prefabs[id].get();
 }

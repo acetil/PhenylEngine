@@ -6,8 +6,8 @@
 
 namespace phenyl::graphics {
 struct MeshRenderer3D {
-    core::Asset<Mesh> mesh;
-    core::Asset<MaterialInstance> material;
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<MaterialInstance> material;
 };
 
 PHENYL_DECLARE_SERIALIZABLE(MeshRenderer3D)

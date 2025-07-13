@@ -22,7 +22,6 @@ public:
     AudioSource& operator= (const AudioSource&) = delete;
     AudioSource& operator= (AudioSource&& other) noexcept;
 
-    void play (const core::Asset<AudioSample>& sample);
     void play (const AudioSample& sample);
 
     [[nodiscard]] float getGain () const;

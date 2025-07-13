@@ -19,7 +19,7 @@ struct UniformDefinition {
 PHENYL_SERIALIZABLE(UniformDefinition, PHENYL_SERIALIZABLE_MEMBER(name), PHENYL_SERIALIZABLE_MEMBER(type))
 
 struct MaterialDefinition {
-    phenyl::core::Asset<Shader> shader;
+    std::shared_ptr<Shader> shader;
     std::vector<UniformDefinition> uniforms;
 };
 
@@ -28,42 +28,28 @@ PHENYL_SERIALIZABLE(MaterialDefinition, PHENYL_SERIALIZABLE_MEMBER(shader), PHEN
 
 MaterialManager::MaterialManager (Renderer& renderer) : m_renderer{renderer} {}
 
-Material* MaterialManager::load (std::ifstream& data, std::size_t id) {
-    auto def = core::DeserializeFromJson<MaterialDefinition>(data);
+std::shared_ptr<Material> MaterialManager::load (core::AssetLoadContext& ctx) {
+    return ctx.withExtension(".json").deserialize([&] (MaterialDefinition&& def) -> std::shared_ptr<Material> {
+        MaterialProperties props;
+        for (auto& i : def.uniforms) {
+            auto type = ShaderTypeFromName(i.type);
+            if (type == ShaderDataType::UNKNOWN) {
+                PHENYL_LOGE(LOGGER, "Failed to parse uniform type \"{}\" for property \"{}\"", i.type, i.name);
+                continue;
+            }
 
-    MaterialProperties props;
-    for (auto& i : def.uniforms) {
-        auto type = ShaderTypeFromName(i.type);
-        if (type == ShaderDataType::UNKNOWN) {
-            PHENYL_LOGE(LOGGER, "Failed to parse uniform type \"{}\" for property \"{}\"", i.type, i.name);
-            continue;
+            if (auto off = def.shader->uniformOffset("Material", i.name); off) {
+                props.uniforms.emplace_back(i.name, type, *off);
+            } else {
+                PHENYL_LOGE(LOGGER, "Failed to find uniform \"{}\" in shader", i.name);
+            }
         }
 
-        if (auto off = def.shader->uniformOffset("Material", i.name); off) {
-            props.uniforms.emplace_back(i.name, type, *off);
-        } else {
-            PHENYL_LOGE(LOGGER, "Failed to find uniform \"{}\" in shader", i.name);
-        }
-    }
+        props.uniformBlockSize = *def.shader->uniformBlockSize("Material");
 
-    props.uniformBlockSize = *def.shader->uniformBlockSize("Material");
-
-    auto material = std::make_unique<Material>(m_renderer, id, std::move(def.shader), std::move(props));
-    auto [it, _] = m_materials.emplace(id, std::move(material));
-
-    return it->second.get();
-}
-
-Material* MaterialManager::load (Material&& obj, std::size_t id) {
-    PHENYL_ABORT("Virtual loading not supported for materials!");
-}
-
-const char* MaterialManager::getFileType () const {
-    return ".json";
-}
-
-void MaterialManager::queueUnload (std::size_t id) {
-    // TODO
+        // TODO
+        return std::make_shared<Material>(m_renderer, 0, std::move(def.shader), std::move(props));
+    });
 }
 
 void MaterialManager::selfRegister () {

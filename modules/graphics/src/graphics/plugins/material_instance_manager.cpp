@@ -116,7 +116,7 @@ public:
 
     void deserializeStruct (std::shared_ptr<MaterialInstance>& obj,
         phenyl::core::IStructDeserializer& deserializer) override {
-        auto matOpt = deserializer.next<phenyl::core::Asset<Material>>("material");
+        auto matOpt = deserializer.next<std::shared_ptr<Material>>("material");
         if (!matOpt) {
             throw phenyl::DeserializeException("Failed to deserialize parent material of instance");
         }
@@ -136,25 +136,13 @@ public:
 };
 } // namespace
 
-MaterialInstance* MaterialInstanceManager::load (std::ifstream& data, std::size_t id) {
-    std::shared_ptr<MaterialInstance> instance;
+std::shared_ptr<MaterialInstance> MaterialInstanceManager::load (core::AssetLoadContext& ctx) {
     MaterialInstanceSerializable serializable{};
-    core::DeserializeFromJson(data, serializable, instance);
-
-    auto [it, _] = m_instances.emplace(id, std::move(instance));
-    return it->second.get();
-}
-
-MaterialInstance* MaterialInstanceManager::load (MaterialInstance&& obj, std::size_t id) {
-    PHENYL_ABORT("Virtual loading of material instances not supported!");
-}
-
-const char* MaterialInstanceManager::getFileType () const {
-    return ".json";
-}
-
-void MaterialInstanceManager::queueUnload (std::size_t id) {
-    // TODO
+    return ctx.withExtension(".json").read([&] (std::istream& data) {
+        std::shared_ptr<MaterialInstance> instance;
+        core::DeserializeFromJson(data, serializable, instance);
+        return instance;
+    });
 }
 
 void MaterialInstanceManager::selfRegister () {

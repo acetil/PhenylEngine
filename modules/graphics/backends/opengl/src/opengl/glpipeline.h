@@ -32,7 +32,7 @@ public:
         std::size_t vertices, std::size_t offset) override;
 
     void setRenderMode (GLenum renderMode);
-    void setShader (core::Asset<graphics::Shader> shader);
+    void setShader (std::shared_ptr<graphics::Shader> shader);
 
     graphics::BufferBinding addBuffer (meta::TypeIndex type, GLuint divisor);
     void addAttrib (GLenum type, GLint size, GLuint location, graphics::BufferBinding binding, std::size_t offset);
@@ -53,7 +53,7 @@ private:
     GLuint m_vao;
     GLenum m_renderMode = GL_TRIANGLES;
     GlWindowFrameBuffer* m_windowFrameBuffer;
-    core::Asset<graphics::Shader> m_shader;
+    std::shared_ptr<graphics::Shader> m_shader;
     std::vector<meta::TypeIndex> m_bufferTypes;
     std::unordered_map<graphics::UniformBinding, meta::TypeIndex> m_uniformTypes;
     std::optional<PipelineIndex> m_indexType = std::nullopt;
@@ -75,7 +75,7 @@ public:
     GlPipelineBuilder (GlWindowFrameBuffer* fb);
 
     void withGeometryType (graphics::GeometryType type) override;
-    void withShader (core::Asset<graphics::Shader> shader) override;
+    void withShader (const std::shared_ptr<graphics::Shader>& shader) override;
 
     graphics::BufferBinding withBuffer (meta::TypeIndex type, std::size_t size,
         graphics::BufferInputRate inputRate) override;

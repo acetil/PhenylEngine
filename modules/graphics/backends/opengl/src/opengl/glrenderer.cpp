@@ -167,102 +167,103 @@ std::unique_ptr<IUniformBuffer> GLRenderer::makeRendererUniformBuffer (bool read
 
 void GLRenderer::loadDefaultShaders () {
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual box shader!");
-    m_boxShader = core::Assets::LoadVirtual("phenyl/shaders/box",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
-              .withAttrib(ShaderDataType::VEC2F, "pos")
-              .withAttrib(ShaderDataType::VEC2F, "rectPosIn")
-              .withAttrib(ShaderDataType::VEC4F, "borderColourIn")
-              .withAttrib(ShaderDataType::VEC4F, "bgColourIn")
-              .withAttrib(ShaderDataType::VEC4F, "boxDetailIn")
-              .withUniformBlock("Uniform")
-              .build()});
+    m_boxShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_BOX_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_BOX_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "pos")
+            .withAttrib(ShaderDataType::VEC2F, "rectPosIn")
+            .withAttrib(ShaderDataType::VEC4F, "borderColourIn")
+            .withAttrib(ShaderDataType::VEC4F, "bgColourIn")
+            .withAttrib(ShaderDataType::VEC4F, "boxDetailIn")
+            .withUniformBlock("Uniform")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual debug shader!");
-    m_debugShader = core::Assets::LoadVirtual("phenyl/shaders/debug",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
-              .withAttrib(ShaderDataType::VEC3F, "position")
-              .withAttrib(ShaderDataType::VEC4F, "colourOut")
-              .withUniformBlock("Uniform")
-              .build()});
+    m_debugShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_DEBUG_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_DEBUG_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC3F, "position")
+            .withAttrib(ShaderDataType::VEC4F, "colourOut")
+            .withUniformBlock("Uniform")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual sprite shader!");
-    m_spriteShader = core::Assets::LoadVirtual("phenyl/shaders/sprite",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
-              .withAttrib(ShaderDataType::VEC2F, "position")
-              .withAttrib(ShaderDataType::VEC2F, "uvOut")
-              .withUniformBlock("Camera")
-              .withSampler("textureSampler")
-              .build()});
+    m_spriteShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_SPRITE_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_SPRITE_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "position")
+            .withAttrib(ShaderDataType::VEC2F, "uvOut")
+            .withUniformBlock("Camera")
+            .withSampler("textureSampler")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual canvas shader!");
-    m_textShader = core::Assets::LoadVirtual("phenyl/shaders/canvas",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
-              .withAttrib(ShaderDataType::VEC2F, "pos")
-              .withAttrib(ShaderDataType::VEC3F, "uvOut")
-              .withAttrib(ShaderDataType::VEC4F, "colorOut")
-              .withUniformBlock("Uniform")
-              .withSampler("textureSampler")
-              .build()});
+    m_textShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_CANVAS_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_CANVAS_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "pos")
+            .withAttrib(ShaderDataType::VEC3F, "uvOut")
+            .withAttrib(ShaderDataType::VEC4F, "colorOut")
+            .withUniformBlock("Uniform")
+            .withSampler("textureSampler")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual particle shader!");
-    m_particleShader = core::Assets::LoadVirtual("phenyl/shaders/particle",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
-              .withAttrib(ShaderDataType::VEC2F, "pos")
-              .withAttrib(ShaderDataType::VEC4F, "colourIn")
-              .withUniformBlock("Camera")
-              .build()});
+    m_particleShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_PARTICLE_VERTEX_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_PARTICLE_FRAGMENT_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "pos")
+            .withAttrib(ShaderDataType::VEC4F, "colourIn")
+            .withUniformBlock("Camera")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual Blinn-Phong shader!");
-    m_meshShader = core::Assets::LoadVirtual("phenyl/shaders/blinn_phong",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
-              .withAttrib(ShaderDataType::VEC3F, "position")
-              .withAttrib(ShaderDataType::VEC3F, "normal")
-              .withAttrib(ShaderDataType::VEC2F, "texcoord_0")
-              .withAttrib(ShaderDataType::MAT4F, "model")
-              .withUniformBlock("GlobalUniform")
-              .withUniformBlock("BPLightUniform")
-              .withUniformBlock("Material")
-              .withSampler("ShadowMap")
-              .build()});
+    m_meshShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_BLINN_PHONG_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_BLINN_PHONG_FRAG)
+            .withAttrib(ShaderDataType::VEC3F, "position")
+            .withAttrib(ShaderDataType::VEC3F, "normal")
+            .withAttrib(ShaderDataType::VEC2F, "texcoord_0")
+            .withAttrib(ShaderDataType::MAT4F, "model")
+            .withUniformBlock("GlobalUniform")
+            .withUniformBlock("BPLightUniform")
+            .withUniformBlock("Material")
+            .withSampler("ShadowMap")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual shadow mapping shader!");
-    m_shadowMapShader = core::Assets::LoadVirtual("phenyl/shaders/shadow_map",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
-              .withAttrib(ShaderDataType::VEC3F, "position")
-              .withAttrib(ShaderDataType::MAT4F, "model")
-              .withUniformBlock("BPLightUniform")
-              .build()});
+    m_shadowMapShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_SHADOW_MAP_VERT)
+            .withAttrib(ShaderDataType::VEC3F, "position")
+            .withAttrib(ShaderDataType::MAT4F, "model")
+            .withUniformBlock("BPLightUniform")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual mesh z-prepass shader!");
-    m_prepassShader = core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
-              .withAttrib(ShaderDataType::VEC3F, "position")
-              .withAttrib(ShaderDataType::MAT4F, "model")
-              .withUniformBlock("GlobalUniform")
-              .build()});
+    m_prepassShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_MESH_PREPASS_VERT)
+            .withAttrib(ShaderDataType::VEC3F, "position")
+            .withAttrib(ShaderDataType::MAT4F, "model")
+            .withUniformBlock("GlobalUniform")
+            .build());
 
     PHENYL_TRACE(detail::OPENGL_LOGGER, "Loading virtual no-op post-process shader!");
-    m_noopPostShader = core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop",
-        Shader{GlShader::Builder()
-              .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
-              .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
-              .withAttrib(ShaderDataType::VEC2F, "position")
-              .withSampler("frameBuffer")
-              .build()});
+    m_noopPostShader = std::make_shared<Shader>(GlShader::Builder()
+            .withSource(ShaderSourceType::VERTEX, EMBED_POSTPROCESS_VERT)
+            .withSource(ShaderSourceType::FRAGMENT, EMBED_NOOP_POSTPROCESS_FRAG)
+            .withAttrib(ShaderDataType::VEC2F, "position")
+            .withSampler("frameBuffer")
+            .build());
+
+    core::Assets::LoadVirtual("phenyl/shaders/box", m_boxShader);
+    core::Assets::LoadVirtual("phenyl/shaders/debug", m_debugShader);
+    core::Assets::LoadVirtual("phenyl/shaders/sprite", m_spriteShader);
+    core::Assets::LoadVirtual("phenyl/shaders/canvas", m_textShader);
+    core::Assets::LoadVirtual("phenyl/shaders/particle", m_particleShader);
+    core::Assets::LoadVirtual("phenyl/shaders/blinn_phong", m_meshShader);
+    core::Assets::LoadVirtual("phenyl/shaders/shadow_map", m_shadowMapShader);
+    core::Assets::LoadVirtual("phenyl/shaders/mesh_prepass", m_prepassShader);
+    core::Assets::LoadVirtual("phenyl/shaders/postprocess/noop", m_noopPostShader);
 }
 
 std::string_view GLRenderer::getName () const noexcept {

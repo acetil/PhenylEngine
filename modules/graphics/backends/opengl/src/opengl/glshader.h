@@ -62,15 +62,12 @@ private:
 };
 
 class GlShaderManager : public core::AssetManager<graphics::Shader> {
-private:
-    std::unordered_map<std::size_t, graphics::Shader> m_shaders;
-
 public:
-    const char* getFileType () const override;
-    graphics::Shader* load (std::ifstream& data, std::size_t id) override;
-    graphics::Shader* load (graphics::Shader&& obj, std::size_t id) override;
-    void queueUnload (std::size_t id) override;
+    std::shared_ptr<graphics::Shader> load (core::AssetLoadContext& ctx) override;
 
     void selfRegister ();
+
+private:
+    std::shared_ptr<graphics::Shader> loadJson (std::istream& data);
 };
 } // namespace phenyl::opengl

@@ -22,7 +22,7 @@ private:
     // phenyl::ui::Label livesLabel;
     phenyl::ui::LabelWidget* m_pointsLabel = nullptr;
     phenyl::ui::LabelWidget* m_livesLabel = nullptr;
-    phenyl::Asset<phenyl::Prefab> m_tilePrefab;
+    std::shared_ptr<phenyl::Prefab> m_tilePrefab;
 
     void init () override;
     void postInit () override;

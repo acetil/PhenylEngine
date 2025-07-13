@@ -26,7 +26,7 @@ void breakout::InitWall (BreakoutApp* app, phenyl::World& world) {
             emitterEntity.apply<phenyl::ParticleEmitter2D>(
                 [normal = signal.normal] (phenyl::ParticleEmitter2D& emitter) { emitter.direction = normal; });
 
-            audioPlayer.play(wall.bounceSample);
+            audioPlayer.play(*wall.bounceSample);
             /*wall.emitter->instantiate()
                 .with(emitterTransform)
                 .complete()

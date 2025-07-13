@@ -21,7 +21,7 @@ struct MaterialProperties {
     std::size_t uniformBlockSize;
 };
 
-class Material : public core::IAssetType<Material> {
+class Material : public core::Asset<Material>, public std::enable_shared_from_this<Material> {
 public:
     struct MatPipeline {
         Pipeline pipeline;
@@ -52,7 +52,7 @@ public:
         std::vector<BufferBinding> streamBindings;
     };
 
-    Material (Renderer& renderer, std::uint32_t id, core::Asset<Shader> shader, MaterialProperties properties);
+    Material (Renderer& renderer, std::uint32_t id, std::shared_ptr<Shader> shader, MaterialProperties properties);
 
     std::uint32_t id () const noexcept {
         return m_id;
@@ -67,7 +67,7 @@ public:
 private:
     Renderer& m_renderer;
     std::uint32_t m_id;
-    core::Asset<Shader> m_shader;
+    std::shared_ptr<Shader> m_shader;
 
     util::HashMap<std::uint64_t, MatPipeline> m_pipelines;
     util::HashMap<std::uint64_t, DepthPipeline> m_depthPipelines;
@@ -76,9 +76,9 @@ private:
     MaterialProperties materialProperties;
 };
 
-class MaterialInstance {
+class MaterialInstance : public core::Asset<MaterialInstance> {
 public:
-    MaterialInstance (Renderer& renderer, core::Asset<Material> material, const MaterialProperties& properties);
+    MaterialInstance (Renderer& renderer, std::shared_ptr<Material> material, const MaterialProperties& properties);
 
     template <typename T>
     void set (const std::string& uniform, T&& val) requires (GetShaderDataType<T>() != ShaderDataType::UNKNOWN)
@@ -109,7 +109,7 @@ private:
         std::size_t offset;
     };
 
-    core::Asset<Material> m_material;
+    std::shared_ptr<Material> m_material;
     RawUniformBuffer m_data;
     std::unordered_map<std::string, MaterialUniform> m_uniforms;
 };

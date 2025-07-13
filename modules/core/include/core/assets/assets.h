@@ -5,6 +5,7 @@
 #include "core/detail/loggers.h"
 #include "forward.h"
 #include "util/fl_vector.h"
+#include "util/hash.h"
 #include "util/type_index.h"
 
 #include <fstream>
@@ -13,126 +14,111 @@
 
 namespace phenyl::core {
 namespace detail {
-    template <typename T>
-    struct AssetEntry {
-        T* data{nullptr};
-        std::string path{};
-        std::size_t refCount{0};
+    class IAssetCache {
+    public:
+        virtual ~IAssetCache () = default;
+
+        virtual void remove (std::size_t assetId) = 0;
     };
 
-    class AssetCacheBase {
+    template <typename T>
+    class AssetCache : public IAssetCache {
     public:
-        virtual ~AssetCacheBase () = default;
-        virtual void incRefCount (std::size_t id) = 0;
-        virtual bool decRefCount (std::size_t id) = 0;
-        virtual bool removeEntry (std::size_t id) = 0;
-        virtual std::string_view getPath (std::size_t id) = 0;
+        AssetCache (AssetManager<T>& manager) : m_manager{manager} {}
 
-        [[nodiscard]] AssetManagerBase* getManagerBase () const {
+        std::shared_ptr<T> lookup (std::string_view path) {
+            auto pathIt = m_pathMap.find(path);
+            if (pathIt == m_pathMap.end()) {
+                return nullptr;
+            }
+
+            const CacheItem& item = m_cache.at(pathIt->second);
+            if (auto ptr = item.obj.lock(); ptr) {
+                return ptr;
+            } else {
+                m_cache.erase(pathIt->second);
+                m_pathMap.erase(pathIt);
+                return nullptr;
+            }
+        }
+
+        std::shared_ptr<T> load (std::string_view path, AssetLoadContext& ctx) {
+            PHENYL_DASSERT(!m_pathMap.contains(path));
+
+            auto id = ctx.id();
+            auto ptr = m_manager.load(ctx);
+            if (!ptr) {
+                return nullptr;
+            }
+
+            completeLoad(path, id, ptr);
+            return ptr;
+        }
+
+        void virtualLoad (std::string_view path, std::size_t id, const std::shared_ptr<T>& ptr) {
+            PHENYL_ASSERT_MSG(!m_pathMap.contains(path), "Attempted to virtually load asset {} twice!", path);
+            completeLoad(path, id, ptr);
+        }
+
+        void remove (std::size_t assetId) override {
+            auto it = m_cache.find(assetId);
+            if (it == m_cache.end()) {
+                return;
+            }
+
+            m_pathMap.erase(it->second.path);
+            m_cache.erase(it);
+        }
+
+        AssetManager<T>& manager () {
             return m_manager;
         }
 
-    protected:
-        AssetManagerBase* m_manager;
-
-        explicit AssetCacheBase (AssetManagerBase* manager) : m_manager{manager} {}
-    };
-
-    template <typename T>
-    class AssetCache : public AssetCacheBase {
-    public:
-        explicit AssetCache (AssetManager<T>* manager) : AssetCacheBase{manager}, m_pathMap{}, m_cache{} {}
-
-        Asset<T> getCached (const std::string& path) {
-            if (m_pathMap.contains(path)) {
-                auto index = m_pathMap.at(path);
-                auto& entry = m_cache.at(index);
-                entry.refCount++;
-
-                return Asset<T>{index + 1, entry.data};
-            } else {
-                return Asset<T>{};
-            }
-        }
-
-        AssetManager<T>* getManager () const {
-            return static_cast<AssetManager<T>*>(m_manager);
-        }
-
-        std::size_t addEntry (const std::string& path) {
-            PHENYL_DASSERT(!m_pathMap.contains(path));
-            auto index = m_cache.emplace(nullptr, path, 1);
-            m_pathMap[path] = index;
-
-            return index + 1;
-        }
-
-        void putData (std::size_t id, T* data) {
-            PHENYL_DASSERT(id && m_cache.present(id - 1));
-            m_cache.at(id - 1).data = data;
-        }
-
-        void incRefCount (std::size_t id) override {
-            PHENYL_DASSERT(id && m_cache.present(id - 1));
-            m_cache.at(id - 1).refCount++;
-        }
-
-        bool decRefCount (std::size_t id) override {
-            PHENYL_DASSERT(id && m_cache.present(id - 1));
-            PHENYL_DASSERT(m_cache.at(id - 1).refCount);
-            return --m_cache.at(id - 1).refCount;
-        }
-
-        bool removeEntry (std::size_t id) override {
-            PHENYL_DASSERT(id && m_cache.present(id - 1));
-            if (m_cache.at(id - 1).refCount) {
-                return false;
-            }
-
-            forceRemoveEntry(id);
-            return true;
-        }
-
-        void forceRemoveEntry (std::size_t id) {
-            PHENYL_DASSERT(id && m_cache.present(id - 1));
-            m_pathMap.erase(m_cache.at(id - 1).path);
-            m_cache.remove(id - 1);
-        }
-
-        std::string_view getPath (std::size_t id) override {
-            if (id && m_cache.present(id - 1)) {
-                return m_cache.at(id - 1).path;
-            } else {
-                return UnknownPath;
-            }
-        }
-
     private:
-        static constexpr std::string_view UnknownPath = "";
+        struct CacheItem {
+            std::weak_ptr<T> obj;
+            std::string path;
+        };
 
-        std::unordered_map<std::string, std::size_t> m_pathMap;
-        util::FLVector<AssetEntry<T>> m_cache;
+        AssetManager<T>& m_manager;
+
+        util::HashMap<std::string, std::size_t> m_pathMap;
+        std::unordered_map<std::size_t, CacheItem> m_cache;
+        std::size_t m_nextId = 1;
+
+        void completeLoad (std::string_view path, std::size_t id, const std::shared_ptr<T>& ptr) {
+            PHENYL_DASSERT(ptr);
+            auto& obj = static_cast<AssetBase&>(*ptr);
+            obj.m_id = id;
+
+            m_pathMap.emplace(path, id);
+            m_cache.emplace(id,
+                CacheItem{
+                  .obj = ptr,
+                  .path = std::string{path},
+                });
+        }
     };
 } // namespace detail
 
 class Assets {
 public:
-    template <typename T>
-    static Asset<T> Load (const std::string& path) {
+    template <AssetType T>
+    static std::shared_ptr<T> Load (std::string_view path) {
         return GetInstance()->load<T>(path);
     }
 
-    template <typename T>
-    static Asset<T> LoadVirtual (const std::string& virtualPath, T&& obj) {
-        return GetInstance()->virtualLoad(virtualPath, std::forward<T>(obj));
+    template <AssetType T>
+    static void LoadVirtual (std::string_view path, const std::shared_ptr<T>& obj) {
+        GetInstance()->virtualLoad(path, obj);
     }
 
-    template <typename T>
+    template <AssetType T>
     static void AddManager (AssetManager<T>* manager) {
         GetInstance()->addManager(manager);
     }
 
-    template <typename T>
+    template <AssetType T>
     static void RemoveManager (AssetManager<T>* manager) {
         GetInstance()->removeManager(manager);
     }
@@ -148,111 +134,69 @@ private:
         return INSTANCE;
     }
 
-    std::unordered_map<meta::TypeIndex, std::unique_ptr<detail::AssetCacheBase>> m_caches;
+    std::unordered_map<meta::TypeIndex, std::unique_ptr<detail::IAssetCache>> m_caches;
+    std::size_t m_nextId = 1;
 
-    void incrementRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-        PHENYL_DASSERT(m_caches.contains(typeIndex));
-        m_caches.at(typeIndex)->incRefCount(id);
+    void unloadAsset (meta::TypeIndex type, std::size_t id) {
+        PHENYL_DASSERT(id);
+        if (auto it = m_caches.find(type); it != m_caches.end()) {
+            it->second->remove(id);
+        } else {
+            PHENYL_LOGW(detail::ASSETS_LOGGER,
+                "Ignored removal of asset {} of type {} because manager has already been unregistered", id, type);
+        }
     }
 
-    void decrementRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-        if (!m_caches.contains(typeIndex)) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER,
-                "Attempted to decrement ref count of manager with type {} that no longer "
-                "exists!",
-                typeIndex);
+    template <AssetType T>
+    std::shared_ptr<T> load (std::string_view path) {
+        auto type = meta::TypeIndex::Get<T>();
+        auto cacheIt = m_caches.find(type);
+        if (cacheIt == m_caches.end()) {
+            PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
+            return nullptr;
+        }
+        detail::AssetCache<T>& cache = static_cast<detail::AssetCache<T>&>(*cacheIt->second);
+        if (auto ptr = cache.lookup(path); ptr) {
+            return ptr;
+        }
+
+        AssetLoadContext ctx{std::string{path}, m_nextId};
+        auto ptr = cache.load(path, ctx);
+        if (ptr) {
+            PHENYL_LOGD(detail::ASSETS_LOGGER, "Loaded asset {} of type {} from path {}", m_nextId, type, path);
+            m_nextId++;
+        } else {
+            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to load asset at \"{}\"!", path);
+        }
+        return ptr;
+    }
+
+    template <AssetType T>
+    void virtualLoad (std::string_view path, const std::shared_ptr<T>& obj) {
+        auto type = meta::TypeIndex::Get<T>();
+        auto cacheIt = m_caches.find(type);
+        if (cacheIt == m_caches.end()) {
+            PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to virtually load asset of unknown type!");
             return;
         }
-        auto& entry = m_caches.at(typeIndex);
-        if (!entry->decRefCount(id)) {
-            entry->getManagerBase()->queueUnload(id);
-        }
+
+        auto& cache = static_cast<detail::AssetCache<T>&>(*cacheIt->second);
+        cache.virtualLoad(path, m_nextId, obj);
+        PHENYL_LOGD(detail::ASSETS_LOGGER, "Virtually loaded asset {} of type {} to path {}", m_nextId, type, path);
+        m_nextId++;
     }
 
-    bool unloadAsset (meta::TypeIndex typeIndex, std::size_t id) {
-        PHENYL_DASSERT(m_caches.contains(typeIndex));
-        return m_caches.at(typeIndex)->removeEntry(id);
-    }
-
-    template <typename T>
-    Asset<T> load (const std::string& path) {
-        if (!m_caches.contains(meta::TypeIndex::Get<T>())) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
-            return Asset<T>{};
-        }
-
-        auto* cache = static_cast<detail::AssetCache<T>*>(m_caches.at(meta::TypeIndex::Get<T>()).get());
-        Asset<T> asset;
-        if ((asset = std::move(cache->getCached(path)))) {
-            PHENYL_ASSERT_MSG(asset.get(), "Possible cyclic dependency including \"{}\"!", path);
-
-            return std::move(asset);
-        }
-
-        std::ifstream file;
-
-        if (cache->getManagerBase()->isBinary()) {
-            file = std::ifstream{path + cache->getManager()->getFileType(), std::ios::binary};
-        } else {
-            file = std::ifstream{path + cache->getManager()->getFileType()};
-        }
-
-        if (!file) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to open file at \"{}\"!",
-                path + cache->getManager()->getFileType());
-            return Asset<T>{};
-        }
-
-        auto id = cache->addEntry(path);
-        T* ptr = cache->getManager()->load(file, id);
-        if (!ptr) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to load asset at \"{}\"!", path);
-            cache->forceRemoveEntry(id);
-            return Asset<T>{};
-        }
-        cache->putData(id, ptr);
-
-        if constexpr (std::derived_from<T, IAssetType<T>>) {
-            static_cast<IAssetType<T>*>(ptr)->m_id = id;
-        }
-
-        return Asset<T>{id, ptr};
-    }
-
-    template <typename T>
-    Asset<T> virtualLoad (const std::string& path, T&& obj) {
-        if (!m_caches.contains(meta::TypeIndex::Get<T>())) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to load asset of unknown type!");
-            return Asset<T>{};
-        }
-
-        auto* cache = static_cast<detail::AssetCache<T>*>(m_caches.at(meta::TypeIndex::Get<T>()).get());
-
-        PHENYL_ASSERT_MSG(!cache->getCached(path), "Attempted to virtual load an asset multiple times!", path);
-
-        auto id = cache->addEntry(path);
-        T* ptr = cache->getManager()->load(std::forward<T>(obj), id);
-        if (!ptr) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to load asset at \"{}\"!", path);
-            cache->forceRemoveEntry(id);
-            return Asset<T>{};
-        }
-        cache->putData(id, ptr);
-
-        return Asset<T>{id, ptr};
-    }
-
-    template <typename T>
+    template <AssetType T>
     void addManager (AssetManager<T>* manager) {
         if (m_caches.contains(meta::TypeIndex::Get<T>())) {
             PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to add asset manager that has already been added!");
             return;
         }
 
-        m_caches[meta::TypeIndex::Get<T>()] = std::make_unique<detail::AssetCache<T>>(manager);
+        m_caches.emplace(meta::TypeIndex::Get<T>(), std::make_unique<detail::AssetCache<T>>(*manager));
     }
 
-    template <typename T>
+    template <AssetType T>
     void removeManager (AssetManager<T>* manager) {
         if (!m_caches.contains(meta::TypeIndex::Get<T>())) {
             PHENYL_LOGE(detail::ASSETS_LOGGER, "Attempted to remove asset manager that does not exist!");
@@ -262,50 +206,31 @@ private:
         m_caches.erase(meta::TypeIndex::Get<T>());
     }
 
-    std::string_view getPath (meta::TypeIndex typeIndex, std::size_t id) {
-        PHENYL_DASSERT(m_caches.contains(typeIndex));
-        auto& cache = m_caches.at(typeIndex);
-        return cache->getPath(id);
+    static void OnUnload (meta::TypeIndex type, std::size_t id) {
+        GetInstance()->unloadAsset(type, id);
     }
 
-    static void IncrementRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-        GetInstance()->incrementRefCount(typeIndex, id);
-    }
-
-    static void DecrementRefCount (meta::TypeIndex typeIndex, std::size_t id) {
-        GetInstance()->decrementRefCount(typeIndex, id);
-    }
-
-    static bool UnloadAsset (meta::TypeIndex typeIndex, std::size_t id) {
-        return GetInstance()->unloadAsset(typeIndex, id);
-    }
-
-    static std::string_view GetPath (meta::TypeIndex typeIndex, std::size_t id) {
-        return GetInstance()->getPath(typeIndex, id);
-    }
-
-    friend detail::AssetManagerBase;
-    friend detail::AssetBase;
+    friend AssetBase;
 };
 
 namespace detail {
-    template <typename T>
-    class AssetSerializable : public ISerializable<Asset<T>> {
+    template <AssetType T>
+    class AssetSerializable : public ISerializable<std::shared_ptr<T>> {
     public:
         std::string_view name () const noexcept override {
             return "Asset";
         }
 
-        void serialize (ISerializer& serializer, const Asset<T>& obj) override {
-            serializer.serialize(obj.id());
+        void serialize (ISerializer& serializer, const std::shared_ptr<T>& obj) override {
+            serializer.serialize(obj->assetId());
         }
 
-        void deserialize (IDeserializer& deserializer, Asset<T>& obj) override {
+        void deserialize (IDeserializer& deserializer, std::shared_ptr<T>& obj) override {
             deserializer.deserializeString(*this, obj);
         }
 
-        void deserializeString (Asset<T>& obj, std::string_view string) override {
-            obj = Assets::Load<T>(std::string{string}); // TODO
+        void deserializeString (std::shared_ptr<T>& obj, std::string_view string) override {
+            obj = Assets::Load<T>(string); // TODO
             if (!obj) {
                 throw DeserializeException(std::format("Failed to load asset at \"{}\"", string));
             }
@@ -313,8 +238,8 @@ namespace detail {
     };
 } // namespace detail
 
-template <typename T>
-ISerializable<Asset<T>>& phenyl_GetSerializable (detail::SerializableMarker<Asset<T>>) {
+template <AssetType T>
+ISerializable<std::shared_ptr<T>>& phenyl_GetSerializable (detail::SerializableMarker<std::shared_ptr<T>>) {
     static detail::AssetSerializable<T> serializable;
     return serializable;
 }

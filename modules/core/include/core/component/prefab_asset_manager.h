@@ -15,14 +15,9 @@ public:
 
     ~PrefabAssetManager () override;
 
-    Prefab* load (std::ifstream& data, std::size_t id) override;
-    Prefab* load (phenyl::core::Prefab&& obj, std::size_t id) override;
-
-    void queueUnload (std::size_t id) override;
-    [[nodiscard]] const char* getFileType () const override;
+    std::shared_ptr<Prefab> load (AssetLoadContext& ctx) override;
 
     void selfRegister ();
-    void clear ();
 
 private:
     std::unordered_map<std::size_t, std::unique_ptr<Prefab>> m_prefabs;
