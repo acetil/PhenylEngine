@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/assets/asset.h"
+#include "core/assets/load_context.h"
 #include "core/serialization/component_serializer.h"
 
 #include <fstream>
@@ -18,11 +19,10 @@ public:
 
 private:
     // std::vector<detail::LevelEntity> entities;
-    std::ifstream m_file;
-    std::ifstream::pos_type m_startPos;
+    core::AssetLoadContext m_loadCtx;
     LevelManager& m_manager;
 
-    Level (std::ifstream file, LevelManager& manager);
+    Level (core::AssetLoadContext loadCtx, LevelManager& manager);
 
     void loadImmediate (core::World& world, core::EntityComponentSerializer& serializer);
     friend LevelManager;

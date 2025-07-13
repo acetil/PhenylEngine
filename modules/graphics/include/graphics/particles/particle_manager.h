@@ -18,9 +18,7 @@ public:
     [[nodiscard]] std::string_view getName () const noexcept override;
 
 protected:
-    [[nodiscard]] const char* getFileType () const override;
-
-    std::shared_ptr<ParticleSystem2D> load (std::ifstream& data) override;
+    std::shared_ptr<ParticleSystem2D> load (core::AssetLoadContext& ctx) override;
 
 private:
     std::vector<std::weak_ptr<ParticleSystem2D>> m_systems;

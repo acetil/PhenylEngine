@@ -26,7 +26,7 @@ public:
     void dump (std::ostream& file) const;
 
 protected:
-    std::shared_ptr<Level> load (std::ifstream& data) override;
+    std::shared_ptr<Level> load (core::AssetLoadContext& ctx) override;
 
 private:
     core::World& m_world;
@@ -34,7 +34,5 @@ private:
 
     std::vector<std::shared_ptr<Level>> m_queuedLoads;
     bool m_queuedClear = false;
-
-    [[nodiscard]] const char* getFileType () const override;
 };
 } // namespace phenyl::game

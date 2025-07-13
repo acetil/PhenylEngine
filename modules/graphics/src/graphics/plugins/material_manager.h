@@ -8,8 +8,7 @@ class MaterialManager : public core::AssetManager<Material> {
 public:
     MaterialManager (Renderer& renderer);
 
-    std::shared_ptr<Material> load (std::ifstream& data) override;
-    const char* getFileType () const override;
+    std::shared_ptr<Material> load (core::AssetLoadContext& ctx) override;
 
     void selfRegister ();
 

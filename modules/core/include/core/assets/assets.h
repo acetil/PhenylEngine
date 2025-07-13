@@ -42,10 +42,10 @@ namespace detail {
             }
         }
 
-        std::shared_ptr<T> load (std::string_view path, std::ifstream& data) {
+        std::shared_ptr<T> load (std::string_view path, AssetLoadContext& ctx) {
             PHENYL_DASSERT(!m_pathMap.contains(path));
 
-            auto ptr = m_manager.load(data);
+            auto ptr = m_manager.load(ctx);
             if (!ptr) {
                 return nullptr;
             }
@@ -156,18 +156,19 @@ private:
             return ptr;
         }
 
-        std::ifstream file;
-        if (cache.manager().isBinary()) {
-            file = std::ifstream{std::string{path} + cache.manager().getFileType(), std::ios::binary};
-        } else {
-            file = std::ifstream{std::string{path} + cache.manager().getFileType()};
-        }
-        if (!file) {
-            PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to open file at \"{}{}\"!", path, cache.manager().getFileType());
-            return nullptr;
-        }
+        // std::ifstream file;
+        // if (cache.manager().isBinary()) {
+        //     file = std::ifstream{std::string{path} + cache.manager().getFileType(), std::ios::binary};
+        // } else {
+        //     file = std::ifstream{std::string{path} + cache.manager().getFileType()};
+        // }
+        // if (!file) {
+        //     PHENYL_LOGE(detail::ASSETS_LOGGER, "Failed to open file at \"{}{}\"!", path,
+        //     cache.manager().getFileType()); return nullptr;
+        // }
 
-        auto ptr = cache.load(path, file);
+        AssetLoadContext ctx{std::string{path}};
+        auto ptr = cache.load(path, ctx);
         PHENYL_LOGE_IF(!ptr, detail::ASSETS_LOGGER, "Failed to load asset at \"{}\"!", path);
         return ptr;
     }

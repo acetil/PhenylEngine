@@ -63,9 +63,11 @@ private:
 
 class GlShaderManager : public core::AssetManager<graphics::Shader> {
 public:
-    const char* getFileType () const override;
-    std::shared_ptr<graphics::Shader> load (std::ifstream& data) override;
+    std::shared_ptr<graphics::Shader> load (core::AssetLoadContext& ctx) override;
 
     void selfRegister ();
+
+private:
+    std::shared_ptr<graphics::Shader> loadJson (std::istream& data);
 };
 } // namespace phenyl::opengl

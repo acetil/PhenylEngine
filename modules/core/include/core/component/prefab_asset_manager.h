@@ -15,9 +15,7 @@ public:
 
     ~PrefabAssetManager () override;
 
-    std::shared_ptr<Prefab> load (std::ifstream& data) override;
-
-    [[nodiscard]] const char* getFileType () const override;
+    std::shared_ptr<Prefab> load (AssetLoadContext& ctx) override;
 
     void selfRegister ();
 

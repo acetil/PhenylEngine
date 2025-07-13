@@ -1,6 +1,7 @@
 #pragma once
 
 #include "forward.h"
+#include "load_context.h"
 #include "util/type_index.h"
 
 #include <cstddef>
@@ -16,12 +17,6 @@ namespace detail {
         virtual ~AssetManagerBase () = default;
 
     private:
-        [[nodiscard]] virtual const char* getFileType () const = 0;
-
-        virtual bool isBinary () const {
-            return false;
-        }
-
         friend class core::Assets;
         template <typename T>
         friend class core::AssetManager;
@@ -31,7 +26,7 @@ namespace detail {
 template <typename T>
 class AssetManager : public detail::AssetManagerBase {
 public:
-    virtual std::shared_ptr<T> load (std::ifstream& data) = 0;
+    virtual std::shared_ptr<T> load (AssetLoadContext& ctx) = 0;
 
     virtual void onVirtualLoad (std::shared_ptr<T> obj) {}
 

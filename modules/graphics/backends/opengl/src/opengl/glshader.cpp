@@ -213,11 +213,15 @@ void GlShader::bind () {
     glUseProgram(m_program);
 }
 
-const char* GlShaderManager::getFileType () const {
-    return ".json";
+std::shared_ptr<Shader> GlShaderManager::load (core::AssetLoadContext& ctx) {
+    return ctx.withExtension(".json").read([&] (std::istream& data) { return loadJson(data); });
 }
 
-std::shared_ptr<Shader> GlShaderManager::load (std::ifstream& data) {
+void GlShaderManager::selfRegister () {
+    core::Assets::AddManager(this);
+}
+
+std::shared_ptr<Shader> GlShaderManager::loadJson (std::istream& data) {
     PHENYL_TRACE(LOGGER, "Loading shader from file");
     nlohmann::json json;
     data >> json;
@@ -298,10 +302,6 @@ std::shared_ptr<Shader> GlShaderManager::load (std::ifstream& data) {
 
     PHENYL_TRACE(LOGGER, "Successfully built shader");
     return std::make_shared<Shader>(std::move(shader));
-}
-
-void GlShaderManager::selfRegister () {
-    core::Assets::AddManager(this);
 }
 
 static std::optional<GLuint> LoadShader (GLenum type, const std::string& source) {

@@ -136,15 +136,13 @@ public:
 };
 } // namespace
 
-std::shared_ptr<MaterialInstance> MaterialInstanceManager::load (std::ifstream& data) {
-    std::shared_ptr<MaterialInstance> instance;
+std::shared_ptr<MaterialInstance> MaterialInstanceManager::load (core::AssetLoadContext& ctx) {
     MaterialInstanceSerializable serializable{};
-    core::DeserializeFromJson(data, serializable, instance);
-    return instance;
-}
-
-const char* MaterialInstanceManager::getFileType () const {
-    return ".json";
+    return ctx.withExtension(".json").read([&] (std::istream& data) {
+        std::shared_ptr<MaterialInstance> instance;
+        core::DeserializeFromJson(data, serializable, instance);
+        return instance;
+    });
 }
 
 void MaterialInstanceManager::selfRegister () {

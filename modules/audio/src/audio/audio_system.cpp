@@ -53,26 +53,20 @@ std::unique_ptr<AudioSystem> phenyl::audio::MakeOpenALSystem () {
     return std::make_unique<AudioSystem>(std::make_unique<OpenALSystem>());
 }
 
-std::shared_ptr<AudioSample> AudioSystem::load (std::ifstream& data) {
-    // Assume is wav format
-    auto wavOpt = WAVFile::Load(data);
-    if (!wavOpt) {
-        return nullptr;
-    }
+std::shared_ptr<AudioSample> AudioSystem::load (core::AssetLoadContext& ctx) {
+    return ctx.read([&] (std::istream& data) -> std::shared_ptr<AudioSample> {
+        // Assume is wav format
+        auto wavOpt = WAVFile::Load(data);
+        if (!wavOpt) {
+            return nullptr;
+        }
 
-    return std::shared_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(*wavOpt)));
-}
-
-const char* AudioSystem::getFileType () const {
-    return "";
+        return std::shared_ptr<AudioSample>(new AudioSample(this, m_backend->makeWAVSample(*wavOpt)));
+    });
 }
 
 void AudioSystem::selfRegister () {
     core::Assets::AddManager(this);
-}
-
-bool AudioSystem::isBinary () const {
-    return true;
 }
 
 void AudioSystem::addComponents (core::World& world, core::EntityComponentSerializer& serializer) {

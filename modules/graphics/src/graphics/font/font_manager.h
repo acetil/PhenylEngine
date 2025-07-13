@@ -17,13 +17,7 @@ public:
 
     ~FontManager () override;
 
-    const char* getFileType () const override;
-    std::shared_ptr<Font> load (std::ifstream& data) override;
-
-    bool isBinary () const override {
-        return true;
-    }
-
+    std::shared_ptr<Font> load (core::AssetLoadContext& ctx) override;
     void selfRegister ();
 
 private:

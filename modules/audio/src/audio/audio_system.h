@@ -22,9 +22,7 @@ public:
     explicit AudioSystem (std::unique_ptr<AudioBackend> backend, std::size_t maxBackendSources = 32);
     ~AudioSystem () override;
 
-    std::shared_ptr<AudioSample> load (std::ifstream& data) override;
-    [[nodiscard]] const char* getFileType () const override;
-    bool isBinary () const override;
+    std::shared_ptr<AudioSample> load (core::AssetLoadContext& ctx) override;
 
     // virtual AudioSource createSource () = 0;
     AudioSource createSource ();

@@ -44,28 +44,26 @@ FontManager::~FontManager () {
     }
 }
 
-const char* FontManager::getFileType () const {
-    return ".ttf";
-}
+std::shared_ptr<Font> FontManager::load (core::AssetLoadContext& ctx) {
+    return ctx.withExtension(".ttf").withBinary().read([&] (std::istream& data) -> std::shared_ptr<Font> {
+        std::vector<char> bytes{std::istreambuf_iterator{data}, std::istreambuf_iterator<char>{}};
+        auto dataSize = bytes.size();
+        auto fontData = std::make_unique<std::byte[]>(bytes.size());
+        std::ranges::copy(bytes, reinterpret_cast<char*>(fontData.get()));
 
-std::shared_ptr<Font> FontManager::load (std::ifstream& data) {
-    std::vector<char> bytes{std::istreambuf_iterator{data}, std::istreambuf_iterator<char>{}};
-    auto dataSize = bytes.size();
-    auto fontData = std::make_unique<std::byte[]>(bytes.size());
-    std::ranges::copy(bytes, reinterpret_cast<char*>(fontData.get()));
+        FT_Face face;
+        auto error = FT_New_Memory_Face(m_library, reinterpret_cast<const FT_Byte*>(fontData.get()),
+            static_cast<FT_Long>(dataSize), 0, &face);
+        if (error) {
+            PHENYL_LOGE(LOGGER, "FreeType error on FT_New_Memory_Face ({}): {}", error, FT_Error_String(error));
+            return nullptr;
+        }
 
-    FT_Face face;
-    auto error = FT_New_Memory_Face(m_library, reinterpret_cast<const FT_Byte*>(fontData.get()),
-        static_cast<FT_Long>(dataSize), 0, &face);
-    if (error) {
-        PHENYL_LOGE(LOGGER, "FreeType error on FT_New_Memory_Face ({}): {}", error, FT_Error_String(error));
-        return nullptr;
-    }
-
-    auto font = std::make_shared<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
-        m_viewport.getContentScale() * glm::vec2{96, 96});
-    m_loadedFonts.emplace_back(font); // Unloading not supported yet
-    return font;
+        auto font = std::make_shared<Font>(m_glyphAtlas, std::move(fontData), face, m_nextFontId++,
+            m_viewport.getContentScale() * glm::vec2{96, 96});
+        m_loadedFonts.emplace_back(font); // Unloading not supported yet
+        return font;
+    });
 }
 
 void FontManager::selfRegister () {

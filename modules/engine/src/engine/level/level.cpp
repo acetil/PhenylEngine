@@ -157,12 +157,8 @@ LevelManager::LevelManager (core::World& world, core::EntityComponentSerializer&
 
 LevelManager::~LevelManager () = default;
 
-std::shared_ptr<Level> LevelManager::load (std::ifstream& data) {
-    return std::make_shared<Level>(Level{std::move(data), *this});
-}
-
-const char* LevelManager::getFileType () const {
-    return ".json";
+std::shared_ptr<Level> LevelManager::load (core::AssetLoadContext& ctx) {
+    return std::make_shared<Level>(Level{std::move(ctx.withExtension(".json")), *this});
 }
 
 void LevelManager::selfRegister () {
@@ -211,16 +207,14 @@ std::string_view LevelManager::getName () const noexcept {
     return "LevelManager";
 }
 
-Level::Level (std::ifstream file, LevelManager& manager) : m_file{std::move(file)}, m_manager{manager} {
-    PHENYL_DASSERT(!this->m_file.bad());
-    m_startPos = this->m_file.tellg();
-}
+Level::Level (core::AssetLoadContext loadCtx, LevelManager& manager) :
+    m_loadCtx{std::move(loadCtx)},
+    m_manager{manager} {}
 
 void Level::loadImmediate (core::World& world, core::EntityComponentSerializer& serializer) {
-    m_file.seekg(m_startPos);
     LevelSerializable serializable{world, serializer};
     LevelMarker marker{};
-    core::DeserializeFromJson(m_file, serializable, marker);
+    m_loadCtx.read([&] (std::istream& data) { core::DeserializeFromJson(data, serializable, marker); });
 }
 
 void Level::load (bool additive) {

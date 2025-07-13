@@ -43,10 +43,7 @@ class VulkanShaderManager : public core::AssetManager<graphics::Shader> {
 public:
     VulkanShaderManager (VkDevice device);
 
-    std::shared_ptr<graphics::Shader> load (std::ifstream& data) override;
-    bool isBinary () const override;
-    const char* getFileType () const override;
-
+    std::shared_ptr<graphics::Shader> load (core::AssetLoadContext& ctx) override;
     void selfRegister ();
 
     void loadDefaultShaders ();

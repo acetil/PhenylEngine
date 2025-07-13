@@ -10,11 +10,7 @@ class TextureManager : public core::AssetManager<Texture> {
 public:
     TextureManager (Renderer& renderer);
 
-    std::shared_ptr<Texture> load (std::ifstream& data) override;
-
-    const char* getFileType () const override;
-    bool isBinary () const override;
-
+    std::shared_ptr<Texture> load (core::AssetLoadContext& ctx) override;
     void selfRegister ();
 
 private:

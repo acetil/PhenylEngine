@@ -10,28 +10,22 @@ static phenyl::Logger LOGGER{"TEXTURE_MANAGER", detail::GRAPHICS_LOGGER};
 
 TextureManager::TextureManager (Renderer& renderer) : m_renderer{renderer} {}
 
-std::shared_ptr<Texture> TextureManager::load (std::ifstream& data) {
-    auto image = Image::Load(data);
-    if (!image) {
-        PHENYL_LOGE(LOGGER, "Failed to load image from file!");
-        return nullptr;
-    }
+std::shared_ptr<Texture> TextureManager::load (core::AssetLoadContext& ctx) {
+    return ctx.withBinary().read([&] (std::istream& data) -> std::shared_ptr<Texture> {
+        auto image = Image::Load(data);
+        if (!image) {
+            PHENYL_LOGE(LOGGER, "Failed to load image from file!");
+            return nullptr;
+        }
 
-    TextureProperties properties{
-      .format = image->format(),
-      .filter = TextureFilter::POINT,
-      .useMipmapping = true,
-    };
+        TextureProperties properties{
+          .format = image->format(),
+          .filter = TextureFilter::POINT,
+          .useMipmapping = true,
+        };
 
-    return std::make_shared<ImageTexture>(m_renderer.makeTexture(properties, *image));
-}
-
-bool TextureManager::isBinary () const {
-    return true;
-}
-
-const char* TextureManager::getFileType () const {
-    return "";
+        return std::make_shared<ImageTexture>(m_renderer.makeTexture(properties, *image));
+    });
 }
 
 void TextureManager::selfRegister () {

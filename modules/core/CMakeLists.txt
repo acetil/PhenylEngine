@@ -52,6 +52,8 @@ add_library(core OBJECT include/core/maths/2d/transform.h src/common/maths/2d/tr
         include/core/plugins/core_plugin.h
         src/common/plugins/core_plugin.cpp
         include/core/component/detail/component_view.h
+        include/core/assets/load_context.h
+        src/common/assets/load_context.cpp
 )
 
 find_package(nlohmann_json REQUIRED)

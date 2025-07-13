@@ -6,9 +6,7 @@
 namespace phenyl::graphics {
 class MaterialInstanceManager : public core::AssetManager<MaterialInstance> {
 public:
-    std::shared_ptr<MaterialInstance> load (std::ifstream& data) override;
-    const char* getFileType () const override;
-
+    std::shared_ptr<MaterialInstance> load (core::AssetLoadContext& ctx) override;
     void selfRegister ();
 };
 } // namespace phenyl::graphics

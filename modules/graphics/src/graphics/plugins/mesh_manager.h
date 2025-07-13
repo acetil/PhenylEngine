@@ -10,10 +10,7 @@ public:
     MeshManager (Renderer& renderer);
 
     void selfRegister ();
-
-    std::shared_ptr<Mesh> load (std::ifstream& data) override;
-    const char* getFileType () const override;
-    bool isBinary () const override;
+    std::shared_ptr<Mesh> load (core::AssetLoadContext& ctx) override;
 
 private:
     Renderer& m_renderer;

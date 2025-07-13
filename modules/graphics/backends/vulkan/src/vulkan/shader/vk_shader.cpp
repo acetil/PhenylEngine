@@ -117,16 +117,8 @@ std::optional<std::size_t> VulkanShader::getUniformBlockSize (const std::string&
 
 VulkanShaderManager::VulkanShaderManager (VkDevice device) : m_device{device} {}
 
-std::shared_ptr<phenyl::graphics::Shader> VulkanShaderManager::load (std::ifstream& data) {
+std::shared_ptr<phenyl::graphics::Shader> VulkanShaderManager::load (core::AssetLoadContext& ctx) {
     PHENYL_ABORT("Unimplemented");
-}
-
-bool VulkanShaderManager::isBinary () const {
-    return false;
-}
-
-const char* VulkanShaderManager::getFileType () const {
-    return ""; // TODO
 }
 
 void VulkanShaderManager::selfRegister () {
