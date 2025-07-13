@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/assets/asset_manager.h"
 #include "graphics/backend/buffer.h"
 #include "graphics/backend/pipeline.h"
 #include "graphics/backend/renderer.h"
@@ -7,6 +8,7 @@
 #include "util/hash.h"
 
 #include <queue>
+#include <unordered_set>
 
 namespace phenyl::graphics {
 enum class MeshAttributeKind {
@@ -55,6 +57,8 @@ inline constexpr std::string_view GetMeshAttribName (MeshAttributeKind kind) {
     PHENYL_ABORT("Invalid mesh attribute kind!");
 }
 
+class Meshes;
+
 struct MeshAttribute {
     MeshAttributeKind kind = MeshAttributeKind::Unknown;
     ShaderDataType type = ShaderDataType::UNKNOWN;
@@ -73,87 +77,6 @@ struct MeshLayout {
 
     bool operator== (const MeshLayout&) const = default;
 };
-
-class Mesh : public core::Asset<Mesh> {
-public:
-    Mesh (MeshLayout layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams, std::size_t meshSize);
-
-    const MeshLayout& layout () const noexcept {
-        return m_layout;
-    }
-
-    const RawBuffer& indices () const noexcept {
-        return m_indices;
-    }
-
-    const std::vector<RawBuffer>& streams () const noexcept {
-        return m_streams;
-    }
-
-    std::size_t numVertices () const noexcept {
-        return m_size;
-    }
-
-    // TODO
-    void setLayoutId (std::uint64_t id) noexcept {
-        m_layout.layoutId = id;
-    }
-
-private:
-    MeshLayout m_layout{};
-    RawBuffer m_indices;
-    std::vector<RawBuffer> m_streams;
-    std::size_t m_size;
-};
-
-class MeshBuilder {
-public:
-    MeshBuilder (Renderer& renderer);
-
-    MeshBuilder& withStream (std::span<const std::byte> data, std::size_t stride);
-    MeshBuilder& withAttribute (MeshAttribute attribute);
-    MeshBuilder& withIndices (ShaderIndexType indexType, std::span<const std::byte> data, std::size_t size);
-    MeshBuilder& withSize (std::size_t size);
-
-    template <typename T>
-    MeshBuilder& withAttribute (MeshAttributeKind kind, std::uint32_t stream, std::size_t offset = 0) {
-        return withAttribute(MeshAttribute{
-          .kind = kind,
-          .type = GetShaderDataType<T>(),
-          .stream = stream,
-          .offset = offset,
-        });
-    }
-
-    template <typename T>
-    MeshBuilder& withVertices (MeshAttributeKind kind, std::span<const T> data) {
-        std::uint32_t stream = m_streams.size();
-        withStream(std::as_bytes(data), sizeof(T));
-        withAttribute<T>(kind, stream);
-        if (!m_indexBuffer) {
-            withSize(data.size());
-        }
-        return *this;
-    }
-
-    template <typename T>
-    MeshBuilder& withIndices (std::span<const T> indices) {
-        return withIndices(GetIndexType<T>(), std::as_bytes(indices), indices.size());
-    }
-
-    std::shared_ptr<Mesh> build ();
-
-private:
-    Renderer& m_renderer;
-    std::vector<RawBuffer> m_streams;
-    std::vector<std::size_t> m_streamStrides;
-    std::optional<RawBuffer> m_indexBuffer;
-    std::optional<ShaderIndexType> m_indexType;
-
-    std::vector<MeshAttribute> m_attribs;
-
-    std::optional<std::size_t> m_size;
-};
 } // namespace phenyl::graphics
 
 template <>
@@ -169,6 +92,114 @@ struct std::hash<phenyl::graphics::MeshLayout> {
         return phenyl::util::HashAll(layout.indexType, layout.attributes, layout.streamStrides);
     }
 };
+
+namespace phenyl::graphics {
+class Mesh : public core::Asset<Mesh> {
+public:
+    Mesh (const MeshLayout* layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams, std::size_t meshSize);
+
+    const MeshLayout& layout () const noexcept {
+        return *m_layout;
+    }
+
+    const RawBuffer& indices () const noexcept {
+        return m_indices;
+    }
+
+    const std::vector<RawBuffer>& streams () const noexcept {
+        return m_streams;
+    }
+
+    std::size_t numVertices () const noexcept {
+        return m_size;
+    }
+
+    //
+    // // TODO
+    // void setLayoutId (std::uint64_t id) noexcept {
+    //     m_layout.layoutId = id;
+    // }
+
+    void bind (Pipeline& pipeline, const std::vector<BufferBinding>& streamBindings) const;
+
+private:
+    const MeshLayout* m_layout;
+    RawBuffer m_indices;
+    std::vector<RawBuffer> m_streams;
+    std::size_t m_size;
+};
+
+class Meshes : public core::AssetManager<Mesh>, public core::IResource {
+public:
+    class Builder {
+    public:
+        Builder& withStream (std::span<const std::byte> data, std::size_t stride);
+        Builder& withAttribute (MeshAttribute attribute);
+        Builder& withIndices (ShaderIndexType indexType, std::span<const std::byte> data, std::size_t size);
+        Builder& withSize (std::size_t size);
+
+        template <typename T>
+        Builder& withAttribute (MeshAttributeKind kind, std::uint32_t stream, std::size_t offset = 0) {
+            return withAttribute(MeshAttribute{
+              .kind = kind,
+              .type = GetShaderDataType<T>(),
+              .stream = stream,
+              .offset = offset,
+            });
+        }
+
+        template <typename T>
+        Builder& withVertices (MeshAttributeKind kind, std::span<const T> data) {
+            std::uint32_t stream = m_streams.size();
+            withStream(std::as_bytes(data), sizeof(T));
+            withAttribute<T>(kind, stream);
+            if (!m_indexBuffer) {
+                withSize(data.size());
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Builder& withIndices (std::span<const T> indices) {
+            return withIndices(GetIndexType<T>(), std::as_bytes(indices), indices.size());
+        }
+
+        std::shared_ptr<Mesh> build ();
+
+    private:
+        Meshes& m_meshes;
+        Renderer& m_renderer;
+        std::vector<RawBuffer> m_streams;
+        std::vector<std::size_t> m_streamStrides;
+        std::optional<RawBuffer> m_indexBuffer;
+        std::optional<ShaderIndexType> m_indexType;
+
+        std::vector<MeshAttribute> m_attribs;
+
+        std::optional<std::size_t> m_size;
+
+        Builder (Meshes& meshes, Renderer& renderer);
+
+        friend class Meshes;
+    };
+
+    explicit Meshes (Renderer& renderer);
+
+    Builder builder ();
+
+    std::shared_ptr<Mesh> load (core::AssetLoadContext& ctx) override;
+    void selfRegister ();
+    std::string_view getName () const noexcept override;
+
+private:
+    Renderer& m_renderer;
+
+    std::unordered_set<MeshLayout> m_layouts;
+    std::uint64_t m_nextLayoutId = 1;
+
+    const MeshLayout& findLayout (MeshLayout&& layout);
+};
+} // namespace phenyl::graphics
 
 template <>
 struct std::formatter<phenyl::graphics::MeshAttributeKind, char> {

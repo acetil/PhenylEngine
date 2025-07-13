@@ -6,7 +6,6 @@
 #include "graphics/renderlayer/mesh_layer.h"
 #include "material_instance_manager.h"
 #include "material_manager.h"
-#include "mesh_manager.h"
 
 using namespace phenyl::graphics;
 
@@ -27,8 +26,8 @@ void Mesh3DPlugin::init (core::PhenylRuntime& runtime) {
     m_materialInstanceManager = std::make_unique<MaterialInstanceManager>();
     m_materialInstanceManager->selfRegister();
 
-    m_meshManager = std::make_unique<MeshManager>(renderer);
-    m_meshManager->selfRegister();
+    runtime.addResource<Meshes>(renderer);
+    runtime.resource<Meshes>().selfRegister();
 
     auto& layer = renderer.addLayer<MeshRenderLayer>(runtime.world());
     layer.addSystems(runtime);

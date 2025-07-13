@@ -247,18 +247,13 @@ void MeshRenderLayer::renderLight (CommandList& cmdList, const MeshLight& light,
         pipeline.bindUniform(matPipeline.globalUniform, m_globalUniform);
         pipeline.bindUniform(matPipeline.lightUniform, m_bpLights, index);
 
-        auto& streams = instance.mesh->streams();
-        PHENYL_DASSERT(streams.size() == matPipeline.streamBindings.size());
-        for (std::size_t i = 0; i < streams.size(); i++) {
-            pipeline.bindBuffer(matPipeline.streamBindings[i], streams[i]);
-        }
+        instance.mesh->bind(pipeline, matPipeline.streamBindings);
 
         pipeline.bindBuffer(matPipeline.modelBinding, m_instanceBuffer, instance.instanceOffset);
-        pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
 
-        if (light.castShadows) {
-            pipeline.bindSampler(matPipeline.shadowMapBinding, m_shadowFb.depthSampler());
-        }
+        // if (light.castShadows) {
+        pipeline.bindSampler(matPipeline.shadowMapBinding, m_shadowFb.depthSampler());
+        // }
 
         matInstance->bind(matPipeline);
 

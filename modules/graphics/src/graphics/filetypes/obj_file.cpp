@@ -162,9 +162,9 @@ ObjFile::ObjFile (std::istream& file) {
     }
 }
 
-std::shared_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
+std::shared_ptr<Mesh> ObjFile::makeMesh (Meshes& meshes, bool includeW) {
     MeshLayout layout{};
-    MeshBuilder builder{renderer};
+    auto builder = meshes.builder();
 
     std::size_t stride = 0;
     if (includeW) {

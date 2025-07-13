@@ -50,8 +50,6 @@ add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphi
         include/graphics/camera_3d.h
         src/graphics/camera_3d.cpp
         src/graphics/mesh/mesh.cpp
-        src/graphics/plugins/mesh_manager.h
-        src/graphics/plugins/mesh_manager.cpp
         src/graphics/filetypes/obj_file.h
         src/graphics/filetypes/obj_file.cpp
         include/graphics/plugins/mesh_3d_plugin.h
