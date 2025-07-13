@@ -14,7 +14,7 @@ class World;
 class PrefabManager;
 class PrefabBuilder;
 
-class Prefab : public AssetType<Prefab> {
+class Prefab : public Asset<Prefab> {
 public:
     Prefab ();
     ~Prefab () override;

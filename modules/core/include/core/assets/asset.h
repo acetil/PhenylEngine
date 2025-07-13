@@ -10,28 +10,27 @@
 #include <string>
 
 namespace phenyl::core {
-template <typename T>
-class IAssetType;
-
 namespace detail {
     template <typename T>
     class AssetCache;
 } // namespace detail
 
-class AssetTypeUntyped {
+class AssetBase {
 public:
+    virtual ~AssetBase ();
+
+    AssetBase (const AssetBase& other);
+    AssetBase (AssetBase&& other) noexcept;
+
+    AssetBase& operator= (const AssetBase& other);
+    AssetBase& operator= (AssetBase&& other) noexcept;
+
     [[nodiscard]] std::size_t assetId () const noexcept {
         return m_id;
     }
 
 protected:
-    explicit AssetTypeUntyped (meta::TypeIndex type);
-    AssetTypeUntyped (const AssetTypeUntyped& other);
-    AssetTypeUntyped (AssetTypeUntyped&& other) noexcept;
-
-    AssetTypeUntyped& operator= (const AssetTypeUntyped& other);
-    AssetTypeUntyped& operator= (AssetTypeUntyped&& other) noexcept;
-    virtual ~AssetTypeUntyped ();
+    explicit AssetBase (meta::TypeIndex type);
 
 private:
     std::size_t m_id;
@@ -43,13 +42,13 @@ private:
 };
 
 template <typename T>
-class AssetType : public AssetTypeUntyped {
+class Asset : public AssetBase {
 public:
-    AssetType () : AssetTypeUntyped{meta::TypeIndex::Get<T>()} {}
+    Asset () : AssetBase{meta::TypeIndex::Get<T>()} {}
 };
 
-template <typename T> concept IsAssetType = std::derived_from<T, AssetType<T>>;
+template <typename T> concept AssetType = std::derived_from<T, Asset<T>>;
 
-template <IsAssetType T>
+template <AssetType T>
 ISerializable<std::shared_ptr<T>>& phenyl_GetSerializable(detail::SerializableMarker<std::shared_ptr<T>>);
 } // namespace phenyl::core

@@ -21,7 +21,7 @@ struct MaterialProperties {
     std::size_t uniformBlockSize;
 };
 
-class Material : public core::AssetType<Material>, public std::enable_shared_from_this<Material> {
+class Material : public core::Asset<Material>, public std::enable_shared_from_this<Material> {
 public:
     struct MatPipeline {
         Pipeline pipeline;
@@ -76,7 +76,7 @@ private:
     MaterialProperties materialProperties;
 };
 
-class MaterialInstance : public core::AssetType<MaterialInstance> {
+class MaterialInstance : public core::Asset<MaterialInstance> {
 public:
     MaterialInstance (Renderer& renderer, std::shared_ptr<Material> material, const MaterialProperties& properties);
 

@@ -7,7 +7,7 @@
 namespace phenyl::audio {
 class AudioSystem;
 
-class AudioSample : public core::AssetType<AudioSample> {
+class AudioSample : public core::Asset<AudioSample> {
 public:
     AudioSample () = default;
 

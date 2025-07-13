@@ -7,33 +7,24 @@ using namespace phenyl::core;
 
 Assets* Assets::INSTANCE = nullptr;
 
-// bool detail::AssetManagerBase::OnUnloadUntyped (meta::TypeIndex typeIndex, std::size_t id) {
-//     return true;
-// }
-//
-// std::size_t detail::AssetManagerBase::onVirtualLoadUntyped (meta::TypeIndex, const std::string& virtualPath,
-//     std::byte* data) {
-//     return 0;
-// }
+AssetBase::AssetBase (meta::TypeIndex type) : m_id{0}, m_type{type} {}
 
-AssetTypeUntyped::AssetTypeUntyped (meta::TypeIndex type) : m_id{0}, m_type{type} {}
+AssetBase::AssetBase (const AssetBase& other) : m_id{0}, m_type{other.m_type} {}
 
-AssetTypeUntyped::AssetTypeUntyped (const AssetTypeUntyped& other) : m_id{0}, m_type{other.m_type} {}
+AssetBase::AssetBase (AssetBase&& other) noexcept : m_id{0}, m_type{other.m_type} {}
 
-AssetTypeUntyped::AssetTypeUntyped (AssetTypeUntyped&& other) noexcept : m_id{0}, m_type{other.m_type} {}
-
-AssetTypeUntyped& AssetTypeUntyped::operator= (const AssetTypeUntyped& other) {
+AssetBase& AssetBase::operator= (const AssetBase& other) {
     // Keep old id
     return *this;
 }
 
-AssetTypeUntyped& AssetTypeUntyped::operator= (AssetTypeUntyped&& other) noexcept {
+AssetBase& AssetBase::operator= (AssetBase&& other) noexcept {
     // Keep old id
     return *this;
 }
 
-AssetTypeUntyped::~AssetTypeUntyped () {
+AssetBase::~AssetBase () {
     if (m_id) {
-        Assets::OnUnload2(m_type, m_id);
+        Assets::OnUnload(m_type, m_id);
     }
 }

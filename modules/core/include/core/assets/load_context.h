@@ -16,7 +16,7 @@ public:
 
     void read (const std::function<void(std::istream&)>& readFunc);
 
-    template <IsAssetType T>
+    template <AssetType T>
     std::shared_ptr<T> read (const std::function<std::shared_ptr<T>(std::istream&)>& readFunc) {
         std::shared_ptr<T> result = nullptr;
         read([&] (std::istream& data) { result = readFunc(data); });
@@ -28,7 +28,7 @@ public:
         return read(std::function{func});
     }
 
-    template <IsAssetType T>
+    template <AssetType T>
     std::shared_ptr<T> deserialize () {
         return read(std::function{[&] (std::istream& data) -> std::shared_ptr<T> {
             try {
@@ -40,7 +40,7 @@ public:
         }});
     }
 
-    template <IsAssetType T>
+    template <AssetType T>
     std::shared_ptr<T> deserialize (ISerializable<T>& serializable) {
         return read(std::function{[&] (std::istream& data) -> std::shared_ptr<T> {
             try {
@@ -54,7 +54,7 @@ public:
         }});
     }
 
-    template <typename U, IsAssetType T>
+    template <typename U, AssetType T>
     std::shared_ptr<T> deserialize (const std::function<std::shared_ptr<T>(U&&)>& mapFunc) {
         return read(std::function{[&] (std::istream& data) -> std::shared_ptr<T> {
             try {
@@ -77,12 +77,17 @@ public:
         return m_path;
     }
 
+    std::size_t id () const noexcept {
+        return m_id;
+    }
+
 private:
     std::string m_path;
     std::string m_extension;
+    std::size_t m_id;
     bool m_binary = false;
 
-    explicit AssetLoadContext (std::string path);
+    explicit AssetLoadContext (std::string path, std::size_t id);
 
     friend class Assets;
 };

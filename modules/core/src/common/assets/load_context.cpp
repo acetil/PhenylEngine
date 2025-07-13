@@ -6,7 +6,7 @@
 
 using namespace phenyl::core;
 
-AssetLoadContext::AssetLoadContext (std::string path) : m_path{std::move(path)} {}
+AssetLoadContext::AssetLoadContext (std::string path, std::size_t id) : m_path{std::move(path)}, m_id{id} {}
 
 AssetLoadContext& AssetLoadContext::withExtension (std::string extension) {
     m_extension = std::move(extension);

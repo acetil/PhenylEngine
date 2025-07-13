@@ -13,7 +13,7 @@ namespace detail {
 
 class LevelManager;
 
-class Level : public core::AssetType<Level>, public std::enable_shared_from_this<Level> {
+class Level : public core::Asset<Level>, public std::enable_shared_from_this<Level> {
 public:
     void load (bool additive = false);
 

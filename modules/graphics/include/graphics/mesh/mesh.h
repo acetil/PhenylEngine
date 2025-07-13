@@ -71,7 +71,7 @@ struct MeshLayout {
     bool operator== (const MeshLayout&) const = default;
 };
 
-class Mesh : public core::AssetType<Mesh> {
+class Mesh : public core::Asset<Mesh> {
 public:
     Mesh (MeshLayout layout, RawBuffer meshIndices, std::vector<RawBuffer> meshStreams, std::size_t meshSize);
 
