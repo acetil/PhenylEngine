@@ -2,8 +2,11 @@
 
 #include "graphics/backend/buffer.h"
 #include "graphics/backend/pipeline.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/backend/shader.h"
 #include "util/hash.h"
+
+#include <queue>
 
 namespace phenyl::graphics {
 enum class MeshAttributeKind {
@@ -21,7 +24,7 @@ enum class MeshAttributeKind {
     TexCoord7,
 };
 
-inline std::string GetMeshAttribName (MeshAttributeKind kind) {
+inline constexpr std::string_view GetMeshAttribName (MeshAttributeKind kind) {
     switch (kind) {
     case MeshAttributeKind::Unknown:
         break;
@@ -102,6 +105,55 @@ private:
     std::vector<RawBuffer> m_streams;
     std::size_t m_size;
 };
+
+class MeshBuilder {
+public:
+    MeshBuilder (Renderer& renderer);
+
+    MeshBuilder& withStream (std::span<const std::byte> data, std::size_t stride);
+    MeshBuilder& withAttribute (MeshAttribute attribute);
+    MeshBuilder& withIndices (ShaderIndexType indexType, std::span<const std::byte> data, std::size_t size);
+    MeshBuilder& withSize (std::size_t size);
+
+    template <typename T>
+    MeshBuilder& withAttribute (MeshAttributeKind kind, std::uint32_t stream, std::size_t offset = 0) {
+        return withAttribute(MeshAttribute{
+          .kind = kind,
+          .type = GetShaderDataType<T>(),
+          .stream = stream,
+          .offset = offset,
+        });
+    }
+
+    template <typename T>
+    MeshBuilder& withVertices (MeshAttributeKind kind, std::span<const T> data) {
+        std::uint32_t stream = m_streams.size();
+        withStream(std::as_bytes(data), sizeof(T));
+        withAttribute<T>(kind, stream);
+        if (!m_indexBuffer) {
+            withSize(data.size());
+        }
+        return *this;
+    }
+
+    template <typename T>
+    MeshBuilder& withIndices (std::span<const T> indices) {
+        return withIndices(GetIndexType<T>(), std::as_bytes(indices), indices.size());
+    }
+
+    std::shared_ptr<Mesh> build ();
+
+private:
+    Renderer& m_renderer;
+    std::vector<RawBuffer> m_streams;
+    std::vector<std::size_t> m_streamStrides;
+    std::optional<RawBuffer> m_indexBuffer;
+    std::optional<ShaderIndexType> m_indexType;
+
+    std::vector<MeshAttribute> m_attribs;
+
+    std::optional<std::size_t> m_size;
+};
 } // namespace phenyl::graphics
 
 template <>
@@ -115,5 +167,23 @@ template <>
 struct std::hash<phenyl::graphics::MeshLayout> {
     std::size_t operator() (const phenyl::graphics::MeshLayout& layout) const noexcept {
         return phenyl::util::HashAll(layout.indexType, layout.attributes, layout.streamStrides);
+    }
+};
+
+template <>
+struct std::formatter<phenyl::graphics::MeshAttributeKind, char> {
+    template <class ParseContext>
+    constexpr ParseContext::iterator parse (ParseContext& ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it != '}') {
+            throw std::format_error("Invalid format string for MeshAttributeKind");
+        }
+
+        return it;
+    }
+
+    template <class FmtContext>
+    FmtContext::iterator format (const phenyl::graphics::MeshAttributeKind& kind, FmtContext& ctx) const {
+        return std::format_to(ctx.out(), "{}", phenyl::graphics::GetMeshAttribName(kind));
     }
 };

@@ -15,7 +15,7 @@ std::shared_ptr<Mesh> MeshManager::load (core::AssetLoadContext& ctx) {
     return ctx.read([&] (std::istream& data) {
         // Only obj files supported for now
         ObjFile objFile{data};
-        auto mesh = std::make_shared<Mesh>(objFile.makeMesh(m_renderer));
+        auto mesh = objFile.makeMesh(m_renderer);
 
         if (auto it = m_layoutIds.find(mesh->layout()); it != m_layoutIds.end()) {
             mesh->setLayoutId(it->second);

@@ -108,7 +108,7 @@ public:
     virtual ~IShader () = default;
 
     [[nodiscard]] virtual std::size_t hash () const noexcept = 0;
-    [[nodiscard]] virtual std::optional<unsigned int> getAttribLocation (const std::string& attrib) const noexcept = 0;
+    [[nodiscard]] virtual std::optional<unsigned int> getAttribLocation (std::string_view attrib) const noexcept = 0;
     [[nodiscard]] virtual std::optional<unsigned int> getUniformLocation (
         const std::string& uniform) const noexcept = 0;
     [[nodiscard]] virtual std::optional<unsigned int> getSamplerLocation (
@@ -141,7 +141,7 @@ public:
         return m_shader->getSamplerLocation(sampler);
     }
 
-    [[nodiscard]] std::optional<unsigned int> attribLocation (const std::string& attrib) const noexcept {
+    [[nodiscard]] std::optional<unsigned int> attribLocation (std::string_view attrib) const noexcept {
         PHENYL_DASSERT(m_shader);
         return m_shader->getAttribLocation(attrib);
     }

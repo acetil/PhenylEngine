@@ -129,7 +129,7 @@ void ShaderReflection::addSamplers (const Compiler& compiler, const ShaderResour
     }
 }
 
-const ShaderReflection::VertexInput* ShaderReflection::getAttrib (const std::string& name) const noexcept {
+const ShaderReflection::VertexInput* ShaderReflection::getAttrib (std::string_view name) const noexcept {
     auto it = m_attribs.find(name);
     return it != m_attribs.end() ? &it->second : nullptr;
 }

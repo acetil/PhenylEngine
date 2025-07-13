@@ -168,7 +168,7 @@ std::size_t GlShader::hash () const noexcept {
     return static_cast<std::size_t>(m_program);
 }
 
-std::optional<unsigned int> GlShader::getAttribLocation (const std::string& attrib) const noexcept {
+std::optional<unsigned int> GlShader::getAttribLocation (std::string_view attrib) const noexcept {
     auto it = m_attribs.find(attrib);
     return it != m_attribs.end() ? std::optional{it->second} : std::nullopt;
 }

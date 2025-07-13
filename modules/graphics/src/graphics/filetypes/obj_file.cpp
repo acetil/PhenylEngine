@@ -162,29 +162,34 @@ ObjFile::ObjFile (std::istream& file) {
     }
 }
 
-Mesh ObjFile::makeMesh (Renderer& renderer, bool includeW) {
+std::shared_ptr<Mesh> ObjFile::makeMesh (Renderer& renderer, bool includeW) {
     MeshLayout layout{};
+    MeshBuilder builder{renderer};
 
     std::size_t stride = 0;
     if (includeW) {
         stride = sizeof(glm::vec4);
-        layout.attributes.emplace_back(MeshAttributeKind::Position, ShaderDataType::VEC4F, 0, 0);
+        // layout.attributes.emplace_back(MeshAttributeKind::Position, ShaderDataType::VEC4F, 0, 0);
+        builder.withAttribute<glm::vec4>(MeshAttributeKind::Position, 0);
     } else {
         stride = sizeof(glm::vec3);
-        layout.attributes.emplace_back(MeshAttributeKind::Position, ShaderDataType::VEC3F, 0, 0);
+        // layout.attributes.emplace_back(MeshAttributeKind::Position, ShaderDataType::VEC3F, 0, 0);
+        builder.withAttribute<glm::vec3>(MeshAttributeKind::Position, 0);
     }
 
     std::size_t normOffset = 0;
     if (!m_normals.empty()) {
         normOffset = stride;
-        layout.attributes.emplace_back(MeshAttributeKind::Normal, ShaderDataType::VEC3F, 0, normOffset);
+        // layout.attributes.emplace_back(MeshAttributeKind::Normal, ShaderDataType::VEC3F, 0, normOffset);
+        builder.withAttribute<glm::vec3>(MeshAttributeKind::Normal, 0, normOffset);
         stride += sizeof(glm::vec3);
     }
 
     std::size_t uvOffset = 0;
     if (!m_uvs.empty()) {
         uvOffset = stride;
-        layout.attributes.emplace_back(MeshAttributeKind::TexCoord0, ShaderDataType::VEC2F, 0, uvOffset);
+        // layout.attributes.emplace_back(MeshAttributeKind::TexCoord0, ShaderDataType::VEC2F, 0, uvOffset);
+        builder.withAttribute<glm::vec2>(MeshAttributeKind::TexCoord0, 0, uvOffset);
         stride += sizeof(glm::vec2);
     }
 
@@ -217,26 +222,39 @@ Mesh ObjFile::makeMesh (Renderer& renderer, bool includeW) {
             *ptr = m_uvs[i];
         }
     }
+    builder.withStream({data.get(), stride * numVertices}, stride);
 
-    auto vertexBuffer = renderer.makeRawBuffer(stride, numVertices, BufferStorageHint::STATIC);
-    vertexBuffer.upload({data.get(), stride * numVertices});
-    layout.streamStrides = std::vector{stride};
+    // auto vertexBuffer = renderer.makeRawBuffer(stride, numVertices, BufferStorageHint::STATIC);
+    // vertexBuffer.upload({data.get(), stride * numVertices});
+    // layout.streamStrides = std::vector{stride};
+    //
+    // RawBuffer indexBuffer;
+    // if (numVertices <= std::numeric_limits<std::uint16_t>::max()) {
+    //     std::vector<std::uint16_t> vec{m_indices.begin(), m_indices.end()};
+    //     indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size(), BufferStorageHint::STATIC, true);
+    //     indexBuffer.upload(std::as_bytes(std::span{vec}));
+    //
+    //     layout.indexType = ShaderIndexType::USHORT;
+    // } else {
+    //     indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), m_indices.size(), BufferStorageHint::STATIC,
+    //     true); indexBuffer.upload(std::as_bytes(std::span{m_indices}));
+    //
+    //     layout.indexType = ShaderIndexType::UINT;
+    // }
+    //
+    // std::vector<RawBuffer> streams;
+    // streams.emplace_back(std::move(vertexBuffer));
+    // return Mesh{std::move(layout), std::move(indexBuffer), std::move(streams), m_indices.size()};
 
-    RawBuffer indexBuffer;
     if (numVertices <= std::numeric_limits<std::uint16_t>::max()) {
         std::vector<std::uint16_t> vec{m_indices.begin(), m_indices.end()};
-        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint16_t), vec.size(), BufferStorageHint::STATIC, true);
-        indexBuffer.upload(std::as_bytes(std::span{vec}));
-
-        layout.indexType = ShaderIndexType::USHORT;
+        builder.withIndices(std::span<const std::uint16_t>{vec});
     } else {
-        indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), m_indices.size(), BufferStorageHint::STATIC, true);
-        indexBuffer.upload(std::as_bytes(std::span{m_indices}));
-
-        layout.indexType = ShaderIndexType::UINT;
+        // indexBuffer = renderer.makeRawBuffer(sizeof(std::uint32_t), m_indices.size(), BufferStorageHint::STATIC,
+        // true); indexBuffer.upload(std::as_bytes(std::span{m_indices}));
+        builder.withIndices(std::span<const std::uint32_t>{m_indices});
+        //
+        // layout.indexType = ShaderIndexType::UINT;
     }
-
-    std::vector<RawBuffer> streams;
-    streams.emplace_back(std::move(vertexBuffer));
-    return Mesh{std::move(layout), std::move(indexBuffer), std::move(streams), m_indices.size()};
+    return builder.build();
 }

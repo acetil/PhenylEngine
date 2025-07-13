@@ -51,6 +51,18 @@ inline constexpr ShaderIndexType GetIndexType () {
     }
 }
 
+constexpr std::size_t GetIndexTypeSize (ShaderIndexType type) {
+    switch (type) {
+    case ShaderIndexType::UBYTE:
+        return sizeof(std::uint8_t);
+    case ShaderIndexType::USHORT:
+        return sizeof(std::uint16_t);
+    case ShaderIndexType::UINT:
+        return sizeof(std::uint32_t);
+    }
+    PHENYL_ABORT("Unexpected index type: {}", static_cast<std::uint32_t>(type));
+}
+
 using BufferBinding = unsigned int;
 using UniformBinding = unsigned int;
 using SamplerBinding = unsigned int;
