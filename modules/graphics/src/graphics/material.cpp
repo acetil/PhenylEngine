@@ -7,6 +7,39 @@
 
 using namespace phenyl::graphics;
 
+MeshRenderBuilder::MeshRenderBuilder (MaterialRenderPipeline& pipeline, const Mesh& mesh) :
+    m_matPipeline{pipeline},
+    m_mesh{mesh} {}
+
+MeshRenderBuilder& MeshRenderBuilder::bindModelBuffer (const Buffer<glm::mat4>& buffer, std::size_t offset) {
+    m_matPipeline.pipeline.bindBuffer(m_matPipeline.modelBinding, buffer, offset);
+    return *this;
+}
+
+MeshRenderBuilder& MeshRenderBuilder::bindSampler (MaterialSampler samplerType, ISampler& sampler) {
+    if (const auto it = m_matPipeline.samplerBindings.find(samplerType); it != m_matPipeline.samplerBindings.end()) {
+        pipeline().bindSampler(it->second, sampler);
+    }
+    return *this;
+}
+
+MeshRenderBuilder& MeshRenderBuilder::bindInstanceUniform (const RawUniformBuffer& instanceUniform) {
+    if (m_matPipeline.instanceBindings) {
+        pipeline().bindUniform(m_matPipeline.instanceBindings->dataUniformBinding, instanceUniform);
+    }
+    return *this;
+}
+
+void MeshRenderBuilder::render (CommandList& cmdList, FrameBuffer& fb, std::size_t numInstances) {
+    m_mesh.bind(pipeline(), m_matPipeline.streamBindings);
+    pipeline().renderInstanced(cmdList, fb, numInstances, m_mesh.numVertices());
+}
+
+std::optional<UniformBinding> MeshRenderBuilder::getUniformBinding (MaterialRenderUniform uniformType) const noexcept {
+    const auto it = m_matPipeline.uniformBindings.find(uniformType);
+    return it != m_matPipeline.uniformBindings.end() ? std::optional{it->second} : std::nullopt;
+}
+
 Material::Material (Renderer& renderer, std::uint32_t id, std::shared_ptr<Shader> shader,
     MaterialProperties properties) :
     m_renderer{renderer},
@@ -14,11 +47,38 @@ Material::Material (Renderer& renderer, std::uint32_t id, std::shared_ptr<Shader
     m_shader{std::move(shader)},
     materialProperties{std::move(properties)} {}
 
-Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
-    if (auto it = m_pipelines.find(layout.layoutId); it != m_pipelines.end()) {
-        return it->second;
+std::shared_ptr<MaterialInstance> Material::instance () {
+    return std::make_shared<MaterialInstance>(m_renderer, shared_from_this(), materialProperties);
+}
+
+MeshRenderBuilder Material::renderMesh (ForwardRenderStage renderStage, const Mesh& mesh) {
+    return MeshRenderBuilder{getPipeline(renderStage, mesh.layout()), mesh};
+}
+
+MaterialRenderPipeline& Material::getPipeline (ForwardRenderStage renderStage, const MeshLayout& layout) {
+    auto& pipelineMap = m_pipelines2[layout.layoutId];
+    if (auto pipelineIt = pipelineMap.find(renderStage); pipelineIt != pipelineMap.end()) {
+        return pipelineIt->second;
     }
 
+    switch (renderStage) {
+    case ForwardRenderStage::DEPTH_PREPASS: {
+        auto [it, _] = pipelineMap.emplace(renderStage, makeDepthPipeline(layout));
+        return it->second;
+    }
+    case ForwardRenderStage::SHADOW_MAP: {
+        auto [it, _] = pipelineMap.emplace(renderStage, makeShadowMapPipeline(layout));
+        return it->second;
+    }
+    case ForwardRenderStage::RENDER: {
+        auto [it, _] = pipelineMap.emplace(renderStage, makeRenderPipeline(layout));
+        return it->second;
+    }
+    }
+    PHENYL_ABORT("Unexpected ForwardRenderStage value: {}", static_cast<std::uint32_t>(renderStage));
+}
+
+MaterialRenderPipeline Material::makeRenderPipeline (const MeshLayout& layout) {
     auto builder = m_renderer.buildPipeline();
 
     UniformBinding globalUniform;
@@ -54,26 +114,21 @@ Material::MatPipeline& Material::getPipeline (const MeshLayout& layout) {
 
     UniformBinding instanceBinding;
     builder.withRawUniform(m_shader->uniformLocation("Material").value(), instanceBinding);
-
-    auto [it, _] = m_pipelines.emplace(layout.layoutId,
-        MatPipeline{
-          .pipeline = builder.build(),
-          .globalUniform = globalUniform,
-          .lightUniform = lightUniform,
-          .modelBinding = model,
-          .streamBindings = std::move(streamBindings),
-          .instanceBinding = instanceBinding,
-          .shadowMapBinding = shadowMapBinding,
-          .samplerBindings = {} // TODO
-        });
-    return it->second;
+    return MaterialRenderPipeline{
+      .pipeline = builder.build(),
+      .streamBindings = std::move(streamBindings),
+      .modelBinding = model,
+      .uniformBindings = {{MaterialRenderUniform::GLOBAL_UNIFORM, globalUniform},
+        {MaterialRenderUniform::BP_LIGHT_UNIFORM, lightUniform}},
+      .samplerBindings = {{MaterialSampler::SHADOW_MAP, shadowMapBinding}},
+      .instanceBindings =
+          MaterialInstanceBindings{
+            .dataUniformBinding = instanceBinding,
+          },
+    };
 }
 
-Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
-    if (auto it = m_depthPipelines.find(layout.layoutId); it != m_depthPipelines.end()) {
-        return it->second;
-    }
-
+MaterialRenderPipeline Material::makeDepthPipeline (const MeshLayout& layout) {
     auto builder = m_renderer.buildPipeline();
     builder.withBlending(BlendMode::ADDITIVE);
 
@@ -102,21 +157,15 @@ Material::DepthPipeline& Material::getDepthPipeline (const MeshLayout& layout) {
     }
 
     builder.withAttrib<glm::mat4>(prepassShader->attribLocation("model").value(), model);
-
-    auto [it, _] = m_depthPipelines.emplace(layout.layoutId,
-        DepthPipeline{.pipeline = builder.build(),
-          .globalUniform = globalUniform,
-          .modelBinding = model,
-          .streamBindings = std::move(streamBindings)});
-
-    return it->second;
+    return MaterialRenderPipeline{
+      .pipeline = builder.build(),
+      .streamBindings = std::move(streamBindings),
+      .modelBinding = model,
+      .uniformBindings = {{MaterialRenderUniform::GLOBAL_UNIFORM, globalUniform}},
+    };
 }
 
-Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& layout) {
-    if (auto it = m_shadowMapPipelines.find(layout.layoutId); it != m_shadowMapPipelines.end()) {
-        return it->second;
-    }
-
+MaterialRenderPipeline Material::makeShadowMapPipeline (const MeshLayout& layout) {
     auto builder = m_renderer.buildPipeline();
 
     auto shadowMapShader = core::Assets::Load<Shader>("phenyl/shaders/shadow_map");
@@ -144,20 +193,12 @@ Material::ShadowMapPipeline& Material::getShadowMapPipeline (const MeshLayout& l
     }
 
     builder.withAttrib<glm::mat4>(shadowMapShader->attribLocation("model").value(), model);
-
-    auto [it, _] = m_shadowMapPipelines.emplace(layout.layoutId,
-        ShadowMapPipeline{
-          .pipeline = builder.build(),
-          .lightUniform = lightUniform,
-          .modelBinding = model,
-          .streamBindings = std::move(streamBindings),
-        });
-
-    return it->second;
-}
-
-std::shared_ptr<MaterialInstance> Material::instance () {
-    return std::make_shared<MaterialInstance>(m_renderer, shared_from_this(), materialProperties);
+    return MaterialRenderPipeline{
+      .pipeline = builder.build(),
+      .streamBindings = std::move(streamBindings),
+      .modelBinding = model,
+      .uniformBindings = {{MaterialRenderUniform::BP_LIGHT_UNIFORM, lightUniform}},
+    };
 }
 
 MaterialInstance::MaterialInstance (Renderer& renderer, std::shared_ptr<Material> material,
@@ -179,4 +220,10 @@ void MaterialInstance::upload () {
 
 void MaterialInstance::bind (Material::MatPipeline& pipeline) {
     pipeline.pipeline.bindUniform(pipeline.instanceBinding, m_data);
+}
+
+MeshRenderBuilder MaterialInstance::render (ForwardRenderStage renderStage, const Mesh& mesh) {
+    auto builder = m_material->renderMesh(renderStage, mesh);
+    builder.bindInstanceUniform(m_data);
+    return builder;
 }

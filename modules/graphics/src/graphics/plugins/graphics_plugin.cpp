@@ -3,9 +3,9 @@
 #include "core/input/game_input.h"
 #include "core/plugins/input_plugin.h"
 #include "core/runtime.h"
+#include "graphics/backend/renderer.h"
 #include "graphics/camera_2d.h"
 #include "graphics/camera_3d.h"
-#include "mesh_manager.h"
 #include "texture_manager.h"
 
 using namespace phenyl::graphics;

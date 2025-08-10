@@ -81,7 +81,7 @@ std::size_t VulkanShader::hash () const noexcept {
     return 1;
 }
 
-std::optional<unsigned int> VulkanShader::getAttribLocation (const std::string& attrib) const noexcept {
+std::optional<unsigned int> VulkanShader::getAttribLocation (std::string_view attrib) const noexcept {
     auto* input = m_reflection.getAttrib(attrib);
     return input ? std::optional{input->location} : std::nullopt;
 }

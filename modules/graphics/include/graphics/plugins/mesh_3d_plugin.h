@@ -5,6 +5,7 @@
 #include <memory>
 
 namespace phenyl::graphics {
+class Meshes;
 class MeshManager;
 class MaterialManager;
 class MaterialInstanceManager;
@@ -20,6 +21,5 @@ public:
 private:
     std::unique_ptr<MaterialManager> m_materialManager;
     std::unique_ptr<MaterialInstanceManager> m_materialInstanceManager;
-    std::unique_ptr<MeshManager> m_meshManager;
 };
 } // namespace phenyl::graphics

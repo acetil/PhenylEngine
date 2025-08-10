@@ -21,7 +21,7 @@ public:
     std::vector<VkPipelineShaderStageCreateInfo> getStageInfo ();
 
     std::size_t hash () const noexcept override;
-    std::optional<unsigned int> getAttribLocation (const std::string& attrib) const noexcept override;
+    std::optional<unsigned int> getAttribLocation (std::string_view attrib) const noexcept override;
     std::optional<unsigned int> getUniformLocation (const std::string& uniform) const noexcept override;
     std::optional<unsigned int> getSamplerLocation (const std::string& sampler) const noexcept override;
 

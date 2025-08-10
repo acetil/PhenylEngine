@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/backend/shader.h"
+#include "util/hash.h"
 #include "vulkan/vulkan_headers.h"
 
 #include <unordered_map>
@@ -43,13 +44,13 @@ public:
     explicit ShaderReflection (
         const std::unordered_map<graphics::ShaderSourceType, std::vector<std::uint32_t>>& sources);
 
-    const VertexInput* getAttrib (const std::string& name) const noexcept;
+    const VertexInput* getAttrib (std::string_view name) const noexcept;
     const FragmentOutput* getOutput (const std::string& name) const noexcept;
     const UniformBlock* getUniformBlock (const std::string& name) const noexcept;
     const Sampler* getSampler (const std::string& name) const noexcept;
 
 private:
-    std::unordered_map<std::string, VertexInput> m_attribs;
+    util::HashMap<std::string, VertexInput> m_attribs;
     std::vector<FragmentOutput> m_outputs;
     std::unordered_map<std::string, UniformBlock> m_uniformBlocks;
     std::unordered_map<std::string, Sampler> m_samplers;

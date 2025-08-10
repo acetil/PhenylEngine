@@ -3,6 +3,7 @@
 #include "core/assets/asset_manager.h"
 #include "graphics/backend/shader.h"
 #include "opengl_headers.h"
+#include "util/hash.h"
 
 #include <unordered_set>
 
@@ -38,7 +39,7 @@ public:
     ~GlShader () override;
 
     std::size_t hash () const noexcept override;
-    std::optional<unsigned int> getAttribLocation (const std::string& attrib) const noexcept override;
+    std::optional<unsigned int> getAttribLocation (std::string_view attrib) const noexcept override;
     std::optional<unsigned int> getUniformLocation (const std::string& uniform) const noexcept override;
     std::optional<unsigned int> getSamplerLocation (const std::string& sampler) const noexcept override;
 
@@ -50,7 +51,7 @@ public:
 
 private:
     GLuint m_program{0};
-    std::unordered_map<std::string, unsigned int> m_attribs;
+    util::HashMap<std::string, unsigned int> m_attribs;
     std::unordered_map<std::string, unsigned int> m_uniformBlocks;
     std::unordered_map<std::string, unsigned int> m_samplers;
 

@@ -192,22 +192,10 @@ void MeshRenderLayer::gatherLights () {
 
 void MeshRenderLayer::depthPrepass (CommandList& cmdList) {
     for (const auto& instance : m_instances) {
-        auto& depthPipeline = instance.materialInstance->material()->getDepthPipeline(instance.mesh->layout());
-
-        auto& pipeline = depthPipeline.pipeline;
-        pipeline.bindUniform(depthPipeline.globalUniform, m_globalUniform);
-
-        auto& streams = instance.mesh->streams();
-        PHENYL_DASSERT(streams.size() == depthPipeline.streamBindings.size());
-        for (std::size_t i = 0; i < streams.size(); i++) {
-            pipeline.bindBuffer(depthPipeline.streamBindings[i], streams[i]);
-        }
-
-        pipeline.bindBuffer(depthPipeline.modelBinding, m_instanceBuffer, instance.instanceOffset);
-        pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
-
-        pipeline.renderInstanced(cmdList, m_testFb, instance.numInstances, instance.mesh->numVertices());
-        // pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        instance.materialInstance->render(ForwardRenderStage::DEPTH_PREPASS, *instance.mesh)
+            .bindModelBuffer(m_instanceBuffer, instance.instanceOffset)
+            .bindUniform(MaterialRenderUniform::GLOBAL_UNIFORM, m_globalUniform)
+            .render(cmdList, m_testFb, instance.numInstances);
     }
 }
 
@@ -238,32 +226,12 @@ void MeshRenderLayer::renderLight (CommandList& cmdList, const MeshLight& light,
     }
 
     for (const auto& instance : m_instances) {
-        // auto& meshPipeline = getPipeline(instance.mesh->layout()); // TODO: ahead of time
-        // pipeline creation
-        auto* matInstance = instance.materialInstance;
-        auto& matPipeline = matInstance->material()->getPipeline(instance.mesh->layout());
-        auto& pipeline = matPipeline.pipeline;
-
-        pipeline.bindUniform(matPipeline.globalUniform, m_globalUniform);
-        pipeline.bindUniform(matPipeline.lightUniform, m_bpLights, index);
-
-        auto& streams = instance.mesh->streams();
-        PHENYL_DASSERT(streams.size() == matPipeline.streamBindings.size());
-        for (std::size_t i = 0; i < streams.size(); i++) {
-            pipeline.bindBuffer(matPipeline.streamBindings[i], streams[i]);
-        }
-
-        pipeline.bindBuffer(matPipeline.modelBinding, m_instanceBuffer, instance.instanceOffset);
-        pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
-
-        if (light.castShadows) {
-            pipeline.bindSampler(matPipeline.shadowMapBinding, m_shadowFb.depthSampler());
-        }
-
-        matInstance->bind(matPipeline);
-
-        pipeline.renderInstanced(cmdList, m_testFb, instance.numInstances, instance.mesh->numVertices());
-        // pipeline.renderInstanced(instance.numInstances, instance.mesh->numVertices());
+        instance.materialInstance->render(ForwardRenderStage::RENDER, *instance.mesh)
+            .bindModelBuffer(m_instanceBuffer, instance.instanceOffset)
+            .bindUniform(MaterialRenderUniform::GLOBAL_UNIFORM, m_globalUniform)
+            .bindUniform(MaterialRenderUniform::BP_LIGHT_UNIFORM, m_bpLights, index)
+            .bindSampler(MaterialSampler::SHADOW_MAP, m_shadowFb.depthSampler())
+            .render(cmdList, m_testFb, instance.numInstances);
     }
 }
 
@@ -306,21 +274,10 @@ void MeshRenderLayer::renderShadowMap (CommandList& cmdList, const MeshLight& li
     m_shadowFb.clear();
     if (light.type == LightType::Directional || light.type == LightType::Spot) {
         for (const auto& instance : m_instances) {
-            auto& smPipeline = instance.materialInstance->material()->getShadowMapPipeline(instance.mesh->layout());
-
-            auto& pipeline = smPipeline.pipeline;
-            pipeline.bindUniform(smPipeline.lightUniform, m_bpLights, index);
-
-            auto& streams = instance.mesh->streams();
-            PHENYL_DASSERT(streams.size() == smPipeline.streamBindings.size());
-            for (std::size_t i = 0; i < streams.size(); i++) {
-                pipeline.bindBuffer(smPipeline.streamBindings[i], streams[i]);
-            }
-
-            pipeline.bindBuffer(smPipeline.modelBinding, m_instanceBuffer, instance.instanceOffset);
-            pipeline.bindIndexBuffer(instance.mesh->layout().indexType, instance.mesh->indices());
-
-            pipeline.renderInstanced(cmdList, m_shadowFb, instance.numInstances, instance.mesh->numVertices());
+            instance.materialInstance->render(ForwardRenderStage::SHADOW_MAP, *instance.mesh)
+                .bindModelBuffer(m_instanceBuffer, instance.instanceOffset)
+                .bindUniform(MaterialRenderUniform::BP_LIGHT_UNIFORM, m_bpLights, index)
+                .render(cmdList, m_testFb, instance.numInstances);
         }
     } else {
         // TODO
@@ -331,46 +288,3 @@ void MeshRenderLayer::postProcessing (CommandList& cmdList) {
     m_postProcessPipeline.bindSampler(m_ppSampler, m_testFb.sampler());
     m_postProcessPipeline.render(cmdList, 6);
 }
-
-// MeshRenderLayer::MeshPipeline& MeshRenderLayer::getPipeline (const MeshLayout& layout) {
-//     if (auto it = pipelines.find(layout.layoutId); it != pipelines.end()) {
-//         return it->second;
-//     }
-//
-//     UniformBinding globalUniform;
-//
-//     PHENYL_DASSERT(renderer);
-//     auto shader = core::Assets::Load<Shader>("phenyl/shaders/mesh"); // TODO
-//     auto builder = renderer->buildPipeline();
-//
-//     builder.withShader(shader)
-//         .withUniform<GlobalUniform>(*shader->uniformLocation("GlobalUniform"),
-//         globalUniform);
-//
-//     std::vector<BufferBinding> streamBindings;
-//     for (auto i : layout.streamStrides) {
-//         streamBindings.emplace_back();
-//
-//         builder.withRawBuffer(streamBindings.back(), i);
-//     }
-//
-//     // TODO: material specific
-//     BufferBinding instanceBinding;
-//     builder.withBuffer<glm::mat4>(instanceBinding, BufferInputRate::INSTANCE);
-//
-//     unsigned int location = 0;
-//     for (auto& i : layout.attributes) {
-//         PHENYL_DASSERT(i.stream < streamBindings.size());
-//         builder.withAttrib(location++, streamBindings[i.stream], i.type, i.offset);
-//     }
-//
-//     builder.withAttrib<glm::mat4>(location, instanceBinding);
-//
-//     auto [it, _] = pipelines.emplace(layout.layoutId, MeshPipeline{
-//         .pipeline = builder.build(),
-//         .globalUniform = globalUniform,
-//         .instanceBinding = instanceBinding,
-//         .streamBindings = std::move(streamBindings)
-//     });
-//     return it->second;
-// }
