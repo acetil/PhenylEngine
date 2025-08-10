@@ -114,12 +114,6 @@ public:
         return m_size;
     }
 
-    //
-    // // TODO
-    // void setLayoutId (std::uint64_t id) noexcept {
-    //     m_layout.layoutId = id;
-    // }
-
     void bind (Pipeline& pipeline, const std::vector<BufferBinding>& streamBindings) const;
 
 private:

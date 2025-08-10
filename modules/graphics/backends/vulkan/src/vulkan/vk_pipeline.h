@@ -84,16 +84,16 @@ private:
     VulkanResource<VkDescriptorSetLayout> m_descriptorSetLayout;
     std::unique_ptr<FramePool<VulkanDescriptorPool>> m_descriptorPools;
 
-    std::unordered_map<graphics::UniformBinding, meta::TypeIndex> m_uniformTypes;
-    std::unordered_map<graphics::UniformBinding, UniformBufferBinding> m_boundUniformBuffers;
-    std::unordered_set<graphics::SamplerBinding> m_validSamplerBindings;
-    std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> m_boundSamplers;
+    std::unordered_map<graphics::UniformBinding, meta::TypeIndex> m_uniformTypes{};
+    std::unordered_map<graphics::UniformBinding, UniformBufferBinding> m_boundUniformBuffers{};
+    std::unordered_set<graphics::SamplerBinding> m_validSamplerBindings{};
+    std::unordered_map<graphics::SamplerBinding, IVulkanCombinedSampler*> m_boundSamplers{};
 
-    std::vector<meta::TypeIndex> m_vertexBindingTypes;
+    std::vector<meta::TypeIndex> m_vertexBindingTypes{};
 
-    std::vector<const IVulkanStorageBuffer*> m_boundVertexBuffers;
-    std::vector<VkBuffer> m_boundVkBuffers;
-    std::vector<VkDeviceSize> m_vertexBufferOffsets;
+    std::vector<const IVulkanStorageBuffer*> m_boundVertexBuffers{};
+    std::vector<VkBuffer> m_boundVkBuffers{};
+    std::vector<VkDeviceSize> m_vertexBufferOffsets{};
 
     const IVulkanStorageBuffer* m_indexBuffer = nullptr;
     VkIndexType m_indexBufferType;

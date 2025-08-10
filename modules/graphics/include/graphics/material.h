@@ -5,6 +5,7 @@
 #include "graphics/backend/pipeline.h"
 #include "graphics/backend/renderer.h"
 #include "graphics/backend/shader.h"
+#include "mesh/blinn_phong.h"
 #include "mesh/mesh.h"
 
 namespace phenyl::graphics {
@@ -19,6 +20,70 @@ struct MaterialProperties {
 
     std::vector<Uniform> uniforms;
     std::size_t uniformBlockSize;
+};
+
+enum class MaterialRenderUniform {
+    GLOBAL_UNIFORM,
+    BP_LIGHT_UNIFORM
+};
+
+enum class MaterialSampler {
+    SHADOW_MAP
+};
+
+struct MaterialInstanceBindings {
+    UniformBinding dataUniformBinding;
+    std::vector<SamplerBinding> samplerBindings;
+};
+
+struct MaterialRenderPipeline {
+    Pipeline pipeline;
+    std::vector<BufferBinding> streamBindings;
+
+    UniformBinding modelBinding;
+    std::unordered_map<MaterialRenderUniform, UniformBinding> uniformBindings;
+    std::unordered_map<MaterialSampler, SamplerBinding> samplerBindings;
+
+    std::optional<MaterialInstanceBindings> instanceBindings;
+};
+
+class MeshRenderBuilder {
+public:
+    MeshRenderBuilder (MaterialRenderPipeline& pipeline, const Mesh& mesh);
+
+    MeshRenderBuilder& bindModelBuffer (const Buffer<glm::mat4>& buffer, std::size_t offset);
+    MeshRenderBuilder& bindSampler (MaterialSampler samplerType, ISampler& sampler);
+
+    template <typename T>
+    MeshRenderBuilder& bindUniform (MaterialRenderUniform uniformType, const UniformBuffer<T>& uniform) {
+        if (auto binding = getUniformBinding(uniformType)) {
+            pipeline().bindUniform(*binding, uniform);
+        }
+        return *this;
+    }
+
+    template <typename T>
+    MeshRenderBuilder& bindUniform (MaterialRenderUniform uniformType, const UniformArrayBuffer<T>& uniformArray,
+        std::size_t index) {
+        if (auto binding = getUniformBinding(uniformType)) {
+            pipeline().bindUniform(*binding, uniformArray, index);
+        }
+        return *this;
+    }
+
+    MeshRenderBuilder& bindInstanceUniform (const RawUniformBuffer& instanceUniform);
+
+    void render (CommandList& cmdList, FrameBuffer& fb, std::size_t numInstances);
+
+private:
+    MaterialRenderPipeline& m_matPipeline;
+    const Mesh& m_mesh;
+
+    Pipeline& pipeline () {
+        return m_matPipeline.pipeline;
+    }
+
+    [[nodiscard]] std::optional<UniformBinding> getUniformBinding (MaterialRenderUniform uniformType) const noexcept;
 };
 
 class Material : public core::Asset<Material>, public std::enable_shared_from_this<Material> {
@@ -58,22 +123,23 @@ public:
         return m_id;
     }
 
-    MatPipeline& getPipeline (const MeshLayout& layout);
-    DepthPipeline& getDepthPipeline (const MeshLayout& layout);
-    ShadowMapPipeline& getShadowMapPipeline (const MeshLayout& layout);
-
     std::shared_ptr<MaterialInstance> instance ();
+    MeshRenderBuilder renderMesh (ForwardRenderStage renderStage, const Mesh& mesh);
 
 private:
     Renderer& m_renderer;
     std::uint32_t m_id;
     std::shared_ptr<Shader> m_shader;
 
-    util::HashMap<std::uint64_t, MatPipeline> m_pipelines;
-    util::HashMap<std::uint64_t, DepthPipeline> m_depthPipelines;
-    util::HashMap<std::uint64_t, ShadowMapPipeline> m_shadowMapPipelines;
+    util::HashMap<std::uint64_t, std::unordered_map<ForwardRenderStage, MaterialRenderPipeline>> m_pipelines2;
 
     MaterialProperties materialProperties;
+
+    MaterialRenderPipeline& getPipeline (ForwardRenderStage renderStage, const MeshLayout& layout);
+
+    MaterialRenderPipeline makeRenderPipeline (const MeshLayout& layout);
+    MaterialRenderPipeline makeDepthPipeline (const MeshLayout& layout);
+    MaterialRenderPipeline makeShadowMapPipeline (const MeshLayout& layout);
 };
 
 class MaterialInstance : public core::Asset<MaterialInstance> {
@@ -102,6 +168,8 @@ public:
 
     void upload ();
     void bind (Material::MatPipeline& pipeline);
+
+    MeshRenderBuilder render (ForwardRenderStage renderStage, const Mesh& mesh);
 
 private:
     struct MaterialUniform {

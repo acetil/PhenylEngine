@@ -9,29 +9,10 @@
 #include "graphics/components/3d/lighting.h"
 #include "graphics/components/3d/mesh_renderer.h"
 #include "graphics/material.h"
+#include "graphics/mesh/blinn_phong.h"
 #include "graphics/mesh/mesh.h"
 
 namespace phenyl::graphics {
-struct MeshGlobalUniform {
-    glm::mat4 view;
-    glm::mat4 projection;
-    glm::vec3 viewPos;
-};
-
-struct BPLightUniform {
-    // std140 alignment
-    alignas(16) glm::mat4 lightSpace;
-    alignas(16) glm::vec3 lightPos;
-    alignas(16) glm::vec3 lightDir;
-    alignas(16) glm::vec3 lightColor;
-    alignas(16) glm::vec3 ambientColor;
-    float brightness;
-    float cosOuter;
-    float cosInner;
-    int lightType = 0;
-    int castShadows; // TODO: combine with light type
-};
-
 class MeshRenderLayer : public AbstractRenderLayer {
 public:
     explicit MeshRenderLayer (core::World& world);
