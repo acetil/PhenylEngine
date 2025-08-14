@@ -61,7 +61,9 @@ add_library(phenyl SHARED
         include/phenyl/graphics/mesh.h
         src/phenyl/plugins/default_3d_plugin.cpp
         include/phenyl/graphics/material.h
-        include/phenyl/components/3D/lighting.h)
+        include/phenyl/components/3D/lighting.h
+        src/phenyl/engine_clock.h
+        src/phenyl/engine_clock.cpp)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 
