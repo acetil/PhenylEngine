@@ -1,6 +1,7 @@
 #include "phenyl/engine.h"
 
 #include "core/runtime.h"
+#include "engine_clock.h"
 #include "graphics/backend/renderer.h"
 #include "graphics/phenyl_graphics.h"
 #include "logging/logging.h"
@@ -23,7 +24,7 @@ public:
     explicit Engine (const ApplicationProperties& properties) :
         m_renderer{graphics::MakeVulkanRenderer(properties.m_graphics)},
         m_runtime(),
-        m_lastTime{m_renderer->getCurrentTime()} {}
+        m_clock{std::chrono::duration_cast<EngineClock::Duration>(std::chrono::duration<double>(1.0 / FIXED_FPS))} {}
 
     ~Engine () {
         PHENYL_LOGI(LOGGER, "Shutting down!");
@@ -37,6 +38,7 @@ public:
 
     void init (std::unique_ptr<ApplicationBase> app) {
         m_runtime.addResource(m_renderer.get());
+        m_runtime.addResource<core::Clock>(&m_clock);
 
         m_runtime.registerPlugin(std::make_unique<AppPlugin>(std::move(app)));
 
@@ -52,26 +54,24 @@ public:
 
             m_runtime.runFrameBegin();
 
-            // double deltaTime = graphics->getDeltaTime();
-            m_fixedTimeSlop += m_deltaTime * app->getFixedTimeScale();
-
             util::startProfile("physics");
-            while (m_fixedTimeSlop >= 1.0 / FIXED_FPS) {
+            while (m_clock.startFixedFrame()) {
                 PHENYL_TRACE(LOGGER, "Physics frame start");
                 fixedUpdate();
-                m_fixedTimeSlop -= 1.0 / FIXED_FPS;
+                // m_fixedTimeSlop -= 1.0 / FIXED_FPS;
                 PHENYL_TRACE(LOGGER, "Physics frame end");
             }
             util::endProfile();
 
             util::startProfile("graphics");
-            update(m_deltaTime);
-            render(m_deltaTime);
+            m_clock.startVariableFrame();
+            update(m_clock.deltaTime());
+            render(m_clock.deltaTime());
             util::endProfile();
 
             util::endProfileFrame();
 
-            sync(app->getTargetFps()); // TODO
+            sync(app); // TODO
             m_renderer->getViewport().poll();
             PHENYL_TRACE(LOGGER, "Frame end");
         }
@@ -79,13 +79,13 @@ public:
 
     void update (double deltaTime) {
         PHENYL_TRACE(LOGGER, "Update start");
-        m_runtime.runVariableTimestep(deltaTime);
+        m_runtime.runVariableTimestep();
         PHENYL_TRACE(LOGGER, "Update end");
     }
 
     void fixedUpdate () {
         PHENYL_TRACE(LOGGER, "Fixed update start");
-        m_runtime.runFixedTimestep(1.0 / FIXED_FPS);
+        m_runtime.runFixedTimestep();
         PHENYL_TRACE(LOGGER, "Fixed update end");
     }
 
@@ -96,22 +96,18 @@ public:
         PHENYL_TRACE(LOGGER, "Render end");
     }
 
-    void sync (double fps) {
-        while (m_renderer->getCurrentTime() - m_lastTime < 1.0 / (fps)) {
+    void sync (ApplicationBase* app) {
+        std::chrono::duration<double> targetFrameTime{1.0 / app->getTargetFps()};
+        while (!m_renderer->getViewport().shouldClose() && m_clock.frameTime() < targetFrameTime) {
             std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
-        double currTime = m_renderer->getCurrentTime();
-        m_deltaTime = currTime - m_lastTime;
-        m_lastTime = currTime;
+        m_clock.advance(app->getFixedTimeScale());
     }
 
 private:
     std::unique_ptr<graphics::Renderer> m_renderer;
     core::PhenylRuntime m_runtime;
-
-    double m_lastTime;
-    double m_deltaTime{0.0};
-    double m_fixedTimeSlop{0.0};
+    EngineClock m_clock;
 };
 
 PhenylEngine::PhenylEngine (const logging::LoggingProperties& properties) {

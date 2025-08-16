@@ -14,9 +14,9 @@ PHENYL_SERIALIZABLE(ParticleEmitter2D, PHENYL_SERIALIZABLE_MEMBER(system), PHENY
     PHENYL_SERIALIZABLE_MEMBER_NAMED(oneShot, "one_shot"), PHENYL_SERIALIZABLE_MEMBER(enabled))
 }
 
-void ParticleEmitter2D::update (const core::Resources<const core::DeltaTime>& resources,
+void ParticleEmitter2D::update (const core::Resources<const core::Clock>& resources,
     const core::GlobalTransform2D& transform) {
-    updateInternal(resources.get<const core::DeltaTime>()(), transform);
+    updateInternal(resources.get<const core::Clock>().deltaTime(), transform);
 }
 
 void ParticleEmitter2D::updateInternal (double deltaTime, const core::GlobalTransform2D& transform) {

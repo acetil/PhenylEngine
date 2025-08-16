@@ -18,9 +18,9 @@ struct ParticleData : public phenyl::core::IResource {
     }
 };
 
-static void UpdateSystem (const phenyl::core::Resources<const phenyl::core::DeltaTime, ParticleManager2D>& resources) {
-    auto& [deltaTime, manager] = resources;
-    manager.update(static_cast<float>(deltaTime()));
+static void UpdateSystem (const phenyl::core::Resources<const phenyl::core::Clock, ParticleManager2D>& resources) {
+    auto& [clock, manager] = resources;
+    manager.update(static_cast<float>(clock.deltaTime()));
 }
 
 static void RenderSystem (const phenyl::core::Resources<ParticleData, Camera2D, ParticleManager2D>& resources) {

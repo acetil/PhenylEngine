@@ -54,6 +54,7 @@ add_library(core OBJECT include/core/maths/2d/transform.h src/common/maths/2d/tr
         include/core/component/detail/component_view.h
         include/core/assets/load_context.h
         src/common/assets/load_context.cpp
+        include/core/clock.h
 )
 
 find_package(nlohmann_json REQUIRED)

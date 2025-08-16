@@ -169,8 +169,8 @@ public:
 
     void runPostInit ();
     void runFrameBegin ();
-    void runFixedTimestep (double deltaTime);
-    void runVariableTimestep (double deltaTime);
+    void runFixedTimestep ();
+    void runVariableTimestep ();
     void runRender ();
 
     void shutdown ();

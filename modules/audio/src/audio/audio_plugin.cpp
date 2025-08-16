@@ -1,14 +1,14 @@
 #include "audio/audio_plugin.h"
 
 #include "audio/audio_system.h"
-#include "core/delta_time.h"
+#include "core/clock.h"
 #include "core/runtime.h"
 
 using namespace phenyl::audio;
 
-static void AudioUpdateSystem (const phenyl::core::Resources<AudioSystem, phenyl::core::DeltaTime>& resources) {
-    auto& [system, deltaTime] = resources;
-    system.update(static_cast<float>(deltaTime()));
+static void AudioUpdateSystem (const phenyl::core::Resources<AudioSystem, phenyl::core::Clock>& resources) {
+    auto& [system, clock] = resources;
+    system.update(static_cast<float>(clock.deltaTime()));
 }
 
 AudioPlugin::AudioPlugin () : m_audioSystem(MakeOpenALSystem()) {}
