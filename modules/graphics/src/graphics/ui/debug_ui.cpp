@@ -1,8 +1,8 @@
 #include "graphics/ui/debug_ui.h"
 
 #include "core/assets/assets.h"
+#include "core/clock.h"
 #include "core/debug.h"
-#include "core/delta_time.h"
 #include "core/runtime.h"
 #include "graphics/plugins/ui_plugin.h"
 #include "util/profiler.h"
@@ -26,9 +26,9 @@ void graphics::ProfileUiPlugin::init (core::PhenylRuntime& runtime) {
 }
 
 void graphics::ProfileUiPlugin::update (core::PhenylRuntime& runtime) {
-    auto deltaTime = runtime.resource<core::DeltaTime>()();
+    auto& clock = runtime.resource<core::Clock>();
 
-    m_deltaTimeQueue.pushPop((float) deltaTime);
+    m_deltaTimeQueue.pushPop(static_cast<float>(clock.deltaTime()));
     m_frameQueue.pushPop(util::getProfileFrameTime());
     m_graphicsQueue.pushPop(util::getProfileTime("graphics"));
     m_physicsQueue.pushPop(util::getProfileTime("physics"));

@@ -1,8 +1,8 @@
 #include "physics_2d.h"
 
+#include "core/clock.h"
 #include "core/components/2d/global_transform.h"
 #include "core/debug.h"
-#include "core/delta_time.h"
 #include "core/runtime.h"
 #include "core/serialization/component_serializer.h"
 #include "physics/2d/collisions_2d.h"
@@ -22,11 +22,11 @@ struct Constraints2D : public phenyl::core::IResource {
     }
 };
 
-static void RigidBody2DMotionSystem (const phenyl::core::Resources<const phenyl::core::FixedDelta>& resources,
+static void RigidBody2DMotionSystem (const phenyl::core::Resources<const phenyl::core::Clock>& resources,
     phenyl::core::Transform2D& transform, RigidBody2D& body) {
-    auto& [delta] = resources;
+    auto& [clock] = resources;
 
-    body.doMotion(transform, static_cast<float>(delta()));
+    body.doMotion(transform, static_cast<float>(clock.deltaTime()));
 }
 
 static void Collider2DSyncSystem (const phenyl::core::GlobalTransform2D& transform, const RigidBody2D& body,
@@ -39,10 +39,9 @@ static void BoxCollider2DFrameTransformSystem (const phenyl::core::GlobalTransfo
     collider.applyFrameTransform(transform.transform.linearTransform());
 }
 
-static void CollisionCheck2DSystem (
-    const phenyl::core::Resources<Constraints2D, const phenyl::core::FixedDelta>& resources,
+static void CollisionCheck2DSystem (const phenyl::core::Resources<Constraints2D, const phenyl::core::Clock>& resources,
     const phenyl::core::Bundle<BoxCollider2D>& bundle1, const phenyl::core::Bundle<BoxCollider2D>& bundle2) {
-    auto& [constraints, deltaTime] = resources;
+    auto& [constraints, clock] = resources;
 
     auto entity1 = bundle1.entity();
     auto entity2 = bundle2.entity();
@@ -59,7 +58,7 @@ static void CollisionCheck2DSystem (
         auto face2 = box2.getSignificantFace(-result.normal);
 
         auto manifold = buildManifold(face1, face2, result.normal, result.depth);
-        constraints.constraints.emplace_back(manifold.buildConstraint(&box1, &box2, deltaTime()));
+        constraints.constraints.emplace_back(manifold.buildConstraint(&box1, &box2, clock.deltaTime()));
 
         auto contactPoint = manifold.getContactPoint();
         if (box1.layers & box2.mask) {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/assets/asset.h"
+#include "core/clock.h"
 #include "core/component/forward.h"
-#include "core/delta_time.h"
 #include "core/runtime.h"
 #include "core/serialization/serializer_forward.h"
 #include "graphics/maths_headers.h"
@@ -31,7 +31,7 @@ public:
 
     static void AddSystems (core::PhenylRuntime& runtime, core::System<core::Update>& particleUpdateSystem);
 
-    void update (const core::Resources<const core::DeltaTime>& resources, const core::GlobalTransform2D& transform);
+    void update (const core::Resources<const core::Clock>& resources, const core::GlobalTransform2D& transform);
     void start ();
 
 private:

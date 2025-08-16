@@ -79,13 +79,13 @@ public:
 
     void update (double deltaTime) {
         PHENYL_TRACE(LOGGER, "Update start");
-        m_runtime.runVariableTimestep(deltaTime);
+        m_runtime.runVariableTimestep();
         PHENYL_TRACE(LOGGER, "Update end");
     }
 
     void fixedUpdate () {
         PHENYL_TRACE(LOGGER, "Fixed update start");
-        m_runtime.runFixedTimestep(1.0 / FIXED_FPS);
+        m_runtime.runFixedTimestep();
         PHENYL_TRACE(LOGGER, "Fixed update end");
     }
 

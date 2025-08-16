@@ -1,6 +1,5 @@
 #include "core/runtime.h"
 
-#include "core/delta_time.h"
 #include "core/iresource.h"
 #include "core/runtime/resource_manager.h"
 #include "core/stages.h"
@@ -34,9 +33,6 @@ PhenylRuntime::PhenylRuntime () : m_world{} {
     addStage<Update, GlobalVariableTimestep>("Update");
     addStage<PostUpdate, GlobalVariableTimestep>("PostUpdate");
     runStageBefore<Update, PostUpdate>();
-
-    addResource<DeltaTime>();
-    addResource<FixedDelta>();
 }
 
 PhenylRuntime::~PhenylRuntime () = default;
@@ -73,15 +69,13 @@ void PhenylRuntime::runFrameBegin () {
     getStage<FrameBegin>()->run();
 }
 
-void PhenylRuntime::runFixedTimestep (double deltaTime) {
+void PhenylRuntime::runFixedTimestep () {
     PHENYL_TRACE(LOGGER, "Initiating GlobalFixedTimestep stage");
-    resource<FixedDelta>().set(deltaTime);
     getStage<GlobalFixedTimestep>()->run();
 }
 
-void PhenylRuntime::runVariableTimestep (double deltaTime) {
+void PhenylRuntime::runVariableTimestep () {
     PHENYL_TRACE(LOGGER, "Initating GlobalVariableTimestep stage");
-    resource<DeltaTime>().set(deltaTime);
     getStage<GlobalVariableTimestep>()->run();
 }
 
