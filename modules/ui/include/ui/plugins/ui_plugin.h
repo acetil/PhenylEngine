@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/plugin.h"
-#include "graphics/ui/ui_manager.h"
+#include "ui/ui_manager.h"
 
 namespace phenyl::graphics {
 class UIPlugin : public core::IPlugin {

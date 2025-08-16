@@ -4,7 +4,6 @@
 #include "core/runtime.h"
 #include "graphics_plugin.h"
 #include "mesh_3d_plugin.h"
-#include "ui_plugin.h"
 
 namespace phenyl::graphics {
 class Graphics3DPlugin : public core::IInitPlugin {
@@ -16,7 +15,6 @@ public:
     void init (core::PhenylRuntime& runtime) override {
         runtime.addPlugin<GraphicsPlugin>();
         runtime.addPlugin<Mesh3DPlugin>();
-        runtime.addPlugin<UIPlugin>();
     }
 };
 } // namespace phenyl::graphics

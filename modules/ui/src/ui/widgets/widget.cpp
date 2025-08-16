@@ -1,7 +1,7 @@
-#include "graphics/ui/widgets/widget.h"
+#include "ui/widgets/widget.h"
 
-#include "graphics/ui/widgets/event.h"
 #include "logging/logging.h"
+#include "ui/widgets/event.h"
 
 using namespace phenyl::graphics;
 

@@ -1,10 +1,10 @@
-#include "graphics/ui/debug_ui.h"
+#include "ui/debug_ui.h"
 
 #include "core/assets/assets.h"
 #include "core/clock.h"
 #include "core/debug.h"
 #include "core/runtime.h"
-#include "graphics/plugins/ui_plugin.h"
+#include "ui/plugins/ui_plugin.h"
 #include "util/profiler.h"
 #include "util/smooth_queue.h"
 

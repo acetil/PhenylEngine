@@ -1,11 +1,11 @@
-#include "graphics/ui/ui_manager.h"
+#include "ui/ui_manager.h"
 
 #include "core/assets/assets.h"
 #include "core/input/game_input.h"
 #include "graphics/backend/renderer.h"
 #include "graphics/detail/loggers.h"
-#include "graphics/ui/widgets/event.h"
 #include "logging/logging.h"
+#include "ui/widgets/event.h"
 
 using namespace phenyl::graphics;
 

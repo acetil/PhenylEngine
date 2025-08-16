@@ -1,4 +1,4 @@
-#include "graphics/ui/widgets/container.h"
+#include "ui/widgets/container.h"
 
 #include "graphics/canvas/canvas.h"
 

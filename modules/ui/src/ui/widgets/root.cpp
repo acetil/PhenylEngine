@@ -1,4 +1,4 @@
-#include "graphics/ui/widgets/root.h"
+#include "ui/widgets/root.h"
 
 #include "graphics/canvas/canvas.h"
 

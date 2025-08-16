@@ -1,6 +1,5 @@
-add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/ui/debug_ui.cpp src/graphics/ui/ui_manager.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp include/graphics/ui/ui_defs.h
+add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphics/renderlayer/canvas_layer.cpp src/graphics/image.cpp src/graphics/camera_2d.cpp src/stb/stb_image.cpp
         include/graphics/components/2d/sprite.h
-        include/graphics/ui/forward.h
         include/graphics/particles/particle_system_2d.h
         src/graphics/particles/particle_system_2d.cpp
         src/graphics/renderlayer/particle_layer.h
@@ -11,8 +10,6 @@ add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphi
         src/graphics/particles/particle_emitter_2d.cpp
         include/graphics/detail/loggers.h
         src/graphics/detail/loggers.cpp
-        include/graphics/plugins/ui_plugin.h
-        src/graphics/plugins/ui_plugin.cpp
         include/graphics/plugins/graphics_plugin.h
         src/graphics/plugins/graphics_plugin.cpp
         include/graphics/plugins/particle_plugin.h
@@ -34,19 +31,6 @@ add_library(graphics OBJECT src/graphics/renderlayer/entity_layer.cpp src/graphi
         src/graphics/plugins/texture_manager.h
         src/graphics/plugins/texture_manager.cpp
         src/graphics/components/2d/sprite.cpp
-        include/graphics/ui/widgets/widget.h
-        src/graphics/ui/widgets/widget.cpp
-        include/graphics/ui/widgets/label.h
-        src/graphics/ui/widgets/label.cpp
-        include/graphics/ui/widgets/layout.h
-        src/graphics/ui/widgets/layout.cpp
-        include/graphics/ui/widgets/root.h
-        src/graphics/ui/widgets/root.cpp
-        include/graphics/ui/widgets/container.h
-        src/graphics/ui/widgets/container.cpp
-        include/graphics/ui/widgets/event.h
-        include/graphics/ui/widgets/button.h
-        src/graphics/ui/widgets/button.cpp
         include/graphics/camera_3d.h
         src/graphics/camera_3d.cpp
         src/graphics/mesh/mesh.cpp

@@ -30,6 +30,7 @@ add_subdirectory(modules/graphics)
 add_subdirectory(modules/engine)
 add_subdirectory(modules/audio)
 add_subdirectory(modules/platform)
+add_subdirectory(modules/ui)
 #add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
@@ -69,6 +70,6 @@ target_include_directories(phenyl PRIVATE src)
 
 set_property(TARGET phenyl PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util platform glfw_backend opengl_backend vulkan_backend)
+target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util platform glfw_backend opengl_backend vulkan_backend ui)
 #target_link_libraries(phenyl PUBLIC cpptrace::cpptrace)
 #target_link_libraries(phenyl PUBLIC $<COMPILE_ONLY:audio core engine graphics logger maths physics util>)

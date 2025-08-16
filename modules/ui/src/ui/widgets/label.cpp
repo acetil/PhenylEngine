@@ -1,4 +1,4 @@
-#include "graphics/ui/widgets/label.h"
+#include "ui/widgets/label.h"
 
 #include "graphics/canvas/canvas.h"
 #include "graphics/detail/loggers.h"

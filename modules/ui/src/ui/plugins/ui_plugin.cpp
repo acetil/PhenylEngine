@@ -1,4 +1,4 @@
-#include "graphics/plugins/ui_plugin.h"
+#include "ui/plugins/ui_plugin.h"
 
 #include "core/assets/assets.h"
 #include "core/debug.h"

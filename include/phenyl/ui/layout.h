@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/ui/widgets/layout.h"
+#include "ui/widgets/layout.h"
 
 namespace phenyl::ui {
 using LayoutWidget = phenyl::graphics::LayoutWidget;
