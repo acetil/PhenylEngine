@@ -6,6 +6,7 @@
 #include "graphics/backend/renderer.h"
 #include "graphics/camera_2d.h"
 #include "graphics/camera_3d.h"
+#include "graphics/canvas/canvas.h"
 #include "texture_manager.h"
 
 using namespace phenyl::graphics;
@@ -21,6 +22,8 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<core::InputPlugin>();
 
     auto& renderer = runtime.resource<Renderer>();
+    renderer.loadDefaultShaders();
+
     runtime.addResource(&renderer.getViewport());
 
     runtime.addResource<Camera2D>(renderer.getViewport().getResolution());
@@ -29,12 +32,13 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     renderer.getViewport().addUpdateHandler(&runtime.resource<Camera2D>());
     renderer.getViewport().addUpdateHandler(&runtime.resource<Camera3D>());
 
-    renderer.loadDefaultShaders();
     m_textureManager = std::make_unique<TextureManager>(renderer);
     m_textureManager->selfRegister();
 
     auto& input = runtime.resource<core::GameInput>();
     renderer.getViewport().addInputDevices(input);
+
+    runtime.addResource<Canvas>(renderer);
 
     runtime.addSystem<core::PostInit>("Graphics::PostInit", this, &GraphicsPlugin::postInit);
 }
