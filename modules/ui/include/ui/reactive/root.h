@@ -38,7 +38,15 @@ class UIRoot {
 public:
     explicit UIRoot (UIAtom<detail::UIRootComponents> comps);
 
-    template <std::copyable Props, UIComponentType<Props> T>
+    template <typename T, std::copyable Props>
+    requires UIComponentType<T, Props>
+    std::size_t add (Props&& props) {
+        return addComponent(0,
+            [props = std::forward<Props>(props)] (UI& ui, std::size_t id) { ui.render<T>(id, props); });
+    }
+
+    template <typename T, std::copyable Props>
+    requires UIComponentType<T, Props>
     std::size_t add (std::size_t priority, Props&& props) {
         return addComponent(priority,
             [props = std::forward<Props>(props)] (UI& ui, std::size_t id) { ui.render<T>(id, props); });

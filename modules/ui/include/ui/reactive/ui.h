@@ -8,14 +8,16 @@ class UIRoot;
 
 class UI : public core::IResource {
 public:
-    template <typename Props, UIComponentType<Props> T>
-    void render (Props&& props) {
-        render<T>(currentSize(), std::forward<Props>(props));
+    template <typename T, typename Props>
+    requires UIComponentType<T, Props>
+    void render (Props props) {
+        render<T>(currentSize(), std::move(props));
     }
 
-    template <typename Props, UIComponentType<Props> T>
-    void render (std::size_t key, Props&& props) {
-        UIComponentBase* comp = construct<T>(key, std::forward<Props>(props));
+    template <typename T, typename Props>
+    requires UIComponentType<T, Props>
+    void render (std::size_t key, Props props) {
+        UIComponentBase* comp = construct<T>(key, std::move(props));
         pushComp(key);
         comp->render(*this);
         pop();
@@ -40,7 +42,6 @@ public:
     }
 
     template <std::derived_from<UINode> T, typename... Args>
-    requires std::constructible_from<T, Args...>
     UINode& constructNode (Args&&... args) {
         return addNode(std::make_unique<T>(std::forward<Args>(args)...));
     }
@@ -61,11 +62,13 @@ protected:
     virtual void pop () = 0;
 
 private:
-    template <typename Props, UIComponentType<Props> T>
-    UIComponentBase* construct (Props&& props, std::size_t key) {
+    template <typename T, typename Props>
+    requires UIComponentType<T, std::remove_cvref_t<Props>>
+    UIComponentBase* construct (std::size_t key, Props&& props) {
         auto compType = meta::TypeIndex::Get<T>();
         auto* comp = current(key);
         if (comp && comp->type() == compType) {
+            reinterpret_cast<T*>(comp)->setProps(std::forward<Props>(props));
             return comp;
         }
 

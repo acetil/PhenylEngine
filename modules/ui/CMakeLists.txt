@@ -20,6 +20,8 @@ add_library(ui OBJECT include/
         src/ui/reactive/root.cpp
         src/ui/reactive/root_comp.h
         src/ui/reactive/root_comp.cpp
+        include/ui/reactive/label.h
+        src/ui/reactive/label.cpp
 )
 
 set_property(TARGET ui PROPERTY CXX_STANDARD 20)

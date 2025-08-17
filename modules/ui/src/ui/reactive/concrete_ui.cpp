@@ -17,6 +17,7 @@ ConcreteUI::ConcreteUI () {
           .comps = rootAtom,
         });
     m_rootComp = std::make_unique<UIComponentNode>(std::move(rootComp), nullptr);
+    m_current = m_rootComp.get();
     m_doRerender = true;
 }
 
@@ -41,6 +42,7 @@ void ConcreteUI::update () {
     PHENYL_DASSERT(m_rootComp);
     m_rootComp->component->render(*this);
     OnRenderEnd(m_rootComp.get());
+    PHENYL_DASSERT(m_current == m_rootComp.get());
 
     m_doRerender = false;
 }

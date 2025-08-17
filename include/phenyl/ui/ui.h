@@ -5,9 +5,12 @@
 #include "event.h"
 #include "label.h"
 #include "layout.h"
+#include "ui/reactive/ui.h"
 #include "ui/ui_manager.h"
 #include "widget.h"
 
 namespace phenyl {
 using UIManager = graphics::UIManager;
-}
+
+using UI = graphics::UI;
+} // namespace phenyl

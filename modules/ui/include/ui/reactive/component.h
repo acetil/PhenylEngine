@@ -50,10 +50,14 @@ class UIComponent : public UIComponentBase {
 public:
     UIComponent (UI& ui, Props&& props) :
         UIComponentBase{ui, meta::TypeIndex::Get<CompType>()},
-        m_props{std::forward<Props>(props)} {}
+        m_props{std::move(props)} {}
 
     const Props& props () const noexcept {
         return m_props;
+    }
+
+    void setProps (Props&& props) {
+        m_props = std::move(props);
     }
 
 private:
@@ -69,6 +73,6 @@ public:
 template <typename T> concept UIComponentTypeVoidProps =
     std::derived_from<T, UIComponent<T, void>> && std::constructible_from<T, UI&>;
 
-template <typename T, typename Props> concept UIComponentType = UIComponentTypeVoidProps<T> ||
+template <typename T, typename Props> concept UIComponentType =
     (std::derived_from<T, UIComponent<T, Props>> && std::constructible_from<T, UI&, Props&&>);
 } // namespace phenyl::graphics

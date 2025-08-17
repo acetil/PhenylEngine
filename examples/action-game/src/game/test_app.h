@@ -1,6 +1,7 @@
 #pragma once
 
 #include "phenyl/font.h"
+#include "phenyl/ui/atom.h"
 
 #include <phenyl/application.h>
 #include <phenyl/asset.h>
@@ -43,6 +44,8 @@ private:
     phenyl::InputAction m_stepAction;
     phenyl::InputAction m_consoleAction;
     std::shared_ptr<phenyl::Font> m_testFont;
+
+    phenyl::ui::Atom<std::string> m_labelText;
 
     int m_numPresses = 0;
     bool m_isButtonDown = false;

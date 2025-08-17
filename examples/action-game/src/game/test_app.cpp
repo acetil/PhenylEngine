@@ -2,8 +2,11 @@
 
 #include "entity/bullet.h"
 #include "entity/player.h"
+#include "phenyl/ui/atom.h"
+#include "phenyl/ui/component.h"
 #include "phenyl/ui/container.h"
 #include "phenyl/ui/widget.h"
+#include "ui/reactive/root.h"
 #include "util/debug_console.h"
 
 #include <phenyl/asset.h>
@@ -14,6 +17,26 @@
 #include <phenyl/ui/ui.h>
 
 static phenyl::Logger LOGGER{"TEST_APP"};
+
+struct DynamicLabelProps {
+    phenyl::ui::Atom<std::string> text;
+    phenyl::ui::Modifier modifier;
+};
+
+class DynamicLabel : public phenyl::ui::Component<DynamicLabel, DynamicLabelProps> {
+public:
+    DynamicLabel (phenyl::UI& ui, DynamicLabelProps labelProps) : UIComponent{ui, std::move(labelProps)} {
+        useAtom(props().text);
+    }
+
+    void render (phenyl::UI& ui) override {
+        ui.render<phenyl::ui::Label>(phenyl::ui::LabelProps{
+          .text = *props().text,
+          .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+          .modifier = props().modifier,
+        });
+    }
+};
 
 test::TestApp::TestApp (phenyl::ApplicationProperties properties) :
     phenyl::Application2D(properties.withResolution(800, 600).withWindowTitle("Action Game").withVsync(false)) {}
@@ -69,6 +92,11 @@ void test::TestApp::postInit () {
 
     m_testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
     updateDebugRender(true);
+
+    auto& ui = runtime().resource<phenyl::UI>();
+    m_labelText = phenyl::ui::Atom<std::string>::Make("Hello World Reactive!");
+    ui.root().add<DynamicLabel>(
+        DynamicLabelProps{.text = m_labelText, .modifier = phenyl::ui::Modifier{}.withOffset({300, 10})});
 }
 
 void test::TestApp::fixedUpdate () {
@@ -111,6 +139,8 @@ void test::TestApp::addLabel () {
     auto* widget = m_column->emplaceBack<phenyl::ui::LabelWidget>(std::format("Pressed {} times!", m_numPresses));
     widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
     m_extraWidgets.emplace_back(widget);
+
+    m_labelText.set(std::format("Hello World Reactive! {}", m_numPresses));
 }
 
 void test::TestApp::removeLabel () {
