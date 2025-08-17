@@ -18,7 +18,7 @@ public:
         return m_compType;
     }
 
-    virtual void render (UI& ui) = 0;
+    virtual void render (UI& ui) const = 0;
 
 protected:
     UIComponentBase (UI& ui, meta::TypeIndex compType);

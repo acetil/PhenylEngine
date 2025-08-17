@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/reactive/label.h"
+#include "ui/reactive/components/label.h"
 #include "ui/widgets/label.h"
 
 namespace phenyl::ui {

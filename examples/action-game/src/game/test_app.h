@@ -46,6 +46,7 @@ private:
     std::shared_ptr<phenyl::Font> m_testFont;
 
     phenyl::ui::Atom<std::string> m_labelText;
+    phenyl::ui::Atom<std::vector<std::string>> m_labels;
 
     int m_numPresses = 0;
     bool m_isButtonDown = false;

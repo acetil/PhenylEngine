@@ -1,4 +1,4 @@
-#include "ui/reactive/label.h"
+#include "ui/reactive/components/label.h"
 
 #include "graphics/detail/loggers.h"
 #include "ui/reactive/node.h"
@@ -14,7 +14,7 @@ public:
     explicit UILabelNode (const UILabelProps& props) : UINode{GetModifier(props)}, m_props{props} {}
 
     void measure (const WidgetConstraints& constraints) override {
-        // TODO
+        setDimensions(modifier().minSize);
     }
 
     void render (Canvas& canvas) override {
@@ -27,7 +27,7 @@ public:
     }
 
     void addChild (std::unique_ptr<UINode> node) override {
-        PHENYL_LOGE(LOGGER, "Attempted to add child to label node!");
+        PHENYL_ABORT("Attempted to add child to label node!");
     }
 
 private:
@@ -44,6 +44,6 @@ private:
 };
 } // namespace
 
-void UILabelComponent::render (UI& ui) {
+void UILabelComponent::render (UI& ui) const {
     ui.constructNode<UILabelNode>(props());
 }

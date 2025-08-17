@@ -6,7 +6,6 @@
 #include "phenyl/ui/component.h"
 #include "phenyl/ui/container.h"
 #include "phenyl/ui/widget.h"
-#include "ui/reactive/root.h"
 #include "util/debug_console.h"
 
 #include <phenyl/asset.h>
@@ -29,11 +28,46 @@ public:
         useAtom(props().text);
     }
 
-    void render (phenyl::UI& ui) override {
+    void render (phenyl::UI& ui) const override {
         ui.render<phenyl::ui::Label>(phenyl::ui::LabelProps{
           .text = *props().text,
           .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
           .modifier = props().modifier,
+        });
+    }
+};
+
+struct DynamicListProps {
+    phenyl::ui::Atom<std::vector<std::string>> labels;
+    phenyl::ui::Modifier modifier;
+};
+
+class DynamicList : public phenyl::ui::Component<DynamicList, DynamicListProps> {
+public:
+    DynamicList (phenyl::UI& ui, DynamicListProps listProps) : UIComponent{ui, std::move(listProps)} {
+        useAtom(props().labels);
+    }
+
+    void render (phenyl::UI& ui) const override {
+        ui.render<phenyl::ui::Container>(phenyl::ui::ContainerProps{
+          .borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
+          .borderSize = 2.0f,
+          .modifier = props().modifier,
+          .child =
+              [this] (phenyl::UI& ui) {
+                  ui.render<phenyl::ui::Column>(phenyl::ui::ColumnProps{
+                    .children =
+                        [this] (phenyl::UI& ui) {
+                            auto font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif");
+                            for (const auto& label : *props().labels) {
+                                ui.render<phenyl::ui::Label>(phenyl::ui::LabelProps{
+                                  .text = label,
+                                  .font = font,
+                                });
+                            }
+                        },
+                  });
+              },
         });
     }
 };
@@ -95,8 +129,16 @@ void test::TestApp::postInit () {
 
     auto& ui = runtime().resource<phenyl::UI>();
     m_labelText = phenyl::ui::Atom<std::string>::Make("Hello World Reactive!");
-    ui.root().add<DynamicLabel>(
-        DynamicLabelProps{.text = m_labelText, .modifier = phenyl::ui::Modifier{}.withOffset({300, 10})});
+    ui.root().add<DynamicLabel>(DynamicLabelProps{
+      .text = m_labelText,
+      .modifier = phenyl::ui::Modifier{}.withOffset({300, 10}),
+    });
+
+    m_labels = phenyl::ui::Atom<std::vector<std::string>>::Make("Hello World!");
+    ui.root().add<DynamicList>(DynamicListProps{
+      .labels = m_labels,
+      .modifier = phenyl::ui::Modifier{}.withOffset({300, 40}).withSize({200, 300}),
+    });
 }
 
 void test::TestApp::fixedUpdate () {
@@ -140,6 +182,7 @@ void test::TestApp::addLabel () {
     widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
     m_extraWidgets.emplace_back(widget);
 
+    m_labels.update([&] (auto& labels) { labels.emplace_back(std::format("Pressed {} times!", m_numPresses)); });
     m_labelText.set(std::format("Hello World Reactive! {}", m_numPresses));
 }
 
@@ -151,6 +194,10 @@ void test::TestApp::removeLabel () {
     if (!m_extraWidgets.empty()) {
         m_extraWidgets.back()->queueDestroy();
         m_extraWidgets.pop_back();
+    }
+
+    if (!m_labels->empty()) {
+        m_labels.update([] (auto& labels) { labels.pop_back(); });
     }
 }
 

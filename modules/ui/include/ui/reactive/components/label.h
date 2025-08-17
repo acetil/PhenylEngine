@@ -1,7 +1,7 @@
 #pragma once
 
-#include "component.h"
 #include "graphics/font/font.h"
+#include "ui/reactive/component.h"
 #include "ui/widgets/widget.h"
 
 #include <string>
@@ -20,6 +20,6 @@ class UILabelComponent : public UIComponent<UILabelComponent, UILabelProps> {
 public:
     UILabelComponent (UI& ui, UILabelProps props) : UIComponent{ui, std::move(props)} {}
 
-    void render (UI& ui) override;
+    void render (UI& ui) const override;
 };
 } // namespace phenyl::graphics

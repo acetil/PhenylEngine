@@ -5,6 +5,7 @@
 #include "event.h"
 #include "label.h"
 #include "layout.h"
+#include "ui/reactive/components/root.h"
 #include "ui/reactive/ui.h"
 #include "ui/ui_manager.h"
 #include "widget.h"

@@ -36,7 +36,7 @@ UIRootComponent::UIRootComponent (UI& ui, UIRootProps&& rootProps) : UIComponent
     useAtom(props().comps);
 }
 
-void UIRootComponent::render (UI& ui) {
+void UIRootComponent::render (UI& ui) const {
     ui.constructNode<UIRootNode>();
 
     for (const auto& child : *props().comps) {

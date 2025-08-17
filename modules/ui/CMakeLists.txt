@@ -16,12 +16,16 @@ add_library(ui OBJECT include/
         src/ui/reactive/concrete_ui.h
         src/ui/reactive/concrete_ui.cpp
         include/ui/reactive/atom.h
-        include/ui/reactive/root.h
-        src/ui/reactive/root.cpp
-        src/ui/reactive/root_comp.h
-        src/ui/reactive/root_comp.cpp
-        include/ui/reactive/label.h
-        src/ui/reactive/label.cpp
+        include/ui/reactive/components/root.h
+        src/ui/reactive/components/root.cpp
+        src/ui/reactive/components/root_comp.h
+        src/ui/reactive/components/root_comp.cpp
+        include/ui/reactive/components/label.h
+        src/ui/reactive/components/label.cpp
+        include/ui/reactive/components/layout.h
+        src/ui/reactive/components/layout.cpp
+        include/ui/reactive/components/container.h
+        src/ui/reactive/components/container.cpp
 )
 
 set_property(TARGET ui PROPERTY CXX_STANDARD 20)

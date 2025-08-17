@@ -1,7 +1,7 @@
 #include "concrete_ui.h"
 
-#include "root_comp.h"
-#include "ui/reactive/root.h"
+#include "components/root_comp.h"
+#include "ui/reactive/components/root.h"
 
 using namespace phenyl::graphics;
 
@@ -67,7 +67,11 @@ UIComponentBase* ConcreteUI::setCurrent (std::size_t key, std::unique_ptr<UIComp
     PHENYL_DASSERT(m_current);
 
     auto* ptr = component.get();
-    m_current->children.emplace(key, UIComponentNode{.component = std::move(component), .parent = m_current});
+    m_current->children.emplace(key,
+        UIComponentNode{
+          .component = std::move(component),
+          .parent = m_current,
+        });
     return ptr;
 }
 
@@ -83,6 +87,8 @@ void ConcreteUI::pushComp (std::size_t key) {
     PHENYL_DASSERT(it != m_current->children.end());
     m_current->seenChildren.emplace(key);
     m_current = &it->second;
+
+    m_currNodes.emplace_back(m_currNodes.back());
 }
 
 void ConcreteUI::pop () {
@@ -91,6 +97,9 @@ void ConcreteUI::pop () {
     OnRenderEnd(m_current);
     m_current = m_current->parent;
     PHENYL_DASSERT(m_current);
+
+    PHENYL_DASSERT(!m_currNodes.empty());
+    m_currNodes.pop_back();
 }
 
 UINode& ConcreteUI::addNode (std::unique_ptr<UINode> node) {
