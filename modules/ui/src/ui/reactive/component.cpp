@@ -8,9 +8,13 @@ UIComponentBase::~UIComponentBase () {
     for (auto* observable : m_observables) {
         observable->removeListener(*this);
     }
+    m_ui.onComponentDestroy(id());
 }
 
-UIComponentBase::UIComponentBase (UI& ui, meta::TypeIndex compType) : m_ui{ui}, m_compType{compType} {}
+UIComponentBase::UIComponentBase (UI& ui, meta::TypeIndex compType) :
+    m_ui{ui},
+    m_compType{compType},
+    m_id{ui.makeId()} {}
 
 void UIComponentBase::markDirty () {
     m_ui.markDirty();

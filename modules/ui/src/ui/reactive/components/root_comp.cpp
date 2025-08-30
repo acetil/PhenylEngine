@@ -24,7 +24,42 @@ public:
     }
 
     void addChild (std::unique_ptr<UINode> node) override {
+        node->setParent(this);
         m_children.emplace_back(std::move(node));
+    }
+
+    UINode* pick (glm::vec2 pointer) noexcept override {
+        for (auto it = m_children.rbegin(); it != m_children.rend(); ++it) {
+            if (auto* ptr = (*it)->pick(pointer - (*it)->modifier().offset)) {
+                return ptr;
+            }
+        }
+        return nullptr;
+    }
+
+    bool doPointerUpdate (glm::vec2 pointer) override {
+        auto it = m_children.rbegin();
+        while (it != m_children.rend()) {
+            bool childResult = (*it)->doPointerUpdate(pointer - (*it)->modifier().offset);
+            ++it;
+            if (childResult) {
+                break;
+            }
+        }
+
+        for (; it != m_children.rend(); ++it) {
+            (*it)->onPointerLeave();
+        }
+
+        return UINode::doPointerUpdate(pointer);
+    }
+
+    void onPointerLeave () override {
+        // Should never occur
+        for (auto& i : m_children) {
+            i->onPointerLeave();
+        }
+        UINode::onPointerLeave();
     }
 
 private:

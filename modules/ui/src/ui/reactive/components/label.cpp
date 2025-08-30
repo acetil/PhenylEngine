@@ -13,10 +13,6 @@ class UILabelNode : public UINode {
 public:
     explicit UILabelNode (const UILabelProps& props) : UINode{GetModifier(props)}, m_props{props} {}
 
-    void measure (const WidgetConstraints& constraints) override {
-        setDimensions(modifier().minSize);
-    }
-
     void render (Canvas& canvas) override {
         if (!m_props.font) {
             PHENYL_LOGD(LOGGER, "Ignoring label render due to missing font");

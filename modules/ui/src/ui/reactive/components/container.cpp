@@ -69,6 +69,38 @@ public:
     void addChild (std::unique_ptr<UINode> node) override {
         PHENYL_DASSERT_MSG(!m_child, "Attempted to create container with multiple components!");
         m_child = std::move(node);
+        m_child->setParent(this);
+    }
+
+    UINode* pick (glm::vec2 pointer) noexcept override {
+        if (pointer.x < 0.0f || pointer.x >= dimensions().x || pointer.y < 0.0f || pointer.y >= dimensions().y) {
+            return nullptr;
+        }
+
+        auto* childResult = m_child ?
+            m_child->pick(pointer -
+                glm::vec2{m_borderSize + m_child->modifier().padding, m_borderSize + m_child->modifier().padding}) :
+            nullptr;
+        return childResult ? childResult : this;
+    }
+
+    bool doPointerUpdate (glm::vec2 pointer) override {
+        if (m_child) {
+            if (m_child->doPointerUpdate(pointer -
+                    glm::vec2{m_borderSize + m_child->modifier().padding,
+                      m_borderSize + m_child->modifier().padding})) {
+                UINode::onPointerLeave();
+                return true;
+            }
+        }
+        return UINode::doPointerUpdate(pointer);
+    }
+
+    void onPointerLeave () override {
+        if (m_child) {
+            m_child->onPointerLeave();
+        }
+        UINode::onPointerLeave();
     }
 
 private:

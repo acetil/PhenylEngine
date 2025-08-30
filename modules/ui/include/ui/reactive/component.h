@@ -18,6 +18,10 @@ public:
         return m_compType;
     }
 
+    std::size_t id () const noexcept {
+        return m_id;
+    }
+
     virtual void render (UI& ui) const = 0;
 
 protected:
@@ -38,7 +42,7 @@ protected:
 private:
     UI& m_ui;
     meta::TypeIndex m_compType;
-    std::vector<UIComponentBase*> m_children;
+    std::size_t m_id;
 
     std::unordered_set<IUIObservable*> m_observables;
 

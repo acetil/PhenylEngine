@@ -110,6 +110,11 @@ static void UIRenderSystem (const phenyl::core::Resources<UIManager, Canvas>& re
     manager.renderUI(canvas);
 }
 
+static void UIHandleInputSystem (const phenyl::core::Resources<UI>& resources) {
+    auto& [ui] = resources;
+    reinterpret_cast<ConcreteUI&>(ui).handleInput();
+}
+
 static void UIUpdateSystem2 (const phenyl::core::Resources<UI>& resources) {
     auto& [ui] = resources;
     reinterpret_cast<ConcreteUI&>(ui).update();
@@ -135,7 +140,7 @@ void UIPlugin::init (phenyl::core::PhenylRuntime& runtime) {
     auto& renderer = runtime.resource<Renderer>();
     auto& input = runtime.resource<core::GameInput>();
     m_manager = std::make_unique<UIManager>(input);
-    m_concreteUi = std::make_unique<ConcreteUI>();
+    m_concreteUi = std::make_unique<ConcreteUI>(input);
 
     runtime.addResource(m_manager.get());
     runtime.addResource<UI>(m_concreteUi.get());
@@ -144,7 +149,7 @@ void UIPlugin::init (phenyl::core::PhenylRuntime& runtime) {
     auto& debugRenderer = runtime.resource<UIDebugRenderer>();
     runtime.resource<core::Debug>().setRenderer(&debugRenderer);
 
-    runtime.addSystem<core::FrameBegin>("UIManager::Update", UIUpdateSystem);
+    // runtime.addSystem<core::FrameBegin>("UIManager::Update", UIUpdateSystem);
 
     auto& debugScreenRender =
         runtime.addSystem<core::Render>("UIDebugRenderer::DebugScreenRender", DebugScreenRenderSystem);
@@ -152,11 +157,14 @@ void UIPlugin::init (phenyl::core::PhenylRuntime& runtime) {
         runtime.addSystem<core::Render>("UIDebugRenderer::DebugWorld2DRender", DebugWorld2DRenderSystem);
     debugScreenRender.runAfter(debugWorld2DRender);
 
-    auto& uiRender = runtime.addSystem<core::Render>("UIManager::Render", UIRenderSystem);
-    uiRender.runAfter(debugScreenRender);
-    uiRender.runAfter(debugWorld2DRender);
+    // auto& uiRender = runtime.addSystem<core::Render>("UIManager::Render", UIRenderSystem);
+    // uiRender.runAfter(debugScreenRender);
+    // uiRender.runAfter(debugWorld2DRender);
 
+    runtime.addSystem<core::FrameBegin>("UI::HandleInput", UIHandleInputSystem);
     auto& uiUpdate2 = runtime.addSystem<core::Render>("UI::Update", UIUpdateSystem2);
     auto& uiRender2 = runtime.addSystem<core::Render>("UI::Render", UIRenderSystem2);
     uiRender2.runAfter(uiUpdate2);
+    uiRender2.runAfter(debugScreenRender);
+    uiRender2.runAfter(debugWorld2DRender);
 }

@@ -46,6 +46,9 @@ public:
         return addNode(std::make_unique<T>(std::forward<Args>(args)...));
     }
 
+    virtual std::size_t makeId () = 0;
+    virtual void onComponentDestroy (std::size_t id) = 0;
+
     virtual void markDirty () = 0;
 
     virtual UIRoot& root () = 0;

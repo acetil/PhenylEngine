@@ -45,6 +45,8 @@ namespace detail {
 class Canvas;
 class UIEvent;
 
+using UIEventHandler = std::function<bool(const UIEvent&)>;
+
 struct Modifier {
     glm::vec2 minSize = {0.0f, 0.0f};
     std::optional<float> maxWidth = std::nullopt;
@@ -52,6 +54,7 @@ struct Modifier {
     float padding = 0.0f;
     float weight = 0.0f;
     glm::vec2 offset = {0.0f, 0.0f};
+    std::vector<UIEventHandler> handlers;
 
     [[nodiscard]] Modifier withSize (glm::vec2 size) const noexcept {
         Modifier copy = *this;
@@ -90,6 +93,32 @@ struct Modifier {
         copy.offset = offset;
 
         return copy;
+    }
+
+    Modifier handle (std::function<bool(const UIEvent&)> handler) {
+        handlers.emplace_back(std::move(handler));
+        return std::move(*this);
+    }
+
+    template <typename T>
+    Modifier handle (std::function<bool(const T&)> handler) {
+        return handle([handler = std::move(handler)] (const UIEvent& event) {
+            const auto* typedEvent = event.get<T>();
+            return typedEvent ? handler(*typedEvent) : false;
+        });
+    }
+
+    template <typename T>
+    Modifier handle (std::function<void(const T&)> handler) {
+        return handle([handler = std::move(handler)] (const T& event) {
+            handler(event);
+            return false;
+        });
+    }
+
+    template <typename F>
+    Modifier handle (F&& fn) {
+        return handle(std::function{std::forward<F>(fn)});
     }
 };
 

@@ -2,6 +2,8 @@
 
 #include "logging/logging.h"
 
+#include <memory>
+
 namespace phenyl::graphics {
 class IUIObservable;
 
@@ -21,28 +23,47 @@ public:
     virtual void removeListener (IUIDirtyable& dirtyable) = 0;
 };
 
+namespace detail {
+    template <typename T>
+    struct UIStateHolder {
+        IUIDirtyable& dirtyable;
+        T state;
+    };
+} // namespace detail
+
 template <typename T>
 class UIState {
 public:
+    UIState () = default;
+
     const T& operator* () const noexcept {
-        return m_state;
+        PHENYL_DASSERT(m_state);
+        return m_state->state;
     }
 
     const T* operator->() const noexcept {
-        return &m_state;
+        PHENYL_DASSERT(m_state);
+        return &m_state->state;
+    }
+
+    void set (T&& newState) const {
+        PHENYL_DASSERT(m_state);
+        m_state->state = std::move(newState);
+        m_state->dirtyable.markDirty();
     }
 
     template <std::invocable<T&> F>
-    void set (F&& func) {
-        std::forward<F>(func)(m_state);
-        m_dirtyable.markDirty();
+    void update (F&& func) const {
+        PHENYL_DASSERT(m_state);
+        std::forward<F>(func)(m_state->state);
+        m_state->dirtyable.markDirty();
     }
 
 private:
-    explicit UIState (IUIDirtyable& dirtyable, T&& state) : m_dirtyable{dirtyable}, m_state{std::forward<T>(state)} {}
+    explicit UIState (IUIDirtyable& dirtyable, T&& initial) :
+        m_state{std::make_unique<detail::UIStateHolder<T>>(dirtyable, std::move(initial))} {}
 
-    IUIDirtyable& m_dirtyable;
-    T m_state;
+    std::unique_ptr<detail::UIStateHolder<T>> m_state;
 
     friend class UIComponentBase;
 };

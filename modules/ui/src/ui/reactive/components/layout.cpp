@@ -99,7 +99,52 @@ public:
     }
 
     void addChild (std::unique_ptr<UINode> node) override {
+        node->setParent(this);
         m_children.emplace_back(std::move(node));
+    }
+
+    UINode* pick (glm::vec2 pointer) noexcept override {
+        if (pointer.x < 0.0f || pointer.x >= dimensions().x || pointer.y < 0.0f || pointer.y >= dimensions().y) {
+            return nullptr;
+        }
+
+        PHENYL_DASSERT(m_children.size() == m_childOffsets.size());
+        for (std::size_t i = 0; i < m_children.size(); i++) {
+            if (auto* ptr = m_children[i]->pick(pointer - m_childOffsets[i])) {
+                return ptr;
+            }
+        }
+
+        return this;
+    }
+
+    bool doPointerUpdate (glm::vec2 pointer) override {
+        assert(m_children.size() == m_childOffsets.size());
+
+        auto it = m_children.rbegin();
+        auto offIt = m_childOffsets.rbegin();
+        while (it != m_children.rend()) {
+            bool childResult = (*it)->doPointerUpdate(pointer - *offIt);
+            ++it;
+            ++offIt;
+            if (childResult) {
+                break;
+            }
+        }
+
+        for (; it != m_children.rend(); ++it) {
+            (*it)->onPointerLeave();
+            ++offIt;
+        }
+
+        return UINode::doPointerUpdate(pointer);
+    }
+
+    void onPointerLeave () override {
+        for (auto& i : m_children) {
+            i->onPointerLeave();
+        }
+        UINode::onPointerLeave();
     }
 
 private:
