@@ -3,6 +3,7 @@
 #include "components/root_comp.h"
 #include "core/input/game_input.h"
 #include "ui/reactive/components/root.h"
+#include "ui/reactive/render.h"
 
 using namespace phenyl::graphics;
 
@@ -23,9 +24,12 @@ ConcreteUI::ConcreteUI (core::GameInput& input) :
           .comps = rootAtom,
         });
     m_rootComp = std::make_unique<UIComponentNode>(std::move(rootComp), nullptr);
+    insertComponent(m_rootComp.get());
     m_current = m_rootComp.get();
+
     m_nodeDom = std::make_unique<UINodeDOM>();
-    refreshRender();
+    auto result = UIContext{*this, m_rootComp.get()}.renderComponent();
+    m_nodeDom->setRoot(std::move(result).node());
 }
 
 ConcreteUI::~ConcreteUI () {
@@ -34,8 +38,8 @@ ConcreteUI::~ConcreteUI () {
     m_root = nullptr;
 }
 
-void ConcreteUI::markDirty () {
-    m_doRerender = true;
+void ConcreteUI::markDirty (std::size_t id) {
+    m_dirtyComps.emplace(id);
 }
 
 UIRoot& ConcreteUI::root () {
@@ -51,6 +55,7 @@ void ConcreteUI::onComponentDestroy (std::size_t id) {
     if (m_nodeDom) {
         m_nodeDom->remove(id);
     }
+    m_components.erase(id);
 }
 
 void ConcreteUI::handleInput () {
@@ -81,7 +86,7 @@ void ConcreteUI::handleInput () {
 }
 
 void ConcreteUI::update () {
-    if (!m_doRerender) {
+    if (m_dirtyComps.empty()) {
         return;
     }
     refreshRender();
@@ -100,83 +105,55 @@ void ConcreteUI::canvasRender (Canvas& canvas) {
     m_nodeDom->render(canvas);
 }
 
-UIComponentBase* ConcreteUI::current (std::size_t key) {
-    PHENYL_DASSERT(m_current);
-    auto it = m_current->children.find(key);
-    return it != m_current->children.end() ? it->second.component.get() : nullptr;
+void ConcreteUI::insertComponent (UIComponentNode* node) {
+    m_components.emplace(node->component->id(), node);
 }
 
-UIComponentBase* ConcreteUI::setCurrent (std::size_t key, std::unique_ptr<UIComponentBase> component) {
-    PHENYL_DASSERT(component);
-    PHENYL_DASSERT(m_current);
-
-    auto* ptr = component.get();
-    m_current->children.emplace(key,
-        UIComponentNode{
-          .component = std::move(component),
-          .parent = m_current,
-        });
-    return ptr;
-}
-
-std::size_t ConcreteUI::currentSize () const {
-    PHENYL_DASSERT(m_current);
-    return m_current->seenChildren.size();
-}
-
-void ConcreteUI::pushComp (std::size_t key) {
-    PHENYL_DASSERT(m_current);
-
-    auto it = m_current->children.find(key);
-    PHENYL_DASSERT(it != m_current->children.end());
-    m_current->seenChildren.emplace(key);
-    m_current = &it->second;
-
-    m_currNodes.emplace_back(m_currNodes.back());
-}
-
-void ConcreteUI::pop () {
-    PHENYL_DASSERT(m_current);
-
-    onRenderEnd(m_current);
-    m_current = m_current->parent;
-    PHENYL_DASSERT(m_current);
-}
-
-UINode& ConcreteUI::addNode (std::unique_ptr<UINode> node) {
+void ConcreteUI::insertNode (UIComponentBase* comp, UINode* node) {
+    PHENYL_DASSERT(comp);
     PHENYL_DASSERT(node);
-    PHENYL_DASSERT(m_current);
-    auto* ptr = node.get();
-    auto id = m_current->component->id();
-    m_nodeDom->insert(id, ptr);
-
-    if (m_currNodes.empty()) {
-        m_nodeDom->setRoot(std::move(node));
-        m_currNodes.emplace_back(ptr);
-        return *ptr;
-    }
-
-    m_currNodes.back()->addChild(std::move(node));
-    m_currNodes.back() = ptr;
-    return *ptr;
+    m_nodeDom->insert(comp->id(), node);
 }
 
-void ConcreteUI::onRenderEnd (UIComponentNode* curr) {
-    PHENYL_DASSERT(curr);
-
-    std::erase_if(curr->children, [&] (const auto& item) { return !curr->seenChildren.contains(item.first); });
-    curr->seenChildren.clear();
-    PHENYL_DASSERT(!m_currNodes.empty());
-    m_currNodes.pop_back();
+void ConcreteUI::onComponentRender (UIComponentBase* comp) {
+    m_renderedComps.emplace(comp);
 }
 
 void ConcreteUI::refreshRender () {
-    m_nodeDom->clear();
+    // m_nodeDom->clear();
+    m_renderedComps.clear();
 
-    PHENYL_DASSERT(m_rootComp);
-    m_rootComp->component->render(*this);
-    onRenderEnd(m_rootComp.get());
-    PHENYL_DASSERT(m_current == m_rootComp.get());
+    // auto result = UIContext{*this, m_rootComp.get()}.renderComponent();
+    // auto node = std::move(result).node();
+    // // m_nodeDom->insert(m_rootComp->component->id(), node.get());
+    //
+    // m_nodeDom->setRoot(std::move(node));
+    // m_dirtyComps.clear();
+    for (auto i : m_dirtyComps) {
+        auto it = m_components.find(i);
+        if (it != m_components.end()) {
+            rerenderComponent(it->second);
+        }
+    }
+    m_dirtyComps.clear();
+}
 
-    m_doRerender = false;
+void ConcreteUI::rerenderComponent (UIComponentNode* compNode) {
+    if (m_renderedComps.contains(compNode->component.get())) {
+        return;
+    }
+    if (compNode->parent && compNode->parent->node == compNode->node) {
+        rerenderComponent(compNode->parent);
+        return;
+    }
+
+    auto* parent = compNode->node->parent();
+    auto parentIndex = compNode->node->parentIndex();
+    auto result = UIContext{*this, compNode}.renderComponent();
+    if (!parent) {
+        m_nodeDom->setRoot(std::move(result).node());
+        return;
+    }
+
+    parent->replaceChild(parentIndex, std::move(result).node());
 }

@@ -28,8 +28,8 @@ public:
         useAtom(props().text);
     }
 
-    void render (phenyl::UI& ui) const override {
-        ui.render<phenyl::ui::Label>(phenyl::ui::LabelProps{
+    phenyl::graphics::UIRenderResult render (phenyl::UIContext& ctx) const override {
+        return ctx.render<phenyl::ui::Label>(phenyl::ui::LabelProps{
           .text = *props().text,
           .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
           .modifier = props().modifier,
@@ -48,24 +48,25 @@ public:
         useAtom(props().labels);
     }
 
-    void render (phenyl::UI& ui) const override {
-        ui.render<phenyl::ui::Container>(phenyl::ui::ContainerProps{
+    phenyl::UIResult render (phenyl::UIContext& ctx) const override {
+        std::vector<phenyl::UIFactory> children;
+        for (const auto& label : *props().labels) {
+            std::string_view labelView = label;
+            auto font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif");
+            children.emplace_back([labelView, font] (phenyl::UIContext& ctx) {
+                return ctx.render<phenyl::ui::Label>(
+                    phenyl::ui::LabelProps{.text = std::string{labelView}, .font = font});
+            });
+        }
+
+        return ctx.render<phenyl::ui::Container>(phenyl::ui::ContainerProps{
           .borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
           .borderSize = 2.0f,
           .modifier = props().modifier,
           .child =
-              [this] (phenyl::UI& ui) {
-                  ui.render<phenyl::ui::Column>(phenyl::ui::ColumnProps{
-                    .children =
-                        [this] (phenyl::UI& ui) {
-                            auto font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif");
-                            for (const auto& label : *props().labels) {
-                                ui.render<phenyl::ui::Label>(phenyl::ui::LabelProps{
-                                  .text = label,
-                                  .font = font,
-                                });
-                            }
-                        },
+              [children = std::move(children)] (phenyl::UIContext& ctx) {
+                  return ctx.render<phenyl::ui::Column>(phenyl::ui::ColumnProps{
+                    .children = children,
                   });
               },
         });

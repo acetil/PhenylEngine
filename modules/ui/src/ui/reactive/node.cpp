@@ -1,6 +1,10 @@
 #include "ui/reactive/node.h"
 
+#include "graphics/detail/loggers.h"
+
 using namespace phenyl::graphics;
+
+static phenyl::Logger LOGGER{"UINODE", detail::GRAPHICS_LOGGER};
 
 UINode::UINode (Modifier modifier) : m_modifier{std::move(modifier)} {}
 
@@ -53,8 +57,17 @@ void UINode::setDimensions (glm::vec2 dimensions) {
     m_dimensions = dimensions;
 }
 
-void UINode::setParent (UINode* parent) {
+UINode* UINode::parent () const noexcept {
+    return m_parent;
+}
+
+std::size_t UINode::parentIndex () const noexcept {
+    return m_parentIndex;
+}
+
+void UINode::setParent (UINode* parent, std::size_t parentIndex) {
     m_parent = parent;
+    m_parentIndex = parentIndex;
 }
 
 void UINode::setState (detail::UINodeState* state) {
@@ -77,4 +90,30 @@ bool UINode::bubbleUp (const UIEvent& event) {
     }
 
     return m_parent ? m_parent->bubbleUp(event) : false;
+}
+
+EmptyUINode::EmptyUINode () : UINode{Modifier{}.withSize({0, 0})} {
+    PHENYL_TRACE(LOGGER, "Constructed EmptyUINode");
+}
+
+UINode* EmptyUINode::pick (glm::vec2 pointer) noexcept {
+    return nullptr;
+}
+
+bool EmptyUINode::doPointerUpdate (glm::vec2 pointer) {
+    return false;
+}
+
+void EmptyUINode::measure (const WidgetConstraints& constraints) {
+    setDimensions({0, 0});
+}
+
+void EmptyUINode::render (Canvas& canvas) {}
+
+void EmptyUINode::addChild (std::unique_ptr<UINode> node) {
+    PHENYL_ABORT("Attempted to add child to an EmptyUINode");
+}
+
+void EmptyUINode::replaceChild (std::size_t index, std::unique_ptr<UINode> node) {
+    PHENYL_ABORT("Attempted to replace child of an EmptyUINode");
 }

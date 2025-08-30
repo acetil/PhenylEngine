@@ -14,4 +14,7 @@ namespace phenyl {
 using UIManager = graphics::UIManager;
 
 using UI = graphics::UI;
+using UIContext = graphics::UIContext;
+using UIResult = graphics::UIRenderResult;
+using UIFactory = graphics::UIComponentFactory;
 } // namespace phenyl

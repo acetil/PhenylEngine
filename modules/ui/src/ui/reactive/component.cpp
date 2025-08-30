@@ -17,7 +17,7 @@ UIComponentBase::UIComponentBase (UI& ui, meta::TypeIndex compType) :
     m_id{ui.makeId()} {}
 
 void UIComponentBase::markDirty () {
-    m_ui.markDirty();
+    m_ui.markDirty(m_id);
 }
 
 void UIComponentBase::addObservable (IUIObservable& observable) {

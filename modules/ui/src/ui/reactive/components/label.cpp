@@ -2,6 +2,7 @@
 
 #include "graphics/detail/loggers.h"
 #include "ui/reactive/node.h"
+#include "ui/reactive/render.h"
 #include "ui/reactive/ui.h"
 
 using namespace phenyl::graphics;
@@ -11,7 +12,9 @@ static phenyl::Logger LOGGER{"LABEL2", detail::GRAPHICS_LOGGER};
 namespace {
 class UILabelNode : public UINode {
 public:
-    explicit UILabelNode (const UILabelProps& props) : UINode{GetModifier(props)}, m_props{props} {}
+    explicit UILabelNode (const UILabelProps& props) : UINode{GetModifier(props)}, m_props{props} {
+        PHENYL_TRACE(LOGGER, "Created UILabelNode with text \"{}\"", props.text);
+    }
 
     void render (Canvas& canvas) override {
         if (!m_props.font) {
@@ -24,6 +27,10 @@ public:
 
     void addChild (std::unique_ptr<UINode> node) override {
         PHENYL_ABORT("Attempted to add child to label node!");
+    }
+
+    void replaceChild (std::size_t index, std::unique_ptr<UINode> node) override {
+        PHENYL_ABORT("Attempted to replace child in label node!");
     }
 
 private:
@@ -40,6 +47,6 @@ private:
 };
 } // namespace
 
-void UILabelComponent::render (UI& ui) const {
-    ui.constructNode<UILabelNode>(props());
+UIRenderResult UILabelComponent::render (UIContext& ctx) const {
+    return ctx.makeNode<UILabelNode>(props()).build();
 }

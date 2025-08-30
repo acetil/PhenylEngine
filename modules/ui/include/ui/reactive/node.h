@@ -29,7 +29,9 @@ public:
         return m_state->id;
     }
 
-    void setParent (UINode* parent);
+    UINode* parent () const noexcept;
+    std::size_t parentIndex () const noexcept;
+    void setParent (UINode* parent, std::size_t parentIndex);
     void setState (detail::UINodeState* state);
 
     virtual UINode* pick (glm::vec2 pointer) noexcept;
@@ -42,6 +44,7 @@ public:
     virtual void render (Canvas& canvas) = 0;
 
     virtual void addChild (std::unique_ptr<UINode> node) = 0;
+    virtual void replaceChild (std::size_t index, std::unique_ptr<UINode> node) = 0;
 
 protected:
     void setDimensions (glm::vec2 dimensions);
@@ -51,9 +54,23 @@ private:
     Modifier m_modifier;
     glm::vec2 m_dimensions{0, 0};
     UINode* m_parent = nullptr;
+    std::size_t m_parentIndex = -1;
 
     detail::UINodeState* m_state = nullptr;
 
     bool bubbleUp (const UIEvent& event);
+};
+
+class EmptyUINode : public UINode {
+public:
+    EmptyUINode ();
+
+    UINode* pick (glm::vec2 pointer) noexcept override;
+    bool doPointerUpdate (glm::vec2 pointer) override;
+    void measure (const WidgetConstraints& constraints) override;
+    void render (Canvas& canvas) override;
+
+    void addChild (std::unique_ptr<UINode> node) override;
+    void replaceChild (std::size_t index, std::unique_ptr<UINode> node) override;
 };
 } // namespace phenyl::graphics

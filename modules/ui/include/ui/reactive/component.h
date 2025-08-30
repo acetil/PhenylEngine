@@ -1,6 +1,7 @@
 #pragma once
 
 #include "atom.h"
+#include "node.h"
 #include "state.h"
 #include "util/meta.h"
 #include "util/type_index.h"
@@ -8,6 +9,8 @@
 #include <unordered_set>
 
 namespace phenyl::graphics {
+class UIRenderResult;
+class UIContext;
 class UI;
 
 class UIComponentBase : protected IUIDirtyable {
@@ -22,7 +25,7 @@ public:
         return m_id;
     }
 
-    virtual void render (UI& ui) const = 0;
+    virtual UIRenderResult render (UIContext& ctx) const = 0;
 
 protected:
     UIComponentBase (UI& ui, meta::TypeIndex compType);

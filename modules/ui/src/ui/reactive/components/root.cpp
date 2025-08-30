@@ -4,7 +4,8 @@
 
 using namespace phenyl::graphics;
 
-std::size_t detail::UIRootComponents::insert (std::size_t priority, std::function<void(UI&, std::size_t)> comp) {
+std::size_t detail::UIRootComponents::insert (std::size_t priority,
+    std::function<UIRenderResult(UIContext&, std::size_t)> comp) {
     auto id = m_nextId++;
     m_children.emplace_back(std::move(comp), id, priority);
     std::ranges::sort(m_children, [] (const auto& lhs, const auto& rhs) {
@@ -48,7 +49,7 @@ void UIRoot::remove (std::size_t id) {
     m_rootComponents.update([&] (detail::UIRootComponents& comps) { comps.remove(id); });
 }
 
-std::size_t UIRoot::addComponent (std::size_t priority, std::function<void(UI&, std::size_t)> comp) {
+std::size_t UIRoot::addComponent (std::size_t priority, std::function<UIRenderResult(UIContext&, std::size_t)> comp) {
     std::size_t id;
     m_rootComponents.update([&] (detail::UIRootComponents& comps) { id = comps.insert(priority, std::move(comp)); });
     return id;

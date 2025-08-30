@@ -2,6 +2,7 @@
 
 #include "graphics/maths_headers.h"
 #include "ui/reactive/component.h"
+#include "ui/reactive/render.h"
 #include "ui/widgets/widget.h"
 
 namespace phenyl::graphics {
@@ -15,8 +16,7 @@ struct UIButtonProps {
     std::function<void()> onPress = [] () {
     };
 
-    std::function<void(UI&)> child = [] (UI&) {
-    };
+    UIComponentFactory child = EmptyUIFactory;
 
     glm::vec4 getHoverColor () const noexcept {
         return hoverBgColor ? *hoverBgColor : defaultBgColor;
@@ -31,7 +31,7 @@ class UIButtonComponent : public UIComponent<UIButtonComponent, UIButtonProps> {
 public:
     UIButtonComponent (UI& ui, UIButtonProps props);
 
-    void render (UI& ui) const override;
+    UIRenderResult render (UIContext& ctx) const override;
 
 private:
     enum class ButtonState {

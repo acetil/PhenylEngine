@@ -1,5 +1,6 @@
 #pragma once
 #include "ui/reactive/component.h"
+#include "ui/reactive/render.h"
 #include "ui/reactive/ui.h"
 #include "ui/widgets/layout.h"
 
@@ -18,15 +19,14 @@ struct UILayoutProps {
 
     Modifier modifier{};
 
-    std::function<void(UI&)> children = [] (UI&) {
-    };
+    std::vector<UIComponentFactory> children;
 };
 
 class UILayoutComponent : public UIComponent<UILayoutComponent, UILayoutProps> {
 public:
     UILayoutComponent (UI& ui, UILayoutProps props);
 
-    void render (UI& ui) const override;
+    UIRenderResult render (UIContext& ctx) const override;
 };
 
 struct UIColumnProps {
@@ -36,15 +36,14 @@ struct UIColumnProps {
 
     Modifier modifier{};
 
-    std::function<void(UI&)> children = [] (UI&) {
-    };
+    std::vector<UIComponentFactory> children;
 };
 
 class UIColumnComponent : public UIComponent<UIColumnComponent, UIColumnProps> {
 public:
     UIColumnComponent (UI& ui, UIColumnProps props);
 
-    void render (UI& ui) const override;
+    UIRenderResult render (UIContext& ctx) const override;
 
 private:
     LayoutAxis axis () const noexcept;
@@ -57,15 +56,14 @@ struct UIRowProps {
 
     Modifier modifier{};
 
-    std::function<void(UI&)> children = [] (UI&) {
-    };
+    std::vector<UIComponentFactory> children;
 };
 
 class UIRowComponent : public UIComponent<UIRowComponent, UIRowProps> {
 public:
     UIRowComponent (UI& ui, UIRowProps props);
 
-    void render (UI& ui) const override;
+    UIRenderResult render (UIContext& ctx) const override;
 
 private:
     LayoutAxis axis () const noexcept;

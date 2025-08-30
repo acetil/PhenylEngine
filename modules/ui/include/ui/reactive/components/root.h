@@ -1,4 +1,5 @@
 #pragma once
+#include "ui/reactive/render.h"
 #include "ui/reactive/ui.h"
 
 #include <functional>
@@ -6,7 +7,7 @@
 namespace phenyl::graphics {
 namespace detail {
     struct UIRootChild {
-        std::function<void(UI&, std::size_t)> comp;
+        std::function<UIRenderResult(UIContext&, std::size_t)> comp;
         std::size_t id;
         std::size_t priority;
     };
@@ -16,7 +17,7 @@ namespace detail {
         using iterator = std::vector<UIRootChild>::iterator;
         using const_iterator = std::vector<UIRootChild>::const_iterator;
 
-        std::size_t insert (std::size_t priority, std::function<void(UI&, std::size_t)> comp);
+        std::size_t insert (std::size_t priority, std::function<UIRenderResult(UIContext&, std::size_t)> comp);
         void remove (std::size_t id);
 
         iterator begin () noexcept;
@@ -42,14 +43,14 @@ public:
     requires UIComponentType<T, Props>
     std::size_t add (Props&& props) {
         return addComponent(0,
-            [props = std::forward<Props>(props)] (UI& ui, std::size_t id) { ui.render<T>(id, props); });
+            [props = std::forward<Props>(props)] (UIContext& ctx, std::size_t id) { return ctx.render<T>(id, props); });
     }
 
     template <typename T, std::copyable Props>
     requires UIComponentType<T, Props>
     std::size_t add (std::size_t priority, Props&& props) {
         return addComponent(priority,
-            [props = std::forward<Props>(props)] (UI& ui, std::size_t id) { ui.render<T>(id, props); });
+            [props = std::forward<Props>(props)] (UIContext& ctx, std::size_t id) { return ctx.render<T>(id, props); });
     }
 
     void remove (std::size_t id);
@@ -57,6 +58,6 @@ public:
 private:
     UIAtom<detail::UIRootComponents> m_rootComponents;
 
-    std::size_t addComponent (std::size_t priority, std::function<void(UI&, std::size_t)> comp);
+    std::size_t addComponent (std::size_t priority, std::function<UIRenderResult(UIContext&, std::size_t)> comp);
 };
 } // namespace phenyl::graphics

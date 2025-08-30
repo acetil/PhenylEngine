@@ -10,7 +10,7 @@ UIButtonComponent::UIButtonComponent (UI& ui, UIButtonProps props) : UIComponent
     m_state = makeState(ButtonState::UNPRESSED);
 }
 
-void UIButtonComponent::render (UI& ui) const {
+UIRenderResult UIButtonComponent::render (UIContext& ctx) const {
     auto modifier = props().modifier;
     modifier = modifier.handle([this] (const MouseEnterEvent&) { onHover(); })
                    .handle([this] (const MouseExitEvent&) { onUnhover(); })
@@ -22,11 +22,10 @@ void UIButtonComponent::render (UI& ui) const {
                        onRelease();
                        return true;
                    });
-
-    ui.render<UIContainerComponent>(UIContainerProps{
+    return ctx.render<UIContainerComponent>(UIContainerProps{
       .bgColor = GetBgColor(props(), *m_state),
       .modifier = std::move(modifier),
-      .child = [this] (UI& ui) { props().child(ui); },
+      .child = [this] (UIContext& ctx) { return props().child(ctx); },
     });
 }
 

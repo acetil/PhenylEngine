@@ -31,6 +31,8 @@ add_library(ui OBJECT include/
         src/ui/reactive/components/button.cpp
         src/ui/reactive/node_dom.h
         src/ui/reactive/node_dom.cpp
+        include/ui/reactive/render.h
+        src/ui/reactive/render.cpp
 )
 
 set_property(TARGET ui PROPERTY CXX_STANDARD 20)

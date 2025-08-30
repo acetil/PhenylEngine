@@ -1,6 +1,10 @@
 #include "ui/reactive/components/layout.h"
 
+#include "graphics/detail/loggers.h"
+
 using namespace phenyl::graphics;
+
+static phenyl::Logger LOGGER{"LAYOUT2", detail::GRAPHICS_LOGGER};
 
 namespace {
 class UILayoutNode : public UINode {
@@ -9,7 +13,9 @@ public:
         UINode{props.modifier},
         m_axis{props.axis},
         m_arrangement{props.arrangement},
-        m_alignment{props.alignment} {}
+        m_alignment{props.alignment} {
+        PHENYL_TRACE(LOGGER, "Constructed UILayoutNode");
+    }
 
     void measure (const WidgetConstraints& constraints) override {
         glm::vec2 constraintDims = glm::vec2{
@@ -99,8 +105,15 @@ public:
     }
 
     void addChild (std::unique_ptr<UINode> node) override {
-        node->setParent(this);
+        node->setParent(this, m_children.size());
         m_children.emplace_back(std::move(node));
+    }
+
+    void replaceChild (std::size_t index, std::unique_ptr<UINode> node) override {
+        PHENYL_DASSERT_MSG(index < m_children.size(),
+            "Attempted to replace non-existent child (index: {}, numChildren: {})", index, m_children.size());
+        node->setParent(this, index);
+        m_children[index] = std::move(node);
     }
 
     UINode* pick (glm::vec2 pointer) noexcept override {
@@ -200,21 +213,22 @@ private:
 
 UILayoutComponent::UILayoutComponent (UI& ui, UILayoutProps props) : UIComponent{ui, std::move(props)} {}
 
-void UILayoutComponent::render (UI& ui) const {
-    ui.constructNode<UILayoutNode>(props());
-    props().children(ui);
+UIRenderResult UILayoutComponent::render (UIContext& ctx) const {
+    auto builder = ctx.makeNode<UILayoutNode>(props());
+    for (const auto& child : props().children) {
+        builder.withChild(child(ctx));
+    }
+    return builder.build();
 }
 
 UIColumnComponent::UIColumnComponent (UI& ui, UIColumnProps props) : UIComponent{ui, std::move(props)} {}
 
-void UIColumnComponent::render (UI& ui) const {
-    ui.render<UILayoutComponent>(UILayoutProps{
-      .axis = axis(),
+UIRenderResult UIColumnComponent::render (UIContext& ctx) const {
+    return ctx.render<UILayoutComponent>(UILayoutProps{.axis = axis(),
       .arrangement = props().arrangement,
       .alignment = props().alignment,
       .modifier = props().modifier,
-      .children = [this] (UI& ui) { props().children(ui); },
-    });
+      .children = props().children});
 }
 
 LayoutAxis UIColumnComponent::axis () const noexcept {
@@ -230,13 +244,13 @@ LayoutAxis UIColumnComponent::axis () const noexcept {
 
 UIRowComponent::UIRowComponent (UI& ui, UIRowProps props) : UIComponent{ui, std::move(props)} {}
 
-void UIRowComponent::render (UI& ui) const {
-    ui.render<UILayoutComponent>(UILayoutProps{
+UIRenderResult UIRowComponent::render (UIContext& ctx) const {
+    return ctx.render<UILayoutComponent>(UILayoutProps{
       .axis = axis(),
       .arrangement = props().arrangement,
       .alignment = props().alignment,
       .modifier = props().modifier,
-      .children = [this] (UI& ui) { props().children(ui); },
+      .children = props().children,
     });
 }
 

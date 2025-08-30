@@ -2,6 +2,7 @@
 
 #include "graphics/maths_headers.h"
 #include "ui/reactive/component.h"
+#include "ui/reactive/render.h"
 #include "ui/widgets/widget.h"
 
 namespace phenyl::graphics {
@@ -12,14 +13,13 @@ struct UIContainerProps {
 
     Modifier modifier{};
 
-    std::function<void(UI&)> child = [] (UI&) {
-    };
+    UIComponentFactory child = EmptyUIFactory;
 };
 
 class UIContainerComponent : public UIComponent<UIContainerComponent, UIContainerProps> {
 public:
     UIContainerComponent (UI& ui, UIContainerProps props);
 
-    void render (UI& ui) const override;
+    UIRenderResult render (UIContext& ctx) const override;
 };
 } // namespace phenyl::graphics

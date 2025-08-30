@@ -12,6 +12,6 @@ class UIRootComponent : public UIComponent<UIRootComponent, UIRootProps> {
 public:
     UIRootComponent (UI& ui, UIRootProps&& props);
 
-    void render (UI& ui) const override;
+    UIRenderResult render (UIContext& ctx) const override;
 };
 } // namespace phenyl::graphics

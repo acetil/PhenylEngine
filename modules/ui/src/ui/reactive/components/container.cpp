@@ -1,9 +1,12 @@
 #include "ui/reactive/components/container.h"
 
+#include "graphics/detail/loggers.h"
 #include "ui/reactive/node.h"
 #include "ui/reactive/ui.h"
 
 using namespace phenyl::graphics;
+
+static phenyl::Logger LOGGER{"CONTAINER2", detail::GRAPHICS_LOGGER};
 
 namespace {
 class UIContainerNode : public UINode {
@@ -12,7 +15,9 @@ public:
         UINode{props.modifier},
         m_bgColor{props.bgColor},
         m_borderColor{props.borderColor},
-        m_borderSize{props.borderSize} {}
+        m_borderSize{props.borderSize} {
+        PHENYL_TRACE(LOGGER, "Constructed UIContainerNode");
+    }
 
     void measure (const WidgetConstraints& constraints) override {
         glm::vec2 minSize = modifier().minSize;
@@ -69,7 +74,13 @@ public:
     void addChild (std::unique_ptr<UINode> node) override {
         PHENYL_DASSERT_MSG(!m_child, "Attempted to create container with multiple components!");
         m_child = std::move(node);
-        m_child->setParent(this);
+        m_child->setParent(this, 0);
+    }
+
+    void replaceChild (std::size_t index, std::unique_ptr<UINode> node) override {
+        PHENYL_DASSERT_MSG(index == 0, "Attempted to replace non-zero index child in UIContainer");
+        m_child = std::move(node);
+        m_child->setParent(this, 0);
     }
 
     UINode* pick (glm::vec2 pointer) noexcept override {
@@ -114,7 +125,6 @@ private:
 
 UIContainerComponent::UIContainerComponent (UI& ui, UIContainerProps props) : UIComponent{ui, std::move(props)} {}
 
-void UIContainerComponent::render (UI& ui) const {
-    ui.constructNode<UIContainerNode>(props());
-    props().child(ui);
+UIRenderResult UIContainerComponent::render (UIContext& ctx) const {
+    return ctx.makeNode<UIContainerNode>(props()).withChild(props().child(ctx)).build();
 }
