@@ -24,11 +24,12 @@ ConcreteUI::ConcreteUI (core::GameInput& input) :
         });
     m_rootComp = std::make_unique<UIComponentNode>(std::move(rootComp), nullptr);
     m_current = m_rootComp.get();
+    m_nodeDom = std::make_unique<UINodeDOM>();
     refreshRender();
 }
 
 ConcreteUI::~ConcreteUI () {
-    m_rootNode = nullptr;
+    m_nodeDom = nullptr;
     m_rootComp = nullptr;
     m_root = nullptr;
 }
@@ -47,28 +48,30 @@ std::size_t ConcreteUI::makeId () {
 }
 
 void ConcreteUI::onComponentDestroy (std::size_t id) {
-    m_nodeStates.erase(id);
+    if (m_nodeDom) {
+        m_nodeDom->remove(id);
+    }
 }
 
 void ConcreteUI::handleInput () {
-    PHENYL_DASSERT(m_rootNode);
+    PHENYL_DASSERT(m_nodeDom);
     auto pointer = m_mousePos.value();
-    m_rootNode->doPointerUpdate(pointer);
+    m_nodeDom->pointerUpdate(pointer);
 
     bool newMouse = m_selectAction.value();
     if (newMouse != m_mouseDown) {
         // TODO: focus
         if (newMouse) {
-            auto* node = m_rootNode->pick(pointer);
+            auto* node = m_nodeDom->pick(pointer);
             if (node) {
                 m_focusedNode = node->id();
                 node->raise(UIEvent{MousePressEvent{}});
             }
         } else {
             if (m_focusedNode) {
-                auto it = m_nodes.find(*m_focusedNode);
-                if (it != m_nodes.end()) {
-                    it->second->raise(UIEvent{MouseReleaseEvent{}});
+                auto* node = m_nodeDom->get(*m_focusedNode);
+                if (node) {
+                    node->raise(UIEvent{MouseReleaseEvent{}});
                 }
                 m_focusedNode = std::nullopt;
             }
@@ -81,29 +84,20 @@ void ConcreteUI::update () {
     if (!m_doRerender) {
         return;
     }
-    //
-    // m_rootNode = nullptr;
-    //
-    // PHENYL_DASSERT(m_rootComp);
-    // m_rootComp->component->render(*this);
-    // OnRenderEnd(m_rootComp.get());
-    // PHENYL_DASSERT(m_current == m_rootComp.get());
-    //
-    // m_doRerender = false;
     refreshRender();
     m_doReMeasure = true;
 }
 
 void ConcreteUI::canvasRender (Canvas& canvas) {
-    PHENYL_DASSERT(m_rootNode);
+    PHENYL_DASSERT(m_nodeDom);
 
     if (m_doReMeasure) {
-        m_rootNode->measure(WidgetConstraints{
+        m_nodeDom->measure(WidgetConstraints{
           .maxSize = canvas.resolution(),
         });
         m_doReMeasure = false;
     }
-    m_rootNode->render(canvas);
+    m_nodeDom->render(canvas);
 }
 
 UIComponentBase* ConcreteUI::current (std::size_t key) {
@@ -144,12 +138,9 @@ void ConcreteUI::pushComp (std::size_t key) {
 void ConcreteUI::pop () {
     PHENYL_DASSERT(m_current);
 
-    OnRenderEnd(m_current);
+    onRenderEnd(m_current);
     m_current = m_current->parent;
     PHENYL_DASSERT(m_current);
-
-    PHENYL_DASSERT(!m_currNodes.empty());
-    m_currNodes.pop_back();
 }
 
 UINode& ConcreteUI::addNode (std::unique_ptr<UINode> node) {
@@ -157,13 +148,11 @@ UINode& ConcreteUI::addNode (std::unique_ptr<UINode> node) {
     PHENYL_DASSERT(m_current);
     auto* ptr = node.get();
     auto id = m_current->component->id();
-    ptr->setState(&m_nodeStates[id]);
-    m_nodeStates[id].id = id;
-    m_nodes[id] = ptr;
+    m_nodeDom->insert(id, ptr);
 
-    if (!m_rootNode) {
-        m_rootNode = std::move(node);
-        m_currNodes.emplace_back(m_rootNode.get());
+    if (m_currNodes.empty()) {
+        m_nodeDom->setRoot(std::move(node));
+        m_currNodes.emplace_back(ptr);
         return *ptr;
     }
 
@@ -172,20 +161,21 @@ UINode& ConcreteUI::addNode (std::unique_ptr<UINode> node) {
     return *ptr;
 }
 
-void ConcreteUI::OnRenderEnd (UIComponentNode* curr) {
+void ConcreteUI::onRenderEnd (UIComponentNode* curr) {
     PHENYL_DASSERT(curr);
 
     std::erase_if(curr->children, [&] (const auto& item) { return !curr->seenChildren.contains(item.first); });
     curr->seenChildren.clear();
+    PHENYL_DASSERT(!m_currNodes.empty());
+    m_currNodes.pop_back();
 }
 
 void ConcreteUI::refreshRender () {
-    m_rootNode = nullptr;
-    m_nodes.clear();
+    m_nodeDom->clear();
 
     PHENYL_DASSERT(m_rootComp);
     m_rootComp->component->render(*this);
-    OnRenderEnd(m_rootComp.get());
+    onRenderEnd(m_rootComp.get());
     PHENYL_DASSERT(m_current == m_rootComp.get());
 
     m_doRerender = false;

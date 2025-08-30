@@ -2,6 +2,7 @@
 
 #include "core/input/axis_action.h"
 #include "core/input/input_action.h"
+#include "node_dom.h"
 #include "ui/reactive/ui.h"
 
 #include <unordered_set>
@@ -39,8 +40,6 @@ protected:
     UINode& addNode (std::unique_ptr<UINode> node) override;
 
 private:
-    static void OnRenderEnd (UIComponentNode* curr);
-
     std::unique_ptr<UIRoot> m_root;
 
     std::unique_ptr<UIComponentNode> m_rootComp;
@@ -49,7 +48,7 @@ private:
 
     UIComponentNode* m_current = nullptr;
 
-    std::unique_ptr<UINode> m_rootNode = nullptr;
+    std::unique_ptr<UINodeDOM> m_nodeDom;
     std::vector<UINode*> m_currNodes;
 
     // TODO: refactor
@@ -58,10 +57,9 @@ private:
     bool m_mouseDown = false;
     std::optional<std::size_t> m_focusedNode;
 
-    std::unordered_map<std::size_t, detail::UINodeState> m_nodeStates;
-    std::unordered_map<std::size_t, UINode*> m_nodes;
     std::size_t m_nextId = 1;
 
+    void onRenderEnd (UIComponentNode* curr);
     void refreshRender ();
 };
 } // namespace phenyl::graphics
