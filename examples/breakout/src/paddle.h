@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/clock.h"
+
 #include <phenyl/asset.h>
 #include <phenyl/audio.h>
 #include <phenyl/components/2D/global_transform.h>
@@ -25,7 +27,7 @@ struct Paddle {
     std::shared_ptr<phenyl::Prefab> emitterPrefab;
     std::shared_ptr<phenyl::AudioSample> bounceSample;
 
-    void update (const phenyl::Resources<const phenyl::Camera2D, const phenyl::FixedDelta>& resources,
+    void update (const phenyl::Resources<const phenyl::Camera2D, const phenyl::Clock>& resources,
         const phenyl::Bundle<const phenyl::GlobalTransform2D, phenyl::RigidBody2D>& bundle);
 };
 PHENYL_DECLARE_SERIALIZABLE(Paddle)

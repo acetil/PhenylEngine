@@ -1,5 +1,7 @@
 #pragma once
 
+#include "phenyl/ui/atom.h"
+
 #include <phenyl/application.h>
 #include <phenyl/asset.h>
 #include <phenyl/prefab.h>
@@ -20,8 +22,8 @@ private:
     int m_lives;
     // phenyl::ui::Label pointsLabel;
     // phenyl::ui::Label livesLabel;
-    phenyl::ui::LabelWidget* m_pointsLabel = nullptr;
-    phenyl::ui::LabelWidget* m_livesLabel = nullptr;
+    phenyl::ui::Atom<std::string> m_pointsLabel;
+    phenyl::ui::Atom<std::string> m_livesLabel;
     std::shared_ptr<phenyl::Prefab> m_tilePrefab;
 
     void init () override;

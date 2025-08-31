@@ -1,12 +1,5 @@
-add_library(ui OBJECT include/
+add_library(ui OBJECT
         src/ui/debug_ui.cpp
-        src/ui/ui_manager.cpp
-        src/ui/widgets/button.cpp
-        src/ui/widgets/container.cpp
-        src/ui/widgets/label.cpp
-        src/ui/widgets/layout.cpp
-        src/ui/widgets/root.cpp
-        src/ui/widgets/widget.cpp
         src/ui/plugins/ui_plugin.cpp
         include/ui/reactive/state.h
         include/ui/reactive/component.h
@@ -33,6 +26,7 @@ add_library(ui OBJECT include/
         src/ui/reactive/node_dom.cpp
         include/ui/reactive/render.h
         src/ui/reactive/render.cpp
+        include/ui/ui_types.h
 )
 
 set_property(TARGET ui PROPERTY CXX_STANDARD 20)

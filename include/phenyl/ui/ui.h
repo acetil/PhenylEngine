@@ -5,14 +5,11 @@
 #include "event.h"
 #include "label.h"
 #include "layout.h"
+#include "types.h"
 #include "ui/reactive/components/root.h"
 #include "ui/reactive/ui.h"
-#include "ui/ui_manager.h"
-#include "widget.h"
 
 namespace phenyl {
-using UIManager = graphics::UIManager;
-
 using UI = graphics::UI;
 using UIContext = graphics::UIContext;
 using UIResult = graphics::UIRenderResult;

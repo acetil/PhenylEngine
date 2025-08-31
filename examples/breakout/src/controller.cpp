@@ -2,7 +2,7 @@
 
 #include "breakout.h"
 #include "phenyl/font.h"
-#include "phenyl/ui/widget.h"
+#include "phenyl/ui/types.h"
 
 #include <phenyl/components/2D/global_transform.h>
 #include <phenyl/serialization.h>
@@ -21,17 +21,15 @@ using namespace breakout;
 void TileController::Init (BreakoutApp* app, phenyl::PhenylRuntime& runtime) {
     app->addComponent<TileController>("TileController");
 
-    auto& uiManager = runtime.resource<phenyl::UIManager>();
-    runtime.world().addHandler<TileController>(
-        [&uiManager, app] (const phenyl::signals::OnInsert<TileController>& signal, phenyl::Entity entity) {
-            signal.get().onInsert(entity, app, uiManager);
-        });
+    auto& ui = runtime.resource<phenyl::UI>();
+    runtime.world().addHandler<TileController>([&ui, app] (const phenyl::signals::OnInsert<TileController>& signal,
+                                                   phenyl::Entity entity) { signal.get().onInsert(entity, app, ui); });
 
     runtime.world().addHandler<OnTileBreak, TileController>(
         [] (const OnTileBreak& signal, TileController& controller) { controller.onTileBreak(signal.points); });
 }
 
-void TileController::onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::UIManager& uiManager) {
+void TileController::onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::UI& ui) {
     this->app = app;
 
     float xIncrement = (endOffset.x - startOffset.x) / static_cast<float>(columns);
@@ -51,15 +49,22 @@ void TileController::onInsert (phenyl::Entity entity, BreakoutApp* app, phenyl::
 
     tilesRemaining = rows * columns;
     // pointsLabel->setText(std::format("Points: {}", points);
-    pointsLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Points: {}", points), 14,
-        phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
-        phenyl::ui::Modifier{}.withOffset({180, 30}));
+    // pointsLabel = ui.root().add<phenyl::ui::LabelWidget>(std::format("Points: {}", points), 14,
+    //     phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+    //     phenyl::ui::Modifier{}.withOffset({180, 30}));
+    pointsLabel = phenyl::ui::Atom<std::string>::Make(std::format("Points: {}", points));
+    ui.root().add<phenyl::ui::DynamicLabel>(phenyl::ui::DynamicLabelProps{
+      .text = pointsLabel,
+      .textSize = 14,
+      .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+      .modifier = phenyl::ui::Modifier{}.withOffset({180, 30}),
+    });
     // uiManager.addUIComp(pointsLabel, labelPos);
 }
 
 void TileController::onTileBreak (int tilePoints) {
     points += tilePoints;
-    pointsLabel->setText(std::format("Points: {}", points));
+    pointsLabel.set(std::format("Points: {}", points));
 
     if (!(--tilesRemaining)) {
         app->onWin();

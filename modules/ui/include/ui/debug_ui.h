@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/plugin.h"
-#include "ui_manager.h"
 #include "util/smooth_queue.h"
 
 namespace phenyl::graphics {

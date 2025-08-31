@@ -4,6 +4,7 @@
 #include "core/clock.h"
 #include "core/debug.h"
 #include "core/runtime.h"
+#include "graphics/canvas/canvas.h"
 #include "ui/plugins/ui_plugin.h"
 #include "util/profiler.h"
 #include "util/smooth_queue.h"

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "ui/widgets/widget.h"
+#include "ui/ui_types.h"
 
 namespace phenyl::ui {
-using Widget = phenyl::graphics::Widget;
 using WidgetConstraints = phenyl::graphics::WidgetConstraints;
 using Modifier = phenyl::graphics::Modifier;
 } // namespace phenyl::ui

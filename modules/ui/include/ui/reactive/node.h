@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics/canvas/canvas.h"
-#include "ui/widgets/widget.h"
+#include "ui/ui_types.h"
 
 namespace phenyl::graphics {
 namespace detail {

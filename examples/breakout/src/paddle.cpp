@@ -64,16 +64,16 @@ void breakout::InitPaddle (breakout::BreakoutApp* app, phenyl::PhenylRuntime& ru
     runtime.addSystem<phenyl::FixedUpdate>("Paddle::Update", &Paddle::update);
 }
 
-void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const phenyl::FixedDelta>& resources,
+void Paddle::update (const phenyl::Resources<const phenyl::Camera2D, const phenyl::Clock>& resources,
     const phenyl::Bundle<const phenyl::GlobalTransform2D, phenyl::RigidBody2D>& bundle) {
     auto& [transform, body] = bundle.comps();
-    auto& [camera, deltaTime] = resources;
+    auto& [camera, clock] = resources;
 
     auto vel = PlayerMove.value() * speed;
-    auto newPos = vel * static_cast<float>(deltaTime()) + transform.position();
+    auto newPos = vel * static_cast<float>(clock.deltaTime()) + transform.position();
 
     vel.x = (glm::clamp(newPos.x, minX + width / 2, maxX - width / 2) - transform.position().x) /
-        static_cast<float>(deltaTime());
+        static_cast<float>(clock.deltaTime());
 
     body.applyImpulse(vel * body.mass() - body.momentum());
 

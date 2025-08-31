@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/widgets/event.h"
+#include "../../../modules/ui/include/ui/event.h"
 
 namespace phenyl::ui {
 using MouseEnterEvent = graphics::MouseEnterEvent;

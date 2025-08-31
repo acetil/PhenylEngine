@@ -51,7 +51,7 @@ add_library(phenyl SHARED
         include/phenyl/maths.h
         include/phenyl/serialization_fwd.h
         include/phenyl/ui/layout.h
-        include/phenyl/ui/widget.h
+        include/phenyl/ui/types.h
         include/phenyl/ui/container.h
         include/phenyl/ui/event.h
         include/phenyl/entrypoint.h

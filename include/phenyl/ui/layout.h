@@ -1,13 +1,8 @@
 #pragma once
 
 #include "ui/reactive/components/layout.h"
-#include "ui/widgets/layout.h"
 
 namespace phenyl::ui {
-using LayoutWidget = phenyl::graphics::LayoutWidget;
-using ColumnWidget = phenyl::graphics::ColumnWidget;
-using RowWidget = phenyl::graphics::RowWidget;
-
 using LayoutArrangement = phenyl::graphics::LayoutArrangement;
 using LayoutAlignment = phenyl::graphics::LayoutAlignment;
 

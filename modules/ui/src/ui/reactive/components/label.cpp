@@ -50,3 +50,18 @@ private:
 UIRenderResult UILabelComponent::render (UIContext& ctx) const {
     return ctx.makeNode<UILabelNode>(props()).build();
 }
+
+UIDynamicLabelComponent::UIDynamicLabelComponent (UI& ui, UIDynamicLabelProps labelProps) :
+    UIComponent{ui, std::move(labelProps)} {
+    useAtom(props().text);
+}
+
+UIRenderResult UIDynamicLabelComponent::render (UIContext& ctx) const {
+    return ctx.render<UILabelComponent>(UILabelProps{
+      .text = *props().text,
+      .textSize = props().textSize,
+      .font = props().font,
+      .color = props().color,
+      .modifier = props().modifier,
+    });
+}

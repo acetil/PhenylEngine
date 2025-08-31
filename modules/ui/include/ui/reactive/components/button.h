@@ -3,7 +3,6 @@
 #include "graphics/maths_headers.h"
 #include "ui/reactive/component.h"
 #include "ui/reactive/render.h"
-#include "ui/widgets/widget.h"
 
 namespace phenyl::graphics {
 struct UIButtonProps {
