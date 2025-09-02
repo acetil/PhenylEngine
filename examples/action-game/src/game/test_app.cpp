@@ -2,8 +2,10 @@
 
 #include "entity/bullet.h"
 #include "entity/player.h"
+#include "phenyl/ui/atom.h"
+#include "phenyl/ui/component.h"
 #include "phenyl/ui/container.h"
-#include "phenyl/ui/widget.h"
+#include "phenyl/ui/types.h"
 #include "util/debug_console.h"
 
 #include <phenyl/asset.h>
@@ -14,6 +16,42 @@
 #include <phenyl/ui/ui.h>
 
 static phenyl::Logger LOGGER{"TEST_APP"};
+
+struct DynamicListProps {
+    phenyl::ui::Atom<std::vector<std::string>> labels;
+    phenyl::ui::Modifier modifier;
+};
+
+class DynamicList : public phenyl::ui::Component<DynamicList, DynamicListProps> {
+public:
+    DynamicList (phenyl::UI& ui, DynamicListProps listProps) : UIComponent{ui, std::move(listProps)} {
+        useAtom(props().labels);
+    }
+
+    phenyl::UIResult render (phenyl::UIContext& ctx) const override {
+        std::vector<phenyl::UIFactory> children;
+        for (const auto& label : *props().labels) {
+            std::string_view labelView = label;
+            auto font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif");
+            children.emplace_back([labelView, font] (phenyl::UIContext& ctx) {
+                return ctx.render<phenyl::ui::Label>(
+                    phenyl::ui::LabelProps{.text = std::string{labelView}, .font = font});
+            });
+        }
+
+        return ctx.render<phenyl::ui::Container>(phenyl::ui::ContainerProps{
+          .borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
+          .borderSize = 2.0f,
+          .modifier = props().modifier,
+          .child =
+              [children = std::move(children)] (phenyl::UIContext& ctx) {
+                  return ctx.render<phenyl::ui::Column>(phenyl::ui::ColumnProps{
+                    .children = children,
+                  });
+              },
+        });
+    }
+};
 
 test::TestApp::TestApp (phenyl::ApplicationProperties properties) :
     phenyl::Application2D(properties.withResolution(800, 600).withWindowTitle("Action Game").withVsync(false)) {}
@@ -36,39 +74,38 @@ void test::TestApp::init () {
 void test::TestApp::postInit () {
     phenyl::Assets::Load<phenyl::Level>("resources/levels/test_level")->load();
 
-    auto& uiManager = runtime().resource<phenyl::UIManager>();
-    // uiManager.addUIComp(button4, {500, 300});
-    // uiManager.addUIComp(button5, {500, 385});
-    m_button1 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(
-        phenyl::ui::Modifier{}.withSize({100, 80}).withOffset({500, 300}));
-    m_button1->setDefaultBgColor({1.0, 0.0, 0.0, 1.0});
-    m_button1->setHoverBgColor({0.0, 1.0, 0.0, 1.0});
-    m_button1->setPressBgColor({0.0, 0.0, 1.0, 1.0});
-    m_button1->addListener([&] (const phenyl::ui::ButtonPressEvent&) { addLabel(); });
-
-    m_button2 = uiManager.root().emplace<phenyl::ui::ButtonWidget>(
-        phenyl::ui::Modifier{}.withSize({100, 80}).withOffset({500, 385}));
-    m_button2->setDefaultBgColor({1.0, 0.0, 0.0, 1.0});
-    m_button2->setHoverBgColor({0.0, 1.0, 0.0, 1.0});
-    m_button2->setPressBgColor({0.0, 0.0, 1.0, 1.0});
-    m_button2->addListener([&] (const phenyl::ui::ButtonPressEvent&) { removeLabel(); });
-
-    auto* container = uiManager.root().emplace<phenyl::ui::ContainerWidget>(
-        phenyl::ui::Modifier{}.withSize({200, 300}).withOffset({0, 100}));
-    container->setBorderColor({1.0f, 1.0f, 1.0f, 1.0f});
-    container->setBorderSize(2);
-    m_column = container->emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN,
-        phenyl::ui::LayoutArrangement::START, phenyl::ui::LayoutAlignment::START, phenyl::ui::Modifier{});
-
-    /*column =
-       uiManager.root().emplace<phenyl::ui::ColumnWidget>(phenyl::ui::ColumnDirection::DOWN,
-       phenyl::ui::LayoutArrangement::SPACED, phenyl::ui::LayoutAlignment::START,
-       phenyl::ui::Modifier{} .withSize({0, 0}, {200, 300}) .withOffset({200, 100}));*/
-    auto* labelWidget = m_column->emplaceBack<phenyl::ui::LabelWidget>("Hello World 2!");
-    labelWidget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
-
     m_testFont = phenyl::Assets::Load<phenyl::graphics::Font>("resources/fonts/OpenSans-Regular");
     updateDebugRender(true);
+
+    auto& ui = runtime().resource<phenyl::UI>();
+    m_labelText = phenyl::ui::Atom<std::string>::Make("Hello World Reactive!");
+    ui.root().add<phenyl::ui::DynamicLabel>(phenyl::ui::DynamicLabelProps{
+      .text = m_labelText,
+      .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+      .modifier = phenyl::ui::Modifier{}.withOffset({300, 10}),
+    });
+
+    m_labels = phenyl::ui::Atom<std::vector<std::string>>::Make("Hello World!");
+    ui.root().add<DynamicList>(DynamicListProps{
+      .labels = m_labels,
+      .modifier = phenyl::ui::Modifier{}.withOffset({0, 100}).withSize({200, 300}),
+    });
+
+    ui.root().add<phenyl::ui::Button>(phenyl::ui::ButtonProps{
+      .defaultBgColor = {1.0, 0.0, 0.0, 1.0},
+      .hoverBgColor = glm::vec4{0.0, 1.0, 0.0, 1.0},
+      .pressBgColor = glm::vec4{0.0, 0.0, 1.0, 1.0},
+      .modifier = phenyl::ui::Modifier{}.withSize({100, 80}).withOffset({500, 300}),
+      .onPress = [&] () { addLabel(); },
+    });
+
+    ui.root().add<phenyl::ui::Button>(phenyl::ui::ButtonProps{
+      .defaultBgColor = {1.0, 0.0, 0.0, 1.0},
+      .hoverBgColor = glm::vec4{0.0, 1.0, 0.0, 1.0},
+      .pressBgColor = glm::vec4{0.0, 0.0, 1.0, 1.0},
+      .modifier = phenyl::ui::Modifier{}.withSize({100, 80}).withOffset({500, 385}),
+      .onPress = [&] () { removeLabel(); },
+    });
 }
 
 void test::TestApp::fixedUpdate () {
@@ -102,25 +139,14 @@ void test::TestApp::update () {
 
 void test::TestApp::addLabel () {
     m_numPresses++;
-    // label.text = "Pressed " + std::to_string(numPresses) + " times!";
-    // auto newLabel = phenyl::ui::Label("label");
-    // newLabel.text = "Label " + std::to_string(extraLabels.size());
-    // flexBoxC.add(newLabel);
-    // extraLabels.emplace_back(std::move(newLabel));
 
-    auto* widget = m_column->emplaceBack<phenyl::ui::LabelWidget>(std::format("Pressed {} times!", m_numPresses));
-    widget->setFont(phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"));
-    m_extraWidgets.emplace_back(widget);
+    m_labels.update([&] (auto& labels) { labels.emplace_back(std::format("Pressed {} times!", m_numPresses)); });
+    m_labelText.set(std::format("Hello World Reactive! {}", m_numPresses));
 }
 
 void test::TestApp::removeLabel () {
-    // if (!extraLabels.empty()) {
-    //     extraLabels.pop_back();
-    // }
-
-    if (!m_extraWidgets.empty()) {
-        m_extraWidgets.back()->queueDestroy();
-        m_extraWidgets.pop_back();
+    if (!m_labels->empty()) {
+        m_labels.update([] (auto& labels) { labels.pop_back(); });
     }
 }
 

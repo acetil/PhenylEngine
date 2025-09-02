@@ -1,14 +1,15 @@
 #pragma once
 
 #include "phenyl/font.h"
+#include "phenyl/ui/atom.h"
 
 #include <phenyl/application.h>
 #include <phenyl/asset.h>
 #include <phenyl/audio.h>
 #include <phenyl/input.h>
 #include <phenyl/ui/layout.h>
+#include <phenyl/ui/types.h>
 #include <phenyl/ui/ui.h>
-#include <phenyl/ui/widget.h>
 
 namespace test {
 class TestApp : public phenyl::Application2D {
@@ -30,19 +31,12 @@ public:
     void dumpLevel (const std::string& path);
 
 private:
-    // std::vector<phenyl::ui::Label> extraLabels;
-    std::vector<phenyl::ui::Widget*> m_extraWidgets;
-    // phenyl::ui::Label label{"label"};
-    // phenyl::ui::Flexbox flexBoxC{"flex_box"};
-
-    phenyl::ui::ColumnWidget* m_column = nullptr;
-
-    phenyl::ui::ButtonWidget* m_button1 = nullptr;
-    phenyl::ui::ButtonWidget* m_button2 = nullptr;
-
     phenyl::InputAction m_stepAction;
     phenyl::InputAction m_consoleAction;
     std::shared_ptr<phenyl::Font> m_testFont;
+
+    phenyl::ui::Atom<std::string> m_labelText;
+    phenyl::ui::Atom<std::vector<std::string>> m_labels;
 
     int m_numPresses = 0;
     bool m_isButtonDown = false;

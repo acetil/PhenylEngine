@@ -4,9 +4,10 @@
 #include "controller.h"
 #include "paddle.h"
 #include "phenyl/font.h"
+#include "phenyl/ui/component.h"
 #include "phenyl/ui/container.h"
 #include "phenyl/ui/layout.h"
-#include "phenyl/ui/widget.h"
+#include "phenyl/ui/types.h"
 #include "tile.h"
 #include "wall.h"
 
@@ -49,11 +50,15 @@ void BreakoutApp::init () {
 }
 
 void BreakoutApp::postInit () {
-    auto& uiManager = runtime().resource<phenyl::UIManager>();
-
-    m_livesLabel = uiManager.root().emplace<phenyl::ui::LabelWidget>(std::format("Lives: {}", m_lives), 14,
-        phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
-        phenyl::ui::Modifier{}.withOffset({280, 30}));
+    // auto& uiManager = runtime().resource<phenyl::UIManager>();
+    auto& ui = runtime().resource<phenyl::UI>();
+    m_livesLabel = phenyl::ui::Atom<std::string>::Make(std::format("Lives: {}", m_lives));
+    ui.root().add<phenyl::ui::DynamicLabel>(phenyl::ui::DynamicLabelProps{
+      .text = m_livesLabel,
+      .textSize = 14,
+      .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+      .modifier = phenyl::ui::Modifier{}.withOffset({280, 30}),
+    });
 
     phenyl::Assets::Load<phenyl::Level>("resources/levels/main")->load();
 
@@ -65,39 +70,32 @@ void BreakoutApp::postInit () {
 
 void BreakoutApp::addPoints (int points) {
     m_totalPoints += points;
-    // pointsLabel.text = "Points: " + std::to_string(totalPoints);
-    // pointsLabel->setText(std::format("Points: {}", totalPoints));
 
     if (m_totalPoints == TileCols * TileRows * 10) {
-        runtime().resource<phenyl::UIManager>().root().emplace<phenyl::ui::ContainerWidget>(
-            phenyl::ui::LabelWidget{"You Win!", 72,
-              phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
-            phenyl::ui::Modifier{}.withOffset({240, 250}));
-        pause();
+        onWin();
     }
 }
 
 void BreakoutApp::subtractLife () {
-    // livesLabel.text = "Lives: " + std::to_string(lives - 1);
-    m_livesLabel->setText(std::format("Lives: {}", m_lives - 1));
-    // livesLabel->setText("Lives: " + std::to_string(lives - 1));
+    m_livesLabel.set(std::format("Lives: {}", m_lives - 1));
     if (!--m_lives) {
-        runtime().resource<phenyl::UIManager>().root().emplace<phenyl::ui::ContainerWidget>(
-            phenyl::ui::LabelWidget{"You Lose!", 72,
-              phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
-            phenyl::ui::Modifier{}.withOffset({240, 250}));
+        runtime().resource<phenyl::UI>().root().add<phenyl::ui::Label>(phenyl::ui::LabelProps{
+          .text = "You Lose!",
+          .textSize = 72,
+          .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+          .modifier = phenyl::ui::Modifier{}.withOffset({240, 250}),
+        });
         pause();
     }
 }
 
 void BreakoutApp::onWin () {
-    // phenyl::ui::Label winLabel{"big_label"};
-    // winLabel.text = "You Win!";
-    // runtime().resource<phenyl::UIManager>().addUIComp(winLabel.detach(), {240, 250});
-    runtime().resource<phenyl::UIManager>().root().emplace<phenyl::ui::ContainerWidget>(
-        phenyl::ui::LabelWidget{"You Win!", 72,
-          phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif")},
-        phenyl::ui::Modifier{}.withOffset({240, 250}));
+    runtime().resource<phenyl::UI>().root().add<phenyl::ui::Label>(phenyl::ui::LabelProps{
+      .text = "You Win!",
+      .textSize = 72,
+      .font = phenyl::Assets::Load<phenyl::Font>("resources/phenyl/fonts/noto-serif"),
+      .modifier = phenyl::ui::Modifier{}.withOffset({240, 250}),
+    });
     pause();
 }
 

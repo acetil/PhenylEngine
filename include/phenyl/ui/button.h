@@ -1,9 +1,8 @@
 #pragma once
 
-#include "graphics/ui/widgets/button.h"
+#include "ui/reactive/components/button.h"
 
 namespace phenyl::ui {
-using ButtonWidget = phenyl::graphics::ButtonWidget;
-
-using ButtonPressEvent = phenyl::graphics::ButtonPressEvent;
+using ButtonProps = phenyl::graphics::UIButtonProps;
+using Button = phenyl::graphics::UIButtonComponent;
 } // namespace phenyl::ui

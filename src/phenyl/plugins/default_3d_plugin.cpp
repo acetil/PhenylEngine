@@ -6,9 +6,10 @@
 #include "core/plugins/timed_lifetime_plugin.h"
 #include "core/runtime.h"
 #include "graphics/plugins/graphics_3d_plugin.h"
-#include "graphics/ui/debug_ui.h"
 #include "phenyl/plugins/level_plugin.h"
 #include "physics/physics.h"
+#include "ui/debug_ui.h"
+#include "ui/plugins/ui_plugin.h"
 
 using namespace phenyl;
 
@@ -23,6 +24,7 @@ void Default3DPlugin::init (core::PhenylRuntime& runtime) {
     runtime.addPlugin<graphics::Graphics3DPlugin>();
     // runtime.addPlugin<physics::Physics2DPlugin>();
     runtime.addPlugin<audio::AudioPlugin>();
+    runtime.addPlugin<graphics::UIPlugin>();
     runtime.addPlugin<graphics::ProfileUiPlugin>();
     runtime.addPlugin<core::InputPlugin>();
 

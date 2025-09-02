@@ -30,6 +30,7 @@ add_subdirectory(modules/graphics)
 add_subdirectory(modules/engine)
 add_subdirectory(modules/audio)
 add_subdirectory(modules/platform)
+add_subdirectory(modules/ui)
 #add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
@@ -50,7 +51,7 @@ add_library(phenyl SHARED
         include/phenyl/maths.h
         include/phenyl/serialization_fwd.h
         include/phenyl/ui/layout.h
-        include/phenyl/ui/widget.h
+        include/phenyl/ui/types.h
         include/phenyl/ui/container.h
         include/phenyl/ui/event.h
         include/phenyl/entrypoint.h
@@ -63,12 +64,14 @@ add_library(phenyl SHARED
         include/phenyl/graphics/material.h
         include/phenyl/components/3D/lighting.h
         src/phenyl/engine_clock.h
-        src/phenyl/engine_clock.cpp)
+        src/phenyl/engine_clock.cpp
+        include/phenyl/ui/component.h
+        include/phenyl/ui/atom.h)
 target_include_directories(phenyl PUBLIC include)
 target_include_directories(phenyl PRIVATE src)
 
 set_property(TARGET phenyl PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util platform glfw_backend opengl_backend vulkan_backend)
+target_link_libraries(phenyl PUBLIC audio core engine graphics logger maths physics util platform glfw_backend opengl_backend vulkan_backend ui)
 #target_link_libraries(phenyl PUBLIC cpptrace::cpptrace)
 #target_link_libraries(phenyl PUBLIC $<COMPILE_ONLY:audio core engine graphics logger maths physics util>)

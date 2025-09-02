@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/clock.h"
 #include "core/runtime.h"
 #include "core/stages.h"
 
@@ -14,4 +15,6 @@ using FrameBegin = core::FrameBegin;
 using Update = core::Update;
 using Render = core::Render;
 using FixedUpdate = core::FixedUpdate;
+
+using Clock = core::Clock;
 } // namespace phenyl

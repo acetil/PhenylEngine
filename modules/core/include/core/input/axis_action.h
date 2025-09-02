@@ -2,6 +2,7 @@
 
 #include "graphics/maths_headers.h"
 #include "input_source.h"
+#include "logging/logging.h"
 
 #include <vector>
 
@@ -38,6 +39,7 @@ public:
     }
 
     [[nodiscard]] glm::vec2 value () const noexcept {
+        PHENYL_DASSERT(m_binding);
         return m_binding->state();
     }
 

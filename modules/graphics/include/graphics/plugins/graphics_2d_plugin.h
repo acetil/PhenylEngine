@@ -5,7 +5,6 @@
 #include "graphics_plugin.h"
 #include "particle_plugin.h"
 #include "sprite_2d_plugin.h"
-#include "ui_plugin.h"
 
 namespace phenyl::graphics {
 class Graphics2DPlugin : public core::IInitPlugin {
@@ -18,7 +17,6 @@ public:
         runtime.addPlugin<GraphicsPlugin>();
         runtime.addPlugin<Particle2DPlugin>();
         runtime.addPlugin<Sprite2DPlugin>();
-        runtime.addPlugin<UIPlugin>();
     }
 };
 } // namespace phenyl::graphics
