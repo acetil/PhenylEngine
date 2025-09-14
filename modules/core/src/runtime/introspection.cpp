@@ -103,7 +103,7 @@ public:
     void pushStruct (std::string_view name) override {
         PHENYL_DASSERT(!info);
         PHENYL_DASSERT(!m_structInfo);
-        m_structInfo = {};
+        m_structInfo = StructInfo{};
     }
 
     void visitMember (std::string_view memberName, ISerializableBase& serializable) override {

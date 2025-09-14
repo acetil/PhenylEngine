@@ -1,4 +1,6 @@
-add_library(platform OBJECT)
+add_library(platform OBJECT
+        include/platform/process.h
+        src/unix/process.cpp)
 set_property(TARGET platform PROPERTY CXX_STANDARD 20)
 
 if(UNIX)
@@ -7,4 +9,4 @@ if(UNIX)
 endif()
 
 target_include_directories(platform PUBLIC include)
-target_link_libraries(platform PRIVATE logger)
+target_link_libraries(platform PRIVATE logger util)
