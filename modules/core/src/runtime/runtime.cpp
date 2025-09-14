@@ -102,3 +102,7 @@ void PhenylRuntime::shutdown () {
     PHENYL_TRACE(LOGGER, "Destructing plugins");
     m_plugins.clear();
 }
+
+const std::vector<ComponentInfo>& PhenylRuntime::components () const noexcept {
+    return m_componentInfos;
+}

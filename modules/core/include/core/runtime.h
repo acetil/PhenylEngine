@@ -4,6 +4,7 @@
 #include "core/serialization/component_serializer.h"
 #include "core/world.h"
 #include "plugin.h"
+#include "runtime/introspection.h"
 #include "runtime/stage.h"
 #include "runtime/system.h"
 #include "stages.h"
@@ -102,8 +103,9 @@ public:
 
     template <core::SerializableType T>
     void addComponent (std::string name) {
-        addUnserializedComponent<T>(std::move(name));
+        addUnserializedComponent<T>(name);
         serializer().addSerializer<T>();
+        m_componentInfos.emplace_back(ComponentInfo::GetInfo<T>(std::move(name)));
     }
 
     template <typename T>
@@ -175,9 +177,12 @@ public:
 
     void shutdown ();
 
+    const std::vector<ComponentInfo>& components () const noexcept;
+
 private:
     World m_world;
     core::EntityComponentSerializer m_serializer;
+    std::vector<ComponentInfo> m_componentInfos;
 
     ResourceManager m_resourceManager;
 
