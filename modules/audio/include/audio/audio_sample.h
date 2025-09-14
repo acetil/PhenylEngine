@@ -9,6 +9,8 @@ class AudioSystem;
 
 class AudioSample : public core::Asset<AudioSample> {
 public:
+    static std::string_view GetAssetType ();
+
     AudioSample () = default;
 
     AudioSample (const AudioSample&) = delete;

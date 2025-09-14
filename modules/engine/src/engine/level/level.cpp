@@ -37,6 +37,10 @@ private:
             }
         }
 
+        void accept (phenyl::core::ISchemaVisitor& visitor) override {
+            visitor.visitArray(m_serializable);
+        }
+
         void deserialize (phenyl::core::IDeserializer& deserializer, phenyl::core::Entity& obj) override {
             deserializer.deserializeArray(*this, obj);
         }
@@ -63,6 +67,16 @@ public:
         auto& objSerializer = serializer.serializeObj();
 
         objSerializer.serializeMember("components", compSerializable, obj);
+    }
+
+    void accept (phenyl::core::ISchemaVisitor& visitor) override {
+        auto entitySerializable = m_serializer.entity();
+        visitor.pushStruct("phenyl::LevelEntity");
+        visitor.visitMember("components", entitySerializable);
+        ChildrenSerializable children{*this};
+        visitor.visitMember("children", children);
+        visitor.visitMember<std::shared_ptr<phenyl::core::Prefab>>("prefab");
+        visitor.popStruct();
     }
 
     void deserialize (phenyl::core::IDeserializer& deserializer, phenyl::core::Entity& obj) override {
@@ -111,6 +125,10 @@ private:
             }
         }
 
+        void accept (phenyl::core::ISchemaVisitor& visitor) override {
+            visitor.visitArray(m_serializable);
+        }
+
         void deserialize (phenyl::core::IDeserializer& deserializer, LevelMarker& obj) override {
             deserializer.deserializeArray(*this, obj);
         }
@@ -138,6 +156,12 @@ public:
     void serialize (phenyl::core::ISerializer& serializer, const LevelMarker& obj) override {
         auto& objSerializer = serializer.serializeObj();
         objSerializer.serializeMember("entities", m_entitiesSerializable, obj);
+    }
+
+    void accept (phenyl::core::ISchemaVisitor& visitor) override {
+        visitor.pushStruct("phenyl::Level");
+        visitor.visitMember("entities", m_entitiesSerializable);
+        visitor.popStruct();
     }
 
     void deserialize (phenyl::core::IDeserializer& deserializer, LevelMarker& obj) override {
@@ -219,4 +243,8 @@ void Level::loadImmediate (core::World& world, core::EntityComponentSerializer& 
 
 void Level::load (bool additive) {
     m_manager.queueLoad(shared_from_this(), additive);
+}
+
+std::string_view Level::GetAssetType () {
+    return "phenyl::Level";
 }

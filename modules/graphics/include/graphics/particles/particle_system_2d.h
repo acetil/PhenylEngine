@@ -49,6 +49,8 @@ public:
     void bufferPos (Buffer<glm::vec2>& buffer) const;
     void bufferColour (Buffer<glm::vec4>& buffer) const;
 
+    static std::string_view GetAssetType ();
+
 private:
     struct Particle {
         glm::vec2 pos{0, 0};

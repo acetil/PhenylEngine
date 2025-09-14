@@ -14,6 +14,10 @@ class BoolSerializable : public ISerializable<bool> {
         serializer.serialize(obj);
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitBool();
+    }
+
     void deserialize (IDeserializer& deserializer, bool& obj) override {
         deserializer.deserializeBool(*this, obj);
     }
@@ -78,6 +82,10 @@ class Int8Serializable : public IntSerializable<std::int8_t> {
         return "std::int8_t";
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitInt8();
+    }
+
     void deserialize (IDeserializer& deserializer, std::int8_t& obj) override {
         deserializer.deserializeInt8(*this, obj);
     }
@@ -86,6 +94,10 @@ class Int8Serializable : public IntSerializable<std::int8_t> {
 class Uint8Serializable : public IntSerializable<std::uint8_t> {
     std::string_view name () const noexcept override {
         return "std::uint8_t";
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitUint8();
     }
 
     void deserialize (IDeserializer& deserializer, std::uint8_t& obj) override {
@@ -98,6 +110,10 @@ class Int16Serializable : public IntSerializable<std::int16_t> {
         return "std::int16_t";
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitInt16();
+    }
+
     void deserialize (IDeserializer& deserializer, std::int16_t& obj) override {
         deserializer.deserializeInt16(*this, obj);
     }
@@ -106,6 +122,10 @@ class Int16Serializable : public IntSerializable<std::int16_t> {
 class Uint16Serializable : public IntSerializable<std::uint16_t> {
     std::string_view name () const noexcept override {
         return "std::uint16_t";
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitUint16();
     }
 
     void deserialize (IDeserializer& deserializer, std::uint16_t& obj) override {
@@ -118,6 +138,10 @@ class Int32Serializable : public IntSerializable<std::int32_t> {
         return "std::int32_t";
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitInt32();
+    }
+
     void deserialize (IDeserializer& deserializer, std::int32_t& obj) override {
         deserializer.deserializeInt32(*this, obj);
     }
@@ -126,6 +150,10 @@ class Int32Serializable : public IntSerializable<std::int32_t> {
 class Uint32Serializable : public IntSerializable<std::uint32_t> {
     std::string_view name () const noexcept override {
         return "std::uint32_t";
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitUint32();
     }
 
     void deserialize (IDeserializer& deserializer, std::uint32_t& obj) override {
@@ -138,6 +166,10 @@ class Int64Serializable : public IntSerializable<std::int64_t> {
         return "std::int64_t";
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitInt64();
+    }
+
     void deserialize (IDeserializer& deserializer, std::int64_t& obj) override {
         deserializer.deserializeInt64(*this, obj);
     }
@@ -146,6 +178,10 @@ class Int64Serializable : public IntSerializable<std::int64_t> {
 class Uint64Serializable : public IntSerializable<std::uint64_t> {
     std::string_view name () const noexcept override {
         return "std::uint64_t";
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitUint64();
     }
 
     void deserialize (IDeserializer& deserializer, std::uint64_t& obj) override {
@@ -160,6 +196,10 @@ class FloatSerializable : public ISerializable<float> {
 
     void serialize (ISerializer& serializer, const float& obj) override {
         serializer.serialize(obj);
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitFloat();
     }
 
     void deserialize (IDeserializer& deserializer, float& obj) override {
@@ -184,6 +224,10 @@ class DoubleSerializable : public ISerializable<double> {
         serializer.serialize(obj);
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitDouble();
+    }
+
     void deserialize (IDeserializer& deserializer, double& obj) override {
         deserializer.deserializeDouble(*this, obj);
     }
@@ -200,6 +244,10 @@ class StringSerializable : public ISerializable<std::string> {
 
     void serialize (ISerializer& serializer, const std::string& obj) override {
         serializer.serialize(obj);
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitString();
     }
 
     void deserialize (IDeserializer& deserializer, std::string& obj) override {

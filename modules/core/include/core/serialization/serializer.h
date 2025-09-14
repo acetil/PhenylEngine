@@ -34,6 +34,8 @@ class IStructDeserializer;
 class IObjectDeserializer;
 class IArrayDeserializer;
 
+class ISchemaVisitor;
+
 class ISerializableBase {
 public:
     virtual ~ISerializableBase () = default;
@@ -41,6 +43,7 @@ public:
     [[nodiscard]] virtual std::string_view name () const noexcept = 0;
 
     virtual void serialize (ISerializer& serializer, const std::byte* ptr) = 0;
+    virtual void accept (ISchemaVisitor& visitor) = 0;
 
     virtual void deserialize (IDeserializer& deserializer, std::byte* ptr) = 0;
 

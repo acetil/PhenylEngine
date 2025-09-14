@@ -167,6 +167,10 @@ void ParticleSystem2D::bufferColour (Buffer<glm::vec4>& buffer) const {
     }
 }
 
+std::string_view ParticleSystem2D::GetAssetType () {
+    return "phenyl::ParticleSystem2D";
+}
+
 std::optional<ParticleProperties2D> phenyl::graphics::LoadParticleProperties2D (std::istream& file) {
     /*nlohmann::json json;
     file >> json;

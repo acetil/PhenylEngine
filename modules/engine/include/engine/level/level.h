@@ -17,6 +17,8 @@ class Level : public core::Asset<Level>, public std::enable_shared_from_this<Lev
 public:
     void load (bool additive = false);
 
+    static std::string_view GetAssetType ();
+
 private:
     // std::vector<detail::LevelEntity> entities;
     core::AssetLoadContext m_loadCtx;

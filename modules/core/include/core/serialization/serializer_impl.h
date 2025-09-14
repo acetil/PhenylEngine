@@ -2,6 +2,7 @@
 
 #include "core/detail/loggers.h"
 #include "graphics/maths_headers.h"
+#include "schema.h"
 #include "serializer.h"
 
 #include <functional>
@@ -24,6 +25,10 @@ public:
             arrSerializer.serializeElement(i);
         }
         arrSerializer.end();
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitArray<T>();
     }
 
     void deserialize (IDeserializer& deserializer, std::vector<T>& obj) override {
@@ -65,6 +70,10 @@ public:
         objSerializer.end();
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitMap<T>();
+    }
+
     void deserialize (IDeserializer& deserializer, std::unordered_map<std::string, T>& obj) override {
         deserializer.deserializeObject(*this, obj);
     }
@@ -102,6 +111,10 @@ public:
             arrSerializer.serializeElement(obj[i]);
         }
         arrSerializer.end();
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitVector<T>(N);
     }
 
     void deserialize (IDeserializer& deserializer, Vec& obj) override {
@@ -148,6 +161,10 @@ public:
             arrSerializer.serializeElement(obj[i]);
         }
         arrSerializer.end();
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitMatrix<T>(H, W);
     }
 
     void deserialize (IDeserializer& deserializer, Mat& obj) override {
@@ -197,6 +214,7 @@ public:
     virtual std::string_view getKey () const noexcept = 0;
 
     virtual void serialize (IObjectSerializer& serializer, const T* obj) = 0;
+    virtual void accept (ISchemaVisitor& visitor) = 0;
     virtual void deserialize (IObjectDeserializer& deserializer, T* obj) = 0;
     virtual bool deserialize (IStructDeserializer& deserializer, T* obj) = 0;
 };
@@ -212,6 +230,10 @@ public:
 
     void serialize (IObjectSerializer& serializer, const T* obj) override {
         serializer.serializeMember(m_name, obj->*member);
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitMember<M>(m_name);
     }
 
     void deserialize (IObjectDeserializer& deserializer, T* obj) override {
@@ -241,6 +263,10 @@ public:
 
     void serialize (IObjectSerializer& serializer, const T* obj) override {
         serializer.serializeMember(m_name, std::invoke(m_getter, obj));
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitMember<M>(m_name);
     }
 
     void deserialize (IObjectDeserializer& deserializer, T* obj) override {
@@ -275,6 +301,10 @@ public:
 
     void serialize (IObjectSerializer& serializer, const T* obj) override {
         serializer.serializeMember(m_name, *static_cast<const B*>(obj));
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitMember<B>(m_name);
     }
 
     void deserialize (IObjectDeserializer& deserializer, T* obj) override {
@@ -314,6 +344,14 @@ public:
             member->serialize(objSerializer, &obj);
         }
         objSerializer.end();
+    }
+
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.pushStruct(name());
+        for (auto& member : m_members) {
+            member->accept(visitor);
+        }
+        visitor.popStruct();
     }
 
     void deserialize (IDeserializer& deserializer, T& obj) override {

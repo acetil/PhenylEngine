@@ -3,6 +3,7 @@
 #include "asset.h"
 #include "asset_manager.h"
 #include "core/detail/loggers.h"
+#include "core/serialization/schema.h"
 #include "forward.h"
 #include "util/fl_vector.h"
 #include "util/hash.h"
@@ -223,6 +224,10 @@ namespace detail {
 
         void serialize (ISerializer& serializer, const std::shared_ptr<T>& obj) override {
             serializer.serialize(obj->assetId());
+        }
+
+        void accept (ISchemaVisitor& visitor) override {
+            visitor.visitAsset(Asset<T>::Name());
         }
 
         void deserialize (IDeserializer& deserializer, std::shared_ptr<T>& obj) override {

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "core/detail/loggers.h"
 #include "core/prefab.h"
 #include "core/serialization/serializer.h"
 #include "core/world.h"
+#include "debug_schema.h"
+#include "schema.h"
 #include "util/hash.h"
 
 namespace phenyl::core {
@@ -63,6 +66,10 @@ public:
             PHENYL_ABORT("Cannot serialize prefab builder");
         }
 
+        void accept (ISchemaVisitor& visitor) override {
+            visitor.visitEngineType(EngineSerializableType::Prefab);
+        }
+
         void deserialize (IDeserializer& deserializer, PrefabBuilder& obj) override {
             deserializer.deserializeObject(*this, obj);
         }
@@ -87,6 +94,10 @@ public:
             m_serializer.serializeEntity(serializer, obj);
         }
 
+        void accept (ISchemaVisitor& visitor) override {
+            visitor.visitEngineType(EngineSerializableType::Entity);
+        }
+
         void deserialize (IDeserializer& deserializer, Entity& obj) override {
             deserializer.deserializeObject(*this, obj);
         }
@@ -100,6 +111,11 @@ public:
     void addSerializer () {
         auto serializer = std::make_unique<ComponentSerializer<T>>();
         m_serializers.emplace(serializer->name(), std::move(serializer));
+
+        std::stringstream debugStr;
+        DebugSchemaVisitor debugVisitor{debugStr};
+        static_cast<ISchemaVisitor&>(debugVisitor).visit<T>();
+        PHENYL_LOGD(detail::SERIALIZER_LOGGER, "Added serializer: \n{}", debugStr.str());
     }
 
     PrefabSerializable prefab () {

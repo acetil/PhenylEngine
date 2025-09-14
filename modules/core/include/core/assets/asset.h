@@ -41,13 +41,23 @@ private:
     friend class detail::AssetCache;
 };
 
+template <typename T> concept NamedAssetType = requires {
+    { T::GetAssetType() } -> std::same_as<std::string_view>;
+};
+
 template <typename T>
 class Asset : public AssetBase {
 public:
-    Asset () : AssetBase{meta::TypeIndex::Get<T>()} {}
+    static std::string_view Name () {
+        return T::GetAssetType();
+    }
+
+    Asset () : AssetBase{meta::TypeIndex::Get<T>()} {
+        static_assert(NamedAssetType<T>);
+    }
 };
 
-template <typename T> concept AssetType = std::derived_from<T, Asset<T>>;
+template <typename T> concept AssetType = NamedAssetType<T> && std::derived_from<T, Asset<T>>;
 
 template <AssetType T>
 ISerializable<std::shared_ptr<T>>& phenyl_GetSerializable(detail::SerializableMarker<std::shared_ptr<T>>);
