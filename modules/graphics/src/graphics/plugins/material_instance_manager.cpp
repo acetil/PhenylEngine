@@ -17,6 +17,14 @@ public:
         PHENYL_ABORT("Material instance serializing is currently unsupported");
     }
 
+    void accept (phenyl::core::ISchemaVisitor& visitor) override {
+        // visitor.pushStruct("phenyl::MaterialInstance::uniform");
+        // visitor.visitMember<std::string>("name");
+        // visitor.visitMember<std::string>("type");
+        // visitor.visitMember()
+        PHENYL_ABORT("Material uniform schema visting is currently unsupported");
+    }
+
     void deserialize (phenyl::core::IDeserializer& deserializer, std::shared_ptr<MaterialInstance>& obj) override {
         static std::string members[] = {"name", "type", "val"};
         deserializer.deserializeStruct(*this, members, obj);
@@ -86,6 +94,11 @@ public:
         PHENYL_ABORT("Material instance serializing is currently unsupported");
     }
 
+    void accept (phenyl::core::ISchemaVisitor& visitor) override {
+        MaterialUniformSerializable uniformSerializable{};
+        visitor.visitArray(uniformSerializable);
+    }
+
     void deserialize (phenyl::core::IDeserializer& deserializer, std::shared_ptr<MaterialInstance>& obj) override {
         deserializer.deserializeArray(*this, obj);
     }
@@ -107,6 +120,14 @@ public:
 
     void serialize (phenyl::core::ISerializer& serializer, const std::shared_ptr<MaterialInstance>& obj) override {
         PHENYL_ABORT("Material instance serializing is currently unsupported");
+    }
+
+    void accept (phenyl::core::ISchemaVisitor& visitor) override {
+        visitor.pushStruct("phenyl::MaterialInstance");
+        visitor.visitMember<std::shared_ptr<Material>>("material");
+        MaterialUniformsSerializable uniforms;
+        visitor.visitMember("uniforms", uniforms);
+        visitor.popStruct();
     }
 
     void deserialize (phenyl::core::IDeserializer& deserializer, std::shared_ptr<MaterialInstance>& obj) override {

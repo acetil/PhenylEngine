@@ -171,6 +171,10 @@ void Font::renderText (IGlyphRenderer& glyphRenderer, std::uint32_t size, std::s
     }
 }
 
+std::string_view Font::GetAssetType () {
+    return "phenyl::Font";
+}
+
 void Font::setSize (std::uint32_t size) {
     if (m_size != size) {
         FT_Set_Char_Size(m_face, size * 64, size * 64, m_windowDpi.x, m_windowDpi.y);

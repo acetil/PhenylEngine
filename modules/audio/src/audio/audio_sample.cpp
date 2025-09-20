@@ -4,6 +4,10 @@
 
 using namespace phenyl::audio;
 
+std::string_view AudioSample::GetAssetType () {
+    return "phenyl::AudioSample";
+}
+
 AudioSample::AudioSample (phenyl::audio::AudioSample&& other) noexcept :
     m_audioSystem{other.m_audioSystem},
     m_id{other.m_id} {

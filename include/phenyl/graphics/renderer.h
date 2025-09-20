@@ -1,6 +1,6 @@
 #pragma once
 
-#include <graphics/renderer.h>
+#include <graphics/backend/renderer.h>
 
 namespace phenyl {
 using Renderer = graphics::Renderer;

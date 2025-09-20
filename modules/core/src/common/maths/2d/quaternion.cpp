@@ -16,6 +16,10 @@ public:
         objSerializer.serializeMember("xyz", obj.xyz());
     }
 
+    void accept (ISchemaVisitor& visitor) override {
+        visitor.visitQuaternion();
+    }
+
     void deserialize (IDeserializer& deserializer, Quaternion& obj) override {
         static std::string members[] = {"w", "xyz"};
         deserializer.deserializeStruct(*this, members, obj);

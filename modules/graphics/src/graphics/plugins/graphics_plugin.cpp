@@ -39,8 +39,4 @@ void GraphicsPlugin::init (core::PhenylRuntime& runtime) {
     renderer.getViewport().addInputDevices(input);
 
     runtime.addResource<Canvas>(renderer);
-
-    runtime.addSystem<core::PostInit>("Graphics::PostInit", this, &GraphicsPlugin::postInit);
 }
-
-void GraphicsPlugin::postInit (core::PhenylRuntime& runtime) {}

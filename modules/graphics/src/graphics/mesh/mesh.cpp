@@ -24,6 +24,10 @@ void Mesh::bind (Pipeline& pipeline, const std::vector<BufferBinding>& streamBin
     pipeline.bindIndexBuffer(layout().indexType, indices());
 }
 
+std::string_view Mesh::GetAssetType () {
+    return "phenyl::Mesh";
+}
+
 Meshes::Builder::Builder (Meshes& meshes, Renderer& renderer) : m_meshes{meshes}, m_renderer{renderer} {}
 
 Meshes::Builder& Meshes::Builder::withStream (std::span<const std::byte> data, std::size_t stride) {

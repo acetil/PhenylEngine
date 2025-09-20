@@ -40,6 +40,8 @@ public:
         return m_id;
     }
 
+    static std::string_view GetAssetType ();
+
 private:
     GlyphAtlas& m_atlas;
     std::unique_ptr<std::byte[]> m_faceData;

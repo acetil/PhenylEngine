@@ -35,6 +35,10 @@ private:
             PHENYL_ABORT("Prefab children serialization not supported!");
         }
 
+        void accept (core::ISchemaVisitor& visitor) override {
+            visitor.visitEngineType(core::EngineSerializableType::Children);
+        }
+
         void deserialize (core::IDeserializer& deserializer, core::PrefabBuilder& obj) override {
             deserializer.deserializeArray(*this, obj);
         }
@@ -59,6 +63,10 @@ public:
 
     void serialize (core::ISerializer& serializer, const core::Prefab& obj) override {
         PHENYL_ABORT("Prefab serialization not supported!");
+    }
+
+    void accept (core::ISchemaVisitor& visitor) override {
+        visitor.visitEngineType(core::EngineSerializableType::Prefab);
     }
 
     void deserialize (core::IDeserializer& deserializer, core::Prefab& obj) override {

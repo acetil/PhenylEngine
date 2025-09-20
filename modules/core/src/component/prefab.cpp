@@ -7,6 +7,10 @@ using namespace phenyl::core;
 
 static phenyl::Logger LOGGER{"PREFAB", phenyl::core::detail::COMPONENT_LOGGER};
 
+std::string_view Prefab::GetAssetType () {
+    return "phenyl::Prefab";
+}
+
 Prefab::Prefab () : m_id{0} {}
 
 Prefab::Prefab (std::size_t prefabId, std::weak_ptr<PrefabManager> manager) :

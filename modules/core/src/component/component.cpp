@@ -89,6 +89,11 @@ Entity World::parent (EntityId id) noexcept {
     return Entity{parentId, this};
 }
 
+std::string_view World::componentName (meta::TypeIndex type) const noexcept {
+    auto it = m_components.find(type);
+    return it != m_components.end() ? it->second->name() : std::string_view{};
+}
+
 void World::defer () {
     if (m_deferCount++) {
         // Already deferred

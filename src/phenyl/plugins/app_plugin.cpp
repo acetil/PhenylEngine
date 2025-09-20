@@ -1,4 +1,4 @@
-#include "app_plugin.h"
+#include "phenyl/app_plugin.h"
 
 #include "phenyl/application.h"
 

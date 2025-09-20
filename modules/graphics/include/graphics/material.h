@@ -126,6 +126,8 @@ public:
     std::shared_ptr<MaterialInstance> instance ();
     MeshRenderBuilder renderMesh (ForwardRenderStage renderStage, const Mesh& mesh);
 
+    static std::string_view GetAssetType ();
+
 private:
     Renderer& m_renderer;
     std::uint32_t m_id;
@@ -170,6 +172,8 @@ public:
     void bind (Material::MatPipeline& pipeline);
 
     MeshRenderBuilder render (ForwardRenderStage renderStage, const Mesh& mesh);
+
+    static std::string_view GetAssetType ();
 
 private:
     struct MaterialUniform {

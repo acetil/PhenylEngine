@@ -55,6 +55,10 @@ MeshRenderBuilder Material::renderMesh (ForwardRenderStage renderStage, const Me
     return MeshRenderBuilder{getPipeline(renderStage, mesh.layout()), mesh};
 }
 
+std::string_view Material::GetAssetType () {
+    return "phenyl::Material";
+}
+
 MaterialRenderPipeline& Material::getPipeline (ForwardRenderStage renderStage, const MeshLayout& layout) {
     auto& pipelineMap = m_pipelines2[layout.layoutId];
     if (auto pipelineIt = pipelineMap.find(renderStage); pipelineIt != pipelineMap.end()) {
@@ -226,4 +230,8 @@ MeshRenderBuilder MaterialInstance::render (ForwardRenderStage renderStage, cons
     auto builder = m_material->renderMesh(renderStage, mesh);
     builder.bindInstanceUniform(m_data);
     return builder;
+}
+
+std::string_view MaterialInstance::GetAssetType () {
+    return "phenyl::MaterialInstance";
 }

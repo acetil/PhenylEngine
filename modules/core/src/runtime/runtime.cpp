@@ -46,6 +46,7 @@ void PhenylRuntime::registerPlugin (meta::TypeIndex typeIndex, std::unique_ptr<I
     m_plugins.emplace(typeIndex, std::move(plugin));
 
     pluginRef.init(*this);
+    m_pluginNames.emplace_back(pluginRef.getName());
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", pluginRef.getName());
 }
 
@@ -56,6 +57,7 @@ void PhenylRuntime::registerPlugin (meta::TypeIndex typeIndex, IInitPlugin& plug
     m_initPlugins.emplace(typeIndex);
 
     plugin.init(*this);
+    m_pluginNames.emplace_back(plugin.getName());
     PHENYL_LOGI(LOGGER, "Registered plugin \"{}\"", plugin.getName());
 }
 
@@ -101,4 +103,12 @@ void PhenylRuntime::shutdown () {
 
     PHENYL_TRACE(LOGGER, "Destructing plugins");
     m_plugins.clear();
+}
+
+const std::vector<ComponentInfo>& PhenylRuntime::components () const noexcept {
+    return m_componentInfos;
+}
+
+const std::vector<std::string>& PhenylRuntime::plugins () const noexcept {
+    return m_pluginNames;
 }

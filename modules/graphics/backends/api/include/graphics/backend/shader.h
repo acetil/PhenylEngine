@@ -162,10 +162,16 @@ public:
         return *m_shader;
     }
 
+    static std::string_view GetAssetType ();
+
 private:
     std::unique_ptr<IShader> m_shader;
     std::size_t m_hash{0};
 };
+
+inline std::string_view Shader::GetAssetType () {
+    return "phenyl::Shader";
+}
 } // namespace phenyl::graphics
 
 template <>

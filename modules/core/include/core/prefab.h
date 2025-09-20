@@ -16,6 +16,8 @@ class PrefabBuilder;
 
 class Prefab : public Asset<Prefab> {
 public:
+    static std::string_view GetAssetType ();
+
     Prefab ();
     ~Prefab () override;
 

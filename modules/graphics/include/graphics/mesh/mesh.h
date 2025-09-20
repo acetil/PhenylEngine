@@ -116,6 +116,8 @@ public:
 
     void bind (Pipeline& pipeline, const std::vector<BufferBinding>& streamBindings) const;
 
+    static std::string_view GetAssetType ();
+
 private:
     const MeshLayout* m_layout;
     RawBuffer m_indices;

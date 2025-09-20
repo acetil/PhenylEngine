@@ -71,6 +71,8 @@ public:
 
 class Texture : public core::Asset<Texture> {
 public:
+    static std::string_view GetAssetType ();
+
     Texture () : m_hash{0} {}
 
     explicit Texture (std::size_t hash) : m_hash{hash} {}
@@ -86,6 +88,10 @@ public:
 private:
     std::size_t m_hash;
 };
+
+inline std::string_view Texture::GetAssetType () {
+    return "phenyl::Texture";
+}
 
 class ImageTexture : public Texture {
 public:
