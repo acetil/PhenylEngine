@@ -11,7 +11,7 @@
 
 using namespace phenyl;
 
-static nlohmann::json CollectComponents (PhenylRuntime& runtime);
+static nlohmann::json CollectComponents (const PhenylRuntime& runtime);
 static nlohmann::json CollectComponent (const core::ComponentInfo& info);
 
 static nlohmann::json CollectTypeInfo (const core::ISerializedTypeInfo& info);
@@ -20,6 +20,8 @@ static nlohmann::json CollectArray (const core::ArraySerializedTypeInfo& info);
 static nlohmann::json CollectMap (const core::MapSerializedTypeInfo& info);
 static nlohmann::json CollectAsset (const core::AssetSerializedTypeInfo& info);
 static nlohmann::json CollectStruct (const core::StructSerializedTypeInfo& info);
+
+static nlohmann::json CollectPlugins (const PhenylRuntime& runtime);
 
 int main (int argc, char* argv[]) {
     if (argc != 2) {
@@ -58,11 +60,14 @@ int main (int argc, char* argv[]) {
     // Run app init
     runtime.registerPlugin(std::make_unique<engine::AppPlugin>(std::move(app)));
 
-    nlohmann::json result{{"components", CollectComponents(runtime)}};
+    nlohmann::json result{
+      {"components", CollectComponents(runtime)}, //
+      {"plugins", CollectPlugins(runtime)}        //
+    };
     std::cout << result.dump(4) << "\n";
 }
 
-nlohmann::json CollectComponents (PhenylRuntime& runtime) {
+nlohmann::json CollectComponents (const PhenylRuntime& runtime) {
     std::vector<nlohmann::json> components;
     for (const auto& i : runtime.components()) {
         components.emplace_back(CollectComponent(i));
@@ -195,4 +200,8 @@ nlohmann::json CollectStruct (const core::StructSerializedTypeInfo& info) {
     }
     json["members"] = std::move(members);
     return json;
+}
+
+static nlohmann::json CollectPlugins (const PhenylRuntime& runtime) {
+    return nlohmann::json{runtime.plugins()};
 }

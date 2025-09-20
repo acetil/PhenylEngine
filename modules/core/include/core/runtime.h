@@ -178,6 +178,7 @@ public:
     void shutdown ();
 
     const std::vector<ComponentInfo>& components () const noexcept;
+    const std::vector<std::string>& plugins () const noexcept;
 
 private:
     World m_world;
@@ -188,6 +189,7 @@ private:
 
     std::unordered_set<meta::TypeIndex> m_initPlugins;
     std::unordered_map<meta::TypeIndex, std::unique_ptr<IPlugin>> m_plugins;
+    std::vector<std::string> m_pluginNames;
 
     std::unordered_map<std::string, std::unique_ptr<IRunnableSystem>> m_systems;
     std::unordered_map<meta::TypeIndex, std::unique_ptr<AbstractStage>> m_stages;

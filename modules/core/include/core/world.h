@@ -151,6 +151,13 @@ public:
             std::function<void(const Signal&, std::remove_reference_t<Args>&...)>{std::forward<decltype(fn)>(fn)});
     }
 
+    template <typename T>
+    std::string_view componentName () const noexcept {
+        return componentName(meta::TypeIndex::Get<T>());
+    }
+
+    std::string_view componentName (meta::TypeIndex type) const noexcept;
+
     void defer ();
     void deferEnd ();
     void deferSignals ();
