@@ -5,7 +5,7 @@
 #include "graphics/backend/renderer.h"
 #include "graphics/phenyl_graphics.h"
 #include "logging/logging.h"
-#include "plugins/app_plugin.h"
+#include "phenyl/app_plugin.h"
 #include "util/profiler.h"
 
 #include <chrono>

@@ -34,6 +34,7 @@ add_subdirectory(modules/ui)
 #add_subdirectory(modules/runtime)
 
 add_subdirectory(examples)
+add_subdirectory(editor)
 
 add_library(phenyl SHARED
         src/phenyl/application.cpp
